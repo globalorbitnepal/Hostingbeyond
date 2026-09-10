@@ -211,11 +211,18 @@ jobs:
           fi
 
           echo "==> Verifying listener on port 3000"
-          if command -v ss >/dev/null 2>&1; then
-            if ! ss -lnt | awk '$4 ~ /:3000$/ { found=1 } END { exit !found }'; then
-              echo "LISTEN_FAIL: nothing listening on TCP port 3000"
-              exit 1
+          LISTEN_OK=0
+          for _i in $(seq 1 30); do
+            if command -v ss >/dev/null 2>&1 && ss -lnt | grep -Eq ':3000([[:space:]]|$)'; then
+              LISTEN_OK=1
+              break
             fi
+            sleep 1
+          done
+          if [ "$LISTEN_OK" != "1" ]; then
+            echo "LISTEN_FAIL: nothing listening on TCP port 3000 after restart wait"
+            ss -lnt || true
+            exit 1
           fi
 
           echo "==> Verifying local HTTP on 127.0.0.1:3000"
