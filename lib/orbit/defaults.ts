@@ -166,8 +166,42 @@ export type CmsHostingTypesContent = {
   cards: CmsHostingTypeCard[];
 };
 
+export type CmsSolutionImage = {
+  id: string;
+  url: string;
+  alt: string;
+  visible: boolean;
+  order: number;
+};
+
+export type CmsSolutionProduct = {
+  id: string;
+  visible: boolean;
+  order: number;
+  category: string;
+  name: string;
+  description: string;
+  badge: string;
+  icon: "server" | "cloud" | "cart" | "wordpress" | "users" | "mail" | "cpu" | "globe";
+  ctaLabel: string;
+  ctaHref: string;
+  images: CmsSolutionImage[];
+};
+
+export type CmsSolutionsContent = {
+  visible: boolean;
+  eyebrow: string;
+  title: string;
+  titleAccent: string;
+  description: string;
+  ctaLabel: string;
+  ctaHref: string;
+  products: CmsSolutionProduct[];
+};
+
 export type CmsHomeSections = {
   hero: CmsHeroContent;
+  solutions: CmsSolutionsContent;
   products: CmsProductsContent;
   hostingTypes: CmsHostingTypesContent;
   hostingPlans: CmsHostingPlansContent;
@@ -592,6 +626,277 @@ function defaultHostingTypesSection(): CmsHostingTypesContent {
   };
 }
 
+function solutionImages(
+  items: Array<{ id: string; url: string; alt: string }>,
+): CmsSolutionImage[] {
+  return items.map((item, order) => ({
+    ...item,
+    visible: true,
+    order,
+  }));
+}
+
+function defaultSolutionsSection(): CmsSolutionsContent {
+  const atmosphere = "/images/hero-atmosphere.jpg";
+  const cloud = "/images/hosting/cloud.jpg";
+  const ecommerce = "/images/hosting/ecommerce.jpg";
+  const wordpress = "/images/hosting/wordpress.jpg";
+  const reseller = "/images/hosting/reseller.jpg";
+
+  return {
+    visible: true,
+    eyebrow: "Our solutions",
+    title: "Everything You Need",
+    titleAccent: "to Build Beyond",
+    description:
+      "Powerful hosting, domains, email and infrastructure designed for modern businesses.",
+    ctaLabel: "View all services",
+    ctaHref: routes.hosting,
+    products: [
+      {
+        id: "web-hosting",
+        visible: true,
+        order: 0,
+        category: "Web Hosting",
+        name: "Web Hosting",
+        description:
+          "Fast, secure hosting for websites, applications and growing online businesses.",
+        badge: "",
+        icon: "server",
+        ctaLabel: "Explore Web Hosting",
+        ctaHref: routes.hosting,
+        images: solutionImages([
+          {
+            id: "web-1",
+            url: atmosphere,
+            alt: "HostingBeyond data-center lobby and server infrastructure",
+          },
+          {
+            id: "web-2",
+            url: cloud,
+            alt: "Global cloud network for HostingBeyond web hosting",
+          },
+          {
+            id: "web-3",
+            url: wordpress,
+            alt: "Published website environment on HostingBeyond hosting",
+          },
+        ]),
+      },
+      {
+        id: "cloud-hosting",
+        visible: true,
+        order: 1,
+        category: "Cloud Hosting",
+        name: "Cloud Hosting",
+        description:
+          "Multi-server cloud architecture built for demanding sites that need room to scale.",
+        badge: "",
+        icon: "cloud",
+        ctaLabel: "Explore Cloud Hosting",
+        ctaHref: routes.cloud,
+        images: solutionImages([
+          {
+            id: "cloud-1",
+            url: cloud,
+            alt: "Global infrastructure visual for HostingBeyond cloud hosting",
+          },
+          {
+            id: "cloud-2",
+            url: atmosphere,
+            alt: "Server infrastructure supporting HostingBeyond cloud platforms",
+          },
+          {
+            id: "cloud-3",
+            url: reseller,
+            alt: "Managed workspace running on HostingBeyond cloud hosting",
+          },
+        ]),
+      },
+      {
+        id: "ecommerce-hosting",
+        visible: true,
+        order: 2,
+        category: "eCommerce Hosting",
+        name: "eCommerce Hosting",
+        description:
+          "Hosting tuned for online stores that need speed, security and a reliable checkout path.",
+        badge: "Popular",
+        icon: "cart",
+        ctaLabel: "Explore eCommerce",
+        ctaHref: `${routes.hosting}/ecommerce`,
+        images: solutionImages([
+          {
+            id: "ecom-1",
+            url: ecommerce,
+            alt: "Product photography for a HostingBeyond eCommerce storefront",
+          },
+          {
+            id: "ecom-2",
+            url: cloud,
+            alt: "Infrastructure behind HostingBeyond eCommerce hosting",
+          },
+          {
+            id: "ecom-3",
+            url: atmosphere,
+            alt: "Secure hosting environment for online stores",
+          },
+        ]),
+      },
+      {
+        id: "wordpress-hosting",
+        visible: true,
+        order: 3,
+        category: "WordPress Hosting",
+        name: "WordPress Hosting",
+        description:
+          "Optimized WordPress hosting with the performance and tools sites need to stay fast.",
+        badge: "",
+        icon: "wordpress",
+        ctaLabel: "Explore WordPress",
+        ctaHref: `${routes.hosting}/wordpress`,
+        images: solutionImages([
+          {
+            id: "wp-1",
+            url: wordpress,
+            alt: "Website visual for HostingBeyond WordPress hosting",
+          },
+          {
+            id: "wp-2",
+            url: atmosphere,
+            alt: "Infrastructure supporting HostingBeyond WordPress sites",
+          },
+          {
+            id: "wp-3",
+            url: cloud,
+            alt: "Cloud-backed WordPress hosting on HostingBeyond",
+          },
+        ]),
+      },
+      {
+        id: "reseller-hosting",
+        visible: true,
+        order: 4,
+        category: "Reseller Hosting",
+        name: "Reseller Hosting",
+        description:
+          "White-label hosting packages you can offer under your own brand.",
+        badge: "",
+        icon: "users",
+        ctaLabel: "Explore Reseller",
+        ctaHref: `${routes.hosting}/reseller`,
+        images: solutionImages([
+          {
+            id: "res-1",
+            url: reseller,
+            alt: "Studio brand visual for HostingBeyond reseller hosting",
+          },
+          {
+            id: "res-2",
+            url: cloud,
+            alt: "Network capacity for HostingBeyond reseller plans",
+          },
+          {
+            id: "res-3",
+            url: atmosphere,
+            alt: "Infrastructure available to HostingBeyond resellers",
+          },
+        ]),
+      },
+      {
+        id: "business-email",
+        visible: true,
+        order: 5,
+        category: "Business Email",
+        name: "Business Email",
+        description:
+          "Professional email for your domain, ready for teams that need a trusted inbox.",
+        badge: "",
+        icon: "mail",
+        ctaLabel: "Explore Business Email",
+        ctaHref: routes.businessEmail,
+        images: solutionImages([
+          {
+            id: "mail-1",
+            url: atmosphere,
+            alt: "Professional environment for HostingBeyond business email",
+          },
+          {
+            id: "mail-2",
+            url: cloud,
+            alt: "Connected infrastructure for HostingBeyond email",
+          },
+          {
+            id: "mail-3",
+            url: wordpress,
+            alt: "Branded online presence paired with HostingBeyond email",
+          },
+        ]),
+      },
+      {
+        id: "vps",
+        visible: true,
+        order: 6,
+        category: "VPS / Servers",
+        name: "VPS Hosting",
+        description:
+          "Dedicated virtual servers for workloads that need more control and isolation.",
+        badge: "",
+        icon: "cpu",
+        ctaLabel: "Explore VPS",
+        ctaHref: routes.vps,
+        images: solutionImages([
+          {
+            id: "vps-1",
+            url: atmosphere,
+            alt: "Server racks for HostingBeyond VPS hosting",
+          },
+          {
+            id: "vps-2",
+            url: cloud,
+            alt: "Isolated compute capacity on HostingBeyond VPS",
+          },
+          {
+            id: "vps-3",
+            url: reseller,
+            alt: "Managed server workspace on HostingBeyond VPS",
+          },
+        ]),
+      },
+      {
+        id: "domains",
+        visible: true,
+        order: 7,
+        category: "Domain Services",
+        name: "Domain Services",
+        description:
+          "Register and manage domains as the starting point of your HostingBeyond presence.",
+        badge: "",
+        icon: "globe",
+        ctaLabel: "Explore Domains",
+        ctaHref: routes.domains,
+        images: solutionImages([
+          {
+            id: "dom-1",
+            url: cloud,
+            alt: "Global network visual for HostingBeyond domain services",
+          },
+          {
+            id: "dom-2",
+            url: wordpress,
+            alt: "Website identity connected to a HostingBeyond domain",
+          },
+          {
+            id: "dom-3",
+            url: atmosphere,
+            alt: "Infrastructure behind HostingBeyond domain services",
+          },
+        ]),
+      },
+    ],
+  };
+}
+
 function defaultOffers(): CmsProductOffer[] {
   return [
     {
@@ -739,6 +1044,7 @@ export function defaultHomeSections(): CmsHomeSections {
         { value: "10,000+", label: "Businesses Trust Us", icon: "users" },
       ],
     },
+    solutions: defaultSolutionsSection(),
     products: {
       visible: true,
       eyebrow: "Everything You Need",
@@ -927,6 +1233,63 @@ export function mergeHomeSections(
     }
   }
 
+  const solutionIcon = (
+    value: CmsSolutionProduct["icon"] | string | undefined,
+    fallback: CmsSolutionProduct["icon"],
+  ): CmsSolutionProduct["icon"] =>
+    value === "server" ||
+    value === "cloud" ||
+    value === "cart" ||
+    value === "wordpress" ||
+    value === "users" ||
+    value === "mail" ||
+    value === "cpu" ||
+    value === "globe"
+      ? value
+      : fallback;
+
+  const mergeSolutionImages = (
+    storedImages: CmsSolutionImage[] | undefined,
+    fallbackImages: CmsSolutionImage[],
+  ): CmsSolutionImage[] => {
+    if (!Array.isArray(storedImages) || storedImages.length === 0) {
+      return fallbackImages;
+    }
+    return storedImages.map((image, index) => {
+      const fallback = fallbackImages[index] ?? fallbackImages[0];
+      return {
+        id: image.id || fallback?.id || `image-${index}`,
+        url: typeof image.url === "string" ? image.url : (fallback?.url ?? ""),
+        alt: typeof image.alt === "string" ? image.alt : (fallback?.alt ?? ""),
+        visible: image.visible !== false,
+        order: typeof image.order === "number" ? image.order : index,
+      };
+    });
+  };
+
+  const storedSolutions = stored.solutions;
+  const storedSolutionProducts = Array.isArray(storedSolutions?.products)
+    ? storedSolutions.products
+    : [];
+  const defaultSolutionProducts = defaults.solutions.products;
+  const solutionProducts =
+    storedSolutionProducts.length > 0
+      ? storedSolutionProducts.map((item, index) => {
+          const fallback =
+            defaultSolutionProducts.find((product) => product.id === item.id) ??
+            defaultSolutionProducts[index % defaultSolutionProducts.length];
+          return {
+            ...fallback,
+            ...item,
+            id: item.id || fallback.id || `solution-${index}`,
+            icon: solutionIcon(item.icon, fallback.icon),
+            visible: item.visible !== false,
+            order: typeof item.order === "number" ? item.order : index,
+            images: mergeSolutionImages(item.images, fallback.images),
+          } satisfies CmsSolutionProduct;
+        })
+      : defaultSolutionProducts;
+
   const storedHero: Partial<CmsHeroContent> = stored.hero ?? {};
   const legacyHeadline =
     storedHero.headline === "Everything You Need." ||
@@ -1076,6 +1439,12 @@ export function mergeHomeSections(
     ...defaults,
     ...stored,
     hero,
+    solutions: {
+      ...defaults.solutions,
+      ...stored.solutions,
+      visible: stored.solutions?.visible !== false,
+      products: solutionProducts.sort((a, b) => a.order - b.order),
+    },
     products: {
       ...defaults.products,
       ...stored.products,

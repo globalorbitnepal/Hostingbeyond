@@ -4,6 +4,7 @@ import {
   HostingPlansSection,
   HostingTypesSection,
   ProductsSection,
+  SolutionsSection,
 } from "@/components/home";
 import { getHomeSections, getSiteSettings } from "@/lib/orbit/content";
 
@@ -37,6 +38,10 @@ export default async function HomePage() {
         />
         {sections.hero.visible ? <HeroSection content={sections.hero} /> : null}
       </div>
+
+      {sections.solutions ? (
+        <SolutionsSection content={sections.solutions} />
+      ) : null}
 
       {sections.products.visible ? (
         <ProductsSection content={sections.products} />

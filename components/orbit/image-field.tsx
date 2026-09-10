@@ -6,9 +6,15 @@ type ImageFieldProps = {
   label: string;
   value: string;
   onChange: (url: string) => void;
+  onDelete?: () => void;
 };
 
-export function OrbitImageField({ label, value, onChange }: ImageFieldProps) {
+export function OrbitImageField({
+  label,
+  value,
+  onChange,
+  onDelete,
+}: ImageFieldProps) {
   const [status, setStatus] = useState("");
   const [uploading, setUploading] = useState(false);
 
@@ -89,6 +95,23 @@ export function OrbitImageField({ label, value, onChange }: ImageFieldProps) {
           />
         </label>
         {value ? (
+          <label className="inline-flex cursor-pointer items-center rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900">
+            Replace image
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
+              className="hidden"
+              disabled={uploading}
+              onChange={(event) =>
+                void onUpload(
+                  event.target.files?.[0] ?? null,
+                  event.currentTarget,
+                )
+              }
+            />
+          </label>
+        ) : null}
+        {value ? (
           <button
             type="button"
             onClick={() => {
@@ -98,6 +121,15 @@ export function OrbitImageField({ label, value, onChange }: ImageFieldProps) {
             className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900"
           >
             Clear field
+          </button>
+        ) : null}
+        {onDelete ? (
+          <button
+            type="button"
+            onClick={onDelete}
+            className="rounded-lg border border-red-200 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50"
+          >
+            Delete image
           </button>
         ) : null}
       </div>

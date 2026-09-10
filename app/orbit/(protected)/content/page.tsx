@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { OrbitImageField } from "@/components/orbit/image-field";
+import { SolutionsEditor } from "@/components/orbit/solutions-editor";
 import {
   defaultTechnologyPartners,
   type CmsDomainTld,
@@ -324,6 +325,13 @@ export default function OrbitContentPage() {
           }
         />
       </section>
+
+      {sections.solutions ? (
+        <SolutionsEditor
+          value={sections.solutions}
+          onChange={(solutions) => setSections({ ...sections, solutions })}
+        />
+      ) : null}
 
       {/* PRODUCTS */}
       <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5">
