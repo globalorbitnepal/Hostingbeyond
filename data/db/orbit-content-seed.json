@@ -1,0 +1,654 @@
+{
+  "exportedAt": "2026-09-10T09:49:54.936Z",
+  "source": "lib/orbit/defaults.ts",
+  "note": "Full Orbit CMS content seed for cloning to another server. Run: npm run db:import",
+  "siteSettings": [
+    {
+      "id": "default",
+      "data": {
+        "name": "HostingBeyond",
+        "tagline": "Beyond Hosting, Beyond Possibilities",
+        "description": "Premium domains, blazing-fast hosting, and secure business email — everything you need to build, grow, and succeed online.",
+        "url": "https://beyond.theglobalorbit.com",
+        "locale": "en_US",
+        "twitterHandle": "@hostingbeyond",
+        "logoPath": "/logo/hostingbeyond-logo-v5.png",
+        "ogImagePath": "/images/hero-speaker-light.png",
+        "loginLabel": "Login",
+        "getStartedLabel": "Get Started",
+        "getStartedHref": "/get-started",
+        "loginHref": "/login",
+        "contactEmail": "hello@hostingbeyond.com",
+        "contactPhone": "",
+        "social": {
+          "twitter": "https://twitter.com/hostingbeyond",
+          "linkedin": "",
+          "facebook": ""
+        }
+      }
+    }
+  ],
+  "pageContent": [
+    {
+      "slug": "home",
+      "title": "Home",
+      "isPublished": true,
+      "isVisible": true,
+      "seo": {
+        "title": "HostingBeyond — Beyond Hosting, Beyond Possibilities",
+        "description": "Premium domains, blazing-fast hosting, and secure business email — everything you need to build, grow, and succeed online."
+      },
+      "sections": {
+        "hero": {
+          "visible": true,
+          "eyebrow": "SIMPLE • SECURE • SCALABLE",
+          "headline": "Host Your Ideas",
+          "headlineAccent": "Beyond Limits",
+          "description": "Reliable hosting, powerful infrastructure and the freedom to build what's next.",
+          "searchPlaceholder": "Find your perfect domain name...",
+          "searchButtonLabel": "Search",
+          "bulkSearchLabel": "Bulk Search",
+          "backgroundImage": "/images/hero-speaker-scene.png",
+          "speakerImage": "/images/hero-speaker-scene.png",
+          "glassPanelLeft": "Ideas\nHost\nGrow\nBeyond",
+          "glassPanelRight": "Global Infrastructure for a Brighter Tomorrow",
+          "domainPricing": [
+            {
+              "tld": ".com",
+              "priceLabel": "$7.99/yr",
+              "visible": true
+            },
+            {
+              "tld": ".net",
+              "priceLabel": "$6.99/yr",
+              "visible": true
+            },
+            {
+              "tld": ".org",
+              "priceLabel": "$5.99/yr",
+              "visible": true
+            },
+            {
+              "tld": ".dev",
+              "priceLabel": "$3.99/yr",
+              "visible": true
+            }
+          ],
+          "technologyPartners": [
+            {
+              "id": "wordpress",
+              "label": "WordPress",
+              "imageUrl": "",
+              "visible": true,
+              "order": 0
+            },
+            {
+              "id": "cpanel",
+              "label": "cPanel",
+              "imageUrl": "",
+              "visible": true,
+              "order": 1
+            },
+            {
+              "id": "plesk",
+              "label": "plesk",
+              "imageUrl": "",
+              "visible": true,
+              "order": 2
+            },
+            {
+              "id": "intel",
+              "label": "intel",
+              "imageUrl": "",
+              "visible": true,
+              "order": 3
+            },
+            {
+              "id": "amd",
+              "label": "AMD",
+              "imageUrl": "",
+              "visible": true,
+              "order": 4
+            },
+            {
+              "id": "nvme",
+              "label": "nvme EXPRESS",
+              "imageUrl": "",
+              "visible": true,
+              "order": 5
+            },
+            {
+              "id": "linux",
+              "label": "Linux",
+              "imageUrl": "",
+              "visible": true,
+              "order": 6
+            },
+            {
+              "id": "python",
+              "label": "Python",
+              "imageUrl": "",
+              "visible": true,
+              "order": 7
+            },
+            {
+              "id": "php",
+              "label": "PHP",
+              "imageUrl": "",
+              "visible": true,
+              "order": 8
+            },
+            {
+              "id": "mysql",
+              "label": "MySQL",
+              "imageUrl": "",
+              "visible": true,
+              "order": 9
+            },
+            {
+              "id": "docker",
+              "label": "Docker",
+              "imageUrl": "",
+              "visible": true,
+              "order": 10
+            }
+          ],
+          "trustItems": [
+            {
+              "title": "99.99% Uptime",
+              "subtitle": "Network Guarantee",
+              "icon": "shield"
+            },
+            {
+              "title": "NVMe Performance",
+              "subtitle": "Ultra-fast storage",
+              "icon": "lock"
+            },
+            {
+              "title": "24/7 Expert Support",
+              "subtitle": "We're here for you",
+              "icon": "support"
+            }
+          ],
+          "stats": [
+            {
+              "value": "2.7M+",
+              "label": "Domains Under Management",
+              "icon": "globe"
+            },
+            {
+              "value": "600+",
+              "label": "Domain Extensions",
+              "icon": "server"
+            },
+            {
+              "value": "24/7",
+              "label": "Expert Support Always Here",
+              "icon": "shield"
+            },
+            {
+              "value": "10,000+",
+              "label": "Businesses Trust Us",
+              "icon": "users"
+            }
+          ]
+        },
+        "products": {
+          "visible": true,
+          "eyebrow": "Everything You Need",
+          "title": "Power Your Online Success",
+          "titleAccent": "Everything in One Place",
+          "description": "Get premium domains, professional email, and blazing-fast hosting at unbeatable prices.",
+          "offers": [
+            {
+              "id": "domain",
+              "visible": true,
+              "order": 0,
+              "title": "Domain Site",
+              "subtitle": "",
+              "badge": "Best Value",
+              "accent": "blue",
+              "priceOverride": "",
+              "priceSuffix": "/ 1 Year",
+              "highlight": "+ Free 2 Business Mail 1 Year",
+              "priceLabel": "",
+              "features": [
+                "Free Domain Privacy Protection",
+                "Free DNS Management",
+                "24/7 Domain Support",
+                "Easy Domain Management"
+              ],
+              "ctaLabel": "Find Your Domain",
+              "ctaHref": "/domains",
+              "searchEnabled": true,
+              "searchPlaceholder": "Enter your domain name",
+              "searchButtonLabel": "Search",
+              "iconUrl": "",
+              "illustrationUrl": ""
+            },
+            {
+              "id": "email",
+              "visible": true,
+              "order": 1,
+              "title": "Business Email",
+              "subtitle": "Professional Email for Your Business",
+              "badge": "Professional",
+              "accent": "purple",
+              "priceOverride": "",
+              "priceSuffix": "/ Month",
+              "highlight": "",
+              "priceLabel": "Per Mailbox",
+              "features": [
+                "Custom Email Address",
+                "Spam & Virus Protection",
+                "99.99% Uptime Guarantee",
+                "Webmail Access",
+                "Mobile & Desktop Sync"
+              ],
+              "ctaLabel": "Get Business Email",
+              "ctaHref": "/business-email",
+              "searchEnabled": false,
+              "searchPlaceholder": "",
+              "searchButtonLabel": "Search",
+              "iconUrl": "",
+              "illustrationUrl": ""
+            },
+            {
+              "id": "hosting",
+              "visible": true,
+              "order": 2,
+              "title": "Web Hosting",
+              "subtitle": "Blazing-Fast Hosting Plans",
+              "badge": "Fast & Reliable",
+              "accent": "cyan",
+              "priceOverride": "",
+              "priceSuffix": "/ Per Month",
+              "highlight": "",
+              "priceLabel": "Starting Plan",
+              "features": [
+                "Ultra-Fast NVMe SSD",
+                "99.99% Uptime Guarantee",
+                "Free SSL Certificate",
+                "Daily Backups",
+                "24/7 Expert Support"
+              ],
+              "ctaLabel": "View Hosting Plans",
+              "ctaHref": "/hosting",
+              "searchEnabled": false,
+              "searchPlaceholder": "",
+              "searchButtonLabel": "Search",
+              "iconUrl": "",
+              "illustrationUrl": ""
+            }
+          ]
+        },
+        "hostingTypes": {
+          "visible": true,
+          "cards": [
+            {
+              "id": "cloud",
+              "visible": true,
+              "order": 0,
+              "title": "Cloud Hosting",
+              "description": "Run your heavy sites on a highly stable, multi-server network architecture.",
+              "href": "/cloud",
+              "accent": "blue",
+              "icon": "cloud",
+              "ctaLabel": "View Plans",
+              "imageUrl": "/images/hosting/cloud.jpg",
+              "imageAlt": "Earth from space — cloud hosting network",
+              "overlayStyle": "cloud",
+              "overlayCaption": "www",
+              "overlayStat": "↑ 85.2%",
+              "overlayPills": ["UPTIME", "RELIABILITY", "SECURITY"]
+            },
+            {
+              "id": "ecommerce",
+              "visible": true,
+              "order": 1,
+              "title": "eCommerce Hosting",
+              "description": "Get high-speed performance and top security for your e-commerce operations.",
+              "href": "/hosting/ecommerce",
+              "accent": "purple",
+              "icon": "cart",
+              "ctaLabel": "View Plans",
+              "imageUrl": "/images/hosting/ecommerce.jpg",
+              "imageAlt": "Ceramic product photography for online store",
+              "overlayStyle": "shop",
+              "overlayCaption": "",
+              "overlayStat": "109.00",
+              "overlayPills": []
+            },
+            {
+              "id": "wordpress",
+              "visible": true,
+              "order": 2,
+              "title": "WordPress Hosting",
+              "description": "Experience high speeds with specialized staging tools and smart optimization.",
+              "href": "/hosting/wordpress",
+              "accent": "blue",
+              "icon": "wordpress",
+              "ctaLabel": "View Plans",
+              "imageUrl": "/images/hosting/wordpress.jpg",
+              "imageAlt": "Mountain landscape in WordPress editor",
+              "overlayStyle": "gallery",
+              "overlayCaption": "",
+              "overlayStat": "",
+              "overlayPills": []
+            },
+            {
+              "id": "reseller",
+              "visible": true,
+              "order": 3,
+              "title": "Reseller Hosting",
+              "description": "Create custom packages to sell hosting directly under your white-label brand.",
+              "href": "/hosting/reseller",
+              "accent": "purple",
+              "icon": "user",
+              "ctaLabel": "View Plans",
+              "imageUrl": "/images/hosting/reseller.jpg",
+              "imageAlt": "Botanical studio plant photography",
+              "overlayStyle": "studio",
+              "overlayCaption": "Sage. Botanical Studio",
+              "overlayStat": "",
+              "overlayPills": ["Aa", "Aa", "Aa"]
+            }
+          ]
+        },
+        "hostingPlans": {
+          "visible": true,
+          "eyebrow": "Web Hosting Plans",
+          "title": "Web Hosting",
+          "titleAccent": "Plans & Price",
+          "description": "Compare our affordable web hosting price in Nepal and choose the perfect hosting plan for your website.",
+          "supportLabel": "24/7 Local Support",
+          "activationLabel": "Instant Activation",
+          "annualToggleLabel": "Annually (Save 50%)",
+          "monthlyToggleLabel": "Monthly",
+          "defaultBilling": "annually",
+          "plans": [
+            {
+              "id": "essential",
+              "visible": true,
+              "order": 0,
+              "name": "Web Essential",
+              "discountBadge": "50% OFF",
+              "popular": false,
+              "popularLabel": "",
+              "accent": "blue",
+              "priceAnnually": "$5.00",
+              "originalAnnually": "$10.00",
+              "billedAnnually": "Billed $60.00 Annually",
+              "priceMonthly": "$10.00",
+              "originalMonthly": "",
+              "billedMonthly": "Billed monthly",
+              "features": [
+                "1 Website",
+                "10 GB SSD Storage",
+                "Unmetered Bandwidth",
+                "2 GB RAM",
+                "1 Email Account",
+                "Free SSL Certificate",
+                "24/7 Support"
+              ],
+              "ctaLabel": "Get Started",
+              "ctaHref": "/get-started"
+            },
+            {
+              "id": "plus",
+              "visible": true,
+              "order": 1,
+              "name": "Web Plus",
+              "discountBadge": "50% OFF",
+              "popular": false,
+              "popularLabel": "",
+              "accent": "blue",
+              "priceAnnually": "$10.00",
+              "originalAnnually": "$20.00",
+              "billedAnnually": "Billed $120.00 Annually",
+              "priceMonthly": "$20.00",
+              "originalMonthly": "",
+              "billedMonthly": "Billed monthly",
+              "features": [
+                "5 Websites",
+                "20 GB SSD Storage",
+                "Unmetered Bandwidth",
+                "4 GB RAM",
+                "10 Email Accounts",
+                "Free SSL Certificate",
+                "24/7 Support"
+              ],
+              "ctaLabel": "Get Started",
+              "ctaHref": "/get-started"
+            },
+            {
+              "id": "pro",
+              "visible": true,
+              "order": 2,
+              "name": "Web Pro",
+              "discountBadge": "50% OFF",
+              "popular": true,
+              "popularLabel": "Most Popular",
+              "accent": "gradient",
+              "priceAnnually": "$15.00",
+              "originalAnnually": "$30.00",
+              "billedAnnually": "Billed $180.00 Annually",
+              "priceMonthly": "$30.00",
+              "originalMonthly": "",
+              "billedMonthly": "Billed monthly",
+              "features": [
+                "Unlimited Websites",
+                "40 GB SSD Storage",
+                "Unmetered Bandwidth",
+                "6 GB RAM",
+                "Unlimited Email Accounts",
+                "Free SSL Certificate",
+                "Priority Support"
+              ],
+              "ctaLabel": "Get Started",
+              "ctaHref": "/get-started"
+            },
+            {
+              "id": "ultimate",
+              "visible": true,
+              "order": 3,
+              "name": "Web Ultimate",
+              "discountBadge": "50% OFF",
+              "popular": false,
+              "popularLabel": "",
+              "accent": "purple",
+              "priceAnnually": "$20.00",
+              "originalAnnually": "$40.00",
+              "billedAnnually": "Billed $240.00 Annually",
+              "priceMonthly": "$40.00",
+              "originalMonthly": "",
+              "billedMonthly": "Billed monthly",
+              "features": [
+                "Unlimited Websites",
+                "60 GB SSD Storage",
+                "Unmetered Bandwidth",
+                "8 GB RAM",
+                "Unlimited Email Accounts",
+                "Free SSL Certificate",
+                "Priority Support"
+              ],
+              "ctaLabel": "Get Started",
+              "ctaHref": "/get-started"
+            }
+          ],
+          "guarantees": [
+            {
+              "id": "moneyback",
+              "title": "30-Day Money-Back Guarantee",
+              "description": "Try risk-free. If you're not satisfied, get a full refund within 30 days.",
+              "icon": "shield"
+            },
+            {
+              "id": "secure",
+              "title": "Secure & Reliable Infrastructure",
+              "description": "Enterprise-grade security and daily backups keep your sites protected.",
+              "icon": "lock"
+            },
+            {
+              "id": "uptime",
+              "title": "99.99% Uptime Guarantee",
+              "description": "High-availability network designed for always-on performance.",
+              "icon": "rocket"
+            }
+          ]
+        },
+        "navigation": [
+          {
+            "label": "Domains",
+            "href": "/domains",
+            "children": [
+              {
+                "label": "Register Domain",
+                "href": "/domains/register"
+              },
+              {
+                "label": "Transfer Domain",
+                "href": "/domains/transfer"
+              },
+              {
+                "label": "Domain Pricing",
+                "href": "/domains/pricing"
+              },
+              {
+                "label": "WHOIS Lookup",
+                "href": "/domains/whois"
+              }
+            ]
+          },
+          {
+            "label": "Hosting",
+            "href": "/hosting",
+            "children": [
+              {
+                "label": "Shared Hosting",
+                "href": "/hosting/shared"
+              },
+              {
+                "label": "WordPress Hosting",
+                "href": "/hosting/wordpress"
+              },
+              {
+                "label": "Reseller Hosting",
+                "href": "/hosting/reseller"
+              },
+              {
+                "label": "Cloud Hosting",
+                "href": "/cloud"
+              },
+              {
+                "label": "VPS Hosting",
+                "href": "/vps"
+              }
+            ]
+          },
+          {
+            "label": "Business Email",
+            "href": "/business-email"
+          },
+          {
+            "label": "Resources",
+            "href": "/resources",
+            "children": [
+              {
+                "label": "Blog",
+                "href": "/resources/blog"
+              },
+              {
+                "label": "Expert Tips",
+                "href": "/resources/tips"
+              },
+              {
+                "label": "Product Updates",
+                "href": "/resources/updates"
+              },
+              {
+                "label": "Our Story",
+                "href": "/about"
+              },
+              {
+                "label": "Contact",
+                "href": "/contact"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "slug": "login",
+      "title": "Login",
+      "isPublished": true,
+      "isVisible": true,
+      "seo": {
+        "title": "Login — HostingBeyond",
+        "description": "Sign in to manage your HostingBeyond services."
+      },
+      "sections": {
+        "logoPath": "/logo/hostingbeyond-logo-transparent.png",
+        "tagline": "",
+        "copyright": "© 2025 HostingBeyond. All rights reserved.",
+        "badge": "Everything You Need, All in One Place",
+        "headline": "Power Your Online Success with",
+        "headlineAccent": "HostingBeyond",
+        "description": "Premium hosting solutions, powerful tools, and 24/7 support to help your business grow online with confidence.",
+        "features": [
+          {
+            "id": "secure",
+            "title": "Secure & Reliable",
+            "description": "Enterprise-grade security for your peace of mind.",
+            "icon": "shield"
+          },
+          {
+            "id": "performance",
+            "title": "High Performance",
+            "description": "Lightning-fast servers for optimal performance.",
+            "icon": "zap"
+          },
+          {
+            "id": "support",
+            "title": "24/7 Support",
+            "description": "Expert support whenever you need us.",
+            "icon": "headphones"
+          },
+          {
+            "id": "uptime",
+            "title": "99.99% Uptime",
+            "description": "Guaranteed uptime for your business reliability.",
+            "icon": "lock"
+          }
+        ],
+        "cardTitle": "Welcome Back",
+        "cardSubtitle": "Login to your account and continue managing your hosting services.",
+        "emailLabel": "Email address",
+        "emailPlaceholder": "Enter your email address",
+        "passwordLabel": "Password",
+        "passwordPlaceholder": "Enter your password",
+        "rememberLabel": "Remember me",
+        "forgotLabel": "Forgot password?",
+        "forgotHref": "/forgot-password",
+        "loginCtaLabel": "Login",
+        "signupPrompt": "Don't have an account?",
+        "signupLabel": "Sign up",
+        "signupHref": "/get-started",
+        "dividerLabel": "OR",
+        "google": {
+          "visible": true,
+          "label": "Continue with Google",
+          "href": "#"
+        },
+        "github": {
+          "visible": true,
+          "label": "Continue with GitHub",
+          "href": "#"
+        },
+        "backgroundImage": ""
+      }
+    }
+  ],
+  "mediaAsset": []
+}

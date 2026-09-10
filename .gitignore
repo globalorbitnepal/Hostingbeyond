@@ -40,6 +40,10 @@ yarn-error.log*
 /data/uploads/*
 !/data/uploads/.gitkeep
 
+# Portable Orbit CMS dumps — commit these for clone/migrate
+!/data/db/
+!/data/db/**
+
 # Vercel / Netlify
 .vercel
 .netlify
