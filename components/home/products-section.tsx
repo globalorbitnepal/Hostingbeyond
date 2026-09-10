@@ -12,6 +12,7 @@ import { useLocale } from "@/components/locale/locale-provider";
 import { cn } from "@/lib/utils";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import type { CmsProductOffer, CmsProductsContent } from "@/lib/orbit/defaults";
+import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
 import { DomainVisual, EmailVisual, HostingVisual } from "./product-visuals";
 
 function HostingCardIcon({ className }: { className?: string }) {
@@ -132,7 +133,7 @@ function ProductCard({
       }}
       whileHover={reduceMotion ? undefined : { y: -6 }}
       className={cn(
-        "group relative flex h-full flex-col overflow-hidden rounded-[22px] border bg-[linear-gradient(165deg,rgba(10,14,28,0.97),rgba(4,8,18,0.99))] p-5 backdrop-blur-xl transition-[box-shadow,border-color,transform] duration-200 sm:p-6",
+        "group relative flex h-full flex-col overflow-hidden rounded-[22px] border bg-[rgba(12,20,40,0.55)] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-2xl transition-[box-shadow,border-color,transform] duration-200 sm:p-6",
         styles.card,
       )}
     >
@@ -155,6 +156,7 @@ function ProductCard({
                 alt=""
                 width={28}
                 height={28}
+                unoptimized={isRuntimeMediaSrc(offer.iconUrl)}
                 className="size-7 object-contain"
               />
             ) : (
@@ -251,6 +253,7 @@ function ProductCard({
                 src={offer.illustrationUrl}
                 alt=""
                 fill
+                unoptimized={isRuntimeMediaSrc(offer.illustrationUrl)}
                 className="object-contain transition-transform duration-300 group-hover:scale-[1.04]"
                 sizes="200px"
               />
@@ -403,7 +406,7 @@ export function ProductsSection({ content }: { content?: CmsProductsContent }) {
   return (
     <section
       id="products"
-      className="relative isolate overflow-hidden bg-[var(--hb-bg)] px-4 pt-10 pb-14 sm:px-6 sm:pt-12 sm:pb-16 lg:px-8 lg:pt-14 lg:pb-20"
+      className="relative isolate overflow-hidden bg-[#07122a] px-4 pt-8 pb-6 sm:px-6 sm:pt-10 sm:pb-8 lg:px-8 lg:pt-12 lg:pb-8"
     >
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute top-0 left-1/2 h-48 w-[70%] -translate-x-1/2 bg-[radial-gradient(ellipse,rgb(10_132_255_/_0.08),transparent_70%)] blur-2xl" />
@@ -449,7 +452,7 @@ export function ProductsSection({ content }: { content?: CmsProductsContent }) {
 
         <div
           className={cn(
-            "mt-10 grid grid-cols-1 items-stretch gap-5 transition-opacity duration-150 sm:mt-8 lg:mt-10 lg:grid-cols-3 lg:gap-6",
+            "mt-8 grid grid-cols-1 items-stretch gap-5 transition-opacity duration-150 sm:mt-7 lg:mt-8 lg:grid-cols-3 lg:gap-5",
             isPending && "opacity-70",
           )}
         >

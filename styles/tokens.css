@@ -3,14 +3,14 @@
  */
 
 :root {
-  --hb-bg: #050816;
-  --hb-navy: #070b18;
-  --hb-blue: #2563eb;
+  --hb-bg: #0a1630;
+  --hb-navy: #0c1a36;
+  --hb-blue: #2f6bff;
   --hb-purple: #7c3aed;
   --hb-white: #f8fafc;
-  --hb-muted: #aab4c8;
-  --hb-glass: rgba(7, 11, 24, 0.62);
-  --hb-glass-strong: rgba(5, 8, 22, 0.82);
+  --hb-muted: #c5d0e6;
+  --hb-glass: rgba(255, 255, 255, 0.08);
+  --hb-glass-strong: rgba(18, 32, 62, 0.55);
   --hb-border: rgba(255, 255, 255, 0.08);
   --hb-border-blue: rgba(37, 99, 235, 0.35);
   --hb-glow-blue: rgba(37, 99, 235, 0.32);

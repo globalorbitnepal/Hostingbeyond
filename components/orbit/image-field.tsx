@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 
 type ImageFieldProps = {
   label: string;
@@ -13,7 +12,7 @@ export function OrbitImageField({ label, value, onChange }: ImageFieldProps) {
   const [status, setStatus] = useState("");
   const [uploading, setUploading] = useState(false);
 
-  async function onUpload(file: File | null) {
+  async function onUpload(file: File | null, input: HTMLInputElement) {
     if (!file) return;
     setUploading(true);
     setStatus("Uploading…");
@@ -38,6 +37,7 @@ export function OrbitImageField({ label, value, onChange }: ImageFieldProps) {
     } catch {
       setStatus("Upload failed");
     } finally {
+      input.value = "";
       setUploading(false);
     }
   }
@@ -49,12 +49,12 @@ export function OrbitImageField({ label, value, onChange }: ImageFieldProps) {
       </p>
       {value ? (
         <div className="relative h-28 w-full overflow-hidden rounded-lg border border-white/10 bg-black/40">
-          <Image
+          {/* Native img so runtime /uploads files preview without next/image optimizer. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src={value}
             alt={label}
-            fill
-            className="object-contain p-2"
-            sizes="240px"
+            className="h-full w-full object-contain p-2"
           />
         </div>
       ) : (
@@ -76,7 +76,12 @@ export function OrbitImageField({ label, value, onChange }: ImageFieldProps) {
             accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
             className="hidden"
             disabled={uploading}
-            onChange={(event) => void onUpload(event.target.files?.[0] ?? null)}
+            onChange={(event) =>
+              void onUpload(
+                event.target.files?.[0] ?? null,
+                event.currentTarget,
+              )
+            }
           />
         </label>
         {value ? (
@@ -84,11 +89,11 @@ export function OrbitImageField({ label, value, onChange }: ImageFieldProps) {
             type="button"
             onClick={() => {
               onChange("");
-              setStatus("Removed");
+              setStatus("Cleared from this field (file kept in Media Library)");
             }}
             className="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-white/70 hover:text-white"
           >
-            Remove
+            Clear field
           </button>
         ) : null}
       </div>

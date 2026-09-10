@@ -2,14 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, ChevronDown, Menu, X } from "lucide-react";
+import { ChevronDown, Menu, User, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { mainNavigation, type NavItem } from "@/config/navigation";
 import { routes } from "@/config/routes";
 import { CountryLanguageSelector } from "@/components/locale/country-language-selector";
 import { useLocale } from "@/components/locale/locale-provider";
-import { GlowButton } from "@/components/shared/glow-button";
 import { Logo } from "@/components/shared/logo";
 import { cn } from "@/lib/utils";
 
@@ -19,10 +18,11 @@ function localizeNavLabel(
 ) {
   const map: Record<string, string> = {
     Domains: nav.domains,
-    "Web Hosting": nav.hosting,
-    Hosting: nav.hosting,
+    Hosting: "Servers & Hosting",
+    "Web Hosting": "Servers & Hosting",
     "Business Email": nav.businessEmail,
-    Resources: nav.resources,
+    Resources: "Solutions",
+    Pricing: "Pricing",
   };
   return map[label] ?? label;
 }
@@ -34,10 +34,9 @@ function NavDropdown({ item, label }: { item: NavItem; label: string }) {
   const clearClose = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
-
   const scheduleClose = () => {
     clearClose();
-    timeoutRef.current = setTimeout(() => setOpen(false), 140);
+    timeoutRef.current = setTimeout(() => setOpen(false), 150);
   };
 
   useEffect(() => () => clearClose(), []);
@@ -46,7 +45,7 @@ function NavDropdown({ item, label }: { item: NavItem; label: string }) {
     return (
       <Link
         href={item.href}
-        className="py-1.5 text-[14px] font-bold tracking-[-0.01em] whitespace-nowrap text-white/90 uppercase transition-colors hover:text-white xl:text-[15px]"
+        className="text-[15px] font-bold tracking-[-0.015em] whitespace-nowrap text-slate-800 transition-colors duration-150 hover:text-slate-950 xl:text-[16px]"
       >
         {label}
       </Link>
@@ -64,14 +63,14 @@ function NavDropdown({ item, label }: { item: NavItem; label: string }) {
     >
       <button
         type="button"
-        className="inline-flex items-center gap-1 py-1.5 text-[14px] font-bold tracking-[-0.01em] whitespace-nowrap text-white/90 uppercase transition-colors hover:text-white xl:text-[15px]"
+        className="inline-flex items-center gap-1 text-[15px] font-bold tracking-[-0.015em] whitespace-nowrap text-slate-800 transition-colors duration-150 hover:text-slate-950 xl:text-[16px]"
         aria-expanded={open}
-        onClick={() => setOpen((value) => !value)}
+        onClick={() => setOpen((v) => !v)}
       >
         {label}
         <ChevronDown
           className={cn(
-            "size-3 opacity-55 transition-transform duration-200",
+            "mt-px size-[14px] shrink-0 text-slate-500 transition-transform duration-200",
             open && "rotate-180",
           )}
           aria-hidden
@@ -81,18 +80,18 @@ function NavDropdown({ item, label }: { item: NavItem; label: string }) {
       <AnimatePresence>
         {open ? (
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 4 }}
-            transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute top-[calc(100%+10px)] left-1/2 z-50 min-w-[236px] -translate-x-1/2"
+            exit={{ opacity: 0, y: 3 }}
+            transition={{ duration: 0.13, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute top-[calc(100%+12px)] left-1/2 z-50 min-w-[220px] -translate-x-1/2"
           >
-            <div className="overflow-hidden rounded-2xl border border-white/10 bg-[rgba(5,8,20,0.96)] p-2 shadow-[0_24px_60px_rgb(0_0_0_/_0.55)] backdrop-blur-2xl">
+            <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 py-1.5 shadow-[0_18px_48px_rgba(15,23,42,0.12)] backdrop-blur-2xl">
               {item.children.map((child) => (
                 <Link
                   key={child.href}
                   href={child.href}
-                  className="block rounded-xl px-3.5 py-2.5 text-[14px] font-semibold text-white/80 normal-case transition-colors hover:bg-white/[0.06] hover:text-white"
+                  className="block px-4 py-[10px] text-[13.5px] font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-950"
                   onClick={() => setOpen(false)}
                 >
                   {child.label}
@@ -106,13 +105,32 @@ function NavDropdown({ item, label }: { item: NavItem; label: string }) {
   );
 }
 
+const NAV_ORDER = [
+  "Domains",
+  "Hosting",
+  "Web Hosting",
+  "Business Email",
+  "Resources",
+  "Pricing",
+];
+
+function sortNav(items: NavItem[]): NavItem[] {
+  return [...items].sort((a, b) => {
+    const ai = NAV_ORDER.indexOf(a.label);
+    const bi = NAV_ORDER.indexOf(b.label);
+    const aIdx = ai === -1 ? 99 : ai;
+    const bIdx = bi === -1 ? 99 : bi;
+    return aIdx - bIdx;
+  });
+}
+
 export function SiteHeader({
   navigation = mainNavigation,
   loginLabel,
   loginHref = routes.login,
   getStartedLabel,
   getStartedHref = routes.getStarted,
-  logoPath,
+  logoPath: _logoPath,
 }: {
   navigation?: NavItem[];
   loginLabel?: string;
@@ -126,24 +144,40 @@ export function SiteHeader({
   const [mobileSection, setMobileSection] = useState<string | null>(null);
 
   const resolvedLogin =
-    preferences.language === "en" ? loginLabel || "Log In" : t.nav.login;
+    preferences.language === "en" ? loginLabel || "Login" : t.nav.login;
   const resolvedGetStarted =
     preferences.language === "en"
       ? getStartedLabel || "Get Started"
       : t.nav.getStarted;
 
-  // Safety: never render a top-level Cloud & VPS item (lives under Web Hosting)
-  const navItems = navigation.filter(
-    (item) =>
-      item.label !== "Cloud & VPS" &&
-      !/^cloud\s*&\s*vps$/i.test(item.label.trim()),
-  );
-  const resolvedNav = navItems.length >= 4 ? navItems : mainNavigation;
+  const filteredNav = (() => {
+    const cleaned = navigation.filter(
+      (item) => !/^cloud\s*&\s*vps$/i.test(item.label.trim()),
+    );
+    const hasHosting = cleaned.some(
+      (item) => item.label === "Hosting" || item.label === "Web Hosting",
+    );
+    if (!hasHosting) return sortNav(mainNavigation);
+    const seen = new Set<string>();
+    const deduped = cleaned.filter((item) => {
+      const key =
+        item.label === "Web Hosting" || item.label === "Hosting"
+          ? "hosting"
+          : item.label;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    if (!deduped.some((item) => item.label === "Pricing")) {
+      deduped.push({ label: "Pricing", href: routes.pricing });
+    }
+    return sortNav(deduped);
+  })();
 
   useEffect(() => {
     if (!open) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
     };
     document.addEventListener("keydown", onKeyDown);
     document.body.style.overflow = "hidden";
@@ -154,20 +188,21 @@ export function SiteHeader({
   }, [open]);
 
   return (
-    <header className="relative z-50 w-full shrink-0 px-[3%] pt-3 pb-1.5 lg:pt-3.5 lg:pb-2">
-      <div className="mx-auto flex h-[72px] w-full max-w-[1520px] items-center gap-5 rounded-[20px] border border-[rgba(100,130,255,0.2)] bg-[rgba(6,9,22,0.78)] px-5 shadow-[0_10px_36px_rgb(0_0_0_/_0.35),inset_0_1px_0_rgb(255_255_255_/_0.06)] backdrop-blur-[22px] sm:h-[76px] sm:px-6 lg:h-[80px] lg:gap-7 lg:px-7 xl:gap-8 xl:px-8">
-        <div className="flex shrink-0 items-center">
+    <header className="relative z-50 w-full shrink-0 bg-transparent px-[3%] pt-2.5 pb-1 sm:px-[2.2%] sm:pt-4">
+      <div className="mx-auto flex h-[56px] w-full max-w-[1280px] items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 shadow-[0_10px_40px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-2xl sm:h-[70px] sm:gap-3 sm:px-5 lg:px-6">
+        <div className="min-w-0 flex-1 lg:min-w-[210px] lg:flex-none xl:min-w-[270px]">
           <Logo
-            src={logoPath}
-            className="w-[210px] max-w-[210px] sm:w-[230px] sm:max-w-[230px] xl:w-[250px] xl:max-w-[250px]"
+            src="/logo/hostingbeyond-logo-v5.png"
+            variant="image"
+            className="h-[26px] max-w-[min(100%,168px)] sm:h-[34px] sm:max-w-[280px] xl:h-[38px] xl:max-w-[310px]"
           />
         </div>
 
         <nav
-          aria-label="Primary"
-          className="hidden min-w-0 flex-1 items-center justify-center gap-8 lg:flex xl:gap-10 2xl:gap-11"
+          aria-label="Primary navigation"
+          className="hidden min-w-0 flex-1 items-center justify-center gap-6 lg:flex xl:gap-8"
         >
-          {resolvedNav.map((item) => (
+          {filteredNav.map((item) => (
             <NavDropdown
               key={item.label}
               item={item}
@@ -176,35 +211,36 @@ export function SiteHeader({
           ))}
         </nav>
 
-        <div className="ml-auto hidden shrink-0 items-center gap-3.5 lg:ml-0 lg:flex lg:pl-8 xl:pl-10">
-          <CountryLanguageSelector className="h-10 rounded-[14px] border border-white/12 bg-white/[0.04] px-3.5 text-[12.5px] font-bold" />
+        <div className="hidden shrink-0 items-center justify-end gap-2.5 lg:flex">
+          <CountryLanguageSelector tone="light" />
+          <span
+            aria-hidden
+            className="mx-0.5 hidden h-6 w-px bg-slate-200 xl:block"
+          />
           <Link
             href={loginHref}
-            className="inline-flex h-10 items-center px-2.5 text-[14px] font-bold text-white/90 transition hover:text-white"
+            className="inline-flex h-[38px] items-center gap-2 rounded-full border border-slate-200/90 bg-white px-3.5 text-[13px] font-semibold text-slate-800 shadow-[0_4px_14px_rgba(15,23,42,0.06)] transition hover:border-slate-300 hover:bg-slate-50"
           >
+            <User className="size-4 text-slate-600" aria-hidden />
             {resolvedLogin}
           </Link>
-          <GlowButton
-            href={getStartedHref}
-            size="md"
-            className="h-11 min-w-[142px] rounded-[14px] px-4 text-[13px] font-bold shadow-[0_0_20px_rgb(37_99_235_/_0.28)]"
-          >
-            {resolvedGetStarted}
-            <ArrowRight className="size-3.5" aria-hidden />
-          </GlowButton>
         </div>
 
-        <div className="ml-auto flex items-center gap-2 lg:hidden">
-          <CountryLanguageSelector compact />
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2 lg:hidden">
+          <CountryLanguageSelector compact tone="light" />
           <button
             type="button"
-            className="inline-flex size-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-white"
+            className="inline-flex size-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-800 shadow-sm"
             aria-expanded={open}
-            aria-controls="mobile-nav"
+            aria-controls="hb-mobile-nav"
             aria-label={open ? "Close menu" : "Open menu"}
-            onClick={() => setOpen((value) => !value)}
+            onClick={() => setOpen((v) => !v)}
           >
-            {open ? <X className="size-5" /> : <Menu className="size-5" />}
+            {open ? (
+              <X className="size-[18px]" />
+            ) : (
+              <Menu className="size-[18px]" />
+            )}
           </button>
         </div>
       </div>
@@ -212,32 +248,37 @@ export function SiteHeader({
       <AnimatePresence>
         {open ? (
           <motion.div
-            id="mobile-nav"
+            id="hb-mobile-nav"
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            className="mx-auto mt-2 w-full max-w-[1520px] overflow-hidden rounded-2xl border border-white/10 bg-[rgba(5,8,22,0.96)] shadow-[0_24px_60px_rgb(0_0_0_/_0.5)] backdrop-blur-2xl lg:hidden"
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.17 }}
+            className="mx-auto mt-2 w-full max-w-[1280px] overflow-hidden rounded-[22px] border border-slate-200/80 bg-white/95 shadow-[0_20px_56px_rgba(15,23,42,0.12)] backdrop-blur-2xl lg:hidden"
           >
-            <nav className="flex flex-col gap-1 p-4" aria-label="Mobile">
-              {resolvedNav.map((item) => {
+            <nav
+              className="flex flex-col gap-0.5 p-4"
+              aria-label="Mobile navigation"
+            >
+              {filteredNav.map((item) => {
                 const label = localizeNavLabel(item.label, t.nav);
+                const hasChildren = Boolean(item.children?.length);
                 return (
                   <div key={item.label}>
-                    {item.children?.length ? (
+                    {hasChildren ? (
                       <>
                         <button
                           type="button"
-                          className="flex w-full items-center justify-between rounded-xl px-3 py-3.5 text-left text-[16px] font-bold text-white"
+                          className="flex w-full items-center justify-between rounded-xl px-3 py-3 text-left text-[16px] font-bold text-slate-900"
                           onClick={() =>
-                            setMobileSection((current) =>
-                              current === item.label ? null : item.label,
+                            setMobileSection((s) =>
+                              s === item.label ? null : item.label,
                             )
                           }
                         >
                           {label}
                           <ChevronDown
                             className={cn(
-                              "size-4 transition-transform",
+                              "size-4 text-slate-400 transition-transform duration-200",
                               mobileSection === item.label && "rotate-180",
                             )}
                           />
@@ -248,13 +289,14 @@ export function SiteHeader({
                               initial={{ height: 0, opacity: 0 }}
                               animate={{ height: "auto", opacity: 1 }}
                               exit={{ height: 0, opacity: 0 }}
-                              className="overflow-hidden pl-2"
+                              transition={{ duration: 0.15 }}
+                              className="overflow-hidden pl-4"
                             >
-                              {item.children.map((child) => (
+                              {item.children!.map((child) => (
                                 <Link
                                   key={child.href}
                                   href={child.href}
-                                  className="block rounded-lg px-3 py-3 text-[15px] font-semibold text-white/80"
+                                  className="block rounded-lg px-3 py-2.5 text-[13.5px] text-slate-600 hover:text-slate-950"
                                   onClick={() => setOpen(false)}
                                 >
                                   {child.label}
@@ -267,7 +309,7 @@ export function SiteHeader({
                     ) : (
                       <Link
                         href={item.href}
-                        className="block rounded-xl px-3 py-3.5 text-[16px] font-bold text-white"
+                        className="block rounded-xl px-3 py-3 text-[16px] font-bold text-slate-900"
                         onClick={() => setOpen(false)}
                       >
                         {label}
@@ -276,21 +318,23 @@ export function SiteHeader({
                   </div>
                 );
               })}
-              <Link
-                href={loginHref}
-                className="mt-2 rounded-xl border border-white/10 px-3 py-3 text-center text-[15px] font-bold text-white/85"
-                onClick={() => setOpen(false)}
-              >
-                {resolvedLogin}
-              </Link>
-              <GlowButton
-                href={getStartedHref}
-                className="mt-1 w-full rounded-xl font-bold"
-                size="lg"
-              >
-                {resolvedGetStarted}
-                <ArrowRight className="size-4" aria-hidden />
-              </GlowButton>
+              <div className="mt-3 flex flex-col gap-2 border-t border-slate-100 pt-3">
+                <Link
+                  href={loginHref}
+                  className="flex items-center justify-center gap-2 rounded-full border border-slate-200 px-3 py-2.5 text-[14px] font-semibold text-slate-800"
+                  onClick={() => setOpen(false)}
+                >
+                  <User className="size-4" aria-hidden />
+                  {resolvedLogin}
+                </Link>
+                <Link
+                  href={getStartedHref}
+                  className="flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#7c3aed] to-[#2563eb] px-3 py-2.5 text-[14px] font-semibold text-white shadow-[0_8px_24px_rgba(124,58,237,0.28)]"
+                  onClick={() => setOpen(false)}
+                >
+                  {resolvedGetStarted}
+                </Link>
+              </div>
             </nav>
           </motion.div>
         ) : null}

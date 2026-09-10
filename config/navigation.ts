@@ -23,7 +23,7 @@ export const mainNavigation: NavItem[] = [
     ],
   },
   {
-    label: "Web Hosting",
+    label: "Hosting",
     href: routes.hosting,
     children: [
       { label: "Shared Hosting", href: `${routes.hosting}/shared` },
