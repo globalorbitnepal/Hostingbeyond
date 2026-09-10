@@ -78,19 +78,32 @@ jobs:
             echo "==> Deploying HostingBeyond"
             echo "==> Target: /srv/apps/hostingbeyond"
             echo "==> PM2 wrapper: /usr/local/sbin/hostingbeyond-ctl"
+            echo "==> PM2_HOME: /home/hostingbeyond/.pm2"
             echo "==> Port: 3000"
 
             cd /srv/apps/hostingbeyond
             test "$(pwd)" = "/srv/apps/hostingbeyond"
 
-            echo "==> Validating Git remote"
+            echo "==> Validating Git remote and branch"
             test "$(git remote get-url origin)" = "git@github.com:globalorbitnepal/Hostingbeyond.git"
+
+            echo "==> Confirming existing PM2 process hostingbeyond"
+            test -x /usr/local/sbin/hostingbeyond-ctl
+            sudo -n -u hostingbeyond -H env PM2_HOME=/home/hostingbeyond/.pm2 /usr/local/sbin/hostingbeyond-ctl status
 
             echo "==> Syncing origin/main (preserve .env and runtime uploads)"
             git fetch origin main
             git checkout main
+            test "$(git branch --show-current)" = "main"
             git reset --hard origin/main
-            git clean -fd -e .env -e .env.local -e .env.production -e public/uploads -e data/uploads -e node_modules
+            git clean -fd \
+              -e .env \
+              -e .env.local \
+              -e .env.production \
+              -e public/uploads \
+              -e data/uploads \
+              -e data/hostingbeyond \
+              -e node_modules
 
             if [ ! -f .env ]; then
               echo "ENV_MISSING: /srv/apps/hostingbeyond/.env is required on the server"
@@ -99,14 +112,25 @@ jobs:
             echo "ENV_PRESENT"
 
             echo "==> Installing dependencies"
-            npm install
+            if [ -f package-lock.json ]; then
+              npm ci
+            else
+              npm install
+            fi
 
             echo "==> Building production bundle"
             npm run build
 
             echo "==> Restarting ONLY existing HostingBeyond PM2 process"
-            sudo -n -u hostingbeyond -H /usr/local/sbin/hostingbeyond-ctl restart
-            sudo -n -u hostingbeyond -H /usr/local/sbin/hostingbeyond-ctl status
+            sudo -n -u hostingbeyond -H env PM2_HOME=/home/hostingbeyond/.pm2 /usr/local/sbin/hostingbeyond-ctl restart
+            sudo -n -u hostingbeyond -H env PM2_HOME=/home/hostingbeyond/.pm2 /usr/local/sbin/hostingbeyond-ctl status
+
+            echo "==> Verifying local port 3000"
+            LOCAL_CODE="$(curl -fsS -o /dev/null -w "%{http_code}" --retry 8 --retry-delay 2 --retry-all-errors --max-time 20 http://127.0.0.1:3000/ || true)"
+            if [ "$LOCAL_CODE" != "200" ]; then
+              echo "Local verify failed: expected HTTP 200 on 127.0.0.1:3000, got ${LOCAL_CODE:-none}"
+              exit 1
+            fi
 
             echo "==> HostingBeyond deploy completed"
 
