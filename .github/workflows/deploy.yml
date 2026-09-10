@@ -123,17 +123,26 @@ jobs:
           mkdir -p "${HOME}/.ssh"
           chmod 700 "${HOME}/.ssh"
           ssh-keyscan -4 -p 22 -T 10 "${VPS_HOST}" >> "${HOME}/.ssh/known_hosts"
-          echo "==> SSH as ${VPS_USER} over IPv4 port 22"
-          ssh -4 -i "${KEY_FILE}" \
-            -o IdentitiesOnly=yes \
-            -o BatchMode=yes \
-            -o StrictHostKeyChecking=yes \
-            -o ServerAliveInterval=15 \
-            -o ServerAliveCountMax=40 \
-            -p 22 \
-            "${VPS_USER}@${VPS_HOST}" \
-            bash -s <<'REMOTE'
+          SSH=(ssh -4 -i "${KEY_FILE}" -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes -o ServerAliveInterval=15 -o ServerAliveCountMax=40 -p 22 "${VPS_USER}@${VPS_HOST}")
+
+          echo "==> Uploading remote deploy script"
+          "${SSH[@]}" "cat > /tmp/hostingbeyond-gha-deploy.sh" <<'REMOTE'
+          #!/bin/bash
           set -euo pipefail
+          # Keep the GitHub SSH channel quiet except for heartbeats. Next.js
+          # stdout on bash -s previously caused the client to close (~64s).
+          exec 3>&1
+          : > /tmp/hostingbeyond-gha-deploy.log
+          exec > /tmp/hostingbeyond-gha-deploy.log 2>&1
+          heartbeat() {
+            while true; do
+              echo "[deploy-heartbeat] $(date -u +%Y-%m-%dT%H:%M:%SZ)" >&3
+              sleep 15
+            done
+          }
+          heartbeat &
+          HEARTBEAT_PID=$!
+          trap 'kill "$HEARTBEAT_PID" 2>/dev/null || true' EXIT
 
           echo "==> Validating SSH user"
           test "$(id -un)" = "sysadmin"
@@ -175,6 +184,9 @@ jobs:
           fi
           echo "ENV_PRESENT"
 
+          export CI=true
+          export NODE_OPTIONS="${NODE_OPTIONS:-"--max-old-space-size=4096"}"
+
           echo "==> Installing dependencies"
           if [ -f package-lock.json ]; then
             npm ci </dev/null
@@ -215,7 +227,20 @@ jobs:
 
           echo "==> HostingBeyond deploy completed"
           REMOTE
+
+          echo "==> Running remote deploy script"
+          set +e
+          "${SSH[@]}" "bash /tmp/hostingbeyond-gha-deploy.sh"
+          REMOTE_STATUS=$?
+          set -e
+          echo "==> Remote deploy log (secrets filtered)"
+          "${SSH[@]}" 'if test -f /tmp/hostingbeyond-gha-deploy.log; then grep -viE "password|secret|token|database_url|begin |cookie" /tmp/hostingbeyond-gha-deploy.log | tail -n 120; else echo NO_DEPLOY_LOG; fi'
           rm -f "${KEY_FILE}"
+          if [ "$REMOTE_STATUS" -ne 0 ]; then
+            echo "REMOTE_DEPLOY_FAIL: exit ${REMOTE_STATUS}"
+            exit "$REMOTE_STATUS"
+          fi
+          echo "==> HostingBeyond remote deploy succeeded"
 
       - name: Verify live site
         run: |
