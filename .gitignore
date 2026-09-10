@@ -68,3 +68,5 @@ next-env.d.ts
 *.sql.gz
 *.backup
 *.bak
+!/prisma/migrations/
+!/prisma/migrations/**

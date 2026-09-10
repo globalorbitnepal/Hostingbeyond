@@ -90,6 +90,7 @@ jobs:
 
             echo "==> Confirming existing PM2 process hostingbeyond"
             test -x /usr/local/sbin/hostingbeyond-ctl
+            test -d /home/hostingbeyond/.pm2
             sudo -n -u hostingbeyond -H /usr/local/sbin/hostingbeyond-ctl status
 
             echo "==> Syncing origin/main (preserve .env and runtime uploads)"
@@ -118,6 +119,9 @@ jobs:
             else
               npm install
             fi
+
+            echo "==> Typecheck"
+            npm run typecheck
 
             echo "==> Building production bundle"
             npm run build
