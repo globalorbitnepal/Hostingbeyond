@@ -55,10 +55,11 @@ jobs:
           if [ -z "${VPS_USER}" ]; then echo "Missing GitHub secret: VPS_USER"; missing=1; fi
           if [ -z "${VPS_SSH_KEY}" ]; then echo "Missing GitHub secret: VPS_SSH_KEY"; missing=1; fi
           if [ "$missing" -ne 0 ]; then
-            echo "Add VPS_HOST, VPS_USER, VPS_SSH_KEY, and optional VPS_PORT in GitHub Actions secrets."
+            echo "Add VPS_HOST, VPS_USER, VPS_SSH_KEY, and optional VPS_PORT in GitHub repository Settings > Secrets and variables > Actions."
+            echo "Do not put those values in the workflow file."
             exit 1
           fi
-          echo "SSH secrets are present"
+          echo "Required GitHub SSH secrets are present"
 
       - name: Deploy HostingBeyond to VPS
         uses: appleboy/ssh-action@v1.2.0
@@ -89,7 +90,7 @@ jobs:
 
             echo "==> Confirming existing PM2 process hostingbeyond"
             test -x /usr/local/sbin/hostingbeyond-ctl
-            sudo -n -u hostingbeyond -H env PM2_HOME=/home/hostingbeyond/.pm2 /usr/local/sbin/hostingbeyond-ctl status
+            sudo -n -u hostingbeyond -H /usr/local/sbin/hostingbeyond-ctl status
 
             echo "==> Syncing origin/main (preserve .env and runtime uploads)"
             git fetch origin main
@@ -122,10 +123,24 @@ jobs:
             npm run build
 
             echo "==> Restarting ONLY existing HostingBeyond PM2 process"
-            sudo -n -u hostingbeyond -H env PM2_HOME=/home/hostingbeyond/.pm2 /usr/local/sbin/hostingbeyond-ctl restart
-            sudo -n -u hostingbeyond -H env PM2_HOME=/home/hostingbeyond/.pm2 /usr/local/sbin/hostingbeyond-ctl status
+            sudo -n -u hostingbeyond -H /usr/local/sbin/hostingbeyond-ctl restart
+            sudo -n -u hostingbeyond -H /usr/local/sbin/hostingbeyond-ctl status
 
-            echo "==> Verifying local port 3000"
+            echo "==> Verifying process owner hostingbeyond"
+            if ! pgrep -u hostingbeyond -a node >/dev/null 2>&1; then
+              echo "PROCESS_USER_FAIL: no node process owned by hostingbeyond"
+              exit 1
+            fi
+
+            echo "==> Verifying listener on port 3000"
+            if command -v ss >/dev/null 2>&1; then
+              if ! ss -lnt | awk '$4 ~ /:3000$/ { found=1 } END { exit !found }'; then
+                echo "LISTEN_FAIL: nothing listening on TCP port 3000"
+                exit 1
+              fi
+            fi
+
+            echo "==> Verifying local HTTP on 127.0.0.1:3000"
             LOCAL_CODE="$(curl -fsS -o /dev/null -w "%{http_code}" --retry 8 --retry-delay 2 --retry-all-errors --max-time 20 http://127.0.0.1:3000/ || true)"
             if [ "$LOCAL_CODE" != "200" ]; then
               echo "Local verify failed: expected HTTP 200 on 127.0.0.1:3000, got ${LOCAL_CODE:-none}"
