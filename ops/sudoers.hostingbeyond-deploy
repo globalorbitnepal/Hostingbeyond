@@ -1,0 +1,10 @@
+# Narrow sudo for HostingBeyond production only.
+# Install as root:
+#   visudo -c -f this-file && install -o root -g root -m 440 this-file /etc/sudoers.d/hostingbeyond-deploy
+# Allows sysadmin to run ONLY /usr/local/sbin/hostingbeyond-ctl as hostingbeyond.
+# Does not grant a root shell, su, or NOPASSWD: ALL.
+
+sysadmin ALL=(hostingbeyond) NOPASSWD: /usr/local/sbin/hostingbeyond-ctl restart
+sysadmin ALL=(hostingbeyond) NOPASSWD: /usr/local/sbin/hostingbeyond-ctl status
+sysadmin ALL=(hostingbeyond) NOPASSWD: /usr/local/sbin/hostingbeyond-ctl list
+sysadmin ALL=(hostingbeyond) NOPASSWD: /usr/local/sbin/hostingbeyond-ctl logs

@@ -1,0 +1,35 @@
+#!/bin/bash
+# HostingBeyond production control wrapper.
+# Must run as user hostingbeyond via:
+#   sudo -n -u hostingbeyond -H /usr/local/sbin/hostingbeyond-ctl <command>
+# Do not invoke the copy under /srv/apps/hostingbeyond via sudo.
+set -euo pipefail
+
+if [ "$(id -un)" != "hostingbeyond" ]; then
+  echo "hostingbeyond-ctl must run as hostingbeyond" >&2
+  exit 1
+fi
+
+export HOME=/home/hostingbeyond
+export PM2_HOME=/home/hostingbeyond/.pm2
+export PATH=/usr/bin:/bin
+
+cmd="${1:-}"
+case "$cmd" in
+  restart)
+    exec /usr/bin/pm2 restart hostingbeyond
+    ;;
+  status)
+    exec /usr/bin/pm2 describe hostingbeyond
+    ;;
+  list)
+    exec /usr/bin/pm2 list
+    ;;
+  logs)
+    exec /usr/bin/pm2 logs hostingbeyond --lines 80 --nostream
+    ;;
+  *)
+    echo "usage: hostingbeyond-ctl restart|status|list|logs" >&2
+    exit 2
+    ;;
+esac
