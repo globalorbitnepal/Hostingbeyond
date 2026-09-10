@@ -6,6 +6,7 @@ import {
   ProductsSection,
   SolutionsSection,
 } from "@/components/home";
+import { PartnerLogoStrip } from "@/components/home/partner-logo-strip";
 import { getHomeSections, getSiteSettings } from "@/lib/orbit/content";
 
 export default async function HomePage() {
@@ -42,6 +43,7 @@ export default async function HomePage() {
       {sections.solutions ? (
         <SolutionsSection content={sections.solutions} />
       ) : null}
+      <PartnerLogoStrip partners={sections.hero.technologyPartners} />
 
       {sections.products.visible ? (
         <ProductsSection content={sections.products} />

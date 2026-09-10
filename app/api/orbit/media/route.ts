@@ -6,6 +6,7 @@ import { logActivity } from "@/lib/orbit/session";
 import {
   extensionForUpload,
   isAllowedUpload,
+  listBundledSiteMedia,
   listUploadFiles,
   mimeFromFilename,
   saveUploadFile,
@@ -20,13 +21,16 @@ export async function GET(request: NextRequest) {
   if (!admin) return unauthorizedJson();
 
   const q = request.nextUrl.searchParams.get("q")?.trim().toLowerCase() ?? "";
-  const diskFiles = await listUploadFiles();
+  const [diskFiles, bundledFiles] = await Promise.all([
+    listUploadFiles(),
+    listBundledSiteMedia(),
+  ]);
 
   let dbAssets: Awaited<ReturnType<typeof prisma.mediaAsset.findMany>> = [];
   try {
     dbAssets = await prisma.mediaAsset.findMany({
       orderBy: { createdAt: "desc" },
-      take: 500,
+      take: 2000,
     });
   } catch {
     dbAssets = [];
@@ -88,7 +92,25 @@ export async function GET(request: NextRequest) {
 
   const unique = new Map<string, (typeof merged)[number]>();
   for (const asset of merged) {
-    if (!unique.has(asset.filename)) unique.set(asset.filename, asset);
+    const key = asset.url || asset.filename;
+    if (!unique.has(key)) unique.set(key, asset);
+  }
+
+  for (const file of bundledFiles) {
+    if (unique.has(file.url)) continue;
+    unique.set(file.url, {
+      id: `site:${file.url}`,
+      filename: file.filename,
+      originalName: file.url,
+      mimeType: file.mimeType,
+      size: file.size,
+      width: null,
+      height: null,
+      alt: "",
+      url: file.url,
+      createdAt: new Date(file.mtimeMs),
+      updatedAt: new Date(file.mtimeMs),
+    });
   }
 
   const assets = [...unique.values()].sort((a, b) => {
@@ -102,7 +124,8 @@ export async function GET(request: NextRequest) {
         (asset) =>
           asset.originalName.toLowerCase().includes(q) ||
           asset.alt.toLowerCase().includes(q) ||
-          asset.filename.toLowerCase().includes(q),
+          asset.filename.toLowerCase().includes(q) ||
+          asset.url.toLowerCase().includes(q),
       )
     : assets;
 

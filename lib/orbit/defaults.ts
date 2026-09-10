@@ -63,6 +63,26 @@ export type CmsHeroContent = {
   domainPricing?: CmsDomainTld[];
   /** Technology / trust strip logos */
   technologyPartners?: CmsTechPartner[];
+  /** Slim feature bar under the hero (offer + icons + CTA) */
+  featureBar?: CmsHeroFeatureBar;
+};
+
+export type CmsHeroFeatureItem = {
+  id: string;
+  visible: boolean;
+  order: number;
+  title: string;
+  subtitle: string;
+  iconUrl: string;
+};
+
+export type CmsHeroFeatureBar = {
+  offerEyebrow: string;
+  offerTitle: string;
+  offerHighlight: string;
+  ctaLabel: string;
+  ctaHref: string;
+  items: CmsHeroFeatureItem[];
 };
 
 export type CmsProductOffer = {
@@ -993,6 +1013,58 @@ export function defaultTechnologyPartners(): CmsTechPartner[] {
   ];
 }
 
+export function defaultHeroFeatureBar(): CmsHeroFeatureBar {
+  return {
+    offerEyebrow: "Special Offer",
+    offerTitle: "Save Up to",
+    offerHighlight: "70%",
+    ctaLabel: "View Plans",
+    ctaHref: routes.hosting,
+    items: [
+      {
+        id: "cpanel",
+        visible: true,
+        order: 0,
+        title: "One Click",
+        subtitle: "cPanel Access",
+        iconUrl: "/images/feature-marks/cpanel-user.png",
+      },
+      {
+        id: "wordpress",
+        visible: true,
+        order: 1,
+        title: "One Click",
+        subtitle: "WordPress Install",
+        iconUrl: "/images/feature-marks/wordpress-w.svg",
+      },
+      {
+        id: "builder",
+        visible: true,
+        order: 2,
+        title: "One Click",
+        subtitle: "Website Create",
+        iconUrl: "/images/feature-marks/website-create.svg",
+      },
+      {
+        id: "email",
+        visible: true,
+        order: 3,
+        title: "Business Email",
+        subtitle: "Professional Mail",
+        iconUrl: "",
+      },
+      {
+        id: "ssl",
+        visible: true,
+        order: 4,
+        title: "Free SSL",
+        subtitle: "With All Plans",
+        iconUrl: "",
+      },
+    ],
+  };
+}
+
 export function defaultHomeSections(): CmsHomeSections {
   return {
     hero: {
@@ -1016,6 +1088,7 @@ export function defaultHomeSections(): CmsHomeSections {
         { tld: ".dev", priceLabel: "$3.99/yr", visible: true },
       ],
       technologyPartners: defaultTechnologyPartners(),
+      featureBar: defaultHeroFeatureBar(),
       trustItems: [
         {
           title: "99.99% Uptime",
@@ -1291,50 +1364,65 @@ export function mergeHomeSections(
       : defaultSolutionProducts;
 
   const storedHero: Partial<CmsHeroContent> = stored.hero ?? {};
-  const legacyHeadline =
-    storedHero.headline === "Everything You Need." ||
-    storedHero.headline === "Everything You Need" ||
-    storedHero.headline === "HOST SMARTER." ||
-    storedHero.headline === "Built for Speed." ||
-    Boolean(storedHero.headline?.includes("Built for Speed")) ||
-    Boolean(storedHero.headline?.includes("Secured for You")) ||
-    Boolean(storedHero.headline?.includes("HOST SMARTER"));
-  const legacyDescription =
-    Boolean(
-      storedHero.description?.includes("Premium domains, blazing-fast"),
-    ) ||
-    Boolean(
-      storedHero.description?.includes(
-        "Premium hosting infrastructure for ambitious",
-      ),
-    ) ||
-    Boolean(storedHero.description?.includes("High-performance hosting"));
-
   const storedPartners = Array.isArray(storedHero.technologyPartners)
     ? storedHero.technologyPartners
     : [];
-  const partnerIds = new Set(
-    storedPartners.map((partner) => (partner.id || "").toLowerCase()),
-  );
-  // Prefer full premium strip (11 logos) over older 6-logo / DELL splits
-  const useDefaultPartners =
-    !storedPartners.length ||
-    partnerIds.has("dell") ||
-    partnerIds.has("express") ||
-    !partnerIds.has("docker") ||
-    storedPartners.filter((p) => p.visible !== false).length < 11;
-  const technologyPartners = (
-    useDefaultPartners
-      ? defaults.hero.technologyPartners!
-      : storedPartners.map((partner, index) => ({
-          id: partner.id || `partner-${index}`,
-          label: partner.label || `Partner ${index + 1}`,
-          imageUrl:
-            typeof partner.imageUrl === "string" ? partner.imageUrl : "",
-          visible: partner.visible !== false,
-          order: typeof partner.order === "number" ? partner.order : index,
-        }))
-  ).sort((a, b) => a.order - b.order);
+  const technologyPartners = [
+    ...defaults.hero.technologyPartners!.map((fallback) => {
+      const match = storedPartners.find((item) => item.id === fallback.id);
+      if (!match) return fallback;
+      return {
+        ...fallback,
+        ...match,
+        imageUrl: typeof match.imageUrl === "string" ? match.imageUrl : "",
+        visible: match.visible !== false,
+        order: typeof match.order === "number" ? match.order : fallback.order,
+      };
+    }),
+    ...storedPartners
+      .filter(
+        (item) =>
+          !defaults.hero.technologyPartners!.some((d) => d.id === item.id),
+      )
+      .map((partner, index) => ({
+        id: partner.id || `partner-extra-${index}`,
+        label: partner.label || `Partner ${index + 1}`,
+        imageUrl: typeof partner.imageUrl === "string" ? partner.imageUrl : "",
+        visible: partner.visible !== false,
+        order:
+          typeof partner.order === "number"
+            ? partner.order
+            : defaults.hero.technologyPartners!.length + index,
+      })),
+  ].sort((a, b) => a.order - b.order);
+
+  const storedFeatureBar = storedHero.featureBar;
+  const defaultBar = defaultHeroFeatureBar();
+  const storedFeatureItems = Array.isArray(storedFeatureBar?.items)
+    ? storedFeatureBar.items
+    : [];
+  const featureBar: CmsHeroFeatureBar = {
+    ...defaultBar,
+    ...storedFeatureBar,
+    items: [
+      ...defaultBar.items.map((fallback) => {
+        const match = storedFeatureItems.find(
+          (item) => item.id === fallback.id,
+        );
+        return match
+          ? {
+              ...fallback,
+              ...match,
+              iconUrl: typeof match.iconUrl === "string" ? match.iconUrl : "",
+              visible: match.visible !== false,
+            }
+          : fallback;
+      }),
+      ...storedFeatureItems.filter(
+        (item) => !defaultBar.items.some((d) => d.id === item.id),
+      ),
+    ].sort((a, b) => a.order - b.order),
+  };
 
   const storedPricing = Array.isArray(storedHero.domainPricing)
     ? storedHero.domainPricing.filter(
@@ -1346,83 +1434,34 @@ export function mergeHomeSections(
     ...defaults.hero,
     ...storedHero,
     visible: storedHero.visible !== false,
-    eyebrow: legacyHeadline
-      ? defaults.hero.eyebrow
-      : (storedHero.eyebrow ?? defaults.hero.eyebrow),
-    headline: legacyHeadline
-      ? defaults.hero.headline
-      : (storedHero.headline ?? defaults.hero.headline),
-    headlineAccent: legacyHeadline
-      ? defaults.hero.headlineAccent
-      : (storedHero.headlineAccent ?? defaults.hero.headlineAccent),
-    description: legacyDescription
-      ? defaults.hero.description
-      : (storedHero.description ?? defaults.hero.description),
+    eyebrow: storedHero.eyebrow ?? defaults.hero.eyebrow,
+    headline: storedHero.headline ?? defaults.hero.headline,
+    headlineAccent: storedHero.headlineAccent ?? defaults.hero.headlineAccent,
+    description: storedHero.description ?? defaults.hero.description,
     searchPlaceholder:
       storedHero.searchPlaceholder ?? defaults.hero.searchPlaceholder,
     searchButtonLabel:
       storedHero.searchButtonLabel ?? defaults.hero.searchButtonLabel,
     bulkSearchLabel:
       storedHero.bulkSearchLabel ?? defaults.hero.bulkSearchLabel,
-    backgroundImage: (() => {
-      const path = storedHero.backgroundImage?.trim() || "";
-      if (
-        !path ||
-        path.includes("hero-atmosphere") ||
-        path.includes("hero-glass") ||
-        path.includes("hero-speaker-half") ||
-        path.includes("hero-speaker-clear") ||
-        path.includes("hero-speaker-cutout") ||
-        path === "/images/hero-speaker.png" ||
-        path === "/images/hero-speaker.jpg"
-      ) {
-        return defaults.hero.backgroundImage;
-      }
-      return path.includes("hero-speaker-scene")
-        ? defaults.hero.backgroundImage
-        : path;
-    })(),
-    speakerImage: (() => {
-      const path = storedHero.speakerImage?.trim() || "";
-      if (
-        !path ||
-        path.includes("hero-speaker-half") ||
-        path.includes("hero-speaker-clear") ||
-        path.includes("hero-speaker-cutout") ||
-        path.includes("hero-glass") ||
-        path.includes("hero-atmosphere") ||
-        path === "/images/hero-speaker.png" ||
-        path === "/images/hero-speaker.jpg" ||
-        path.includes("hero-speaker-scene")
-      ) {
-        return defaults.hero.speakerImage;
-      }
-      return path;
-    })(),
+    backgroundImage:
+      storedHero.backgroundImage?.trim() || defaults.hero.backgroundImage,
+    speakerImage: storedHero.speakerImage?.trim() || defaults.hero.speakerImage,
     glassPanelLeft:
       storedHero.glassPanelLeft?.trim() || defaults.hero.glassPanelLeft,
     glassPanelRight:
       storedHero.glassPanelRight?.trim() || defaults.hero.glassPanelRight,
     trustItems: storedHero.trustItems ?? defaults.hero.trustItems,
     stats: storedHero.stats ?? defaults.hero.stats,
-    domainPricing: (() => {
-      if (!storedPricing.length) return defaults.hero.domainPricing;
-      const normalized = storedPricing.map((item) => ({
-        tld: item.tld.startsWith(".") ? item.tld : `.${item.tld}`,
-        priceLabel: item.priceLabel || "",
-        visible: item.visible !== false,
-      }));
-      // Prefer the 4 mockup TLDs when CMS still has the old 5-item set
-      const preferred = [".com", ".net", ".org", ".dev"];
-      const picked = preferred
-        .map((tld) =>
-          normalized.find((item) => item.tld === tld && item.visible),
-        )
-        .filter(Boolean) as typeof normalized;
-      if (picked.length === 4) return picked;
-      return normalized.filter((item) => item.visible).slice(0, 4);
-    })(),
+    domainPricing: storedPricing.length
+      ? storedPricing.map((item) => ({
+          tld: item.tld.startsWith(".") ? item.tld : `.${item.tld}`,
+          priceLabel: item.priceLabel || "",
+          visible: item.visible !== false,
+        }))
+      : defaults.hero.domainPricing,
     technologyPartners,
+    featureBar,
   };
 
   const storedNav = stored.navigation;

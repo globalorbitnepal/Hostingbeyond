@@ -15,6 +15,8 @@ export const UPLOAD_MIME: Record<string, string> = {
   ".webp": "image/webp",
   ".gif": "image/gif",
   ".svg": "image/svg+xml",
+  ".mp4": "video/mp4",
+  ".webm": "video/webm",
 };
 
 const ALLOWED_EXT = new Set(Object.keys(UPLOAD_MIME));
@@ -120,6 +122,63 @@ export type DiskUpload = {
   mimeType: string;
   mtimeMs: number;
 };
+
+const BUNDLED_MEDIA_ROOTS: Array<{ dir: string; urlPrefix: string }> = [
+  { dir: "images", urlPrefix: "/images" },
+  { dir: "logo", urlPrefix: "/logo" },
+  { dir: "videos", urlPrefix: "/videos" },
+  { dir: "icons", urlPrefix: "/icons" },
+];
+
+async function walkMediaFiles(
+  absDir: string,
+  urlPrefix: string,
+  seen: Map<string, DiskUpload>,
+) {
+  let names: string[] = [];
+  try {
+    names = await readdir(absDir);
+  } catch {
+    return;
+  }
+  for (const name of names) {
+    if (name.startsWith(".")) continue;
+    const abs = path.join(absDir, name);
+    const urlPath = `${urlPrefix}/${name}`.replace(/\\/g, "/");
+    try {
+      const info = await stat(abs);
+      if (info.isDirectory()) {
+        await walkMediaFiles(abs, urlPath, seen);
+        continue;
+      }
+      if (!info.isFile()) continue;
+      const ext = path.extname(name).toLowerCase();
+      if (!UPLOAD_MIME[ext] && ext !== ".mp4" && ext !== ".webm") continue;
+      if (seen.has(urlPath)) continue;
+      seen.set(urlPath, {
+        filename: name,
+        url: urlPath,
+        size: info.size,
+        mimeType:
+          UPLOAD_MIME[ext] ||
+          (ext === ".mp4" ? "video/mp4" : ext === ".webm" ? "video/webm" : ""),
+        mtimeMs: info.mtimeMs,
+      });
+    } catch {
+      /* skip unreadable */
+    }
+  }
+}
+
+/** Site design files in public/ — shown in Orbit media, never deleted. */
+export async function listBundledSiteMedia(): Promise<DiskUpload[]> {
+  const seen = new Map<string, DiskUpload>();
+  const publicRoot = path.join(process.cwd(), "public");
+  for (const root of BUNDLED_MEDIA_ROOTS) {
+    await walkMediaFiles(path.join(publicRoot, root.dir), root.urlPrefix, seen);
+  }
+  return [...seen.values()].sort((a, b) => a.url.localeCompare(b.url));
+}
 
 export async function listUploadFiles(): Promise<DiskUpload[]> {
   await ensureUploadDirs();

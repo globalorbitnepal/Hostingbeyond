@@ -19,22 +19,6 @@ export async function getSiteSettings(): Promise<CmsSiteSettings> {
     return {
       ...defaultSiteSettings(),
       ...(row.data as CmsSiteSettings),
-      logoPath:
-        !(row.data as CmsSiteSettings)?.logoPath ||
-        (row.data as CmsSiteSettings).logoPath.includes(
-          "hostingbeyond-logo-transparent",
-        ) ||
-        (row.data as CmsSiteSettings).logoPath.includes(
-          "hostingbeyond-logo-wordmark",
-        ) ||
-        (row.data as CmsSiteSettings).logoPath.includes(
-          "hostingbeyond-logo-header",
-        ) ||
-        (row.data as CmsSiteSettings).logoPath.includes(
-          "hostingbeyond-logo-light",
-        )
-          ? defaultSiteSettings().logoPath
-          : (row.data as CmsSiteSettings).logoPath,
     };
   } catch {
     return defaultSiteSettings();

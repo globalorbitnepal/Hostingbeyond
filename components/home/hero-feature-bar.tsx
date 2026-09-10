@@ -1,11 +1,14 @@
 "use client";
 
 import type { ReactNode } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Gift, Mail, ShieldCheck } from "lucide-react";
 
 import { routes } from "@/config/routes";
+import {
+  defaultHeroFeatureBar,
+  type CmsHeroFeatureBar,
+} from "@/lib/orbit/defaults";
 
 function IconTile({
   children,
@@ -39,86 +42,75 @@ function IconTile({
   );
 }
 
-const features = [
-  {
-    key: "cpanel",
-    title: "One Click",
-    subtitle: "cPanel Access",
-    icon: (
-      <IconTile tone="orange" wide>
-        <Image
-          src="/images/feature-marks/cpanel-user.png"
-          alt="cPanel"
-          width={40}
-          height={30}
-          className="h-[18px] w-auto object-contain sm:h-[21px]"
-          priority
-        />
-      </IconTile>
-    ),
-  },
-  {
-    key: "wordpress",
-    title: "One Click",
-    subtitle: "WordPress Install",
-    icon: (
-      <IconTile tone="blue">
+const FALLBACK_TONES = ["orange", "blue", "white", "sky", "green"] as const;
+
+function FeatureIcon({
+  id,
+  iconUrl,
+  title,
+}: {
+  id: string;
+  iconUrl: string;
+  title: string;
+}) {
+  if (iconUrl) {
+    const wide = id === "cpanel";
+    const tone =
+      id === "cpanel"
+        ? "orange"
+        : id === "wordpress"
+          ? "blue"
+          : id === "ssl"
+            ? "green"
+            : id === "email"
+              ? "sky"
+              : "white";
+    return (
+      <IconTile tone={tone} wide={wide}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/images/feature-marks/wordpress-w.svg?v=3"
-          alt="WordPress"
-          width={28}
-          height={28}
-          className="h-[22px] w-[22px] object-contain sm:h-6 sm:w-6"
+          src={iconUrl}
+          alt={title}
+          width={wide ? 40 : 28}
+          height={wide ? 30 : 28}
+          className={
+            wide
+              ? "h-[18px] w-auto object-contain sm:h-[21px]"
+              : "h-[22px] w-[22px] object-contain sm:h-6 sm:w-6"
+          }
           draggable={false}
         />
       </IconTile>
-    ),
-  },
-  {
-    key: "builder",
-    title: "One Click",
-    subtitle: "Website Create",
-    icon: (
-      <IconTile tone="white">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/images/feature-marks/website-create.svg?v=2"
-          alt=""
-          width={28}
-          height={28}
-          className="h-[22px] w-[22px] object-contain sm:h-6 sm:w-6"
-          draggable={false}
-        />
-      </IconTile>
-    ),
-  },
-  {
-    key: "email",
-    title: "Business Email",
-    subtitle: "Professional Mail",
-    icon: (
+    );
+  }
+  if (id === "email") {
+    return (
       <IconTile tone="sky">
         <Mail className="h-4 w-4 sm:h-[18px] sm:w-[18px]" strokeWidth={2} />
       </IconTile>
-    ),
-  },
-  {
-    key: "ssl",
-    title: "Free SSL",
-    subtitle: "With All Plans",
-    icon: (
+    );
+  }
+  if (id === "ssl") {
+    return (
       <IconTile tone="green">
         <ShieldCheck
           className="h-4 w-4 sm:h-[18px] sm:w-[18px]"
           strokeWidth={2}
         />
       </IconTile>
-    ),
-  },
-] as const;
+    );
+  }
+  return (
+    <IconTile tone={FALLBACK_TONES[0]}>
+      <Gift className="h-4 w-4 sm:h-[18px] sm:w-[18px]" strokeWidth={2} />
+    </IconTile>
+  );
+}
 
-export function HeroFeatureBar() {
+export function HeroFeatureBar({ bar }: { bar?: CmsHeroFeatureBar }) {
+  const data = bar ?? defaultHeroFeatureBar();
+  const items = (data.items ?? []).filter((item) => item.visible !== false);
+
   return (
     <div className="relative flex [scrollbar-width:none] items-center gap-3 overflow-x-auto px-3 py-2 sm:gap-0 sm:overflow-visible sm:px-3.5 sm:py-1.5 lg:justify-between [&::-webkit-scrollbar]:hidden">
       <div className="flex shrink-0 items-center gap-2">
@@ -127,25 +119,29 @@ export function HeroFeatureBar() {
         </IconTile>
         <div className="min-w-0 leading-tight">
           <p className="text-[9px] font-bold tracking-[0.14em] text-slate-500 uppercase sm:text-[10px]">
-            Special Offer
+            {data.offerEyebrow}
           </p>
           <p className="text-[12px] font-bold text-slate-900 sm:text-[13px]">
-            Save Up to{" "}
+            {data.offerTitle}{" "}
             <span className="bg-gradient-to-r from-[#7c3aed] to-[#2563eb] bg-clip-text text-transparent">
-              70%
+              {data.offerHighlight}
             </span>
           </p>
         </div>
       </div>
 
-      {features.map((item) => (
-        <div key={item.key} className="flex shrink-0 items-center">
+      {items.map((item) => (
+        <div key={item.id} className="flex shrink-0 items-center">
           <div
             aria-hidden
             className="mx-2 hidden h-7 w-px bg-[#8eb8de]/50 sm:mx-2.5 sm:block lg:mx-3"
           />
           <div className="flex items-center gap-2">
-            {item.icon}
+            <FeatureIcon
+              id={item.id}
+              iconUrl={item.iconUrl}
+              title={item.title}
+            />
             <div className="min-w-0 leading-tight">
               <p className="text-[12px] font-bold text-slate-900 sm:text-[13px]">
                 {item.title}
@@ -164,10 +160,10 @@ export function HeroFeatureBar() {
           className="mr-2.5 hidden h-7 w-px bg-[#8eb8de]/50 sm:block lg:mr-3"
         />
         <Link
-          href={routes.hosting}
+          href={data.ctaHref || routes.hosting}
           className="inline-flex h-8 items-center gap-1.5 rounded-full bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-3.5 text-[12px] font-semibold whitespace-nowrap text-white shadow-[0_8px_18px_rgba(37,99,235,0.28)] transition hover:brightness-105 sm:h-9 sm:px-4 sm:text-[13px]"
         >
-          View Plans
+          {data.ctaLabel}
           <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.4} />
         </Link>
       </div>

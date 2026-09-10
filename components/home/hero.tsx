@@ -20,10 +20,11 @@ const FALLBACK_TEASERS = [
 
 const SCENE_SRC = "/images/hero-speaker-scene-v3.png";
 
-function SceneImage({ className }: { className?: string }) {
+function SceneImage({ src, className }: { src?: string; className?: string }) {
+  const imageSrc = src?.trim() || SCENE_SRC;
   return (
     <Image
-      src={`${SCENE_SRC}?v=mix16`}
+      src={imageSrc}
       alt=""
       fill
       priority
@@ -55,17 +56,11 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
     const fromCms = (content?.domainPricing ?? []).filter(
       (item) => item.visible !== false && item.tld.trim(),
     );
-    const preferred = [".com", ".net", ".org", ".dev"];
     if (fromCms.length) {
-      const normalized = fromCms.map((item) => ({
+      return fromCms.map((item) => ({
         ...item,
         tld: item.tld.startsWith(".") ? item.tld : `.${item.tld}`,
       }));
-      const picked = preferred
-        .map((tld) => normalized.find((item) => item.tld === tld))
-        .filter(Boolean) as typeof normalized;
-      if (picked.length >= 4) return picked.slice(0, 4);
-      return normalized.slice(0, 4);
     }
     return [...FALLBACK_TEASERS];
   }, [content?.domainPricing]);
@@ -82,6 +77,11 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
   }, [teasers]);
 
   const [tld, setTld] = useState(tldChoices[0] || ".com");
+
+  const sceneSrc =
+    content?.speakerImage?.trim() ||
+    content?.backgroundImage?.trim() ||
+    SCENE_SRC;
 
   const onSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -113,7 +113,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
             maskComposite: "intersect",
           }}
         >
-          <SceneImage />
+          <SceneImage src={sceneSrc} />
         </motion.div>
         <div className="absolute inset-y-0 left-0 z-[2] w-[2.2%] bg-gradient-to-r from-[#b5d3f2] from-[40%] to-transparent" />
         <div className="absolute inset-x-0 top-0 z-[2] h-[4%] bg-gradient-to-b from-[#b5d3f2] from-[35%] to-transparent" />
@@ -243,7 +243,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
           aria-hidden
         >
           <div className="relative mx-auto aspect-[5/4] w-full max-w-[560px] overflow-hidden rounded-[28px]">
-            <SceneImage />
+            <SceneImage src={sceneSrc} />
             <div className="pointer-events-none absolute inset-y-0 left-0 w-[12%] bg-gradient-to-r from-[#b5d3f2] to-transparent" />
             <div className="pointer-events-none absolute inset-y-0 right-0 w-[10%] bg-gradient-to-l from-[#b5d3f2] to-transparent" />
             <div className="pointer-events-none absolute inset-x-0 top-0 h-[10%] bg-gradient-to-b from-[#b5d3f2] to-transparent" />
@@ -263,7 +263,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
             className="pointer-events-none absolute inset-0 rounded-[22px] bg-[radial-gradient(ellipse_at_50%_0%,rgba(140,195,235,0.4),transparent_58%)] lg:rounded-full"
           />
           <div className="relative">
-            <HeroFeatureBar />
+            <HeroFeatureBar bar={content?.featureBar} />
           </div>
         </div>
       </div>

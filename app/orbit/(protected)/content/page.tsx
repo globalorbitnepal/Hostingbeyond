@@ -5,12 +5,14 @@ import { useEffect, useState } from "react";
 import { OrbitImageField } from "@/components/orbit/image-field";
 import { SolutionsEditor } from "@/components/orbit/solutions-editor";
 import {
+  defaultHeroFeatureBar,
   defaultTechnologyPartners,
   type CmsDomainTld,
   type CmsHomeSections,
   type CmsHostingGuarantee,
   type CmsHostingPlan,
   type CmsHostingTypeCard,
+  type CmsHeroFeatureBar,
   type CmsLoginFeature,
   type CmsLoginPage,
   type CmsProductOffer,
@@ -106,7 +108,9 @@ export default function OrbitContentPage() {
         <div>
           <h1 className="text-2xl font-bold">Website Content</h1>
           <p className="mt-1 text-sm text-slate-500">
-            Full editor for homepage, hosting plans, and the /login page.
+            Full editor for every homepage section — text, images, and prices.
+            Hide items instead of deleting. Uploaded files stay in Media
+            forever.
           </p>
         </div>
         <div className="flex gap-2">
@@ -275,6 +279,110 @@ export default function OrbitContentPage() {
             }
           />
         </div>
+      </section>
+
+      {/* HERO FEATURE BAR */}
+      <section className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+        <div>
+          <h2 className="font-semibold">Hero feature bar</h2>
+          <p className="mt-0.5 text-xs text-[var(--hb-muted)]">
+            Special offer, cPanel / WordPress / SSL icons, and View Plans CTA.
+          </p>
+        </div>
+        <HeroFeatureBarEditor
+          bar={sections.hero.featureBar ?? defaultHeroFeatureBar()}
+          onChange={(featureBar) =>
+            setSections({
+              ...sections,
+              hero: { ...sections.hero, featureBar },
+            })
+          }
+        />
+      </section>
+
+      {/* TRUST + STATS */}
+      <section className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+        <h2 className="font-semibold">Hero trust items & stats</h2>
+        {(sections.hero.trustItems ?? []).map((item, index) => (
+          <div key={`trust-${index}`} className="grid gap-3 md:grid-cols-3">
+            <Field
+              label={`Trust ${index + 1} title`}
+              value={item.title}
+              onChange={(value) => {
+                const trustItems = [...(sections.hero.trustItems ?? [])];
+                trustItems[index] = { ...trustItems[index], title: value };
+                setSections({
+                  ...sections,
+                  hero: { ...sections.hero, trustItems },
+                });
+              }}
+            />
+            <Field
+              label="Subtitle"
+              value={item.subtitle}
+              onChange={(value) => {
+                const trustItems = [...(sections.hero.trustItems ?? [])];
+                trustItems[index] = { ...trustItems[index], subtitle: value };
+                setSections({
+                  ...sections,
+                  hero: { ...sections.hero, trustItems },
+                });
+              }}
+            />
+            <Field
+              label="Icon key"
+              value={item.icon}
+              onChange={(value) => {
+                const trustItems = [...(sections.hero.trustItems ?? [])];
+                trustItems[index] = { ...trustItems[index], icon: value };
+                setSections({
+                  ...sections,
+                  hero: { ...sections.hero, trustItems },
+                });
+              }}
+            />
+          </div>
+        ))}
+        {(sections.hero.stats ?? []).map((item, index) => (
+          <div key={`stat-${index}`} className="grid gap-3 md:grid-cols-3">
+            <Field
+              label={`Stat ${index + 1} value`}
+              value={item.value}
+              onChange={(value) => {
+                const stats = [...(sections.hero.stats ?? [])];
+                stats[index] = { ...stats[index], value };
+                setSections({
+                  ...sections,
+                  hero: { ...sections.hero, stats },
+                });
+              }}
+            />
+            <Field
+              label="Label"
+              value={item.label}
+              onChange={(value) => {
+                const stats = [...(sections.hero.stats ?? [])];
+                stats[index] = { ...stats[index], label: value };
+                setSections({
+                  ...sections,
+                  hero: { ...sections.hero, stats },
+                });
+              }}
+            />
+            <Field
+              label="Icon key"
+              value={item.icon}
+              onChange={(value) => {
+                const stats = [...(sections.hero.stats ?? [])];
+                stats[index] = { ...stats[index], icon: value };
+                setSections({
+                  ...sections,
+                  hero: { ...sections.hero, stats },
+                });
+              }}
+            />
+          </div>
+        ))}
       </section>
 
       {/* DOMAIN PRICING */}
@@ -603,18 +711,6 @@ export default function OrbitContentPage() {
                 },
               });
             }}
-            onRemove={() => {
-              setSections({
-                ...sections,
-                hostingTypes: {
-                  ...sections.hostingTypes,
-                  visible: sections.hostingTypes?.visible !== false,
-                  cards: (sections.hostingTypes?.cards ?? []).filter(
-                    (_, i) => i !== index,
-                  ),
-                },
-              });
-            }}
           />
         ))}
 
@@ -821,17 +917,6 @@ export default function OrbitContentPage() {
                 hostingPlans: {
                   ...sections.hostingPlans,
                   plans: plans.map((p, order) => ({ ...p, order })),
-                },
-              });
-            }}
-            onRemove={() => {
-              setSections({
-                ...sections,
-                hostingPlans: {
-                  ...sections.hostingPlans,
-                  plans: sections.hostingPlans.plans.filter(
-                    (_, i) => i !== index,
-                  ),
                 },
               });
             }}
@@ -1220,18 +1305,6 @@ export default function OrbitContentPage() {
                     }}
                   />
                 </div>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setLogin({
-                      ...login,
-                      features: login.features.filter((_, i) => i !== index),
-                    })
-                  }
-                  className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-red-600 md:col-span-2 md:w-fit"
-                >
-                  Remove feature
-                </button>
               </div>
             ))}
           </div>
@@ -1245,12 +1318,10 @@ function HostingTypeCardEditor({
   card,
   onChange,
   onMove,
-  onRemove,
 }: {
   card: CmsHostingTypeCard;
   onChange: (patch: Partial<CmsHostingTypeCard>) => void;
   onMove: (direction: -1 | 1) => void;
-  onRemove: () => void;
 }) {
   return (
     <div className="space-y-3 rounded-xl border border-slate-200 p-4">
@@ -1280,13 +1351,6 @@ function HostingTypeCardEditor({
             className="rounded-lg border border-slate-200 px-2 py-1 text-xs"
           >
             ↓
-          </button>
-          <button
-            type="button"
-            onClick={onRemove}
-            className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-red-600"
-          >
-            Remove
           </button>
         </div>
       </div>
@@ -1386,12 +1450,10 @@ function HostingPlanEditor({
   plan,
   onChange,
   onMove,
-  onRemove,
 }: {
   plan: CmsHostingPlan;
   onChange: (patch: Partial<CmsHostingPlan>) => void;
   onMove: (direction: -1 | 1) => void;
-  onRemove: () => void;
 }) {
   return (
     <div className="space-y-3 rounded-xl border border-slate-200 p-4">
@@ -1429,13 +1491,6 @@ function HostingPlanEditor({
             className="rounded-lg border border-slate-200 px-2 py-1 text-xs"
           >
             ↓
-          </button>
-          <button
-            type="button"
-            onClick={onRemove}
-            className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-red-600"
-          >
-            Remove
           </button>
         </div>
       </div>
@@ -1516,6 +1571,92 @@ function HostingPlanEditor({
   );
 }
 
+function HeroFeatureBarEditor({
+  bar,
+  onChange,
+}: {
+  bar: CmsHeroFeatureBar;
+  onChange: (bar: CmsHeroFeatureBar) => void;
+}) {
+  const items = [...(bar.items ?? [])].sort((a, b) => a.order - b.order);
+  const updateItem = (
+    index: number,
+    patch: Partial<(typeof items)[number]>,
+  ) => {
+    const next = items.map((item, i) =>
+      i === index ? { ...item, ...patch } : item,
+    );
+    onChange({
+      ...bar,
+      items: next.map((item, order) => ({ ...item, order })),
+    });
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-3 md:grid-cols-2">
+        <Field
+          label="Offer eyebrow"
+          value={bar.offerEyebrow}
+          onChange={(value) => onChange({ ...bar, offerEyebrow: value })}
+        />
+        <Field
+          label="Offer title"
+          value={bar.offerTitle}
+          onChange={(value) => onChange({ ...bar, offerTitle: value })}
+        />
+        <Field
+          label="Offer highlight (e.g. 70%)"
+          value={bar.offerHighlight}
+          onChange={(value) => onChange({ ...bar, offerHighlight: value })}
+        />
+        <Field
+          label="CTA text"
+          value={bar.ctaLabel}
+          onChange={(value) => onChange({ ...bar, ctaLabel: value })}
+        />
+        <Field
+          label="CTA link"
+          value={bar.ctaHref}
+          onChange={(value) => onChange({ ...bar, ctaHref: value })}
+        />
+      </div>
+      {items.map((item, index) => (
+        <div
+          key={item.id}
+          className="space-y-3 rounded-xl border border-white/10 p-3"
+        >
+          <label className="flex items-center gap-2 text-xs text-[var(--hb-muted)]">
+            <input
+              type="checkbox"
+              checked={item.visible !== false}
+              onChange={(e) => updateItem(index, { visible: e.target.checked })}
+            />
+            Visible — {item.id}
+          </label>
+          <div className="grid gap-3 md:grid-cols-2">
+            <Field
+              label="Title"
+              value={item.title}
+              onChange={(value) => updateItem(index, { title: value })}
+            />
+            <Field
+              label="Subtitle"
+              value={item.subtitle}
+              onChange={(value) => updateItem(index, { subtitle: value })}
+            />
+          </div>
+          <OrbitImageField
+            label="Icon image"
+            value={item.iconUrl}
+            onChange={(url) => updateItem(index, { iconUrl: url })}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function DomainPricingEditor({
   pricing,
   onChange,
@@ -1585,13 +1726,6 @@ function DomainPricingEditor({
               className="rounded-lg border border-slate-200 px-2 py-1.5 text-xs text-slate-500"
             >
               Down
-            </button>
-            <button
-              type="button"
-              onClick={() => onChange(pricing.filter((_, i) => i !== index))}
-              className="rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs text-red-600"
-            >
-              Remove
             </button>
           </div>
         </div>
@@ -1671,19 +1805,6 @@ function TechPartnersEditor({
               className="rounded-lg border border-slate-200 px-2 py-1.5 text-xs text-slate-500"
             >
               Down
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                onChange(
-                  ordered
-                    .filter((_, i) => i !== index)
-                    .map((item, i) => ({ ...item, order: i })),
-                )
-              }
-              className="rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs text-red-600"
-            >
-              Remove
             </button>
           </div>
           <OrbitImageField

@@ -45,7 +45,7 @@ jobs:
             git fetch origin main
             git checkout main
             git reset --hard origin/main
-            git clean -fd -e .env -e .env.local -e .env.production -e public/uploads
+            git clean -fd -e .env -e .env.local -e .env.production -e public/uploads -e data/uploads
 
             echo "==> Safety checks"
             pwd

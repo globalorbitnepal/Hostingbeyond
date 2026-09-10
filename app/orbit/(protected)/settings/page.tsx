@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import { OrbitImageField } from "@/components/orbit/image-field";
 import type { CmsSiteSettings } from "@/lib/orbit/defaults";
 
 export default function OrbitSettingsPage() {
@@ -49,9 +50,18 @@ export default function OrbitSettingsPage() {
       {status ? <p className="text-sm text-emerald-700">{status}</p> : null}
 
       <div className="grid gap-4 rounded-2xl border border-slate-200 p-5 md:grid-cols-2">
+        <OrbitImageField
+          label="Site logo"
+          value={settings.logoPath}
+          onChange={(url) => setSettings({ ...settings, logoPath: url })}
+        />
+        <OrbitImageField
+          label="Share / OG image"
+          value={settings.ogImagePath}
+          onChange={(url) => setSettings({ ...settings, ogImagePath: url })}
+        />
         {(
           [
-            ["logoPath", "Logo path"],
             ["loginLabel", "Login label"],
             ["loginHref", "Login href"],
             ["getStartedLabel", "Get Started label"],

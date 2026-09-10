@@ -55,8 +55,9 @@ export default function OrbitMediaPage() {
       <div>
         <h1 className="text-2xl font-bold">Media Library</h1>
         <p className="mt-1 text-sm text-slate-500">
-          All uploaded images stay here permanently. Replace a field anytime —
-          the old file is never deleted.
+          All site images (hero, logo, hosting photos) plus every upload stay
+          here permanently. Replace a field anytime — the old file is never
+          deleted.
         </p>
       </div>
 
@@ -72,7 +73,7 @@ export default function OrbitMediaPage() {
             Upload image
             <input
               type="file"
-              accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
+              accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,video/mp4,video/webm"
               className="hidden"
               onChange={(e) =>
                 void onUpload(e.target.files?.[0] ?? null, e.currentTarget)
@@ -113,12 +114,21 @@ export default function OrbitMediaPage() {
             key={asset.id}
             className="overflow-hidden rounded-2xl border border-slate-200 bg-white"
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={asset.url}
-              alt={asset.alt || asset.originalName}
-              className="h-40 w-full object-cover"
-            />
+            {asset.mimeType.startsWith("video/") ? (
+              <video
+                src={asset.url}
+                className="h-40 w-full object-cover"
+                muted
+                playsInline
+              />
+            ) : (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={asset.url}
+                alt={asset.alt || asset.originalName}
+                className="h-40 w-full object-cover"
+              />
+            )}
             <div className="space-y-2 p-3">
               <p className="truncate text-sm font-medium">
                 {asset.originalName}
