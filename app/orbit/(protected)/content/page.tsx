@@ -96,7 +96,7 @@ export default function OrbitContentPage() {
   }
 
   if (!sections) {
-    return <p className="text-sm text-[var(--hb-muted)]">Loading content…</p>;
+    return <p className="text-sm text-slate-500">Loading content…</p>;
   }
 
   return (
@@ -104,7 +104,7 @@ export default function OrbitContentPage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Website Content</h1>
-          <p className="mt-1 text-sm text-[var(--hb-muted)]">
+          <p className="mt-1 text-sm text-slate-500">
             Full editor for homepage, hosting plans, and the /login page.
           </p>
         </div>
@@ -113,7 +113,7 @@ export default function OrbitContentPage() {
             href="/login"
             target="_blank"
             rel="noreferrer"
-            className="rounded-xl border border-white/10 px-4 py-2 text-sm text-[var(--hb-muted)] hover:text-white"
+            className="rounded-xl border border-slate-200 px-4 py-2 text-sm text-slate-500 hover:text-slate-900"
           >
             Preview login
           </a>
@@ -121,7 +121,7 @@ export default function OrbitContentPage() {
             href="/"
             target="_blank"
             rel="noreferrer"
-            className="rounded-xl border border-white/10 px-4 py-2 text-sm text-[var(--hb-muted)] hover:text-white"
+            className="rounded-xl border border-slate-200 px-4 py-2 text-sm text-slate-500 hover:text-slate-900"
           >
             Preview site
           </a>
@@ -129,20 +129,20 @@ export default function OrbitContentPage() {
             type="button"
             disabled={saving}
             onClick={() => void save()}
-            className="rounded-xl bg-gradient-to-r from-[var(--hb-blue)] to-[var(--hb-purple)] px-4 py-2 text-sm font-semibold disabled:opacity-60"
+            className="rounded-xl bg-gradient-to-r from-[var(--hb-blue)] to-[var(--hb-purple)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
           >
             {saving ? "Saving…" : "Save home"}
           </button>
         </div>
       </div>
 
-      {status ? <p className="text-sm text-emerald-300">{status}</p> : null}
+      {status ? <p className="text-sm text-emerald-700">{status}</p> : null}
 
       {/* HERO */}
-      <section className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+      <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5">
         <div className="flex items-center justify-between">
           <h2 className="font-semibold">Hero section</h2>
-          <label className="flex items-center gap-2 text-xs text-[var(--hb-muted)]">
+          <label className="flex items-center gap-2 text-xs text-slate-500">
             <input
               type="checkbox"
               checked={sections.hero.visible}
@@ -277,10 +277,10 @@ export default function OrbitContentPage() {
       </section>
 
       {/* DOMAIN PRICING */}
-      <section className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+      <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5">
         <div>
           <h2 className="font-semibold">Domain TLD Pricing</h2>
-          <p className="mt-0.5 text-xs text-[var(--hb-muted)]">
+          <p className="mt-0.5 text-xs text-slate-500">
             Edit the domain extension prices shown in the hero search bar.
           </p>
         </div>
@@ -304,10 +304,10 @@ export default function OrbitContentPage() {
       </section>
 
       {/* TECHNOLOGY / TRUST STRIP */}
-      <section className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+      <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5">
         <div>
           <h2 className="font-semibold">Technology / trust logos</h2>
-          <p className="mt-0.5 text-xs text-[var(--hb-muted)]">
+          <p className="mt-0.5 text-xs text-slate-500">
             Control visibility, order, labels and optional custom logo images
             for the strip under the hero.
           </p>
@@ -326,10 +326,10 @@ export default function OrbitContentPage() {
       </section>
 
       {/* PRODUCTS */}
-      <section className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+      <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5">
         <div className="flex items-center justify-between">
           <h2 className="font-semibold">Service cards section</h2>
-          <label className="flex items-center gap-2 text-xs text-[var(--hb-muted)]">
+          <label className="flex items-center gap-2 text-xs text-slate-500">
             <input
               type="checkbox"
               checked={sections.products.visible}
@@ -390,14 +390,14 @@ export default function OrbitContentPage() {
         {sections.products.offers.map((offer, index) => (
           <div
             key={offer.id}
-            className="space-y-3 rounded-xl border border-white/10 p-4"
+            className="space-y-3 rounded-xl border border-slate-200 p-4"
           >
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h3 className="text-sm font-semibold tracking-wide uppercase">
                 {offer.title || offer.id} card
               </h3>
               <div className="flex flex-wrap items-center gap-2">
-                <label className="flex items-center gap-2 text-xs text-[var(--hb-muted)]">
+                <label className="flex items-center gap-2 text-xs text-slate-500">
                   <input
                     type="checkbox"
                     checked={offer.visible !== false}
@@ -410,14 +410,14 @@ export default function OrbitContentPage() {
                 <button
                   type="button"
                   onClick={() => moveOffer(index, -1)}
-                  className="rounded-lg border border-white/10 px-2 py-1 text-xs"
+                  className="rounded-lg border border-slate-200 px-2 py-1 text-xs"
                 >
                   ↑
                 </button>
                 <button
                   type="button"
                   onClick={() => moveOffer(index, 1)}
-                  className="rounded-lg border border-white/10 px-2 py-1 text-xs"
+                  className="rounded-lg border border-slate-200 px-2 py-1 text-xs"
                 >
                   ↓
                 </button>
@@ -484,7 +484,7 @@ export default function OrbitContentPage() {
               />
             </div>
 
-            <label className="flex items-center gap-2 text-xs text-[var(--hb-muted)]">
+            <label className="flex items-center gap-2 text-xs text-slate-500">
               <input
                 type="checkbox"
                 checked={Boolean(offer.searchEnabled)}
@@ -536,16 +536,16 @@ export default function OrbitContentPage() {
       </section>
 
       {/* HOSTING TYPES — 4 glass cards */}
-      <section className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+      <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="font-semibold">Hosting types (4 glass cards)</h2>
-            <p className="mt-0.5 text-xs text-[var(--hb-muted)]">
+            <p className="mt-0.5 text-xs text-slate-500">
               Full A–Z editor for Cloud / eCommerce / WordPress / Reseller cards
               — titles, links, icons, and in-card images.
             </p>
           </div>
-          <label className="flex items-center gap-2 text-xs text-[var(--hb-muted)]">
+          <label className="flex items-center gap-2 text-xs text-slate-500">
             <input
               type="checkbox"
               checked={sections.hostingTypes?.visible !== false}
@@ -642,22 +642,22 @@ export default function OrbitContentPage() {
               },
             });
           }}
-          className="rounded-xl border border-dashed border-white/20 px-4 py-2 text-xs font-semibold text-white/70 hover:border-white/40 hover:text-white"
+          className="rounded-xl border border-dashed border-white/20 px-4 py-2 text-xs font-semibold text-slate-600 hover:border-white/40 hover:text-slate-900"
         >
           + Add hosting type card
         </button>
       </section>
 
       {/* HOSTING PLANS */}
-      <section className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+      <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="font-semibold">Web Hosting Plans & Price</h2>
-            <p className="mt-0.5 text-xs text-[var(--hb-muted)]">
+            <p className="mt-0.5 text-xs text-slate-500">
               Full A–Z editor for the pricing section on the homepage.
             </p>
           </div>
-          <label className="flex items-center gap-2 text-xs text-[var(--hb-muted)]">
+          <label className="flex items-center gap-2 text-xs text-slate-500">
             <input
               type="checkbox"
               checked={sections.hostingPlans?.visible !== false}
@@ -863,17 +863,17 @@ export default function OrbitContentPage() {
               },
             });
           }}
-          className="rounded-xl border border-white/10 px-3 py-2 text-xs text-[var(--hb-muted)] hover:text-white"
+          className="rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-500 hover:text-slate-900"
         >
           + Add plan
         </button>
 
-        <div className="space-y-3 border-t border-white/10 pt-4">
+        <div className="space-y-3 border-t border-slate-200 pt-4">
           <h3 className="text-sm font-semibold">Guarantee cards</h3>
           {(sections.hostingPlans?.guarantees ?? []).map((item, index) => (
             <div
               key={item.id}
-              className="space-y-3 rounded-xl border border-white/10 p-4"
+              className="space-y-3 rounded-xl border border-slate-200 p-4"
             >
               <div className="grid gap-3 md:grid-cols-2">
                 <Field
@@ -925,11 +925,11 @@ export default function OrbitContentPage() {
 
       {/* LOGIN PAGE */}
       {login ? (
-        <section className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+        <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="font-semibold">Login page (/login)</h2>
-              <p className="mt-0.5 text-xs text-[var(--hb-muted)]">
+              <p className="mt-0.5 text-xs text-slate-500">
                 Full A–Z editor for the Sign In page — Google / GitHub included.
               </p>
             </div>
@@ -937,7 +937,7 @@ export default function OrbitContentPage() {
               type="button"
               disabled={savingLogin}
               onClick={() => void saveLogin()}
-              className="rounded-xl bg-gradient-to-r from-[var(--hb-blue)] to-[var(--hb-purple)] px-4 py-2 text-sm font-semibold disabled:opacity-60"
+              className="rounded-xl bg-gradient-to-r from-[var(--hb-blue)] to-[var(--hb-purple)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
             >
               {savingLogin ? "Saving…" : "Save login page"}
             </button>
@@ -1066,11 +1066,11 @@ export default function OrbitContentPage() {
             />
           </div>
 
-          <div className="grid gap-3 rounded-xl border border-white/10 p-4 md:grid-cols-2">
+          <div className="grid gap-3 rounded-xl border border-slate-200 p-4 md:grid-cols-2">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold">Google sign-in</h3>
-                <label className="flex items-center gap-2 text-xs text-[var(--hb-muted)]">
+                <label className="flex items-center gap-2 text-xs text-slate-500">
                   <input
                     type="checkbox"
                     checked={login.google.visible}
@@ -1108,7 +1108,7 @@ export default function OrbitContentPage() {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold">GitHub sign-in</h3>
-                <label className="flex items-center gap-2 text-xs text-[var(--hb-muted)]">
+                <label className="flex items-center gap-2 text-xs text-slate-500">
                   <input
                     type="checkbox"
                     checked={login.github.visible}
@@ -1164,7 +1164,7 @@ export default function OrbitContentPage() {
                     ],
                   })
                 }
-                className="rounded-lg border border-white/10 px-2 py-1 text-xs"
+                className="rounded-lg border border-slate-200 px-2 py-1 text-xs"
               >
                 Add feature
               </button>
@@ -1172,7 +1172,7 @@ export default function OrbitContentPage() {
             {login.features.map((feature, index) => (
               <div
                 key={feature.id}
-                className="grid gap-3 rounded-xl border border-white/10 p-4 md:grid-cols-2"
+                className="grid gap-3 rounded-xl border border-slate-200 p-4 md:grid-cols-2"
               >
                 <Field
                   label="Title"
@@ -1220,7 +1220,7 @@ export default function OrbitContentPage() {
                       features: login.features.filter((_, i) => i !== index),
                     })
                   }
-                  className="rounded-lg border border-white/10 px-2 py-1 text-xs text-red-300 md:col-span-2 md:w-fit"
+                  className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-red-600 md:col-span-2 md:w-fit"
                 >
                   Remove feature
                 </button>
@@ -1245,13 +1245,13 @@ function HostingTypeCardEditor({
   onRemove: () => void;
 }) {
   return (
-    <div className="space-y-3 rounded-xl border border-white/10 p-4">
+    <div className="space-y-3 rounded-xl border border-slate-200 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-sm font-semibold tracking-wide uppercase">
           {card.title || card.id} card
         </h3>
         <div className="flex flex-wrap items-center gap-2">
-          <label className="flex items-center gap-2 text-xs text-[var(--hb-muted)]">
+          <label className="flex items-center gap-2 text-xs text-slate-500">
             <input
               type="checkbox"
               checked={card.visible !== false}
@@ -1262,21 +1262,21 @@ function HostingTypeCardEditor({
           <button
             type="button"
             onClick={() => onMove(-1)}
-            className="rounded-lg border border-white/10 px-2 py-1 text-xs"
+            className="rounded-lg border border-slate-200 px-2 py-1 text-xs"
           >
             ↑
           </button>
           <button
             type="button"
             onClick={() => onMove(1)}
-            className="rounded-lg border border-white/10 px-2 py-1 text-xs"
+            className="rounded-lg border border-slate-200 px-2 py-1 text-xs"
           >
             ↓
           </button>
           <button
             type="button"
             onClick={onRemove}
-            className="rounded-lg border border-white/10 px-2 py-1 text-xs text-red-300"
+            className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-red-600"
           >
             Remove
           </button>
@@ -1386,13 +1386,13 @@ function HostingPlanEditor({
   onRemove: () => void;
 }) {
   return (
-    <div className="space-y-3 rounded-xl border border-white/10 p-4">
+    <div className="space-y-3 rounded-xl border border-slate-200 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-sm font-semibold tracking-wide uppercase">
           {plan.name || plan.id} plan
         </h3>
         <div className="flex flex-wrap items-center gap-2">
-          <label className="flex items-center gap-2 text-xs text-[var(--hb-muted)]">
+          <label className="flex items-center gap-2 text-xs text-slate-500">
             <input
               type="checkbox"
               checked={plan.visible !== false}
@@ -1400,7 +1400,7 @@ function HostingPlanEditor({
             />
             Visible
           </label>
-          <label className="flex items-center gap-2 text-xs text-[var(--hb-muted)]">
+          <label className="flex items-center gap-2 text-xs text-slate-500">
             <input
               type="checkbox"
               checked={Boolean(plan.popular)}
@@ -1411,21 +1411,21 @@ function HostingPlanEditor({
           <button
             type="button"
             onClick={() => onMove(-1)}
-            className="rounded-lg border border-white/10 px-2 py-1 text-xs"
+            className="rounded-lg border border-slate-200 px-2 py-1 text-xs"
           >
             ↑
           </button>
           <button
             type="button"
             onClick={() => onMove(1)}
-            className="rounded-lg border border-white/10 px-2 py-1 text-xs"
+            className="rounded-lg border border-slate-200 px-2 py-1 text-xs"
           >
             ↓
           </button>
           <button
             type="button"
             onClick={onRemove}
-            className="rounded-lg border border-white/10 px-2 py-1 text-xs text-red-300"
+            className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-red-600"
           >
             Remove
           </button>
@@ -1529,9 +1529,9 @@ function DomainPricingEditor({
       {pricing.map((item, index) => (
         <div
           key={`${index}-${item.tld}`}
-          className="flex flex-wrap items-center gap-2 rounded-xl border border-white/10 p-3"
+          className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 p-3"
         >
-          <label className="flex items-center gap-2 text-xs text-[var(--hb-muted)]">
+          <label className="flex items-center gap-2 text-xs text-slate-500">
             <input
               type="checkbox"
               checked={item.visible !== false}
@@ -1551,7 +1551,7 @@ function DomainPricingEditor({
               onChange(next);
             }}
             placeholder=".com"
-            className="w-[80px] rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm font-bold text-white outline-none"
+            className="w-[80px] rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-900 outline-none"
           />
           <input
             value={item.priceLabel}
@@ -1561,27 +1561,27 @@ function DomainPricingEditor({
               onChange(next);
             }}
             placeholder="$7.99/yr"
-            className="w-[110px] rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white outline-none"
+            className="w-[110px] rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none"
           />
           <div className="ml-auto flex items-center gap-1.5">
             <button
               type="button"
               onClick={() => move(index, -1)}
-              className="rounded-lg border border-white/10 px-2 py-1.5 text-xs text-[var(--hb-muted)]"
+              className="rounded-lg border border-slate-200 px-2 py-1.5 text-xs text-slate-500"
             >
               Up
             </button>
             <button
               type="button"
               onClick={() => move(index, 1)}
-              className="rounded-lg border border-white/10 px-2 py-1.5 text-xs text-[var(--hb-muted)]"
+              className="rounded-lg border border-slate-200 px-2 py-1.5 text-xs text-slate-500"
             >
               Down
             </button>
             <button
               type="button"
               onClick={() => onChange(pricing.filter((_, i) => i !== index))}
-              className="rounded-lg border border-white/10 px-2.5 py-1.5 text-xs text-red-300"
+              className="rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs text-red-600"
             >
               Remove
             </button>
@@ -1596,7 +1596,7 @@ function DomainPricingEditor({
             { tld: ".io", priceLabel: "$12.99/yr", visible: true },
           ])
         }
-        className="rounded-xl border border-white/10 px-3 py-2 text-xs text-[var(--hb-muted)] hover:text-white"
+        className="rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-500 hover:text-slate-900"
       >
         + Add TLD
       </button>
@@ -1634,10 +1634,10 @@ function TechPartnersEditor({
       {ordered.map((partner, index) => (
         <div
           key={partner.id}
-          className="space-y-2 rounded-xl border border-white/10 p-3"
+          className="space-y-2 rounded-xl border border-slate-200 p-3"
         >
           <div className="flex flex-wrap items-center gap-2">
-            <label className="flex items-center gap-2 text-xs text-[var(--hb-muted)]">
+            <label className="flex items-center gap-2 text-xs text-slate-500">
               <input
                 type="checkbox"
                 checked={partner.visible !== false}
@@ -1648,19 +1648,19 @@ function TechPartnersEditor({
             <input
               value={partner.label}
               onChange={(e) => update(index, { label: e.target.value })}
-              className="min-w-[120px] flex-1 rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white outline-none"
+              className="min-w-[120px] flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none"
             />
             <button
               type="button"
               onClick={() => move(index, -1)}
-              className="rounded-lg border border-white/10 px-2 py-1.5 text-xs text-[var(--hb-muted)]"
+              className="rounded-lg border border-slate-200 px-2 py-1.5 text-xs text-slate-500"
             >
               Up
             </button>
             <button
               type="button"
               onClick={() => move(index, 1)}
-              className="rounded-lg border border-white/10 px-2 py-1.5 text-xs text-[var(--hb-muted)]"
+              className="rounded-lg border border-slate-200 px-2 py-1.5 text-xs text-slate-500"
             >
               Down
             </button>
@@ -1673,7 +1673,7 @@ function TechPartnersEditor({
                     .map((item, i) => ({ ...item, order: i })),
                 )
               }
-              className="rounded-lg border border-white/10 px-2.5 py-1.5 text-xs text-red-300"
+              className="rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs text-red-600"
             >
               Remove
             </button>
@@ -1699,7 +1699,7 @@ function TechPartnersEditor({
             },
           ])
         }
-        className="rounded-xl border border-white/10 px-3 py-2 text-xs text-[var(--hb-muted)] hover:text-white"
+        className="rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-500 hover:text-slate-900"
       >
         + Add partner
       </button>
@@ -1715,15 +1715,15 @@ function FeatureEditor({
   onChange: (features: string[]) => void;
 }) {
   return (
-    <div className="space-y-2 rounded-xl border border-white/10 p-3">
+    <div className="space-y-2 rounded-xl border border-slate-200 p-3">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold tracking-wide text-[var(--hb-muted)] uppercase">
+        <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase">
           Features
         </p>
         <button
           type="button"
           onClick={() => onChange([...features, "New feature"])}
-          className="rounded-lg border border-white/10 px-2 py-1 text-xs"
+          className="rounded-lg border border-slate-200 px-2 py-1 text-xs"
         >
           Add feature
         </button>
@@ -1737,7 +1737,7 @@ function FeatureEditor({
               next[index] = event.target.value;
               onChange(next);
             }}
-            className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm outline-none"
+            className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none"
           />
           <button
             type="button"
@@ -1748,7 +1748,7 @@ function FeatureEditor({
                 onChange(next);
               }
             }}
-            className="rounded-lg border border-white/10 px-2 text-xs"
+            className="rounded-lg border border-slate-200 px-2 text-xs"
           >
             ↑
           </button>
@@ -1761,14 +1761,14 @@ function FeatureEditor({
                 onChange(next);
               }
             }}
-            className="rounded-lg border border-white/10 px-2 text-xs"
+            className="rounded-lg border border-slate-200 px-2 text-xs"
           >
             ↓
           </button>
           <button
             type="button"
             onClick={() => onChange(features.filter((_, i) => i !== index))}
-            className="rounded-lg border border-white/10 px-2 text-xs text-red-300"
+            className="rounded-lg border border-slate-200 px-2 text-xs text-red-600"
           >
             ✕
           </button>
@@ -1788,12 +1788,12 @@ function Field({
   onChange: (value: string) => void;
 }) {
   return (
-    <label className="block text-xs font-semibold tracking-wide text-[var(--hb-muted)] uppercase">
+    <label className="block text-xs font-semibold tracking-wide text-slate-500 uppercase">
       {label}
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2.5 text-sm font-normal tracking-normal text-white normal-case outline-none focus:border-[var(--hb-blue)]/40"
+        className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-normal tracking-normal text-slate-900 normal-case outline-none focus:border-[var(--hb-blue)]/40"
       />
     </label>
   );
@@ -1809,13 +1809,13 @@ function TextArea({
   onChange: (value: string) => void;
 }) {
   return (
-    <label className="block text-xs font-semibold tracking-wide text-[var(--hb-muted)] uppercase">
+    <label className="block text-xs font-semibold tracking-wide text-slate-500 uppercase">
       {label}
       <textarea
         value={value}
         onChange={(event) => onChange(event.target.value)}
         rows={3}
-        className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2.5 text-sm font-normal tracking-normal text-white normal-case outline-none focus:border-[var(--hb-blue)]/40"
+        className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-normal tracking-normal text-slate-900 normal-case outline-none focus:border-[var(--hb-blue)]/40"
       />
     </label>
   );

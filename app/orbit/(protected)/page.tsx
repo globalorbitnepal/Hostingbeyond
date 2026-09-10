@@ -2,7 +2,15 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { FileText, ImageIcon, Sparkles, Activity } from "lucide-react";
+import {
+  Activity,
+  FileText,
+  ImageIcon,
+  Navigation,
+  Search,
+  Settings,
+  Sparkles,
+} from "lucide-react";
 
 type DashboardData = {
   admin: { displayName: string };
@@ -14,6 +22,45 @@ type DashboardData = {
     createdAt: string;
   }>;
 };
+
+const cmsAreas = [
+  {
+    href: "/orbit/content",
+    label: "Website content",
+    detail: "Hero, hosting types, plans, partners, and login page copy",
+    icon: Sparkles,
+  },
+  {
+    href: "/orbit/pages",
+    label: "Pages",
+    detail: "Public pages, titles, visibility, and previews",
+    icon: FileText,
+  },
+  {
+    href: "/orbit/media",
+    label: "Images & media",
+    detail: "Upload, replace, preview, and organize assets",
+    icon: ImageIcon,
+  },
+  {
+    href: "/orbit/navigation",
+    label: "Navigation",
+    detail: "Header and site navigation content",
+    icon: Navigation,
+  },
+  {
+    href: "/orbit/seo",
+    label: "SEO",
+    detail: "Meta titles, descriptions, and Open Graph defaults",
+    icon: Search,
+  },
+  {
+    href: "/orbit/settings",
+    label: "Site settings",
+    detail: "Brand, contact, and CTA defaults",
+    icon: Settings,
+  },
+] as const;
 
 export default function OrbitDashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -35,19 +82,19 @@ export default function OrbitDashboardPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <p className="mt-1 text-sm text-[var(--hb-muted)]">
-          Overview of HostingBeyond content and Orbit session health.
+        <p className="mt-1 text-sm text-slate-500">
+          Control the HostingBeyond website from one Orbit workspace.
         </p>
       </div>
 
-      {error ? <p className="text-sm text-red-300">{error}</p> : null}
+      {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
           {
             label: "Website status",
             value: "Online",
-            href: "https://beyond.theglobalorbit.com",
+            href: "/",
             external: true,
           },
           {
@@ -61,18 +108,18 @@ export default function OrbitDashboardPage() {
             href: "/orbit/media",
           },
           {
-            label: "Passkeys",
-            value: String(data?.stats.credentials ?? "—"),
-            href: "/orbit/settings",
+            label: "Activity",
+            value: String(data?.recentActivity.length ?? "—"),
+            href: "/orbit/activity",
           },
         ].map((card) => (
           <Link
             key={card.label}
             href={card.href}
             {...(card.external ? { target: "_blank", rel: "noreferrer" } : {})}
-            className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition hover:border-[var(--hb-blue)]/40 hover:bg-white/[0.05]"
+            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-[var(--hb-blue)]/40"
           >
-            <p className="text-xs tracking-wide text-[var(--hb-muted)] uppercase">
+            <p className="text-xs tracking-wide text-slate-500 uppercase">
               {card.label}
             </p>
             <p className="mt-2 text-2xl font-bold">{card.value}</p>
@@ -80,63 +127,46 @@ export default function OrbitDashboardPage() {
         ))}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-          <h2 className="text-sm font-semibold">Quick actions</h2>
-          <div className="mt-4 grid gap-2 sm:grid-cols-2">
-            {[
-              {
-                href: "/orbit/content",
-                label: "Edit website content",
-                icon: Sparkles,
-              },
-              {
-                href: "/orbit/media",
-                label: "Open media library",
-                icon: ImageIcon,
-              },
-              { href: "/orbit/pages", label: "Manage pages", icon: FileText },
-              {
-                href: "/orbit/activity",
-                label: "View activity",
-                icon: Activity,
-              },
-            ].map((action) => (
-              <Link
-                key={action.href}
-                href={action.href}
-                className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-3 py-3 text-sm text-[var(--hb-muted)] transition hover:border-white/20 hover:text-white"
-              >
-                <action.icon className="size-4" />
-                {action.label}
-              </Link>
-            ))}
-          </div>
-        </section>
+      <section>
+        <h2 className="text-sm font-semibold text-slate-900">Website CMS</h2>
+        <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {cmsAreas.map((area) => (
+            <Link
+              key={area.href}
+              href={area.href}
+              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-[var(--hb-blue)]/35"
+            >
+              <area.icon className="size-5 text-[var(--hb-blue)]" />
+              <p className="mt-3 text-sm font-semibold">{area.label}</p>
+              <p className="mt-1 text-sm text-slate-500">{area.detail}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
 
-        <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="flex items-center gap-2">
+          <Activity className="size-4 text-slate-400" />
           <h2 className="text-sm font-semibold">Recent activity</h2>
-          <ul className="mt-4 space-y-3">
-            {(data?.recentActivity ?? []).length === 0 ? (
-              <li className="text-sm text-[var(--hb-muted)]">
-                No activity yet.
+        </div>
+        <ul className="mt-4 space-y-3">
+          {(data?.recentActivity ?? []).length === 0 ? (
+            <li className="text-sm text-slate-500">No activity yet.</li>
+          ) : (
+            data?.recentActivity.map((item) => (
+              <li
+                key={item.id}
+                className="flex items-center justify-between gap-3 text-sm"
+              >
+                <span className="text-slate-800">{item.action}</span>
+                <span className="text-xs text-slate-400">
+                  {new Date(item.createdAt).toLocaleString()}
+                </span>
               </li>
-            ) : (
-              data?.recentActivity.map((item) => (
-                <li
-                  key={item.id}
-                  className="flex items-center justify-between gap-3 text-sm"
-                >
-                  <span className="text-white/90">{item.action}</span>
-                  <span className="text-xs text-[var(--hb-muted)]">
-                    {new Date(item.createdAt).toLocaleString()}
-                  </span>
-                </li>
-              ))
-            )}
-          </ul>
-        </section>
-      </div>
+            ))
+          )}
+        </ul>
+      </section>
     </div>
   );
 }

@@ -27,35 +27,35 @@ export default function OrbitNavigationPage() {
   }
 
   if (!sections)
-    return <p className="text-sm text-[var(--hb-muted)]">Loading…</p>;
+    return <p className="text-sm text-slate-500">Loading…</p>;
 
   return (
     <div className="space-y-6">
       <div className="flex items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Navigation</h1>
-          <p className="mt-1 text-sm text-[var(--hb-muted)]">
+          <p className="mt-1 text-sm text-slate-500">
             Edit header menu labels and destinations.
           </p>
         </div>
         <button
           type="button"
           onClick={() => void save()}
-          className="rounded-xl bg-gradient-to-r from-[var(--hb-blue)] to-[var(--hb-purple)] px-4 py-2 text-sm font-semibold"
+          className="rounded-xl bg-gradient-to-r from-[var(--hb-blue)] to-[var(--hb-purple)] px-4 py-2 text-sm font-semibold text-white"
         >
           Save
         </button>
       </div>
-      {status ? <p className="text-sm text-emerald-300">{status}</p> : null}
+      {status ? <p className="text-sm text-emerald-700">{status}</p> : null}
 
       <div className="space-y-4">
         {sections.navigation.map((item, index) => (
           <div
             key={`${item.label}-${index}`}
-            className="rounded-2xl border border-white/10 p-4"
+            className="rounded-2xl border border-slate-200 p-4"
           >
             <div className="grid gap-3 md:grid-cols-2">
-              <label className="text-xs text-[var(--hb-muted)] uppercase">
+              <label className="text-xs text-slate-500 uppercase">
                 Label
                 <input
                   value={item.label}
@@ -64,10 +64,10 @@ export default function OrbitNavigationPage() {
                     navigation[index] = { ...item, label: e.target.value };
                     setSections({ ...sections, navigation });
                   }}
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white"
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
                 />
               </label>
-              <label className="text-xs text-[var(--hb-muted)] uppercase">
+              <label className="text-xs text-slate-500 uppercase">
                 Href
                 <input
                   value={item.href}
@@ -76,7 +76,7 @@ export default function OrbitNavigationPage() {
                     navigation[index] = { ...item, href: e.target.value };
                     setSections({ ...sections, navigation });
                   }}
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white"
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
                 />
               </label>
             </div>

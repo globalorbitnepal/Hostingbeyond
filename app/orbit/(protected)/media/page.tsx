@@ -54,21 +54,21 @@ export default function OrbitMediaPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Media Library</h1>
-        <p className="mt-1 text-sm text-[var(--hb-muted)]">
+        <p className="mt-1 text-sm text-slate-500">
           All uploaded images stay here permanently. Replace a field anytime —
           the old file is never deleted.
         </p>
       </div>
 
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+      <div className="rounded-2xl border border-slate-200 bg-white p-5">
         <div className="grid gap-3 md:grid-cols-[1fr_auto_auto]">
           <input
             value={alt}
             onChange={(e) => setAlt(e.target.value)}
             placeholder="Alt text"
-            className="rounded-xl border border-white/10 bg-black/30 px-3 py-2.5 text-sm outline-none"
+            className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none"
           />
-          <label className="inline-flex cursor-pointer items-center justify-center rounded-xl border border-[var(--hb-blue)]/40 px-4 py-2.5 text-sm font-semibold text-[#9ad0ff]">
+          <label className="inline-flex cursor-pointer items-center justify-center rounded-xl border border-[var(--hb-blue)]/40 px-4 py-2.5 text-sm font-semibold text-[var(--hb-blue)]">
             Upload image
             <input
               type="file"
@@ -82,7 +82,7 @@ export default function OrbitMediaPage() {
           <button
             type="button"
             onClick={() => void load()}
-            className="rounded-xl border border-white/10 px-4 py-2.5 text-sm"
+            className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm"
           >
             Refresh
           </button>
@@ -92,18 +92,18 @@ export default function OrbitMediaPage() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search media"
-            className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2.5 text-sm outline-none"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none"
           />
           <button
             type="button"
             onClick={() => void load(q)}
-            className="rounded-xl bg-white/10 px-4 text-sm"
+            className="rounded-xl border border-slate-200 bg-white px-4 text-sm"
           >
             Search
           </button>
         </div>
         {status ? (
-          <p className="mt-3 text-sm text-emerald-300">{status}</p>
+          <p className="mt-3 text-sm text-emerald-700">{status}</p>
         ) : null}
       </div>
 
@@ -111,7 +111,7 @@ export default function OrbitMediaPage() {
         {assets.map((asset) => (
           <article
             key={asset.id}
-            className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]"
+            className="overflow-hidden rounded-2xl border border-slate-200 bg-white"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -123,13 +123,13 @@ export default function OrbitMediaPage() {
               <p className="truncate text-sm font-medium">
                 {asset.originalName}
               </p>
-              <p className="truncate text-[11px] text-white/40">{asset.url}</p>
-              <p className="text-xs text-[var(--hb-muted)]">
+              <p className="truncate text-[11px] text-slate-400">{asset.url}</p>
+              <p className="text-xs text-slate-500">
                 {(asset.size / 1024).toFixed(1)} KB · {asset.mimeType}
               </p>
               <button
                 type="button"
-                className="rounded-lg border border-white/10 px-2 py-1 text-xs"
+                className="rounded-lg border border-slate-200 px-2 py-1 text-xs"
                 onClick={() => void navigator.clipboard.writeText(asset.url)}
               >
                 Copy URL

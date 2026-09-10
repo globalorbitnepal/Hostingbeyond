@@ -27,14 +27,14 @@ export default function OrbitPagesPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Pages</h1>
-        <p className="mt-1 text-sm text-[var(--hb-muted)]">
+        <p className="mt-1 text-sm text-slate-500">
           Manage HostingBeyond pages and section visibility.
         </p>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-white/10">
+      <div className="overflow-hidden rounded-2xl border border-slate-200">
         <table className="w-full text-left text-sm">
-          <thead className="bg-white/[0.04] text-[var(--hb-muted)]">
+          <thead className="bg-slate-50 text-slate-500">
             <tr>
               <th className="px-4 py-3 font-medium">Title</th>
               <th className="px-4 py-3 font-medium">Slug</th>
@@ -45,15 +45,15 @@ export default function OrbitPagesPage() {
           </thead>
           <tbody>
             {pages.map((page) => (
-              <tr key={page.id} className="border-t border-white/10">
+              <tr key={page.id} className="border-t border-slate-200">
                 <td className="px-4 py-3">{page.title}</td>
-                <td className="px-4 py-3 text-[var(--hb-muted)]">
+                <td className="px-4 py-3 text-slate-500">
                   /{page.slug === "home" ? "" : page.slug}
                 </td>
                 <td className="px-4 py-3">
                   {page.isPublished && page.isVisible ? "Published" : "Hidden"}
                 </td>
-                <td className="px-4 py-3 text-[var(--hb-muted)]">
+                <td className="px-4 py-3 text-slate-500">
                   {new Date(page.updatedAt).toLocaleString()}
                 </td>
                 <td className="px-4 py-3">
@@ -68,11 +68,11 @@ export default function OrbitPagesPage() {
                       href="/"
                       target="_blank"
                       rel="noreferrer"
-                      className="text-[var(--hb-muted)]"
+                      className="text-slate-500"
                     >
                       Preview
                     </a>
-                    <Link href="/orbit/seo" className="text-[var(--hb-muted)]">
+                    <Link href="/orbit/seo" className="text-slate-500">
                       SEO
                     </Link>
                   </div>

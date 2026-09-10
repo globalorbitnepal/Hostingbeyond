@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+import { HostingBeyondLogo } from "@/components/shared/hostingbeyond-logo";
 import { cn } from "@/lib/utils";
 
 const nav = [
@@ -49,24 +50,24 @@ export function OrbitShell({
   }
 
   return (
-    <div className="min-h-dvh bg-[#050814] text-white">
+    <div className="min-h-dvh bg-[#f4f7fb] text-slate-900">
       <div className="mx-auto flex min-h-dvh max-w-[1600px]">
         <aside
           className={cn(
-            "fixed inset-y-0 left-0 z-40 w-72 border-r border-white/10 bg-[#070b18]/95 p-4 backdrop-blur-xl transition-transform lg:static lg:translate-x-0",
+            "fixed inset-y-0 left-0 z-40 w-72 border-r border-slate-200 bg-white p-4 transition-transform lg:static lg:translate-x-0",
             open ? "translate-x-0" : "-translate-x-full",
           )}
         >
           <div className="mb-8 flex items-center justify-between px-2">
             <div>
-              <p className="text-[10px] font-semibold tracking-[0.22em] text-[var(--hb-muted)] uppercase">
-                HostingBeyond
+              <HostingBeyondLogo className="h-7 w-auto" />
+              <p className="mt-2 text-[10px] font-semibold tracking-[0.22em] text-slate-400 uppercase">
+                Orbit
               </p>
-              <p className="text-lg font-bold">Orbit</p>
             </div>
             <button
               type="button"
-              className="rounded-lg border border-white/10 p-2 lg:hidden"
+              className="rounded-lg border border-slate-200 p-2 lg:hidden"
               onClick={() => setOpen(false)}
             >
               <X className="size-4" />
@@ -87,8 +88,8 @@ export function OrbitShell({
                   className={cn(
                     "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition",
                     active
-                      ? "bg-[var(--hb-blue)]/15 text-white shadow-[0_0_20px_rgb(10_132_255_/_0.15)]"
-                      : "text-[var(--hb-muted)] hover:bg-white/5 hover:text-white",
+                      ? "bg-[var(--hb-blue)]/10 text-[var(--hb-blue)]"
+                      : "text-slate-500 hover:bg-slate-50 hover:text-slate-900",
                   )}
                 >
                   <item.icon className="size-4" />
@@ -100,30 +101,33 @@ export function OrbitShell({
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-white/10 bg-[#050814]/85 px-4 py-3 backdrop-blur-xl sm:px-6">
+          <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur-xl sm:px-6">
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                className="rounded-lg border border-white/10 p-2 lg:hidden"
+                className="rounded-lg border border-slate-200 p-2 lg:hidden"
                 onClick={() => setOpen(true)}
               >
                 <Menu className="size-4" />
               </button>
               <div>
-                <p className="text-[11px] text-[var(--hb-muted)]">
-                  Super Admin
-                </p>
+                <p className="text-[11px] text-slate-500">Super Admin</p>
                 <p className="text-sm font-semibold">{adminName}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="hidden rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-[11px] text-emerald-300 sm:inline">
-                Passkey session
-              </span>
+              <a
+                href="/"
+                target="_blank"
+                rel="noreferrer"
+                className="hidden rounded-full border border-slate-200 px-3 py-1 text-[11px] text-slate-500 sm:inline"
+              >
+                View site
+              </a>
               <button
                 type="button"
                 onClick={() => void logout()}
-                className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-sm text-[var(--hb-muted)] transition hover:bg-white/5 hover:text-white"
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-600 transition hover:bg-slate-50 hover:text-slate-900"
               >
                 <LogOut className="size-4" />
                 Logout
@@ -138,7 +142,7 @@ export function OrbitShell({
         <button
           type="button"
           aria-label="Close menu"
-          className="fixed inset-0 z-30 bg-black/50 lg:hidden"
+          className="fixed inset-0 z-30 bg-slate-900/20 lg:hidden"
           onClick={() => setOpen(false)}
         />
       ) : null}
