@@ -80,11 +80,6 @@ export function SolutionsSection({
       <div className="relative mt-10 sm:mt-12">
         <SolutionCarousel products={products} />
       </div>
-
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-[#07122a]"
-      />
     </section>
   );
 }

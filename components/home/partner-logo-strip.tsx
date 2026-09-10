@@ -78,7 +78,7 @@ function PartnerRow({
             {index > 0 ? (
               <span
                 aria-hidden
-                className="mx-5 h-5 w-px shrink-0 bg-[#7eb6e8]/55 sm:mx-7"
+                className="mx-5 h-5 w-px shrink-0 bg-slate-300/90 sm:mx-7"
               />
             ) : (
               <span aria-hidden className="w-2 shrink-0 sm:w-3" />
@@ -100,7 +100,7 @@ function PartnerRow({
             {index === items.length - 1 ? (
               <span
                 aria-hidden
-                className="mx-5 h-5 w-px shrink-0 bg-[#7eb6e8]/55 sm:mx-7"
+                className="mx-5 h-5 w-px shrink-0 bg-slate-300/90 sm:mx-7"
               />
             ) : null}
           </li>
@@ -140,11 +140,18 @@ export function PartnerLogoStrip({
 
   return (
     <div
-      className={cn("relative w-full overflow-hidden", className)}
+      className={cn(
+        "relative w-full overflow-hidden bg-[#f4f8fd] py-5 sm:py-6",
+        className,
+      )}
       role="region"
       aria-label="Technology partners"
     >
-      <div className="hb-partner-marquee flex w-max items-center">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,#f4f8fd_0%,#eef4fb_100%)]"
+      />
+      <div className="hb-partner-marquee relative z-10 flex w-max items-center">
         <PartnerRow items={items} keyPrefix="a" />
         <PartnerRow items={items} keyPrefix="b" />
       </div>
