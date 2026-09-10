@@ -83,6 +83,18 @@
   --sidebar-accent-foreground: #f4f7ff;
   --sidebar-border: rgb(255 255 255 / 10%);
   --sidebar-ring: #7b4dff;
+  --hb-shell-pad: clamp(0.9rem, 2.2vw, 2.25rem);
+}
+
+@layer components {
+  /* Fluid page gutters — same on every device; no leftover empty columns */
+  .hb-shell {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: auto;
+    padding-inline: var(--hb-shell-pad);
+    box-sizing: border-box;
+  }
 }
 
 @layer base {

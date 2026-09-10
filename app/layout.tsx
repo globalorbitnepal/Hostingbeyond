@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import { DM_Sans, Geist_Mono, Manrope } from "next/font/google";
 
@@ -29,6 +29,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = buildMetadata();
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 export default async function RootLayout({
   children,

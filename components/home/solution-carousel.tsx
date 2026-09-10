@@ -29,18 +29,21 @@ export function SolutionCarousel({ products }: Props) {
 
   const count = products.length;
 
-  const scrollToIndex = useCallback((next: number, behavior: ScrollBehavior = "smooth") => {
-    const node = scrollerRef.current;
-    if (!node || count === 0) return;
-    const clamped = ((next % count) + count) % count;
-    const card = node.children[clamped] as HTMLElement | undefined;
-    if (!card) return;
-    node.scrollTo({
-      left: card.offsetLeft - 8,
-      behavior: reduceMotion ? "auto" : behavior,
-    });
-    setIndex(clamped);
-  }, [count, reduceMotion]);
+  const scrollToIndex = useCallback(
+    (next: number, behavior: ScrollBehavior = "smooth") => {
+      const node = scrollerRef.current;
+      if (!node || count === 0) return;
+      const clamped = ((next % count) + count) % count;
+      const card = node.children[clamped] as HTMLElement | undefined;
+      if (!card) return;
+      node.scrollTo({
+        left: card.offsetLeft - 8,
+        behavior: reduceMotion ? "auto" : behavior,
+      });
+      setIndex(clamped);
+    },
+    [count, reduceMotion],
+  );
 
   const syncIndex = useCallback(() => {
     const node = scrollerRef.current;
@@ -117,7 +120,7 @@ export function SolutionCarousel({ products }: Props) {
         aria-labelledby={labelId}
         tabIndex={0}
         onKeyDown={onKeyDown}
-        className="flex snap-x snap-mandatory gap-5 overflow-x-auto px-5 pb-3 [-ms-overflow-style:none] [scrollbar-width:none] outline-none focus-visible:ring-2 focus-visible:ring-[var(--hb-blue)]/30 sm:px-8 lg:gap-6 lg:px-[max(2rem,calc((100vw-1180px)/2))] [&::-webkit-scrollbar]:hidden"
+        className="flex snap-x snap-mandatory [scrollbar-width:none] gap-5 overflow-x-auto px-[var(--hb-shell-pad)] pb-3 outline-none [-ms-overflow-style:none] focus-visible:ring-2 focus-visible:ring-[var(--hb-blue)]/30 lg:gap-6 [&::-webkit-scrollbar]:hidden"
       >
         {products.map((product, productIndex) => (
           <div key={product.id} className={solutionCardWidthClass()}>
@@ -142,7 +145,11 @@ export function SolutionCarousel({ products }: Props) {
         >
           <ChevronLeft className="size-5" />
         </button>
-        <div className="flex items-center gap-2" role="tablist" aria-label="Solutions">
+        <div
+          className="flex items-center gap-2"
+          role="tablist"
+          aria-label="Solutions"
+        >
           {products.map((product, productIndex) => (
             <button
               key={product.id}

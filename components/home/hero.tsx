@@ -97,7 +97,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
       {/* Desktop scene — zoom locked */}
       <div
         aria-hidden
-        className="pointer-events-none absolute top-0 right-0 bottom-[58px] z-[1] hidden overflow-hidden lg:left-[36%] lg:block lg:w-auto"
+        className="pointer-events-none absolute inset-x-0 top-0 z-[1] hidden overflow-hidden lg:inset-y-0 lg:top-0 lg:right-0 lg:bottom-[58px] lg:left-[38%] lg:block xl:left-[36%]"
       >
         <motion.div
           initial={reduceMotion ? false : { opacity: 0 }}
@@ -115,14 +115,14 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
         >
           <SceneImage src={sceneSrc} />
         </motion.div>
-        <div className="absolute inset-y-0 left-0 z-[2] w-[2.2%] bg-gradient-to-r from-[#b5d3f2] from-[40%] to-transparent" />
-        <div className="absolute inset-x-0 top-0 z-[2] h-[4%] bg-gradient-to-b from-[#b5d3f2] from-[35%] to-transparent" />
-        <div className="absolute inset-y-0 right-0 z-[2] w-[2.8%] bg-gradient-to-l from-[#b5d3f2] from-[40%] to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 z-[2] h-[5%] bg-gradient-to-t from-[#b5d3f2] via-[#b5d3f2]/30 to-transparent" />
+        <div className="absolute inset-y-0 left-0 z-[2] w-[4%] bg-gradient-to-r from-[#b5d3f2] from-[30%] to-transparent" />
+        <div className="absolute inset-x-0 top-0 z-[2] h-[3%] bg-gradient-to-b from-[#b5d3f2] from-[35%] to-transparent" />
+        <div className="absolute inset-y-0 right-0 z-[2] w-[1.2%] bg-gradient-to-l from-[#b5d3f2] to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 z-[2] h-[4%] bg-gradient-to-t from-[#b5d3f2] via-[#b5d3f2]/30 to-transparent" />
       </div>
 
-      <div className="relative z-20 mx-auto grid w-full max-w-[1360px] flex-1 grid-cols-1 px-[4%] pt-3 pb-3 sm:px-[3%] sm:pt-2 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center lg:pb-2">
-        <div className="relative max-w-[520px] self-center lg:pb-6">
+      <div className="hb-shell relative z-20 grid w-full flex-1 grid-cols-1 pt-3 pb-3 sm:pt-2 lg:grid-cols-[minmax(0,0.42fr)_minmax(0,0.58fr)] lg:items-center lg:gap-6 lg:pb-2 xl:grid-cols-[minmax(0,0.4fr)_minmax(0,0.6fr)]">
+        <div className="relative w-full min-w-0 self-center lg:pb-6">
           <motion.p
             initial={reduceMotion ? false : { opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -135,7 +135,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
             initial={reduceMotion ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.04 }}
-            className="font-heading mt-2 text-[clamp(1.85rem,7.2vw,3.55rem)] leading-[1.08] font-extrabold tracking-[-0.04em] text-slate-950"
+            className="font-heading mt-2 text-[clamp(1.7rem,4.2vw,4.25rem)] leading-[1.08] font-extrabold tracking-[-0.04em] text-slate-950"
           >
             <span className="block">{headline}</span>
             <span className="mt-0.5 block bg-gradient-to-r from-[#7c3aed] via-[#4f46e5] to-[#2563eb] bg-clip-text text-transparent">
@@ -147,7 +147,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
             initial={reduceMotion ? false : { opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.08 }}
-            className="mt-3 max-w-[430px] text-[14px] leading-relaxed text-slate-600 sm:text-[15.5px]"
+            className="mt-3 w-full text-[14px] leading-relaxed text-slate-600 sm:text-[15.5px] xl:text-[16.5px]"
           >
             {description}
           </motion.p>
@@ -157,7 +157,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
             initial={reduceMotion ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.12 }}
-            className="mt-5 flex w-full max-w-[500px] flex-col gap-1.5 rounded-[22px] border border-white/80 bg-white/90 p-2 shadow-[0_14px_40px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,0.95)] backdrop-blur-xl sm:flex-row sm:items-center sm:gap-1.5 sm:rounded-full sm:p-1.5"
+            className="mt-5 flex w-full flex-col gap-1.5 rounded-[22px] border border-white/80 bg-white/90 p-2 shadow-[0_14px_40px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,0.95)] backdrop-blur-xl sm:flex-row sm:items-center sm:gap-1.5 sm:rounded-full sm:p-1.5"
           >
             <div className="flex min-w-0 flex-1 items-center gap-2 px-2 sm:px-3">
               <Search
@@ -205,7 +205,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
             initial={reduceMotion ? false : { opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.16 }}
-            className="mt-3 flex max-w-[500px] [scrollbar-width:none] flex-nowrap items-center gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden"
+            className="mt-3 flex w-full [scrollbar-width:none] flex-nowrap items-center gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden"
           >
             {teasers.map((item) => {
               const value = item.tld.startsWith(".")
@@ -242,7 +242,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
           className="relative mt-5 w-full lg:hidden"
           aria-hidden
         >
-          <div className="relative mx-auto aspect-[5/4] w-full max-w-[560px] overflow-hidden rounded-[28px]">
+          <div className="relative aspect-[5/4] w-full overflow-hidden rounded-[22px] sm:rounded-[28px]">
             <SceneImage src={sceneSrc} />
             <div className="pointer-events-none absolute inset-y-0 left-0 w-[12%] bg-gradient-to-r from-[#b5d3f2] to-transparent" />
             <div className="pointer-events-none absolute inset-y-0 right-0 w-[10%] bg-gradient-to-l from-[#b5d3f2] to-transparent" />
@@ -255,15 +255,17 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
       </div>
 
       {/* Slim feature glass bar */}
-      <div className="relative z-30 mt-auto shrink-0 bg-[#b5d3f2] px-[3%] pt-1 pb-4 sm:px-[2.5%] sm:pb-4">
+      <div className="relative z-30 mt-auto shrink-0 bg-[#b5d3f2] pt-1 pb-4 sm:pb-4">
         <div className="pointer-events-none absolute inset-x-0 -top-8 h-8 bg-gradient-to-b from-transparent to-[#b5d3f2]" />
-        <div className="relative mx-auto max-w-[1240px] overflow-hidden rounded-[22px] border border-[#7aadd8]/70 bg-[linear-gradient(180deg,rgba(165,200,232,0.92)_0%,rgba(181,211,242,0.82)_48%,rgba(170,205,236,0.88)_100%)] shadow-[0_8px_24px_rgba(60,120,170,0.16)] backdrop-blur-xl lg:rounded-full">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 rounded-[22px] bg-[radial-gradient(ellipse_at_50%_0%,rgba(140,195,235,0.4),transparent_58%)] lg:rounded-full"
-          />
-          <div className="relative">
-            <HeroFeatureBar bar={content?.featureBar} />
+        <div className="hb-shell">
+          <div className="relative w-full overflow-hidden rounded-[22px] border border-[#7aadd8]/70 bg-[linear-gradient(180deg,rgba(165,200,232,0.92)_0%,rgba(181,211,242,0.82)_48%,rgba(170,205,236,0.88)_100%)] shadow-[0_8px_24px_rgba(60,120,170,0.16)] backdrop-blur-xl lg:rounded-full">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 rounded-[22px] bg-[radial-gradient(ellipse_at_50%_0%,rgba(140,195,235,0.4),transparent_58%)] lg:rounded-full"
+            />
+            <div className="relative">
+              <HeroFeatureBar bar={content?.featureBar} />
+            </div>
           </div>
         </div>
       </div>

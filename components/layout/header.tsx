@@ -188,60 +188,62 @@ export function SiteHeader({
   }, [open]);
 
   return (
-    <header className="relative z-50 w-full shrink-0 bg-transparent px-[3%] pt-2.5 pb-1 sm:px-[2.2%] sm:pt-4">
-      <div className="mx-auto flex h-[56px] w-full max-w-[1280px] items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 shadow-[0_10px_40px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-2xl sm:h-[70px] sm:gap-3 sm:px-5 lg:px-6">
-        <div className="min-w-0 flex-1 lg:min-w-[210px] lg:flex-none xl:min-w-[270px]">
-          <Logo
-            src="/logo/hostingbeyond-logo-v5.png"
-            variant="image"
-            className="h-[26px] max-w-[min(100%,168px)] sm:h-[34px] sm:max-w-[280px] xl:h-[38px] xl:max-w-[310px]"
-          />
-        </div>
-
-        <nav
-          aria-label="Primary navigation"
-          className="hidden min-w-0 flex-1 items-center justify-center gap-6 lg:flex xl:gap-8"
-        >
-          {filteredNav.map((item) => (
-            <NavDropdown
-              key={item.label}
-              item={item}
-              label={localizeNavLabel(item.label, t.nav)}
+    <header className="relative z-50 w-full shrink-0 bg-transparent pt-2.5 pb-1 sm:pt-4">
+      <div className="hb-shell">
+        <div className="mx-auto flex h-[56px] w-full items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 shadow-[0_10px_40px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-2xl sm:h-[70px] sm:gap-3 sm:px-5 lg:px-6">
+          <div className="min-w-0 flex-1 lg:min-w-[210px] lg:flex-none xl:min-w-[270px]">
+            <Logo
+              src="/logo/hostingbeyond-logo-v5.png"
+              variant="image"
+              className="h-[26px] max-w-[min(100%,150px)] sm:h-[32px] sm:max-w-[240px] lg:h-[34px] lg:max-w-[260px] xl:h-[38px] xl:max-w-[300px]"
             />
-          ))}
-        </nav>
+          </div>
 
-        <div className="hidden shrink-0 items-center justify-end gap-2.5 lg:flex">
-          <CountryLanguageSelector tone="light" />
-          <span
-            aria-hidden
-            className="mx-0.5 hidden h-6 w-px bg-slate-200 xl:block"
-          />
-          <Link
-            href={loginHref}
-            className="inline-flex h-[38px] items-center gap-2 rounded-full border border-slate-200/90 bg-white px-3.5 text-[13px] font-semibold text-slate-800 shadow-[0_4px_14px_rgba(15,23,42,0.06)] transition hover:border-slate-300 hover:bg-slate-50"
+          <nav
+            aria-label="Primary navigation"
+            className="hidden min-w-0 flex-1 items-center justify-center gap-4 lg:flex xl:gap-7 2xl:gap-8"
           >
-            <User className="size-4 text-slate-600" aria-hidden />
-            {resolvedLogin}
-          </Link>
-        </div>
+            {filteredNav.map((item) => (
+              <NavDropdown
+                key={item.label}
+                item={item}
+                label={localizeNavLabel(item.label, t.nav)}
+              />
+            ))}
+          </nav>
 
-        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2 lg:hidden">
-          <CountryLanguageSelector compact tone="light" />
-          <button
-            type="button"
-            className="inline-flex size-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-800 shadow-sm"
-            aria-expanded={open}
-            aria-controls="hb-mobile-nav"
-            aria-label={open ? "Close menu" : "Open menu"}
-            onClick={() => setOpen((v) => !v)}
-          >
-            {open ? (
-              <X className="size-[18px]" />
-            ) : (
-              <Menu className="size-[18px]" />
-            )}
-          </button>
+          <div className="hidden shrink-0 items-center justify-end gap-2.5 lg:flex">
+            <CountryLanguageSelector tone="light" />
+            <span
+              aria-hidden
+              className="mx-0.5 hidden h-6 w-px bg-slate-200 xl:block"
+            />
+            <Link
+              href={loginHref}
+              className="inline-flex h-[38px] items-center gap-2 rounded-full border border-slate-200/90 bg-white px-3.5 text-[13px] font-semibold text-slate-800 shadow-[0_4px_14px_rgba(15,23,42,0.06)] transition hover:border-slate-300 hover:bg-slate-50"
+            >
+              <User className="size-4 text-slate-600" aria-hidden />
+              {resolvedLogin}
+            </Link>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2 lg:hidden">
+            <CountryLanguageSelector compact tone="light" />
+            <button
+              type="button"
+              className="inline-flex size-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-800 shadow-sm"
+              aria-expanded={open}
+              aria-controls="hb-mobile-nav"
+              aria-label={open ? "Close menu" : "Open menu"}
+              onClick={() => setOpen((v) => !v)}
+            >
+              {open ? (
+                <X className="size-[18px]" />
+              ) : (
+                <Menu className="size-[18px]" />
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -253,89 +255,91 @@ export function SiteHeader({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.17 }}
-            className="mx-auto mt-2 w-full max-w-[1280px] overflow-hidden rounded-[22px] border border-slate-200/80 bg-white/95 shadow-[0_20px_56px_rgba(15,23,42,0.12)] backdrop-blur-2xl lg:hidden"
+            className="hb-shell mt-2 lg:hidden"
           >
-            <nav
-              className="flex flex-col gap-0.5 p-4"
-              aria-label="Mobile navigation"
-            >
-              {filteredNav.map((item) => {
-                const label = localizeNavLabel(item.label, t.nav);
-                const hasChildren = Boolean(item.children?.length);
-                return (
-                  <div key={item.label}>
-                    {hasChildren ? (
-                      <>
-                        <button
-                          type="button"
-                          className="flex w-full items-center justify-between rounded-xl px-3 py-3 text-left text-[16px] font-bold text-slate-900"
-                          onClick={() =>
-                            setMobileSection((s) =>
-                              s === item.label ? null : item.label,
-                            )
-                          }
+            <div className="w-full overflow-hidden rounded-[22px] border border-slate-200/80 bg-white/95 shadow-[0_20px_56px_rgba(15,23,42,0.12)] backdrop-blur-2xl">
+              <nav
+                className="flex flex-col gap-0.5 p-4"
+                aria-label="Mobile navigation"
+              >
+                {filteredNav.map((item) => {
+                  const label = localizeNavLabel(item.label, t.nav);
+                  const hasChildren = Boolean(item.children?.length);
+                  return (
+                    <div key={item.label}>
+                      {hasChildren ? (
+                        <>
+                          <button
+                            type="button"
+                            className="flex w-full items-center justify-between rounded-xl px-3 py-3 text-left text-[16px] font-bold text-slate-900"
+                            onClick={() =>
+                              setMobileSection((s) =>
+                                s === item.label ? null : item.label,
+                              )
+                            }
+                          >
+                            {label}
+                            <ChevronDown
+                              className={cn(
+                                "size-4 text-slate-400 transition-transform duration-200",
+                                mobileSection === item.label && "rotate-180",
+                              )}
+                            />
+                          </button>
+                          <AnimatePresence>
+                            {mobileSection === item.label ? (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.15 }}
+                                className="overflow-hidden pl-4"
+                              >
+                                {item.children!.map((child) => (
+                                  <Link
+                                    key={child.href}
+                                    href={child.href}
+                                    className="block rounded-lg px-3 py-2.5 text-[13.5px] text-slate-600 hover:text-slate-950"
+                                    onClick={() => setOpen(false)}
+                                  >
+                                    {child.label}
+                                  </Link>
+                                ))}
+                              </motion.div>
+                            ) : null}
+                          </AnimatePresence>
+                        </>
+                      ) : (
+                        <Link
+                          href={item.href}
+                          className="block rounded-xl px-3 py-3 text-[16px] font-bold text-slate-900"
+                          onClick={() => setOpen(false)}
                         >
                           {label}
-                          <ChevronDown
-                            className={cn(
-                              "size-4 text-slate-400 transition-transform duration-200",
-                              mobileSection === item.label && "rotate-180",
-                            )}
-                          />
-                        </button>
-                        <AnimatePresence>
-                          {mobileSection === item.label ? (
-                            <motion.div
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: "auto", opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              transition={{ duration: 0.15 }}
-                              className="overflow-hidden pl-4"
-                            >
-                              {item.children!.map((child) => (
-                                <Link
-                                  key={child.href}
-                                  href={child.href}
-                                  className="block rounded-lg px-3 py-2.5 text-[13.5px] text-slate-600 hover:text-slate-950"
-                                  onClick={() => setOpen(false)}
-                                >
-                                  {child.label}
-                                </Link>
-                              ))}
-                            </motion.div>
-                          ) : null}
-                        </AnimatePresence>
-                      </>
-                    ) : (
-                      <Link
-                        href={item.href}
-                        className="block rounded-xl px-3 py-3 text-[16px] font-bold text-slate-900"
-                        onClick={() => setOpen(false)}
-                      >
-                        {label}
-                      </Link>
-                    )}
-                  </div>
-                );
-              })}
-              <div className="mt-3 flex flex-col gap-2 border-t border-slate-100 pt-3">
-                <Link
-                  href={loginHref}
-                  className="flex items-center justify-center gap-2 rounded-full border border-slate-200 px-3 py-2.5 text-[14px] font-semibold text-slate-800"
-                  onClick={() => setOpen(false)}
-                >
-                  <User className="size-4" aria-hidden />
-                  {resolvedLogin}
-                </Link>
-                <Link
-                  href={getStartedHref}
-                  className="flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#7c3aed] to-[#2563eb] px-3 py-2.5 text-[14px] font-semibold text-white shadow-[0_8px_24px_rgba(124,58,237,0.28)]"
-                  onClick={() => setOpen(false)}
-                >
-                  {resolvedGetStarted}
-                </Link>
-              </div>
-            </nav>
+                        </Link>
+                      )}
+                    </div>
+                  );
+                })}
+                <div className="mt-3 flex flex-col gap-2 border-t border-slate-100 pt-3">
+                  <Link
+                    href={loginHref}
+                    className="flex items-center justify-center gap-2 rounded-full border border-slate-200 px-3 py-2.5 text-[14px] font-semibold text-slate-800"
+                    onClick={() => setOpen(false)}
+                  >
+                    <User className="size-4" aria-hidden />
+                    {resolvedLogin}
+                  </Link>
+                  <Link
+                    href={getStartedHref}
+                    className="flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#7c3aed] to-[#2563eb] px-3 py-2.5 text-[14px] font-semibold text-white shadow-[0_8px_24px_rgba(124,58,237,0.28)]"
+                    onClick={() => setOpen(false)}
+                  >
+                    {resolvedGetStarted}
+                  </Link>
+                </div>
+              </nav>
+            </div>
           </motion.div>
         ) : null}
       </AnimatePresence>

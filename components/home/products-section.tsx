@@ -406,13 +406,13 @@ export function ProductsSection({ content }: { content?: CmsProductsContent }) {
   return (
     <section
       id="products"
-      className="relative isolate overflow-hidden bg-[#07122a] px-4 pt-8 pb-6 sm:px-6 sm:pt-10 sm:pb-8 lg:px-8 lg:pt-12 lg:pb-8"
+      className="relative isolate overflow-hidden bg-[#07122a] pt-8 pb-6 sm:pt-10 sm:pb-8 lg:pt-12 lg:pb-8"
     >
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute top-0 left-1/2 h-48 w-[70%] -translate-x-1/2 bg-[radial-gradient(ellipse,rgb(10_132_255_/_0.08),transparent_70%)] blur-2xl" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-[1280px]">
+      <div className="hb-shell relative z-10">
         <div className="mx-auto max-w-3xl text-center">
           <motion.div
             initial={reduceMotion ? false : { opacity: 0, y: 10 }}

@@ -89,6 +89,6 @@ export function SolutionCard({ product, paused, priority }: Props) {
 
 export function solutionCardWidthClass() {
   return cn(
-    "w-[min(86vw,560px)] shrink-0 snap-start sm:w-[min(78vw,600px)] lg:w-[min(42vw,640px)]",
+    "w-[calc(100vw-2*var(--hb-shell-pad))] max-w-none shrink-0 snap-start sm:w-[min(70vw,540px)] lg:w-[calc((100vw-2*var(--hb-shell-pad)-1.5rem)/2)] xl:w-[calc((100vw-2*var(--hb-shell-pad)-2rem)/2.15)]",
   );
 }

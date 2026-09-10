@@ -196,7 +196,7 @@ export function HostingPlansSection({
   const guarantees = data.guarantees ?? [];
 
   return (
-    <section className="relative isolate overflow-hidden bg-[#07122a] px-4 pt-4 pb-14 sm:px-6 sm:pt-5 sm:pb-16 lg:px-8 lg:pt-6 lg:pb-20">
+    <section className="relative isolate overflow-hidden bg-[#07122a] pt-4 pb-14 sm:pt-5 sm:pb-16 lg:pt-6 lg:pb-20">
       <div
         aria-hidden
         className="pointer-events-none absolute top-[18%] left-1/2 h-[55%] w-[70%] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse,rgba(47,107,255,0.14),transparent_68%)] blur-3xl"
@@ -206,7 +206,7 @@ export function HostingPlansSection({
         className="pointer-events-none absolute right-[8%] bottom-[10%] h-[35%] w-[40%] rounded-full bg-[radial-gradient(ellipse,rgba(124,58,237,0.12),transparent_70%)] blur-3xl"
       />
 
-      <div className="relative z-10 mx-auto max-w-[1280px]">
+      <div className="hb-shell relative z-10">
         <div className="text-center">
           <motion.span
             initial={reduceMotion ? false : { opacity: 0, y: 8 }}

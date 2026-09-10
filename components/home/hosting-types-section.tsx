@@ -213,13 +213,13 @@ export function HostingTypesSection({
   if (content?.visible === false || cards.length === 0) return null;
 
   return (
-    <section className="relative isolate overflow-hidden bg-[#07122a] px-4 pt-4 pb-4 sm:px-6 sm:pt-5 sm:pb-5 lg:px-8 lg:pt-6 lg:pb-6">
+    <section className="relative isolate overflow-hidden bg-[#07122a] pt-4 pb-4 sm:pt-5 sm:pb-5 lg:pt-6 lg:pb-6">
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute top-0 left-1/2 h-40 w-[60%] -translate-x-1/2 bg-[radial-gradient(ellipse,rgba(59,130,246,0.12),transparent_70%)] blur-2xl" />
         <div className="absolute right-[8%] bottom-0 h-32 w-[40%] bg-[radial-gradient(ellipse,rgba(168,85,247,0.1),transparent_70%)] blur-2xl" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-[1280px]">
+      <div className="hb-shell relative z-10">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
           {cards.map((card, index) => {
             const styles = accentMap[card.accent as Accent] ?? accentMap.blue;
