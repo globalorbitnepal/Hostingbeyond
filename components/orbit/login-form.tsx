@@ -1,20 +1,28 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { KeyRound, Loader2, ShieldCheck } from "lucide-react";
-import { motion } from "framer-motion";
+import { Eye, EyeOff, Loader2, Shield } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
+
+import { HostingBeyondLogo } from "@/components/shared/hostingbeyond-logo";
 
 export function OrbitLoginForm() {
   const router = useRouter();
+  const reduceMotion = useReducedMotion();
+  const errorId = useId();
   const [accessKey, setAccessKey] = useState("");
+  const [showKey, setShowKey] = useState(false);
   const [status, setStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
   const [message, setMessage] = useState("");
 
+  const submitting = status === "loading";
+
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
+    if (submitting) return;
     setStatus("loading");
     setMessage("");
     try {
@@ -25,92 +33,131 @@ export function OrbitLoginForm() {
       });
       const json = (await res.json()) as { error?: string };
       if (!res.ok) {
-        throw new Error(json.error || "Access denied");
+        throw new Error(json.error || "Invalid access key");
       }
       setStatus("success");
-      setMessage("Authenticated. Opening Orbit…");
       setAccessKey("");
       router.replace("/orbit");
       router.refresh();
     } catch (error) {
       setStatus("error");
       setMessage(
-        error instanceof Error ? error.message : "Unable to open Orbit",
+        error instanceof Error ? error.message : "Invalid access key",
       );
     }
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="w-full max-w-md rounded-[28px] border border-[var(--hb-border-blue)] bg-[rgba(8,12,28,0.82)] p-7 shadow-[0_30px_80px_rgb(0_0_0_/_0.45),0_0_40px_rgb(10_132_255_/_0.15)] backdrop-blur-2xl"
-    >
-      <div className="mb-6 flex items-center gap-3">
-        <span className="inline-flex size-12 items-center justify-center rounded-2xl border border-[var(--hb-blue)]/40 bg-[var(--hb-blue)]/15 text-[var(--hb-blue)] shadow-[0_0_24px_rgb(10_132_255_/_0.35)]">
-          <KeyRound className="size-6" />
-        </span>
-        <div>
-          <p className="text-xs font-semibold tracking-[0.2em] text-[var(--hb-muted)] uppercase">
-            Orbit
-          </p>
-          <h1 className="text-xl font-bold text-white">Super Admin</h1>
+    <main className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-[#050b18] px-4 py-10 sm:px-6">
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(47,107,255,0.14),transparent_52%),radial-gradient(ellipse_at_bottom,rgba(124,58,237,0.1),transparent_48%)]" />
+        <div
+          className="absolute inset-0 opacity-[0.22]"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(148,163,184,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.07) 1px, transparent 1px)",
+            backgroundSize: "64px 64px",
+          }}
+        />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_42%,#050b18_100%)]" />
+      </div>
+
+      <motion.section
+        initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: reduceMotion ? 0 : 0.35, ease: "easeOut" }}
+        className="relative w-full max-w-[420px]"
+      >
+        <div className="mb-7 flex justify-center">
+          <HostingBeyondLogo className="h-8 w-auto opacity-90 sm:h-9" />
         </div>
-      </div>
 
-      <p className="text-sm leading-relaxed text-[var(--hb-muted)]">
-        Enter your Orbit access key to open the HostingBeyond dashboard. The key
-        is verified against the server environment — it is never stored in the
-        browser after login.
-      </p>
+        <div className="rounded-2xl border border-white/[0.09] bg-[#0b1428]/78 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl sm:p-8">
+          <div className="flex items-start gap-3.5">
+            <span className="mt-0.5 inline-flex size-11 shrink-0 items-center justify-center rounded-xl border border-[var(--hb-blue)]/25 bg-[var(--hb-blue)]/10 text-[var(--hb-blue)]">
+              <Shield className="size-5" strokeWidth={1.75} />
+            </span>
+            <div>
+              <p className="text-[11px] font-semibold tracking-[0.28em] text-slate-400 uppercase">
+                Orbit
+              </p>
+              <h1 className="mt-1 text-[1.65rem] leading-none font-semibold tracking-tight text-white">
+                Super Admin
+              </h1>
+            </div>
+          </div>
 
-      <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-[11px] font-medium text-emerald-300">
-        <ShieldCheck className="size-3.5" />
-        Server-side access key
-      </div>
+          <p className="mt-5 text-[13.5px] leading-relaxed text-slate-400">
+            Secure access to HostingBeyond infrastructure.
+          </p>
 
-      <form onSubmit={onSubmit} className="mt-6 space-y-3">
-        <label className="block text-xs font-semibold tracking-wide text-white/70 uppercase">
-          Access key
-          <input
-            type="password"
-            name="orbit-access-key"
-            autoComplete="current-password"
-            value={accessKey}
-            onChange={(event) => setAccessKey(event.target.value)}
-            className="mt-2 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-3 text-sm text-white outline-none focus:border-[var(--hb-blue)]/50"
-            placeholder="Enter Orbit access key"
-            required
-          />
-        </label>
+          <form onSubmit={onSubmit} className="mt-7 space-y-4">
+            <div>
+              <label
+                htmlFor="orbit-access-key"
+                className="text-[11px] font-semibold tracking-[0.18em] text-slate-300 uppercase"
+              >
+                Access key
+              </label>
+              <div className="relative mt-2">
+                <input
+                  id="orbit-access-key"
+                  type={showKey ? "text" : "password"}
+                  name="orbit-access-key"
+                  autoComplete="current-password"
+                  value={accessKey}
+                  onChange={(event) => setAccessKey(event.target.value)}
+                  disabled={submitting}
+                  aria-invalid={status === "error"}
+                  aria-describedby={status === "error" ? errorId : undefined}
+                  className="h-12 w-full rounded-xl border border-white/10 bg-[#060d1c] px-3.5 pr-12 text-sm text-white outline-none transition-[border-color,box-shadow] placeholder:text-slate-500 focus-visible:border-[var(--hb-blue)]/55 focus-visible:ring-2 focus-visible:ring-[var(--hb-blue)]/25 disabled:cursor-not-allowed disabled:opacity-60"
+                  placeholder="Enter your Orbit access key"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowKey((open) => !open)}
+                  disabled={submitting}
+                  className="absolute top-1/2 right-1.5 inline-flex size-9 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 outline-none transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-[var(--hb-blue)]/40 disabled:opacity-50"
+                  aria-label={showKey ? "Hide access key" : "Show access key"}
+                  aria-pressed={showKey}
+                >
+                  {showKey ? (
+                    <EyeOff className="size-4" />
+                  ) : (
+                    <Eye className="size-4" />
+                  )}
+                </button>
+              </div>
+            </div>
 
-        <button
-          type="submit"
-          disabled={status === "loading" || !accessKey.trim()}
-          className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[var(--hb-blue)] to-[var(--hb-purple)] text-sm font-semibold text-white shadow-[0_0_28px_rgb(10_132_255_/_0.35)] transition hover:brightness-110 disabled:opacity-60"
-        >
-          {status === "loading" ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <KeyRound className="size-4" />
-          )}
-          Open Orbit Dashboard
-        </button>
-      </form>
+            <button
+              type="submit"
+              disabled={submitting || !accessKey.trim()}
+              className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[var(--hb-blue)] to-[var(--hb-purple)] text-sm font-semibold text-white shadow-[0_10px_28px_rgba(47,107,255,0.22)] outline-none transition-[filter,transform,opacity] hover:brightness-110 focus-visible:ring-2 focus-visible:ring-[var(--hb-blue)]/50 disabled:cursor-not-allowed disabled:opacity-55"
+            >
+              {submitting ? (
+                <Loader2 className="size-4 animate-spin" aria-hidden />
+              ) : null}
+              {submitting ? "Authenticating…" : "Open Orbit Dashboard"}
+            </button>
+          </form>
 
-      {message ? (
-        <p
-          className={`mt-4 text-center text-sm ${
-            status === "error"
-              ? "text-red-300"
-              : status === "success"
-                ? "text-emerald-300"
-                : "text-[var(--hb-muted)]"
-          }`}
-        >
-          {message}
-        </p>
-      ) : null}
-    </motion.div>
+          <div
+            id={errorId}
+            role="status"
+            aria-live="polite"
+            className="min-h-6 pt-4 text-center text-sm"
+          >
+            {status === "error" && message ? (
+              <p className="text-red-300/95">{message}</p>
+            ) : null}
+            {status === "success" ? (
+              <p className="text-emerald-300/90">Opening Orbit…</p>
+            ) : null}
+          </div>
+        </div>
+      </motion.section>
+    </main>
   );
 }

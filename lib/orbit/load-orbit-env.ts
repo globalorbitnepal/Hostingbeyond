@@ -1,8 +1,6 @@
 import { readFileSync } from "fs";
 import { resolve } from "path";
 
-const ORBIT_ENV_KEYS = ["ORBIT_ENROLLMENT_SECRET"] as const;
-
 function parseEnvLine(line: string): [string, string] | null {
   const trimmed = line.trim();
   if (!trimmed || trimmed.startsWith("#")) return null;
@@ -21,18 +19,11 @@ function parseEnvLine(line: string): [string, string] | null {
 }
 
 /**
- * Fill missing Orbit secrets from `.env` at request time.
- * Next.js only loads `.env` at process start, and only if the process user
- * can read the file — this recovers when those conditions were not met.
- * Never overwrites variables already present in the process environment.
- * Never logs values.
+ * Load ORBIT_ENROLLMENT_SECRET from `.env` at request time.
+ * The file is the source of truth so a stale process env cannot keep an
+ * old access key after `.env` is updated. Never logs values.
  */
 export function hydrateOrbitEnvFromFile() {
-  const missing = ORBIT_ENV_KEYS.filter(
-    (key) => !process.env[key]?.trim(),
-  );
-  if (missing.length === 0) return;
-
   const paths = [
     resolve(process.cwd(), ".env"),
     "/srv/apps/hostingbeyond/.env",
@@ -46,18 +37,14 @@ export function hydrateOrbitEnvFromFile() {
       continue;
     }
 
-    const parsed = new Map<string, string>();
     for (const line of text.split(/\r?\n/)) {
       const pair = parseEnvLine(line);
-      if (pair) parsed.set(pair[0], pair[1]);
-    }
-
-    for (const key of missing) {
-      const value = parsed.get(key)?.trim();
-      if (value && !process.env[key]?.trim()) {
-        process.env[key] = value;
+      if (pair?.[0] !== "ORBIT_ENROLLMENT_SECRET") continue;
+      const value = pair[1].trim();
+      if (value) {
+        process.env.ORBIT_ENROLLMENT_SECRET = value;
       }
+      return;
     }
-    break;
   }
 }

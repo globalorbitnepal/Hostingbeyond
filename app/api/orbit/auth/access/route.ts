@@ -23,10 +23,10 @@ export async function POST(request: NextRequest) {
     const accessKey = body.accessKey?.trim() ?? "";
 
     if (!getEnrollmentSecret()) {
-      console.error("[orbit] ORBIT_ENROLLMENT_SECRET is not loaded");
+      console.error("[orbit] access is not configured");
       return NextResponse.json(
-        { error: "Orbit access is not configured on the server" },
-        { status: 503 },
+        { error: "Invalid access key" },
+        { status: 401 },
       );
     }
 
