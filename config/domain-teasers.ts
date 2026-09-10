@@ -1,13 +1,12 @@
 /**
- * Visual domain extension teasers for the hero search bar.
- * Display-only placeholders — replace via pricing config / CMS later.
+ * Fallback domain extension teasers for the hero search bar.
+ * Live values come from Orbit CMS (`hero.domainPricing`) when available.
  */
 export const heroDomainTeasers = [
-  { tld: ".com", priceLabel: "$6.99/yr" },
-  { tld: ".net", priceLabel: "$7.99/yr" },
-  { tld: ".org", priceLabel: "$6.99/yr" },
-  { tld: ".co", priceLabel: "$5.99/yr" },
-  { tld: ".dev", priceLabel: "$9.99/yr" },
+  { tld: ".com", priceLabel: "$7.99/yr" },
+  { tld: ".net", priceLabel: "$6.99/yr" },
+  { tld: ".org", priceLabel: "$5.99/yr" },
+  { tld: ".dev", priceLabel: "$3.99/yr" },
 ] as const;
 
 export const heroTldOptions = [

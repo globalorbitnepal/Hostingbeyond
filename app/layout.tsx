@@ -48,6 +48,9 @@ export default async function RootLayout({
       className="dark"
       suppressHydrationWarning
     >
+      <head>
+        <link rel="preconnect" href="https://flagcdn.com" crossOrigin="" />
+      </head>
       <body
         className={`${manrope.variable} ${dmSans.variable} ${geistMono.variable} min-h-dvh bg-black font-sans text-white antialiased`}
       >

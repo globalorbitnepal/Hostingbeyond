@@ -15,9 +15,14 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
-    "prisma:seed": "node prisma/seed.cjs",
-    "orbit:export": "node scripts/export-orbit-cms.cjs",
+    "db:seed": "prisma db seed",
+    "db:export": "node scripts/export-orbit-db.mjs",
+    "db:import": "node scripts/import-orbit-db.mjs",
+    "db:generate-seed": "node --import ./scripts/register-alias.mjs --experimental-strip-types ./scripts/generate-orbit-seed.ts",
     "prepare": "husky"
+  },
+  "prisma": {
+    "seed": "node --import ./scripts/register-alias.mjs --experimental-strip-types ./prisma/seed.ts"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -67,8 +72,5 @@
     "prisma": "^6.19.3",
     "tailwindcss": "^4",
     "typescript": "^5"
-  },
-  "prisma": {
-    "seed": "node prisma/seed.cjs"
   }
 }

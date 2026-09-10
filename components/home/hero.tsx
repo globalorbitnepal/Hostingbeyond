@@ -1,49 +1,87 @@
 "use client";
 
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useMemo, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
-import { ArrowRight, ChevronDown, Globe2 } from "lucide-react";
+import { ArrowRight, ChevronDown, Search } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 
-import { heroDomainTeasers, heroTldOptions } from "@/config/domain-teasers";
+import { heroTldOptions } from "@/config/domain-teasers";
 import { routes } from "@/config/routes";
-import { useLocale } from "@/components/locale/locale-provider";
-import { GlowButton } from "@/components/shared/glow-button";
+import { HeroFeatureBar } from "@/components/home/hero-feature-bar";
 import { cn } from "@/lib/utils";
 import type { CmsHeroContent } from "@/lib/orbit/defaults";
 
-/**
- * Exact first-viewport composition matching the HostingBeyond brand mockup.
- * Copy / layout intentionally mirrors the attached reference.
- */
-const REF = {
-  line1: "Built for Speed.",
-  line2: "Secured for You.",
-  line3: "Beyond Limits.",
-  description:
-    "Premium hosting infrastructure for ambitious ideas and growing businesses.",
-  searchPlaceholder: "Find your perfect domain name",
-};
+const FALLBACK_TEASERS = [
+  { tld: ".com", priceLabel: "$7.99/yr", visible: true },
+  { tld: ".net", priceLabel: "$6.99/yr", visible: true },
+  { tld: ".org", priceLabel: "$5.99/yr", visible: true },
+  { tld: ".dev", priceLabel: "$3.99/yr", visible: true },
+] as const;
+
+const SCENE_SRC = "/images/hero-speaker-scene-v3.png";
+
+function SceneImage({ className }: { className?: string }) {
+  return (
+    <Image
+      src={`${SCENE_SRC}?v=mix16`}
+      alt=""
+      fill
+      priority
+      unoptimized
+      sizes="(max-width: 1024px) 100vw, 70vw"
+      className={cn("scale-[1.04] object-cover object-[50%_6%]", className)}
+    />
+  );
+}
 
 export function HeroSection({ content }: { content?: CmsHeroContent }) {
   const reduceMotion = useReducedMotion();
-  const { preferences } = useLocale();
   const [domain, setDomain] = useState("");
-  const [tld, setTld] = useState<(typeof heroTldOptions)[number]>(".com");
 
-  const isEn = preferences.language === "en";
-  const imageSrc = content?.backgroundImage || "/images/hero-speaker.png";
+  const eyebrow = content?.eyebrow || "SIMPLE • SECURE • SCALABLE";
+  const headline = content?.headline || "Host Your Ideas";
+  const accent = (content?.headlineAccent || "Beyond Limits").replace(
+    /\.$/,
+    "",
+  );
+  const description =
+    content?.description ||
+    "Reliable hosting, powerful infrastructure and the freedom to build what's next.";
+  const searchPlaceholder =
+    content?.searchPlaceholder || "Find your perfect domain name...";
+  const searchButtonLabel = content?.searchButtonLabel || "Search";
 
-  const line1 = isEn ? REF.line1 : (content?.headline ?? REF.line1);
-  const line2 = isEn ? REF.line2 : "";
-  const line3 = isEn ? REF.line3 : (content?.headlineAccent ?? REF.line3);
-  const description = isEn
-    ? REF.description
-    : (content?.description ?? REF.description);
-  const searchPlaceholder = isEn
-    ? REF.searchPlaceholder
-    : (content?.searchPlaceholder ?? REF.searchPlaceholder);
+  const teasers = useMemo(() => {
+    const fromCms = (content?.domainPricing ?? []).filter(
+      (item) => item.visible !== false && item.tld.trim(),
+    );
+    const preferred = [".com", ".net", ".org", ".dev"];
+    if (fromCms.length) {
+      const normalized = fromCms.map((item) => ({
+        ...item,
+        tld: item.tld.startsWith(".") ? item.tld : `.${item.tld}`,
+      }));
+      const picked = preferred
+        .map((tld) => normalized.find((item) => item.tld === tld))
+        .filter(Boolean) as typeof normalized;
+      if (picked.length >= 4) return picked.slice(0, 4);
+      return normalized.slice(0, 4);
+    }
+    return [...FALLBACK_TEASERS];
+  }, [content?.domainPricing]);
+
+  const tldChoices = useMemo(() => {
+    const fromTeasers = teasers.map((item) =>
+      item.tld.startsWith(".") ? item.tld : `.${item.tld}`,
+    );
+    const merged = [...fromTeasers];
+    for (const option of heroTldOptions) {
+      if (!merged.includes(option)) merged.push(option);
+    }
+    return merged;
+  }, [teasers]);
+
+  const [tld, setTld] = useState(tldChoices[0] || ".com");
 
   const onSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -55,227 +93,180 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
   };
 
   return (
-    <section className="relative isolate flex min-h-0 flex-1 flex-col overflow-hidden bg-[#050816]">
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[#050816]" />
-        <div className="absolute top-[-10%] left-[-8%] h-[28rem] w-[28rem] rounded-full bg-[radial-gradient(circle,rgb(37_99_235_/_0.16),transparent_70%)] blur-3xl" />
-        <div className="absolute top-[5%] right-[-5%] h-[32rem] w-[32rem] rounded-full bg-[radial-gradient(circle,rgb(124_58_237_/_0.14),transparent_72%)] blur-3xl" />
-        <div className="absolute bottom-[10%] left-[20%] h-[18rem] w-[18rem] rounded-full bg-[radial-gradient(circle,rgb(59_130_246_/_0.08),transparent_70%)] blur-3xl" />
+    <section className="relative z-10 flex min-h-0 flex-1 flex-col">
+      {/* Desktop scene — zoom locked */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute top-0 right-0 bottom-[58px] z-[1] hidden overflow-hidden lg:left-[36%] lg:block lg:w-auto"
+      >
+        <motion.div
+          initial={reduceMotion ? false : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.55 }}
+          className="absolute inset-0"
+          style={{
+            WebkitMaskImage:
+              "linear-gradient(to right, transparent 0%, #000 5.5%, #000 93%, transparent 100%), linear-gradient(to bottom, transparent 0%, #000 6%, #000 100%)",
+            WebkitMaskComposite: "source-in",
+            maskImage:
+              "linear-gradient(to right, transparent 0%, #000 5.5%, #000 93%, transparent 100%), linear-gradient(to bottom, transparent 0%, #000 6%, #000 100%)",
+            maskComposite: "intersect",
+          }}
+        >
+          <SceneImage />
+        </motion.div>
+        <div className="absolute inset-y-0 left-0 z-[2] w-[2.2%] bg-gradient-to-r from-[#b5d3f2] from-[40%] to-transparent" />
+        <div className="absolute inset-x-0 top-0 z-[2] h-[4%] bg-gradient-to-b from-[#b5d3f2] from-[35%] to-transparent" />
+        <div className="absolute inset-y-0 right-0 z-[2] w-[2.8%] bg-gradient-to-l from-[#b5d3f2] from-[40%] to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 z-[2] h-[5%] bg-gradient-to-t from-[#b5d3f2] via-[#b5d3f2]/30 to-transparent" />
       </div>
 
-      {/* Hero body — fills remaining viewport above domain search */}
-      <div className="relative z-10 mx-auto grid min-h-0 w-full max-w-[1520px] flex-1 grid-cols-1 items-center px-[3.5%] pt-5 pb-3 lg:grid-cols-[minmax(0,0.46fr)_minmax(0,0.54fr)] lg:gap-4 lg:pt-4 lg:pb-2 xl:pt-5">
-        {/* LEFT copy */}
-        <div className="relative z-20 max-w-[560px] min-w-0 py-2">
-          <h1 className="font-heading text-[clamp(2.35rem,4.8vw,4.35rem)] leading-[1.02] font-extrabold tracking-[-0.035em] text-white">
-            <motion.span
-              initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="block"
-            >
-              {line1}
-            </motion.span>
-            {line2 ? (
-              <motion.span
-                initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  delay: 0.06,
-                  duration: 0.4,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-                className="block"
-              >
-                {line2}
-              </motion.span>
-            ) : null}
-            <motion.span
-              initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                delay: 0.12,
-                duration: 0.45,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-              className={cn(
-                "block bg-clip-text text-transparent",
-                reduceMotion
-                  ? "bg-gradient-to-r from-[#3b82f6] via-[#6366f1] to-[#a855f7]"
-                  : "hb-hero-gradient",
-              )}
-            >
-              {line3}
-            </motion.span>
-          </h1>
+      <div className="relative z-20 mx-auto grid w-full max-w-[1360px] flex-1 grid-cols-1 px-[4%] pt-3 pb-3 sm:px-[3%] sm:pt-2 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center lg:pb-2">
+        <div className="relative max-w-[520px] self-center lg:pb-6">
+          <motion.p
+            initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-[10px] font-bold tracking-[0.2em] text-slate-500 uppercase sm:text-[12px]"
+          >
+            {eyebrow}
+          </motion.p>
+
+          <motion.h1
+            initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.04 }}
+            className="font-heading mt-2 text-[clamp(1.85rem,7.2vw,3.55rem)] leading-[1.08] font-extrabold tracking-[-0.04em] text-slate-950"
+          >
+            <span className="block">{headline}</span>
+            <span className="mt-0.5 block bg-gradient-to-r from-[#7c3aed] via-[#4f46e5] to-[#2563eb] bg-clip-text text-transparent">
+              {accent}
+            </span>
+          </motion.h1>
 
           <motion.p
             initial={reduceMotion ? false : { opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.18, duration: 0.35 }}
-            className="mt-5 flex max-w-[480px] items-start gap-3 text-[15px] leading-[1.55] font-medium text-[#c5cddc] sm:text-[16px] lg:mt-6"
+            transition={{ delay: 0.08 }}
+            className="mt-3 max-w-[430px] text-[14px] leading-relaxed text-slate-600 sm:text-[15.5px]"
           >
-            <span
-              aria-hidden
-              className="mt-2 h-[2px] w-8 shrink-0 rounded-full bg-gradient-to-r from-[#6366f1] to-[#a855f7]"
-            />
-            <span>{description}</span>
+            {description}
           </motion.p>
 
-          <motion.div
-            initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.22, duration: 0.35 }}
-            className="mt-7 flex flex-wrap items-center gap-3.5 lg:mt-8"
-          >
-            <GlowButton
-              href={routes.getStarted}
-              size="lg"
-              className="h-[50px] min-w-[168px] rounded-2xl px-6 text-[14px] font-bold shadow-[0_0_28px_rgb(37_99_235_/_0.35)] sm:h-[52px]"
-            >
-              GET STARTED
-              <ArrowRight className="size-4" aria-hidden />
-            </GlowButton>
-            <Link
-              href={routes.hosting}
-              className="inline-flex h-[50px] min-w-[168px] items-center justify-center gap-2 rounded-2xl border border-[#7c3aed]/55 bg-transparent px-6 text-[14px] font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#7c3aed]/10 sm:h-[52px]"
-            >
-              EXPLORE PLANS
-              <ArrowRight className="size-4 text-[#a78bfa]" aria-hidden />
-            </Link>
-          </motion.div>
-        </div>
-
-        {/* RIGHT — large human visual (desktop) */}
-        <motion.div
-          initial={reduceMotion ? false : { opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.1, duration: 0.5 }}
-          className="relative hidden h-full min-h-0 w-full lg:block"
-        >
-          <div
-            aria-hidden
-            className="absolute top-[8%] right-[4%] h-[75%] w-[75%] rounded-full bg-[radial-gradient(circle,rgb(37_99_235_/_0.22),transparent_68%)] blur-3xl"
-          />
-          <div
-            aria-hidden
-            className="absolute right-[12%] bottom-[4%] h-[50%] w-[55%] rounded-full bg-[radial-gradient(circle,rgb(124_58_237_/_0.18),transparent_70%)] blur-3xl"
-          />
-          <div className="hb-hero-subject absolute inset-0 overflow-hidden">
-            <Image
-              src={imageSrc}
-              alt="HostingBeyond speaker"
-              fill
-              priority
-              quality={95}
-              sizes="(max-width: 1536px) 55vw, 780px"
-              className="object-contain object-[78%_20%] xl:object-cover xl:object-[72%_12%]"
-            />
-          </div>
-        </motion.div>
-
-        {/* Mobile image */}
-        <div className="relative mx-auto mt-2 h-[220px] w-full max-w-[380px] sm:h-[260px] lg:hidden">
-          <div className="hb-hero-subject relative h-full w-full overflow-hidden">
-            <Image
-              src={imageSrc}
-              alt="HostingBeyond speaker"
-              fill
-              priority
-              quality={90}
-              sizes="90vw"
-              className="object-cover object-[65%_10%]"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Domain search — locked to bottom of first viewport */}
-      <motion.div
-        initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.26, duration: 0.4 }}
-        className="relative z-20 mx-auto w-full max-w-[1520px] shrink-0 px-[3.5%] pb-4 lg:pb-5"
-      >
-        <div className="rounded-[20px] border border-[rgba(90,120,255,0.28)] bg-[rgba(8,12,26,0.88)] px-4 py-3.5 shadow-[0_16px_50px_rgba(0,0,0,0.4),inset_0_1px_0_rgb(255_255_255_/_0.05)] backdrop-blur-xl sm:px-5 sm:py-4">
-          <form
+          <motion.form
             onSubmit={onSearch}
-            className="flex flex-col gap-2.5 lg:flex-row lg:items-center lg:gap-3"
+            initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.12 }}
+            className="mt-5 flex w-full max-w-[500px] flex-col gap-1.5 rounded-[22px] border border-white/80 bg-white/90 p-2 shadow-[0_14px_40px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,0.95)] backdrop-blur-xl sm:flex-row sm:items-center sm:gap-1.5 sm:rounded-full sm:p-1.5"
           >
-            <div className="flex min-w-0 flex-1 items-center gap-2.5 rounded-2xl border border-white/12 bg-black/50 px-3.5 focus-within:border-[#3b82f6]/55 focus-within:shadow-[0_0_0_3px_rgb(37_99_235_/_0.14)] sm:px-4">
-              <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#2563eb]/25 text-[#60a5fa]">
-                <Globe2 className="size-4" aria-hidden />
-              </span>
-              <label htmlFor="hero-domain-search" className="sr-only">
-                {searchPlaceholder}
-              </label>
-              <input
-                id="hero-domain-search"
-                type="text"
-                value={domain}
-                onChange={(event) => setDomain(event.target.value)}
-                placeholder={searchPlaceholder}
-                className="min-w-0 flex-1 bg-transparent py-[13px] text-[15px] text-white outline-none placeholder:text-white/40 sm:py-[14px] sm:text-[16px]"
+            <div className="flex min-w-0 flex-1 items-center gap-2 px-2 sm:px-3">
+              <Search
+                className="size-[18px] shrink-0 text-slate-400"
+                aria-hidden
               />
-              <div className="relative shrink-0">
+              <input
+                value={domain}
+                onChange={(e) => setDomain(e.target.value)}
+                placeholder={searchPlaceholder}
+                aria-label={searchPlaceholder}
+                className="min-w-0 flex-1 bg-transparent py-2 text-[14px] text-slate-800 outline-none placeholder:text-slate-400 sm:py-0 sm:text-[15px]"
+              />
+            </div>
+            <div className="flex items-center gap-1.5">
+              <label className="relative min-w-0 flex-1 sm:flex-none">
+                <span className="sr-only">Domain extension</span>
                 <select
                   value={tld}
-                  onChange={(event) => setTld(event.target.value as typeof tld)}
-                  className="h-[42px] appearance-none rounded-xl border border-white/12 bg-white/[0.05] py-2 pr-8 pl-3 text-[13px] font-bold text-white outline-none focus:border-[#3b82f6]/45 sm:h-[46px]"
-                  aria-label="Domain extension"
+                  onChange={(e) => setTld(e.target.value)}
+                  className="h-11 w-full appearance-none rounded-full border border-slate-200/80 bg-slate-50/90 py-0 pr-8 pl-3 text-[13px] font-semibold text-slate-700 outline-none sm:h-10 sm:w-auto"
                 >
-                  {heroTldOptions.map((option) => (
-                    <option
-                      key={option}
-                      value={option}
-                      className="bg-[#0a1020]"
-                    >
+                  {tldChoices.map((option) => (
+                    <option key={option} value={option}>
                       {option}
                     </option>
                   ))}
                 </select>
                 <ChevronDown
-                  className="pointer-events-none absolute top-1/2 right-2.5 size-3.5 -translate-y-1/2 text-white/50"
+                  className="pointer-events-none absolute top-1/2 right-2.5 size-3.5 -translate-y-1/2 text-slate-400"
                   aria-hidden
                 />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              className="inline-flex h-[50px] w-full shrink-0 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-6 text-[13px] font-bold tracking-wide text-white uppercase shadow-[0_0_26px_rgb(37_99_235_/_0.32)] transition hover:-translate-y-0.5 hover:brightness-110 sm:h-[52px] lg:w-[200px]"
-            >
-              SEARCH DOMAIN
-              <ArrowRight className="size-4" aria-hidden />
-            </button>
-          </form>
-
-          <div className="mt-3 flex items-center gap-2 overflow-x-auto pb-0.5">
-            {heroDomainTeasers.map((item) => (
+              </label>
               <button
-                key={item.tld}
-                type="button"
-                onClick={() => setTld(item.tld as typeof tld)}
-                className={cn(
-                  "inline-flex shrink-0 items-center gap-2 rounded-xl border px-3 py-1.5 text-[12px] font-semibold transition",
-                  tld === item.tld
-                    ? "border-[#3b82f6]/45 bg-[#2563eb]/15 text-white"
-                    : "border-white/10 bg-white/[0.03] text-white/75 hover:border-white/20 hover:text-white",
-                )}
+                type="submit"
+                className="inline-flex h-11 flex-1 items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-[#7c3aed] to-[#2563eb] px-4 text-[13.5px] font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.28)] transition hover:brightness-105 sm:h-10 sm:flex-none sm:px-5"
               >
-                <span className="font-bold text-[#93c5fd]">{item.tld}</span>
-                <span className="text-white/55">{item.priceLabel}</span>
+                {searchButtonLabel}
+                <ArrowRight className="size-4" aria-hidden />
               </button>
-            ))}
-            <Link
-              href={routes.domains}
-              className="ml-auto shrink-0 text-[12px] font-bold whitespace-nowrap text-[#60a5fa] transition hover:text-[#93c5fd] sm:text-[13px]"
-            >
-              View all domains →
-            </Link>
+            </div>
+          </motion.form>
+
+          <motion.div
+            initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.16 }}
+            className="mt-3 flex max-w-[500px] [scrollbar-width:none] flex-nowrap items-center gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden"
+          >
+            {teasers.map((item) => {
+              const value = item.tld.startsWith(".")
+                ? item.tld
+                : `.${item.tld}`;
+              const active = value === tld;
+              return (
+                <button
+                  key={item.tld}
+                  type="button"
+                  onClick={() => setTld(value)}
+                  className={cn(
+                    "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12.5px] shadow-[0_4px_14px_rgba(15,23,42,0.04)] transition sm:px-3.5 sm:text-[13px]",
+                    active
+                      ? "border-sky-300 bg-sky-50"
+                      : "border-slate-200/90 bg-white hover:border-sky-200",
+                  )}
+                >
+                  <span className="font-extrabold text-[#2563eb]">{value}</span>
+                  <span className="font-bold text-slate-600">
+                    {item.priceLabel}
+                  </span>
+                </button>
+              );
+            })}
+          </motion.div>
+        </div>
+
+        {/* Mobile speaker — clear, uncropped, below copy */}
+        <motion.div
+          initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.14 }}
+          className="relative mt-5 w-full lg:hidden"
+          aria-hidden
+        >
+          <div className="relative mx-auto aspect-[5/4] w-full max-w-[560px] overflow-hidden rounded-[28px]">
+            <SceneImage />
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-[12%] bg-gradient-to-r from-[#b5d3f2] to-transparent" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-[10%] bg-gradient-to-l from-[#b5d3f2] to-transparent" />
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-[10%] bg-gradient-to-b from-[#b5d3f2] to-transparent" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[14%] bg-gradient-to-t from-[#b5d3f2] to-transparent" />
+          </div>
+        </motion.div>
+
+        <div className="hidden lg:block" aria-hidden />
+      </div>
+
+      {/* Slim feature glass bar */}
+      <div className="relative z-30 mt-auto shrink-0 bg-[#b5d3f2] px-[3%] pt-1 pb-4 sm:px-[2.5%] sm:pb-4">
+        <div className="pointer-events-none absolute inset-x-0 -top-8 h-8 bg-gradient-to-b from-transparent to-[#b5d3f2]" />
+        <div className="relative mx-auto max-w-[1240px] overflow-hidden rounded-[22px] border border-[#7aadd8]/70 bg-[linear-gradient(180deg,rgba(165,200,232,0.92)_0%,rgba(181,211,242,0.82)_48%,rgba(170,205,236,0.88)_100%)] shadow-[0_8px_24px_rgba(60,120,170,0.16)] backdrop-blur-xl lg:rounded-full">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 rounded-[22px] bg-[radial-gradient(ellipse_at_50%_0%,rgba(140,195,235,0.4),transparent_58%)] lg:rounded-full"
+          />
+          <div className="relative">
+            <HeroFeatureBar />
           </div>
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 }
