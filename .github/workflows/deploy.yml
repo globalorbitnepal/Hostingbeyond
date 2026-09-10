@@ -62,7 +62,7 @@ jobs:
           fi
 
           python3 - <<'PY'
-          import os, pathlib, re, sys
+          import os, re, sys
 
           def fail(msg: str) -> None:
               print(msg)
@@ -95,9 +95,6 @@ jobs:
           if "Proc-Type: 4,ENCRYPTED" in raw:
               fail("SSH_KEY_FAIL: VPS_SSH_KEY is encrypted; use an unencrypted deploy key (do not put a passphrase key in Actions)")
 
-          key_path = pathlib.Path(os.environ["RUNNER_TEMP"]) / "hostingbeyond_gha_ssh_key"
-          key_path.write_text(raw)
-          key_path.chmod(0o600)
           print("SSH preflight passed: identity and key shape OK")
           PY
 
@@ -106,7 +103,7 @@ jobs:
         with:
           host: ${{ secrets.VPS_HOST }}
           username: sysadmin
-          key_path: ${{ runner.temp }}/hostingbeyond_gha_ssh_key
+          key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
           protocol: tcp4
           timeout: 30s
