@@ -177,16 +177,16 @@ jobs:
 
           echo "==> Installing dependencies"
           if [ -f package-lock.json ]; then
-            npm ci
+            npm ci </dev/null
           else
-            npm install
+            npm install </dev/null
           fi
 
           echo "==> Typecheck"
-          npm run typecheck
+          npm run typecheck </dev/null
 
           echo "==> Building production bundle"
-          npm run build
+          npm run build </dev/null
 
           echo "==> Restarting ONLY existing HostingBeyond PM2 process"
           sudo -n -u hostingbeyond -H /usr/local/sbin/hostingbeyond-ctl restart
