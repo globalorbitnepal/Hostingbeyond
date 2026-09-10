@@ -4,6 +4,7 @@ import {
   createAdminSession,
   createJwtOnlySession,
   ensureOrbitAdmin,
+  getEnrollmentSecret,
   logActivity,
   ORBIT_SESSION_COOKIE,
   SESSION_TTL_MS,
@@ -20,6 +21,14 @@ export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as { accessKey?: string };
     const accessKey = body.accessKey?.trim() ?? "";
+
+    if (!getEnrollmentSecret()) {
+      console.error("[orbit] ORBIT_ENROLLMENT_SECRET is not loaded");
+      return NextResponse.json(
+        { error: "Orbit access is not configured on the server" },
+        { status: 503 },
+      );
+    }
 
     if (!verifyEnrollmentSecret(accessKey)) {
       await logActivity({

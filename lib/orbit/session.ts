@@ -3,6 +3,7 @@ import { createHash, randomBytes, timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/prisma";
 
 import { SESSION_TTL_MS, signOrbitJwt, verifyOrbitJwt } from "./jwt";
+import { hydrateOrbitEnvFromFile } from "./load-orbit-env";
 
 export { ORBIT_SESSION_COOKIE, SESSION_TTL_MS, verifyOrbitJwt } from "./jwt";
 
@@ -21,10 +22,29 @@ export function safeEqualString(a: string, b: string) {
   return timingSafeEqual(left, right);
 }
 
+export function getEnrollmentSecret() {
+  hydrateOrbitEnvFromFile();
+  return process.env.ORBIT_ENROLLMENT_SECRET?.trim() ?? "";
+}
+
 export function verifyEnrollmentSecret(candidate: string) {
-  const expected = process.env.ORBIT_ENROLLMENT_SECRET;
-  if (!expected || !candidate) return false;
-  return safeEqualString(hashSecret(candidate), hashSecret(expected));
+  const expected = getEnrollmentSecret();
+  const input = candidate.trim();
+  if (!expected || !input) return false;
+
+  if (safeEqualString(hashSecret(input), hashSecret(expected))) {
+    return true;
+  }
+
+  // Compatibility: some deployments stored sha256(accessKey) in .env
+  if (
+    /^[0-9a-f]{64}$/i.test(expected) &&
+    safeEqualString(hashSecret(input), expected.toLowerCase())
+  ) {
+    return true;
+  }
+
+  return false;
 }
 
 export async function ensureOrbitAdmin() {
