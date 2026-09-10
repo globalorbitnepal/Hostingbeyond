@@ -2,8 +2,6 @@ import { SiteHeader } from "@/components/layout";
 import {
   HeroSection,
   HostingPlansSection,
-  HostingTypesSection,
-  ProductsSection,
   SolutionsSection,
 } from "@/components/home";
 import { PartnerLogoStrip } from "@/components/home/partner-logo-strip";
@@ -45,12 +43,6 @@ export default async function HomePage() {
       ) : null}
       <PartnerLogoStrip partners={sections.hero.technologyPartners} />
 
-      {sections.products.visible ? (
-        <ProductsSection content={sections.products} />
-      ) : null}
-      {sections.hostingTypes?.visible !== false ? (
-        <HostingTypesSection content={sections.hostingTypes} />
-      ) : null}
       {sections.hostingPlans?.visible !== false ? (
         <HostingPlansSection content={sections.hostingPlans} />
       ) : null}
