@@ -48,6 +48,7 @@ jobs:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_USER: ${{ secrets.VPS_USER }}
           VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
         run: |
           set -euo pipefail
           missing=0
@@ -59,15 +60,56 @@ jobs:
             echo "Do not put those values in the workflow file."
             exit 1
           fi
-          echo "Required GitHub SSH secrets are present"
+
+          python3 - <<'PY'
+          import os, pathlib, re, sys
+
+          def fail(msg: str) -> None:
+              print(msg)
+              sys.exit(1)
+
+          host = os.environ.get("VPS_HOST", "").strip()
+          user = os.environ.get("VPS_USER", "").strip()
+          port = os.environ.get("VPS_PORT", "").strip() or "22"
+          key = os.environ.get("VPS_SSH_KEY", "")
+
+          if host != "51.15.21.166":
+              fail("SSH_IDENTITY_FAIL: VPS_HOST must be the HostingBeyond production IPv4 address")
+          if "@" in host:
+              fail("SSH_IDENTITY_FAIL: VPS_HOST must be an IP/hostname only, not user@host")
+          if user != "sysadmin":
+              fail("SSH_IDENTITY_FAIL: VPS_USER must be exactly sysadmin (no extra whitespace)")
+          if port != "22":
+              fail("SSH_IDENTITY_FAIL: VPS_PORT must be 22")
+
+          raw = key.replace("\r\n", "\n").replace("\r", "\n").strip()
+          if raw.count("\n") < 2 and "\\n" in raw:
+              raw = raw.replace("\\n", "\n")
+          if raw.count("\n") < 2 and "BEGIN" in raw and "END" in raw:
+              raw = re.sub(r"[ \t]+", "\n", raw)
+          if not raw.endswith("\n"):
+              raw += "\n"
+
+          if "BEGIN" not in raw or "PRIVATE KEY" not in raw or "END" not in raw:
+              fail("SSH_KEY_FAIL: VPS_SSH_KEY is not a PEM/OpenSSH private key (missing BEGIN/END PRIVATE KEY)")
+          if "Proc-Type: 4,ENCRYPTED" in raw:
+              fail("SSH_KEY_FAIL: VPS_SSH_KEY is encrypted; use an unencrypted deploy key (do not put a passphrase key in Actions)")
+
+          key_path = pathlib.Path(os.environ["RUNNER_TEMP"]) / "hostingbeyond_gha_ssh_key"
+          key_path.write_text(raw)
+          key_path.chmod(0o600)
+          print("SSH preflight passed: identity and key shape OK")
+          PY
 
       - name: Deploy HostingBeyond to VPS
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT != '' && secrets.VPS_PORT || 22 }}
+          username: sysadmin
+          key_path: ${{ runner.temp }}/hostingbeyond_gha_ssh_key
+          port: 22
+          protocol: tcp4
+          timeout: 30s
           script_stop: true
           command_timeout: 15m
           script: |
