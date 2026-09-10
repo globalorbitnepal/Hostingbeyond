@@ -6,11 +6,14 @@ export const ORBIT_SESSION_COOKIE = "hb_orbit_session";
 export const SESSION_TTL_MS = 1000 * 60 * 60 * 12;
 
 export function sessionSecret() {
-  const value =
-    process.env.ORBIT_SESSION_SECRET ||
-    process.env.ORBIT_ENROLLMENT_SECRET ||
-    "hostingbeyond-orbit-dev-secret-change-me";
-  return new TextEncoder().encode(value);
+  const value = process.env.ORBIT_SESSION_SECRET?.trim();
+  if (value) return new TextEncoder().encode(value);
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("ORBIT_SESSION_SECRET is required in production");
+  }
+
+  return new TextEncoder().encode("hostingbeyond-orbit-dev-secret-change-me");
 }
 
 export async function signOrbitJwt(payload: {

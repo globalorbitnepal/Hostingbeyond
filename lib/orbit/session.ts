@@ -102,6 +102,7 @@ export async function destroyAdminSession(token: string | undefined) {
 }
 
 export async function getSessionAdmin(token: string | undefined) {
+  hydrateOrbitEnvFromFile();
   const verified = await verifyOrbitJwt(token);
   if (!verified) return null;
 

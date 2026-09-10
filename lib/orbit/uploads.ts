@@ -28,9 +28,18 @@ const ALLOWED_MIME = new Set([
 
 const ALLOWED_EXT = new Set(Object.keys(UPLOAD_MIME));
 
+const PRODUCTION_UPLOAD_DIR = "/data/hostingbeyond/uploads";
+
 function uploadDirCandidates() {
+  const fromEnv = process.env.ORBIT_UPLOAD_DIR?.trim();
+  if (process.env.NODE_ENV === "production") {
+    const dirs: string[] = [];
+    if (fromEnv) dirs.push(fromEnv);
+    if (!dirs.includes(PRODUCTION_UPLOAD_DIR)) dirs.push(PRODUCTION_UPLOAD_DIR);
+    return dirs;
+  }
   return [
-    process.env.ORBIT_UPLOAD_DIR,
+    fromEnv,
     path.join(process.cwd(), "data", "uploads"),
     path.join(os.homedir(), "hostingbeyond-uploads"),
   ].filter((dir): dir is string => Boolean(dir));

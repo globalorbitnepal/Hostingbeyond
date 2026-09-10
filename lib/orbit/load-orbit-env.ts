@@ -19,7 +19,7 @@ function parseEnvLine(line: string): [string, string] | null {
 }
 
 /**
- * Load ORBIT_ENROLLMENT_SECRET from `.env` at request time.
+ * Load Orbit secrets from `.env` at request time.
  * The file is the source of truth so a stale process env cannot keep an
  * old access key after `.env` is updated. Never logs values.
  */
@@ -37,14 +37,19 @@ export function hydrateOrbitEnvFromFile() {
       continue;
     }
 
+    let enrollment = "";
+    let session = "";
     for (const line of text.split(/\r?\n/)) {
       const pair = parseEnvLine(line);
-      if (pair?.[0] !== "ORBIT_ENROLLMENT_SECRET") continue;
+      if (!pair) continue;
       const value = pair[1].trim();
-      if (value) {
-        process.env.ORBIT_ENROLLMENT_SECRET = value;
-      }
-      return;
+      if (!value) continue;
+      if (pair[0] === "ORBIT_ENROLLMENT_SECRET") enrollment = value;
+      if (pair[0] === "ORBIT_SESSION_SECRET") session = value;
     }
+
+    if (enrollment) process.env.ORBIT_ENROLLMENT_SECRET = enrollment;
+    if (session) process.env.ORBIT_SESSION_SECRET = session;
+    if (enrollment || session) return;
   }
 }

@@ -10,7 +10,7 @@ export const siteConfig = {
   url:
     process.env.NEXT_PUBLIC_SITE_URL ??
     process.env.NEXT_PUBLIC_APP_URL ??
-    "https://beyond.theglobalorbit.com",
+    "https://hosting.theglobalorbit.com",
   locale: "en_US",
   twitterHandle: "@hostingbeyond",
 } as const;

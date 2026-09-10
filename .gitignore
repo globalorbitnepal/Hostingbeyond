@@ -34,6 +34,12 @@ yarn-error.log*
 .env.production
 .env.development
 
+# Session/cookie dumps — never commit
+headers.txt
+
+# Production upload tree (outside the Git checkout)
+/data/hostingbeyond/
+
 # Uploads (runtime media — keep folder, ignore files)
 /public/uploads/*
 !/public/uploads/.gitkeep
