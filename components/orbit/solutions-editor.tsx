@@ -23,22 +23,35 @@ const ICONS: CmsSolutionProduct["icon"][] = [
 type Props = {
   value: CmsSolutionsContent;
   onChange: (value: CmsSolutionsContent) => void;
+  onPersist?: (value: CmsSolutionsContent) => void;
 };
 
-export function SolutionsEditor({ value, onChange }: Props) {
+export function SolutionsEditor({ value, onChange, onPersist }: Props) {
   const [openId, setOpenId] = useState<string | null>(value.products[0]?.id ?? null);
   const products = [...value.products].sort((a, b) => a.order - b.order);
 
-  function patchSection(patch: Partial<CmsSolutionsContent>) {
-    onChange({ ...value, ...patch });
+  function patchSection(
+    patch: Partial<CmsSolutionsContent>,
+    persist = false,
+  ) {
+    const next = { ...value, ...patch };
+    onChange(next);
+    if (persist) onPersist?.(next);
   }
 
-  function updateProduct(index: number, patch: Partial<CmsSolutionProduct>) {
+  function updateProduct(
+    index: number,
+    patch: Partial<CmsSolutionProduct>,
+    persist = false,
+  ) {
     const next = [...products];
     next[index] = { ...next[index], ...patch };
-    patchSection({
-      products: next.map((product, order) => ({ ...product, order })),
-    });
+    patchSection(
+      {
+        products: next.map((product, order) => ({ ...product, order })),
+      },
+      persist,
+    );
   }
 
   function moveProduct(index: number, direction: -1 | 1) {
@@ -52,10 +65,18 @@ export function SolutionsEditor({ value, onChange }: Props) {
     });
   }
 
-  function updateImages(index: number, images: CmsSolutionImage[]) {
-    updateProduct(index, {
-      images: images.map((image, order) => ({ ...image, order })),
-    });
+  function updateImages(
+    index: number,
+    images: CmsSolutionImage[],
+    persist = false,
+  ) {
+    updateProduct(
+      index,
+      {
+        images: images.map((image, order) => ({ ...image, order })),
+      },
+      persist,
+    );
   }
 
   return (
@@ -345,10 +366,18 @@ export function SolutionsEditor({ value, onChange }: Props) {
                               images[imageIndex] = { ...image, url };
                               updateImages(index, images);
                             }}
+                            onCommit={(url) => {
+                              const images = [...product.images];
+                              images[imageIndex] = { ...image, url };
+                              updateImages(index, images, true);
+                            }}
                             onDelete={() =>
                               updateImages(
                                 index,
-                                product.images.filter((_, i) => i !== imageIndex),
+                                product.images.filter(
+                                  (_, i) => i !== imageIndex,
+                                ),
+                                true,
                               )
                             }
                           />

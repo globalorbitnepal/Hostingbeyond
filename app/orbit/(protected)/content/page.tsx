@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { OrbitImageField } from "@/components/orbit/image-field";
 import { SolutionsEditor } from "@/components/orbit/solutions-editor";
@@ -18,6 +18,7 @@ import {
   type CmsProductOffer,
   type CmsTechPartner,
 } from "@/lib/orbit/defaults";
+import { readResponseError } from "@/lib/orbit/read-response-error";
 
 export default function OrbitContentPage() {
   const [sections, setSections] = useState<CmsHomeSections | null>(null);
@@ -25,6 +26,8 @@ export default function OrbitContentPage() {
   const [status, setStatus] = useState("");
   const [saving, setSaving] = useState(false);
   const [savingLogin, setSavingLogin] = useState(false);
+  const sectionsRef = useRef(sections);
+  sectionsRef.current = sections;
 
   useEffect(() => {
     void (async () => {
@@ -40,36 +43,81 @@ export default function OrbitContentPage() {
     })();
   }, []);
 
-  async function save() {
-    if (!sections) return;
+  async function save(nextSections?: CmsHomeSections) {
+    const payload = nextSections ?? sectionsRef.current;
+    if (!payload) return;
     setSaving(true);
     setStatus("");
-    const res = await fetch("/api/orbit/content/home", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sections }),
-    });
-    const json = await res.json();
-    setSaving(false);
-    setStatus(res.ok ? "Saved successfully" : json.error || "Save failed");
-    if (res.ok && json.sections) setSections(json.sections);
+    try {
+      const res = await fetch("/api/orbit/content/home", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sections: payload }),
+      });
+      if (!res.ok) {
+        const parsed = await readResponseError(res, "Save failed");
+        setSaving(false);
+        setStatus(parsed.text);
+        return;
+      }
+      const json = (await res.json()) as {
+        error?: string;
+        sections?: CmsHomeSections;
+      };
+      setSaving(false);
+      setStatus("Saved successfully");
+      if (json.sections) {
+        sectionsRef.current = json.sections;
+        setSections(json.sections);
+      }
+    } catch (error) {
+      setSaving(false);
+      setStatus(
+        error instanceof Error
+          ? `Save failed: ${error.message}`
+          : "Save failed",
+      );
+    }
   }
 
-  async function saveLogin() {
-    if (!login) return;
+  function commitHome(next: CmsHomeSections) {
+    sectionsRef.current = next;
+    setSections(next);
+    void save(next);
+  }
+
+  async function saveLogin(nextLogin?: CmsLoginPage) {
+    const payload = nextLogin ?? login;
+    if (!payload) return;
     setSavingLogin(true);
     setStatus("");
-    const res = await fetch("/api/orbit/content/login", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ login }),
-    });
-    const json = await res.json();
-    setSavingLogin(false);
-    setStatus(
-      res.ok ? "Login page saved successfully" : json.error || "Save failed",
-    );
-    if (res.ok && json.login) setLogin(json.login);
+    try {
+      const res = await fetch("/api/orbit/content/login", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ login: payload }),
+      });
+      if (!res.ok) {
+        const parsed = await readResponseError(res, "Login save failed");
+        setSavingLogin(false);
+        setStatus(parsed.text);
+        return;
+      }
+      const json = (await res.json()) as {
+        error?: string;
+        login?: CmsLoginPage;
+      };
+      setSavingLogin(false);
+      setStatus("Login page saved successfully");
+      if (json.login) setLogin(json.login);
+    } catch (error) {
+      setSavingLogin(false);
+      setStatus(
+        error instanceof Error
+          ? `Login save failed: ${error.message}`
+          : "Login save failed",
+      );
+    }
   }
 
   function updateOffer(index: number, patch: Partial<CmsProductOffer>) {
@@ -141,7 +189,17 @@ export default function OrbitContentPage() {
         </div>
       </div>
 
-      {status ? <p className="text-sm text-emerald-700">{status}</p> : null}
+      {status ? (
+        <p
+          className={
+            /fail|error|could not/i.test(status)
+              ? "whitespace-pre-wrap text-sm text-red-600"
+              : "text-sm text-emerald-700"
+          }
+        >
+          {status}
+        </p>
+      ) : null}
 
       {/* HERO */}
       <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5">
@@ -245,6 +303,14 @@ export default function OrbitContentPage() {
                 hero: { ...sections.hero, speakerImage: url },
               })
             }
+            onCommit={(url) => {
+              const current = sectionsRef.current;
+              if (!current) return;
+              commitHome({
+                ...current,
+                hero: { ...current.hero, speakerImage: url },
+              });
+            }}
           />
           <OrbitImageField
             label="Hero atmosphere / background plate"
@@ -255,6 +321,14 @@ export default function OrbitContentPage() {
                 hero: { ...sections.hero, backgroundImage: url },
               })
             }
+            onCommit={(url) => {
+              const current = sectionsRef.current;
+              if (!current) return;
+              commitHome({
+                ...current,
+                hero: { ...current.hero, backgroundImage: url },
+              });
+            }}
           />
         </div>
         <div className="grid gap-3 md:grid-cols-2">
@@ -431,6 +505,19 @@ export default function OrbitContentPage() {
               hero: { ...sections.hero, technologyPartners },
             })
           }
+          onImageCommit={(index, url) => {
+            const current = sectionsRef.current;
+            if (!current) return;
+            const partners = [
+              ...(current.hero.technologyPartners ??
+                defaultTechnologyPartners()),
+            ];
+            partners[index] = { ...partners[index], imageUrl: url };
+            commitHome({
+              ...current,
+              hero: { ...current.hero, technologyPartners: partners },
+            });
+          }}
         />
       </section>
 
@@ -438,6 +525,11 @@ export default function OrbitContentPage() {
         <SolutionsEditor
           value={sections.solutions}
           onChange={(solutions) => setSections({ ...sections, solutions })}
+          onPersist={(solutions) => {
+            const current = sectionsRef.current;
+            if (!current) return;
+            commitHome({ ...current, solutions });
+          }}
         />
       ) : null}
 
@@ -640,11 +732,33 @@ export default function OrbitContentPage() {
                 label="Card icon image"
                 value={offer.iconUrl ?? ""}
                 onChange={(url) => updateOffer(index, { iconUrl: url })}
+                onCommit={(url) => {
+                  const current = sectionsRef.current;
+                  if (!current) return;
+                  const offers = [...current.products.offers];
+                  offers[index] = { ...offers[index], iconUrl: url };
+                  commitHome({
+                    ...current,
+                    products: { ...current.products, offers },
+                  });
+                }}
               />
               <OrbitImageField
                 label="Card illustration image"
                 value={offer.illustrationUrl ?? ""}
-                onChange={(url) => updateOffer(index, { illustrationUrl: url })}
+                onChange={(url) =>
+                  updateOffer(index, { illustrationUrl: url })
+                }
+                onCommit={(url) => {
+                  const current = sectionsRef.current;
+                  if (!current) return;
+                  const offers = [...current.products.offers];
+                  offers[index] = { ...offers[index], illustrationUrl: url };
+                  commitHome({
+                    ...current,
+                    products: { ...current.products, offers },
+                  });
+                }}
               />
             </div>
           </div>
@@ -692,6 +806,20 @@ export default function OrbitContentPage() {
                 hostingTypes: {
                   ...sections.hostingTypes,
                   visible: sections.hostingTypes?.visible !== false,
+                  cards,
+                },
+              });
+            }}
+            onImageCommit={(url) => {
+              const current = sectionsRef.current;
+              if (!current) return;
+              const cards = [...(current.hostingTypes?.cards ?? [])];
+              cards[index] = { ...cards[index], imageUrl: url };
+              commitHome({
+                ...current,
+                hostingTypes: {
+                  ...current.hostingTypes,
+                  visible: current.hostingTypes?.visible !== false,
                   cards,
                 },
               });
@@ -1041,11 +1169,21 @@ export default function OrbitContentPage() {
               label="Logo image"
               value={login.logoPath}
               onChange={(url) => setLogin({ ...login, logoPath: url })}
+              onCommit={(url) => {
+                const next = { ...login, logoPath: url };
+                setLogin(next);
+                void saveLogin(next);
+              }}
             />
             <OrbitImageField
               label="Background image (right side)"
               value={login.backgroundImage}
               onChange={(url) => setLogin({ ...login, backgroundImage: url })}
+              onCommit={(url) => {
+                const next = { ...login, backgroundImage: url };
+                setLogin(next);
+                void saveLogin(next);
+              }}
             />
             <Field
               label="Tagline under logo"
@@ -1317,10 +1455,12 @@ export default function OrbitContentPage() {
 function HostingTypeCardEditor({
   card,
   onChange,
+  onImageCommit,
   onMove,
 }: {
   card: CmsHostingTypeCard;
   onChange: (patch: Partial<CmsHostingTypeCard>) => void;
+  onImageCommit?: (url: string) => void;
   onMove: (direction: -1 | 1) => void;
 }) {
   return (
@@ -1441,6 +1581,7 @@ function HostingTypeCardEditor({
         label="In-card image (fills bottom of glass box)"
         value={card.imageUrl}
         onChange={(url) => onChange({ imageUrl: url })}
+        onCommit={onImageCommit}
       />
     </div>
   );
@@ -1749,9 +1890,11 @@ function DomainPricingEditor({
 function TechPartnersEditor({
   partners,
   onChange,
+  onImageCommit,
 }: {
   partners: CmsTechPartner[];
   onChange: (partners: CmsTechPartner[]) => void;
+  onImageCommit?: (index: number, url: string) => void;
 }) {
   const ordered = [...partners].sort((a, b) => a.order - b.order);
 
@@ -1811,6 +1954,7 @@ function TechPartnersEditor({
             label={`${partner.label} logo (optional — leave empty for built-in mark)`}
             value={partner.imageUrl}
             onChange={(url) => update(index, { imageUrl: url })}
+            onCommit={(url) => onImageCommit?.(index, url)}
           />
         </div>
       ))}

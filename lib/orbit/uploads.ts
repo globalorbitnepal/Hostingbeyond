@@ -4,8 +4,10 @@ import {
   readdir,
   readFile,
   stat,
+  unlink,
   writeFile,
 } from "fs/promises";
+import os from "os";
 import path from "path";
 
 export const UPLOAD_MIME: Record<string, string> = {
@@ -19,11 +21,46 @@ export const UPLOAD_MIME: Record<string, string> = {
   ".webm": "video/webm",
 };
 
+const ALLOWED_MIME = new Set([
+  ...Object.values(UPLOAD_MIME),
+  "image/jpg",
+]);
+
 const ALLOWED_EXT = new Set(Object.keys(UPLOAD_MIME));
 
+function uploadDirCandidates() {
+  return [
+    process.env.ORBIT_UPLOAD_DIR,
+    path.join(process.cwd(), "data", "uploads"),
+    path.join(os.homedir(), "hostingbeyond-uploads"),
+  ].filter((dir): dir is string => Boolean(dir));
+}
+
 export function getPersistentUploadDir() {
-  if (process.env.ORBIT_UPLOAD_DIR) return process.env.ORBIT_UPLOAD_DIR;
-  return path.join(process.cwd(), "data", "uploads");
+  return uploadDirCandidates()[0];
+}
+
+async function directoryIsWritable(dir: string) {
+  await mkdir(dir, { recursive: true });
+  const probe = path.join(dir, `.write-${process.pid}-${Date.now()}`);
+  await writeFile(probe, "ok");
+  await unlink(probe);
+}
+
+export async function resolveWritableUploadDir() {
+  const errors: string[] = [];
+  for (const dir of uploadDirCandidates()) {
+    try {
+      await directoryIsWritable(dir);
+      return dir;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      errors.push(`${dir} (${message})`);
+    }
+  }
+  throw new Error(
+    `No writable upload folder for the Orbit process. Tried: ${errors.join(" | ")}`,
+  );
 }
 
 export function getPublicUploadDir() {
@@ -45,8 +82,18 @@ export function extensionForUpload(originalName: string, mimeType: string) {
 }
 
 export function isAllowedUpload(mimeType: string, originalName: string) {
-  if (mimeType && Object.values(UPLOAD_MIME).includes(mimeType)) return true;
+  const mime = mimeType.toLowerCase().trim();
+  if (mime && ALLOWED_MIME.has(mime)) return true;
   return ALLOWED_EXT.has(path.extname(originalName).toLowerCase());
+}
+
+export function describeUploadRejection(mimeType: string, originalName: string) {
+  const ext = path.extname(originalName).toLowerCase() || "(no extension)";
+  const mime = mimeType || "(no MIME type)";
+  if (ext === ".heic" || ext === ".heif" || mime.includes("heic")) {
+    return "HEIC/HEIF photos are not supported. Convert to JPG, PNG, or WebP and try again.";
+  }
+  return `Unsupported file type (${mime}, ${ext}). Use JPG, PNG, WebP, GIF, or SVG.`;
 }
 
 export function safeUploadFilename(filename: string) {
@@ -57,10 +104,14 @@ export function safeUploadFilename(filename: string) {
 }
 
 export async function ensureUploadDirs() {
-  const persistent = getPersistentUploadDir();
+  const persistent = await resolveWritableUploadDir();
   const publicDir = getPublicUploadDir();
   await mkdir(persistent, { recursive: true });
-  await mkdir(publicDir, { recursive: true });
+  try {
+    await mkdir(publicDir, { recursive: true });
+  } catch {
+    /* public mirror may be read-only */
+  }
 
   // Keep a copy in the durable folder so deploys never drop files.
   try {
@@ -83,13 +134,14 @@ export async function ensureUploadDirs() {
 }
 
 export async function saveUploadFile(filename: string, bytes: Buffer) {
-  await ensureUploadDirs();
-  const persistentPath = path.join(getPersistentUploadDir(), filename);
+  const persistent = await resolveWritableUploadDir();
+  const persistentPath = path.join(persistent, filename);
   await writeFile(persistentPath, bytes);
   try {
+    await mkdir(getPublicUploadDir(), { recursive: true });
     await writeFile(path.join(getPublicUploadDir(), filename), bytes);
   } catch {
-    /* public mirror is optional */
+    /* public mirror is optional when the folder is not writable */
   }
   return persistentPath;
 }
@@ -98,7 +150,7 @@ export async function readUploadFile(filename: string) {
   const safe = safeUploadFilename(filename);
   if (!safe) return null;
   const candidates = [
-    path.join(getPersistentUploadDir(), safe),
+    ...uploadDirCandidates().map((dir) => path.join(dir, safe)),
     path.join(getPublicUploadDir(), safe),
   ];
   for (const filePath of candidates) {
@@ -181,8 +233,8 @@ export async function listBundledSiteMedia(): Promise<DiskUpload[]> {
 }
 
 export async function listUploadFiles(): Promise<DiskUpload[]> {
-  await ensureUploadDirs();
-  const dirs = [getPersistentUploadDir(), getPublicUploadDir()];
+  await ensureUploadDirs().catch(() => undefined);
+  const dirs = [...uploadDirCandidates(), getPublicUploadDir()];
   const seen = new Map<string, DiskUpload>();
 
   for (const dir of dirs) {

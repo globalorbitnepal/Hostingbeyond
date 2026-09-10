@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireOrbitAdmin, unauthorizedJson } from "@/lib/orbit/api";
 import { logActivity } from "@/lib/orbit/session";
 import {
+  describeUploadRejection,
   extensionForUpload,
   isAllowedUpload,
   listBundledSiteMedia,
@@ -113,11 +114,19 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  const assets = [...unique.values()].sort((a, b) => {
-    const aTime = a.createdAt instanceof Date ? a.createdAt.getTime() : 0;
-    const bTime = b.createdAt instanceof Date ? b.createdAt.getTime() : 0;
-    return bTime - aTime;
-  });
+  const assets = [...unique.values()]
+    .map((asset) => ({
+      ...asset,
+      source:
+        asset.url.startsWith("/uploads/") || asset.url.startsWith("/api/uploads/")
+          ? ("upload" as const)
+          : ("site" as const),
+    }))
+    .sort((a, b) => {
+      const aTime = a.createdAt instanceof Date ? a.createdAt.getTime() : 0;
+      const bTime = b.createdAt instanceof Date ? b.createdAt.getTime() : 0;
+      return bTime - aTime;
+    });
 
   const filtered = q
     ? assets.filter(
@@ -146,58 +155,83 @@ export async function POST(request: NextRequest) {
 
   if (!isAllowedUpload(file.type, file.name)) {
     return NextResponse.json(
-      { error: "Unsupported file type" },
+      {
+        error: describeUploadRejection(file.type, file.name),
+        details: `Received ${file.name || "unnamed file"} (${file.type || "unknown type"}, ${(file.size / 1024).toFixed(1)} KB)`,
+      },
       { status: 400 },
     );
   }
 
   if (file.size > MAX_BYTES) {
     return NextResponse.json(
-      { error: "File too large (max 8MB)" },
+      {
+        error: `File too large (${(file.size / (1024 * 1024)).toFixed(1)} MB). Maximum is 8 MB.`,
+        details: file.name,
+      },
       { status: 400 },
     );
   }
 
-  const mimeType = file.type || mimeFromFilename(file.name, "image/png");
-  const safeExt = extensionForUpload(file.name, mimeType);
-  const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${safeExt}`;
-  const bytes = Buffer.from(await file.arrayBuffer());
-  await saveUploadFile(filename, bytes);
-  const url = `/uploads/${filename}`;
-
-  let asset = {
-    id: filename,
-    filename,
-    url,
-    originalName: file.name.slice(0, 180),
-    mimeType,
-    size: file.size,
-    alt: alt.slice(0, 200),
-  };
-
   try {
-    asset = await prisma.mediaAsset.create({
-      data: {
-        filename,
-        originalName: asset.originalName,
-        mimeType,
-        size: file.size,
-        alt: asset.alt,
-        url,
-      },
+    const mimeType = file.type || mimeFromFilename(file.name, "image/png");
+    const safeExt = extensionForUpload(file.name, mimeType);
+    const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${safeExt}`;
+    const bytes = Buffer.from(await file.arrayBuffer());
+    await saveUploadFile(filename, bytes);
+    const url = `/uploads/${filename}`;
+
+    let asset = {
+      id: filename,
+      filename,
+      url,
+      originalName: file.name.slice(0, 180),
+      mimeType,
+      size: file.size,
+      alt: alt.slice(0, 200),
+      source: "upload" as const,
+    };
+
+    try {
+      asset = {
+        ...(await prisma.mediaAsset.create({
+          data: {
+            filename,
+            originalName: asset.originalName,
+            mimeType,
+            size: file.size,
+            alt: asset.alt,
+            url,
+          },
+        })),
+        source: "upload" as const,
+      };
+    } catch {
+      /* file is already on disk — library GET will pick it up */
+    }
+
+    await logActivity({
+      adminUserId: admin.id,
+      action: "MEDIA_UPLOAD",
+      resource: asset.id,
+      details: asset.originalName,
     });
-  } catch {
-    /* file is already on disk — library GET will pick it up */
+
+    return NextResponse.json({ asset });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const code =
+      error && typeof error === "object" && "code" in error
+        ? String((error as { code?: string }).code)
+        : "";
+    return NextResponse.json(
+      {
+        error: "Could not save the image file.",
+        details: [code, message].filter(Boolean).join(" — "),
+      },
+      { status: 500 },
+    );
   }
-
-  await logActivity({
-    adminUserId: admin.id,
-    action: "MEDIA_UPLOAD",
-    resource: asset.id,
-    details: asset.originalName,
-  });
-
-  return NextResponse.json({ asset });
 }
 
 export async function DELETE() {

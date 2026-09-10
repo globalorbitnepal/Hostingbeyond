@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+import { readResponseError } from "@/lib/orbit/read-response-error";
+
 type Asset = {
   id: string;
   url: string;
@@ -11,6 +13,7 @@ type Asset = {
   size: number;
   alt: string;
   createdAt: string;
+  source?: "upload" | "site";
 };
 
 export default function OrbitMediaPage() {
@@ -21,9 +24,13 @@ export default function OrbitMediaPage() {
 
   async function load(query = q) {
     const res = await fetch(`/api/orbit/media?q=${encodeURIComponent(query)}`);
+    if (!res.ok) {
+      const parsed = await readResponseError(res, "Failed to load media");
+      setStatus(parsed.text);
+      return;
+    }
     const json = await res.json();
-    if (res.ok) setAssets(json.assets ?? []);
-    else setStatus(json.error || "Failed to load media");
+    setAssets(json.assets ?? []);
   }
 
   useEffect(() => {
@@ -39,10 +46,15 @@ export default function OrbitMediaPage() {
     form.set("file", file);
     form.set("alt", alt);
     const res = await fetch("/api/orbit/media", { method: "POST", body: form });
-    const json = await res.json();
     input.value = "";
     if (!res.ok) {
-      setStatus(json.error || "Upload failed");
+      const parsed = await readResponseError(res, "Upload failed");
+      setStatus(parsed.text);
+      return;
+    }
+    const json = await res.json();
+    if (!json.asset?.url) {
+      setStatus(json.error || json.details || "Upload did not return a URL");
       return;
     }
     setAlt("");
@@ -55,9 +67,9 @@ export default function OrbitMediaPage() {
       <div>
         <h1 className="text-2xl font-bold">Media Library</h1>
         <p className="mt-1 text-sm text-slate-500">
-          All site images (hero, logo, hosting photos) plus every upload stay
-          here permanently. Replace a field anytime — the old file is never
-          deleted.
+          All site images (hero, logo, hosting photos) plus every upload. If
+          Change/Replace fails, the full error is shown here and on the image
+          field.
         </p>
       </div>
 
@@ -104,7 +116,15 @@ export default function OrbitMediaPage() {
           </button>
         </div>
         {status ? (
-          <p className="mt-3 text-sm text-emerald-700">{status}</p>
+          <p
+            className={
+              /fail|error|could not/i.test(status)
+                ? "mt-3 whitespace-pre-wrap text-sm text-red-600"
+                : "mt-3 text-sm text-emerald-700"
+            }
+          >
+            {status}
+          </p>
         ) : null}
       </div>
 
@@ -131,6 +151,7 @@ export default function OrbitMediaPage() {
             )}
             <div className="space-y-2 p-3">
               <p className="truncate text-sm font-medium">
+                {asset.source === "site" ? "Site · " : "Upload · "}
                 {asset.originalName}
               </p>
               <p className="truncate text-[11px] text-slate-400">{asset.url}</p>
