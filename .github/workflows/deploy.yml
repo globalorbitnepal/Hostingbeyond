@@ -14,14 +14,51 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
-    name: Deploy to VPS
+  quality:
+    name: Typecheck
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-
+    timeout-minutes: 10
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+  deploy:
+    name: Deploy to VPS
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Confirm SSH secrets exist
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          missing=0
+          if [ -z "${VPS_HOST}" ]; then echo "Missing GitHub secret: VPS_HOST"; missing=1; fi
+          if [ -z "${VPS_USER}" ]; then echo "Missing GitHub secret: VPS_USER"; missing=1; fi
+          if [ -z "${VPS_SSH_KEY}" ]; then echo "Missing GitHub secret: VPS_SSH_KEY"; missing=1; fi
+          if [ "$missing" -ne 0 ]; then
+            echo "Add these in GitHub → Settings → Secrets and variables → Actions"
+            exit 1
+          fi
+          echo "SSH secrets are present"
 
       - name: Deploy HostingBeyond to VPS
         uses: appleboy/ssh-action@v1.2.0
@@ -29,78 +66,64 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT }}
+          port: ${{ secrets.VPS_PORT != '' && secrets.VPS_PORT || 22 }}
           script_stop: true
           command_timeout: 15m
           script: |
             set -euo pipefail
 
-            echo "==> Deploying HostingBeyond only"
-            echo "==> Target: /var/www/hostingbeyond"
-            echo "==> PM2 process: hostingbeyond"
+            echo "==> Deploying HostingBeyond"
+            echo "==> Target: /srv/apps/hostingbeyond"
+            echo "==> PM2 user/process: hostingbeyond"
+            echo "==> Port: 3000"
 
-            cd /var/www/hostingbeyond
+            cd /srv/apps/hostingbeyond
+            test "$(pwd)" = "/srv/apps/hostingbeyond"
 
-            echo "==> Syncing to origin/main (preserve .env)"
+            echo "==> Syncing origin/main (preserve .env and uploads)"
             git fetch origin main
             git checkout main
             git reset --hard origin/main
-            git clean -fd -e .env -e .env.local -e .env.production -e public/uploads -e data/uploads
+            git clean -fd -e .env -e .env.local -e .env.production -e public/uploads -e data/uploads -e node_modules
 
-            echo "==> Safety checks"
-            pwd
-            test "$(pwd)" = "/var/www/hostingbeyond"
-            test -f .env && echo "ENV_PRESENT" || echo "ENV_MISSING_WARNING"
-
-            echo "==> Ensuring Orbit access key in .env (append-only if missing)"
-            touch .env
-            if ! grep -q '^ORBIT_ENROLLMENT_SECRET=' .env; then
-              echo 'ORBIT_ENROLLMENT_SECRET=713304977' >> .env
+            if [ ! -f .env ]; then
+              echo "ENV_MISSING: /srv/apps/hostingbeyond/.env is required on the server"
+              exit 1
             fi
-            if ! grep -q '^ORBIT_SESSION_SECRET=' .env; then
-              echo 'ORBIT_SESSION_SECRET=hb_orbit_prod_session_secret_v1' >> .env
-            fi
-            if ! grep -q '^ORBIT_RP_ID=' .env; then
-              echo 'ORBIT_RP_ID=beyond.theglobalorbit.com' >> .env
-            fi
-            if ! grep -q '^ORBIT_ORIGIN=' .env; then
-              echo 'ORBIT_ORIGIN=https://beyond.theglobalorbit.com' >> .env
-            fi
-            echo "ORBIT_ENV_READY"
+            echo "ENV_PRESENT"
 
             echo "==> Installing dependencies"
             npm install
 
-            echo "==> Prisma generate + migrate deploy (HostingBeyond DB only)"
+            echo "==> Prisma generate"
             npx prisma generate
+
+            echo "==> Prisma migrate deploy (additive only)"
             npx prisma migrate deploy || echo "MIGRATE_WARNING_CONTINUING"
 
             echo "==> Building production bundle"
             npm run build
 
-            echo "==> Restarting ONLY PM2 process: hostingbeyond on PORT 3005"
-            PORT=3005 pm2 restart hostingbeyond --update-env || PORT=3005 pm2 start npm --name hostingbeyond -- start
-            pm2 save || true
+            echo "==> Restarting ONLY HostingBeyond PM2"
+            sudo -n -u hostingbeyond -H /usr/local/sbin/hostingbeyond-ctl restart
+            sudo -n -u hostingbeyond -H /usr/local/sbin/hostingbeyond-ctl status
 
-            echo "==> PM2 status for hostingbeyond"
-            pm2 describe hostingbeyond
-
-            echo "==> HostingBeyond deploy completed on VPS"
+            echo "==> HostingBeyond deploy completed"
 
       - name: Verify live site
         run: |
           set -euo pipefail
 
-          echo "==> Verifying https://beyond.theglobalorbit.com"
+          echo "==> Verifying https://hosting.theglobalorbit.com"
           sleep 5
-          HTTP_CODE="$(curl -fsS -o /tmp/hostingbeyond-verify.html -w "%{http_code}" --retry 8 --retry-delay 3 --retry-all-errors https://beyond.theglobalorbit.com)"
+          HTTP_CODE="$(curl -fsS -o /tmp/hostingbeyond-verify.html -w "%{http_code}" --retry 8 --retry-delay 3 --retry-all-errors https://hosting.theglobalorbit.com/)"
 
           if [ "$HTTP_CODE" != "200" ]; then
             echo "Deployment verification failed: expected HTTP 200, got ${HTTP_CODE}"
             exit 1
           fi
 
-          if ! grep -qi "HostingBeyond\|HOSTINGBEYOND\|Built for Speed\|Find your perfect domain\|hero-speaker" /tmp/hostingbeyond-verify.html; then
+          if ! grep -qi "HostingBeyond\|Host Your Ideas\|hb-solutions-heading" /tmp/hostingbeyond-verify.html; then
             echo "Deployment verification failed: expected homepage content was not found"
             exit 1
           fi
