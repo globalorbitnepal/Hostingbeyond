@@ -14,7 +14,7 @@ export default async function HomePage() {
   ]);
 
   return (
-    <div className="overflow-x-hidden bg-[#07122a]">
+    <div className="overflow-x-hidden bg-[#f4f8fd]">
       {/* Premium sky-blue glass hero — matches speaker scene glass */}
       <div className="relative flex min-h-0 flex-col bg-[#b5d3f2] lg:min-h-svh">
         <div
