@@ -1,11 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
+  Box,
   Check,
+  Clock,
+  Crown,
   Headphones,
+  Layers,
   Lock,
   Rocket,
   Server,
@@ -25,28 +29,6 @@ import type {
 
 type Billing = "annually" | "monthly";
 
-const accentStyles = {
-  blue: {
-    cube: "from-[#7dd3fc] to-[#2563eb]",
-    price: "text-[#2563eb]",
-    check: "text-[#2563eb]",
-    cta: "border-slate-200/90 bg-white/80 text-slate-800 hover:border-slate-300 hover:bg-white",
-  },
-  purple: {
-    cube: "from-[#d8b4fe] to-[#7c3aed]",
-    price: "text-[#7c3aed]",
-    check: "text-[#7c3aed]",
-    cta: "border-slate-200/90 bg-white/80 text-slate-800 hover:border-slate-300 hover:bg-white",
-  },
-  gradient: {
-    cube: "from-[#818cf8] to-[#7c3aed]",
-    price:
-      "bg-gradient-to-r from-[#2563eb] to-[#7c3aed] bg-clip-text text-transparent",
-    check: "text-[#4f46e5]",
-    cta: "border-transparent bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-white shadow-[0_12px_28px_rgba(79,70,229,0.28)] hover:brightness-105",
-  },
-} as const;
-
 function GuaranteeIcon({
   icon,
   className,
@@ -59,6 +41,36 @@ function GuaranteeIcon({
   return <Shield className={className} aria-hidden />;
 }
 
+function PlanGlyph({
+  accent,
+  popular,
+}: {
+  accent: CmsHostingPlan["accent"];
+  popular: boolean;
+}) {
+  const Icon = popular
+    ? Layers
+    : accent === "purple"
+      ? Crown
+      : accent === "gradient"
+        ? Layers
+        : Box;
+  return (
+    <span
+      className={cn(
+        "inline-flex size-11 items-center justify-center rounded-2xl",
+        popular
+          ? "bg-white/12 text-cyan-200 ring-1 ring-white/20"
+          : accent === "purple"
+            ? "bg-fuchsia-50 text-[#c026d3] ring-1 ring-fuchsia-100"
+            : "bg-sky-50 text-[#2563eb] ring-1 ring-sky-100",
+      )}
+    >
+      <Icon className="size-5" strokeWidth={1.8} aria-hidden />
+    </span>
+  );
+}
+
 function PlanCard({
   plan,
   billing,
@@ -69,109 +81,147 @@ function PlanCard({
   delay: number;
 }) {
   const reduceMotion = useReducedMotion();
-  const styles = accentStyles[plan.accent] ?? accentStyles.blue;
+  const popular = Boolean(plan.popular);
   const isAnnual = billing === "annually";
   const price = isAnnual ? plan.priceAnnually : plan.priceMonthly;
   const original = isAnnual ? plan.originalAnnually : plan.originalMonthly;
   const billed = isAnnual ? plan.billedAnnually : plan.billedMonthly;
-  const solidCta = plan.accent === "gradient" || plan.popular;
 
   return (
     <motion.article
-      initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+      initial={reduceMotion ? false : { opacity: 0, y: 18 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
-      transition={{ delay, duration: 0.35 }}
+      transition={{ delay, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       className={cn(
-        "relative flex h-full flex-col overflow-hidden rounded-[26px] border border-white/80 bg-white/70 p-5 shadow-[0_18px_50px_-28px_rgba(37,80,130,0.35)] backdrop-blur-2xl sm:p-6",
-        plan.popular &&
-          "border-indigo-200/80 bg-white/85 shadow-[0_22px_60px_-24px_rgba(79,70,229,0.38)]",
+        "relative flex h-full flex-col overflow-hidden rounded-[28px] p-5 sm:p-6",
+        popular
+          ? "z-10 border border-white/10 bg-[linear-gradient(165deg,#1d4ed8_0%,#312e81_48%,#6d28d9_100%)] text-white shadow-[0_28px_70px_-24px_rgba(49,46,129,0.65)] xl:-mt-6 xl:mb-0 xl:min-h-[560px] xl:px-6 xl:pt-7 xl:pb-7"
+          : "border border-white/80 bg-white/75 shadow-[0_18px_50px_-28px_rgba(37,80,130,0.32)] backdrop-blur-2xl",
       )}
     >
-      {plan.popular ? (
-        <span
+      {!popular ? (
+        <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 rounded-[26px] p-px"
-          style={{
-            background:
-              "linear-gradient(160deg, rgba(37,99,235,0.55), rgba(124,58,237,0.5), rgba(255,255,255,0.15))",
-            WebkitMask:
-              "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
-            WebkitMaskComposite: "xor",
-            maskComposite: "exclude",
-          }}
+          className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.55),transparent_42%)]"
         />
-      ) : null}
+      ) : (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(125,211,252,0.22),transparent_52%)]"
+        />
+      )}
 
-      <div className="relative z-10 flex items-start justify-between gap-2">
-        {plan.discountBadge ? (
-          <span className="inline-flex rounded-md bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-white uppercase shadow-[0_6px_18px_rgba(79,70,229,0.28)]">
+      <div className="relative z-10 flex items-start justify-between gap-3">
+        <PlanGlyph accent={plan.accent} popular={popular} />
+        {popular && plan.popularLabel ? (
+          <span className="inline-flex items-center gap-1 rounded-full bg-white/14 px-2.5 py-1 text-[10px] font-bold tracking-wide text-cyan-50 uppercase ring-1 ring-white/20 backdrop-blur-md">
+            <Star className="size-3 fill-current" aria-hidden />
+            {plan.popularLabel}
+          </span>
+        ) : plan.discountBadge ? (
+          <span
+            className={cn(
+              "inline-flex rounded-full px-2.5 py-1 text-[10px] font-extrabold tracking-wide uppercase",
+              plan.accent === "purple"
+                ? "bg-fuchsia-50 text-[#c026d3]"
+                : "bg-sky-50 text-[#2563eb]",
+            )}
+          >
             {plan.discountBadge}
           </span>
         ) : (
           <span />
         )}
-        <span
-          aria-hidden
-          className={cn(
-            "inline-flex size-9 shrink-0 items-center justify-center rounded-[12px] bg-gradient-to-br shadow-[inset_0_1px_0_rgba(255,255,255,0.55)]",
-            styles.cube,
-          )}
-        />
       </div>
 
-      {plan.popular && plan.popularLabel ? (
-        <span className="relative z-10 mt-3 inline-flex w-fit items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50/90 px-2.5 py-1 text-[10px] font-bold text-indigo-700">
-          <Star className="size-3 fill-current" aria-hidden />
-          {plan.popularLabel}
-        </span>
-      ) : null}
-
-      <h3 className="font-heading relative z-10 mt-4 text-[20px] font-extrabold tracking-tight text-slate-950 sm:text-[22px]">
+      <h3
+        className={cn(
+          "font-heading relative z-10 mt-5 text-[1.35rem] font-extrabold tracking-[-0.03em] sm:text-[1.5rem]",
+          popular ? "text-white" : "text-slate-950",
+        )}
+      >
         {plan.name}
       </h3>
 
       <div className="relative z-10 mt-4">
         {original ? (
-          <p className="text-[13px] font-medium text-slate-400 line-through">
+          <p
+            className={cn(
+              "text-[13px] font-medium line-through",
+              popular ? "text-white/45" : "text-slate-400",
+            )}
+          >
             {original}
           </p>
         ) : null}
         <p className="mt-0.5 flex items-end gap-1.5">
           <span
             className={cn(
-              "text-[clamp(1.85rem,2.6vw,2.4rem)] leading-none font-extrabold tracking-tight",
-              styles.price,
+              "text-[clamp(1.9rem,3vw,2.45rem)] leading-none font-extrabold tracking-tight",
+              popular
+                ? "text-white"
+                : plan.accent === "purple"
+                  ? "text-[#c026d3]"
+                  : "text-[#2563eb]",
             )}
           >
             {price}
           </span>
-          <span className="pb-1 text-[13px] font-semibold text-slate-500">
+          <span
+            className={cn(
+              "pb-1 text-[13px] font-semibold",
+              popular ? "text-white/70" : "text-slate-500",
+            )}
+          >
             /mo
           </span>
         </p>
-        <p className="mt-2 text-[12px] font-medium text-slate-500">{billed}</p>
+        {billed ? (
+          <p
+            className={cn(
+              "mt-2 text-[12px] font-medium",
+              popular ? "text-white/50" : "text-slate-500",
+            )}
+          >
+            {billed}
+          </p>
+        ) : null}
       </div>
 
       <Link
         href={plan.ctaHref || "/get-started"}
         className={cn(
-          "relative z-10 mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full border text-[13px] font-bold shadow-[0_8px_22px_rgba(15,23,42,0.06)] transition",
-          solidCta ? accentStyles.gradient.cta : styles.cta,
+          "relative z-10 mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full text-[14px] font-bold transition",
+          popular
+            ? "bg-gradient-to-r from-[#22d3ee] via-[#818cf8] to-[#e879f9] text-slate-950 shadow-[0_12px_28px_rgba(34,211,238,0.28)] hover:brightness-105"
+            : plan.accent === "purple"
+              ? "border border-fuchsia-200 bg-white text-[#a21caf] hover:bg-fuchsia-50"
+              : "border border-sky-200 bg-white text-[#1d4ed8] hover:bg-sky-50",
         )}
       >
-        {plan.ctaLabel || "Get Started"}
+        {plan.ctaLabel || "Choose Plan"}
         <ArrowRight className="size-4" aria-hidden />
       </Link>
 
-      <ul className="relative z-10 mt-5 space-y-2.5 border-t border-slate-200/80 pt-5">
+      <ul className="relative z-10 mt-6 flex flex-1 flex-col gap-2.5">
         {plan.features.map((feature) => (
           <li
             key={feature}
-            className="flex items-start gap-2.5 text-[13px] leading-snug text-slate-600"
+            className={cn(
+              "flex items-start gap-2.5 text-[13px] leading-snug sm:text-[14px]",
+              popular ? "text-white/88" : "text-slate-600",
+            )}
           >
             <Check
-              className={cn("mt-0.5 size-4 shrink-0", styles.check)}
+              className={cn(
+                "mt-0.5 size-4 shrink-0",
+                popular
+                  ? "text-cyan-200"
+                  : plan.accent === "purple"
+                    ? "text-[#c026d3]"
+                    : "text-[#2563eb]",
+              )}
               aria-hidden
             />
             <span>{feature}</span>
@@ -200,29 +250,59 @@ export function HostingPlansSection({
     .sort((a, b) => a.order - b.order);
 
   const guarantees = data.guarantees ?? [];
+  const trust = [
+    guarantees[0]
+      ? {
+          id: guarantees[0].id,
+          label: guarantees[0].title,
+          icon: (
+            <GuaranteeIcon icon={guarantees[0].icon} className="size-[18px]" />
+          ),
+        }
+      : null,
+    data.activationLabel
+      ? {
+          id: "activation",
+          label: data.activationLabel,
+          icon: <Zap className="size-[18px]" aria-hidden />,
+        }
+      : null,
+    {
+      id: "cancel",
+      label: "Cancel anytime",
+      icon: <Clock className="size-[18px]" aria-hidden />,
+    },
+    data.supportLabel
+      ? {
+          id: "support",
+          label: data.supportLabel,
+          icon: <Headphones className="size-[18px]" aria-hidden />,
+        }
+      : null,
+  ].filter(Boolean) as Array<{ id: string; label: string; icon: ReactNode }>;
 
   return (
-    <section className="relative isolate overflow-hidden bg-[#f4f8fd] pt-8 pb-16 sm:pt-10 sm:pb-20 lg:pt-12 lg:pb-24">
+    <section className="relative isolate overflow-hidden bg-[#f4f8fd] pt-10 pb-16 sm:pt-12 sm:pb-20 lg:pt-14 lg:pb-24">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,#eef4fb_0%,#f4f8fd_42%,#e7f1fb_100%)]"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,#eef4fb_0%,#f7fbff_45%,#e7f1fb_100%)]"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute top-[-12%] left-[-8%] h-[48%] w-[50%] rounded-full bg-[radial-gradient(ellipse,rgba(147,197,253,0.38),transparent_68%)] blur-3xl"
+        className="pointer-events-none absolute top-[-16%] left-[-10%] h-[52%] w-[55%] rounded-full bg-[radial-gradient(ellipse,rgba(147,197,253,0.4),transparent_68%)] blur-3xl"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute right-[-10%] bottom-[-8%] h-[42%] w-[46%] rounded-full bg-[radial-gradient(ellipse,rgba(167,139,250,0.16),transparent_70%)] blur-3xl"
+        className="pointer-events-none absolute right-[-12%] bottom-[-10%] h-[46%] w-[48%] rounded-full bg-[radial-gradient(ellipse,rgba(167,139,250,0.18),transparent_70%)] blur-3xl"
       />
 
       <div className="hb-shell relative z-10">
-        <div className="text-center">
+        <div className="mx-auto max-w-3xl text-center">
           <motion.span
             initial={reduceMotion ? false : { opacity: 0, y: 8 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/70 px-4 py-1.5 text-[11px] font-bold tracking-[0.14em] text-slate-600 uppercase shadow-[0_8px_24px_rgba(37,80,130,0.08)] backdrop-blur-xl"
+            className="inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/75 px-4 py-1.5 text-[11px] font-bold tracking-[0.16em] text-slate-500 uppercase shadow-[0_8px_24px_rgba(37,80,130,0.08)] backdrop-blur-xl"
           >
             <Server className="size-3.5 text-[#2563eb]" aria-hidden />
             {data.eyebrow}
@@ -233,10 +313,10 @@ export function HostingPlansSection({
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.04 }}
-            className="font-heading mt-4 text-[clamp(1.75rem,3.6vw,3.15rem)] leading-[1.12] font-extrabold tracking-[-0.04em] text-slate-950"
+            className="font-heading mt-5 text-[clamp(1.85rem,4.2vw,3.35rem)] leading-[1.12] font-extrabold tracking-[-0.045em] text-slate-950"
           >
-            {data.title}{" "}
-            <span className="bg-gradient-to-r from-[#2563eb] via-[#4f46e5] to-[#7c3aed] bg-clip-text text-transparent">
+            <span className="block">{data.title}</span>
+            <span className="mt-1 block bg-gradient-to-r from-[#2563eb] via-[#4f46e5] to-[#c026d3] bg-clip-text text-transparent">
               {data.titleAccent}
             </span>
           </motion.h2>
@@ -246,59 +326,61 @@ export function HostingPlansSection({
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.08 }}
-            className="mx-auto mt-3 max-w-[640px] text-[14px] leading-relaxed text-slate-600 sm:text-[16px]"
+            className="mx-auto mt-4 max-w-[38rem] text-[15px] leading-relaxed text-slate-600 sm:text-[17px]"
           >
             {data.description}
           </motion.p>
         </div>
 
-        <div className="mt-7 flex flex-col gap-4 sm:mt-8 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] font-semibold text-slate-600">
-            <span className="inline-flex items-center gap-2">
-              <Headphones className="size-4 text-[#2563eb]" aria-hidden />
-              {data.supportLabel}
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <Zap className="size-4 text-[#7c3aed]" aria-hidden />
-              {data.activationLabel}
-            </span>
+        {trust.length > 0 ? (
+          <div className="mx-auto mt-8 grid max-w-5xl grid-cols-2 gap-3 sm:mt-10 sm:grid-cols-4 sm:gap-4">
+            {trust.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center gap-2.5 rounded-2xl border border-white/80 bg-white/65 px-3 py-3 shadow-[0_10px_28px_-18px_rgba(37,80,130,0.28)] backdrop-blur-xl sm:justify-center sm:px-2 lg:px-3"
+              >
+                <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-[#2563eb] ring-1 ring-sky-100">
+                  {item.icon}
+                </span>
+                <p className="text-left text-[12px] leading-snug font-semibold text-slate-700 sm:text-[13px]">
+                  {item.label}
+                </p>
+              </div>
+            ))}
           </div>
+        ) : null}
 
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-slate-500">
-              <Sparkles className="size-3.5 text-[#2563eb]" aria-hidden />
-              {data.annualToggleLabel}
-            </span>
-            <div className="inline-flex rounded-full border border-white/80 bg-white/70 p-1 shadow-[0_8px_22px_rgba(15,23,42,0.06)] backdrop-blur-xl">
-              <button
-                type="button"
-                onClick={() => setBilling("annually")}
-                className={cn(
-                  "rounded-full px-4 py-1.5 text-[12px] font-bold transition",
-                  billing === "annually"
-                    ? "bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-white shadow-[0_8px_18px_rgba(79,70,229,0.28)]"
-                    : "text-slate-500 hover:text-slate-800",
-                )}
-              >
-                Annually
-              </button>
-              <button
-                type="button"
-                onClick={() => setBilling("monthly")}
-                className={cn(
-                  "rounded-full px-4 py-1.5 text-[12px] font-bold transition",
-                  billing === "monthly"
-                    ? "bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-white shadow-[0_8px_18px_rgba(79,70,229,0.28)]"
-                    : "text-slate-500 hover:text-slate-800",
-                )}
-              >
-                {data.monthlyToggleLabel || "Monthly"}
-              </button>
-            </div>
+        <div className="mt-7 flex justify-center sm:mt-8">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/70 p-1 shadow-[0_8px_22px_rgba(15,23,42,0.06)] backdrop-blur-xl">
+            <Sparkles className="ml-3 size-3.5 text-[#2563eb]" aria-hidden />
+            <button
+              type="button"
+              onClick={() => setBilling("annually")}
+              className={cn(
+                "rounded-full px-4 py-1.5 text-[12px] font-bold transition",
+                billing === "annually"
+                  ? "bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-white shadow-[0_8px_18px_rgba(79,70,229,0.28)]"
+                  : "text-slate-500 hover:text-slate-800",
+              )}
+            >
+              {data.annualToggleLabel || "Annually"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setBilling("monthly")}
+              className={cn(
+                "rounded-full px-4 py-1.5 text-[12px] font-bold transition",
+                billing === "monthly"
+                  ? "bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-white shadow-[0_8px_18px_rgba(79,70,229,0.28)]"
+                  : "text-slate-500 hover:text-slate-800",
+              )}
+            >
+              {data.monthlyToggleLabel || "Monthly"}
+            </button>
           </div>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:mt-8 sm:grid-cols-2 xl:grid-cols-4 xl:gap-5">
+        <div className="mt-8 grid grid-cols-1 items-stretch gap-4 sm:mt-10 sm:grid-cols-2 xl:mt-12 xl:grid-cols-4 xl:items-end xl:gap-5">
           {plans.map((plan, index) => (
             <PlanCard
               key={plan.id}
@@ -308,40 +390,6 @@ export function HostingPlansSection({
             />
           ))}
         </div>
-
-        {guarantees.length > 0 ? (
-          <div className="mt-5 grid grid-cols-1 gap-3 sm:mt-6 sm:grid-cols-3 sm:gap-4">
-            {guarantees.map((item, index) => (
-              <motion.div
-                key={item.id}
-                initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.04 * index }}
-                className="flex gap-3.5 rounded-[20px] border border-white/80 bg-white/70 p-4 shadow-[0_14px_40px_-24px_rgba(37,80,130,0.28)] backdrop-blur-2xl sm:p-5"
-              >
-                <span
-                  className={cn(
-                    "inline-flex size-11 shrink-0 items-center justify-center rounded-xl border",
-                    item.icon === "lock"
-                      ? "border-violet-200 bg-violet-50 text-[#7c3aed]"
-                      : "border-sky-200 bg-sky-50 text-[#2563eb]",
-                  )}
-                >
-                  <GuaranteeIcon icon={item.icon} className="size-5" />
-                </span>
-                <div>
-                  <h4 className="font-heading text-[14px] font-extrabold tracking-tight text-slate-950">
-                    {item.title}
-                  </h4>
-                  <p className="mt-1 text-[12px] leading-relaxed text-slate-500 sm:text-[13px]">
-                    {item.description}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        ) : null}
       </div>
     </section>
   );
