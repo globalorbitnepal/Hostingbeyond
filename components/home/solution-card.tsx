@@ -43,8 +43,8 @@ export function SolutionCard({ product, paused, priority }: Props) {
         aria-hidden
         className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-[var(--hb-blue)]/50 to-transparent"
       />
-      <div className="grid flex-1 grid-rows-[auto_1fr_auto] gap-0 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:grid-rows-1 lg:items-stretch">
-        <div className="flex flex-col px-7 pt-7 pb-5 sm:px-8 sm:pt-8">
+      <div className="flex min-h-[420px] flex-1 flex-col lg:min-h-[460px] lg:flex-row lg:items-stretch">
+        <div className="flex min-w-0 flex-1 flex-col px-6 pt-6 pb-4 sm:px-8 sm:pt-8 sm:pb-5">
           <div className="flex items-center justify-between gap-3">
             <p className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.2em] text-slate-500 uppercase">
               <span className="inline-flex size-8 items-center justify-center rounded-xl bg-[#EEF4FF] text-[var(--hb-blue)]">
@@ -73,13 +73,13 @@ export function SolutionCard({ product, paused, priority }: Props) {
             <ArrowRight className="size-4" />
           </Link>
         </div>
-        <div className="relative mx-5 mb-5 min-h-[210px] overflow-hidden rounded-[24px] sm:mx-6 sm:mb-6 lg:my-6 lg:mr-6 lg:ml-0 lg:min-h-0">
+        <div className="relative mx-5 mb-5 h-[210px] w-[calc(100%-2.5rem)] shrink-0 overflow-hidden rounded-[24px] bg-[#e8f1fb] sm:mx-6 sm:mb-6 sm:h-[250px] sm:w-[calc(100%-3rem)] lg:my-6 lg:mr-6 lg:ml-0 lg:h-auto lg:min-h-[280px] lg:w-[min(52%,28rem)] lg:flex-none">
           <SolutionImageCarousel
             images={product.images}
             paused={paused}
             priority={priority}
-            sizes="(max-width: 1024px) 90vw, 340px"
-            className="absolute inset-0"
+            sizes="(max-width: 640px) 92vw, (max-width: 1024px) 70vw, 480px"
+            className="absolute inset-0 h-full w-full"
           />
         </div>
       </div>

@@ -5,7 +5,6 @@ import Image from "next/image";
 import { useReducedMotion } from "framer-motion";
 
 import { cn } from "@/lib/utils";
-import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
 import type { CmsSolutionImage } from "@/lib/orbit/defaults";
 
 type Props = {
@@ -57,7 +56,10 @@ export function SolutionImageCarousel({
 
   return (
     <div
-      className={cn("relative overflow-hidden", className)}
+      className={cn(
+        "relative h-full min-h-[210px] w-full overflow-hidden",
+        className,
+      )}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -71,12 +73,12 @@ export function SolutionImageCarousel({
             fill
             sizes={sizes}
             priority={priority && slideIndex === 0}
-            unoptimized={isRuntimeMediaSrc(slide.url)}
+            unoptimized
             className={cn(
               "object-cover object-center transition-[opacity,transform] duration-[1400ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
               active
-                ? "scale-100 opacity-100"
-                : "pointer-events-none scale-[1.04] opacity-0",
+                ? "z-[1] scale-100 opacity-100"
+                : "pointer-events-none z-0 scale-[1.02] opacity-0",
               reduceMotion && "transition-none",
             )}
           />
