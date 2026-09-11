@@ -151,7 +151,7 @@ jobs:
           echo "==> Target: /srv/apps/hostingbeyond"
           echo "==> PM2 wrapper: /usr/local/sbin/hostingbeyond-ctl"
           echo "==> PM2_HOME: /home/hostingbeyond/.pm2"
-          echo "==> Port: 3000"
+          echo "==> Port: 3030"
 
           cd /srv/apps/hostingbeyond
           test "$(pwd)" = "/srv/apps/hostingbeyond"
@@ -210,25 +210,25 @@ jobs:
             exit 1
           fi
 
-          echo "==> Verifying listener on port 3000"
+          echo "==> Verifying listener on port 3030"
           LISTEN_OK=0
           for _i in $(seq 1 30); do
-            if command -v ss >/dev/null 2>&1 && ss -lnt | grep -Eq ':3000([[:space:]]|$)'; then
+            if command -v ss >/dev/null 2>&1 && ss -lnt | grep -Eq ':3030([[:space:]]|$)'; then
               LISTEN_OK=1
               break
             fi
             sleep 1
           done
           if [ "$LISTEN_OK" != "1" ]; then
-            echo "LISTEN_FAIL: nothing listening on TCP port 3000 after restart wait"
+            echo "LISTEN_FAIL: nothing listening on TCP port 3030 after restart wait"
             ss -lnt || true
             exit 1
           fi
 
-          echo "==> Verifying local HTTP on 127.0.0.1:3000"
-          LOCAL_CODE="$(curl -fsS -o /dev/null -w "%{http_code}" --retry 8 --retry-delay 2 --retry-all-errors --max-time 20 http://127.0.0.1:3000/ || true)"
+          echo "==> Verifying local HTTP on 127.0.0.1:3030"
+          LOCAL_CODE="$(curl -fsS -o /dev/null -w "%{http_code}" --retry 8 --retry-delay 2 --retry-all-errors --max-time 20 http://127.0.0.1:3030/ || true)"
           if [ "$LOCAL_CODE" != "200" ]; then
-            echo "Local verify failed: expected HTTP 200 on 127.0.0.1:3000, got ${LOCAL_CODE:-none}"
+            echo "Local verify failed: expected HTTP 200 on 127.0.0.1:3030, got ${LOCAL_CODE:-none}"
             exit 1
           fi
 
