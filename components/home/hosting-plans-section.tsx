@@ -351,31 +351,36 @@ export function HostingPlansSection({
         ) : null}
 
         <div className="mt-7 flex justify-center sm:mt-8">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/70 p-1 shadow-[0_8px_22px_rgba(15,23,42,0.06)] backdrop-blur-xl">
-            <Sparkles className="ml-3 size-3.5 text-[#2563eb]" aria-hidden />
+          <div className="inline-flex max-w-full items-center rounded-full border border-white/80 bg-white/70 p-1 shadow-[0_8px_22px_rgba(15,23,42,0.06)] backdrop-blur-xl">
+            <Sparkles
+              className="ml-2 hidden size-3.5 text-[#2563eb] sm:ml-3 sm:block"
+              aria-hidden
+            />
             <button
               type="button"
+              title={data.annualToggleLabel || "Annually"}
               onClick={() => setBilling("annually")}
               className={cn(
-                "rounded-full px-4 py-1.5 text-[12px] font-bold transition",
+                "rounded-full px-3 py-1.5 text-[12px] font-bold whitespace-nowrap transition sm:px-4",
                 billing === "annually"
                   ? "bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-white shadow-[0_8px_18px_rgba(79,70,229,0.28)]"
                   : "text-slate-500 hover:text-slate-800",
               )}
             >
-              {data.annualToggleLabel || "Annually"}
+              Annually
             </button>
             <button
               type="button"
+              title={data.monthlyToggleLabel || "Monthly"}
               onClick={() => setBilling("monthly")}
               className={cn(
-                "rounded-full px-4 py-1.5 text-[12px] font-bold transition",
+                "rounded-full px-3 py-1.5 text-[12px] font-bold whitespace-nowrap transition sm:px-4",
                 billing === "monthly"
                   ? "bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-white shadow-[0_8px_18px_rgba(79,70,229,0.28)]"
                   : "text-slate-500 hover:text-slate-800",
               )}
             >
-              {data.monthlyToggleLabel || "Monthly"}
+              Monthly
             </button>
           </div>
         </div>
