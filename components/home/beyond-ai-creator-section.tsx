@@ -121,27 +121,25 @@ export function BeyondAiCreatorSection({
             </div>
           </div>
 
-          <div className="relative order-2 mx-auto w-full max-w-[560px] lg:max-w-none">
+          <div className="relative order-2 -mx-[var(--hb-shell-pad)] h-[300px] w-[calc(100%+2*var(--hb-shell-pad))] sm:mx-0 sm:h-[400px] sm:w-full md:h-[460px] lg:h-[540px] xl:h-[600px] 2xl:h-[660px]">
+            {data.imageUrl ? (
+              <Image
+                src={data.imageUrl}
+                alt={data.imageAlt}
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 50vw"
+                unoptimized={isRuntimeMediaSrc(data.imageUrl)}
+                className="object-cover object-[78%_center] sm:rounded-none"
+              />
+            ) : null}
             <div
               aria-hidden
-              className="pointer-events-none absolute top-[8%] left-[4%] h-[86%] w-[92%] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(147,197,253,0.28),transparent_70%)] blur-3xl"
+              className="pointer-events-none absolute inset-y-0 left-0 w-[28%] bg-gradient-to-r from-[#eef4fb] via-[#eef4fb]/70 to-transparent"
             />
-            <div className="relative mx-auto h-[min(52vh,420px)] w-full sm:h-[min(58vh,520px)] lg:h-[min(70vh,640px)] xl:h-[min(74vh,700px)]">
-              {data.imageUrl ? (
-                <Image
-                  src={data.imageUrl}
-                  alt={data.imageAlt}
-                  fill
-                  sizes="(max-width: 640px) 92vw, (max-width: 1024px) 70vw, 42vw"
-                  unoptimized={isRuntimeMediaSrc(data.imageUrl)}
-                  className="[mask-image:radial-gradient(ellipse_72%_78%_at_50%_46%,#000_58%,transparent_78%)] object-contain object-[center_28%] [-webkit-mask-image:radial-gradient(ellipse_72%_78%_at_50%_46%,#000_58%,transparent_78%)]"
-                />
-              ) : null}
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(238,244,251,0.35)_64%,#eef4fb_86%)]"
-              />
-            </div>
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#f4f8fd] to-transparent"
+            />
           </div>
         </div>
       </div>
