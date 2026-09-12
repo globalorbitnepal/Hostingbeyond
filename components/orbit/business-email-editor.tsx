@@ -127,9 +127,19 @@ export function BusinessEmailEditor({ value, onChange, onPersist }: Props) {
           onChange={(composeLabel) => patch({ composeLabel })}
         />
         <Field
-          label="Handwritten note"
-          value={value.handwrittenNote}
-          onChange={(handwrittenNote) => patch({ handwrittenNote })}
+          label="Trust 1"
+          value={value.trust1}
+          onChange={(trust1) => patch({ trust1 })}
+        />
+        <Field
+          label="Trust 2"
+          value={value.trust2}
+          onChange={(trust2) => patch({ trust2 })}
+        />
+        <Field
+          label="Trust 3"
+          value={value.trust3}
+          onChange={(trust3) => patch({ trust3 })}
         />
         <Field
           label="Image alt"
@@ -159,12 +169,21 @@ export function BusinessEmailEditor({ value, onChange, onPersist }: Props) {
         <h3 className="text-sm font-semibold text-slate-800">Highlights</h3>
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           {value.highlights.map((item, index) => (
-            <Field
+            <div
               key={item.id}
-              label={`Highlight ${index + 1}`}
-              value={item.title}
-              onChange={(title) => updateHighlight(index, { title })}
-            />
+              className="space-y-2 rounded-xl border border-slate-200 p-3"
+            >
+              <Field
+                label="Title"
+                value={item.title}
+                onChange={(title) => updateHighlight(index, { title })}
+              />
+              <Field
+                label="Subtitle"
+                value={item.subtitle}
+                onChange={(subtitle) => updateHighlight(index, { subtitle })}
+              />
+            </div>
           ))}
         </div>
       </div>
@@ -224,12 +243,23 @@ export function BusinessEmailEditor({ value, onChange, onPersist }: Props) {
         <h3 className="text-sm font-semibold text-slate-800">Bottom bar</h3>
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           {value.features.map((item, index) => (
-            <Field
+            <div
               key={item.id}
-              label={`Feature ${index + 1}`}
-              value={item.title}
-              onChange={(title) => updateFeature(index, { title })}
-            />
+              className="space-y-2 rounded-xl border border-slate-200 p-3"
+            >
+              <Field
+                label="Title"
+                value={item.title}
+                onChange={(title) => updateFeature(index, { title })}
+              />
+              <Field
+                label="Description"
+                value={item.description}
+                onChange={(description) =>
+                  updateFeature(index, { description })
+                }
+              />
+            </div>
           ))}
         </div>
       </div>

@@ -231,6 +231,7 @@ export type CmsBusinessEmailStat = {
 export type CmsBusinessEmailFeature = {
   id: string;
   title: string;
+  description: string;
   icon: "globe" | "layers" | "headphones" | "users";
 };
 
@@ -253,6 +254,9 @@ export type CmsBusinessEmailContent = {
   secondaryCtaLabel: string;
   secondaryCtaHref: string;
   handwrittenNote: string;
+  trust1: string;
+  trust2: string;
+  trust3: string;
   toastEmail: string;
   toastLabel: string;
   mailTitle: string;
@@ -831,6 +835,9 @@ export function defaultBusinessEmailSection(): CmsBusinessEmailContent {
     secondaryCtaLabel: "See How It Works",
     secondaryCtaHref: routes.businessEmail,
     handwrittenNote: "Same professional you. A bigger tomorrow.",
+    trust1: "Custom domain included",
+    trust2: "Mailbox in minutes",
+    trust3: "99.9% uptime SLA",
     toastEmail: "you@yourcompany.com",
     toastLabel: "Connected",
     mailTitle: "Global Mail",
@@ -840,26 +847,26 @@ export function defaultBusinessEmailSection(): CmsBusinessEmailContent {
     highlights: [
       {
         id: "domain",
-        title: "Custom Domain Email",
-        subtitle: "",
+        title: "Custom Domain",
+        subtitle: "you@yourbrand.com",
         icon: "shield",
       },
       {
         id: "secure",
         title: "Secure & Private",
-        subtitle: "",
+        subtitle: "Encrypted inbox",
         icon: "lock",
       },
       {
         id: "fast",
-        title: "Fast & Reliable Performance",
-        subtitle: "",
+        title: "Fast Performance",
+        subtitle: "Instant delivery",
         icon: "zap",
       },
       {
         id: "teams",
         title: "Built for Teams",
-        subtitle: "",
+        subtitle: "Shared mailboxes",
         icon: "users",
       },
     ],
@@ -914,16 +921,28 @@ export function defaultBusinessEmailSection(): CmsBusinessEmailContent {
       },
     ],
     features: [
-      { id: "infra", title: "Global Infrastructure", icon: "globe" },
+      {
+        id: "infra",
+        title: "Global Infrastructure",
+        description: "Mail routed across worldwide points of presence.",
+        icon: "globe",
+      },
       {
         id: "servers",
         title: "High Performance Email Servers",
+        description: "Fast, dedicated servers built for business inboxes.",
         icon: "layers",
       },
-      { id: "support", title: "24/7 Expert Support", icon: "headphones" },
+      {
+        id: "support",
+        title: "24/7 Expert Support",
+        description: "Real people ready whenever your team needs help.",
+        icon: "headphones",
+      },
       {
         id: "trusted",
         title: "Trusted by Businesses Worldwide",
+        description: "Professional email for growing teams and brands.",
         icon: "users",
       },
     ],
@@ -1646,6 +1665,15 @@ function mergeBusinessEmailSection(
             ...item,
             id: item.id || fallback.id || `email-highlight-${index}`,
             icon: highlightIcon(item.icon, fallback.icon),
+            title:
+              item.title === "Custom Domain Email" ||
+              item.title === "Fast & Reliable Performance"
+                ? fallback.title
+                : item.title || fallback.title,
+            subtitle:
+              typeof item.subtitle === "string" && item.subtitle.trim()
+                ? item.subtitle
+                : fallback.subtitle,
           } satisfies CmsBusinessEmailHighlight;
         })
       : defaults.highlights;
@@ -1684,6 +1712,10 @@ function mergeBusinessEmailSection(
             ...item,
             id: item.id || fallback.id || `email-feature-${index}`,
             icon: featureIcon(item.icon, fallback.icon),
+            description:
+              typeof item.description === "string" && item.description.trim()
+                ? item.description
+                : fallback.description,
           } satisfies CmsBusinessEmailFeature;
         })
       : defaults.features;
@@ -1692,6 +1724,18 @@ function mergeBusinessEmailSection(
     ...defaults,
     ...stored,
     visible: stored.visible !== false,
+    trust1:
+      typeof stored.trust1 === "string" && stored.trust1.trim()
+        ? stored.trust1
+        : defaults.trust1,
+    trust2:
+      typeof stored.trust2 === "string" && stored.trust2.trim()
+        ? stored.trust2
+        : defaults.trust2,
+    trust3:
+      typeof stored.trust3 === "string" && stored.trust3.trim()
+        ? stored.trust3
+        : defaults.trust3,
     imageUrl: (() => {
       const url =
         typeof stored.imageUrl === "string" ? stored.imageUrl.trim() : "";
