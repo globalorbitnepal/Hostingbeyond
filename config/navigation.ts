@@ -48,4 +48,12 @@ export const mainNavigation: NavItem[] = [
       { label: "Contact", href: routes.contact },
     ],
   },
+  {
+    label: "Pricing",
+    href: routes.pricing,
+  },
+  {
+    label: "Beyond AI",
+    href: routes.beyondAi,
+  },
 ];

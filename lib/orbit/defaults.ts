@@ -1537,12 +1537,22 @@ export function mergeHomeSections(
     // Drop legacy top-level Cloud & VPS — those live under Hosting now.
     // Also normalize stored "Web Hosting" label → "Hosting".
     navigation: (() => {
-      if (hasLegacyCloudTopNav || !Array.isArray(storedNav)) {
-        return defaults.navigation;
+      const source =
+        hasLegacyCloudTopNav || !Array.isArray(storedNav)
+          ? defaults.navigation
+          : storedNav.map((item) =>
+              item.label === "Web Hosting"
+                ? { ...item, label: "Hosting" }
+                : item,
+            );
+      const next = [...source];
+      if (!next.some((item) => item.label === "Pricing")) {
+        next.push({ label: "Pricing", href: "/pricing" });
       }
-      return storedNav.map((item) =>
-        item.label === "Web Hosting" ? { ...item, label: "Hosting" } : item,
-      );
+      if (!next.some((item) => item.label === "Beyond AI")) {
+        next.push({ label: "Beyond AI", href: "/beyond-ai" });
+      }
+      return next;
     })(),
   };
 }

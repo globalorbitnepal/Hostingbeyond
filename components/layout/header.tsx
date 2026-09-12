@@ -23,6 +23,7 @@ function localizeNavLabel(
     "Business Email": nav.businessEmail,
     Resources: "Solutions",
     Pricing: "Pricing",
+    "Beyond AI": "Beyond AI",
   };
   return map[label] ?? label;
 }
@@ -112,6 +113,7 @@ const NAV_ORDER = [
   "Business Email",
   "Resources",
   "Pricing",
+  "Beyond AI",
 ];
 
 function sortNav(items: NavItem[]): NavItem[] {
@@ -170,6 +172,9 @@ export function SiteHeader({
     });
     if (!deduped.some((item) => item.label === "Pricing")) {
       deduped.push({ label: "Pricing", href: routes.pricing });
+    }
+    if (!deduped.some((item) => item.label === "Beyond AI")) {
+      deduped.push({ label: "Beyond AI", href: routes.beyondAi });
     }
     return sortNav(deduped);
   })();

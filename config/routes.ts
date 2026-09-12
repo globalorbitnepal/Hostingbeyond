@@ -10,6 +10,7 @@ export const routes = {
   vps: "/vps",
   cloud: "/cloud",
   pricing: "/pricing",
+  beyondAi: "/beyond-ai",
   resources: "/resources",
   about: "/about",
   contact: "/contact",
