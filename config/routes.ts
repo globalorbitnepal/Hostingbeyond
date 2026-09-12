@@ -14,7 +14,9 @@ export const routes = {
   about: "/about",
   contact: "/contact",
   login: "/login",
-  getStarted: "/get-started",
+  signup: "/signup",
+  account: "/account",
+  getStarted: "/signup",
 } as const;
 
 export type AppRoute = (typeof routes)[keyof typeof routes];

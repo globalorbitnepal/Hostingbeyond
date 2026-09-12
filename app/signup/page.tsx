@@ -11,11 +11,11 @@ import {
 import { getLoginPage } from "@/lib/orbit/content";
 
 export const metadata: Metadata = {
-  title: "Login — HostingBeyond",
-  description: "Sign in to manage your HostingBeyond hosting services.",
+  title: "Sign up — HostingBeyond",
+  description: "Create a HostingBeyond account and start hosting in minutes.",
 };
 
-export default async function LoginPage() {
+export default async function SignupPage() {
   const jar = await cookies();
   const user = await getCustomerFromToken(
     jar.get(CUSTOMER_SESSION_COOKIE)?.value,
@@ -25,7 +25,7 @@ export default async function LoginPage() {
   const content = await getLoginPage();
   return (
     <Suspense>
-      <AuthPageView content={content} mode="login" />
+      <AuthPageView content={content} mode="signup" />
     </Suspense>
   );
 }

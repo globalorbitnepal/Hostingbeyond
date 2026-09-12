@@ -121,3 +121,41 @@ model ActivityLog {
   @@index([createdAt])
   @@index([action])
 }
+
+model CustomerUser {
+  id           String                 @id @default(cuid())
+  email        String                 @unique
+  passwordHash String?
+  name         String?
+  image        String?
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+  sessions     CustomerSession[]
+  accounts     CustomerOAuthAccount[]
+}
+
+model CustomerSession {
+  id        String       @id @default(cuid())
+  userId    String
+  user      CustomerUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String       @unique
+  expiresAt DateTime
+  createdAt DateTime     @default(now())
+  userAgent String?
+  ipAddress String?
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model CustomerOAuthAccount {
+  id                String       @id @default(cuid())
+  userId            String
+  user              CustomerUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider          String
+  providerAccountId String
+  createdAt         DateTime     @default(now())
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}

@@ -197,6 +197,9 @@ jobs:
           echo "==> Typecheck"
           npm run typecheck </dev/null
 
+          echo "==> Applying database migrations"
+          npx prisma migrate deploy </dev/null
+
           echo "==> Building production bundle"
           npm run build </dev/null
 

@@ -202,7 +202,15 @@ export type CmsSolutionProduct = {
   name: string;
   description: string;
   badge: string;
-  icon: "server" | "cloud" | "cart" | "wordpress" | "users" | "mail" | "cpu" | "globe";
+  icon:
+    | "server"
+    | "cloud"
+    | "cart"
+    | "wordpress"
+    | "users"
+    | "mail"
+    | "cpu"
+    | "globe";
   ctaLabel: string;
   ctaHref: string;
   images: CmsSolutionImage[];
@@ -266,12 +274,13 @@ export type CmsLoginPage = {
   dividerLabel: string;
   google: CmsLoginOAuthButton;
   github: CmsLoginOAuthButton;
+  facebook: CmsLoginOAuthButton;
   backgroundImage: string;
 };
 
 export function defaultLoginPage(): CmsLoginPage {
   return {
-    logoPath: "/logo/hostingbeyond-logo-transparent.png",
+    logoPath: "/logo/hostingbeyond-logo-v5.png",
     tagline: "",
     copyright: "© 2025 HostingBeyond. All rights reserved.",
     badge: "Everything You Need, All in One Place",
@@ -318,17 +327,22 @@ export function defaultLoginPage(): CmsLoginPage {
     loginCtaLabel: "Login",
     signupPrompt: "Don't have an account?",
     signupLabel: "Sign up",
-    signupHref: "/get-started",
+    signupHref: "/signup",
     dividerLabel: "OR",
     google: {
       visible: true,
       label: "Continue with Google",
-      href: "#",
+      href: "/api/auth/oauth/google",
     },
     github: {
       visible: true,
       label: "Continue with GitHub",
-      href: "#",
+      href: "/api/auth/oauth/github",
+    },
+    facebook: {
+      visible: true,
+      label: "Continue with Facebook",
+      href: "/api/auth/oauth/facebook",
     },
     backgroundImage: "",
   };
@@ -386,6 +400,21 @@ export function mergeLoginPage(
       ...stored.github,
       visible: stored.github?.visible ?? defaults.github.visible,
     },
+    facebook: {
+      ...defaults.facebook,
+      ...stored.facebook,
+      visible: stored.facebook?.visible ?? defaults.facebook.visible,
+    },
+    signupHref:
+      !stored.signupHref ||
+      stored.signupHref === "#" ||
+      stored.signupHref === "/get-started"
+        ? "/signup"
+        : stored.signupHref,
+    logoPath:
+      stored.logoPath && stored.logoPath.includes("/uploads")
+        ? stored.logoPath
+        : "/logo/hostingbeyond-logo-v5.png",
   };
 }
 
@@ -401,7 +430,7 @@ export function defaultSiteSettings(): CmsSiteSettings {
     ogImagePath: "/images/hero-speaker-light.png",
     loginLabel: "Login",
     getStartedLabel: "Get Started",
-    getStartedHref: "/get-started",
+    getStartedHref: "/signup",
     loginHref: "/login",
     contactEmail: "hello@hostingbeyond.com",
     contactPhone: "",

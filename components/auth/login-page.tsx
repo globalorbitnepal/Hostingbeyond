@@ -1,7 +1,8 @@
 "use client";
 
-import { useId, useState, type FormEvent } from "react";
+import { useId, useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import {
   ArrowLeft,
@@ -13,60 +14,65 @@ import {
   Lock,
   Mail,
   Shield,
+  User,
   Zap,
 } from "lucide-react";
 
+import { BrandMark } from "@/components/auth/brand-mark";
+import { SocialAuthButtons } from "@/components/auth/social-auth-buttons";
 import { CountryLanguageSelector } from "@/components/locale/country-language-selector";
-import { HostingBeyondLogo } from "@/components/shared/hostingbeyond-logo";
 import { cn } from "@/lib/utils";
 import type { CmsLoginFeature, CmsLoginPage } from "@/lib/orbit/defaults";
 
-const FEATURE_ICONS: Record<
-  CmsLoginFeature["icon"],
-  typeof Shield
-> = {
+const FEATURE_ICONS: Record<CmsLoginFeature["icon"], typeof Shield> = {
   shield: Shield,
   zap: Zap,
   headphones: Headphones,
   lock: Lock,
 };
 
-function isUsableHref(href?: string) {
-  if (!href) return false;
-  const value = href.trim();
-  if (!value || value === "#") return false;
-  if (value === "/forgot-password") return false;
-  return true;
-}
+const ERROR_COPY: Record<string, string> = {
+  oauth: "Social sign-in could not be completed. Try email instead.",
+  oauth_denied: "Social sign-in was cancelled.",
+  oauth_profile:
+    "We could not read your social profile email. Try another method.",
+  google_unavailable:
+    "Google sign-in is not connected yet. Create an account with email, or ask support to enable Google.",
+  github_unavailable:
+    "GitHub sign-in is not connected yet. Create an account with email, or ask support to enable GitHub.",
+  facebook_unavailable:
+    "Facebook sign-in is not connected yet. Create an account with email, or ask support to enable Facebook.",
+};
 
-function resolveSignupHref(href?: string) {
-  if (!href || href === "#" || href === "/get-started") return "/";
-  return href;
-}
-
-export function LoginPageView({ content }: { content: CmsLoginPage }) {
+export function AuthPageView({
+  content,
+  mode,
+}: {
+  content: CmsLoginPage;
+  mode: "login" | "signup";
+}) {
   const reduceMotion = useReducedMotion();
   const messageId = useId();
+  const searchParams = useSearchParams();
+  const oauthError = searchParams.get("error");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [remember, setRemember] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
-  const [status, setStatus] = useState<"idle" | "loading" | "info">("idle");
+  const [status, setStatus] = useState<"idle" | "loading">("idle");
   const [message, setMessage] = useState("");
+  const [messageTone, setMessageTone] = useState<"error" | "info">("info");
 
   const submitting = status === "loading";
-  const showForgot = isUsableHref(content.forgotHref);
-  const showGoogle =
-    content.google.visible && isUsableHref(content.google.href);
-  const showGithub =
-    content.github.visible && isUsableHref(content.github.href);
-  const showSocials = showGoogle || showGithub;
   const features = (content.features ?? []).slice(0, 4);
   const backgroundImage =
     content.backgroundImage?.trim() || "/images/hero-atmosphere.jpg";
-
+  const logoSrc = content.logoPath?.trim() || "/logo/hostingbeyond-logo-v5.png";
   const duration = reduceMotion ? 0 : 0.45;
   const delay = reduceMotion ? 0 : 0.08;
+  const isSignup = mode === "signup";
 
   const fieldClass = cn(
     "h-12 w-full rounded-xl border border-slate-200 bg-white pl-11 text-sm text-slate-900",
@@ -77,14 +83,49 @@ export function LoginPageView({ content }: { content: CmsLoginPage }) {
     "motion-reduce:transition-none",
   );
 
+  const oauthMessage = useMemo(() => {
+    if (!oauthError) return "";
+    return ERROR_COPY[oauthError] || ERROR_COPY.oauth;
+  }, [oauthError]);
+
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (submitting) return;
-    setStatus("loading");
     setMessage("");
-    await new Promise((resolve) => window.setTimeout(resolve, 420));
-    setStatus("info");
-    setMessage("Login will connect to your account system soon.");
+
+    if (isSignup && password !== confirmPassword) {
+      setMessageTone("error");
+      setMessage("Passwords do not match.");
+      return;
+    }
+
+    setStatus("loading");
+    try {
+      const res = await fetch(
+        isSignup ? "/api/auth/register" : "/api/auth/login",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(
+            isSignup
+              ? { name, email, password }
+              : { email, password, remember },
+          ),
+        },
+      );
+      const data = (await res.json()) as { error?: string };
+      if (!res.ok) {
+        setMessageTone("error");
+        setMessage(data.error || "Something went wrong. Please try again.");
+        setStatus("idle");
+        return;
+      }
+      window.location.assign("/account");
+    } catch {
+      setMessageTone("error");
+      setMessage("Network error. Please try again.");
+      setStatus("idle");
+    }
   }
 
   return (
@@ -100,10 +141,6 @@ export function LoginPageView({ content }: { content: CmsLoginPage }) {
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_78%_42%,rgba(47,107,255,0.16),transparent_44%)]"
         aria-hidden
       />
-      <div
-        className="pointer-events-none absolute inset-y-0 right-0 hidden w-[46%] bg-gradient-to-l from-slate-900/20 via-transparent to-transparent lg:block"
-        aria-hidden
-      />
 
       <div className="relative mx-auto flex min-h-dvh w-full max-w-[1400px] flex-col px-5 py-5 sm:px-8 lg:px-10 lg:py-7">
         <header className="flex items-center justify-between gap-4">
@@ -111,7 +148,7 @@ export function LoginPageView({ content }: { content: CmsLoginPage }) {
             href="/"
             className="inline-flex min-h-11 items-center rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--hb-blue)]"
           >
-            <HostingBeyondLogo className="h-10 w-auto sm:h-11" />
+            <BrandMark src={logoSrc} />
           </Link>
           <div className="flex items-center gap-2 sm:gap-3">
             <CountryLanguageSelector compact variant="globe" tone="light" />
@@ -126,27 +163,35 @@ export function LoginPageView({ content }: { content: CmsLoginPage }) {
           </div>
         </header>
 
-        <div className="grid flex-1 items-center gap-8 py-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,480px)] lg:gap-12 xl:gap-16 lg:py-10">
+        <div className="grid flex-1 items-center gap-8 py-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,480px)] lg:gap-12 lg:py-10 xl:gap-16">
           <motion.section
             initial={reduceMotion ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration, ease: [0.22, 1, 0.36, 1] }}
             className="order-2 max-w-xl lg:order-1"
           >
-            <p className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 shadow-sm">
+            <p className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/80 px-3 py-1 text-[11px] font-semibold tracking-[0.18em] text-slate-500 uppercase shadow-sm">
               <Shield className="h-3.5 w-3.5 text-[var(--hb-blue)]" />
               {content.badge || "Client control panel"}
             </p>
-            <h1 className="mt-6 font-heading text-[2.4rem] font-semibold leading-[1.05] tracking-[-0.04em] text-slate-950 sm:text-5xl lg:text-[3.85rem]">
-              {content.headline}
-              {content.headlineAccent ? (
+            <h1 className="font-heading mt-6 text-[2.4rem] leading-[1.05] font-semibold tracking-[-0.04em] text-slate-950 sm:text-5xl lg:text-[3.85rem]">
+              {isSignup
+                ? "Create your HostingBeyond account"
+                : content.headline}
+              {isSignup ? (
+                <span className="mt-1 block bg-gradient-to-r from-[var(--hb-blue)] to-[var(--hb-purple)] bg-clip-text text-transparent">
+                  in a minute
+                </span>
+              ) : content.headlineAccent ? (
                 <span className="mt-1 block bg-gradient-to-r from-[var(--hb-blue)] to-[var(--hb-purple)] bg-clip-text text-transparent">
                   {content.headlineAccent}
                 </span>
               ) : null}
             </h1>
             <p className="mt-5 max-w-md text-[15px] leading-7 text-slate-600 sm:text-base">
-              {content.description}
+              {isSignup
+                ? "Sign up with email or continue with Google, GitHub or Facebook — then manage hosting from one place."
+                : content.description}
             </p>
 
             <ul className="mt-8 hidden grid-cols-1 gap-3 sm:grid sm:grid-cols-2">
@@ -183,23 +228,47 @@ export function LoginPageView({ content }: { content: CmsLoginPage }) {
             <div className="w-full rounded-[28px] border border-white/90 bg-white p-6 shadow-[0_30px_80px_-28px_rgba(15,23,42,0.35),0_12px_32px_-18px_rgba(47,107,255,0.18)] sm:p-8">
               <div className="mb-7 text-center">
                 <div className="mb-5 flex justify-center">
-                  <HostingBeyondLogo className="h-9 w-auto" />
+                  <BrandMark src={logoSrc} className="h-9 sm:h-10" />
                 </div>
                 <h2 className="font-heading text-[1.7rem] font-semibold tracking-[-0.03em] text-slate-950">
-                  {content.cardTitle}
+                  {isSignup ? "Create an account" : content.cardTitle}
                 </h2>
                 <p className="mt-1.5 text-sm text-slate-500">
-                  {content.cardSubtitle}
+                  {isSignup
+                    ? "Use email or a social account. One click signs you in if you already have an account."
+                    : content.cardSubtitle}
                 </p>
               </div>
 
               <form className="space-y-4" onSubmit={onSubmit}>
+                {isSignup ? (
+                  <label className="block" htmlFor="customer-name">
+                    <span className="mb-1.5 block text-[13px] font-semibold text-slate-700">
+                      Full name
+                    </span>
+                    <span className="relative block">
+                      <User className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                      <input
+                        id="customer-name"
+                        type="text"
+                        name="name"
+                        autoComplete="name"
+                        value={name}
+                        onChange={(event) => setName(event.target.value)}
+                        placeholder="Your name"
+                        className={fieldClass}
+                        disabled={submitting}
+                      />
+                    </span>
+                  </label>
+                ) : null}
+
                 <label className="block" htmlFor="customer-email">
                   <span className="mb-1.5 block text-[13px] font-semibold text-slate-700">
                     {content.emailLabel}
                   </span>
                   <span className="relative block">
-                    <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <Mail className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-400" />
                     <input
                       id="customer-email"
                       type="email"
@@ -221,23 +290,30 @@ export function LoginPageView({ content }: { content: CmsLoginPage }) {
                     {content.passwordLabel}
                   </span>
                   <span className="relative block">
-                    <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <Lock className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-400" />
                     <input
                       id="customer-password"
                       type={showPassword ? "text" : "password"}
                       name="password"
-                      autoComplete="current-password"
+                      autoComplete={
+                        isSignup ? "new-password" : "current-password"
+                      }
                       required
+                      minLength={isSignup ? 8 : 1}
                       value={password}
                       onChange={(event) => setPassword(event.target.value)}
-                      placeholder={content.passwordPlaceholder}
+                      placeholder={
+                        isSignup
+                          ? "At least 8 characters"
+                          : content.passwordPlaceholder
+                      }
                       className={cn(fieldClass, "pr-12")}
                       disabled={submitting}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword((value) => !value)}
-                      className="absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-50 hover:text-slate-700"
+                      className="absolute top-1/2 right-2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-50 hover:text-slate-700"
                       aria-label={
                         showPassword ? "Hide password" : "Show password"
                       }
@@ -252,33 +328,62 @@ export function LoginPageView({ content }: { content: CmsLoginPage }) {
                   </span>
                 </label>
 
-                <div className="flex items-center justify-between gap-3 pt-0.5">
-                  <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-slate-600">
-                    <input
-                      type="checkbox"
-                      checked={remember}
-                      onChange={(event) => setRemember(event.target.checked)}
-                      className="h-4 w-4 rounded border-slate-300 text-[var(--hb-blue)] focus:ring-[var(--hb-blue)]"
-                    />
-                    {content.rememberLabel}
+                {isSignup ? (
+                  <label className="block" htmlFor="customer-confirm">
+                    <span className="mb-1.5 block text-[13px] font-semibold text-slate-700">
+                      Confirm password
+                    </span>
+                    <span className="relative block">
+                      <Lock className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                      <input
+                        id="customer-confirm"
+                        type={showPassword ? "text" : "password"}
+                        name="confirmPassword"
+                        autoComplete="new-password"
+                        required
+                        minLength={8}
+                        value={confirmPassword}
+                        onChange={(event) =>
+                          setConfirmPassword(event.target.value)
+                        }
+                        placeholder="Repeat your password"
+                        className={fieldClass}
+                        disabled={submitting}
+                      />
+                    </span>
                   </label>
-                  {showForgot ? (
+                ) : (
+                  <div className="flex items-center justify-between gap-3 pt-0.5">
+                    <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-slate-600">
+                      <input
+                        type="checkbox"
+                        checked={remember}
+                        onChange={(event) => setRemember(event.target.checked)}
+                        className="h-4 w-4 rounded border-slate-300 text-[var(--hb-blue)] focus:ring-[var(--hb-blue)]"
+                      />
+                      {content.rememberLabel}
+                    </label>
                     <Link
-                      href={content.forgotHref}
+                      href="/forgot-password"
                       className="text-sm font-semibold text-[var(--hb-blue)] hover:text-[#1D4ED8]"
                     >
                       {content.forgotLabel}
                     </Link>
-                  ) : null}
-                </div>
+                  </div>
+                )}
 
-                {message ? (
+                {oauthMessage || message ? (
                   <p
                     id={messageId}
-                    className="rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-sm text-blue-800"
+                    className={cn(
+                      "rounded-xl border px-3 py-2 text-sm",
+                      messageTone === "error" || oauthMessage
+                        ? "border-red-100 bg-red-50 text-red-800"
+                        : "border-blue-100 bg-blue-50 text-blue-800",
+                    )}
                     role="status"
                   >
-                    {message}
+                    {message || oauthMessage}
                   </p>
                 ) : null}
 
@@ -290,51 +395,26 @@ export function LoginPageView({ content }: { content: CmsLoginPage }) {
                   {submitting ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : null}
-                  {submitting ? "Signing in…" : content.loginCtaLabel}
+                  {submitting
+                    ? isSignup
+                      ? "Creating account…"
+                      : "Signing in…"
+                    : isSignup
+                      ? "Create account"
+                      : content.loginCtaLabel}
                   {!submitting ? <ArrowRight className="h-4 w-4" /> : null}
                 </button>
               </form>
 
-              {showSocials ? (
-                <>
-                  <div className="my-6 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-                    <span className="h-px flex-1 bg-slate-200" />
-                    {content.dividerLabel || "OR"}
-                    <span className="h-px flex-1 bg-slate-200" />
-                  </div>
-                  <div
-                    className={cn(
-                      "grid gap-2.5",
-                      showGoogle && showGithub ? "grid-cols-2" : "grid-cols-1",
-                    )}
-                  >
-                    {showGoogle ? (
-                      <a
-                        href={content.google.href}
-                        className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
-                      >
-                        {content.google.label}
-                      </a>
-                    ) : null}
-                    {showGithub ? (
-                      <a
-                        href={content.github.href}
-                        className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
-                      >
-                        {content.github.label}
-                      </a>
-                    ) : null}
-                  </div>
-                </>
-              ) : null}
+              <SocialAuthButtons dividerLabel={content.dividerLabel} />
 
               <p className="mt-6 text-center text-sm text-slate-500">
-                {content.signupPrompt}{" "}
+                {isSignup ? "Already have an account?" : content.signupPrompt}{" "}
                 <Link
-                  href={resolveSignupHref(content.signupHref)}
+                  href={isSignup ? "/login" : "/signup"}
                   className="font-semibold text-[var(--hb-blue)] hover:text-[#1D4ED8]"
                 >
-                  {content.signupLabel}
+                  {isSignup ? "Log in" : content.signupLabel}
                 </Link>
               </p>
 
@@ -353,3 +433,5 @@ export function LoginPageView({ content }: { content: CmsLoginPage }) {
     </div>
   );
 }
+
+export { AuthPageView as LoginPageView };
