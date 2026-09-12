@@ -75,8 +75,8 @@ const cities = [
   {
     city: "Sydney",
     status: "Connected",
-    top: "22%",
-    left: "80%",
+    top: "6%",
+    left: "88%",
     photo: "/images/business-email/sydney.png",
   },
 ];
@@ -158,7 +158,7 @@ function MailInbox({ content }: { content: CmsBusinessEmailContent }) {
 
 function MailStage({ content }: { content: CmsBusinessEmailContent }) {
   return (
-    <div className="relative mx-auto min-h-[520px] w-full max-w-[640px] sm:min-h-[560px] lg:ml-auto lg:min-h-[600px] lg:max-w-none">
+    <div className="relative mx-auto min-h-[540px] w-full max-w-[640px] sm:min-h-[600px] lg:ml-auto lg:min-h-[640px] lg:max-w-none">
       <div
         aria-hidden
         className="pointer-events-none absolute -inset-6 rounded-[40px] bg-[radial-gradient(ellipse_at_center,rgba(37,99,235,0.16),transparent_62%)] blur-2xl"
@@ -176,7 +176,7 @@ function MailStage({ content }: { content: CmsBusinessEmailContent }) {
       </div>
 
       {content.imageUrl ? (
-        <div className="absolute top-[2%] right-[-10%] z-10 h-[108%] w-[92%] sm:right-[-6%] sm:w-[82%] lg:w-[78%]">
+        <div className="absolute top-[4%] right-[-10%] z-10 h-[104%] w-[92%] sm:right-[-6%] sm:w-[82%] lg:w-[78%]">
           <Image
             src={content.imageUrl}
             alt={content.imageAlt}
@@ -187,12 +187,12 @@ function MailStage({ content }: { content: CmsBusinessEmailContent }) {
               isRuntimeMediaSrc(content.imageUrl) ||
               content.imageUrl.endsWith(".png")
             }
-            className="[mask-image:linear-gradient(to_right,transparent_0%,#000_8%,#000_100%)] object-cover object-[center_8%] [-webkit-mask-image:linear-gradient(to_right,transparent_0%,#000_8%,#000_100%)]"
+            className="[mask-image:linear-gradient(to_right,transparent_0%,#000_8%,#000_100%)] object-cover object-[center_12%] [-webkit-mask-image:linear-gradient(to_right,transparent_0%,#000_8%,#000_100%)]"
           />
         </div>
       ) : null}
 
-      <div className="absolute -top-3 right-2 z-30 hidden items-center gap-2 rounded-full border border-white/80 bg-white/80 px-3 py-1.5 shadow-[0_10px_28px_rgba(15,23,42,0.12)] backdrop-blur-xl sm:flex md:right-8">
+      <div className="absolute -top-3 left-[8%] z-30 hidden items-center gap-2 rounded-full border border-white/80 bg-white/80 px-3 py-1.5 shadow-[0_10px_28px_rgba(15,23,42,0.12)] backdrop-blur-xl sm:flex">
         <span className="inline-flex size-7 items-center justify-center rounded-lg bg-[#eef2ff] text-[#4f46e5]">
           <Mail className="size-3.5" />
         </span>
@@ -229,7 +229,7 @@ function MailStage({ content }: { content: CmsBusinessEmailContent }) {
         <MailInbox content={content} />
       </div>
 
-      <div className="absolute top-[38%] -right-1 z-30 hidden w-[168px] space-y-2 xl:block">
+      <div className="absolute right-0 bottom-[14%] z-30 hidden w-[168px] space-y-2 xl:block">
         {content.stats.map((stat) => {
           const Icon = statIcons[stat.icon] ?? BarChart3;
           return (
