@@ -54,29 +54,29 @@ const cities = [
   {
     city: "New York",
     status: "Connected",
-    top: "7%",
-    left: "48%",
+    top: "3%",
+    left: "36%",
     photo: "/images/business-email/ny.png",
   },
   {
     city: "London",
     status: "Connected",
-    top: "2%",
-    left: "71%",
+    top: "0%",
+    left: "62%",
     photo: "/images/business-email/london.png",
   },
   {
     city: "Tokyo",
     status: "Connected",
-    top: "16%",
-    left: "86%",
+    top: "10%",
+    left: "82%",
     photo: "/images/business-email/tokyo.png",
   },
   {
     city: "Sydney",
     status: "Connected",
-    top: "30%",
-    left: "84%",
+    top: "22%",
+    left: "80%",
     photo: "/images/business-email/sydney.png",
   },
 ];
@@ -158,44 +158,41 @@ function MailInbox({ content }: { content: CmsBusinessEmailContent }) {
 
 function MailStage({ content }: { content: CmsBusinessEmailContent }) {
   return (
-    <div className="relative mx-auto h-[500px] w-full max-w-[640px] sm:h-[560px] lg:h-[600px] lg:max-w-none xl:h-[640px]">
+    <div className="relative mx-auto min-h-[520px] w-full max-w-[640px] sm:min-h-[560px] lg:ml-auto lg:min-h-[600px] lg:max-w-none">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 overflow-hidden"
-      >
-        <div className="absolute top-[2%] right-[-4%] h-[58%] w-[78%] rounded-full bg-[radial-gradient(ellipse,rgba(147,197,253,0.28),transparent_70%)] blur-3xl" />
-        <div className="absolute right-0 bottom-[-8%] h-[40%] w-[46%] rounded-full bg-[radial-gradient(ellipse,rgba(167,139,250,0.12),transparent_70%)] blur-3xl" />
-      </div>
+        className="pointer-events-none absolute -inset-6 rounded-[40px] bg-[radial-gradient(ellipse_at_center,rgba(37,99,235,0.16),transparent_62%)] blur-2xl"
+      />
 
-      <div className="pointer-events-none absolute top-0 right-[-6%] h-[58%] w-[96%] sm:w-[90%]">
+      <div className="pointer-events-none absolute top-0 right-[-4%] h-[48%] w-[92%] sm:w-[88%]">
         <Image
           src="/images/business-email/map.png"
           alt=""
           fill
           unoptimized
           sizes="(max-width: 1024px) 90vw, 55vw"
-          className="object-contain object-[right_top] opacity-80"
+          className="object-contain object-[right_top] opacity-70"
         />
       </div>
 
       {content.imageUrl ? (
-        <div className="absolute right-[-8%] bottom-0 z-10 h-full w-[82%] sm:right-[-4%] sm:w-[70%] lg:w-[66%]">
+        <div className="absolute top-[2%] right-[-10%] z-10 h-[108%] w-[92%] sm:right-[-6%] sm:w-[82%] lg:w-[78%]">
           <Image
             src={content.imageUrl}
             alt={content.imageAlt}
             fill
             priority
-            sizes="(max-width: 1024px) 80vw, 42vw"
+            sizes="(max-width: 1024px) 90vw, 50vw"
             unoptimized={
               isRuntimeMediaSrc(content.imageUrl) ||
               content.imageUrl.endsWith(".png")
             }
-            className="[mask-image:linear-gradient(to_right,transparent_0%,#000_12%,#000_100%)] object-contain object-bottom [-webkit-mask-image:linear-gradient(to_right,transparent_0%,#000_12%,#000_100%)]"
+            className="[mask-image:linear-gradient(to_right,transparent_0%,#000_8%,#000_100%)] object-cover object-[center_8%] [-webkit-mask-image:linear-gradient(to_right,transparent_0%,#000_8%,#000_100%)]"
           />
         </div>
       ) : null}
 
-      <div className="absolute top-4 left-[4%] z-30 hidden items-center gap-2 rounded-2xl border border-white/80 bg-white/80 px-3 py-2 shadow-[0_14px_36px_rgba(37,80,130,0.12)] backdrop-blur-xl sm:flex">
+      <div className="absolute -top-3 right-2 z-30 hidden items-center gap-2 rounded-full border border-white/80 bg-white/80 px-3 py-1.5 shadow-[0_10px_28px_rgba(15,23,42,0.12)] backdrop-blur-xl sm:flex md:right-8">
         <span className="inline-flex size-7 items-center justify-center rounded-lg bg-[#eef2ff] text-[#4f46e5]">
           <Mail className="size-3.5" />
         </span>
@@ -228,11 +225,11 @@ function MailStage({ content }: { content: CmsBusinessEmailContent }) {
         </div>
       ))}
 
-      <div className="absolute top-[20%] left-0 z-20 w-[84%] max-w-[360px] sm:left-[2%] sm:w-[58%] sm:max-w-[380px]">
+      <div className="absolute top-[34%] left-0 z-20 w-[78%] max-w-[340px] sm:top-[32%] sm:w-[54%]">
         <MailInbox content={content} />
       </div>
 
-      <div className="absolute top-[28%] right-0 z-30 hidden w-[168px] space-y-2 lg:block">
+      <div className="absolute top-[38%] -right-1 z-30 hidden w-[168px] space-y-2 xl:block">
         {content.stats.map((stat) => {
           const Icon = statIcons[stat.icon] ?? BarChart3;
           return (
@@ -337,7 +334,9 @@ export function BusinessEmailSection({
             ) : null}
           </div>
 
-          <MailStage content={data} />
+          <div className="relative pb-16 sm:pb-10 lg:pb-8">
+            <MailStage content={data} />
+          </div>
         </div>
 
         <div className="mt-10 grid gap-3 rounded-[28px] border border-white/80 bg-white/60 p-3 shadow-[0_18px_50px_-28px_rgba(37,80,130,0.32)] backdrop-blur-2xl sm:mt-14 sm:grid-cols-2 lg:grid-cols-4 lg:p-4">
