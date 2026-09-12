@@ -214,9 +214,37 @@ export type CmsBeyondAiContent = {
   features: CmsBeyondAiFeature[];
 };
 
-export type CmsBeyondAiCreatorContent = {
+export type CmsBusinessEmailHighlight = {
+  id: string;
+  title: string;
+  subtitle: string;
+  icon: "shield" | "lock" | "zap" | "users";
+};
+
+export type CmsBusinessEmailStat = {
+  id: string;
+  title: string;
+  subtitle: string;
+  icon: "chart" | "globe" | "shield";
+};
+
+export type CmsBusinessEmailFeature = {
+  id: string;
+  title: string;
+  icon: "globe" | "layers" | "headphones" | "users";
+};
+
+export type CmsBusinessEmailMessage = {
+  id: string;
+  sender: string;
+  preview: string;
+  time: string;
+  accent: string;
+};
+
+export type CmsBusinessEmailContent = {
   visible: boolean;
-  eyebrow: string;
+  badge: string;
   title: string;
   titleAccent: string;
   description: string;
@@ -224,12 +252,17 @@ export type CmsBeyondAiCreatorContent = {
   primaryCtaHref: string;
   secondaryCtaLabel: string;
   secondaryCtaHref: string;
-  trust1: string;
-  trust2: string;
-  trust3: string;
+  handwrittenNote: string;
+  toastEmail: string;
+  toastLabel: string;
+  mailTitle: string;
+  composeLabel: string;
   imageUrl: string;
   imageAlt: string;
-  highlights: CmsBeyondAiHighlight[];
+  highlights: CmsBusinessEmailHighlight[];
+  messages: CmsBusinessEmailMessage[];
+  stats: CmsBusinessEmailStat[];
+  features: CmsBusinessEmailFeature[];
 };
 
 export type CmsHostingTypeCard = {
@@ -304,7 +337,7 @@ export type CmsHomeSections = {
   hostingTypes: CmsHostingTypesContent;
   hostingPlans: CmsHostingPlansContent;
   beyondAi: CmsBeyondAiContent;
-  beyondAiCreator: CmsBeyondAiCreatorContent;
+  businessEmail: CmsBusinessEmailContent;
   navigation: typeof mainNavigation;
 };
 
@@ -785,48 +818,113 @@ export function defaultBeyondAiSection(): CmsBeyondAiContent {
   };
 }
 
-export function defaultBeyondAiCreatorSection(): CmsBeyondAiCreatorContent {
+export function defaultBusinessEmailSection(): CmsBusinessEmailContent {
   return {
     visible: true,
-    eyebrow: "Beyond AI · Built for Everyone",
-    title: "Create a website",
-    titleAccent: "with Beyond AI",
+    badge: "Business Email",
+    title: "Professional Email",
+    titleAccent: "for Your Business",
     description:
-      "No design skills. No extra hosting. Describe your idea and publish a professional site in minutes — powered by the same high-speed platform behind HostingBeyond.",
-    primaryCtaLabel: "Start Building with Beyond AI",
-    primaryCtaHref: routes.beyondAi,
-    secondaryCtaLabel: "View Templates",
-    secondaryCtaHref: routes.beyondAi,
-    trust1: "No credit card required",
-    trust2: "Free to try",
-    trust3: "Launch in minutes",
-    imageUrl: "/images/beyond-ai/creator.jpg",
-    imageAlt:
-      "A young woman creating a professional website with Beyond AI on her laptop",
+      "A secure, reliable and high-performance email solution at the world's lowest rates — without compromise.",
+    primaryCtaLabel: "Get Your Business Email",
+    primaryCtaHref: routes.businessEmail,
+    secondaryCtaLabel: "See How It Works",
+    secondaryCtaHref: routes.businessEmail,
+    handwrittenNote: "Same professional you. A bigger tomorrow.",
+    toastEmail: "you@yourcompany.com",
+    toastLabel: "Connected",
+    mailTitle: "Global Mail",
+    composeLabel: "Compose",
+    imageUrl: "/images/business-email/woman.jpg",
+    imageAlt: "Professional using HostingBeyond business email on a laptop",
     highlights: [
       {
-        id: "design",
-        title: "AI Designs for You",
-        subtitle: "Look professional instantly",
+        id: "domain",
+        title: "Custom Domain Email",
+        subtitle: "",
+        icon: "shield",
+      },
+      {
+        id: "secure",
+        title: "Secure & Private",
+        subtitle: "",
+        icon: "lock",
+      },
+      {
+        id: "fast",
+        title: "Fast & Reliable Performance",
+        subtitle: "",
         icon: "zap",
       },
       {
-        id: "hosting",
-        title: "Hosting Included",
-        subtitle: "Nothing extra to buy",
-        icon: "cloud",
+        id: "teams",
+        title: "Built for Teams",
+        subtitle: "",
+        icon: "users",
+      },
+    ],
+    messages: [
+      {
+        id: "client",
+        sender: "Client Support",
+        preview: "Re: Project Update",
+        time: "10:24 AM",
+        accent: "#2563eb",
       },
       {
-        id: "publish",
-        title: "One Click Publish",
-        subtitle: "Go live in minutes",
+        id: "marketing",
+        sender: "Marketing Team",
+        preview: "Campaign Results",
+        time: "09:15 AM",
+        accent: "#f59e0b",
+      },
+      {
+        id: "sales",
+        sender: "Sales",
+        preview: "New Enquiry",
+        time: "Yesterday",
+        accent: "#10b981",
+      },
+      {
+        id: "hr",
+        sender: "HR Department",
+        preview: "Welcome to the Team",
+        time: "Yesterday",
+        accent: "#8b5cf6",
+      },
+    ],
+    stats: [
+      {
+        id: "reach",
+        title: "Global Reach",
+        subtitle: "Stay Connected Everywhere",
+        icon: "chart",
+      },
+      {
+        id: "cost",
+        title: "Ultra Low Cost",
+        subtitle: "World's Best Rates",
         icon: "globe",
       },
       {
-        id: "grow",
-        title: "Built to Grow",
-        subtitle: "From first site to many",
-        icon: "rocket",
+        id: "uptime",
+        title: "99.9% Uptime",
+        subtitle: "Reliable & Secure",
+        icon: "shield",
+      },
+    ],
+    features: [
+      { id: "infra", title: "Global Infrastructure", icon: "globe" },
+      {
+        id: "servers",
+        title: "High Performance Email Servers",
+        icon: "layers",
+      },
+      { id: "support", title: "24/7 Expert Support", icon: "headphones" },
+      {
+        id: "trusted",
+        title: "Trusted by Businesses Worldwide",
+        icon: "users",
       },
     ],
   };
@@ -1396,7 +1494,7 @@ export function defaultHomeSections(): CmsHomeSections {
     hostingTypes: defaultHostingTypesSection(),
     hostingPlans: defaultHostingPlansSection(),
     beyondAi: defaultBeyondAiSection(),
-    beyondAiCreator: defaultBeyondAiCreatorSection(),
+    businessEmail: defaultBusinessEmailSection(),
     navigation: mainNavigation.map((item) => ({
       ...item,
       children: item.children?.map((child) => ({ ...child })),
@@ -1502,20 +1600,39 @@ function mergeBeyondAiSection(
   };
 }
 
-function mergeBeyondAiCreatorSection(
-  stored?: Partial<CmsBeyondAiCreatorContent> | null,
-): CmsBeyondAiCreatorContent {
-  const defaults = defaultBeyondAiCreatorSection();
+function mergeBusinessEmailSection(
+  stored?: Partial<CmsBusinessEmailContent> | null,
+): CmsBusinessEmailContent {
+  const defaults = defaultBusinessEmailSection();
   if (!stored) return defaults;
 
   const highlightIcon = (
     value: unknown,
-    fallback: CmsBeyondAiHighlight["icon"],
-  ): CmsBeyondAiHighlight["icon"] =>
+    fallback: CmsBusinessEmailHighlight["icon"],
+  ): CmsBusinessEmailHighlight["icon"] =>
+    value === "shield" ||
+    value === "lock" ||
     value === "zap" ||
-    value === "cloud" ||
+    value === "users"
+      ? value
+      : fallback;
+
+  const statIcon = (
+    value: unknown,
+    fallback: CmsBusinessEmailStat["icon"],
+  ): CmsBusinessEmailStat["icon"] =>
+    value === "chart" || value === "globe" || value === "shield"
+      ? value
+      : fallback;
+
+  const featureIcon = (
+    value: unknown,
+    fallback: CmsBusinessEmailFeature["icon"],
+  ): CmsBusinessEmailFeature["icon"] =>
     value === "globe" ||
-    value === "rocket"
+    value === "layers" ||
+    value === "headphones" ||
+    value === "users"
       ? value
       : fallback;
 
@@ -1527,13 +1644,49 @@ function mergeBeyondAiCreatorSection(
           return {
             ...fallback,
             ...item,
-            id: item.id || fallback.id || `creator-highlight-${index}`,
+            id: item.id || fallback.id || `email-highlight-${index}`,
             icon: highlightIcon(item.icon, fallback.icon),
-            title: item.title || fallback.title,
-            subtitle: item.subtitle || fallback.subtitle,
-          } satisfies CmsBeyondAiHighlight;
+          } satisfies CmsBusinessEmailHighlight;
         })
       : defaults.highlights;
+
+  const messages =
+    Array.isArray(stored.messages) && stored.messages.length > 0
+      ? stored.messages.map((item, index) => {
+          const fallback = defaults.messages[index % defaults.messages.length];
+          return {
+            ...fallback,
+            ...item,
+            id: item.id || fallback.id || `email-msg-${index}`,
+          } satisfies CmsBusinessEmailMessage;
+        })
+      : defaults.messages;
+
+  const stats =
+    Array.isArray(stored.stats) && stored.stats.length > 0
+      ? stored.stats.map((item, index) => {
+          const fallback = defaults.stats[index % defaults.stats.length];
+          return {
+            ...fallback,
+            ...item,
+            id: item.id || fallback.id || `email-stat-${index}`,
+            icon: statIcon(item.icon, fallback.icon),
+          } satisfies CmsBusinessEmailStat;
+        })
+      : defaults.stats;
+
+  const features =
+    Array.isArray(stored.features) && stored.features.length > 0
+      ? stored.features.map((item, index) => {
+          const fallback = defaults.features[index % defaults.features.length];
+          return {
+            ...fallback,
+            ...item,
+            id: item.id || fallback.id || `email-feature-${index}`,
+            icon: featureIcon(item.icon, fallback.icon),
+          } satisfies CmsBusinessEmailFeature;
+        })
+      : defaults.features;
 
   return {
     ...defaults,
@@ -1544,6 +1697,9 @@ function mergeBeyondAiCreatorSection(
         ? stored.imageUrl
         : defaults.imageUrl,
     highlights,
+    messages,
+    stats,
+    features,
   };
 }
 
@@ -1928,7 +2084,7 @@ export function mergeHomeSections(
       guarantees,
     },
     beyondAi: mergeBeyondAiSection(stored.beyondAi),
-    beyondAiCreator: mergeBeyondAiCreatorSection(stored.beyondAiCreator),
+    businessEmail: mergeBusinessEmailSection(stored.businessEmail),
     // Drop legacy top-level Cloud & VPS — those live under Hosting now.
     // Also normalize stored "Web Hosting" label → "Hosting".
     navigation: (() => {
