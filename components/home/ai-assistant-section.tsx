@@ -194,37 +194,33 @@ function AssistantChat({ content }: { content: CmsAiAssistantContent }) {
 function AssistantStage({ content }: { content: CmsAiAssistantContent }) {
   const photoSrc = content.imageUrl.includes("?")
     ? content.imageUrl
-    : `${content.imageUrl}?v=scene2`;
+    : `${content.imageUrl}?v=scene4`;
 
   return (
-    <div className="relative mx-auto min-h-[560px] w-full max-w-[720px] sm:min-h-[640px] lg:ml-auto lg:min-h-[680px] lg:max-w-none">
+    <div className="relative mx-auto min-h-[560px] w-full overflow-visible sm:min-h-[640px] lg:ml-auto lg:min-h-[700px]">
       <div
         aria-hidden
-        className="pointer-events-none absolute top-[-6%] right-[-8%] h-[78%] w-[72%] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(186,210,255,0.55),transparent_68%)] blur-3xl"
+        className="pointer-events-none absolute -top-16 -right-24 h-[120%] w-[90%] rounded-full bg-[radial-gradient(ellipse_at_70%_40%,rgba(186,210,255,0.45),transparent_70%)] blur-3xl"
       />
 
       {content.imageUrl ? (
-        <div className="absolute right-[-4%] bottom-0 z-10 h-[108%] w-[96%] sm:right-[-2%] sm:w-[88%] lg:w-[90%]">
+        <div className="absolute inset-y-[-8%] right-[-12%] left-[-6%] z-10">
           <Image
             src={photoSrc}
             alt={content.imageAlt}
             fill
             priority
-            sizes="(max-width: 1024px) 100vw, 56vw"
+            sizes="(max-width: 1024px) 100vw, 58vw"
             unoptimized={
               isRuntimeMediaSrc(content.imageUrl) ||
               content.imageUrl.includes(".png")
             }
-            className="object-contain object-[center_bottom]"
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,#f7fbff_0%,rgba(247,251,255,0.55)_12%,transparent_28%),linear-gradient(180deg,#f7fbff_0%,transparent_18%)]"
+            className="[mask-image:linear-gradient(to_right,transparent_0%,#000_11%,#000_100%)] object-cover object-[70%_100%] [-webkit-mask-image:linear-gradient(to_right,transparent_0%,#000_11%,#000_100%)]"
           />
         </div>
       ) : null}
 
-      <div className="absolute top-[14%] left-0 z-20 w-[90%] max-w-[332px] sm:top-[16%] sm:w-[50%]">
+      <div className="absolute top-[16%] left-0 z-20 w-[90%] max-w-[332px] sm:top-[18%] sm:w-[48%]">
         <AssistantChat content={content} />
       </div>
 
@@ -296,11 +292,11 @@ export function AiAssistantSection({
   const data = content ?? defaultAiAssistantSection();
 
   return (
-    <section className="relative isolate overflow-hidden bg-[#f7fbff] pt-6 pb-16 sm:pt-8 sm:pb-20 lg:pb-24">
+    <section className="relative isolate overflow-hidden bg-[#f7f8fc] pt-6 pb-0 sm:pt-8 lg:pb-0">
       <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,#f4f8ff_0%,#eef4fd_45%,#f7fbff_100%)]" />
-        <div className="absolute top-[-12%] right-[-6%] h-[58%] w-[46%] rounded-full bg-[radial-gradient(ellipse,rgba(167,199,255,0.42),transparent_70%)] blur-3xl" />
-        <div className="absolute right-[6%] bottom-[8%] h-[38%] w-[34%] rounded-full bg-[radial-gradient(ellipse,rgba(186,210,255,0.35),transparent_72%)] blur-3xl" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,#fbfcff_0%,#f4f7fd_48%,#eef3fb_100%)]" />
+        <div className="absolute top-[-18%] right-[-10%] h-[70%] w-[55%] rounded-full bg-[radial-gradient(ellipse,rgba(186,210,255,0.5),transparent_72%)] blur-3xl" />
+        <div className="absolute right-[4%] bottom-[-8%] h-[42%] w-[40%] rounded-full bg-[radial-gradient(ellipse,rgba(196,216,255,0.28),transparent_74%)] blur-3xl" />
       </div>
 
       <div className="hb-shell relative z-10">
@@ -391,7 +387,7 @@ export function AiAssistantSection({
             </div>
           </div>
 
-          <div className="relative pb-10 sm:pb-8">
+          <div className="relative min-h-[560px] sm:min-h-[640px]">
             <AssistantStage content={data} />
           </div>
         </div>
