@@ -2,6 +2,7 @@ import { SiteHeader } from "@/components/layout";
 import {
   HeroSection,
   HostingPlansSection,
+  BeyondAiSection,
   SolutionsSection,
 } from "@/components/home";
 import { PartnerLogoStrip } from "@/components/home/partner-logo-strip";
@@ -46,6 +47,7 @@ export default async function HomePage() {
       {sections.hostingPlans?.visible !== false ? (
         <HostingPlansSection content={sections.hostingPlans} />
       ) : null}
+      <BeyondAiSection />
     </div>
   );
 }
