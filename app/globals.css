@@ -379,6 +379,99 @@
     animation-play-state: paused;
   }
 
+  @keyframes hb-ai-shine {
+    0% {
+      transform: translateX(-140%);
+    }
+    100% {
+      transform: translateX(220%);
+    }
+  }
+
+  @keyframes hb-ai-flow {
+    0% {
+      background-position: 0% 50%;
+    }
+    100% {
+      background-position: 200% 50%;
+    }
+  }
+
+  @keyframes hb-ai-pulse {
+    0%,
+    100% {
+      opacity: 0.55;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.08);
+    }
+  }
+
+  .hb-ai-nav {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+  }
+
+  .hb-ai-nav::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      105deg,
+      rgba(37, 99, 235, 0.18),
+      rgba(124, 58, 237, 0.22),
+      rgba(56, 189, 248, 0.16),
+      rgba(37, 99, 235, 0.18)
+    );
+    background-size: 220% 100%;
+    animation: hb-ai-flow 4.8s linear infinite;
+    z-index: -1;
+  }
+
+  .hb-ai-nav__shine {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .hb-ai-nav__shine::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 46%;
+    background: linear-gradient(
+      105deg,
+      transparent,
+      rgba(255, 255, 255, 0.72),
+      transparent
+    );
+    animation: hb-ai-shine 2.8s ease-in-out infinite;
+  }
+
+  .hb-ai-nav__spark {
+    animation: hb-ai-pulse 2.2s ease-in-out infinite;
+  }
+
+  .hb-ai-nav__word {
+    background-image: linear-gradient(
+      90deg,
+      #2563eb,
+      #7c3aed,
+      #06b6d4,
+      #2563eb
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: hb-ai-flow 3.6s linear infinite;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .hb-hero-gradient {
       animation: none;
@@ -386,6 +479,13 @@
     }
 
     .hb-partner-marquee {
+      animation: none;
+    }
+
+    .hb-ai-nav::before,
+    .hb-ai-nav__shine::after,
+    .hb-ai-nav__spark,
+    .hb-ai-nav__word {
       animation: none;
     }
   }

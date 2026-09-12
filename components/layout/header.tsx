@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ChevronDown, Menu, User, X } from "lucide-react";
+import { ChevronDown, Menu, Sparkles, User, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { mainNavigation, type NavItem } from "@/config/navigation";
@@ -28,6 +28,38 @@ function localizeNavLabel(
   return map[label] ?? label;
 }
 
+function BeyondAiNavLink({
+  href,
+  onClick,
+  compact = false,
+}: {
+  href: string;
+  onClick?: () => void;
+  compact?: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className={cn(
+        "hb-ai-nav inline-flex items-center justify-center gap-1.5 rounded-full border border-white/80 bg-white/50 font-bold tracking-[-0.02em] whitespace-nowrap text-slate-900 shadow-[0_8px_22px_rgba(79,70,229,0.16),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl",
+        compact
+          ? "h-11 w-full px-3 text-[15px]"
+          : "h-8 px-3 text-[13px] xl:h-9 xl:px-3.5 xl:text-[14px]",
+      )}
+    >
+      <span className="hb-ai-nav__shine" aria-hidden />
+      <Sparkles
+        className="hb-ai-nav__spark size-3.5 shrink-0 text-[#7c3aed]"
+        aria-hidden
+      />
+      <span>
+        Beyond <span className="hb-ai-nav__word">AI</span>
+      </span>
+    </Link>
+  );
+}
+
 function NavDropdown({ item, label }: { item: NavItem; label: string }) {
   const [open, setOpen] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -41,6 +73,10 @@ function NavDropdown({ item, label }: { item: NavItem; label: string }) {
   };
 
   useEffect(() => () => clearClose(), []);
+
+  if (item.label === "Beyond AI") {
+    return <BeyondAiNavLink href={item.href} />;
+  }
 
   if (!item.children?.length) {
     return (
@@ -314,6 +350,12 @@ export function SiteHeader({
                             ) : null}
                           </AnimatePresence>
                         </>
+                      ) : item.label === "Beyond AI" ? (
+                        <BeyondAiNavLink
+                          href={item.href}
+                          compact
+                          onClick={() => setOpen(false)}
+                        />
                       ) : (
                         <Link
                           href={item.href}
