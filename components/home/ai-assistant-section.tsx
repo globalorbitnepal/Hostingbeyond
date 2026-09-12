@@ -298,7 +298,7 @@ export function AiAssistantSection({
   return (
     <section className="relative isolate overflow-hidden bg-[#f7fbff] pt-6 pb-16 sm:pt-8 sm:pb-20 lg:pb-24">
       <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,#ffffff_0%,#f3f8ff_42%,#eef4fd_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,#f4f8ff_0%,#eef4fd_45%,#f7fbff_100%)]" />
         <div className="absolute top-[-12%] right-[-6%] h-[58%] w-[46%] rounded-full bg-[radial-gradient(ellipse,rgba(167,199,255,0.42),transparent_70%)] blur-3xl" />
         <div className="absolute right-[6%] bottom-[8%] h-[38%] w-[34%] rounded-full bg-[radial-gradient(ellipse,rgba(186,210,255,0.35),transparent_72%)] blur-3xl" />
       </div>
@@ -323,7 +323,7 @@ export function AiAssistantSection({
                       width={28}
                       height={28}
                       unoptimized
-                      className="size-7 object-contain"
+                      className="size-8 shrink-0 object-contain"
                     />
                   ) : null}
                   <span className="text-[13px] font-bold tracking-tight text-slate-800 sm:text-[15px]">
