@@ -34,15 +34,6 @@ const LOGO_SRC: Record<string, string> = {
   imunify: "/images/ai-assistant/imunify.svg",
 };
 
-const LOGO_SIZE: Record<string, { w: number; h: number }> = {
-  claude: { w: 168, h: 40 },
-  openai: { w: 148, h: 40 },
-  gemini: { w: 148, h: 40 },
-  deepseek: { w: 168, h: 40 },
-  openrouter: { w: 188, h: 40 },
-  imunify: { w: 176, h: 40 },
-};
-
 const highlightIcons: Record<CmsAiAssistantHighlight["icon"], typeof Zap> = {
   zap: Zap,
   layers: Layers,
@@ -201,42 +192,69 @@ function AssistantChat({ content }: { content: CmsAiAssistantContent }) {
 }
 
 function AssistantStage({ content }: { content: CmsAiAssistantContent }) {
+  const photoSrc = content.imageUrl.includes("?")
+    ? content.imageUrl
+    : `${content.imageUrl}?v=scene2`;
+
   return (
-    <div className="relative mx-auto min-h-[560px] w-full max-w-[680px] sm:min-h-[620px] lg:ml-auto lg:min-h-[640px] lg:max-w-none">
+    <div className="relative mx-auto min-h-[560px] w-full max-w-[720px] sm:min-h-[640px] lg:ml-auto lg:min-h-[680px] lg:max-w-none">
       <div
         aria-hidden
-        className="pointer-events-none absolute -inset-8 rounded-[48px] bg-[radial-gradient(ellipse_at_70%_50%,rgba(147,197,253,0.28),transparent_64%)] blur-2xl"
+        className="pointer-events-none absolute top-[-6%] right-[-8%] h-[78%] w-[72%] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(186,210,255,0.55),transparent_68%)] blur-3xl"
       />
 
       {content.imageUrl ? (
-        <div className="absolute right-[-10%] bottom-[-10%] z-10 h-[118%] w-[100%] sm:right-[-6%] sm:w-[90%] lg:w-[88%]">
+        <div className="absolute right-[-4%] bottom-0 z-10 h-[108%] w-[96%] sm:right-[-2%] sm:w-[88%] lg:w-[90%]">
           <Image
-            src={content.imageUrl}
+            src={photoSrc}
             alt={content.imageAlt}
             fill
             priority
             sizes="(max-width: 1024px) 100vw, 56vw"
             unoptimized={
               isRuntimeMediaSrc(content.imageUrl) ||
-              content.imageUrl.endsWith(".png")
+              content.imageUrl.includes(".png")
             }
-            className="[mask-image:linear-gradient(to_right,transparent_0%,#000_14%,#000_100%),linear-gradient(to_top,transparent_0%,#000_10%,#000_100%)] [mask-composite:intersect] object-contain object-[center_bottom] [-webkit-mask-composite:source-in] [-webkit-mask-image:linear-gradient(to_right,transparent_0%,#000_14%,#000_100%),linear-gradient(to_top,transparent_0%,#000_10%,#000_100%)]"
+            className="object-contain object-[center_bottom]"
           />
         </div>
       ) : null}
 
-      <div className="absolute top-[10%] left-0 z-20 w-[88%] max-w-[340px] sm:top-[12%] sm:w-[52%]">
+      <div className="absolute top-[14%] left-0 z-20 w-[90%] max-w-[332px] sm:top-[16%] sm:w-[50%]">
         <AssistantChat content={content} />
       </div>
 
       {content.handwrittenNote ? (
-        <p className="absolute top-2 right-2 z-30 hidden max-w-[140px] text-right font-serif text-[13px] leading-snug text-[#60a5fa] italic xl:block">
-          {content.handwrittenNote.split("\n").map((line) => (
-            <span key={line} className="block">
-              {line}
-            </span>
-          ))}
-        </p>
+        <div className="absolute top-3 right-2 z-30 hidden w-[150px] xl:block">
+          <svg
+            aria-hidden
+            viewBox="0 0 64 36"
+            className="absolute -top-1 -left-10 h-9 w-16 text-[#7dd3fc]"
+          >
+            <path
+              d="M4 28 C 18 4, 42 6, 58 18"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+            />
+            <path
+              d="M50 12 L58 18 L49 22"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <p className="text-right font-serif text-[13px] leading-[1.25] text-[#38bdf8] italic">
+            {content.handwrittenNote.split("\n").map((line) => (
+              <span key={line} className="block">
+                {line}
+              </span>
+            ))}
+          </p>
+        </div>
       ) : null}
 
       <div className="absolute top-[28%] right-0 z-30 hidden w-[168px] flex-col gap-2 xl:flex">
@@ -274,40 +292,40 @@ export function AiAssistantSection({
   const data = content ?? defaultAiAssistantSection();
 
   return (
-    <section className="relative isolate overflow-hidden bg-[#f4f8fd] pt-4 pb-16 sm:pt-6 sm:pb-20 lg:pb-24">
+    <section className="relative isolate overflow-hidden bg-[#f7fbff] pt-6 pb-16 sm:pt-8 sm:pb-20 lg:pb-24">
       <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,#f4f8fd_0%,#eef4fb_40%,#f7fbff_100%)]" />
-        <div className="absolute top-[-8%] right-[-8%] h-[52%] w-[48%] rounded-full bg-[radial-gradient(ellipse,rgba(147,197,253,0.32),transparent_68%)] blur-3xl" />
-        <div className="absolute bottom-[-10%] left-[-10%] h-[42%] w-[40%] rounded-full bg-[radial-gradient(ellipse,rgba(167,139,250,0.14),transparent_70%)] blur-3xl" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,#ffffff_0%,#f3f8ff_42%,#eef4fd_100%)]" />
+        <div className="absolute top-[-12%] right-[-6%] h-[58%] w-[46%] rounded-full bg-[radial-gradient(ellipse,rgba(167,199,255,0.42),transparent_70%)] blur-3xl" />
+        <div className="absolute right-[6%] bottom-[8%] h-[38%] w-[34%] rounded-full bg-[radial-gradient(ellipse,rgba(186,210,255,0.35),transparent_72%)] blur-3xl" />
       </div>
 
       <div className="hb-shell relative z-10">
-        <div className="mb-8 flex flex-wrap items-center justify-center gap-y-3 sm:mb-10">
+        <div className="mb-8 flex flex-wrap items-center justify-center gap-y-3 sm:mb-12">
           {data.partners.map((partner, index) => {
             const src = LOGO_SRC[partner.id];
-            const size = LOGO_SIZE[partner.id] ?? { w: 160, h: 40 };
             return (
               <span key={partner.id} className="inline-flex items-center">
                 {index > 0 ? (
                   <span
                     aria-hidden
-                    className="mx-3 h-5 w-px shrink-0 bg-slate-300/90 sm:mx-5"
+                    className="mx-3 h-5 w-px shrink-0 bg-slate-300/80 sm:mx-5"
                   />
                 ) : null}
-                {src ? (
-                  <Image
-                    src={`${src}?v=1`}
-                    alt={partner.label}
-                    width={size.w}
-                    height={size.h}
-                    unoptimized
-                    className="h-8 w-auto max-w-[160px] object-contain sm:h-9"
-                  />
-                ) : (
-                  <span className="text-[12px] font-bold text-slate-600">
+                <span className="inline-flex items-center gap-2">
+                  {src ? (
+                    <Image
+                      src={`${src}?v=mark2`}
+                      alt=""
+                      width={28}
+                      height={28}
+                      unoptimized
+                      className="size-7 object-contain"
+                    />
+                  ) : null}
+                  <span className="text-[13px] font-bold tracking-tight text-slate-800 sm:text-[15px]">
                     {partner.label}
                   </span>
-                )}
+                </span>
               </span>
             );
           })}
@@ -315,14 +333,9 @@ export function AiAssistantSection({
 
         <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-8 xl:gap-12">
           <div className="max-w-xl">
-            <span className="hb-ai-nav hb-ai-nav--section inline-flex items-center justify-center gap-2 rounded-full border border-white/80 bg-white/55 text-slate-950 backdrop-blur-xl">
-              <span className="hb-ai-nav__shine" aria-hidden />
-              <Sparkles
-                className="hb-ai-nav__spark size-4 shrink-0 text-[#7c3aed]"
-                aria-hidden
-              />
-              <span>{data.badge}</span>
-            </span>
+            <p className="text-[11px] font-semibold tracking-[0.22em] text-slate-400 uppercase">
+              {data.badge}
+            </p>
 
             <h2 className="font-heading mt-6 text-[clamp(1.85rem,4vw,3.4rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-slate-950">
               <span className="block">{data.title}</span>
