@@ -78,27 +78,106 @@ const sidebar = [
   { label: "Trash", icon: Trash2 },
 ];
 
+function MailInbox({ content }: { content: CmsBusinessEmailContent }) {
+  return (
+    <div className="overflow-hidden rounded-[26px] border border-white/80 bg-white/55 shadow-[0_28px_70px_-24px_rgba(37,80,130,0.42)] backdrop-blur-2xl">
+      <div className="flex">
+        <aside className="hidden w-[112px] border-r border-white/70 bg-white/35 p-3 sm:block">
+          <p className="mb-3 text-[12px] font-extrabold text-slate-900">
+            {content.mailTitle}
+          </p>
+          <button
+            type="button"
+            className="mb-3 inline-flex h-8 w-full items-center justify-center rounded-full bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-[11px] font-bold text-white"
+          >
+            {content.composeLabel}
+          </button>
+          {sidebar.map((item) => (
+            <p
+              key={item.label}
+              className={`flex items-center justify-between rounded-lg px-2 py-1.5 text-[11px] font-semibold ${
+                item.active ? "bg-[#eef4ff] text-slate-900" : "text-slate-500"
+              }`}
+            >
+              {item.label}
+              {item.count ? (
+                <span className="rounded-full bg-slate-900 px-1.5 text-[9px] text-white">
+                  {item.count}
+                </span>
+              ) : null}
+            </p>
+          ))}
+        </aside>
+        <div className="min-w-0 flex-1 p-3">
+          <div className="mb-3 h-8 rounded-full border border-white/80 bg-white/70 px-3 text-[11px] leading-8 text-slate-400">
+            Search emails…
+          </div>
+          <div className="space-y-2">
+            {content.messages.map((message) => (
+              <div
+                key={message.id}
+                className="flex items-center gap-2.5 rounded-2xl bg-white/65 px-2 py-2"
+              >
+                <span
+                  className="inline-flex size-8 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white"
+                  style={{ background: message.accent }}
+                >
+                  {message.sender.charAt(0)}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[11px] font-extrabold text-slate-900">
+                    {message.sender}
+                  </span>
+                  <span className="block truncate text-[10px] text-slate-500">
+                    {message.preview}
+                  </span>
+                </span>
+                <span className="shrink-0 text-[9px] font-semibold text-slate-400">
+                  {message.time}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function MailStage({ content }: { content: CmsBusinessEmailContent }) {
   return (
-    <div className="relative mx-auto w-full max-w-[640px] lg:max-w-none">
+    <div className="relative mx-auto h-[420px] w-full max-w-[640px] sm:h-[480px] lg:h-[540px] lg:max-w-none xl:h-[580px]">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 overflow-hidden"
       >
-        <div className="absolute top-[-8%] right-[-6%] h-[70%] w-[80%] rounded-full bg-[radial-gradient(ellipse,rgba(147,197,253,0.28),transparent_68%)] blur-3xl" />
+        <div className="absolute top-[4%] right-[2%] h-[58%] w-[70%] rounded-full bg-[radial-gradient(ellipse,rgba(147,197,253,0.34),transparent_68%)] blur-3xl" />
         <svg
-          viewBox="0 0 800 420"
-          className="absolute top-0 right-0 h-[70%] w-[92%] text-slate-300/50"
+          viewBox="0 0 640 280"
+          className="absolute top-2 right-0 h-[46%] w-[78%] text-slate-300/45"
         >
-          <g fill="none" stroke="currentColor" strokeWidth="1.2">
-            <path d="M430 70C520 90 610 40 720 80" strokeDasharray="4 6" />
-            <path d="M520 80C610 110 680 90 740 150" strokeDasharray="4 6" />
-            <path d="M540 90C600 180 690 170 760 210" strokeDasharray="4 6" />
+          <g fill="none" stroke="currentColor" strokeWidth="1.15">
+            <path d="M220 70C310 40 420 50 560 28" strokeDasharray="4 7" />
+            <path d="M260 90C360 70 470 90 600 78" strokeDasharray="4 7" />
+            <path d="M300 110C400 130 500 120 610 150" strokeDasharray="4 7" />
           </g>
         </svg>
       </div>
 
-      <div className="absolute top-2 left-[18%] z-20 hidden items-center gap-2 rounded-2xl border border-white/80 bg-white/85 px-3 py-2 shadow-[0_14px_36px_rgba(37,80,130,0.12)] backdrop-blur-xl sm:flex">
+      {content.imageUrl ? (
+        <div className="absolute right-[-4%] bottom-0 z-10 h-[92%] w-[78%] sm:right-[-2%] sm:w-[72%] lg:w-[70%]">
+          <Image
+            src={content.imageUrl}
+            alt={content.imageAlt}
+            fill
+            sizes="(max-width: 1024px) 90vw, 46vw"
+            unoptimized={isRuntimeMediaSrc(content.imageUrl)}
+            className="[mask-image:linear-gradient(to_bottom,#000_86%,transparent_100%)] object-contain object-bottom drop-shadow-[0_24px_40px_rgba(37,80,130,0.16)] [-webkit-mask-image:linear-gradient(to_bottom,#000_86%,transparent_100%)]"
+          />
+        </div>
+      ) : null}
+
+      <div className="absolute top-3 left-[6%] z-30 hidden items-center gap-2 rounded-2xl border border-white/80 bg-white/80 px-3 py-2 shadow-[0_14px_36px_rgba(37,80,130,0.12)] backdrop-blur-xl sm:flex">
         <span className="inline-flex size-7 items-center justify-center rounded-lg bg-[#eef2ff] text-[#4f46e5]">
           <Mail className="size-3.5" />
         </span>
@@ -111,7 +190,7 @@ function MailStage({ content }: { content: CmsBusinessEmailContent }) {
       {cities.map((city) => (
         <div
           key={city.city}
-          className="absolute z-20 hidden items-center gap-2 xl:flex"
+          className="absolute z-30 hidden items-center gap-2 xl:flex"
           style={{ top: city.top, left: city.left }}
         >
           <span className="inline-flex size-8 items-center justify-center rounded-full border border-white bg-gradient-to-br from-[#93c5fd] to-[#6366f1] text-[11px] font-bold text-white shadow-[0_8px_18px_rgba(79,70,229,0.25)]">
@@ -124,109 +203,32 @@ function MailStage({ content }: { content: CmsBusinessEmailContent }) {
         </div>
       ))}
 
-      <div className="relative grid items-end gap-4 pt-10 sm:pt-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-0">
-        <div className="relative z-10 w-full max-w-[340px] sm:max-w-[380px]">
-          <div className="overflow-hidden rounded-[26px] border border-white/80 bg-white/70 shadow-[0_28px_70px_-24px_rgba(37,80,130,0.45)] backdrop-blur-2xl">
-            <div className="flex">
-              <aside className="hidden w-[118px] border-r border-slate-100/90 bg-white/40 p-3 sm:block">
-                <p className="mb-3 text-[12px] font-extrabold text-slate-900">
-                  {content.mailTitle}
-                </p>
-                <button
-                  type="button"
-                  className="mb-3 inline-flex h-8 w-full items-center justify-center rounded-full bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-[11px] font-bold text-white"
-                >
-                  {content.composeLabel}
-                </button>
-                {sidebar.map((item) => (
-                  <p
-                    key={item.label}
-                    className={`flex items-center justify-between rounded-lg px-2 py-1.5 text-[11px] font-semibold ${
-                      item.active
-                        ? "bg-[#eef4ff] text-slate-900"
-                        : "text-slate-500"
-                    }`}
-                  >
-                    {item.label}
-                    {item.count ? (
-                      <span className="rounded-full bg-slate-900 px-1.5 text-[9px] text-white">
-                        {item.count}
-                      </span>
-                    ) : null}
-                  </p>
-                ))}
-              </aside>
-              <div className="min-w-0 flex-1 p-3">
-                <div className="mb-3 h-8 rounded-full border border-slate-100 bg-white/80 px-3 text-[11px] leading-8 text-slate-400">
-                  Search emails…
-                </div>
-                <div className="space-y-2">
-                  {content.messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className="flex items-center gap-2.5 rounded-2xl bg-white/70 px-2 py-2"
-                    >
-                      <span
-                        className="inline-flex size-8 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white"
-                        style={{ background: message.accent }}
-                      >
-                        {message.sender.charAt(0)}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[11px] font-extrabold text-slate-900">
-                          {message.sender}
-                        </span>
-                        <span className="block truncate text-[10px] text-slate-500">
-                          {message.preview}
-                        </span>
-                      </span>
-                      <span className="shrink-0 text-[9px] font-semibold text-slate-400">
-                        {message.time}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+      <div className="absolute top-[22%] left-0 z-20 w-[86%] max-w-[360px] sm:w-[58%] sm:max-w-[380px]">
+        <MailInbox content={content} />
+      </div>
+
+      <div className="absolute top-[26%] right-0 z-30 hidden w-[168px] space-y-2 lg:block">
+        {content.stats.map((stat) => {
+          const Icon = statIcons[stat.icon] ?? BarChart3;
+          return (
+            <div
+              key={stat.id}
+              className="flex items-center gap-2 rounded-2xl border border-white/80 bg-white/80 px-2.5 py-2 shadow-[0_12px_28px_rgba(37,80,130,0.12)] backdrop-blur-xl"
+            >
+              <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-xl bg-[#eef4ff] text-[#2563eb]">
+                <Icon className="size-4" />
+              </span>
+              <span>
+                <span className="block text-[11px] font-extrabold text-slate-900">
+                  {stat.title}
+                </span>
+                <span className="block text-[10px] text-slate-500">
+                  {stat.subtitle}
+                </span>
+              </span>
             </div>
-          </div>
-        </div>
-
-        <div className="relative -mt-6 h-[280px] sm:-mt-10 sm:h-[340px] lg:mt-0 lg:h-[430px] xl:h-[470px]">
-          {content.imageUrl ? (
-            <Image
-              src={content.imageUrl}
-              alt={content.imageAlt}
-              fill
-              sizes="(max-width: 1024px) 90vw, 46vw"
-              unoptimized={isRuntimeMediaSrc(content.imageUrl)}
-              className="object-cover object-[72%_20%]"
-            />
-          ) : null}
-
-          <div className="absolute top-[18%] right-0 z-20 hidden w-[168px] space-y-2 lg:block">
-            {content.stats.map((stat) => {
-              const Icon = statIcons[stat.icon] ?? BarChart3;
-              return (
-                <div
-                  key={stat.id}
-                  className="flex items-center gap-2 rounded-2xl border border-white/80 bg-white/85 px-2.5 py-2 shadow-[0_12px_28px_rgba(37,80,130,0.12)] backdrop-blur-xl"
-                >
-                  <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-xl bg-[#eef4ff] text-[#2563eb]">
-                    <Icon className="size-4" />
-                  </span>
-                  <span>
-                    <span className="block text-[11px] font-extrabold text-slate-900">
-                      {stat.title}
-                    </span>
-                    <span className="block text-[10px] text-slate-500">
-                      {stat.subtitle}
-                    </span>
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+          );
+        })}
       </div>
     </div>
   );
