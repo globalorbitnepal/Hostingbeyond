@@ -197,7 +197,7 @@ function AssistantStage({ content }: { content: CmsAiAssistantContent }) {
     : `${content.imageUrl}?v=scene4`;
 
   return (
-    <div className="relative mx-auto min-h-[560px] w-full overflow-visible sm:min-h-[640px] lg:ml-auto lg:min-h-[700px]">
+    <div className="relative mx-auto min-h-[600px] w-full overflow-visible sm:min-h-[680px] lg:ml-auto lg:min-h-[740px]">
       <div
         aria-hidden
         className="pointer-events-none absolute -top-16 -right-24 h-[120%] w-[90%] rounded-full bg-[radial-gradient(ellipse_at_70%_40%,rgba(186,210,255,0.45),transparent_70%)] blur-3xl"
@@ -215,7 +215,7 @@ function AssistantStage({ content }: { content: CmsAiAssistantContent }) {
               isRuntimeMediaSrc(content.imageUrl) ||
               content.imageUrl.includes(".png")
             }
-            className="[mask-image:linear-gradient(to_right,transparent_0%,#000_11%,#000_100%)] object-cover object-[70%_100%] [-webkit-mask-image:linear-gradient(to_right,transparent_0%,#000_11%,#000_100%)]"
+            className="[mask-image:linear-gradient(to_right,transparent_0%,#000_11%,#000_100%)] object-cover object-[76%_82%] [-webkit-mask-image:linear-gradient(to_right,transparent_0%,#000_11%,#000_100%)]"
           />
         </div>
       ) : null}
@@ -387,7 +387,7 @@ export function AiAssistantSection({
             </div>
           </div>
 
-          <div className="relative min-h-[560px] sm:min-h-[640px]">
+          <div className="relative min-h-[600px] sm:min-h-[680px] lg:min-h-[740px]">
             <AssistantStage content={data} />
           </div>
         </div>
