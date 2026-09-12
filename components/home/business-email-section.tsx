@@ -165,14 +165,14 @@ function MailStage({ content }: { content: CmsBusinessEmailContent }) {
       </div>
 
       {content.imageUrl ? (
-        <div className="absolute right-[-4%] bottom-0 z-10 h-[92%] w-[78%] sm:right-[-2%] sm:w-[72%] lg:w-[70%]">
+        <div className="absolute right-[-8%] bottom-0 z-10 h-[98%] w-[86%] sm:right-[-4%] sm:w-[78%] lg:w-[76%]">
           <Image
             src={content.imageUrl}
             alt={content.imageAlt}
             fill
-            sizes="(max-width: 1024px) 90vw, 46vw"
+            sizes="(max-width: 1024px) 90vw, 48vw"
             unoptimized={isRuntimeMediaSrc(content.imageUrl)}
-            className="[mask-image:linear-gradient(to_bottom,#000_86%,transparent_100%)] object-contain object-bottom drop-shadow-[0_24px_40px_rgba(37,80,130,0.16)] [-webkit-mask-image:linear-gradient(to_bottom,#000_86%,transparent_100%)]"
+            className="[mask-image:radial-gradient(ellipse_68%_78%_at_54%_46%,#000_58%,transparent_78%)] object-contain object-[center_42%] [-webkit-mask-image:radial-gradient(ellipse_68%_78%_at_54%_46%,#000_58%,transparent_78%)]"
           />
         </div>
       ) : null}
@@ -203,7 +203,7 @@ function MailStage({ content }: { content: CmsBusinessEmailContent }) {
         </div>
       ))}
 
-      <div className="absolute top-[22%] left-0 z-20 w-[86%] max-w-[360px] sm:w-[58%] sm:max-w-[380px]">
+      <div className="absolute top-[18%] left-[4%] z-20 w-[78%] max-w-[340px] sm:left-[8%] sm:w-[54%] sm:max-w-[360px]">
         <MailInbox content={content} />
       </div>
 
