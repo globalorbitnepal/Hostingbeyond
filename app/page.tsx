@@ -45,7 +45,6 @@ export default async function HomePage() {
         <SolutionsSection content={sections.solutions} />
       ) : null}
       <PartnerLogoStrip partners={sections.hero.technologyPartners} />
-
       {sections.hostingPlans?.visible !== false ? (
         <HostingPlansSection content={sections.hostingPlans} />
       ) : null}

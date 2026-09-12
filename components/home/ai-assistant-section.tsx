@@ -385,12 +385,12 @@ export function AiAssistantSection({
   const data = content ?? defaultAiAssistantSection();
 
   return (
-    <section className="relative isolate overflow-hidden bg-[#f7f8fc] pt-6 pb-0 sm:pt-8 lg:pb-0">
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,#fbfcff_0%,#f4f7fd_48%,#eef3fb_100%)]" />
-        <div className="absolute top-[-18%] right-[-10%] h-[70%] w-[55%] rounded-full bg-[radial-gradient(ellipse,rgba(186,210,255,0.5),transparent_72%)] blur-3xl" />
-        <div className="absolute right-[4%] bottom-[-8%] h-[42%] w-[40%] rounded-full bg-[radial-gradient(ellipse,rgba(196,216,255,0.28),transparent_74%)] blur-3xl" />
-      </div>
+    <section className="hb-home-section hb-home-section--rule">
+      <div aria-hidden className="hb-home-section-wash" />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute top-[-12%] right-[-8%] h-[62%] w-[48%] rounded-full bg-[radial-gradient(ellipse,rgba(186,210,255,0.4),transparent_72%)] blur-3xl"
+      />
 
       <div className="hb-shell relative z-10">
         <div className="mb-8 flex flex-nowrap items-center justify-center overflow-x-auto px-1 sm:mb-11">
@@ -417,9 +417,14 @@ export function AiAssistantSection({
 
         <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-8 xl:gap-12">
           <div className="max-w-xl">
-            <p className="text-[11px] font-semibold tracking-[0.22em] text-slate-400 uppercase">
-              {data.badge}
-            </p>
+            <span className="hb-ai-nav hb-ai-nav--section inline-flex items-center justify-center gap-2 rounded-full border border-white/80 bg-white/55 text-slate-950 backdrop-blur-xl">
+              <span className="hb-ai-nav__shine" aria-hidden />
+              <Sparkles
+                className="hb-ai-nav__spark size-4 shrink-0 text-[#7c3aed]"
+                aria-hidden
+              />
+              <span>{data.badge}</span>
+            </span>
 
             <h2 className="font-heading mt-6 text-[clamp(1.85rem,4vw,3.4rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-slate-950">
               <span className="block">{data.title}</span>

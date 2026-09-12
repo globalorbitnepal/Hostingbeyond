@@ -95,6 +95,49 @@
     padding-inline: var(--hb-shell-pad);
     box-sizing: border-box;
   }
+
+  /* Homepage body chapters — one canvas, even rhythm */
+  .hb-home-section {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background-color: #f4f8fd;
+    padding-block: clamp(4rem, 7.2vw, 6.5rem);
+  }
+
+  .hb-home-section--rule::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    left: var(--hb-shell-pad);
+    right: var(--hb-shell-pad);
+    top: 0;
+    z-index: 2;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(148, 163, 184, 0.38),
+      transparent
+    );
+  }
+
+  .hb-home-section-wash {
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(
+        ellipse 52% 42% at 88% 8%,
+        rgba(147, 197, 253, 0.22),
+        transparent 70%
+      ),
+      radial-gradient(
+        ellipse 42% 38% at 6% 92%,
+        rgba(167, 139, 250, 0.08),
+        transparent 72%
+      );
+  }
 }
 
 @layer base {

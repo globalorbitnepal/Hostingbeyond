@@ -279,12 +279,8 @@ export function HostingPlansSection({
   ].filter(Boolean) as Array<{ id: string; label: string; icon: ReactNode }>;
 
   return (
-    <section className="relative isolate overflow-hidden bg-[#f4f8fd] pt-8 pb-16 sm:pt-10 sm:pb-20 lg:pt-12 lg:pb-16">
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,#f4f8fd_0%,#eef4fb_48%,#f4f8fd_100%)]" />
-        <div className="absolute top-[6%] left-[-10%] h-[46%] w-[42%] rounded-full bg-[radial-gradient(ellipse,rgba(147,197,253,0.28),transparent_68%)] blur-3xl" />
-        <div className="absolute right-[-12%] bottom-[8%] h-[40%] w-[38%] rounded-full bg-[radial-gradient(ellipse,rgba(167,139,250,0.12),transparent_70%)] blur-3xl" />
-      </div>
+    <section className="hb-home-section hb-home-section--rule">
+      <div aria-hidden className="hb-home-section-wash" />
 
       <div className="hb-shell relative z-10">
         <div className="flex flex-col items-center text-center lg:flex-row lg:items-center lg:justify-between lg:gap-10 lg:text-left">
