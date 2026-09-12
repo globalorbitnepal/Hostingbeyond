@@ -63,76 +63,82 @@ const statIcons: Record<CmsAiAssistantStat["icon"], typeof Globe> = {
   users: Users,
 };
 
-function TypeLine({
-  text,
-  speed = 46,
-  delay = 200,
-  loop = true,
-  className,
-  onCycleDone,
-}: {
-  text: string;
-  speed?: number;
-  delay?: number;
-  loop?: boolean;
-  className?: string;
-  onCycleDone?: () => void;
-}) {
-  const [shown, setShown] = useState("");
-  const [done, setDone] = useState(false);
+function useChatScript(
+  lines: string[],
+  speed = 34,
+  pause = 380,
+  loopPause = 2400,
+) {
+  const [chars, setChars] = useState<string[]>(() => lines.map(() => ""));
+  const [active, setActive] = useState(0);
+  const script = lines.join("\u0000");
 
   useEffect(() => {
+    const nextLines = script.split("\u0000");
     let cancelled = false;
     let timeout = 0;
+    let line = 0;
+    let col = 0;
+    setChars(nextLines.map(() => ""));
+    setActive(0);
 
-    function type(from = 0) {
+    function tick() {
       if (cancelled) return;
-      if (from === 0) {
-        setShown("");
-        setDone(false);
-      }
-      if (from >= text.length) {
-        setDone(true);
-        onCycleDone?.();
-        if (loop) {
-          timeout = window.setTimeout(() => type(0), 2600);
-        }
+      const target = nextLines[line] ?? "";
+      if (col < target.length) {
+        col += 1;
+        const shown = target.slice(0, col);
+        const current = line;
+        setChars((prev) => {
+          const copy = [...prev];
+          copy[current] = shown;
+          return copy;
+        });
+        timeout = window.setTimeout(tick, speed);
         return;
       }
-      timeout = window.setTimeout(
-        () => {
-          if (cancelled) return;
-          setShown(text.slice(0, from + 1));
-          type(from + 1);
-        },
-        from === 0 ? delay : speed,
-      );
+      if (line < nextLines.length - 1) {
+        timeout = window.setTimeout(() => {
+          line += 1;
+          col = 0;
+          setActive(line);
+          tick();
+        }, pause);
+        return;
+      }
+      timeout = window.setTimeout(() => {
+        line = 0;
+        col = 0;
+        setChars(nextLines.map(() => ""));
+        setActive(0);
+        tick();
+      }, loopPause);
     }
 
-    type(0);
+    timeout = window.setTimeout(tick, 320);
     return () => {
       cancelled = true;
       window.clearTimeout(timeout);
     };
-    // Restart only when the copy changes — not when parent re-renders.
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- onCycleDone is a notify callback
-  }, [text, speed, delay, loop]);
+  }, [script, speed, pause, loopPause]);
 
+  return { chars, active };
+}
+
+function Caret({ on }: { on: boolean }) {
+  if (!on) return null;
   return (
-    <span className={className}>
-      {shown}
-      <span
-        className={`ml-0.5 inline-block h-[1em] w-[2px] translate-y-[2px] bg-current ${
-          done ? "animate-pulse" : ""
-        }`}
-      />
-    </span>
+    <span className="ml-0.5 inline-block h-[1em] w-[2px] translate-y-[2px] animate-pulse bg-current" />
   );
 }
 
 function AssistantChat({ content }: { content: CmsAiAssistantContent }) {
-  const [helloDone, setHelloDone] = useState(false);
-  const firstPrompt = content.prompts[0]?.label ?? "I want to create a website";
+  const lines = [
+    content.helloTitle,
+    content.helloSubtitle,
+    ...content.prompts.map((prompt) => prompt.label),
+  ];
+  const { chars, active } = useChatScript(lines);
 
   return (
     <div className="overflow-hidden rounded-[28px] border border-white/80 bg-white/70 shadow-[0_32px_80px_-28px_rgba(37,80,130,0.45)] backdrop-blur-2xl sm:rounded-[32px]">
@@ -160,32 +166,20 @@ function AssistantChat({ content }: { content: CmsAiAssistantContent }) {
 
       <div className="space-y-3 p-4">
         <div className="max-w-[92%] rounded-2xl bg-[#eef4ff] px-3.5 py-3">
-          <p className="text-[15px] font-extrabold text-slate-900">
-            <TypeLine
-              text={content.helloTitle}
-              speed={70}
-              delay={240}
-              onCycleDone={() => setHelloDone(true)}
-            />
+          <p className="min-h-[22px] text-[15px] font-extrabold text-slate-900">
+            {chars[0]}
+            <Caret on={active === 0} />
           </p>
           <p className="mt-1 min-h-[18px] text-[12px] text-slate-500">
-            {helloDone ? (
-              <TypeLine
-                text={content.helloSubtitle}
-                speed={28}
-                delay={80}
-                loop={false}
-              />
-            ) : (
-              "\u00a0"
-            )}
+            {chars[1]}
+            <Caret on={active === 1} />
           </p>
         </div>
 
         <div className="space-y-2">
           {content.prompts.map((prompt, index) => {
             const Icon = promptIcons[prompt.icon] ?? Globe;
-            const isFirst = index === 0;
+            const lineIndex = index + 2;
             return (
               <button
                 key={prompt.id}
@@ -193,17 +187,10 @@ function AssistantChat({ content }: { content: CmsAiAssistantContent }) {
                 className="flex w-full items-center gap-2 rounded-full border border-white/80 bg-white/90 px-3 py-2 text-left text-[12px] font-semibold text-slate-700 shadow-[0_8px_18px_rgba(37,80,130,0.06)]"
               >
                 <Icon className="size-3.5 shrink-0 text-[#2563eb]" />
-                {isFirst ? (
-                  <TypeLine
-                    text={firstPrompt}
-                    speed={36}
-                    delay={900}
-                    loop
-                    className="min-w-0 truncate"
-                  />
-                ) : (
-                  <span className="truncate">{prompt.label}</span>
-                )}
+                <span className="min-w-0 truncate">
+                  {chars[lineIndex]}
+                  <Caret on={active === lineIndex} />
+                </span>
               </button>
             );
           })}
