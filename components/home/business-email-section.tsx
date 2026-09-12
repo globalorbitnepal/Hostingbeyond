@@ -158,7 +158,7 @@ function MailInbox({ content }: { content: CmsBusinessEmailContent }) {
 
 function MailStage({ content }: { content: CmsBusinessEmailContent }) {
   return (
-    <div className="relative mx-auto h-[460px] w-full max-w-[640px] sm:h-[520px] lg:h-[560px] lg:max-w-none xl:h-[600px]">
+    <div className="relative mx-auto h-[500px] w-full max-w-[640px] sm:h-[560px] lg:h-[600px] lg:max-w-none xl:h-[640px]">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 overflow-hidden"
@@ -179,7 +179,7 @@ function MailStage({ content }: { content: CmsBusinessEmailContent }) {
       </div>
 
       {content.imageUrl ? (
-        <div className="absolute right-[-10%] bottom-[-4%] z-10 h-[96%] w-[78%] sm:right-[-6%] sm:w-[68%] lg:w-[64%]">
+        <div className="absolute right-[-8%] bottom-0 z-10 h-full w-[82%] sm:right-[-4%] sm:w-[70%] lg:w-[66%]">
           <Image
             src={content.imageUrl}
             alt={content.imageAlt}
@@ -190,7 +190,7 @@ function MailStage({ content }: { content: CmsBusinessEmailContent }) {
               isRuntimeMediaSrc(content.imageUrl) ||
               content.imageUrl.endsWith(".png")
             }
-            className="[mask-image:linear-gradient(to_right,transparent_0%,#000_16%,#000_88%,transparent_100%),linear-gradient(to_top,transparent_0%,#000_14%,#000_100%)] [mask-composite:intersect] object-contain object-[center_22%] [-webkit-mask-composite:source-in] [-webkit-mask-image:linear-gradient(to_right,transparent_0%,#000_16%,#000_88%,transparent_100%),linear-gradient(to_top,transparent_0%,#000_14%,#000_100%)]"
+            className="[mask-image:linear-gradient(to_right,transparent_0%,#000_12%,#000_100%)] object-contain object-bottom [-webkit-mask-image:linear-gradient(to_right,transparent_0%,#000_12%,#000_100%)]"
           />
         </div>
       ) : null}
@@ -267,7 +267,7 @@ export function BusinessEmailSection({
   const data = content ?? defaultBusinessEmailSection();
 
   return (
-    <section className="relative isolate overflow-hidden bg-[#f4f8fd] pt-4 pb-16 sm:pt-6 sm:pb-20 lg:pb-24">
+    <section className="relative isolate overflow-x-clip bg-[#f4f8fd] pt-4 pb-16 sm:pt-6 sm:pb-20 lg:pb-24">
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-[linear-gradient(180deg,#f4f8fd_0%,#eef4fb_40%,#f7fbff_100%)]" />
         <div className="absolute top-[-8%] right-[-8%] h-[52%] w-[48%] rounded-full bg-[radial-gradient(ellipse,rgba(147,197,253,0.32),transparent_68%)] blur-3xl" />
