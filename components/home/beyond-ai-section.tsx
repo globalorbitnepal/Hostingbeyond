@@ -1,9 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
   Check,
+  ChevronLeft,
+  ChevronRight,
   Cloud,
   FolderKanban,
   Gauge,
@@ -17,37 +21,31 @@ import {
   Wand2,
   Zap,
 } from "lucide-react";
+import { useReducedMotion } from "framer-motion";
 
-import { routes } from "@/config/routes";
+import { cn } from "@/lib/utils";
+import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
+import {
+  defaultBeyondAiSection,
+  type CmsBeyondAiContent,
+  type CmsBeyondAiFeature,
+  type CmsBeyondAiHighlight,
+  type CmsBeyondAiSite,
+} from "@/lib/orbit/defaults";
 
-const highlights = [
-  { title: "One Click Publish", subtitle: "Go live instantly", icon: Zap },
-  { title: "No Extra Hosting", subtitle: "Everything included", icon: Cloud },
-  { title: "All Sites One Place", subtitle: "Manage with ease", icon: Globe },
-  {
-    title: "High Speed Servers",
-    subtitle: "Built for performance",
-    icon: Rocket,
-  },
-];
+const highlightIcons: Record<CmsBeyondAiHighlight["icon"], typeof Zap> = {
+  zap: Zap,
+  cloud: Cloud,
+  globe: Globe,
+  rocket: Rocket,
+};
 
-const sites = [
-  {
-    name: "Hotel Website",
-    domain: "hotel.com",
-    art: "bg-[linear-gradient(160deg,#7dd3fc_0%,#0369a1_42%,#0f172a_100%)]",
-  },
-  {
-    name: "Trekking Adventure",
-    domain: "trekking.com",
-    art: "bg-[linear-gradient(160deg,#86efac_0%,#047857_48%,#0f172a_100%)]",
-  },
-  {
-    name: "Business Site",
-    domain: "business.com",
-    art: "bg-[linear-gradient(160deg,#c4b5fd_0%,#4f46e5_45%,#0f172a_100%)]",
-  },
-];
+const featureIcons: Record<CmsBeyondAiFeature["icon"], typeof Wand2> = {
+  wand: Wand2,
+  layers: Layers,
+  users: Users,
+  gauge: Gauge,
+};
 
 const tools = [
   { label: "AI Generate", icon: Sparkles },
@@ -56,40 +54,196 @@ const tools = [
   { label: "Publish", icon: Globe },
 ];
 
-const bottom = [
-  {
-    title: "AI Website Creation",
-    description: "Describe your idea and let AI build your website in seconds.",
-    icon: Wand2,
-  },
-  {
-    title: "All-in-One Platform",
-    description: "Hosting, domain, database and everything included.",
-    icon: Layers,
-  },
-  {
-    title: "SaaS Based System",
-    description: "Manage multiple websites, clients and teams easily.",
-    icon: Users,
-  },
-  {
-    title: "High Performance",
-    description: "Optimized servers for blazing fast speed and uptime.",
-    icon: Gauge,
-  },
-];
+function BeyondAiBadge({ text }: { text: string }) {
+  const parts = text.trim().split(/\s+/).filter(Boolean);
+  const last = parts.pop() ?? "AI";
+  const lead = parts.join(" ");
 
-function DashboardPreview() {
   return (
-    <div className="relative mx-auto w-full max-w-[620px] lg:ml-auto lg:max-w-none">
-      <div className="absolute -top-3 right-2 z-20 hidden items-center gap-2 rounded-full border border-white/80 bg-white/90 px-3 py-1.5 text-[11px] font-semibold text-slate-700 shadow-[0_10px_28px_rgba(15,23,42,0.12)] backdrop-blur-xl sm:flex md:right-10">
+    <span className="hb-ai-nav hb-ai-nav--section inline-flex items-center justify-center gap-2 rounded-full border border-white/80 bg-white/55 text-slate-950 backdrop-blur-xl">
+      <span className="hb-ai-nav__shine" aria-hidden />
+      <Sparkles
+        className="hb-ai-nav__spark size-4 shrink-0 text-[#7c3aed]"
+        aria-hidden
+      />
+      <span>
+        {lead ? `${lead} ` : null}
+        <span className="hb-ai-nav__word">{last}</span>
+      </span>
+    </span>
+  );
+}
+
+function SitePhoto({
+  site,
+  className,
+  sizes,
+  priority = false,
+}: {
+  site: CmsBeyondAiSite;
+  className?: string;
+  sizes: string;
+  priority?: boolean;
+}) {
+  if (!site.imageUrl) {
+    return (
+      <div
+        className={cn(
+          "h-full w-full bg-[linear-gradient(160deg,#7dd3fc_0%,#4f46e5_48%,#0f172a_100%)]",
+          className,
+        )}
+      />
+    );
+  }
+
+  return (
+    <div className="relative h-full w-full">
+      <Image
+        src={site.imageUrl}
+        alt={site.imageAlt || site.name}
+        fill
+        sizes={sizes}
+        priority={priority}
+        unoptimized={isRuntimeMediaSrc(site.imageUrl)}
+        className={cn("object-cover object-center", className)}
+      />
+    </div>
+  );
+}
+
+function SiteSlider({ sites }: { sites: CmsBeyondAiSite[] }) {
+  const reduceMotion = useReducedMotion();
+  const [index, setIndex] = useState(0);
+  const [hovered, setHovered] = useState(false);
+  const slides = sites.filter((site) => site.visible !== false);
+
+  useEffect(() => {
+    if (reduceMotion || hovered || slides.length < 2) return;
+    const timer = window.setInterval(() => {
+      setIndex((current) => (current + 1) % slides.length);
+    }, 5000);
+    return () => window.clearInterval(timer);
+  }, [hovered, reduceMotion, slides.length]);
+
+  useEffect(() => {
+    if (index >= slides.length) setIndex(0);
+  }, [index, slides.length]);
+
+  if (!slides.length) return null;
+
+  const active = slides[index] ?? slides[0];
+
+  function go(direction: -1 | 1) {
+    setIndex(
+      (current) => (current + direction + slides.length) % slides.length,
+    );
+  }
+
+  return (
+    <div
+      className="relative overflow-hidden rounded-[22px] border border-white/70 bg-slate-950/5 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <div className="relative aspect-[16/10] min-h-[210px] w-full sm:min-h-[240px]">
+        {slides.map((slide, slideIndex) => (
+          <div
+            key={slide.id}
+            className={cn(
+              "absolute inset-0 transition-[opacity,transform] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
+              slideIndex === index
+                ? "z-[1] scale-100 opacity-100"
+                : "pointer-events-none z-0 scale-[1.03] opacity-0",
+              reduceMotion && "transition-none",
+            )}
+          >
+            <SitePhoto
+              site={slide}
+              sizes="(max-width: 1024px) 100vw, 560px"
+              priority={slideIndex === 0}
+            />
+          </div>
+        ))}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(15,23,42,0.08)_0%,transparent_28%,rgba(15,23,42,0.42)_100%)]"
+        />
+        <div className="absolute right-3 bottom-3 left-3 z-10 flex items-end justify-between gap-3">
+          <div className="min-w-0 rounded-2xl border border-white/25 bg-white/18 px-3 py-2 backdrop-blur-xl">
+            <p className="truncate text-[13px] font-extrabold text-white">
+              {active.name}
+            </p>
+            <p className="truncate text-[11px] text-white/80">
+              {active.domain}
+            </p>
+          </div>
+          <p className="inline-flex items-center gap-1 rounded-full border border-emerald-200/40 bg-emerald-500/90 px-2.5 py-1 text-[10px] font-bold text-white shadow-[0_8px_18px_rgba(16,185,129,0.28)]">
+            <span className="size-1.5 rounded-full bg-white" />
+            {active.status}
+          </p>
+        </div>
+      </div>
+
+      {slides.length > 1 ? (
+        <>
+          <button
+            type="button"
+            aria-label="Previous website"
+            onClick={() => go(-1)}
+            className="absolute top-1/2 left-2 z-20 inline-flex size-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/70 bg-white/80 text-slate-800 shadow-[0_10px_24px_rgba(15,23,42,0.16)] backdrop-blur-xl"
+          >
+            <ChevronLeft className="size-4" />
+          </button>
+          <button
+            type="button"
+            aria-label="Next website"
+            onClick={() => go(1)}
+            className="absolute top-1/2 right-2 z-20 inline-flex size-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/70 bg-white/80 text-slate-800 shadow-[0_10px_24px_rgba(15,23,42,0.16)] backdrop-blur-xl"
+          >
+            <ChevronRight className="size-4" />
+          </button>
+          <div className="absolute top-3 left-1/2 z-20 flex -translate-x-1/2 gap-1.5">
+            {slides.map((slide, slideIndex) => (
+              <button
+                key={slide.id}
+                type="button"
+                aria-label={`Show ${slide.name}`}
+                onClick={() => setIndex(slideIndex)}
+                className={cn(
+                  "h-1.5 rounded-full transition-all duration-300",
+                  slideIndex === index
+                    ? "w-5 bg-white"
+                    : "w-1.5 bg-white/55 hover:bg-white/80",
+                )}
+              />
+            ))}
+          </div>
+        </>
+      ) : null}
+    </div>
+  );
+}
+
+function DashboardPreview({ content }: { content: CmsBeyondAiContent }) {
+  const sites = [...content.sites]
+    .filter((site) => site.visible !== false)
+    .sort((a, b) => a.order - b.order);
+
+  return (
+    <div className="relative mx-auto w-full max-w-[640px] lg:ml-auto lg:max-w-none">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -inset-6 rounded-[40px] bg-[radial-gradient(ellipse_at_center,rgba(124,58,237,0.16),transparent_62%)] blur-2xl"
+      />
+
+      <div className="absolute -top-3 right-2 z-20 hidden items-center gap-2 rounded-full border border-white/80 bg-white/80 px-3 py-1.5 text-[11px] font-semibold text-slate-700 shadow-[0_10px_28px_rgba(15,23,42,0.12)] backdrop-blur-xl sm:flex md:right-8">
         <span className="inline-flex size-5 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
           <Check className="size-3" strokeWidth={2.4} />
         </span>
         <span>
-          Website Published!
+          {content.toastTitle}
           <span className="block text-[10px] font-medium text-slate-400">
-            yourbrand.com is now live
+            {content.toastSubtitle}
           </span>
         </span>
       </div>
@@ -100,7 +254,7 @@ function DashboardPreview() {
           return (
             <div
               key={tool.label}
-              className="flex size-[68px] flex-col items-center justify-center rounded-2xl border border-white/80 bg-white/80 text-center shadow-[0_12px_30px_rgba(37,80,130,0.12)] backdrop-blur-xl"
+              className="flex size-[68px] flex-col items-center justify-center rounded-2xl border border-white/80 bg-white/70 text-center shadow-[0_12px_30px_rgba(37,80,130,0.12)] backdrop-blur-xl"
             >
               <Icon className="size-4 text-[#4f46e5]" />
               <span className="mt-1 text-[9px] font-bold text-slate-600">
@@ -111,15 +265,19 @@ function DashboardPreview() {
         })}
       </div>
 
-      <div className="relative overflow-hidden rounded-[26px] border border-white/80 bg-white/75 shadow-[0_28px_70px_-24px_rgba(37,80,130,0.45)] backdrop-blur-2xl sm:rounded-[30px]">
-        <div className="flex items-center gap-2 border-b border-slate-100/90 px-4 py-2.5">
+      <div className="relative overflow-hidden rounded-[28px] border border-white/80 bg-white/55 shadow-[0_32px_80px_-28px_rgba(37,80,130,0.5)] backdrop-blur-2xl sm:rounded-[32px]">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.55),transparent_38%)]"
+        />
+        <div className="relative flex items-center gap-2 border-b border-white/70 px-4 py-2.5">
           <span className="size-2.5 rounded-full bg-[#ff5f57]" />
           <span className="size-2.5 rounded-full bg-[#febc2e]" />
           <span className="size-2.5 rounded-full bg-[#28c840]" />
           <div className="ml-3 flex min-w-0 items-center gap-4 text-[11px] font-semibold text-slate-400">
             <span className="flex items-center gap-1.5 text-slate-800">
               <Sparkles className="size-3.5 text-[#4f46e5]" />
-              Beyond AI
+              {content.badge}
             </span>
             <span className="hidden text-[#2563eb] sm:inline">Sites</span>
             <span className="hidden md:inline">Templates</span>
@@ -127,76 +285,29 @@ function DashboardPreview() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-[150px_minmax(0,1fr)]">
-          <aside className="hidden border-r border-slate-100 bg-white/40 p-3 sm:block">
-            <p className="mb-2 flex items-center justify-between rounded-xl bg-[#eef4ff] px-2.5 py-2 text-[11px] font-bold text-slate-800">
-              All Websites
-              <span className="rounded-full bg-[#2563eb] px-1.5 text-[10px] text-white">
-                12
-              </span>
-            </p>
-            {[
-              "Templates",
-              "AI Assistant",
-              "Domains",
-              "Analytics",
-              "Team",
-              "Settings",
-            ].map((item) => (
-              <p
-                key={item}
-                className="rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-slate-500"
-              >
-                {item}
-              </p>
-            ))}
-          </aside>
-
-          <div className="p-3 sm:p-4">
-            <div className="mb-3 flex items-center justify-between gap-2">
-              <h3 className="text-[15px] font-extrabold tracking-tight text-slate-900">
-                My Websites
-              </h3>
-              <span className="inline-flex h-8 items-center rounded-full bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-3 text-[11px] font-bold text-white">
-                + New Website
-              </span>
-            </div>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3">
-              {sites.map((site) => (
-                <article
-                  key={site.domain}
-                  className="overflow-hidden rounded-2xl border border-white/80 bg-white/80 shadow-[0_8px_22px_rgba(15,23,42,0.06)]"
-                >
-                  <div className={`h-16 sm:h-[84px] ${site.art}`} />
-                  <div className="px-2 py-2 sm:px-2.5">
-                    <p className="truncate text-[11px] font-bold text-slate-900 sm:text-[12px]">
-                      {site.name}
-                    </p>
-                    <p className="truncate text-[10px] text-slate-400">
-                      {site.domain}
-                    </p>
-                    <p className="mt-1 flex items-center gap-1 text-[10px] font-semibold text-emerald-600">
-                      <span className="size-1.5 rounded-full bg-emerald-500" />
-                      Live
-                    </p>
-                  </div>
-                </article>
-              ))}
-            </div>
+        <div className="relative p-3 sm:p-4">
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <h3 className="text-[15px] font-extrabold tracking-tight text-slate-900">
+              {content.dashboardTitle}
+            </h3>
+            <span className="inline-flex h-8 items-center rounded-full bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-3 text-[11px] font-bold text-white">
+              + New Website
+            </span>
           </div>
+          <SiteSlider sites={sites} />
         </div>
       </div>
 
-      <div className="absolute -bottom-3 left-2 z-20 flex items-center gap-3 rounded-2xl border border-white/80 bg-white/90 px-4 py-3 shadow-[0_14px_36px_rgba(37,80,130,0.16)] backdrop-blur-xl sm:left-8 sm:px-5">
+      <div className="absolute -bottom-3 left-2 z-20 flex items-center gap-3 rounded-2xl border border-white/80 bg-white/85 px-4 py-3 shadow-[0_14px_36px_rgba(37,80,130,0.16)] backdrop-blur-xl sm:left-8 sm:px-5">
         <div>
           <p className="text-[11px] font-semibold text-slate-400">
-            Total Websites
+            {content.statsLabel}
           </p>
           <p className="text-[28px] leading-none font-extrabold text-slate-950">
-            12
+            {content.statsValue}
           </p>
           <p className="mt-1 text-[11px] font-semibold text-emerald-600">
-            +4 this month
+            {content.statsHint}
           </p>
         </div>
         <div className="flex h-12 items-end gap-1 pb-0.5">
@@ -210,18 +321,12 @@ function DashboardPreview() {
         </div>
       </div>
 
-      <div className="absolute right-2 -bottom-2 z-20 hidden w-[210px] rounded-2xl border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(237,233,254,0.9))] p-3.5 shadow-[0_16px_40px_rgba(79,70,229,0.16)] backdrop-blur-xl sm:block md:right-16">
+      <div className="absolute right-2 -bottom-2 z-20 hidden w-[210px] rounded-2xl border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(237,233,254,0.9))] p-3.5 shadow-[0_16px_40px_rgba(79,70,229,0.16)] backdrop-blur-xl sm:block md:right-12">
         <p className="mb-2 flex items-center gap-1.5 text-[12px] font-extrabold text-slate-900">
           <Cloud className="size-3.5 text-[#2563eb]" />
-          Powered by SaaS
+          {content.saasTitle}
         </p>
-        {[
-          "Your sites, forever",
-          "Built-in hosting & domain",
-          "AI tools included",
-          "Team collaboration",
-          "Scalable for business",
-        ].map((item) => (
+        {content.saasItems.map((item) => (
           <p
             key={item}
             className="flex items-center gap-1.5 text-[11px] font-medium text-slate-600"
@@ -235,7 +340,10 @@ function DashboardPreview() {
   );
 }
 
-export function BeyondAiSection() {
+export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
+  const data = content ?? defaultBeyondAiSection();
+  const titleLines = data.title.split("\n").filter(Boolean);
+
   return (
     <section className="relative isolate overflow-hidden bg-[#f4f8fd] pt-4 pb-16 sm:pt-6 sm:pb-20 lg:pb-24">
       <div aria-hidden className="pointer-events-none absolute inset-0">
@@ -247,37 +355,37 @@ export function BeyondAiSection() {
       <div className="hb-shell relative z-10">
         <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-8 xl:gap-12">
           <div className="max-w-xl">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/80 bg-white/75 px-3 py-1 text-[11px] font-bold text-slate-700 shadow-[0_8px_22px_rgba(37,80,130,0.08)] backdrop-blur-xl">
-                <Sparkles className="size-3.5 text-[#4f46e5]" />
-                Beyond AI Builder
-              </span>
-              <span className="rounded-full bg-[#eef2ff] px-3 py-1 text-[11px] font-bold text-[#4f46e5]">
-                Built for Everyone
-              </span>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <BeyondAiBadge text={data.badge} />
+              {data.badgeSecondary ? (
+                <span className="rounded-full border border-white/80 bg-white/70 px-3.5 py-1.5 text-[12px] font-bold text-[#4f46e5] shadow-[0_8px_22px_rgba(79,70,229,0.08)] backdrop-blur-xl">
+                  {data.badgeSecondary}
+                </span>
+              ) : null}
             </div>
 
-            <h2 className="font-heading mt-5 text-[clamp(1.85rem,4vw,3.4rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-slate-950">
-              Create Stunning
-              <span className="block">Websites with</span>
-              <span className="bg-gradient-to-r from-[#2563eb] via-[#4f46e5] to-[#7c3aed] bg-clip-text text-transparent">
-                Beyond AI
+            <h2 className="font-heading mt-6 text-[clamp(1.85rem,4vw,3.4rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-slate-950">
+              {(titleLines.length ? titleLines : [data.title]).map((line) => (
+                <span key={line} className="block">
+                  {line}
+                </span>
+              ))}
+              <span className="block bg-gradient-to-r from-[#2563eb] via-[#4f46e5] to-[#7c3aed] bg-clip-text text-transparent">
+                {data.titleAccent}
               </span>
             </h2>
 
             <p className="mt-4 max-w-md text-[15px] leading-relaxed text-slate-600 sm:text-[16.5px]">
-              All your sites, one place. Create, design and publish professional
-              websites in minutes with AI — no extra hosting, no complex setup.
-              Powered by our high-speed servers and modern SaaS platform.
+              {data.description}
             </p>
 
             <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-2">
-              {highlights.map((item) => {
-                const Icon = item.icon;
+              {data.highlights.map((item) => {
+                const Icon = highlightIcons[item.icon] ?? Zap;
                 return (
                   <div
-                    key={item.title}
-                    className="flex items-start gap-2.5 sm:flex-col sm:items-center sm:text-center"
+                    key={item.id}
+                    className="flex items-start gap-2.5 rounded-2xl border border-white/70 bg-white/55 px-2 py-2 shadow-[0_10px_24px_rgba(37,80,130,0.06)] backdrop-blur-xl sm:flex-col sm:items-center sm:bg-transparent sm:px-0 sm:py-0 sm:text-center sm:shadow-none"
                   >
                     <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl border border-white/80 bg-white/80 text-[#2563eb] shadow-[0_8px_20px_rgba(37,80,130,0.08)]">
                       <Icon className="size-[18px]" />
@@ -297,49 +405,45 @@ export function BeyondAiSection() {
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link
-                href={routes.beyondAi}
+                href={data.primaryCtaHref}
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2563eb] to-[#4f46e5] px-6 text-[14px] font-bold text-white shadow-[0_12px_28px_rgba(37,99,235,0.32)]"
               >
                 <Sparkles className="size-4" />
-                Start Building with Beyond AI
+                {data.primaryCtaLabel}
                 <ArrowRight className="size-4" />
               </Link>
               <Link
-                href={routes.beyondAi}
+                href={data.secondaryCtaHref}
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-white/80 bg-white/80 px-5 text-[14px] font-bold text-slate-800 shadow-[0_10px_24px_rgba(37,80,130,0.08)] backdrop-blur-xl"
               >
                 <Play className="size-4 fill-current" />
-                View Templates
+                {data.secondaryCtaLabel}
               </Link>
             </div>
 
             <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] font-semibold text-slate-500">
-              <span className="inline-flex items-center gap-1">
-                <Check className="size-3.5 text-[#2563eb]" />
-                No credit card required
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <Check className="size-3.5 text-[#2563eb]" />
-                Free to try
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <Check className="size-3.5 text-[#2563eb]" />
-                Launch in minutes
-              </span>
+              {[data.trust1, data.trust2, data.trust3]
+                .filter(Boolean)
+                .map((item) => (
+                  <span key={item} className="inline-flex items-center gap-1">
+                    <Check className="size-3.5 text-[#2563eb]" />
+                    {item}
+                  </span>
+                ))}
             </div>
           </div>
 
           <div className="relative pb-16 sm:pb-10 lg:pb-8">
-            <DashboardPreview />
+            <DashboardPreview content={data} />
           </div>
         </div>
 
-        <div className="mt-10 grid gap-3 rounded-[28px] border border-white/80 bg-white/70 p-3 shadow-[0_18px_50px_-28px_rgba(37,80,130,0.32)] backdrop-blur-2xl sm:mt-14 sm:grid-cols-2 lg:grid-cols-4 lg:p-4">
-          {bottom.map((item) => {
-            const Icon = item.icon;
+        <div className="mt-10 grid gap-3 rounded-[28px] border border-white/80 bg-white/60 p-3 shadow-[0_18px_50px_-28px_rgba(37,80,130,0.32)] backdrop-blur-2xl sm:mt-14 sm:grid-cols-2 lg:grid-cols-4 lg:p-4">
+          {data.features.map((item) => {
+            const Icon = featureIcons[item.icon] ?? Wand2;
             return (
               <article
-                key={item.title}
+                key={item.id}
                 className="flex gap-3 rounded-2xl px-3 py-3 sm:px-4"
               >
                 <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[#eef4ff] text-[#2563eb]">
@@ -357,12 +461,6 @@ export function BeyondAiSection() {
             );
           })}
         </div>
-
-        <p className="mt-8 flex items-center justify-center gap-3 text-[11px] font-bold tracking-[0.22em] text-slate-400 uppercase">
-          <span className="h-px w-8 bg-slate-200" />
-          Build today. Grow beyond tomorrow.
-          <span className="h-px w-8 bg-slate-200" />
-        </p>
       </div>
     </section>
   );

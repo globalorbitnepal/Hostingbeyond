@@ -47,7 +47,9 @@ export default async function HomePage() {
       {sections.hostingPlans?.visible !== false ? (
         <HostingPlansSection content={sections.hostingPlans} />
       ) : null}
-      <BeyondAiSection />
+      {sections.beyondAi?.visible !== false ? (
+        <BeyondAiSection content={sections.beyondAi} />
+      ) : null}
     </div>
   );
 }

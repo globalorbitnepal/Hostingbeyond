@@ -2,9 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { BeyondAiEditor } from "@/components/orbit/beyond-ai-editor";
 import { OrbitImageField } from "@/components/orbit/image-field";
 import { SolutionsEditor } from "@/components/orbit/solutions-editor";
 import {
+  defaultBeyondAiSection,
   defaultHeroFeatureBar,
   defaultTechnologyPartners,
   type CmsDomainTld,
@@ -193,7 +195,7 @@ export default function OrbitContentPage() {
         <p
           className={
             /fail|error|could not/i.test(status)
-              ? "whitespace-pre-wrap text-sm text-red-600"
+              ? "text-sm whitespace-pre-wrap text-red-600"
               : "text-sm text-emerald-700"
           }
         >
@@ -746,9 +748,7 @@ export default function OrbitContentPage() {
               <OrbitImageField
                 label="Card illustration image"
                 value={offer.illustrationUrl ?? ""}
-                onChange={(url) =>
-                  updateOffer(index, { illustrationUrl: url })
-                }
+                onChange={(url) => updateOffer(index, { illustrationUrl: url })}
                 onCommit={(url) => {
                   const current = sectionsRef.current;
                   if (!current) return;
@@ -1143,6 +1143,16 @@ export default function OrbitContentPage() {
           ))}
         </div>
       </section>
+
+      <BeyondAiEditor
+        value={sections.beyondAi ?? defaultBeyondAiSection()}
+        onChange={(beyondAi) => setSections({ ...sections, beyondAi })}
+        onPersist={(beyondAi) => {
+          const current = sectionsRef.current;
+          if (!current) return;
+          commitHome({ ...current, beyondAi });
+        }}
+      />
 
       {/* LOGIN PAGE */}
       {login ? (

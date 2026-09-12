@@ -162,6 +162,58 @@ export type CmsHostingPlansContent = {
   guarantees: CmsHostingGuarantee[];
 };
 
+export type CmsBeyondAiSite = {
+  id: string;
+  visible: boolean;
+  order: number;
+  name: string;
+  domain: string;
+  imageUrl: string;
+  imageAlt: string;
+  status: string;
+};
+
+export type CmsBeyondAiHighlight = {
+  id: string;
+  title: string;
+  subtitle: string;
+  icon: "zap" | "cloud" | "globe" | "rocket";
+};
+
+export type CmsBeyondAiFeature = {
+  id: string;
+  title: string;
+  description: string;
+  icon: "wand" | "layers" | "users" | "gauge";
+};
+
+export type CmsBeyondAiContent = {
+  visible: boolean;
+  badge: string;
+  badgeSecondary: string;
+  title: string;
+  titleAccent: string;
+  description: string;
+  primaryCtaLabel: string;
+  primaryCtaHref: string;
+  secondaryCtaLabel: string;
+  secondaryCtaHref: string;
+  trust1: string;
+  trust2: string;
+  trust3: string;
+  dashboardTitle: string;
+  toastTitle: string;
+  toastSubtitle: string;
+  statsLabel: string;
+  statsValue: string;
+  statsHint: string;
+  saasTitle: string;
+  saasItems: string[];
+  highlights: CmsBeyondAiHighlight[];
+  sites: CmsBeyondAiSite[];
+  features: CmsBeyondAiFeature[];
+};
+
 export type CmsHostingTypeCard = {
   id: string;
   visible: boolean;
@@ -233,6 +285,7 @@ export type CmsHomeSections = {
   products: CmsProductsContent;
   hostingTypes: CmsHostingTypesContent;
   hostingPlans: CmsHostingPlansContent;
+  beyondAi: CmsBeyondAiContent;
   navigation: typeof mainNavigation;
 };
 
@@ -590,6 +643,124 @@ function defaultHostingPlansSection(): CmsHostingPlansContent {
         description:
           "High-availability network designed for always-on performance.",
         icon: "rocket",
+      },
+    ],
+  };
+}
+
+export function defaultBeyondAiSection(): CmsBeyondAiContent {
+  return {
+    visible: true,
+    badge: "Beyond AI",
+    badgeSecondary: "Built for Everyone",
+    title: "Create Stunning\nWebsites with",
+    titleAccent: "Beyond AI",
+    description:
+      "All your sites, one place. Create, design and publish professional websites in minutes with AI — no extra hosting, no complex setup. Powered by our high-speed servers and modern SaaS platform.",
+    primaryCtaLabel: "Start Building with Beyond AI",
+    primaryCtaHref: routes.beyondAi,
+    secondaryCtaLabel: "View Templates",
+    secondaryCtaHref: routes.beyondAi,
+    trust1: "No credit card required",
+    trust2: "Free to try",
+    trust3: "Launch in minutes",
+    dashboardTitle: "My Websites",
+    toastTitle: "Website Published!",
+    toastSubtitle: "yourbrand.com is now live",
+    statsLabel: "Total Websites",
+    statsValue: "12",
+    statsHint: "+4 this month",
+    saasTitle: "Powered by SaaS",
+    saasItems: [
+      "Your sites, forever",
+      "Built-in hosting & domain",
+      "AI tools included",
+      "Team collaboration",
+      "Scalable for business",
+    ],
+    highlights: [
+      {
+        id: "publish",
+        title: "One Click Publish",
+        subtitle: "Go live instantly",
+        icon: "zap",
+      },
+      {
+        id: "hosting",
+        title: "No Extra Hosting",
+        subtitle: "Everything included",
+        icon: "cloud",
+      },
+      {
+        id: "sites",
+        title: "All Sites One Place",
+        subtitle: "Manage with ease",
+        icon: "globe",
+      },
+      {
+        id: "speed",
+        title: "High Speed Servers",
+        subtitle: "Built for performance",
+        icon: "rocket",
+      },
+    ],
+    sites: [
+      {
+        id: "hotel",
+        visible: true,
+        order: 0,
+        name: "Hotel Website",
+        domain: "hotel.com",
+        imageUrl: "/images/beyond-ai/hotel.jpg",
+        imageAlt: "Luxury hotel website preview",
+        status: "Live",
+      },
+      {
+        id: "trekking",
+        visible: true,
+        order: 1,
+        name: "Trekking Adventure",
+        domain: "trekking.com",
+        imageUrl: "/images/beyond-ai/trekking.jpg",
+        imageAlt: "Trekking adventure website preview",
+        status: "Live",
+      },
+      {
+        id: "business",
+        visible: true,
+        order: 2,
+        name: "Business Site",
+        domain: "business.com",
+        imageUrl: "/images/beyond-ai/business.jpg",
+        imageAlt: "Business website preview",
+        status: "Live",
+      },
+    ],
+    features: [
+      {
+        id: "create",
+        title: "AI Website Creation",
+        description:
+          "Describe your idea and let AI build your website in seconds.",
+        icon: "wand",
+      },
+      {
+        id: "platform",
+        title: "All-in-One Platform",
+        description: "Hosting, domain, database and everything included.",
+        icon: "layers",
+      },
+      {
+        id: "saas",
+        title: "SaaS Based System",
+        description: "Manage multiple websites, clients and teams easily.",
+        icon: "users",
+      },
+      {
+        id: "performance",
+        title: "High Performance",
+        description: "Optimized servers for blazing fast speed and uptime.",
+        icon: "gauge",
       },
     ],
   };
@@ -1158,10 +1329,109 @@ export function defaultHomeSections(): CmsHomeSections {
     },
     hostingTypes: defaultHostingTypesSection(),
     hostingPlans: defaultHostingPlansSection(),
+    beyondAi: defaultBeyondAiSection(),
     navigation: mainNavigation.map((item) => ({
       ...item,
       children: item.children?.map((child) => ({ ...child })),
     })),
+  };
+}
+
+function mergeBeyondAiSection(
+  stored?: Partial<CmsBeyondAiContent> | null,
+): CmsBeyondAiContent {
+  const defaults = defaultBeyondAiSection();
+  if (!stored) return defaults;
+
+  const highlightIcon = (
+    value: unknown,
+    fallback: CmsBeyondAiHighlight["icon"],
+  ): CmsBeyondAiHighlight["icon"] =>
+    value === "zap" ||
+    value === "cloud" ||
+    value === "globe" ||
+    value === "rocket"
+      ? value
+      : fallback;
+
+  const featureIcon = (
+    value: unknown,
+    fallback: CmsBeyondAiFeature["icon"],
+  ): CmsBeyondAiFeature["icon"] =>
+    value === "wand" ||
+    value === "layers" ||
+    value === "users" ||
+    value === "gauge"
+      ? value
+      : fallback;
+
+  const highlights =
+    Array.isArray(stored.highlights) && stored.highlights.length > 0
+      ? stored.highlights.map((item, index) => {
+          const fallback =
+            defaults.highlights[index % defaults.highlights.length];
+          return {
+            ...fallback,
+            ...item,
+            id: item.id || fallback.id || `highlight-${index}`,
+            icon: highlightIcon(item.icon, fallback.icon),
+            title: item.title || fallback.title,
+            subtitle: item.subtitle || fallback.subtitle,
+          } satisfies CmsBeyondAiHighlight;
+        })
+      : defaults.highlights;
+
+  const sites =
+    Array.isArray(stored.sites) && stored.sites.length > 0
+      ? stored.sites
+          .map((item, index) => {
+            const fallback = defaults.sites[index % defaults.sites.length];
+            return {
+              ...fallback,
+              ...item,
+              id: item.id || fallback.id || `site-${index}`,
+              visible: item.visible !== false,
+              order: typeof item.order === "number" ? item.order : index,
+              name: item.name || fallback.name,
+              domain: item.domain || fallback.domain,
+              imageUrl:
+                typeof item.imageUrl === "string" && item.imageUrl.trim()
+                  ? item.imageUrl
+                  : fallback.imageUrl,
+              imageAlt: item.imageAlt || fallback.imageAlt,
+              status: item.status || fallback.status,
+            } satisfies CmsBeyondAiSite;
+          })
+          .sort((a, b) => a.order - b.order)
+      : defaults.sites;
+
+  const features =
+    Array.isArray(stored.features) && stored.features.length > 0
+      ? stored.features.map((item, index) => {
+          const fallback = defaults.features[index % defaults.features.length];
+          return {
+            ...fallback,
+            ...item,
+            id: item.id || fallback.id || `feature-${index}`,
+            icon: featureIcon(item.icon, fallback.icon),
+            title: item.title || fallback.title,
+            description: item.description || fallback.description,
+          } satisfies CmsBeyondAiFeature;
+        })
+      : defaults.features;
+
+  const saasItems = Array.isArray(stored.saasItems)
+    ? stored.saasItems.map((item) => item.trim()).filter(Boolean)
+    : defaults.saasItems;
+
+  return {
+    ...defaults,
+    ...stored,
+    visible: stored.visible !== false,
+    saasItems: saasItems.length ? saasItems : defaults.saasItems,
+    highlights,
+    sites,
+    features,
   };
 }
 
@@ -1545,6 +1815,7 @@ export function mergeHomeSections(
       plans: plans.sort((a, b) => a.order - b.order),
       guarantees,
     },
+    beyondAi: mergeBeyondAiSection(stored.beyondAi),
     // Drop legacy top-level Cloud & VPS — those live under Hosting now.
     // Also normalize stored "Web Hosting" label → "Hosting".
     navigation: (() => {

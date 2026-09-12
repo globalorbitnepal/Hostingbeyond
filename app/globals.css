@@ -472,6 +472,22 @@
     animation: hb-ai-flow 3.6s linear infinite;
   }
 
+  .hb-ai-nav--section {
+    height: 2.85rem;
+    padding: 0 1.15rem;
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    box-shadow:
+      0 12px 32px rgba(79, 70, 229, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  }
+
+  .hb-ai-nav--section .hb-ai-nav__spark {
+    width: 1rem;
+    height: 1rem;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .hb-hero-gradient {
       animation: none;
