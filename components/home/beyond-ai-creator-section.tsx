@@ -13,7 +13,6 @@ import {
   Zap,
 } from "lucide-react";
 
-import { cn } from "@/lib/utils";
 import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
 import {
   defaultBeyondAiCreatorSection,
@@ -122,12 +121,12 @@ export function BeyondAiCreatorSection({
             </div>
           </div>
 
-          <div className="relative order-2 mx-auto w-full max-w-[520px] lg:max-w-none">
+          <div className="relative order-2 mx-auto w-full max-w-[560px] lg:max-w-none">
             <div
               aria-hidden
-              className="pointer-events-none absolute top-[12%] left-[8%] h-[78%] w-[84%] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(125,180,230,0.35),transparent_68%)] blur-2xl"
+              className="pointer-events-none absolute top-[8%] left-[4%] h-[86%] w-[92%] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(147,197,253,0.28),transparent_70%)] blur-3xl"
             />
-            <div className="relative mx-auto h-[min(56vh,460px)] w-full sm:h-[min(62vh,560px)] lg:h-[min(72vh,680px)] xl:h-[min(78vh,740px)]">
+            <div className="relative mx-auto h-[min(52vh,420px)] w-full sm:h-[min(58vh,520px)] lg:h-[min(70vh,640px)] xl:h-[min(74vh,700px)]">
               {data.imageUrl ? (
                 <Image
                   src={data.imageUrl}
@@ -135,11 +134,13 @@ export function BeyondAiCreatorSection({
                   fill
                   sizes="(max-width: 640px) 92vw, (max-width: 1024px) 70vw, 42vw"
                   unoptimized={isRuntimeMediaSrc(data.imageUrl)}
-                  className={cn(
-                    "object-contain object-bottom drop-shadow-[0_28px_50px_rgba(37,80,130,0.18)]",
-                  )}
+                  className="[mask-image:radial-gradient(ellipse_72%_78%_at_50%_46%,#000_58%,transparent_78%)] object-contain object-[center_28%] [-webkit-mask-image:radial-gradient(ellipse_72%_78%_at_50%_46%,#000_58%,transparent_78%)]"
                 />
               ) : null}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(238,244,251,0.35)_64%,#eef4fb_86%)]"
+              />
             </div>
           </div>
         </div>
