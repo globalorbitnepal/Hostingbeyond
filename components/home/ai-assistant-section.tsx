@@ -26,12 +26,12 @@ import {
 } from "@/lib/orbit/defaults";
 
 const LOGO_SRC: Record<string, string> = {
-  claude: "/images/ai-assistant/claude.svg",
-  openai: "/images/ai-assistant/openai.svg",
-  gemini: "/images/ai-assistant/gemini.svg",
-  deepseek: "/images/ai-assistant/deepseek.svg",
-  openrouter: "/images/ai-assistant/openrouter.svg",
-  imunify: "/images/ai-assistant/imunify.svg",
+  claude: "/images/ai-assistant/claude.png",
+  openai: "/images/ai-assistant/openai.png",
+  gemini: "/images/ai-assistant/gemini.png",
+  deepseek: "/images/ai-assistant/deepseek.png",
+  openrouter: "/images/ai-assistant/openrouter.png",
+  imunify: "/images/ai-assistant/imunify.png",
 };
 
 const highlightIcons: Record<CmsAiAssistantHighlight["icon"], typeof Zap> = {
@@ -217,6 +217,10 @@ function AssistantStage({ content }: { content: CmsAiAssistantContent }) {
             }
             className="object-contain object-[center_bottom]"
           />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,#f7fbff_0%,rgba(247,251,255,0.55)_12%,transparent_28%),linear-gradient(180deg,#f7fbff_0%,transparent_18%)]"
+          />
         </div>
       ) : null}
 
@@ -314,7 +318,7 @@ export function AiAssistantSection({
                 <span className="inline-flex items-center gap-2">
                   {src ? (
                     <Image
-                      src={`${src}?v=mark2`}
+                      src={`${src}?v=mark3`}
                       alt=""
                       width={28}
                       height={28}
