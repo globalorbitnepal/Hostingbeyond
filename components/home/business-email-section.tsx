@@ -58,29 +58,29 @@ const cities = [
   {
     city: "New York",
     status: "Connected",
-    top: "2%",
-    left: "28%",
+    top: "28%",
+    left: "22%",
     photo: "/images/business-email/ny.png",
   },
   {
     city: "London",
     status: "Connected",
-    top: "0%",
-    left: "54%",
+    top: "24%",
+    left: "49%",
     photo: "/images/business-email/london.png",
   },
   {
     city: "Tokyo",
     status: "Connected",
-    top: "9%",
-    left: "76%",
+    top: "30%",
+    left: "80%",
     photo: "/images/business-email/tokyo.png",
   },
   {
     city: "Sydney",
     status: "Connected",
-    top: "20%",
-    left: "74%",
+    top: "58%",
+    left: "82%",
     photo: "/images/business-email/sydney.png",
   },
 ];
@@ -182,19 +182,63 @@ function MailStage({ content }: { content: CmsBusinessEmailContent }) {
         className="pointer-events-none absolute -inset-6 rounded-[40px] bg-[radial-gradient(ellipse_at_center,rgba(124,58,237,0.16),transparent_62%)] blur-2xl"
       />
 
-      <div className="pointer-events-none absolute top-[-2%] right-[-2%] h-[52%] w-[94%]">
+      <div className="absolute top-0 right-0 z-[5] aspect-[16/9] w-[96%] max-w-[720px]">
         <Image
           src="/images/business-email/map.png"
           alt=""
           fill
           unoptimized
           sizes="(max-width: 1024px) 90vw, 55vw"
-          className="object-contain object-[right_top] opacity-80"
+          className="object-contain object-right"
         />
+        <svg
+          aria-hidden
+          viewBox="0 0 100 56"
+          className="pointer-events-none absolute inset-0 h-full w-full text-sky-400/45"
+        >
+          <path
+            d="M26 20C38 14 46 16 52 16C64 16 74 18 82 20"
+            fill="none"
+            stroke="currentColor"
+            strokeDasharray="1.2 1.8"
+            strokeWidth="0.35"
+          />
+          <path
+            d="M26 20C40 28 58 32 82 34"
+            fill="none"
+            stroke="currentColor"
+            strokeDasharray="1.2 1.8"
+            strokeWidth="0.35"
+          />
+        </svg>
+        {cities.map((city) => (
+          <div
+            key={city.city}
+            className="absolute z-10 hidden items-center gap-2 lg:flex"
+            style={{ top: city.top, left: city.left }}
+          >
+            <span className="relative size-9 overflow-hidden rounded-full border-2 border-white shadow-[0_8px_18px_rgba(79,70,229,0.22)]">
+              <Image
+                src={city.photo}
+                alt=""
+                fill
+                unoptimized
+                sizes="36px"
+                className="object-cover object-top"
+              />
+            </span>
+            <span className="rounded-xl border border-white/70 bg-white/80 px-2 py-1 text-[10px] leading-tight shadow-sm backdrop-blur-xl">
+              <span className="block font-bold text-slate-800">
+                {city.city}
+              </span>
+              <span className="text-slate-500">{city.status}</span>
+            </span>
+          </div>
+        ))}
       </div>
 
       {content.imageUrl ? (
-        <div className="absolute top-[10%] right-[12%] z-10 h-[96%] w-[78%] sm:right-[16%] sm:w-[68%] lg:w-[64%]">
+        <div className="absolute right-[-4%] bottom-[-6%] z-10 h-[88%] w-[72%] sm:right-[-2%] sm:w-[64%] lg:w-[60%]">
           <Image
             src={content.imageUrl}
             alt={content.imageAlt}
@@ -205,16 +249,16 @@ function MailStage({ content }: { content: CmsBusinessEmailContent }) {
               isRuntimeMediaSrc(content.imageUrl) ||
               content.imageUrl.endsWith(".png")
             }
-            className="[mask-image:linear-gradient(to_right,transparent_0%,#000_10%,#000_100%)] object-cover object-[center_10%] [-webkit-mask-image:linear-gradient(to_right,transparent_0%,#000_10%,#000_100%)]"
+            className="[mask-image:radial-gradient(ellipse_72%_78%_at_58%_46%,#000_58%,transparent_82%)] object-contain object-bottom [-webkit-mask-image:radial-gradient(ellipse_72%_78%_at_58%_46%,#000_58%,transparent_82%)]"
           />
         </div>
       ) : null}
 
-      <div className="absolute top-16 left-0 z-20 w-[86%] max-w-[360px] sm:top-[28%] sm:w-[58%]">
+      <div className="absolute top-[34%] left-0 z-20 w-[86%] max-w-[360px] sm:top-[30%] sm:w-[56%]">
         <MailInbox content={content} />
       </div>
 
-      <div className="absolute top-3 left-[4%] z-30 hidden items-center gap-2 rounded-full border border-white/80 bg-white/80 px-3 py-1.5 shadow-[0_10px_28px_rgba(15,23,42,0.12)] backdrop-blur-xl sm:flex">
+      <div className="absolute top-[18%] left-[6%] z-30 hidden items-center gap-2 rounded-full border border-white/80 bg-white/80 px-3 py-1.5 shadow-[0_10px_28px_rgba(15,23,42,0.12)] backdrop-blur-xl sm:flex">
         <span className="inline-flex size-6 items-center justify-center rounded-full bg-[#eef2ff] text-[#4f46e5]">
           <Mail className="size-3.5" />
         </span>
@@ -224,30 +268,7 @@ function MailStage({ content }: { content: CmsBusinessEmailContent }) {
         <Check className="size-4 text-emerald-500" strokeWidth={2.6} />
       </div>
 
-      {cities.map((city) => (
-        <div
-          key={city.city}
-          className="absolute z-30 hidden items-center gap-2 xl:flex"
-          style={{ top: city.top, left: city.left }}
-        >
-          <span className="relative size-9 overflow-hidden rounded-full border-2 border-white shadow-[0_8px_18px_rgba(79,70,229,0.22)]">
-            <Image
-              src={city.photo}
-              alt=""
-              fill
-              unoptimized
-              sizes="36px"
-              className="object-cover object-top"
-            />
-          </span>
-          <span className="rounded-xl border border-white/70 bg-white/80 px-2 py-1 text-[10px] leading-tight shadow-sm backdrop-blur-xl">
-            <span className="block font-bold text-slate-800">{city.city}</span>
-            <span className="text-slate-500">{city.status}</span>
-          </span>
-        </div>
-      ))}
-
-      <div className="absolute top-[30%] right-0 z-30 hidden w-[172px] flex-col gap-2 xl:flex">
+      <div className="absolute top-[36%] right-0 z-30 hidden w-[172px] flex-col gap-2 xl:flex">
         {content.stats.map((stat) => {
           const Icon = statIcons[stat.icon] ?? BarChart3;
           return (
