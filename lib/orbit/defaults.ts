@@ -562,7 +562,7 @@ function defaultHostingPlansSection(): CmsHostingPlansContent {
     title: "Web Hosting",
     titleAccent: "Plans & Price",
     description:
-      "Compare our affordable web hosting price in Nepal and choose the perfect hosting plan for your website.",
+      "Compare our affordable web hosting prices and choose the perfect hosting plan for your website.",
     supportLabel: "24/7 Local Support",
     activationLabel: "Instant Activation",
     annualToggleLabel: "Annually (Save 50%)",
@@ -1527,6 +1527,17 @@ export function mergeHomeSections(
     hostingPlans: {
       ...defaults.hostingPlans,
       ...stored.hostingPlans,
+      description: (() => {
+        const value = stored.hostingPlans?.description;
+        if (
+          typeof value === "string" &&
+          value.trim() &&
+          !/nepal/i.test(value)
+        ) {
+          return value;
+        }
+        return defaults.hostingPlans.description;
+      })(),
       defaultBilling:
         stored.hostingPlans?.defaultBilling === "monthly"
           ? "monthly"
