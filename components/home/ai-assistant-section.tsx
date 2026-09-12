@@ -25,6 +25,24 @@ import {
   type CmsAiAssistantStat,
 } from "@/lib/orbit/defaults";
 
+const LOGO_SRC: Record<string, string> = {
+  claude: "/images/ai-assistant/claude.svg",
+  openai: "/images/ai-assistant/openai.svg",
+  gemini: "/images/ai-assistant/gemini.svg",
+  deepseek: "/images/ai-assistant/deepseek.svg",
+  openrouter: "/images/ai-assistant/openrouter.svg",
+  imunify: "/images/ai-assistant/imunify.svg",
+};
+
+const LOGO_SIZE: Record<string, { w: number; h: number }> = {
+  claude: { w: 168, h: 40 },
+  openai: { w: 148, h: 40 },
+  gemini: { w: 148, h: 40 },
+  deepseek: { w: 168, h: 40 },
+  openrouter: { w: 188, h: 40 },
+  imunify: { w: 176, h: 40 },
+};
+
 const highlightIcons: Record<CmsAiAssistantHighlight["icon"], typeof Zap> = {
   zap: Zap,
   layers: Layers,
@@ -197,30 +215,30 @@ function AssistantChat({ content }: { content: CmsAiAssistantContent }) {
 
 function AssistantStage({ content }: { content: CmsAiAssistantContent }) {
   return (
-    <div className="relative mx-auto min-h-[520px] w-full max-w-[640px] sm:min-h-[580px] lg:ml-auto lg:min-h-[600px] lg:max-w-none">
+    <div className="relative mx-auto min-h-[560px] w-full max-w-[680px] sm:min-h-[620px] lg:ml-auto lg:min-h-[640px] lg:max-w-none">
       <div
         aria-hidden
-        className="pointer-events-none absolute -inset-6 rounded-[40px] bg-[radial-gradient(ellipse_at_center,rgba(37,99,235,0.16),transparent_62%)] blur-2xl"
+        className="pointer-events-none absolute -inset-8 rounded-[48px] bg-[radial-gradient(ellipse_at_70%_50%,rgba(147,197,253,0.28),transparent_64%)] blur-2xl"
       />
 
       {content.imageUrl ? (
-        <div className="absolute right-[-8%] bottom-[-8%] z-10 h-[108%] w-[92%] sm:right-[-4%] sm:w-[82%] lg:w-[78%]">
+        <div className="absolute right-[-10%] bottom-[-10%] z-10 h-[118%] w-[100%] sm:right-[-6%] sm:w-[90%] lg:w-[88%]">
           <Image
             src={content.imageUrl}
             alt={content.imageAlt}
             fill
             priority
-            sizes="(max-width: 1024px) 90vw, 50vw"
+            sizes="(max-width: 1024px) 100vw, 56vw"
             unoptimized={
               isRuntimeMediaSrc(content.imageUrl) ||
               content.imageUrl.endsWith(".png")
             }
-            className="[mask-image:radial-gradient(ellipse_78%_82%_at_62%_48%,#000_56%,transparent_84%)] object-contain object-bottom [-webkit-mask-image:radial-gradient(ellipse_78%_82%_at_62%_48%,#000_56%,transparent_84%)]"
+            className="[mask-image:linear-gradient(to_right,transparent_0%,#000_14%,#000_100%),linear-gradient(to_top,transparent_0%,#000_10%,#000_100%)] [mask-composite:intersect] object-contain object-[center_bottom] [-webkit-mask-composite:source-in] [-webkit-mask-image:linear-gradient(to_right,transparent_0%,#000_14%,#000_100%),linear-gradient(to_top,transparent_0%,#000_10%,#000_100%)]"
           />
         </div>
       ) : null}
 
-      <div className="absolute top-[12%] left-0 z-20 w-[86%] max-w-[340px] sm:top-[16%] sm:w-[54%]">
+      <div className="absolute top-[10%] left-0 z-20 w-[88%] max-w-[340px] sm:top-[12%] sm:w-[52%]">
         <AssistantChat content={content} />
       </div>
 
@@ -277,13 +295,35 @@ export function AiAssistantSection({
       </div>
 
       <div className="hb-shell relative z-10">
-        <div className="mb-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[12px] font-bold text-slate-600 sm:mb-10 sm:gap-x-7">
-          {data.partners.map((partner) => (
-            <span key={partner.id} className="inline-flex items-center gap-1.5">
-              <Sparkles className="size-3.5 text-[#4f46e5]" />
-              {partner.label}
-            </span>
-          ))}
+        <div className="mb-8 flex flex-wrap items-center justify-center gap-y-3 sm:mb-10">
+          {data.partners.map((partner, index) => {
+            const src = LOGO_SRC[partner.id];
+            const size = LOGO_SIZE[partner.id] ?? { w: 160, h: 40 };
+            return (
+              <span key={partner.id} className="inline-flex items-center">
+                {index > 0 ? (
+                  <span
+                    aria-hidden
+                    className="mx-3 h-5 w-px shrink-0 bg-slate-300/90 sm:mx-5"
+                  />
+                ) : null}
+                {src ? (
+                  <Image
+                    src={`${src}?v=1`}
+                    alt={partner.label}
+                    width={size.w}
+                    height={size.h}
+                    unoptimized
+                    className="h-8 w-auto max-w-[160px] object-contain sm:h-9"
+                  />
+                ) : (
+                  <span className="text-[12px] font-bold text-slate-600">
+                    {partner.label}
+                  </span>
+                )}
+              </span>
+            );
+          })}
         </div>
 
         <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-8 xl:gap-12">
