@@ -269,6 +269,54 @@ export type CmsBusinessEmailContent = {
   features: CmsBusinessEmailFeature[];
 };
 
+export type CmsAiAssistantHighlight = {
+  id: string;
+  title: string;
+  subtitle: string;
+  icon: "zap" | "layers" | "shield" | "users";
+};
+
+export type CmsAiAssistantPrompt = {
+  id: string;
+  label: string;
+  icon: "globe" | "layers" | "search" | "refresh";
+};
+
+export type CmsAiAssistantStat = {
+  id: string;
+  title: string;
+  subtitle: string;
+  icon: "globe" | "layers" | "users";
+};
+
+export type CmsAiAssistantPartner = {
+  id: string;
+  label: string;
+};
+
+export type CmsAiAssistantContent = {
+  visible: boolean;
+  badge: string;
+  title: string;
+  titleAccent: string;
+  description: string;
+  primaryCtaLabel: string;
+  primaryCtaHref: string;
+  secondaryCtaLabel: string;
+  secondaryCtaHref: string;
+  handwrittenNote: string;
+  botName: string;
+  botStatus: string;
+  helloTitle: string;
+  helloSubtitle: string;
+  imageUrl: string;
+  imageAlt: string;
+  partners: CmsAiAssistantPartner[];
+  highlights: CmsAiAssistantHighlight[];
+  prompts: CmsAiAssistantPrompt[];
+  stats: CmsAiAssistantStat[];
+};
+
 export type CmsHostingTypeCard = {
   id: string;
   visible: boolean;
@@ -342,6 +390,7 @@ export type CmsHomeSections = {
   hostingPlans: CmsHostingPlansContent;
   beyondAi: CmsBeyondAiContent;
   businessEmail: CmsBusinessEmailContent;
+  aiAssistant: CmsAiAssistantContent;
   navigation: typeof mainNavigation;
 };
 
@@ -949,6 +998,88 @@ export function defaultBusinessEmailSection(): CmsBusinessEmailContent {
   };
 }
 
+export function defaultAiAssistantSection(): CmsAiAssistantContent {
+  return {
+    visible: true,
+    badge: "AI-Powered Web Hosting",
+    title: "Your AI Assistant",
+    titleAccent: "for Web Hosting",
+    description:
+      "Launch, manage, and grow your online presence with the power of AI — only at HostingBeyond.",
+    primaryCtaLabel: "Chat with Our AI Assistant",
+    primaryCtaHref: routes.beyondAi,
+    secondaryCtaLabel: "See How It Works",
+    secondaryCtaHref: routes.beyondAi,
+    handwrittenNote: "AI Tools\nReal Support\nGreater Possibilities",
+    botName: "Hosting Beyond AI",
+    botStatus: "Online",
+    helloTitle: "Hello! 👋",
+    helloSubtitle: "How can I help you today?",
+    imageUrl: "/images/ai-assistant/man.png",
+    imageAlt: "Customer chatting with HostingBeyond AI on a phone",
+    partners: [
+      { id: "claude", label: "Claude AI" },
+      { id: "openai", label: "OpenAI" },
+      { id: "gemini", label: "Gemini" },
+      { id: "deepseek", label: "DeepSeek" },
+      { id: "openrouter", label: "OpenRouter" },
+      { id: "imunify", label: "imunify360" },
+    ],
+    highlights: [
+      {
+        id: "setup",
+        title: "Instant Setup",
+        subtitle: "Get online in minutes",
+        icon: "zap",
+      },
+      {
+        id: "manage",
+        title: "All-in-One Management",
+        subtitle: "Domains, hosting, email & more",
+        icon: "layers",
+      },
+      {
+        id: "security",
+        title: "Advanced Security",
+        subtitle: "Your data stays protected",
+        icon: "shield",
+      },
+      {
+        id: "support",
+        title: "Expert Support",
+        subtitle: "Real people, real solutions",
+        icon: "users",
+      },
+    ],
+    prompts: [
+      { id: "website", label: "I want to create a website", icon: "globe" },
+      { id: "plan", label: "Help me choose a hosting plan", icon: "layers" },
+      { id: "domain", label: "Register a domain name", icon: "search" },
+      { id: "migrate", label: "Migrate my website", icon: "refresh" },
+    ],
+    stats: [
+      {
+        id: "ideas",
+        title: "Your Ideas",
+        subtitle: "Our Infrastructure",
+        icon: "globe",
+      },
+      {
+        id: "performance",
+        title: "High Performance",
+        subtitle: "Global Network",
+        icon: "layers",
+      },
+      {
+        id: "business",
+        title: "Built for",
+        subtitle: "Growing Businesses",
+        icon: "users",
+      },
+    ],
+  };
+}
+
 function defaultHostingTypesSection(): CmsHostingTypesContent {
   return {
     visible: true,
@@ -1514,6 +1645,7 @@ export function defaultHomeSections(): CmsHomeSections {
     hostingPlans: defaultHostingPlansSection(),
     beyondAi: defaultBeyondAiSection(),
     businessEmail: defaultBusinessEmailSection(),
+    aiAssistant: defaultAiAssistantSection(),
     navigation: mainNavigation.map((item) => ({
       ...item,
       children: item.children?.map((child) => ({ ...child })),
@@ -1752,6 +1884,102 @@ function mergeBusinessEmailSection(
     messages,
     stats,
     features,
+  };
+}
+
+function mergeAiAssistantSection(
+  stored?: Partial<CmsAiAssistantContent> | null,
+): CmsAiAssistantContent {
+  const defaults = defaultAiAssistantSection();
+  if (!stored) return defaults;
+
+  const highlightIcon = (
+    value: unknown,
+    fallback: CmsAiAssistantHighlight["icon"],
+  ): CmsAiAssistantHighlight["icon"] =>
+    value === "zap" ||
+    value === "layers" ||
+    value === "shield" ||
+    value === "users"
+      ? value
+      : fallback;
+
+  const promptIcon = (
+    value: unknown,
+    fallback: CmsAiAssistantPrompt["icon"],
+  ): CmsAiAssistantPrompt["icon"] =>
+    value === "globe" ||
+    value === "layers" ||
+    value === "search" ||
+    value === "refresh"
+      ? value
+      : fallback;
+
+  const statIcon = (
+    value: unknown,
+    fallback: CmsAiAssistantStat["icon"],
+  ): CmsAiAssistantStat["icon"] =>
+    value === "globe" || value === "layers" || value === "users"
+      ? value
+      : fallback;
+
+  return {
+    ...defaults,
+    ...stored,
+    visible: stored.visible !== false,
+    imageUrl:
+      typeof stored.imageUrl === "string" && stored.imageUrl.trim()
+        ? stored.imageUrl
+        : defaults.imageUrl,
+    partners:
+      Array.isArray(stored.partners) && stored.partners.length > 0
+        ? stored.partners.map((item, index) => {
+            const fallback =
+              defaults.partners[index % defaults.partners.length];
+            return {
+              ...fallback,
+              ...item,
+              id: item.id || fallback.id || `ai-partner-${index}`,
+            };
+          })
+        : defaults.partners,
+    highlights:
+      Array.isArray(stored.highlights) && stored.highlights.length > 0
+        ? stored.highlights.map((item, index) => {
+            const fallback =
+              defaults.highlights[index % defaults.highlights.length];
+            return {
+              ...fallback,
+              ...item,
+              id: item.id || fallback.id || `ai-highlight-${index}`,
+              icon: highlightIcon(item.icon, fallback.icon),
+            };
+          })
+        : defaults.highlights,
+    prompts:
+      Array.isArray(stored.prompts) && stored.prompts.length > 0
+        ? stored.prompts.map((item, index) => {
+            const fallback = defaults.prompts[index % defaults.prompts.length];
+            return {
+              ...fallback,
+              ...item,
+              id: item.id || fallback.id || `ai-prompt-${index}`,
+              icon: promptIcon(item.icon, fallback.icon),
+            };
+          })
+        : defaults.prompts,
+    stats:
+      Array.isArray(stored.stats) && stored.stats.length > 0
+        ? stored.stats.map((item, index) => {
+            const fallback = defaults.stats[index % defaults.stats.length];
+            return {
+              ...fallback,
+              ...item,
+              id: item.id || fallback.id || `ai-stat-${index}`,
+              icon: statIcon(item.icon, fallback.icon),
+            };
+          })
+        : defaults.stats,
   };
 }
 
@@ -2137,6 +2365,7 @@ export function mergeHomeSections(
     },
     beyondAi: mergeBeyondAiSection(stored.beyondAi),
     businessEmail: mergeBusinessEmailSection(stored.businessEmail),
+    aiAssistant: mergeAiAssistantSection(stored.aiAssistant),
     // Drop legacy top-level Cloud & VPS — those live under Hosting now.
     // Also normalize stored "Web Hosting" label → "Hosting".
     navigation: (() => {

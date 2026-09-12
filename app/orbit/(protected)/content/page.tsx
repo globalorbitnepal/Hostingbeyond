@@ -2,11 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { AiAssistantEditor } from "@/components/orbit/ai-assistant-editor";
 import { BeyondAiEditor } from "@/components/orbit/beyond-ai-editor";
 import { BusinessEmailEditor } from "@/components/orbit/business-email-editor";
 import { OrbitImageField } from "@/components/orbit/image-field";
 import { SolutionsEditor } from "@/components/orbit/solutions-editor";
 import {
+  defaultAiAssistantSection,
   defaultBeyondAiSection,
   defaultBusinessEmailSection,
   defaultHeroFeatureBar,
@@ -1165,6 +1167,16 @@ export default function OrbitContentPage() {
           const current = sectionsRef.current;
           if (!current) return;
           commitHome({ ...current, businessEmail });
+        }}
+      />
+
+      <AiAssistantEditor
+        value={sections.aiAssistant ?? defaultAiAssistantSection()}
+        onChange={(aiAssistant) => setSections({ ...sections, aiAssistant })}
+        onPersist={(aiAssistant) => {
+          const current = sectionsRef.current;
+          if (!current) return;
+          commitHome({ ...current, aiAssistant });
         }}
       />
 

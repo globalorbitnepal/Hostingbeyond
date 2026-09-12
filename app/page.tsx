@@ -4,6 +4,7 @@ import {
   HostingPlansSection,
   BeyondAiSection,
   BusinessEmailSection,
+  AiAssistantSection,
   SolutionsSection,
 } from "@/components/home";
 import { PartnerLogoStrip } from "@/components/home/partner-logo-strip";
@@ -53,6 +54,9 @@ export default async function HomePage() {
       ) : null}
       {sections.businessEmail?.visible !== false ? (
         <BusinessEmailSection content={sections.businessEmail} />
+      ) : null}
+      {sections.aiAssistant?.visible !== false ? (
+        <AiAssistantSection content={sections.aiAssistant} />
       ) : null}
     </div>
   );
