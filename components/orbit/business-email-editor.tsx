@@ -61,8 +61,8 @@ export function BusinessEmailEditor({ value, onChange, onPersist }: Props) {
         <div>
           <h2 className="font-semibold">Business Email section</h2>
           <p className="mt-0.5 text-xs text-slate-500">
-            Homepage block under Beyond AI. The right collage (woman, world map,
-            Global Mail) is the uploaded stage image.
+            Homepage block under Beyond AI. Portrait fades into a built map and
+            glass inbox — upload a new photo to replace the woman.
           </p>
         </div>
         <label className="flex items-center gap-2 text-xs text-slate-500">

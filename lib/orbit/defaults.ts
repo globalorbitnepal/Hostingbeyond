@@ -835,7 +835,7 @@ export function defaultBusinessEmailSection(): CmsBusinessEmailContent {
     toastLabel: "Connected",
     mailTitle: "Global Mail",
     composeLabel: "Compose",
-    imageUrl: "/images/business-email/stage.png",
+    imageUrl: "/images/business-email/woman.png",
     imageAlt: "Professional using HostingBeyond business email on a laptop",
     highlights: [
       {
@@ -1695,7 +1695,11 @@ function mergeBusinessEmailSection(
     imageUrl: (() => {
       const url =
         typeof stored.imageUrl === "string" ? stored.imageUrl.trim() : "";
-      if (!url || url.includes("/images/business-email/woman.jpg")) {
+      if (
+        !url ||
+        url.includes("/images/business-email/woman.jpg") ||
+        url.includes("/images/business-email/stage.png")
+      ) {
         return defaults.imageUrl;
       }
       return url;
