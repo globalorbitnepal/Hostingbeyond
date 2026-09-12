@@ -25,14 +25,107 @@ import {
   type CmsAiAssistantStat,
 } from "@/lib/orbit/defaults";
 
-const LOGO_SRC: Record<string, string> = {
-  claude: "/images/ai-assistant/claude.png",
-  openai: "/images/ai-assistant/openai.png",
-  gemini: "/images/ai-assistant/gemini.png",
-  deepseek: "/images/ai-assistant/deepseek.png",
-  openrouter: "/images/ai-assistant/openrouter.png",
-  imunify: "/images/ai-assistant/imunify.png",
-};
+function PartnerMark({ id }: { id: string }) {
+  const className = "size-[22px] shrink-0 sm:size-6";
+  if (id === "claude") {
+    return (
+      <svg viewBox="0 0 24 24" className={className} aria-hidden>
+        <g fill="#DE7356" transform="translate(12 12)">
+          <rect x="-1.15" y="-10.2" width="2.3" height="20.4" rx="1.15" />
+          <rect
+            x="-1.15"
+            y="-10.2"
+            width="2.3"
+            height="20.4"
+            rx="1.15"
+            transform="rotate(45)"
+          />
+          <rect
+            x="-1.15"
+            y="-10.2"
+            width="2.3"
+            height="20.4"
+            rx="1.15"
+            transform="rotate(90)"
+          />
+          <rect
+            x="-1.15"
+            y="-10.2"
+            width="2.3"
+            height="20.4"
+            rx="1.15"
+            transform="rotate(135)"
+          />
+        </g>
+      </svg>
+    );
+  }
+  if (id === "openai") {
+    return (
+      <svg viewBox="0 0 24 24" className={className} aria-hidden>
+        <path
+          fill="#202123"
+          d="M22.282 9.821a5.985 5.985 0 0 0-.516-4.911 6.046 6.046 0 0 0-6.51-2.9A6.065 6.065 0 0 0 4.981 4.182a5.985 5.985 0 0 0-3.998 2.9 6.046 6.046 0 0 0 .743 7.097 5.98 5.98 0 0 0 .511 4.91 6.051 6.051 0 0 0 6.515 2.9A5.985 5.985 0 0 0 13.26 24a6.056 6.056 0 0 0 5.772-4.206 5.99 5.99 0 0 0 3.997-2.9 6.056 6.056 0 0 0-.747-7.073zm-9.022 12.608a4.476 4.476 0 0 1-2.876-1.041l.142-.08 4.778-2.758a.795.795 0 0 0 .393-.681v-6.737l2.02 1.168a.071.071 0 0 1 .038.052v5.583a4.504 4.504 0 0 1-4.495 4.494zm-9.661-4.125a4.47 4.47 0 0 1-.534-3.014l.142.085 4.783 2.758a.771.771 0 0 0 .78 0l5.843-3.368v2.332a.08.08 0 0 1-.033.062L9.74 19.95a4.499 4.499 0 0 1-6.141-1.646zM2.341 7.896a4.485 4.485 0 0 1 2.365-1.973V11.6a.766.766 0 0 0 .388.676l5.814 3.355-2.02 1.168a.076.076 0 0 1-.071 0L4.0 13.99A4.504 4.504 0 0 1 2.34 7.872zm16.596 3.856L13.104 8.364 15.12 7.2a.076.076 0 0 1 .07 0l4.831 2.791a4.494 4.494 0 0 1-.677 8.104v-5.677a.79.79 0 0 0-.407-.667zm2.011-3.023-.142-.085-4.774-2.782a.776.776 0 0 0-.785 0L9.409 9.23V6.897a.066.066 0 0 1 .028-.061l4.83-2.787a4.499 4.499 0 0 1 6.68 4.66zM8.307 12.863l-2.02-1.164a.08.08 0 0 1-.038-.056V6.074a4.499 4.499 0 0 1 7.375-3.454l-.141.08L8.704 5.46a.795.795 0 0 0-.393.681zm1.097-2.365 2.602-1.5 2.607 1.5v2.999l-2.597 1.5-2.607-1.5z"
+        />
+      </svg>
+    );
+  }
+  if (id === "gemini") {
+    return (
+      <svg viewBox="0 0 48 48" className={className} aria-hidden>
+        <path
+          fill="#FFC107"
+          d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"
+        />
+        <path
+          fill="#FF3D00"
+          d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"
+        />
+        <path
+          fill="#4CAF50"
+          d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"
+        />
+        <path
+          fill="#1976D2"
+          d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"
+        />
+      </svg>
+    );
+  }
+  if (id === "deepseek") {
+    return (
+      <svg viewBox="0 0 24 24" className={className} aria-hidden>
+        <path
+          fill="#4D6BFE"
+          d="M23.748 4.651c-.254-.124-.364.113-.512.233-.051.04-.094.09-.137.137-.372.397-.806.657-1.373.626-.829-.046-1.537.214-2.163.848-.133-.782-.575-1.248-1.247-1.548-.352-.155-.708-.311-.955-.65-.172-.24-.219-.509-.305-.774-.055-.16-.11-.323-.293-.35-.2-.031-.278.136-.356.276-.313.572-.434 1.202-.422 1.84.027 1.436.633 2.58 1.838 3.393.137.094.172.187.129.323-.082.28-.18.553-.266.833-.055.179-.137.218-.328.14a5.5 5.5 0 0 1-1.737-1.179c-.857-.828-1.631-1.743-2.597-2.46a12 12 0 0 0-.689-.47c-.985-.957.13-1.743.387-1.836.27-.098.094-.433-.778-.428-.872.003-1.67.295-2.687.685a3 3 0 0 1-.465.136 9.6 9.6 0 0 0-2.883-.101c-1.885.21-3.39 1.1-4.497 2.622C.082 8.776-.231 10.854.152 13.02c.403 2.284 1.568 4.175 3.36 5.653 1.857 1.533 3.997 2.284 6.438 2.14 1.482-.085 3.132-.284 4.994-1.86.47.234.962.328 1.78.398.629.058 1.235-.031 1.705-.129.735-.155.684-.836.418-.961-2.155-1.004-1.682-.595-2.112-.926 1.095-1.295 2.768-3.598 3.284-6.733.05-.346.115-.834.108-1.114-.004-.171.035-.238.23-.257a4.2 4.2 0 0 0 1.545-.475c1.397-.763 1.96-2.016 2.093-3.517.02-.23-.004-.467-.247-.588M11.58 18.168c-2.088-1.642-3.101-2.183-3.52-2.16-.39.024-.32.472-.234.763.09.288.207.487.371.74.114.167.192.416-.113.603-.673.416-1.842-.14-1.897-.168-1.361-.801-2.5-1.86-3.301-3.306-.775-1.393-1.225-2.888-1.299-4.482-.02-.385.094-.522.477-.592a4.7 4.7 0 0 1 1.53-.038c2.131.311 3.946 1.264 5.467 2.774.868.86 1.525 1.887 2.202 2.89.72 1.066 1.494 2.082 2.48 2.915.348.291.626.513.892.677-.802.09-2.14.109-3.055-.615z"
+        />
+      </svg>
+    );
+  }
+  if (id === "openrouter") {
+    return (
+      <svg viewBox="0 0 24 24" className={className} aria-hidden>
+        <path
+          fill="#1A1A2E"
+          d="M16.778 1.844v1.919q-.569-.026-1.138-.032-.708-.008-1.415.037c-1.93.126-4.023.728-6.149 2.237-2.911 2.066-2.731 1.95-4.14 2.75-.396.223-1.342.574-2.185.798-.841.225-1.753.333-1.751.333v4.229s.768.108 1.61.333c.842.224 1.789.575 2.185.799 1.41.798 1.228.683 4.14 2.75 2.126 1.509 4.22 2.11 6.148 2.236.88.058 1.716.041 2.555.005v1.918l7.222-4.168-7.222-4.17v2.176c-.86.038-1.611.065-2.278.021-1.364-.09-2.417-.357-3.979-1.465-2.244-1.593-2.866-2.027-3.68-2.508.889-.518 1.449-.906 3.822-2.59 1.56-1.109 2.614-1.377 3.978-1.466.667-.044 1.418-.017 2.278.02v2.176L24 6.014Z"
+        />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden>
+      <g fill="#43A047" transform="translate(12 12)">
+        <ellipse cx="0" cy="-6.1" rx="2.55" ry="5.15" />
+        <ellipse cx="0" cy="-6.1" rx="2.55" ry="5.15" transform="rotate(60)" />
+        <ellipse cx="0" cy="-6.1" rx="2.55" ry="5.15" transform="rotate(120)" />
+        <ellipse cx="0" cy="-6.1" rx="2.55" ry="5.15" transform="rotate(180)" />
+        <ellipse cx="0" cy="-6.1" rx="2.55" ry="5.15" transform="rotate(240)" />
+        <ellipse cx="0" cy="-6.1" rx="2.55" ry="5.15" transform="rotate(300)" />
+      </g>
+      <circle cx="12" cy="12" r="2.35" fill="#2E7D32" />
+    </svg>
+  );
+}
 
 const highlightIcons: Record<CmsAiAssistantHighlight["icon"], typeof Zap> = {
   zap: Zap,
@@ -194,7 +287,7 @@ function AssistantChat({ content }: { content: CmsAiAssistantContent }) {
 function AssistantStage({ content }: { content: CmsAiAssistantContent }) {
   const photoSrc = content.imageUrl.includes("?")
     ? content.imageUrl
-    : `${content.imageUrl}?v=scene4`;
+    : `${content.imageUrl}?v=scene5`;
 
   return (
     <div className="relative mx-auto min-h-[600px] w-full overflow-visible sm:min-h-[680px] lg:ml-auto lg:min-h-[740px]">
@@ -204,7 +297,7 @@ function AssistantStage({ content }: { content: CmsAiAssistantContent }) {
       />
 
       {content.imageUrl ? (
-        <div className="absolute inset-y-[-8%] right-[-12%] left-[-6%] z-10">
+        <div className="absolute inset-y-0 right-[-6%] left-[4%] z-10">
           <Image
             src={photoSrc}
             alt={content.imageAlt}
@@ -215,7 +308,7 @@ function AssistantStage({ content }: { content: CmsAiAssistantContent }) {
               isRuntimeMediaSrc(content.imageUrl) ||
               content.imageUrl.includes(".png")
             }
-            className="[mask-image:linear-gradient(to_right,transparent_0%,#000_11%,#000_100%)] object-cover object-[76%_82%] [-webkit-mask-image:linear-gradient(to_right,transparent_0%,#000_11%,#000_100%)]"
+            className="object-contain object-right-bottom"
           />
         </div>
       ) : null}
@@ -300,35 +393,26 @@ export function AiAssistantSection({
       </div>
 
       <div className="hb-shell relative z-10">
-        <div className="mb-8 flex flex-wrap items-center justify-center gap-y-3 sm:mb-12">
-          {data.partners.map((partner, index) => {
-            const src = LOGO_SRC[partner.id];
-            return (
-              <span key={partner.id} className="inline-flex items-center">
-                {index > 0 ? (
-                  <span
-                    aria-hidden
-                    className="mx-3 h-5 w-px shrink-0 bg-slate-300/80 sm:mx-5"
-                  />
-                ) : null}
-                <span className="inline-flex items-center gap-2">
-                  {src ? (
-                    <Image
-                      src={`${src}?v=mark3`}
-                      alt=""
-                      width={28}
-                      height={28}
-                      unoptimized
-                      className="size-8 shrink-0 object-contain"
-                    />
-                  ) : null}
-                  <span className="text-[13px] font-bold tracking-tight text-slate-800 sm:text-[15px]">
-                    {partner.label}
-                  </span>
+        <div className="mb-8 flex flex-nowrap items-center justify-center overflow-x-auto px-1 sm:mb-11">
+          {data.partners.map((partner, index) => (
+            <span
+              key={partner.id}
+              className="inline-flex shrink-0 items-center"
+            >
+              {index > 0 ? (
+                <span
+                  aria-hidden
+                  className="mx-2.5 h-4 w-px shrink-0 bg-slate-300/90 sm:mx-4"
+                />
+              ) : null}
+              <span className="inline-flex items-center gap-1.5 sm:gap-2">
+                <PartnerMark id={partner.id} />
+                <span className="text-[12.5px] font-semibold tracking-tight whitespace-nowrap text-slate-800 sm:text-[14px]">
+                  {partner.label}
                 </span>
               </span>
-            );
-          })}
+            </span>
+          ))}
         </div>
 
         <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-8 xl:gap-12">
