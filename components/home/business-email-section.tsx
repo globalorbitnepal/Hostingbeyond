@@ -15,7 +15,6 @@ import {
   Zap,
 } from "lucide-react";
 
-import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
 import {
   defaultBusinessEmailSection,
   type CmsBusinessEmailContent,
@@ -50,7 +49,7 @@ function MailStage({ src, alt }: { src: string; alt: string }) {
           fill
           priority
           sizes="(max-width: 1024px) 100vw, 60vw"
-          unoptimized={isRuntimeMediaSrc(src)}
+          unoptimized
           className="object-contain object-bottom object-right drop-shadow-[0_28px_50px_rgba(37,80,130,0.12)]"
         />
       </div>
