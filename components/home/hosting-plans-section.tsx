@@ -12,9 +12,7 @@ import {
   Layers,
   Lock,
   Rocket,
-  Server,
   Shield,
-  Sparkles,
   Star,
   Zap,
 } from "lucide-react";
@@ -237,7 +235,6 @@ export function HostingPlansSection({
 }: {
   content?: CmsHostingPlansContent;
 }) {
-  const reduceMotion = useReducedMotion();
   const data = content;
   const [billing, setBilling] = useState<Billing>(
     data?.defaultBilling === "monthly" ? "monthly" : "annually",
@@ -282,108 +279,90 @@ export function HostingPlansSection({
   ].filter(Boolean) as Array<{ id: string; label: string; icon: ReactNode }>;
 
   return (
-    <section className="relative isolate overflow-hidden bg-[#f4f8fd] pt-10 pb-16 sm:pt-12 sm:pb-20 lg:pt-14 lg:pb-24">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,#eef4fb_0%,#f7fbff_45%,#e7f1fb_100%)]"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute top-[-16%] left-[-10%] h-[52%] w-[55%] rounded-full bg-[radial-gradient(ellipse,rgba(147,197,253,0.4),transparent_68%)] blur-3xl"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute right-[-12%] bottom-[-10%] h-[46%] w-[48%] rounded-full bg-[radial-gradient(ellipse,rgba(167,139,250,0.18),transparent_70%)] blur-3xl"
-      />
+    <section className="relative isolate overflow-hidden bg-[#f4f8fd] pt-8 pb-16 sm:pt-10 sm:pb-20 lg:pt-12 lg:pb-24">
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,#f4f8fd_0%,#eef4fb_48%,#f4f8fd_100%)]" />
+        <div className="absolute top-[6%] left-[-10%] h-[46%] w-[42%] rounded-full bg-[radial-gradient(ellipse,rgba(147,197,253,0.28),transparent_68%)] blur-3xl" />
+        <div className="absolute right-[-12%] bottom-[8%] h-[40%] w-[38%] rounded-full bg-[radial-gradient(ellipse,rgba(167,139,250,0.12),transparent_70%)] blur-3xl" />
+      </div>
 
       <div className="hb-shell relative z-10">
-        <div className="mx-auto max-w-3xl text-center">
-          <motion.span
-            initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/75 px-4 py-1.5 text-[11px] font-bold tracking-[0.16em] text-slate-500 uppercase shadow-[0_8px_24px_rgba(37,80,130,0.08)] backdrop-blur-xl"
-          >
-            <Server className="size-3.5 text-[#2563eb]" aria-hidden />
-            {data.eyebrow}
-          </motion.span>
-
-          <motion.h2
-            initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.04 }}
-            className="font-heading mt-5 text-[clamp(1.85rem,4.2vw,3.35rem)] leading-[1.12] font-extrabold tracking-[-0.045em] text-slate-950"
-          >
-            <span className="block">{data.title}</span>
-            <span className="mt-1 block bg-gradient-to-r from-[#2563eb] via-[#4f46e5] to-[#c026d3] bg-clip-text text-transparent">
-              {data.titleAccent}
-            </span>
-          </motion.h2>
-
-          <motion.p
-            initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.08 }}
-            className="mx-auto mt-4 max-w-[38rem] text-[15px] leading-relaxed text-slate-600 sm:text-[17px]"
-          >
-            {data.description}
-          </motion.p>
+        <div className="flex flex-col items-center text-center lg:flex-row lg:items-center lg:justify-between lg:gap-10 lg:text-left">
+          <div className="w-full min-w-0 lg:flex-1">
+            <p className="text-[11px] font-bold tracking-[0.28em] text-slate-500 uppercase sm:text-[12px]">
+              {data.eyebrow}
+            </p>
+            <h2 className="font-heading mt-3 text-[clamp(1.7rem,3.6vw,3.55rem)] leading-[1.12] font-extrabold tracking-[-0.045em] text-balance lg:whitespace-nowrap">
+              <span className="text-slate-950">{data.title}</span>
+              {data.titleAccent ? (
+                <>
+                  {" "}
+                  <span className="bg-gradient-to-r from-[#2563eb] via-[#4f46e5] to-[#7c3aed] bg-clip-text text-transparent">
+                    {data.titleAccent}
+                  </span>
+                </>
+              ) : null}
+            </h2>
+          </div>
+          <div className="mt-4 flex w-full max-w-[40rem] flex-col items-center lg:mt-0 lg:max-w-[28rem] lg:items-end lg:text-right">
+            <p className="text-[15px] leading-relaxed text-slate-600 sm:text-[16.5px] lg:text-[17px]">
+              {data.description}
+            </p>
+            <div className="mt-5 inline-flex items-center rounded-full border border-white/85 bg-white/90 p-1 shadow-[0_10px_28px_rgba(37,80,130,0.12)]">
+              <button
+                type="button"
+                title={data.annualToggleLabel || "Annually"}
+                onClick={() => setBilling("annually")}
+                className={cn(
+                  "rounded-full px-4 py-2 text-[13px] font-semibold whitespace-nowrap transition",
+                  billing === "annually"
+                    ? "bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-white shadow-[0_8px_18px_rgba(79,70,229,0.28)]"
+                    : "text-slate-600 hover:text-slate-950",
+                )}
+              >
+                Annually
+              </button>
+              <button
+                type="button"
+                title={data.monthlyToggleLabel || "Monthly"}
+                onClick={() => setBilling("monthly")}
+                className={cn(
+                  "rounded-full px-4 py-2 text-[13px] font-semibold whitespace-nowrap transition",
+                  billing === "monthly"
+                    ? "bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-white shadow-[0_8px_18px_rgba(79,70,229,0.28)]"
+                    : "text-slate-600 hover:text-slate-950",
+                )}
+              >
+                Monthly
+              </button>
+            </div>
+          </div>
         </div>
 
         {trust.length > 0 ? (
-          <div className="mx-auto mt-8 grid max-w-5xl grid-cols-2 gap-3 sm:mt-10 sm:grid-cols-4 sm:gap-4">
-            {trust.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center gap-2.5 rounded-2xl border border-white/80 bg-white/65 px-3 py-3 shadow-[0_10px_28px_-18px_rgba(37,80,130,0.28)] backdrop-blur-xl sm:justify-center sm:px-2 lg:px-3"
-              >
-                <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-[#2563eb] ring-1 ring-sky-100">
-                  {item.icon}
-                </span>
-                <p className="text-left text-[12px] leading-snug font-semibold text-slate-700 sm:text-[13px]">
-                  {item.label}
-                </p>
-              </div>
-            ))}
+          <div className="mt-8 overflow-hidden rounded-full border border-white/80 bg-white/75 shadow-[0_10px_40px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-2xl sm:mt-10">
+            <div className="flex [scrollbar-width:none] items-center gap-3 overflow-x-auto px-4 py-3 sm:gap-0 sm:overflow-visible sm:px-5 lg:justify-between [&::-webkit-scrollbar]:hidden">
+              {trust.map((item, index) => (
+                <div key={item.id} className="flex shrink-0 items-center">
+                  {index > 0 ? (
+                    <div
+                      aria-hidden
+                      className="mx-2 hidden h-7 w-px bg-[#8eb8de]/50 sm:mx-3 sm:block lg:mx-4"
+                    />
+                  ) : null}
+                  <div className="flex items-center gap-2.5">
+                    <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-[#d6e8f8] text-[#2563eb]">
+                      {item.icon}
+                    </span>
+                    <p className="text-[12px] font-bold text-slate-900 sm:text-[13px]">
+                      {item.label}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         ) : null}
-
-        <div className="mt-7 flex justify-center sm:mt-8">
-          <div className="inline-flex max-w-full items-center rounded-full border border-white/80 bg-white/70 p-1 shadow-[0_8px_22px_rgba(15,23,42,0.06)] backdrop-blur-xl">
-            <Sparkles
-              className="ml-2 hidden size-3.5 text-[#2563eb] sm:ml-3 sm:block"
-              aria-hidden
-            />
-            <button
-              type="button"
-              title={data.annualToggleLabel || "Annually"}
-              onClick={() => setBilling("annually")}
-              className={cn(
-                "rounded-full px-3 py-1.5 text-[12px] font-bold whitespace-nowrap transition sm:px-4",
-                billing === "annually"
-                  ? "bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-white shadow-[0_8px_18px_rgba(79,70,229,0.28)]"
-                  : "text-slate-500 hover:text-slate-800",
-              )}
-            >
-              Annually
-            </button>
-            <button
-              type="button"
-              title={data.monthlyToggleLabel || "Monthly"}
-              onClick={() => setBilling("monthly")}
-              className={cn(
-                "rounded-full px-3 py-1.5 text-[12px] font-bold whitespace-nowrap transition sm:px-4",
-                billing === "monthly"
-                  ? "bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-white shadow-[0_8px_18px_rgba(79,70,229,0.28)]"
-                  : "text-slate-500 hover:text-slate-800",
-              )}
-            >
-              Monthly
-            </button>
-          </div>
-        </div>
 
         <div className="mt-8 grid grid-cols-1 items-stretch gap-4 sm:mt-10 sm:grid-cols-2 xl:mt-12 xl:grid-cols-4 xl:items-end xl:gap-5">
           {plans.map((plan, index) => (
