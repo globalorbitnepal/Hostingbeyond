@@ -3,6 +3,7 @@ import {
   HeroSection,
   HostingPlansSection,
   BeyondAiSection,
+  BeyondAiCreatorSection,
   SolutionsSection,
 } from "@/components/home";
 import { PartnerLogoStrip } from "@/components/home/partner-logo-strip";
@@ -49,6 +50,9 @@ export default async function HomePage() {
       ) : null}
       {sections.beyondAi?.visible !== false ? (
         <BeyondAiSection content={sections.beyondAi} />
+      ) : null}
+      {sections.beyondAiCreator?.visible !== false ? (
+        <BeyondAiCreatorSection content={sections.beyondAiCreator} />
       ) : null}
     </div>
   );

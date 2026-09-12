@@ -2,10 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { BeyondAiCreatorEditor } from "@/components/orbit/beyond-ai-creator-editor";
 import { BeyondAiEditor } from "@/components/orbit/beyond-ai-editor";
 import { OrbitImageField } from "@/components/orbit/image-field";
 import { SolutionsEditor } from "@/components/orbit/solutions-editor";
 import {
+  defaultBeyondAiCreatorSection,
   defaultBeyondAiSection,
   defaultHeroFeatureBar,
   defaultTechnologyPartners,
@@ -1151,6 +1153,18 @@ export default function OrbitContentPage() {
           const current = sectionsRef.current;
           if (!current) return;
           commitHome({ ...current, beyondAi });
+        }}
+      />
+
+      <BeyondAiCreatorEditor
+        value={sections.beyondAiCreator ?? defaultBeyondAiCreatorSection()}
+        onChange={(beyondAiCreator) =>
+          setSections({ ...sections, beyondAiCreator })
+        }
+        onPersist={(beyondAiCreator) => {
+          const current = sectionsRef.current;
+          if (!current) return;
+          commitHome({ ...current, beyondAiCreator });
         }}
       />
 
