@@ -25,7 +25,7 @@ function Chip({
       className={cn(
         "inline-flex h-[42px] items-center justify-center overflow-hidden shadow-[0_10px_22px_-14px_rgba(15,23,42,0.55)] ring-1",
         pill
-          ? "min-w-[108px] rounded-full bg-white/95 px-3 ring-white/70"
+          ? "min-w-[118px] rounded-full bg-white/95 px-3.5 ring-white/70"
           : "rounded-[9px] bg-white px-2 ring-white/80",
         amex && "bg-[#006FCF] px-0 ring-[#005bb0]",
         wide && !pill ? "min-w-[72px]" : !pill && "min-w-[58px]",
@@ -97,22 +97,19 @@ function AmexLogo() {
 
 function DiscoverLogo() {
   return (
-    <svg viewBox="0 0 74 24" className="h-[16px] w-[70px]" aria-hidden>
+    <svg viewBox="0 0 78 24" className="h-[16px] w-[74px]" aria-hidden>
       <text
         x="0"
-        y="17.5"
+        y="17"
         fill="#111"
-        fontSize="12.5"
+        fontSize="12"
         fontWeight="800"
-        fontFamily="Arial Black, Arial, Helvetica, sans-serif"
-        letterSpacing="-0.4"
+        fontFamily="Arial, Helvetica, sans-serif"
+        letterSpacing="0.2"
       >
         DISCOVER
       </text>
-      <path
-        fill="#F76F00"
-        d="M63.2 20.4c4.6 0 8.3-2.2 8.3-8.4 0-1.6-.3-3-.8-4.2-1.8 4.2-5.4 6.9-10.2 7.6 1 .8 2.1 5 2.7 4.99z"
-      />
+      <circle cx="73" cy="16.2" r="4.2" fill="#F76F00" />
     </svg>
   );
 }
@@ -251,21 +248,26 @@ function GooglePayLogo() {
 
 function StripeLogo() {
   return (
-    <svg viewBox="0 0 96 18" className="h-[15px] w-[96px]" aria-hidden>
+    <svg viewBox="0 0 108 18" className="h-[14px] w-[108px]" aria-hidden>
       <text
         x="0"
         y="13.5"
         fill="#6B7280"
-        fontSize="8.5"
+        fontSize="9"
         fontFamily="Arial, Helvetica, sans-serif"
       >
         Powered by
       </text>
-      <path
+      <text
+        x="56"
+        y="14"
         fill="#635BFF"
-        transform="translate(54 0) scale(.62)"
-        d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.594-7.305h.003z"
-      />
+        fontSize="13"
+        fontWeight="700"
+        fontFamily="Arial, Helvetica, sans-serif"
+      >
+        stripe
+      </text>
     </svg>
   );
 }
