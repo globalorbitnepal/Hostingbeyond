@@ -5,6 +5,7 @@ import {
   Globe,
   Headphones,
   List,
+  Lock,
   ShieldCheck,
   Tag,
 } from "lucide-react";
@@ -187,15 +188,13 @@ export function SiteFooter({
           <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
             <div className="min-w-0">
               <p className="flex items-center gap-2 text-[15px] font-extrabold text-slate-950">
-                <span className="inline-flex size-7 items-center justify-center rounded-full bg-[#eef4ff] text-[#2563eb]">
-                  <ShieldCheck className="size-3.5" />
-                </span>
+                <Lock className="size-4 text-slate-800" strokeWidth={2.4} />
                 {data.paymentsTitle}
               </p>
-              <p className="mt-1 pl-9 text-[13px] text-slate-500">
+              <p className="mt-1 text-[13px] text-slate-500">
                 {data.paymentsDescription}
               </p>
-              <div className="mt-4 flex flex-wrap items-center gap-2.5">
+              <div className="mt-4 flex flex-wrap items-center gap-2">
                 {payments.map((item) => (
                   <PaymentMark key={item.id} brand={item.brand} />
                 ))}
