@@ -23,11 +23,9 @@ function Chip({
       role="img"
       aria-label={label}
       className={cn(
-        "inline-flex h-[42px] items-center justify-center overflow-hidden shadow-[0_10px_22px_-14px_rgba(15,23,42,0.55)] ring-1",
-        pill
-          ? "min-w-[118px] rounded-full bg-white/95 px-3.5 ring-white/70"
-          : "rounded-[9px] bg-white px-2 ring-white/80",
-        amex && "bg-[#006FCF] px-0 ring-[#005bb0]",
+        "inline-flex h-[40px] items-center justify-center overflow-hidden border border-slate-200/90 bg-white shadow-[0_8px_18px_-14px_rgba(15,23,42,0.4)]",
+        pill ? "min-w-[118px] rounded-full px-3.5" : "rounded-[9px] px-2",
+        amex && "border-[#005bb0] bg-[#006FCF] px-0",
         wide && !pill ? "min-w-[72px]" : !pill && "min-w-[58px]",
       )}
     >
