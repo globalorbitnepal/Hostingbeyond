@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 32" role="img" aria-label="Diners Club">
+  <rect width="48" height="32" rx="5" fill="#fff"/>
+  <rect x="8" y="6" width="32" height="20" rx="4" fill="#0079BE"/>
+  <circle cx="24" cy="16" r="7.4" fill="#fff"/>
+  <path fill="#0079BE" d="M20.6 10.8h6.8v10.4h-6.8z"/>
+  <circle cx="20.9" cy="16" r="5" fill="#fff"/>
+  <circle cx="27.1" cy="16" r="5" fill="#fff"/>
+</svg>

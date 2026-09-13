@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Sparkles, Wand2, Zap } from "lucide-react";
 
-import { SiteHeader } from "@/components/layout";
+import { SiteFooter, SiteHeader } from "@/components/layout";
 import { routes } from "@/config/routes";
 import { getHomeSections, getSiteSettings } from "@/lib/orbit/content";
 
@@ -105,6 +105,9 @@ export default async function BeyondAiPage() {
           </Link>
         </section>
       </div>
+      {sections.footer?.visible !== false ? (
+        <SiteFooter content={sections.footer} logoPath={settings.logoPath} />
+      ) : null}
     </div>
   );
 }

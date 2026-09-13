@@ -447,6 +447,95 @@ export type CmsHomeFaqsContent = {
   groups: CmsFaqGroup[];
 };
 
+export type CmsFooterLink = {
+  id: string;
+  visible: boolean;
+  order: number;
+  label: string;
+  href: string;
+};
+
+export type CmsFooterColumn = {
+  id: string;
+  visible: boolean;
+  order: number;
+  title: string;
+  links: CmsFooterLink[];
+};
+
+export type CmsFooterSocial = {
+  id: string;
+  visible: boolean;
+  order: number;
+  network: "facebook" | "instagram" | "x" | "linkedin" | "youtube";
+  href: string;
+};
+
+export type CmsFooterPerk = {
+  id: string;
+  visible: boolean;
+  order: number;
+  title: string;
+  icon: "tag" | "list" | "bell";
+};
+
+export type CmsFooterTrustItem = {
+  id: string;
+  visible: boolean;
+  order: number;
+  title: string;
+  subtitle: string;
+  icon: "shield" | "globe" | "headphones";
+};
+
+export type CmsFooterPayment = {
+  id: string;
+  visible: boolean;
+  order: number;
+  brand:
+    | "visa"
+    | "mastercard"
+    | "amex"
+    | "discover"
+    | "jcb"
+    | "diners"
+    | "unionpay"
+    | "applepay"
+    | "googlepay"
+    | "stripe";
+};
+
+export type CmsFooterBenefit = {
+  id: string;
+  visible: boolean;
+  order: number;
+  label: string;
+};
+
+export type CmsFooterContent = {
+  visible: boolean;
+  newsletterEyebrow: string;
+  newsletterTitle: string;
+  newsletterTitleAccent: string;
+  newsletterDescription: string;
+  newsletterPlaceholder: string;
+  newsletterCta: string;
+  newsletterPrivacy: string;
+  newsletterPerks: CmsFooterPerk[];
+  brandTagline: string;
+  brandDescription: string;
+  social: CmsFooterSocial[];
+  columns: CmsFooterColumn[];
+  paymentsTitle: string;
+  paymentsDescription: string;
+  payments: CmsFooterPayment[];
+  paymentBenefits: CmsFooterBenefit[];
+  trustItems: CmsFooterTrustItem[];
+  handwrittenNote: string;
+  legalLinks: CmsFooterLink[];
+  copyright: string;
+};
+
 export type CmsHomeSections = {
   hero: CmsHeroContent;
   solutions: CmsSolutionsContent;
@@ -458,6 +547,7 @@ export type CmsHomeSections = {
   aiAssistant: CmsAiAssistantContent;
   whyChoose: CmsWhyChooseContent;
   homeFaqs: CmsHomeFaqsContent;
+  footer: CmsFooterContent;
   navigation: typeof mainNavigation;
 };
 
@@ -1427,6 +1517,291 @@ export function defaultHomeFaqsSection(): CmsHomeFaqsContent {
   };
 }
 
+function footerLinks(
+  items: Array<{ id: string; label: string; href: string }>,
+): CmsFooterLink[] {
+  return items.map((item, order) => ({
+    ...item,
+    visible: true,
+    order,
+  }));
+}
+
+export function defaultFooterSection(): CmsFooterContent {
+  return {
+    visible: true,
+    newsletterEyebrow: "Stay ahead with Hosting Beyond",
+    newsletterTitle: "Get the Latest",
+    newsletterTitleAccent: "Updates",
+    newsletterDescription:
+      "Subscribe to our newsletter for product updates, tips, offers and insights to help you grow online.",
+    newsletterPlaceholder: "Enter your email address",
+    newsletterCta: "Subscribe",
+    newsletterPrivacy: "No spam. Unsubscribe anytime.",
+    newsletterPerks: [
+      {
+        id: "offers",
+        visible: true,
+        order: 0,
+        title: "Exclusive Offers",
+        icon: "tag",
+      },
+      {
+        id: "updates",
+        visible: true,
+        order: 1,
+        title: "Product Updates",
+        icon: "list",
+      },
+      {
+        id: "tips",
+        visible: true,
+        order: 2,
+        title: "Tips & Insights",
+        icon: "bell",
+      },
+    ],
+    brandTagline: "HOST TODAY. GROW TOMORROW.",
+    brandDescription:
+      "Reliable web hosting, domains, business email and online infrastructure for individuals, businesses and growing brands worldwide.",
+    social: [
+      {
+        id: "facebook",
+        visible: true,
+        order: 0,
+        network: "facebook",
+        href: "https://www.facebook.com/",
+      },
+      {
+        id: "instagram",
+        visible: true,
+        order: 1,
+        network: "instagram",
+        href: "https://www.instagram.com/",
+      },
+      {
+        id: "x",
+        visible: true,
+        order: 2,
+        network: "x",
+        href: "https://x.com/",
+      },
+      {
+        id: "linkedin",
+        visible: true,
+        order: 3,
+        network: "linkedin",
+        href: "https://www.linkedin.com/",
+      },
+      {
+        id: "youtube",
+        visible: true,
+        order: 4,
+        network: "youtube",
+        href: "https://www.youtube.com/",
+      },
+    ],
+    columns: [
+      {
+        id: "products",
+        visible: true,
+        order: 0,
+        title: "Products",
+        links: footerLinks([
+          { id: "web-hosting", label: "Web Hosting", href: routes.hosting },
+          {
+            id: "wordpress",
+            label: "WordPress Hosting",
+            href: `${routes.hosting}/wordpress`,
+          },
+          { id: "vps", label: "VPS Hosting", href: routes.vps },
+          { id: "email", label: "Business Email", href: routes.businessEmail },
+          { id: "domains", label: "Domain Names", href: routes.domains },
+          {
+            id: "ssl",
+            label: "SSL Certificates",
+            href: `${routes.hosting}/ssl`,
+          },
+          { id: "builder", label: "Website Builder", href: routes.beyondAi },
+          { id: "addons", label: "Add-ons", href: routes.pricing },
+        ]),
+      },
+      {
+        id: "company",
+        visible: true,
+        order: 1,
+        title: "Company",
+        links: footerLinks([
+          { id: "about", label: "About Us", href: routes.about },
+          { id: "blog", label: "Our Blog", href: `${routes.resources}/blog` },
+          { id: "careers", label: "Careers", href: `${routes.about}/careers` },
+          {
+            id: "affiliate",
+            label: "Affiliate Program",
+            href: `${routes.about}/affiliates`,
+          },
+          {
+            id: "partner",
+            label: "Partner with Us",
+            href: `${routes.about}/partners`,
+          },
+          {
+            id: "infra",
+            label: "Our Infrastructure",
+            href: `${routes.about}/infrastructure`,
+          },
+          { id: "contact", label: "Contact Us", href: routes.contact },
+        ]),
+      },
+      {
+        id: "support",
+        visible: true,
+        order: 2,
+        title: "Support",
+        links: footerLinks([
+          {
+            id: "help",
+            label: "Help Center",
+            href: `${routes.resources}/help`,
+          },
+          { id: "ticket", label: "Submit a Ticket", href: routes.contact },
+          { id: "chat", label: "Live Chat", href: routes.contact },
+          {
+            id: "status",
+            label: "System Status",
+            href: `${routes.resources}/status`,
+          },
+          {
+            id: "kb",
+            label: "Knowledge Base",
+            href: `${routes.resources}/knowledge-base`,
+          },
+          {
+            id: "migrate",
+            label: "Migration Support",
+            href: `${routes.resources}/migrate`,
+          },
+          { id: "abuse", label: "Report Abuse", href: routes.contact },
+        ]),
+      },
+      {
+        id: "resources",
+        visible: true,
+        order: 3,
+        title: "Resources",
+        links: footerLinks([
+          {
+            id: "guides",
+            label: "Hosting Guides",
+            href: `${routes.resources}/guides`,
+          },
+          { id: "seo", label: "SEO Tips", href: `${routes.resources}/seo` },
+          {
+            id: "security",
+            label: "Website Security",
+            href: `${routes.resources}/security`,
+          },
+          {
+            id: "wp",
+            label: "WordPress Tutorials",
+            href: `${routes.resources}/wordpress`,
+          },
+          {
+            id: "docs",
+            label: "Developer Docs",
+            href: `${routes.resources}/docs`,
+          },
+          {
+            id: "growth",
+            label: "Business Growth",
+            href: `${routes.resources}/growth`,
+          },
+          {
+            id: "updates",
+            label: "Product Updates",
+            href: `${routes.resources}/updates`,
+          },
+          {
+            id: "cases",
+            label: "Case Studies",
+            href: `${routes.resources}/case-studies`,
+          },
+        ]),
+      },
+    ],
+    paymentsTitle: "Secure Payments via Stripe",
+    paymentsDescription: "Your payments are secure and processed by Stripe.",
+    payments: [
+      { id: "visa", visible: true, order: 0, brand: "visa" },
+      { id: "mastercard", visible: true, order: 1, brand: "mastercard" },
+      { id: "amex", visible: true, order: 2, brand: "amex" },
+      { id: "discover", visible: true, order: 3, brand: "discover" },
+      { id: "jcb", visible: true, order: 4, brand: "jcb" },
+      { id: "diners", visible: true, order: 5, brand: "diners" },
+      { id: "unionpay", visible: true, order: 6, brand: "unionpay" },
+      { id: "applepay", visible: true, order: 7, brand: "applepay" },
+      { id: "googlepay", visible: true, order: 8, brand: "googlepay" },
+      { id: "stripe", visible: true, order: 9, brand: "stripe" },
+    ],
+    paymentBenefits: [
+      {
+        id: "encrypted",
+        visible: true,
+        order: 0,
+        label: "Secure & encrypted transactions",
+      },
+      {
+        id: "methods",
+        visible: true,
+        order: 1,
+        label: "Multiple payment methods",
+      },
+      { id: "global", visible: true, order: 2, label: "Global support" },
+      {
+        id: "stripe",
+        visible: true,
+        order: 3,
+        label: "Safe and reliable with Stripe",
+      },
+    ],
+    trustItems: [
+      {
+        id: "infra",
+        visible: true,
+        order: 0,
+        title: "Secure Infrastructure",
+        subtitle: "Your data, our priority",
+        icon: "shield",
+      },
+      {
+        id: "network",
+        visible: true,
+        order: 1,
+        title: "Global Network",
+        subtitle: "Built for performance",
+        icon: "globe",
+      },
+      {
+        id: "support",
+        visible: true,
+        order: 2,
+        title: "Expert Support",
+        subtitle: "Real people, real help",
+        icon: "headphones",
+      },
+    ],
+    handwrittenNote: "Build Beyond\nTogether",
+    legalLinks: footerLinks([
+      { id: "terms", label: "Terms of Service", href: "/legal/terms" },
+      { id: "privacy", label: "Privacy Policy", href: "/legal/privacy" },
+      { id: "refund", label: "Refund Policy", href: "/legal/refund" },
+      { id: "legal", label: "Legal", href: "/legal" },
+      { id: "sitemap", label: "Sitemap", href: "/sitemap.xml" },
+    ]),
+    copyright: "© 2026 Hosting Beyond. All rights reserved.",
+  };
+}
+
 function defaultHostingTypesSection(): CmsHostingTypesContent {
   return {
     visible: true,
@@ -1995,6 +2370,7 @@ export function defaultHomeSections(): CmsHomeSections {
     aiAssistant: defaultAiAssistantSection(),
     whyChoose: defaultWhyChooseSection(),
     homeFaqs: defaultHomeFaqsSection(),
+    footer: defaultFooterSection(),
     navigation: mainNavigation.map((item) => ({
       ...item,
       children: item.children?.map((child) => ({ ...child })),
@@ -2435,6 +2811,151 @@ function mergeAiAssistantSection(
   };
 }
 
+function mergeFooterLinks(
+  stored: CmsFooterLink[] | undefined,
+  fallback: CmsFooterLink[],
+): CmsFooterLink[] {
+  if (!Array.isArray(stored) || stored.length === 0) return fallback;
+  return stored.map((item, index) => {
+    const base = fallback[index % fallback.length];
+    return {
+      id: item.id || base.id || `link-${index}`,
+      visible: item.visible !== false,
+      order: typeof item.order === "number" ? item.order : index,
+      label: item.label || base.label,
+      href: item.href || base.href,
+    };
+  });
+}
+
+function mergeFooterSection(
+  stored?: Partial<CmsFooterContent> | null,
+): CmsFooterContent {
+  const defaults = defaultFooterSection();
+  if (!stored) return defaults;
+
+  const perkIcon = (value: unknown, fallback: CmsFooterPerk["icon"]) =>
+    value === "tag" || value === "list" || value === "bell" ? value : fallback;
+  const trustIcon = (value: unknown, fallback: CmsFooterTrustItem["icon"]) =>
+    value === "shield" || value === "globe" || value === "headphones"
+      ? value
+      : fallback;
+  const socialNet = (value: unknown, fallback: CmsFooterSocial["network"]) =>
+    value === "facebook" ||
+    value === "instagram" ||
+    value === "x" ||
+    value === "linkedin" ||
+    value === "youtube"
+      ? value
+      : fallback;
+  const brands: CmsFooterPayment["brand"][] = [
+    "visa",
+    "mastercard",
+    "amex",
+    "discover",
+    "jcb",
+    "diners",
+    "unionpay",
+    "applepay",
+    "googlepay",
+    "stripe",
+  ];
+  const paymentBrand = (value: unknown, fallback: CmsFooterPayment["brand"]) =>
+    brands.includes(value as CmsFooterPayment["brand"])
+      ? (value as CmsFooterPayment["brand"])
+      : fallback;
+
+  const columns =
+    Array.isArray(stored.columns) && stored.columns.length > 0
+      ? stored.columns.map((column, index) => {
+          const fallback = defaults.columns[index % defaults.columns.length];
+          return {
+            id: column.id || fallback.id || `col-${index}`,
+            visible: column.visible !== false,
+            order: typeof column.order === "number" ? column.order : index,
+            title: column.title || fallback.title,
+            links: mergeFooterLinks(column.links, fallback.links),
+          };
+        })
+      : defaults.columns;
+
+  return {
+    ...defaults,
+    ...stored,
+    visible: stored.visible !== false,
+    newsletterPerks:
+      Array.isArray(stored.newsletterPerks) && stored.newsletterPerks.length > 0
+        ? stored.newsletterPerks.map((item, index) => {
+            const fallback =
+              defaults.newsletterPerks[index % defaults.newsletterPerks.length];
+            return {
+              id: item.id || fallback.id || `perk-${index}`,
+              visible: item.visible !== false,
+              order: typeof item.order === "number" ? item.order : index,
+              title: item.title || fallback.title,
+              icon: perkIcon(item.icon, fallback.icon),
+            };
+          })
+        : defaults.newsletterPerks,
+    social:
+      Array.isArray(stored.social) && stored.social.length > 0
+        ? stored.social.map((item, index) => {
+            const fallback = defaults.social[index % defaults.social.length];
+            return {
+              id: item.id || fallback.id || `social-${index}`,
+              visible: item.visible !== false,
+              order: typeof item.order === "number" ? item.order : index,
+              network: socialNet(item.network, fallback.network),
+              href: item.href || fallback.href,
+            };
+          })
+        : defaults.social,
+    columns: columns.sort((a, b) => a.order - b.order),
+    payments:
+      Array.isArray(stored.payments) && stored.payments.length > 0
+        ? stored.payments.map((item, index) => {
+            const fallback =
+              defaults.payments[index % defaults.payments.length];
+            return {
+              id: item.id || fallback.id || `pay-${index}`,
+              visible: item.visible !== false,
+              order: typeof item.order === "number" ? item.order : index,
+              brand: paymentBrand(item.brand, fallback.brand),
+            };
+          })
+        : defaults.payments,
+    paymentBenefits:
+      Array.isArray(stored.paymentBenefits) && stored.paymentBenefits.length > 0
+        ? stored.paymentBenefits.map((item, index) => {
+            const fallback =
+              defaults.paymentBenefits[index % defaults.paymentBenefits.length];
+            return {
+              id: item.id || fallback.id || `benefit-${index}`,
+              visible: item.visible !== false,
+              order: typeof item.order === "number" ? item.order : index,
+              label: item.label || fallback.label,
+            };
+          })
+        : defaults.paymentBenefits,
+    trustItems:
+      Array.isArray(stored.trustItems) && stored.trustItems.length > 0
+        ? stored.trustItems.map((item, index) => {
+            const fallback =
+              defaults.trustItems[index % defaults.trustItems.length];
+            return {
+              id: item.id || fallback.id || `trust-${index}`,
+              visible: item.visible !== false,
+              order: typeof item.order === "number" ? item.order : index,
+              title: item.title || fallback.title,
+              subtitle: item.subtitle || fallback.subtitle,
+              icon: trustIcon(item.icon, fallback.icon),
+            };
+          })
+        : defaults.trustItems,
+    legalLinks: mergeFooterLinks(stored.legalLinks, defaults.legalLinks),
+  };
+}
+
 /** Deep-merge stored CMS JSON onto defaults (backwards-compatible). */
 export function mergeHomeSections(
   stored?: Partial<CmsHomeSections> | null,
@@ -2820,6 +3341,7 @@ export function mergeHomeSections(
     aiAssistant: mergeAiAssistantSection(stored.aiAssistant),
     whyChoose: mergeWhyChooseSection(stored.whyChoose),
     homeFaqs: mergeHomeFaqsSection(stored.homeFaqs),
+    footer: mergeFooterSection(stored.footer),
     // Drop legacy top-level Cloud & VPS — those live under Hosting now.
     // Also normalize stored "Web Hosting" label → "Hosting".
     navigation: (() => {

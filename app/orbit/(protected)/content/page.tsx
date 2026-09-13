@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { AiAssistantEditor } from "@/components/orbit/ai-assistant-editor";
 import { BeyondAiEditor } from "@/components/orbit/beyond-ai-editor";
 import { BusinessEmailEditor } from "@/components/orbit/business-email-editor";
+import { FooterEditor } from "@/components/orbit/footer-editor";
 import { HomeFaqsEditor } from "@/components/orbit/home-faqs-editor";
 import { OrbitImageField } from "@/components/orbit/image-field";
 import { SolutionsEditor } from "@/components/orbit/solutions-editor";
@@ -13,6 +14,7 @@ import {
   defaultAiAssistantSection,
   defaultBeyondAiSection,
   defaultBusinessEmailSection,
+  defaultFooterSection,
   defaultHomeFaqsSection,
   defaultHeroFeatureBar,
   defaultTechnologyPartners,
@@ -1201,6 +1203,16 @@ export default function OrbitContentPage() {
           const current = sectionsRef.current;
           if (!current) return;
           commitHome({ ...current, homeFaqs });
+        }}
+      />
+
+      <FooterEditor
+        value={sections.footer ?? defaultFooterSection()}
+        onChange={(footer) => setSections({ ...sections, footer })}
+        onPersist={(footer) => {
+          const current = sectionsRef.current;
+          if (!current) return;
+          commitHome({ ...current, footer });
         }}
       />
 

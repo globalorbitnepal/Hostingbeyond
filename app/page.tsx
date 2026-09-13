@@ -1,4 +1,4 @@
-import { SiteHeader } from "@/components/layout";
+import { SiteFooter, SiteHeader } from "@/components/layout";
 import {
   HeroSection,
   HostingPlansSection,
@@ -64,6 +64,9 @@ export default async function HomePage() {
       ) : null}
       {sections.homeFaqs?.visible !== false ? (
         <HomeFaqsSection content={sections.homeFaqs} />
+      ) : null}
+      {sections.footer?.visible !== false ? (
+        <SiteFooter content={sections.footer} logoPath={settings.logoPath} />
       ) : null}
     </div>
   );
