@@ -6,6 +6,7 @@ import { useReducedMotion } from "framer-motion";
 
 import { cn } from "@/lib/utils";
 import type { CmsSolutionImage } from "@/lib/orbit/defaults";
+import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
 
 type Props = {
   images: CmsSolutionImage[];
@@ -65,7 +66,23 @@ export function SolutionImageCarousel({
     >
       {slides.map((slide, slideIndex) => {
         const active = slideIndex === index;
-        return (
+        const imgClass = cn(
+          "absolute inset-0 h-full w-full object-cover object-center transition-[opacity,transform] duration-[1400ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
+          active
+            ? "z-[1] scale-100 opacity-100"
+            : "pointer-events-none z-0 scale-[1.02] opacity-0",
+          reduceMotion && "transition-none",
+        );
+        return isRuntimeMediaSrc(slide.url) ? (
+          // Runtime Orbit files must skip next/image so every device hits /uploads directly.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            key={slide.id || slide.url}
+            src={slide.url}
+            alt={slide.alt || ""}
+            className={imgClass}
+          />
+        ) : (
           <Image
             key={slide.id || slide.url}
             src={slide.url}
@@ -74,13 +91,7 @@ export function SolutionImageCarousel({
             sizes={sizes}
             priority={priority && slideIndex === 0}
             unoptimized
-            className={cn(
-              "object-cover object-center transition-[opacity,transform] duration-[1400ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
-              active
-                ? "z-[1] scale-100 opacity-100"
-                : "pointer-events-none z-0 scale-[1.02] opacity-0",
-              reduceMotion && "transition-none",
-            )}
+            className={imgClass}
           />
         );
       })}
