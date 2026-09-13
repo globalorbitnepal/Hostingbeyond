@@ -57,23 +57,9 @@ const cities = [
   {
     city: "London",
     status: "Connected",
-    top: "24%",
-    left: "49%",
+    top: "22%",
+    left: "48%",
     photo: "/images/business-email/london.png",
-  },
-  {
-    city: "Tokyo",
-    status: "Connected",
-    top: "30%",
-    left: "80%",
-    photo: "/images/business-email/tokyo.png",
-  },
-  {
-    city: "Sydney",
-    status: "Connected",
-    top: "58%",
-    left: "82%",
-    photo: "/images/business-email/sydney.png",
   },
 ];
 
@@ -230,7 +216,7 @@ function MailStage({ content }: { content: CmsBusinessEmailContent }) {
       </div>
 
       {content.imageUrl ? (
-        <div className="absolute right-[2%] bottom-[-4%] z-10 h-[94%] w-[82%] sm:right-0 sm:w-[76%] lg:w-[74%]">
+        <div className="absolute right-[-2%] bottom-[-6%] z-10 h-[98%] w-[88%] sm:right-[-1%] sm:w-[82%] lg:w-[80%]">
           <Image
             src={content.imageUrl}
             alt={content.imageAlt}
