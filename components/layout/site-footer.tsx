@@ -30,7 +30,7 @@ const TRUST_ICONS = {
 
 export function SiteFooter({
   content,
-  logoPath = "/logo/hostingbeyond-logo-v5.png",
+  logoPath: _logoPath = "/logo/hostingbeyond-logo-v5.png",
 }: {
   content?: CmsFooterContent;
   logoPath?: string;
@@ -130,7 +130,7 @@ export function SiteFooter({
               {/* Native img — same file as the header, no Next crop in a shrinking grid. */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={logoPath?.trim() || "/logo/hostingbeyond-logo-v5.png"}
+                src="/logo/hostingbeyond-logo-v5.png"
                 alt="HostingBeyond"
                 width={1400}
                 height={232}
