@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 92 32" role="img" aria-label="Powered by Stripe">
-  <rect width="92" height="32" rx="16" fill="#fff" stroke="#E5E7EB"/>
-  <text x="10" y="20" fill="#6B7280" font-size="8.5" font-family="Arial, Helvetica, sans-serif">Powered by</text>
-  <text x="52" y="21" fill="#635BFF" font-size="12" font-weight="700" font-family="Arial, Helvetica, sans-serif">stripe</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 118 32" role="img" aria-label="Powered by Stripe">
+  <rect width="118" height="32" rx="16" fill="#fff" stroke="#E5E7EB"/>
+  <text x="12" y="20" fill="#6B7280" font-size="9" font-family="Arial, Helvetica, sans-serif">Powered by</text>
+  <text x="68" y="21" fill="#635BFF" font-size="13" font-weight="700" font-family="Arial, Helvetica, sans-serif">stripe</text>
 </svg>

@@ -13,7 +13,6 @@ import { CountryLanguageSelector } from "@/components/locale/country-language-se
 import { NewsletterForm } from "@/components/layout/newsletter-form";
 import { PaymentMark } from "@/components/layout/payment-marks";
 import { SocialMark } from "@/components/layout/social-marks";
-import { Logo } from "@/components/shared/logo";
 import type { CmsFooterContent } from "@/lib/orbit/defaults";
 import { defaultFooterSection } from "@/lib/orbit/defaults";
 
@@ -123,11 +122,22 @@ export function SiteFooter({
 
         <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,2.6fr)] lg:gap-10">
           <div>
-            <Logo
-              src={logoPath || "/logo/hostingbeyond-logo-v5.png"}
-              variant="image"
-              className="h-[34px] max-w-[min(100%,280px)] sm:h-[38px] sm:max-w-[310px]"
-            />
+            <Link
+              href="/"
+              aria-label="HostingBeyond home"
+              className="inline-flex max-w-full items-center"
+            >
+              {/* Native img — same file as the header, no Next crop in a shrinking grid. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={logoPath?.trim() || "/logo/hostingbeyond-logo-v5.png"}
+                alt="HostingBeyond"
+                width={1400}
+                height={232}
+                className="h-10 w-auto max-w-[min(100%,300px)] object-contain object-left sm:h-11"
+                draggable={false}
+              />
+            </Link>
             <p className="mt-2 text-[10.5px] font-bold tracking-[0.22em] text-[#2563eb] uppercase">
               {data.brandTagline}
             </p>
