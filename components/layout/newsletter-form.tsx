@@ -45,7 +45,7 @@ export function NewsletterForm({ placeholder, ctaLabel, privacy }: Props) {
     <div className="w-full max-w-[420px]">
       <form
         onSubmit={(event) => void onSubmit(event)}
-        className="flex h-12 items-center gap-2 rounded-full border border-slate-200/90 bg-white pr-1.5 pl-4 shadow-[0_10px_24px_-16px_rgba(37,80,130,0.45)]"
+        className="flex h-12 items-center gap-2 rounded-full border border-white/55 bg-white/70 pr-1.5 pl-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_24px_-16px_rgba(15,40,80,0.5)] backdrop-blur-md"
       >
         <Mail className="size-4 shrink-0 text-slate-400" aria-hidden />
         <input
@@ -66,8 +66,8 @@ export function NewsletterForm({ placeholder, ctaLabel, privacy }: Props) {
           <ArrowRight className="size-3.5" aria-hidden />
         </button>
       </form>
-      <p className="mt-2 flex items-center gap-1.5 text-[11.5px] text-slate-500">
-        <Lock className="size-3 text-slate-400" aria-hidden />
+      <p className="mt-2 flex items-center gap-1.5 text-[11.5px] text-slate-700">
+        <Lock className="size-3 text-slate-600" aria-hidden />
         {status === "ok" || status === "error" ? message : privacy}
       </p>
     </div>
