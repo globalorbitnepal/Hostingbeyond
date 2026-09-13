@@ -279,9 +279,7 @@ export function HostingPlansSection({
   ].filter(Boolean) as Array<{ id: string; label: string; icon: ReactNode }>;
 
   return (
-    <section className="hb-home-section hb-home-section--rule">
-      <div aria-hidden className="hb-home-section-wash" />
-
+    <section className="hb-home-section hb-home-section--sheet">
       <div className="hb-shell relative z-10">
         <div className="flex flex-col items-center text-center lg:flex-row lg:items-center lg:justify-between lg:gap-10 lg:text-left">
           <div className="w-full min-w-0 lg:flex-1">
@@ -360,7 +358,7 @@ export function HostingPlansSection({
           </div>
         ) : null}
 
-        <div className="mt-8 grid grid-cols-1 items-stretch gap-4 sm:mt-10 sm:grid-cols-2 xl:mt-12 xl:grid-cols-4 xl:items-end xl:gap-5">
+        <div className="mt-6 grid grid-cols-1 items-stretch gap-4 sm:mt-8 sm:grid-cols-2 xl:mt-8 xl:grid-cols-4 xl:items-end xl:gap-5">
           {plans.map((plan, index) => (
             <PlanCard
               key={plan.id}

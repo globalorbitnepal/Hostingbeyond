@@ -15,6 +15,7 @@ import {
   Users,
   Zap,
 } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
 
 import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
 import {
@@ -383,17 +384,17 @@ export function AiAssistantSection({
   content?: CmsAiAssistantContent;
 }) {
   const data = content ?? defaultAiAssistantSection();
+  const reduceMotion = useReducedMotion();
 
   return (
-    <section className="hb-home-section hb-home-section--rule">
-      <div aria-hidden className="hb-home-section-wash" />
+    <section className="hb-home-section hb-home-section--ice">
       <div
         aria-hidden
         className="pointer-events-none absolute top-[-12%] right-[-8%] h-[62%] w-[48%] rounded-full bg-[radial-gradient(ellipse,rgba(186,210,255,0.4),transparent_72%)] blur-3xl"
       />
 
       <div className="hb-shell relative z-10">
-        <div className="mb-8 flex flex-nowrap items-center justify-center overflow-x-auto px-1 sm:mb-11">
+        <div className="mb-5 flex flex-nowrap items-center justify-center overflow-x-auto px-1 sm:mb-6">
           {data.partners.map((partner, index) => (
             <span
               key={partner.id}
@@ -415,8 +416,14 @@ export function AiAssistantSection({
           ))}
         </div>
 
-        <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-8 xl:gap-12">
-          <div className="max-w-xl">
+        <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-8 xl:gap-12">
+          <motion.div
+            className="max-w-xl"
+            initial={reduceMotion ? false : { opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          >
             <span className="hb-ai-nav hb-ai-nav--section inline-flex items-center justify-center gap-2 rounded-full border border-white/80 bg-white/55 text-slate-950 backdrop-blur-xl">
               <span className="hb-ai-nav__shine" aria-hidden />
               <Sparkles
@@ -474,11 +481,17 @@ export function AiAssistantSection({
                 {data.secondaryCtaLabel}
               </Link>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="relative min-h-[600px] sm:min-h-[680px] lg:min-h-[740px]">
+          <motion.div
+            className="relative min-h-[600px] sm:min-h-[680px] lg:min-h-[740px]"
+            initial={reduceMotion ? false : { opacity: 0, x: 32 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+          >
             <AssistantStage content={data} />
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

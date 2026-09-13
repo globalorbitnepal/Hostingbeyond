@@ -141,16 +141,12 @@ export function PartnerLogoStrip({
   return (
     <div
       className={cn(
-        "relative w-full overflow-hidden bg-[#f4f8fd] py-8 sm:py-10",
+        "relative z-10 -mt-1 w-full overflow-hidden bg-white/80 py-3.5 shadow-[0_18px_48px_-28px_rgba(37,80,130,0.35)] ring-1 ring-white/80 backdrop-blur-xl sm:py-4",
         className,
       )}
       role="region"
       aria-label="Technology partners"
     >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[#f4f8fd]"
-      />
       <div className="hb-partner-marquee relative z-10 flex w-max items-center">
         <PartnerRow items={items} keyPrefix="a" />
         <PartnerRow items={items} keyPrefix="b" />

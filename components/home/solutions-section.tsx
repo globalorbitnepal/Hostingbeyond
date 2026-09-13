@@ -22,7 +22,7 @@ export function SolutionsSection({
   return (
     <section
       aria-labelledby="hb-solutions-heading"
-      className="relative overflow-hidden bg-[#b5d3f2] pt-8 pb-10 sm:pt-10 sm:pb-12 lg:pt-12 lg:pb-14"
+      className="relative overflow-hidden bg-[#b5d3f2] pt-7 pb-8 sm:pt-9 sm:pb-9 lg:pt-11 lg:pb-10"
     >
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-[linear-gradient(180deg,#b5d3f2_0%,#d4e6f7_38%,#e7f1fb_72%,#f4f8fd_100%)]" />

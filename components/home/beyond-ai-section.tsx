@@ -21,7 +21,7 @@ import {
   Wand2,
   Zap,
 } from "lucide-react";
-import { useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
 import { cn } from "@/lib/utils";
 import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
@@ -343,14 +343,19 @@ function DashboardPreview({ content }: { content: CmsBeyondAiContent }) {
 export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
   const data = content ?? defaultBeyondAiSection();
   const titleLines = data.title.split("\n").filter(Boolean);
+  const reduceMotion = useReducedMotion();
 
   return (
-    <section className="hb-home-section hb-home-section--rule">
-      <div aria-hidden className="hb-home-section-wash" />
-
+    <section className="hb-home-section hb-home-section--mist">
       <div className="hb-shell relative z-10">
-        <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-8 xl:gap-12">
-          <div className="max-w-xl">
+        <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-8 xl:gap-12">
+          <motion.div
+            className="max-w-xl"
+            initial={reduceMotion ? false : { opacity: 0, x: -28 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          >
             <div className="flex flex-wrap items-center gap-2.5">
               <BeyondAiBadge text={data.badge} />
               {data.badgeSecondary ? (
@@ -427,14 +432,20 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
                   </span>
                 ))}
             </div>
-          </div>
+          </motion.div>
 
-          <div className="relative pb-16 sm:pb-10 lg:pb-8">
+          <motion.div
+            className="relative pb-8 sm:pb-4 lg:pb-0"
+            initial={reduceMotion ? false : { opacity: 0, x: 36 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, amount: 0.25 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          >
             <DashboardPreview content={data} />
-          </div>
+          </motion.div>
         </div>
 
-        <div className="mt-10 grid gap-3 rounded-[28px] border border-white/80 bg-white/60 p-3 shadow-[0_18px_50px_-28px_rgba(37,80,130,0.32)] backdrop-blur-2xl sm:mt-14 sm:grid-cols-2 lg:grid-cols-4 lg:p-4">
+        <div className="mt-6 grid gap-3 rounded-[28px] border border-white/80 bg-white/70 p-3 shadow-[0_18px_50px_-28px_rgba(37,80,130,0.32)] backdrop-blur-2xl sm:mt-8 sm:grid-cols-2 lg:grid-cols-4 lg:p-4">
           {data.features.map((item) => {
             const Icon = featureIcons[item.icon] ?? Wand2;
             return (

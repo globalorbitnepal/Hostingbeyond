@@ -23,6 +23,7 @@ import {
   Users,
   Zap,
 } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
 
 import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
 import {
@@ -301,14 +302,29 @@ export function BusinessEmailSection({
   content?: CmsBusinessEmailContent;
 }) {
   const data = content ?? defaultBusinessEmailSection();
+  const reduceMotion = useReducedMotion();
 
   return (
-    <section className="hb-home-section hb-home-section--rule">
-      <div aria-hidden className="hb-home-section-wash" />
-
+    <section className="hb-home-section hb-home-section--white">
       <div className="hb-shell relative z-10">
-        <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-8 xl:gap-12">
-          <div className="max-w-xl">
+        <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] lg:gap-8 xl:gap-12">
+          <motion.div
+            className="relative order-2 pb-8 sm:pb-4 lg:order-1 lg:pb-0"
+            initial={reduceMotion ? false : { opacity: 0, x: -36 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, amount: 0.25 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <MailStage content={data} />
+          </motion.div>
+
+          <motion.div
+            className="order-1 max-w-xl lg:order-2 lg:ml-auto"
+            initial={reduceMotion ? false : { opacity: 0, x: 28 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          >
             <span className="hb-ai-nav hb-ai-nav--section inline-flex items-center justify-center gap-2 rounded-full border border-white/80 bg-white/55 text-slate-950 backdrop-blur-xl">
               <span className="hb-ai-nav__shine" aria-hidden />
               <Mail
@@ -335,7 +351,7 @@ export function BusinessEmailSection({
                 return (
                   <div
                     key={item.id}
-                    className="flex items-start gap-2.5 rounded-2xl border border-white/70 bg-white/55 px-2 py-2 shadow-[0_10px_24px_rgba(37,80,130,0.06)] backdrop-blur-xl sm:flex-col sm:items-center sm:bg-transparent sm:px-0 sm:py-0 sm:text-center sm:shadow-none"
+                    className="flex items-start gap-2.5 rounded-2xl border border-slate-100 bg-[#f7fbff] px-2 py-2 sm:flex-col sm:items-center sm:bg-transparent sm:px-0 sm:py-0 sm:text-center sm:shadow-none"
                   >
                     <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl border border-white/80 bg-white/80 text-[#2563eb] shadow-[0_8px_20px_rgba(37,80,130,0.08)]">
                       <Icon className="size-[18px]" />
@@ -383,14 +399,10 @@ export function BusinessEmailSection({
                   </span>
                 ))}
             </div>
-          </div>
-
-          <div className="relative pb-16 sm:pb-10 lg:pb-8">
-            <MailStage content={data} />
-          </div>
+          </motion.div>
         </div>
 
-        <div className="mt-10 grid gap-3 rounded-[28px] border border-white/80 bg-white/60 p-3 shadow-[0_18px_50px_-28px_rgba(37,80,130,0.32)] backdrop-blur-2xl sm:mt-14 sm:grid-cols-2 lg:grid-cols-4 lg:p-4">
+        <div className="mt-6 grid gap-3 rounded-[28px] border border-slate-100 bg-[#f7fbff] p-3 shadow-[0_18px_50px_-28px_rgba(37,80,130,0.22)] sm:mt-8 sm:grid-cols-2 lg:grid-cols-4 lg:p-4">
           {data.features.map((item) => {
             const Icon = featureIcons[item.icon] ?? Globe;
             return (

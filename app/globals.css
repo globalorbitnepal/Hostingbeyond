@@ -96,47 +96,40 @@
     box-sizing: border-box;
   }
 
-  /* Homepage body chapters — one canvas, even rhythm */
+  /* Homepage chapters — tight, alternating surfaces */
   .hb-home-section {
     position: relative;
     isolation: isolate;
     overflow: hidden;
-    background-color: #f4f8fd;
-    padding-block: clamp(4rem, 7.2vw, 6.5rem);
+    padding-block: clamp(2.4rem, 4.2vw, 3.85rem);
   }
 
-  .hb-home-section--rule::before {
-    content: "";
-    pointer-events: none;
-    position: absolute;
-    left: var(--hb-shell-pad);
-    right: var(--hb-shell-pad);
-    top: 0;
-    z-index: 2;
-    height: 1px;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(148, 163, 184, 0.38),
-      transparent
-    );
+  .hb-home-section--ice {
+    background: linear-gradient(180deg, #f4f8fd 0%, #eaf2fb 100%);
   }
 
-  .hb-home-section-wash {
-    pointer-events: none;
-    position: absolute;
-    inset: 0;
+  .hb-home-section--white {
+    background: #ffffff;
+  }
+
+  .hb-home-section--mist {
     background:
       radial-gradient(
-        ellipse 52% 42% at 88% 8%,
-        rgba(147, 197, 253, 0.22),
-        transparent 70%
+        ellipse 58% 48% at 92% 12%,
+        rgba(147, 197, 253, 0.28),
+        transparent 62%
       ),
+      linear-gradient(180deg, #e8f1fb 0%, #f6faff 100%);
+  }
+
+  .hb-home-section--sheet {
+    background:
       radial-gradient(
-        ellipse 42% 38% at 6% 92%,
-        rgba(167, 139, 250, 0.08),
-        transparent 72%
-      );
+        ellipse 70% 40% at 0% 0%,
+        rgba(219, 234, 254, 0.7),
+        transparent 55%
+      ),
+      #ffffff;
   }
 }
 
