@@ -188,6 +188,10 @@
     font-family: var(--font-heading), var(--font-sans), system-ui, sans-serif;
   }
 
+  .font-hand {
+    font-family: var(--font-hand), ui-rounded, cursive;
+  }
+
   /* Dark scrollbar for locale modal list */
   .hb-locale-scroll {
     scrollbar-width: thin;

@@ -6,6 +6,8 @@ import {
   BusinessEmailSection,
   AiAssistantSection,
   SolutionsSection,
+  WhyChooseSection,
+  HomeFaqsSection,
 } from "@/components/home";
 import { PartnerLogoStrip } from "@/components/home/partner-logo-strip";
 import { getHomeSections, getSiteSettings } from "@/lib/orbit/content";
@@ -56,6 +58,12 @@ export default async function HomePage() {
       ) : null}
       {sections.aiAssistant?.visible !== false ? (
         <AiAssistantSection content={sections.aiAssistant} />
+      ) : null}
+      {sections.whyChoose?.visible !== false ? (
+        <WhyChooseSection content={sections.whyChoose} />
+      ) : null}
+      {sections.homeFaqs?.visible !== false ? (
+        <HomeFaqsSection content={sections.homeFaqs} />
       ) : null}
     </div>
   );

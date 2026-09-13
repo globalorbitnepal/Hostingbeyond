@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
-import { DM_Sans, Geist_Mono, Manrope } from "next/font/google";
+import { Caveat, DM_Sans, Geist_Mono, Manrope } from "next/font/google";
 
 import { LocaleProvider } from "@/components/locale/locale-provider";
 import { LOCALE_COOKIE, parsePreferencesCookie } from "@/lib/i18n/preferences";
@@ -26,6 +26,13 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
   display: "swap",
+});
+
+const caveat = Caveat({
+  variable: "--font-hand",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["500", "600", "700"],
 });
 
 export const metadata: Metadata = buildMetadata();
@@ -58,7 +65,7 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://flagcdn.com" crossOrigin="" />
       </head>
       <body
-        className={`${manrope.variable} ${dmSans.variable} ${geistMono.variable} min-h-dvh bg-black font-sans text-white antialiased`}
+        className={`${manrope.variable} ${dmSans.variable} ${geistMono.variable} ${caveat.variable} min-h-dvh bg-black font-sans text-white antialiased`}
       >
         <LocaleProvider initialPreferences={initialPreferences}>
           {children}

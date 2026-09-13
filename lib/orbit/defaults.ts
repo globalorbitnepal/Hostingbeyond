@@ -382,6 +382,71 @@ export type CmsSolutionsContent = {
   products: CmsSolutionProduct[];
 };
 
+export type CmsWhyChooseIcon =
+  | "zap"
+  | "shield"
+  | "database"
+  | "globe"
+  | "lock"
+  | "mouse"
+  | "wordpress"
+  | "chart"
+  | "mail"
+  | "cloud"
+  | "code"
+  | "secure"
+  | "layers"
+  | "headphones"
+  | "star";
+
+export type CmsWhyChooseItem = {
+  id: string;
+  visible: boolean;
+  order: number;
+  title: string;
+  description: string;
+  icon: CmsWhyChooseIcon;
+};
+
+export type CmsWhyChooseContent = {
+  visible: boolean;
+  eyebrow: string;
+  title: string;
+  titleAccent: string;
+  description: string;
+  handwrittenNote: string;
+  items: CmsWhyChooseItem[];
+};
+
+export type CmsFaqItem = {
+  id: string;
+  visible: boolean;
+  order: number;
+  question: string;
+  answer: string;
+};
+
+export type CmsFaqGroup = {
+  id: string;
+  visible: boolean;
+  order: number;
+  title: string;
+  icon: "layers" | "chart";
+  items: CmsFaqItem[];
+};
+
+export type CmsHomeFaqsContent = {
+  visible: boolean;
+  eyebrow: string;
+  title: string;
+  titleAccent: string;
+  description: string;
+  handwrittenNote: string;
+  ctaLabel: string;
+  previewCount: number;
+  groups: CmsFaqGroup[];
+};
+
 export type CmsHomeSections = {
   hero: CmsHeroContent;
   solutions: CmsSolutionsContent;
@@ -391,6 +456,8 @@ export type CmsHomeSections = {
   beyondAi: CmsBeyondAiContent;
   businessEmail: CmsBusinessEmailContent;
   aiAssistant: CmsAiAssistantContent;
+  whyChoose: CmsWhyChooseContent;
+  homeFaqs: CmsHomeFaqsContent;
   navigation: typeof mainNavigation;
 };
 
@@ -1080,6 +1147,286 @@ export function defaultAiAssistantSection(): CmsAiAssistantContent {
   };
 }
 
+export function defaultWhyChooseSection(): CmsWhyChooseContent {
+  const items: Array<{
+    id: string;
+    title: string;
+    description: string;
+    icon: CmsWhyChooseIcon;
+  }> = [
+    {
+      id: "speed",
+      title: "High-Speed Infrastructure",
+      description:
+        "Optimized NVMe servers and a tuned network stack keep pages loading quickly so visitors stay, convert, and search engines see a fast HostingBeyond site.",
+      icon: "zap",
+    },
+    {
+      id: "uptime",
+      title: "99.9% Uptime Target",
+      description:
+        "Redundant routing and proactive monitoring are built to keep your website online during traffic spikes, deployments, and everyday business hours.",
+      icon: "shield",
+    },
+    {
+      id: "nvme",
+      title: "NVMe SSD Storage",
+      description:
+        "Faster storage than conventional SSDs means databases, WordPress, and stores on HostingBeyond respond with less wait and more reliability.",
+      icon: "database",
+    },
+    {
+      id: "global",
+      title: "Global-Ready Hosting",
+      description:
+        "Serve customers worldwide with infrastructure designed for consistent performance, whether you are launching locally or expanding a brand.",
+      icon: "globe",
+    },
+    {
+      id: "ssl",
+      title: "Free SSL Security",
+      description:
+        "Encrypted HTTPS ships with plans so browsers trust your site, checkout forms stay private, and Google can treat your pages as secure.",
+      icon: "lock",
+    },
+    {
+      id: "deploy",
+      title: "One-Click Deployment",
+      description:
+        "Launch WordPress, apps, and starter sites in minutes from the panel — no ticket queue required to get a production-ready stack online.",
+      icon: "mouse",
+    },
+    {
+      id: "wordpress",
+      title: "WordPress Optimized",
+      description:
+        "Caching, PHP, and storage choices are tuned for WordPress so editorial sites and WooCommerce stores stay snappy as content and traffic grow.",
+      icon: "wordpress",
+    },
+    {
+      id: "scale",
+      title: "Scalable Resources",
+      description:
+        "Move from a first site to multiple properties without rebuilding. Upgrade RAM, storage, and plan limits when campaigns or catalogs expand.",
+      icon: "chart",
+    },
+    {
+      id: "email",
+      title: "Business Email",
+      description:
+        "Professional inboxes on your domain keep client mail branded, searchable, and separate from free webmail — included alongside hosting.",
+      icon: "mail",
+    },
+    {
+      id: "backups",
+      title: "Daily Backup Options",
+      description:
+        "Protect posts, products, and files with backup options you can restore from, so a plugin error or bad edit does not become a permanent outage.",
+      icon: "cloud",
+    },
+    {
+      id: "developers",
+      title: "Developer Friendly",
+      description:
+        "Agencies and builders get SSH-ready workflows, modern stacks, and room to ship staging work without fighting a locked-down shared box.",
+      icon: "code",
+    },
+    {
+      id: "secure",
+      title: "Secure Infrastructure",
+      description:
+        "Layered protection — SSL, isolation, and hardened defaults — reduces the chance of malware, defacement, and stolen customer data.",
+      icon: "secure",
+    },
+    {
+      id: "manage",
+      title: "Easy Management",
+      description:
+        "Domains, hosting, email, and Beyond AI websites live in one modern panel so your team is not hopping between five vendor dashboards.",
+      icon: "layers",
+    },
+    {
+      id: "support",
+      title: "24/7 Support",
+      description:
+        "Real people help with DNS, SSL, migrations, and downtime — whenever a launch, campaign, or client site needs a human, not a chatbot loop.",
+      icon: "headphones",
+    },
+    {
+      id: "value",
+      title: "Performance Without Compromise",
+      description:
+        "Enterprise-style speed and security at transparent HostingBeyond pricing, so growing brands do not have to choose between quality and cost.",
+      icon: "star",
+    },
+  ];
+
+  return {
+    visible: true,
+    eyebrow: "Why Choose Us",
+    title: "Why Choose",
+    titleAccent: "Hosting Beyond?",
+    description:
+      "More than just hosting — a complete foundation for your online success.",
+    handwrittenNote: "Built for a smarter tomorrow",
+    items: items.map((item, order) => ({
+      ...item,
+      visible: true,
+      order,
+    })),
+  };
+}
+
+export function defaultHomeFaqsSection(): CmsHomeFaqsContent {
+  const hosting: Array<{ question: string; answer: string }> = [
+    {
+      question: "What is HostingBeyond?",
+      answer:
+        "HostingBeyond is an all-in-one platform for domains, web hosting, business email, VPS, and Beyond AI websites. You can register a domain, publish a site, add branded mail, and grow on the same account instead of stitching together separate vendors. The homepage, plans, and Orbit-managed content are built so businesses get speed, SSL, and support in one place.",
+    },
+    {
+      question: "Is HostingBeyond suitable for small business websites?",
+      answer:
+        "Yes. Starter plans are sized for brochure sites, local services, and first WooCommerce stores, while Plus, Pro, and Ultimate plans add sites, storage, RAM, and mailboxes as you grow. Small teams can launch with one-click WordPress, free SSL, and 24/7 support, then scale resources without migrating to a new host every time traffic or catalog size increases.",
+    },
+    {
+      question: "Is HostingBeyond WordPress hosting fast?",
+      answer:
+        "WordPress on HostingBeyond runs on NVMe storage, tuned PHP, and caching-friendly infrastructure so admin screens, storefronts, and blog pages load with less wait. Speed also helps Core Web Vitals and search visibility. You can still add a CDN or a lightweight theme; the stack is designed so typical plugins and media libraries stay responsive under normal business traffic.",
+    },
+    {
+      question: "Does HostingBeyond provide free SSL?",
+      answer:
+        "Free SSL is included with hosting plans so every site can load over HTTPS. That encrypts logins and checkout, avoids browser “Not secure” warnings, and is a baseline ranking signal. Certificates can be issued from the panel after DNS points to HostingBeyond. If a custom certificate is required later, support can help you install it without taking the site offline longer than needed.",
+    },
+    {
+      question: "Can I host multiple websites with HostingBeyond?",
+      answer:
+        "Yes. Beyond Essential is built for a single site, while Plus, Pro, and Ultimate increase or remove site limits and add storage, RAM, and mailboxes. Agencies and founders who run client sites or brand microsites can keep them on one account, with separate domains and SSL, instead of buying a new hosting product for every launch.",
+    },
+    {
+      question: "Do you offer a money-back guarantee?",
+      answer:
+        "HostingBeyond plans include a 30-day money-back guarantee so you can test speed, support, and the panel with real content. If the platform is not the right fit, you can request a refund within that window according to the plan terms. Instant activation and cancel-anytime billing are listed on the homepage so you are not locked into a surprise contract after a trial month.",
+    },
+    {
+      question: "Can you migrate my existing website to HostingBeyond?",
+      answer:
+        "Most WordPress, static, and common CMS sites can be moved with files, databases, and DNS cutover planned so downtime stays short. Share your current host, domain, and whether email must move at the same time. Support can walk through backups, SSL, and nameservers. Complex shops or custom apps may need a staging copy first; we would rather migrate once, correctly, than rush a live store.",
+    },
+    {
+      question: "What control panel and tools do I get?",
+      answer:
+        "Accounts are managed through a modern HostingBeyond panel for domains, hosting, email, and Beyond AI sites, with one-click paths for WordPress and common apps. Developers can work with familiar stacks (Linux, PHP, MySQL, and related tooling shown in our partner strip). You should not need a separate cPanel license for everyday site, mail, and SSL tasks, though advanced SSH or VPS workflows are available on higher products.",
+    },
+    {
+      question: "How does 24/7 support work?",
+      answer:
+        "HostingBeyond support is staffed for real incidents — DNS not resolving, SSL failing to issue, mail not sending, or a site that went down after a plugin update. Open a ticket or use the published contact channels any time. We focus on clear steps and follow-through rather than canned replies. Priority support on Pro and Ultimate plans is for teams that cannot wait in a general queue during launches.",
+    },
+    {
+      question: "Where do I start if I am brand new?",
+      answer:
+        "Search a domain on the homepage, pick a hosting plan (annual billing is the default savings path), then install WordPress or generate a Beyond AI site. Add business email on your domain when you are ready to look professional. SSL and the panel come with the plan. If you already own a domain, you can point DNS to HostingBeyond and skip registration. The AI assistant section on the home page can also walk you through the first decisions.",
+    },
+  ];
+
+  const seo: Array<{ question: string; answer: string }> = [
+    {
+      question: "How long does it take to see SEO results?",
+      answer:
+        "Most sites see meaningful movement in 8–16 weeks after technical basics are healthy: HTTPS, fast hosting, crawlable URLs, and useful content. Local businesses can move faster with Google Business Profile and consistent NAP data. Competitive national keywords take longer. HostingBeyond does not “switch on” rankings overnight, but NVMe speed, SSL, and stable uptime remove common hosting blockers so SEO work you publish can actually be crawled and ranked.",
+    },
+    {
+      question: "Do you guarantee #1 ranking on Google?",
+      answer:
+        "No ethical host or SEO partner can guarantee #1 on Google. Rankings depend on content quality, backlinks, competitors, and Google’s systems. Anyone promising guaranteed first place is either overselling or risking penalties. What HostingBeyond can stand behind is a fast, secure, crawlable foundation — SSL, uptime, Core Web Vitals-friendly infrastructure — plus Beyond AI pages that you can keep updating. That is the honest requirement for rankings; the rest is ongoing SEO work.",
+    },
+    {
+      question: "What SEO services and on-site advantages do you provide?",
+      answer:
+        "HostingBeyond is primarily hosting, domains, email, and Beyond AI site building. SEO-relevant advantages include HTTPS by default, performance-oriented NVMe hosting, mobile-ready pages, and clean URLs you control on your domain. Beyond AI helps you publish structured pages quickly so you are not waiting on a developer to add location or service content. For campaigns, copy, and link building, pair the platform with your marketer — we keep the technical floor high so that work is not wasted on a slow or insecure host.",
+    },
+    {
+      question: "Do you work with local SEO?",
+      answer:
+        "Yes in the sense that HostingBeyond is a strong base for local businesses: a real domain, Google-friendly HTTPS, fast mobile pages, and location content you can publish with WordPress or Beyond AI. Local SEO still needs a complete Google Business Profile, reviews, and consistent name-address-phone data. We do not replace a local SEO agency, but we remove hosting and SSL friction that often blocks Maps and organic visibility for clinics, hotels, shops, and service companies.",
+    },
+    {
+      question: "Can you help improve my existing website’s SEO?",
+      answer:
+        "If you migrate to HostingBeyond we can improve the hosting layer: speed, SSL, uptime, and PHP/WordPress performance that influence Core Web Vitals. After cutover, keep 301 redirects from old URLs, resubmit sitemaps, and watch Search Console. Content, titles, and internal links stay your (or your SEO partner’s) work. A faster, more stable host often lifts pages that were already decent; it will not replace thin content or ignored mobile layouts.",
+    },
+    {
+      question: "Does hosting speed affect SEO?",
+      answer:
+        "Yes. Google uses page experience signals, and users bounce from slow pages — both hurt visibility. TTFB, Largest Contentful Paint, and overall responsiveness improve when the origin is NVMe-backed and not overloaded. HostingBeyond plans advertise unmetered bandwidth and SSD/NVMe storage for that reason. Speed will not rank a page with no relevance, but slow hosting can cap a well-written site. Treat hosting as part of SEO, not a separate IT afterthought.",
+    },
+    {
+      question: "Do Beyond AI websites help with SEO?",
+      answer:
+        "Beyond AI helps you publish complete, branded pages quickly — services, locations, and landing content that search engines can index on your HostingBeyond domain. AI does not replace keyword research or unique expertise, but it shortens the time from idea to crawlable URL. Pair generated pages with real photos, accurate business details, and internal links. Hosting, SSL, and DNS stay on the same platform so you are not exporting AI HTML to a random slow host.",
+    },
+    {
+      question: "Should I use my own domain for SEO?",
+      answer:
+        "Always prefer a domain you own (for example yourbrand.com) over a free subdomain. Rankings, email trust, and branded search attach to that domain. HostingBeyond lets you register or connect a domain, add SSL, and host the site plus mail together. If you start on a temporary URL, plan a proper 301 migration to the live domain so link equity is not split. Domain + HTTPS + fast hosting is the default SEO setup we recommend.",
+    },
+    {
+      question: "Do you help with Core Web Vitals?",
+      answer:
+        "We help from the hosting side: NVMe storage, enough RAM on higher plans, HTTP/HTTPS, and a stack that does not sit on overloaded spinning disks. Core Web Vitals also depend on your theme, images, and scripts. Compress images, limit heavy page builders, and use caching. If LCP is weak after a migration, support can review server-level caching and PHP versions while you slim the frontend. HostingBeyond will not magically fix a 4 MB homepage banner.",
+    },
+    {
+      question: "Is SSL important for SEO and trust?",
+      answer:
+        "HTTPS is a confirmed ranking consideration and a user-trust requirement. Chrome flags HTTP pages, especially those with forms. HostingBeyond includes free SSL on plans so you can serve the whole site securely after DNS is pointed. Mixed-content (HTTP images on an HTTPS page) still needs a cleanup in WordPress or your theme. Once SSL is active, keep it renewed — expired certificates hurt both SEO and conversions overnight.",
+    },
+  ];
+
+  return {
+    visible: true,
+    eyebrow: "Questions & Answers",
+    title: "Frequently Asked",
+    titleAccent: "Questions (FAQs)",
+    description:
+      "Get clear answers to common questions about our hosting and SEO services.",
+    handwrittenNote: "Still have a question?\nWe're here to help!",
+    ctaLabel: "View All FAQs",
+    previewCount: 5,
+    groups: [
+      {
+        id: "hosting",
+        visible: true,
+        order: 0,
+        title: "Hosting FAQs",
+        icon: "layers",
+        items: hosting.map((item, order) => ({
+          id: `hosting-${order + 1}`,
+          visible: true,
+          order,
+          question: item.question,
+          answer: item.answer,
+        })),
+      },
+      {
+        id: "seo",
+        visible: true,
+        order: 1,
+        title: "SEO FAQs",
+        icon: "chart",
+        items: seo.map((item, order) => ({
+          id: `seo-${order + 1}`,
+          visible: true,
+          order,
+          question: item.question,
+          answer: item.answer,
+        })),
+      },
+    ],
+  };
+}
+
 function defaultHostingTypesSection(): CmsHostingTypesContent {
   return {
     visible: true,
@@ -1646,6 +1993,8 @@ export function defaultHomeSections(): CmsHomeSections {
     beyondAi: defaultBeyondAiSection(),
     businessEmail: defaultBusinessEmailSection(),
     aiAssistant: defaultAiAssistantSection(),
+    whyChoose: defaultWhyChooseSection(),
+    homeFaqs: defaultHomeFaqsSection(),
     navigation: mainNavigation.map((item) => ({
       ...item,
       children: item.children?.map((child) => ({ ...child })),
@@ -1884,6 +2233,109 @@ function mergeBusinessEmailSection(
     messages,
     stats,
     features,
+  };
+}
+
+function whyChooseIcon(
+  value: unknown,
+  fallback: CmsWhyChooseIcon,
+): CmsWhyChooseIcon {
+  const allowed: CmsWhyChooseIcon[] = [
+    "zap",
+    "shield",
+    "database",
+    "globe",
+    "lock",
+    "mouse",
+    "wordpress",
+    "chart",
+    "mail",
+    "cloud",
+    "code",
+    "secure",
+    "layers",
+    "headphones",
+    "star",
+  ];
+  return allowed.includes(value as CmsWhyChooseIcon)
+    ? (value as CmsWhyChooseIcon)
+    : fallback;
+}
+
+function mergeWhyChooseSection(
+  stored?: Partial<CmsWhyChooseContent> | null,
+): CmsWhyChooseContent {
+  const defaults = defaultWhyChooseSection();
+  if (!stored) return defaults;
+  const storedItems = Array.isArray(stored.items) ? stored.items : [];
+  const items =
+    storedItems.length > 0
+      ? storedItems.map((item, index) => {
+          const fallback = defaults.items[index % defaults.items.length];
+          return {
+            id: item.id || fallback.id || `why-${index}`,
+            visible: item.visible !== false,
+            order: typeof item.order === "number" ? item.order : index,
+            title: item.title || fallback.title,
+            description: item.description || fallback.description,
+            icon: whyChooseIcon(item.icon, fallback.icon),
+          } satisfies CmsWhyChooseItem;
+        })
+      : defaults.items;
+  return {
+    ...defaults,
+    ...stored,
+    visible: stored.visible !== false,
+    items: items.sort((a, b) => a.order - b.order),
+  };
+}
+
+function mergeHomeFaqsSection(
+  stored?: Partial<CmsHomeFaqsContent> | null,
+): CmsHomeFaqsContent {
+  const defaults = defaultHomeFaqsSection();
+  if (!stored) return defaults;
+  const storedGroups = Array.isArray(stored.groups) ? stored.groups : [];
+  const groups =
+    storedGroups.length > 0
+      ? storedGroups.map((group, groupIndex) => {
+          const fallbackGroup =
+            defaults.groups[groupIndex % defaults.groups.length];
+          const storedItems = Array.isArray(group.items) ? group.items : [];
+          const items =
+            storedItems.length > 0
+              ? storedItems.map((item, index) => {
+                  const fallbackItem =
+                    fallbackGroup.items[index % fallbackGroup.items.length];
+                  return {
+                    id: item.id || fallbackItem.id || `faq-${index}`,
+                    visible: item.visible !== false,
+                    order: typeof item.order === "number" ? item.order : index,
+                    question: item.question || fallbackItem.question,
+                    answer: item.answer || fallbackItem.answer,
+                  } satisfies CmsFaqItem;
+                })
+              : fallbackGroup.items;
+          return {
+            id: group.id || fallbackGroup.id || `faq-group-${groupIndex}`,
+            visible: group.visible !== false,
+            order: typeof group.order === "number" ? group.order : groupIndex,
+            title: group.title || fallbackGroup.title,
+            icon: group.icon === "chart" ? "chart" : "layers",
+            items: items.sort((a, b) => a.order - b.order),
+          } satisfies CmsFaqGroup;
+        })
+      : defaults.groups;
+  const preview =
+    typeof stored.previewCount === "number" && stored.previewCount > 0
+      ? Math.min(20, Math.floor(stored.previewCount))
+      : defaults.previewCount;
+  return {
+    ...defaults,
+    ...stored,
+    visible: stored.visible !== false,
+    previewCount: preview,
+    groups: groups.sort((a, b) => a.order - b.order),
   };
 }
 
@@ -2366,6 +2818,8 @@ export function mergeHomeSections(
     beyondAi: mergeBeyondAiSection(stored.beyondAi),
     businessEmail: mergeBusinessEmailSection(stored.businessEmail),
     aiAssistant: mergeAiAssistantSection(stored.aiAssistant),
+    whyChoose: mergeWhyChooseSection(stored.whyChoose),
+    homeFaqs: mergeHomeFaqsSection(stored.homeFaqs),
     // Drop legacy top-level Cloud & VPS — those live under Hosting now.
     // Also normalize stored "Web Hosting" label → "Hosting".
     navigation: (() => {

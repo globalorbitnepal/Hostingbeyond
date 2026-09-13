@@ -6,3 +6,5 @@ export { HostingPlansSection } from "./hosting-plans-section";
 export { BeyondAiSection } from "./beyond-ai-section";
 export { BusinessEmailSection } from "./business-email-section";
 export { AiAssistantSection } from "./ai-assistant-section";
+export { WhyChooseSection } from "./why-choose-section";
+export { HomeFaqsSection } from "./home-faqs-section";

@@ -5,14 +5,18 @@ import { useEffect, useRef, useState } from "react";
 import { AiAssistantEditor } from "@/components/orbit/ai-assistant-editor";
 import { BeyondAiEditor } from "@/components/orbit/beyond-ai-editor";
 import { BusinessEmailEditor } from "@/components/orbit/business-email-editor";
+import { HomeFaqsEditor } from "@/components/orbit/home-faqs-editor";
 import { OrbitImageField } from "@/components/orbit/image-field";
 import { SolutionsEditor } from "@/components/orbit/solutions-editor";
+import { WhyChooseEditor } from "@/components/orbit/why-choose-editor";
 import {
   defaultAiAssistantSection,
   defaultBeyondAiSection,
   defaultBusinessEmailSection,
+  defaultHomeFaqsSection,
   defaultHeroFeatureBar,
   defaultTechnologyPartners,
+  defaultWhyChooseSection,
   type CmsDomainTld,
   type CmsHomeSections,
   type CmsHostingGuarantee,
@@ -1177,6 +1181,26 @@ export default function OrbitContentPage() {
           const current = sectionsRef.current;
           if (!current) return;
           commitHome({ ...current, aiAssistant });
+        }}
+      />
+
+      <WhyChooseEditor
+        value={sections.whyChoose ?? defaultWhyChooseSection()}
+        onChange={(whyChoose) => setSections({ ...sections, whyChoose })}
+        onPersist={(whyChoose) => {
+          const current = sectionsRef.current;
+          if (!current) return;
+          commitHome({ ...current, whyChoose });
+        }}
+      />
+
+      <HomeFaqsEditor
+        value={sections.homeFaqs ?? defaultHomeFaqsSection()}
+        onChange={(homeFaqs) => setSections({ ...sections, homeFaqs })}
+        onPersist={(homeFaqs) => {
+          const current = sectionsRef.current;
+          if (!current) return;
+          commitHome({ ...current, homeFaqs });
         }}
       />
 
