@@ -83,16 +83,14 @@ export function DomainsMegaMenu({
     >
       <div
         className={cn(
-          "grid items-stretch",
-          compact
-            ? "grid-cols-1"
-            : "grid-cols-1 lg:grid-cols-[1fr_1fr_minmax(280px,0.92fr)]",
+          "flex flex-col",
+          compact ? "" : "lg:flex-row lg:items-stretch",
         )}
       >
         <div
           className={cn(
-            "grid gap-6 p-5 sm:p-6",
-            compact ? "grid-cols-1" : "sm:grid-cols-2 lg:col-span-2 lg:gap-8",
+            "grid flex-1 gap-6 p-5 sm:p-6",
+            compact ? "grid-cols-1" : "sm:grid-cols-2 lg:gap-8",
           )}
         >
           {GROUPS.map((group) => (
@@ -137,14 +135,16 @@ export function DomainsMegaMenu({
 
         <div
           className={cn(
-            "relative min-h-[248px] overflow-hidden",
-            compact ? "m-4 mt-0 rounded-[22px]" : "h-full",
+            "relative overflow-hidden",
+            compact
+              ? "m-4 mt-0 rounded-[22px]"
+              : "lg:w-[min(34%,380px)] lg:shrink-0",
           )}
         >
           <div
             className={cn(
               "relative flex h-full min-h-[248px] flex-col justify-between overflow-hidden bg-[linear-gradient(155deg,#2563eb_0%,#4f46e5_52%,#7c3aed_100%)] p-6 text-white sm:p-7",
-              compact ? "rounded-[22px]" : "lg:rounded-r-[27px]",
+              compact ? "rounded-[22px]" : "",
             )}
           >
             <div
