@@ -308,89 +308,91 @@ export function SiteHeader({
 
   return (
     <header className="relative z-50 w-full shrink-0 bg-transparent pt-2.5 pb-1 sm:pt-4">
-      <div className="hb-shell relative">
-        <div className="mx-auto flex h-[56px] w-full items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 shadow-[0_10px_40px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-2xl sm:h-[70px] sm:gap-3 sm:px-5 lg:px-6">
-          <div className="min-w-0 flex-1 lg:min-w-[210px] lg:flex-none xl:min-w-[270px]">
-            <Logo
-              src="/logo/hostingbeyond-logo-v5.png"
-              variant="image"
-              className="h-[26px] max-w-[min(100%,150px)] sm:h-[32px] sm:max-w-[240px] lg:h-[34px] lg:max-w-[260px] xl:h-[38px] xl:max-w-[300px]"
-            />
-          </div>
-
-          <nav
-            aria-label="Primary navigation"
-            className="hidden min-w-0 flex-1 items-center justify-center gap-4 lg:flex xl:gap-7 2xl:gap-8"
-          >
-            {filteredNav.map((item) => (
-              <NavDropdown
-                key={item.label}
-                item={item}
-                label={localizeNavLabel(item.label, t.nav)}
-                megaOpen={item.label === "Domains" ? domainsMega : false}
-                onMegaOpen={
-                  item.label === "Domains" ? openDomainsMega : undefined
-                }
-                onMegaLeave={
-                  item.label === "Domains" ? scheduleMegaClose : undefined
-                }
-                onDismissMega={
-                  item.label === "Domains" ? undefined : dismissDomainsMega
-                }
+      <div className="hb-shell">
+        <div className="relative">
+          <div className="mx-auto flex h-[56px] w-full items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 shadow-[0_10px_40px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-2xl sm:h-[70px] sm:gap-3 sm:px-5 lg:px-6">
+            <div className="min-w-0 flex-1 lg:min-w-[210px] lg:flex-none xl:min-w-[270px]">
+              <Logo
+                src="/logo/hostingbeyond-logo-v5.png"
+                variant="image"
+                className="h-[26px] max-w-[min(100%,150px)] sm:h-[32px] sm:max-w-[240px] lg:h-[34px] lg:max-w-[260px] xl:h-[38px] xl:max-w-[300px]"
               />
-            ))}
-          </nav>
+            </div>
 
-          <div className="hidden shrink-0 items-center justify-end gap-2.5 lg:flex">
-            <CountryLanguageSelector tone="light" />
-            <span
-              aria-hidden
-              className="mx-0.5 hidden h-6 w-px bg-slate-200 xl:block"
-            />
-            <Link
-              href={loginHref}
-              className="inline-flex h-[38px] items-center gap-2 rounded-full border border-slate-200/90 bg-white px-3.5 text-[13px] font-semibold text-slate-800 shadow-[0_4px_14px_rgba(15,23,42,0.06)] transition hover:border-slate-300 hover:bg-slate-50"
+            <nav
+              aria-label="Primary navigation"
+              className="hidden min-w-0 flex-1 items-center justify-center gap-4 lg:flex xl:gap-7 2xl:gap-8"
             >
-              <User className="size-4 text-slate-600" aria-hidden />
-              {resolvedLogin}
-            </Link>
+              {filteredNav.map((item) => (
+                <NavDropdown
+                  key={item.label}
+                  item={item}
+                  label={localizeNavLabel(item.label, t.nav)}
+                  megaOpen={item.label === "Domains" ? domainsMega : false}
+                  onMegaOpen={
+                    item.label === "Domains" ? openDomainsMega : undefined
+                  }
+                  onMegaLeave={
+                    item.label === "Domains" ? scheduleMegaClose : undefined
+                  }
+                  onDismissMega={
+                    item.label === "Domains" ? undefined : dismissDomainsMega
+                  }
+                />
+              ))}
+            </nav>
+
+            <div className="hidden shrink-0 items-center justify-end gap-2.5 lg:flex">
+              <CountryLanguageSelector tone="light" />
+              <span
+                aria-hidden
+                className="mx-0.5 hidden h-6 w-px bg-slate-200 xl:block"
+              />
+              <Link
+                href={loginHref}
+                className="inline-flex h-[38px] items-center gap-2 rounded-full border border-slate-200/90 bg-white px-3.5 text-[13px] font-semibold text-slate-800 shadow-[0_4px_14px_rgba(15,23,42,0.06)] transition hover:border-slate-300 hover:bg-slate-50"
+              >
+                <User className="size-4 text-slate-600" aria-hidden />
+                {resolvedLogin}
+              </Link>
+            </div>
+
+            <div className="flex shrink-0 items-center gap-1.5 sm:gap-2 lg:hidden">
+              <CountryLanguageSelector compact tone="light" />
+              <button
+                type="button"
+                className="inline-flex size-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-800 shadow-sm"
+                aria-expanded={open}
+                aria-controls="hb-mobile-nav"
+                aria-label={open ? "Close menu" : "Open menu"}
+                onClick={() => setOpen((v) => !v)}
+              >
+                {open ? (
+                  <X className="size-[18px]" />
+                ) : (
+                  <Menu className="size-[18px]" />
+                )}
+              </button>
+            </div>
           </div>
 
-          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2 lg:hidden">
-            <CountryLanguageSelector compact tone="light" />
-            <button
-              type="button"
-              className="inline-flex size-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-800 shadow-sm"
-              aria-expanded={open}
-              aria-controls="hb-mobile-nav"
-              aria-label={open ? "Close menu" : "Open menu"}
-              onClick={() => setOpen((v) => !v)}
-            >
-              {open ? (
-                <X className="size-[18px]" />
-              ) : (
-                <Menu className="size-[18px]" />
-              )}
-            </button>
-          </div>
+          <AnimatePresence>
+            {domainsMega ? (
+              <motion.div
+                id="hb-domains-mega"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 6 }}
+                transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute top-[calc(100%-2px)] right-0 left-0 z-40 hidden pt-3 lg:block"
+                onMouseEnter={openDomainsMega}
+                onMouseLeave={scheduleMegaClose}
+              >
+                <DomainsMegaMenu onNavigate={dismissDomainsMega} />
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
         </div>
-
-        <AnimatePresence>
-          {domainsMega ? (
-            <motion.div
-              id="hb-domains-mega"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 6 }}
-              transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute top-[calc(100%-2px)] right-0 left-0 z-40 hidden pt-3 lg:block"
-              onMouseEnter={openDomainsMega}
-              onMouseLeave={scheduleMegaClose}
-            >
-              <DomainsMegaMenu onNavigate={dismissDomainsMega} />
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
       </div>
 
       <AnimatePresence>

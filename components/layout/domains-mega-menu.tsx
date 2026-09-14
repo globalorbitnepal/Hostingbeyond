@@ -83,7 +83,7 @@ export function DomainsMegaMenu({
     >
       <div
         className={cn(
-          "grid",
+          "grid items-stretch",
           compact
             ? "grid-cols-1"
             : "grid-cols-1 lg:grid-cols-[1fr_1fr_minmax(280px,0.92fr)]",
@@ -137,11 +137,16 @@ export function DomainsMegaMenu({
 
         <div
           className={cn(
-            "relative overflow-hidden",
-            compact ? "m-4 mt-0 rounded-[22px]" : "",
+            "relative min-h-[248px] overflow-hidden",
+            compact ? "m-4 mt-0 rounded-[22px]" : "h-full",
           )}
         >
-          <div className="relative flex h-full min-h-[220px] flex-col justify-between overflow-hidden bg-[linear-gradient(155deg,#2563eb_0%,#4f46e5_52%,#7c3aed_100%)] p-6 text-white sm:p-7">
+          <div
+            className={cn(
+              "relative flex h-full min-h-[248px] flex-col justify-between overflow-hidden bg-[linear-gradient(155deg,#2563eb_0%,#4f46e5_52%,#7c3aed_100%)] p-6 text-white sm:p-7",
+              compact ? "rounded-[22px]" : "lg:rounded-r-[27px]",
+            )}
+          >
             <div
               aria-hidden
               className="pointer-events-none absolute -top-16 -right-10 size-44 rounded-full bg-white/15 blur-2xl"
