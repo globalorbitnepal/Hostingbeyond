@@ -3,7 +3,7 @@ import sharp from "sharp";
 const SRC = process.argv[2] || "public/images/hero-speaker-v6-src.png";
 const OUT = "public/images/hero-speaker-v6.webp";
 
-const SCALE = 2.5;
+const SCALE = 3;
 const meta = await sharp(SRC).metadata();
 const W = Math.round((meta.width || 1280) * SCALE);
 const H = Math.round((meta.height || 720) * SCALE);
@@ -37,7 +37,7 @@ for (let y = 0; y < h; y++) {
     const nx = x / (w - 1);
     const ny = y / (h - 1);
 
-    const emptyLeft = 1 - smoothstep(0.24, 0.46, nx);
+    const emptyLeft = 1 - smoothstep(0.18, 0.42, nx);
     if (emptyLeft > 0.01) {
       const depth = smoothstep(0.45, 1, ny);
       const target = {
@@ -45,7 +45,7 @@ for (let y = 0; y < h; y++) {
         g: THEME.g + (THEME_DEEP.g - THEME.g) * depth,
         b: THEME.b + (THEME_DEEP.b - THEME.b) * depth,
       };
-      const t = emptyLeft * 0.5;
+      const t = emptyLeft * 0.4;
       data[i] = Math.round(data[i] * (1 - t) + target.r * t);
       data[i + 1] = Math.round(data[i + 1] * (1 - t) + target.g * t);
       data[i + 2] = Math.round(data[i + 2] * (1 - t) + target.b * t);
@@ -56,7 +56,7 @@ for (let y = 0; y < h; y++) {
 }
 
 await sharp(data, { raw: { width: w, height: h, channels: ch } })
-  .webp({ quality: 92, effort: 6 })
+  .webp({ quality: 94, effort: 6 })
   .toFile(OUT);
 
 console.log("wrote", OUT, `${w}x${h}`);
