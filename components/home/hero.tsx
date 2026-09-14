@@ -244,7 +244,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
           initial={reduceMotion ? false : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.14 }}
-          className="relative mt-4 -mr-[var(--hb-shell-pad)] -ml-[var(--hb-shell-pad)] aspect-[5/4] w-[calc(100%+2*var(--hb-shell-pad))] lg:hidden"
+          className="relative mt-4 -mr-[var(--hb-shell-pad)] -ml-[var(--hb-shell-pad)] aspect-[3/2] w-[calc(100%+2*var(--hb-shell-pad))] lg:hidden"
           aria-hidden
           style={{
             WebkitMaskImage:
@@ -260,7 +260,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
             priority
             unoptimized
             sizes="100vw"
-            className="object-cover object-[88%_50%]"
+            className="object-cover object-[100%_45%]"
           />
         </motion.div>
       </div>
