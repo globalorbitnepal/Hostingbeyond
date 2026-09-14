@@ -122,6 +122,7 @@ export type CmsHostingPlan = {
   visible: boolean;
   order: number;
   name: string;
+  tagline: string;
   discountBadge: string;
   popular: boolean;
   popularLabel: string;
@@ -131,10 +132,12 @@ export type CmsHostingPlan = {
   /** Strikethrough when Annually is selected */
   originalAnnually: string;
   billedAnnually: string;
+  saveAnnually: string;
   /** Per-month price when Monthly is selected */
   priceMonthly: string;
   originalMonthly: string;
   billedMonthly: string;
+  saveMonthly: string;
   features: string[];
   ctaLabel: string;
   ctaHref: string;
@@ -144,7 +147,7 @@ export type CmsHostingGuarantee = {
   id: string;
   title: string;
   description: string;
-  icon: "shield" | "lock" | "rocket";
+  icon: "shield" | "lock" | "rocket" | "globe" | "headphones";
 };
 
 export type CmsHostingPlansContent = {
@@ -155,6 +158,8 @@ export type CmsHostingPlansContent = {
   description: string;
   supportLabel: string;
   activationLabel: string;
+  uptimeLabel: string;
+  saveBadge: string;
   annualToggleLabel: string;
   monthlyToggleLabel: string;
   defaultBilling: "annually" | "monthly";
@@ -763,25 +768,30 @@ function defaultHostingPlans(): CmsHostingPlan[] {
       id: "essential",
       visible: true,
       order: 0,
-      name: "Web Essential",
-      discountBadge: "50% OFF",
+      name: "Beyond Essential",
+      tagline: "Perfect for individuals and small businesses.",
+      discountBadge: "70% OFF",
       popular: false,
       popularLabel: "",
       accent: "blue",
-      priceAnnually: "$5.00",
-      originalAnnually: "$10.00",
-      billedAnnually: "Billed $60.00 Annually",
-      priceMonthly: "$10.00",
+      priceAnnually: "$2.40",
+      originalAnnually: "$7.99",
+      billedAnnually: "Billed $28.80 annually",
+      saveAnnually: "Save $67.09",
+      priceMonthly: "$7.99",
       originalMonthly: "",
       billedMonthly: "Billed monthly",
+      saveMonthly: "",
       features: [
         "1 Website",
-        "10 GB SSD Storage",
+        "10 GB NVMe SSD Storage",
         "Unmetered Bandwidth",
         "2 GB RAM",
         "1 Email Account",
         "Free SSL Certificate",
-        "24/7 Support",
+        "Weekly Backups",
+        "Managed WordPress",
+        "24/7 Expert Support",
       ],
       ctaLabel: "Get Started",
       ctaHref: routes.getStarted,
@@ -790,25 +800,31 @@ function defaultHostingPlans(): CmsHostingPlan[] {
       id: "plus",
       visible: true,
       order: 1,
-      name: "Web Plus",
-      discountBadge: "50% OFF",
+      name: "Beyond Plus",
+      tagline: "Great for growing businesses and multiple websites.",
+      discountBadge: "70% OFF",
       popular: false,
       popularLabel: "",
       accent: "blue",
-      priceAnnually: "$10.00",
-      originalAnnually: "$20.00",
-      billedAnnually: "Billed $120.00 Annually",
-      priceMonthly: "$20.00",
+      priceAnnually: "$4.80",
+      originalAnnually: "$15.99",
+      billedAnnually: "Billed $57.60 annually",
+      saveAnnually: "Save $111.89",
+      priceMonthly: "$15.99",
       originalMonthly: "",
       billedMonthly: "Billed monthly",
+      saveMonthly: "",
       features: [
         "5 Websites",
-        "20 GB SSD Storage",
+        "20 GB NVMe SSD Storage",
         "Unmetered Bandwidth",
         "4 GB RAM",
         "10 Email Accounts",
         "Free SSL Certificate",
-        "24/7 Support",
+        "Daily Backups",
+        "Managed WordPress",
+        "Free Website Migration",
+        "24/7 Expert Support",
       ],
       ctaLabel: "Get Started",
       ctaHref: routes.getStarted,
@@ -817,25 +833,32 @@ function defaultHostingPlans(): CmsHostingPlan[] {
       id: "pro",
       visible: true,
       order: 2,
-      name: "Web Pro",
-      discountBadge: "50% OFF",
+      name: "Beyond Pro",
+      tagline: "Advanced tools for ambitious entrepreneurs.",
+      discountBadge: "70% OFF",
       popular: true,
       popularLabel: "Most Popular",
       accent: "gradient",
-      priceAnnually: "$15.00",
-      originalAnnually: "$30.00",
-      billedAnnually: "Billed $180.00 Annually",
-      priceMonthly: "$30.00",
+      priceAnnually: "$7.50",
+      originalAnnually: "$24.99",
+      billedAnnually: "Billed $90.00 annually",
+      saveAnnually: "Save $174.89",
+      priceMonthly: "$24.99",
       originalMonthly: "",
       billedMonthly: "Billed monthly",
+      saveMonthly: "",
       features: [
         "Unlimited Websites",
-        "40 GB SSD Storage",
+        "40 GB NVMe SSD Storage",
         "Unmetered Bandwidth",
         "6 GB RAM",
         "Unlimited Email Accounts",
         "Free SSL Certificate",
+        "Daily Backups",
+        "Managed WordPress",
+        "Free Website Migration",
         "Priority Support",
+        "PHP, Python & Node.js Support",
       ],
       ctaLabel: "Get Started",
       ctaHref: routes.getStarted,
@@ -844,25 +867,32 @@ function defaultHostingPlans(): CmsHostingPlan[] {
       id: "ultimate",
       visible: true,
       order: 3,
-      name: "Web Ultimate",
-      discountBadge: "50% OFF",
+      name: "Beyond Ultimate",
+      tagline: "Maximum performance for high-traffic websites.",
+      discountBadge: "70% OFF",
       popular: false,
       popularLabel: "",
       accent: "purple",
-      priceAnnually: "$20.00",
-      originalAnnually: "$40.00",
-      billedAnnually: "Billed $240.00 Annually",
-      priceMonthly: "$40.00",
+      priceAnnually: "$12.00",
+      originalAnnually: "$39.99",
+      billedAnnually: "Billed $144.00 annually",
+      saveAnnually: "Save $279.89",
+      priceMonthly: "$39.99",
       originalMonthly: "",
       billedMonthly: "Billed monthly",
+      saveMonthly: "",
       features: [
         "Unlimited Websites",
-        "60 GB SSD Storage",
+        "60 GB NVMe SSD Storage",
         "Unmetered Bandwidth",
         "8 GB RAM",
         "Unlimited Email Accounts",
         "Free SSL Certificate",
+        "Daily Backups",
+        "Managed WordPress",
+        "Advanced Performance (5× Faster)",
         "Priority Support",
+        "PHP, Python & Node.js Support",
       ],
       ctaLabel: "Get Started",
       ctaHref: routes.getStarted,
@@ -875,12 +905,14 @@ function defaultHostingPlansSection(): CmsHostingPlansContent {
     visible: true,
     eyebrow: "Web Hosting Plans",
     title: "Web Hosting",
-    titleAccent: "Plans & Price",
+    titleAccent: "Plans & Pricing",
     description:
-      "Compare our affordable web hosting prices and choose the perfect hosting plan for your website.",
-    supportLabel: "24/7 Local Support",
+      "Powerful hosting for individuals, businesses and growing brands. Choose the perfect plan and start building your online presence today.",
+    supportLabel: "24/7 Expert Support",
     activationLabel: "Instant Activation",
-    annualToggleLabel: "Annually (Save 50%)",
+    uptimeLabel: "99.9% Uptime",
+    saveBadge: "Save 70%",
+    annualToggleLabel: "Annually",
     monthlyToggleLabel: "Monthly",
     defaultBilling: "annually",
     plans: defaultHostingPlans(),
@@ -900,11 +932,17 @@ function defaultHostingPlansSection(): CmsHostingPlansContent {
         icon: "lock",
       },
       {
-        id: "uptime",
-        title: "99.99% Uptime Guarantee",
+        id: "network",
+        title: "Global Network",
         description:
-          "High-availability network designed for always-on performance.",
-        icon: "rocket",
+          "High-performance servers for a faster, smoother experience.",
+        icon: "globe",
+      },
+      {
+        id: "support",
+        title: "24/7 Expert Support",
+        description: "Real people. Real help. Anytime, anywhere.",
+        icon: "headphones",
       },
     ],
   };
@@ -3020,9 +3058,31 @@ export function mergeHomeSections(
     .map((fallback) => {
       const match = storedPlans.find((item) => item.id === fallback.id);
       if (!match) return fallback;
+      const stale =
+        /^web\s/i.test(match.name || "") ||
+        /50%\s*off/i.test(match.discountBadge || "");
+      if (stale) {
+        return {
+          ...fallback,
+          visible: match.visible ?? true,
+          order: typeof match.order === "number" ? match.order : fallback.order,
+        };
+      }
       return {
         ...fallback,
         ...match,
+        tagline:
+          typeof match.tagline === "string" && match.tagline.trim()
+            ? match.tagline
+            : fallback.tagline,
+        saveAnnually:
+          typeof match.saveAnnually === "string"
+            ? match.saveAnnually
+            : fallback.saveAnnually,
+        saveMonthly:
+          typeof match.saveMonthly === "string"
+            ? match.saveMonthly
+            : fallback.saveMonthly,
         features: Array.isArray(match.features)
           ? match.features.filter(Boolean)
           : fallback.features,
@@ -3040,6 +3100,11 @@ export function mergeHomeSections(
         ...defaults.hostingPlans.plans[0],
         ...extra,
         id: extra.id || `plan-${plans.length}`,
+        tagline: typeof extra.tagline === "string" ? extra.tagline : "",
+        saveAnnually:
+          typeof extra.saveAnnually === "string" ? extra.saveAnnually : "",
+        saveMonthly:
+          typeof extra.saveMonthly === "string" ? extra.saveMonthly : "",
         features: Array.isArray(extra.features) ? extra.features : [],
         visible: extra.visible ?? true,
         order: typeof extra.order === "number" ? extra.order : plans.length,
@@ -3051,25 +3116,42 @@ export function mergeHomeSections(
     ? stored.hostingPlans!.guarantees
     : [];
 
-  const guarantees: CmsHostingGuarantee[] =
-    storedGuarantees.length > 0
-      ? storedGuarantees.map((item, index) => {
-          const fallback =
-            defaults.hostingPlans.guarantees[
-              index % defaults.hostingPlans.guarantees.length
-            ];
-          const icon: CmsHostingGuarantee["icon"] =
-            item.icon === "lock" || item.icon === "rocket"
-              ? item.icon
-              : "shield";
-          return {
-            ...fallback,
-            ...item,
-            id: item.id || `guarantee-${index}`,
-            icon,
-          };
-        })
-      : defaults.hostingPlans.guarantees;
+  const guaranteeIcon = (
+    value: unknown,
+    fallback: CmsHostingGuarantee["icon"],
+  ): CmsHostingGuarantee["icon"] =>
+    value === "lock" ||
+    value === "rocket" ||
+    value === "globe" ||
+    value === "headphones" ||
+    value === "shield"
+      ? value
+      : fallback;
+
+  const guarantees: CmsHostingGuarantee[] = defaults.hostingPlans.guarantees
+    .map((fallback) => {
+      const match = storedGuarantees.find((item) => item.id === fallback.id);
+      if (!match) return fallback;
+      return {
+        ...fallback,
+        ...match,
+        id: match.id || fallback.id,
+        icon: guaranteeIcon(match.icon, fallback.icon),
+      };
+    })
+    .concat(
+      storedGuarantees
+        .filter(
+          (item) =>
+            !defaults.hostingPlans.guarantees.some((fb) => fb.id === item.id),
+        )
+        .map((item, index) => ({
+          ...defaults.hostingPlans.guarantees[0],
+          ...item,
+          id: item.id || `guarantee-extra-${index}`,
+          icon: guaranteeIcon(item.icon, "shield"),
+        })),
+    );
 
   const storedTypeCards = Array.isArray(stored.hostingTypes?.cards)
     ? stored.hostingTypes!.cards
@@ -3318,17 +3400,42 @@ export function mergeHomeSections(
     hostingPlans: {
       ...defaults.hostingPlans,
       ...stored.hostingPlans,
+      eyebrow:
+        stored.hostingPlans?.eyebrow?.trim() || defaults.hostingPlans.eyebrow,
+      title:
+        !stored.hostingPlans?.title?.trim() ||
+        stored.hostingPlans.title === "Web Hosting Plans"
+          ? defaults.hostingPlans.title
+          : stored.hostingPlans.title,
+      titleAccent:
+        stored.hostingPlans?.titleAccent === "Plans & Price"
+          ? defaults.hostingPlans.titleAccent
+          : stored.hostingPlans?.titleAccent ||
+            defaults.hostingPlans.titleAccent,
       description: (() => {
         const value = stored.hostingPlans?.description;
         if (
           typeof value === "string" &&
           value.trim() &&
-          !/nepal/i.test(value)
+          !/nepal/i.test(value) &&
+          !/affordable web hosting prices/i.test(value)
         ) {
           return value;
         }
         return defaults.hostingPlans.description;
       })(),
+      supportLabel: /local support/i.test(
+        stored.hostingPlans?.supportLabel || "",
+      )
+        ? defaults.hostingPlans.supportLabel
+        : stored.hostingPlans?.supportLabel ||
+          defaults.hostingPlans.supportLabel,
+      uptimeLabel:
+        stored.hostingPlans?.uptimeLabel?.trim() ||
+        defaults.hostingPlans.uptimeLabel,
+      saveBadge:
+        stored.hostingPlans?.saveBadge?.trim() ||
+        defaults.hostingPlans.saveBadge,
       defaultBilling:
         stored.hostingPlans?.defaultBilling === "monthly"
           ? "monthly"

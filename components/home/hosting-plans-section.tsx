@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
   Box,
   Check,
-  Clock,
-  Crown,
+  Globe,
   Headphones,
   Layers,
   Lock,
@@ -35,36 +34,29 @@ function GuaranteeIcon({
   className?: string;
 }) {
   if (icon === "lock") return <Lock className={className} aria-hidden />;
+  if (icon === "globe") return <Globe className={className} aria-hidden />;
+  if (icon === "headphones")
+    return <Headphones className={className} aria-hidden />;
   if (icon === "rocket") return <Rocket className={className} aria-hidden />;
   return <Shield className={className} aria-hidden />;
 }
 
-function PlanGlyph({
-  accent,
-  popular,
-}: {
-  accent: CmsHostingPlan["accent"];
-  popular: boolean;
-}) {
-  const Icon = popular
-    ? Layers
-    : accent === "purple"
-      ? Crown
-      : accent === "gradient"
-        ? Layers
-        : Box;
+function PlanGlyph({ plan }: { plan: CmsHostingPlan }) {
+  const stacked = plan.id === "plus" || plan.id === "pro" || plan.popular;
+  const Icon = stacked ? Layers : Box;
+  const popular = Boolean(plan.popular);
   return (
     <span
       className={cn(
-        "inline-flex size-11 items-center justify-center rounded-2xl",
+        "inline-flex size-11 items-center justify-center rounded-2xl shadow-[0_8px_18px_-12px_rgba(37,99,235,0.45)]",
         popular
-          ? "bg-white/12 text-cyan-200 ring-1 ring-white/20"
-          : accent === "purple"
-            ? "bg-fuchsia-50 text-[#c026d3] ring-1 ring-fuchsia-100"
-            : "bg-sky-50 text-[#2563eb] ring-1 ring-sky-100",
+          ? "bg-[#eef2ff] text-[#4f46e5]"
+          : plan.accent === "purple"
+            ? "bg-[#faf5ff] text-[#c026d3]"
+            : "bg-[#eef6ff] text-[#2563eb]",
       )}
     >
-      <Icon className="size-5" strokeWidth={1.8} aria-hidden />
+      <Icon className="size-5" strokeWidth={1.85} aria-hidden />
     </span>
   );
 }
@@ -84,144 +76,106 @@ function PlanCard({
   const price = isAnnual ? plan.priceAnnually : plan.priceMonthly;
   const original = isAnnual ? plan.originalAnnually : plan.originalMonthly;
   const billed = isAnnual ? plan.billedAnnually : plan.billedMonthly;
+  const save = isAnnual ? plan.saveAnnually : plan.saveMonthly;
+  const priceColor =
+    plan.accent === "purple"
+      ? "text-[#c026d3]"
+      : popular
+        ? "text-[#4f46e5]"
+        : "text-[#2563eb]";
 
   return (
     <motion.article
-      initial={reduceMotion ? false : { opacity: 0, y: 18 }}
+      initial={reduceMotion ? false : { opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ delay, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       className={cn(
-        "relative flex h-full flex-col overflow-hidden rounded-[28px] p-5 sm:p-6",
+        "relative flex h-full flex-col rounded-[26px] border bg-white p-5 transition duration-300 sm:p-6",
         popular
-          ? "z-10 border border-white/10 bg-[linear-gradient(165deg,#1d4ed8_0%,#312e81_48%,#6d28d9_100%)] text-white shadow-[0_28px_70px_-24px_rgba(49,46,129,0.65)] xl:-mt-6 xl:mb-0 xl:min-h-[560px] xl:px-6 xl:pt-7 xl:pb-7"
-          : "border border-white/80 bg-white/75 shadow-[0_18px_50px_-28px_rgba(37,80,130,0.32)] backdrop-blur-2xl",
+          ? "z-10 border-indigo-200/90 bg-[linear-gradient(180deg,#f5f3ff_0%,#ffffff_42%)] shadow-[0_28px_60px_-28px_rgba(79,70,229,0.45)] ring-1 ring-indigo-100 hover:-translate-y-1"
+          : "border-slate-200/90 shadow-[0_18px_44px_-30px_rgba(37,80,130,0.4)] hover:-translate-y-0.5 hover:shadow-[0_22px_48px_-28px_rgba(37,80,130,0.5)]",
       )}
     >
-      {!popular ? (
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.55),transparent_42%)]"
-        />
-      ) : (
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(125,211,252,0.22),transparent_52%)]"
-        />
-      )}
-
-      <div className="relative z-10 flex items-start justify-between gap-3">
-        <PlanGlyph accent={plan.accent} popular={popular} />
-        {popular && plan.popularLabel ? (
-          <span className="inline-flex items-center gap-1 rounded-full bg-white/14 px-2.5 py-1 text-[10px] font-bold tracking-wide text-cyan-50 uppercase ring-1 ring-white/20 backdrop-blur-md">
-            <Star className="size-3 fill-current" aria-hidden />
-            {plan.popularLabel}
-          </span>
-        ) : plan.discountBadge ? (
-          <span
-            className={cn(
-              "inline-flex rounded-full px-2.5 py-1 text-[10px] font-extrabold tracking-wide uppercase",
-              plan.accent === "purple"
-                ? "bg-fuchsia-50 text-[#c026d3]"
-                : "bg-sky-50 text-[#2563eb]",
-            )}
-          >
-            {plan.discountBadge}
-          </span>
-        ) : (
-          <span />
-        )}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-1.5">
+          {plan.discountBadge ? (
+            <span className="rounded-full bg-slate-50 px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-slate-500 uppercase">
+              {plan.discountBadge}
+            </span>
+          ) : null}
+          {popular && plan.popularLabel ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#eef2ff] px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-[#4f46e5] uppercase">
+              <Star className="size-3 fill-current" aria-hidden />
+              {plan.popularLabel}
+            </span>
+          ) : null}
+        </div>
+        <PlanGlyph plan={plan} />
       </div>
 
-      <h3
-        className={cn(
-          "font-heading relative z-10 mt-5 text-[1.35rem] font-extrabold tracking-[-0.03em] sm:text-[1.5rem]",
-          popular ? "text-white" : "text-slate-950",
-        )}
-      >
+      <h3 className="font-heading mt-4 text-[1.35rem] font-extrabold tracking-[-0.03em] text-slate-950 sm:text-[1.5rem]">
         {plan.name}
       </h3>
+      {plan.tagline ? (
+        <p className="mt-1 min-h-[2.6rem] text-[13.5px] leading-snug text-slate-500">
+          {plan.tagline}
+        </p>
+      ) : (
+        <div className="min-h-[2.6rem]" />
+      )}
 
-      <div className="relative z-10 mt-4">
+      <div className="mt-4">
         {original ? (
-          <p
-            className={cn(
-              "text-[13px] font-medium line-through",
-              popular ? "text-white/45" : "text-slate-400",
-            )}
-          >
+          <p className="text-[13px] font-medium text-slate-400 line-through">
             {original}
           </p>
-        ) : null}
+        ) : (
+          <p className="h-[20px]" />
+        )}
         <p className="mt-0.5 flex items-end gap-1.5">
           <span
             className={cn(
-              "text-[clamp(1.9rem,3vw,2.45rem)] leading-none font-extrabold tracking-tight",
-              popular
-                ? "text-white"
-                : plan.accent === "purple"
-                  ? "text-[#c026d3]"
-                  : "text-[#2563eb]",
+              "text-[clamp(1.85rem,2.8vw,2.35rem)] leading-none font-extrabold tracking-tight",
+              priceColor,
             )}
           >
             {price}
           </span>
-          <span
-            className={cn(
-              "pb-1 text-[13px] font-semibold",
-              popular ? "text-white/70" : "text-slate-500",
-            )}
-          >
+          <span className="pb-1 text-[13px] font-semibold text-slate-500">
             /mo
           </span>
         </p>
-        {billed ? (
-          <p
-            className={cn(
-              "mt-2 text-[12px] font-medium",
-              popular ? "text-white/50" : "text-slate-500",
-            )}
-          >
-            {billed}
-          </p>
-        ) : null}
+        <div className="mt-2 flex min-h-[1.35rem] flex-wrap items-center gap-x-2 gap-y-1 text-[12px] font-medium">
+          {billed ? <span className="text-slate-500">{billed}</span> : null}
+          {save ? (
+            <span className="font-bold text-emerald-600">{save}</span>
+          ) : null}
+        </div>
       </div>
 
       <Link
         href={plan.ctaHref || "/get-started"}
         className={cn(
-          "relative z-10 mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full text-[14px] font-bold transition",
+          "mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full text-[14px] font-bold transition",
           popular
-            ? "bg-gradient-to-r from-[#22d3ee] via-[#818cf8] to-[#e879f9] text-slate-950 shadow-[0_12px_28px_rgba(34,211,238,0.28)] hover:brightness-105"
-            : plan.accent === "purple"
-              ? "border border-fuchsia-200 bg-white text-[#a21caf] hover:bg-fuchsia-50"
-              : "border border-sky-200 bg-white text-[#1d4ed8] hover:bg-sky-50",
+            ? "bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-white shadow-[0_12px_24px_rgba(79,70,229,0.32)] hover:brightness-105"
+            : "border border-slate-200 bg-white text-slate-800 shadow-[0_8px_18px_-14px_rgba(15,23,42,0.35)] hover:border-blue-200 hover:text-[#1d4ed8]",
         )}
       >
-        {plan.ctaLabel || "Choose Plan"}
+        {plan.ctaLabel || "Get Started"}
         <ArrowRight className="size-4" aria-hidden />
       </Link>
 
-      <ul className="relative z-10 mt-6 flex flex-1 flex-col gap-2.5">
+      <ul className="mt-5 flex flex-1 flex-col gap-2.5">
         {plan.features.map((feature) => (
           <li
             key={feature}
-            className={cn(
-              "flex items-start gap-2.5 text-[13px] leading-snug sm:text-[14px]",
-              popular ? "text-white/88" : "text-slate-600",
-            )}
+            className="flex items-start gap-2.5 text-[13.5px] leading-snug text-slate-600"
           >
-            <Check
-              className={cn(
-                "mt-0.5 size-4 shrink-0",
-                popular
-                  ? "text-cyan-200"
-                  : plan.accent === "purple"
-                    ? "text-[#c026d3]"
-                    : "text-[#2563eb]",
-              )}
-              aria-hidden
-            />
+            <span className="mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-[#e8f1ff] text-[#2563eb]">
+              <Check className="size-2.5" strokeWidth={3} aria-hidden />
+            </span>
             <span>{feature}</span>
           </li>
         ))}
@@ -246,119 +200,102 @@ export function HostingPlansSection({
     .filter((p) => p.visible !== false)
     .sort((a, b) => a.order - b.order);
 
-  const guarantees = data.guarantees ?? [];
-  const trust = [
-    guarantees[0]
-      ? {
-          id: guarantees[0].id,
-          label: guarantees[0].title,
-          icon: (
-            <GuaranteeIcon icon={guarantees[0].icon} className="size-[18px]" />
-          ),
-        }
+  const chips = [
+    data.supportLabel
+      ? { id: "support", label: data.supportLabel, icon: Headphones }
       : null,
     data.activationLabel
-      ? {
-          id: "activation",
-          label: data.activationLabel,
-          icon: <Zap className="size-[18px]" aria-hidden />,
-        }
+      ? { id: "activation", label: data.activationLabel, icon: Zap }
       : null,
-    {
-      id: "cancel",
-      label: "Cancel anytime",
-      icon: <Clock className="size-[18px]" aria-hidden />,
-    },
-    data.supportLabel
-      ? {
-          id: "support",
-          label: data.supportLabel,
-          icon: <Headphones className="size-[18px]" aria-hidden />,
-        }
+    data.uptimeLabel
+      ? { id: "uptime", label: data.uptimeLabel, icon: Shield }
       : null,
-  ].filter(Boolean) as Array<{ id: string; label: string; icon: ReactNode }>;
+  ].filter(Boolean) as Array<{
+    id: string;
+    label: string;
+    icon: typeof Headphones;
+  }>;
+
+  const guarantees = (data.guarantees ?? []).filter(Boolean);
 
   return (
     <section className="hb-home-section hb-home-section--sheet">
       <div className="hb-shell relative z-10">
-        <div className="flex flex-col items-center text-center lg:flex-row lg:items-center lg:justify-between lg:gap-10 lg:text-left">
-          <div className="w-full min-w-0 lg:flex-1">
-            <p className="text-[11px] font-bold tracking-[0.28em] text-slate-500 uppercase sm:text-[12px]">
-              {data.eyebrow}
-            </p>
-            <h2 className="font-heading mt-3 text-[clamp(1.7rem,3.6vw,3.55rem)] leading-[1.12] font-extrabold tracking-[-0.045em] text-balance lg:whitespace-nowrap">
-              <span className="text-slate-950">{data.title}</span>
-              {data.titleAccent ? (
-                <>
-                  {" "}
-                  <span className="bg-gradient-to-r from-[#2563eb] via-[#4f46e5] to-[#7c3aed] bg-clip-text text-transparent">
-                    {data.titleAccent}
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="inline-flex items-center gap-2 rounded-full border border-white bg-white/80 px-3 py-1 text-[11px] font-bold tracking-[0.22em] text-slate-500 uppercase shadow-[0_8px_20px_-14px_rgba(37,80,130,0.4)]">
+            <Layers className="size-3.5 text-[#2563eb]" aria-hidden />
+            {data.eyebrow}
+          </p>
+          <h2 className="font-heading mt-3 text-[clamp(1.7rem,3.6vw,3.15rem)] leading-[1.12] font-extrabold tracking-[-0.045em] text-slate-950">
+            {data.title}{" "}
+            {data.titleAccent ? (
+              <span className="bg-gradient-to-r from-[#2563eb] via-[#4f46e5] to-[#7c3aed] bg-clip-text text-transparent">
+                {data.titleAccent}
+              </span>
+            ) : null}
+          </h2>
+          <p className="mt-3 text-[15px] leading-relaxed text-slate-600 sm:text-[16px]">
+            {data.description}
+          </p>
+        </div>
+
+        <div className="mt-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <ul className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 lg:justify-start">
+            {chips.map((item, index) => {
+              const Icon = item.icon;
+              return (
+                <li key={item.id} className="flex items-center gap-3">
+                  {index > 0 ? (
+                    <span
+                      aria-hidden
+                      className="hidden h-4 w-px bg-slate-200 sm:block"
+                    />
+                  ) : null}
+                  <span className="inline-flex items-center gap-2 text-[13px] font-semibold text-slate-700">
+                    <Icon className="size-4 text-[#2563eb]" aria-hidden />
+                    {item.label}
                   </span>
-                </>
-              ) : null}
-            </h2>
-          </div>
-          <div className="mt-4 flex w-full max-w-[40rem] flex-col items-center lg:mt-0 lg:max-w-[28rem] lg:items-end lg:text-right">
-            <p className="text-[15px] leading-relaxed text-slate-600 sm:text-[16.5px] lg:text-[17px]">
-              {data.description}
-            </p>
-            <div className="mt-5 inline-flex items-center rounded-full border border-white/85 bg-white/90 p-1 shadow-[0_10px_28px_rgba(37,80,130,0.12)]">
+                </li>
+              );
+            })}
+          </ul>
+
+          <div className="flex flex-wrap items-center justify-center gap-2 lg:justify-end">
+            <div className="inline-flex items-center rounded-full border border-slate-200 bg-white p-1 shadow-[0_10px_24px_-16px_rgba(37,80,130,0.4)]">
               <button
                 type="button"
-                title={data.annualToggleLabel || "Annually"}
-                onClick={() => setBilling("annually")}
-                className={cn(
-                  "rounded-full px-4 py-2 text-[13px] font-semibold whitespace-nowrap transition",
-                  billing === "annually"
-                    ? "bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-white shadow-[0_8px_18px_rgba(79,70,229,0.28)]"
-                    : "text-slate-600 hover:text-slate-950",
-                )}
-              >
-                Annually
-              </button>
-              <button
-                type="button"
-                title={data.monthlyToggleLabel || "Monthly"}
                 onClick={() => setBilling("monthly")}
                 className={cn(
-                  "rounded-full px-4 py-2 text-[13px] font-semibold whitespace-nowrap transition",
+                  "rounded-full px-4 py-2 text-[13px] font-semibold transition",
                   billing === "monthly"
-                    ? "bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-white shadow-[0_8px_18px_rgba(79,70,229,0.28)]"
-                    : "text-slate-600 hover:text-slate-950",
+                    ? "bg-slate-100 text-slate-950"
+                    : "text-slate-500 hover:text-slate-900",
                 )}
               >
-                Monthly
+                {data.monthlyToggleLabel || "Monthly"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setBilling("annually")}
+                className={cn(
+                  "rounded-full px-4 py-2 text-[13px] font-semibold transition",
+                  billing === "annually"
+                    ? "bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-white shadow-[0_8px_16px_rgba(79,70,229,0.28)]"
+                    : "text-slate-500 hover:text-slate-900",
+                )}
+              >
+                {data.annualToggleLabel || "Annually"}
               </button>
             </div>
+            {data.saveBadge ? (
+              <span className="rounded-full bg-emerald-50 px-3 py-1.5 text-[12px] font-extrabold text-emerald-600">
+                {data.saveBadge}
+              </span>
+            ) : null}
           </div>
         </div>
 
-        {trust.length > 0 ? (
-          <div className="mt-8 overflow-hidden rounded-full border border-white/80 bg-white/75 shadow-[0_10px_40px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-2xl sm:mt-10">
-            <div className="flex [scrollbar-width:none] items-center gap-3 overflow-x-auto px-4 py-3 sm:gap-0 sm:overflow-visible sm:px-5 lg:justify-between [&::-webkit-scrollbar]:hidden">
-              {trust.map((item, index) => (
-                <div key={item.id} className="flex shrink-0 items-center">
-                  {index > 0 ? (
-                    <div
-                      aria-hidden
-                      className="mx-2 hidden h-7 w-px bg-[#8eb8de]/50 sm:mx-3 sm:block lg:mx-4"
-                    />
-                  ) : null}
-                  <div className="flex items-center gap-2.5">
-                    <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-[#d6e8f8] text-[#2563eb]">
-                      {item.icon}
-                    </span>
-                    <p className="text-[12px] font-bold text-slate-900 sm:text-[13px]">
-                      {item.label}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : null}
-
-        <div className="mt-6 grid grid-cols-1 items-stretch gap-4 sm:mt-8 sm:grid-cols-2 xl:mt-8 xl:grid-cols-4 xl:items-end xl:gap-5">
+        <div className="mt-7 grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-4 xl:gap-4">
           {plans.map((plan, index) => (
             <PlanCard
               key={plan.id}
@@ -368,6 +305,29 @@ export function HostingPlansSection({
             />
           ))}
         </div>
+
+        {guarantees.length > 0 ? (
+          <div className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {guarantees.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-start gap-3 rounded-[22px] border border-white bg-white/90 px-4 py-4 shadow-[0_14px_36px_-28px_rgba(37,80,130,0.45)]"
+              >
+                <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-[#eef4ff] text-[#2563eb]">
+                  <GuaranteeIcon icon={item.icon} className="size-5" />
+                </span>
+                <span>
+                  <span className="block text-[14px] leading-snug font-extrabold text-slate-950">
+                    {item.title}
+                  </span>
+                  <span className="mt-1 block text-[12.5px] leading-snug text-slate-500">
+                    {item.description}
+                  </span>
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : null}
       </div>
     </section>
   );

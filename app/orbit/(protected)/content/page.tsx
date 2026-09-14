@@ -1005,6 +1005,32 @@ export default function OrbitContentPage() {
             }
           />
           <Field
+            label="Uptime label"
+            value={sections.hostingPlans?.uptimeLabel ?? ""}
+            onChange={(value) =>
+              setSections({
+                ...sections,
+                hostingPlans: {
+                  ...sections.hostingPlans,
+                  uptimeLabel: value,
+                },
+              })
+            }
+          />
+          <Field
+            label="Save badge (next to billing toggle)"
+            value={sections.hostingPlans?.saveBadge ?? ""}
+            onChange={(value) =>
+              setSections({
+                ...sections,
+                hostingPlans: {
+                  ...sections.hostingPlans,
+                  saveBadge: value,
+                },
+              })
+            }
+          />
+          <Field
             label="Annual toggle helper text"
             value={sections.hostingPlans?.annualToggleLabel ?? ""}
             onChange={(value) =>
@@ -1076,16 +1102,19 @@ export default function OrbitContentPage() {
                     visible: true,
                     order: plans.length,
                     name: "New Plan",
-                    discountBadge: "50% OFF",
+                    tagline: "Short plan description.",
+                    discountBadge: "70% OFF",
                     popular: false,
                     popularLabel: "",
                     accent: "blue",
                     priceAnnually: "$0.00",
                     originalAnnually: "$0.00",
                     billedAnnually: "Billed annually",
+                    saveAnnually: "",
                     priceMonthly: "$0.00",
                     originalMonthly: "",
                     billedMonthly: "Billed monthly",
+                    saveMonthly: "",
                     features: ["Feature 1"],
                     ctaLabel: "Get Started",
                     ctaHref: "/get-started",
@@ -1120,12 +1149,17 @@ export default function OrbitContentPage() {
                   }}
                 />
                 <Field
-                  label="Icon (shield / lock / rocket)"
+                  label="Icon (shield / lock / rocket / globe / headphones)"
                   value={item.icon}
                   onChange={(value) => {
                     const guarantees = [...sections.hostingPlans.guarantees];
                     const icon: CmsHostingGuarantee["icon"] =
-                      value === "lock" || value === "rocket" ? value : "shield";
+                      value === "lock" ||
+                      value === "rocket" ||
+                      value === "globe" ||
+                      value === "headphones"
+                        ? value
+                        : "shield";
                     guarantees[index] = { ...guarantees[index], icon };
                     setSections({
                       ...sections,
@@ -1715,6 +1749,11 @@ function HostingPlanEditor({
           onChange={(value) => onChange({ name: value })}
         />
         <Field
+          label="Tagline"
+          value={plan.tagline}
+          onChange={(value) => onChange({ tagline: value })}
+        />
+        <Field
           label="Discount badge"
           value={plan.discountBadge}
           onChange={(value) => onChange({ discountBadge: value })}
@@ -1750,6 +1789,11 @@ function HostingPlanEditor({
           onChange={(value) => onChange({ billedAnnually: value })}
         />
         <Field
+          label="Annual save text"
+          value={plan.saveAnnually}
+          onChange={(value) => onChange({ saveAnnually: value })}
+        />
+        <Field
           label="Monthly price /mo"
           value={plan.priceMonthly}
           onChange={(value) => onChange({ priceMonthly: value })}
@@ -1763,6 +1807,11 @@ function HostingPlanEditor({
           label="Billed monthly text"
           value={plan.billedMonthly}
           onChange={(value) => onChange({ billedMonthly: value })}
+        />
+        <Field
+          label="Monthly save text"
+          value={plan.saveMonthly}
+          onChange={(value) => onChange({ saveMonthly: value })}
         />
         <Field
           label="CTA text"
