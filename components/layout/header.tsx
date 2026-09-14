@@ -47,7 +47,7 @@ function BeyondAiNavLink({
       href={href}
       onClick={onClick}
       className={cn(
-        "hb-ai-nav inline-flex items-center justify-center gap-1.5 rounded-full border border-white/80 bg-white/50 font-bold tracking-[-0.02em] whitespace-nowrap text-slate-900 shadow-[0_8px_22px_rgba(79,70,229,0.16),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl",
+        "hb-ai-nav inline-flex items-center justify-center gap-1.5 rounded-full border border-violet-200/80 bg-white font-bold tracking-[-0.02em] whitespace-nowrap text-slate-950 shadow-[0_8px_22px_rgba(79,70,229,0.12),inset_0_1px_0_rgba(255,255,255,1)]",
         compact
           ? "h-11 w-full px-3 text-[15px]"
           : "h-8 px-3 text-[13px] xl:h-9 xl:px-3.5 xl:text-[14px]",
@@ -113,7 +113,7 @@ function NavDropdown({
         type="button"
         className={cn(
           "inline-flex items-center gap-1 text-[15px] font-bold tracking-[-0.015em] whitespace-nowrap transition-colors duration-150 xl:text-[16px]",
-          megaOpen ? "text-slate-950" : "text-slate-800 hover:text-slate-950",
+          megaOpen ? "text-slate-950" : "text-slate-900 hover:text-slate-950",
         )}
         aria-expanded={Boolean(megaOpen)}
         aria-controls={
@@ -141,7 +141,7 @@ function NavDropdown({
       <Link
         href={item.href}
         onMouseEnter={onDismissMega}
-        className="text-[15px] font-bold tracking-[-0.015em] whitespace-nowrap text-slate-800 transition-colors duration-150 hover:text-slate-950 xl:text-[16px]"
+        className="text-[15px] font-bold tracking-[-0.015em] whitespace-nowrap text-slate-900 transition-colors duration-150 hover:text-slate-950 xl:text-[16px]"
       >
         {label}
       </Link>
@@ -160,7 +160,7 @@ function NavDropdown({
     >
       <button
         type="button"
-        className="inline-flex items-center gap-1 text-[15px] font-bold tracking-[-0.015em] whitespace-nowrap text-slate-800 transition-colors duration-150 hover:text-slate-950 xl:text-[16px]"
+        className="inline-flex items-center gap-1 text-[15px] font-bold tracking-[-0.015em] whitespace-nowrap text-slate-900 transition-colors duration-150 hover:text-slate-950 xl:text-[16px]"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
       >
@@ -321,7 +321,7 @@ export function SiteHeader({
     <header className="relative z-50 w-full shrink-0 bg-transparent pt-2.5 pb-1 sm:pt-4">
       <div className="hb-shell">
         <div className="relative">
-          <div className="mx-auto flex h-[56px] w-full items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 shadow-[0_10px_40px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-2xl sm:h-[70px] sm:gap-3 sm:px-5 lg:px-6">
+          <div className="mx-auto flex h-[56px] w-full items-center gap-2 rounded-full border border-white/90 bg-white/[0.92] px-3 shadow-[0_12px_40px_rgba(15,23,42,0.14),inset_0_1px_0_rgba(255,255,255,1)] backdrop-blur-2xl backdrop-saturate-150 sm:h-[70px] sm:gap-3 sm:px-5 lg:px-6">
             <div className="min-w-0 flex-1 lg:min-w-[210px] lg:flex-none xl:min-w-[270px]">
               <Logo
                 src="/logo/hostingbeyond-logo-v5.png"

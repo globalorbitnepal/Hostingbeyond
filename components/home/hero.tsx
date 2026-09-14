@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useMemo, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { ArrowRight, ChevronDown, Search } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
@@ -19,6 +19,7 @@ const FALLBACK_TEASERS = [
 ] as const;
 
 const SCENE_SRC = "/images/hero-speaker-scene-v3.png";
+const TYPING_COPY = "Find the perfect domain for your brand";
 
 function SceneImage({ src, className }: { src?: string; className?: string }) {
   const imageSrc = src?.trim() || SCENE_SRC;
@@ -29,15 +30,56 @@ function SceneImage({ src, className }: { src?: string; className?: string }) {
       fill
       priority
       unoptimized
-      sizes="(max-width: 1024px) 100vw, 70vw"
-      className={cn("scale-[1.04] object-cover object-[50%_6%]", className)}
+      sizes="(max-width: 1024px) 100vw, 72vw"
+      className={cn(
+        "scale-[1.1] object-cover object-[48%_10%] contrast-[1.06] saturate-[1.12]",
+        className,
+      )}
     />
   );
+}
+
+function useTypedPlaceholder(active: boolean, reduce: boolean | null) {
+  const [text, setText] = useState(reduce ? TYPING_COPY : "");
+
+  useEffect(() => {
+    if (!active) return;
+    if (reduce) {
+      setText(TYPING_COPY);
+      return;
+    }
+    let i = 0;
+    let direction: "type" | "hold" | "delete" = "type";
+    let hold = 0;
+    const tick = window.setInterval(() => {
+      if (direction === "type") {
+        i += 1;
+        setText(TYPING_COPY.slice(0, i));
+        if (i >= TYPING_COPY.length) direction = "hold";
+        return;
+      }
+      if (direction === "hold") {
+        hold += 1;
+        if (hold > 18) {
+          hold = 0;
+          direction = "delete";
+        }
+        return;
+      }
+      i = Math.max(0, i - 2);
+      setText(TYPING_COPY.slice(0, i));
+      if (i === 0) direction = "type";
+    }, 55);
+    return () => window.clearInterval(tick);
+  }, [active, reduce]);
+
+  return text;
 }
 
 export function HeroSection({ content }: { content?: CmsHeroContent }) {
   const reduceMotion = useReducedMotion();
   const [domain, setDomain] = useState("");
+  const typed = useTypedPlaceholder(!domain.trim(), reduceMotion);
 
   const eyebrow = content?.eyebrow || "SIMPLE • SECURE • SCALABLE";
   const headline = content?.headline || "Host Your Ideas";
@@ -48,8 +90,6 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
   const description =
     content?.description ||
     "Reliable hosting, powerful infrastructure and the freedom to build what's next.";
-  const searchPlaceholder =
-    content?.searchPlaceholder || "Find your perfect domain name...";
   const searchButtonLabel = content?.searchButtonLabel || "Search";
 
   const teasers = useMemo(() => {
@@ -97,7 +137,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
       {/* Desktop scene — zoom locked */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 z-[1] hidden overflow-hidden lg:inset-y-0 lg:top-0 lg:right-0 lg:bottom-[58px] lg:left-[38%] lg:block xl:left-[36%]"
+        className="pointer-events-none absolute inset-x-0 top-0 z-[1] hidden overflow-hidden lg:inset-y-0 lg:top-0 lg:right-0 lg:bottom-0 lg:left-[22%] lg:block xl:left-[20%]"
       >
         <motion.div
           initial={reduceMotion ? false : { opacity: 0 }}
@@ -106,23 +146,20 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
           className="absolute inset-0"
           style={{
             WebkitMaskImage:
-              "linear-gradient(to right, transparent 0%, #000 5.5%, #000 93%, transparent 100%), linear-gradient(to bottom, transparent 0%, #000 6%, #000 100%)",
-            WebkitMaskComposite: "source-in",
+              "linear-gradient(to right, transparent 0%, #000 34%, #000 100%)",
             maskImage:
-              "linear-gradient(to right, transparent 0%, #000 5.5%, #000 93%, transparent 100%), linear-gradient(to bottom, transparent 0%, #000 6%, #000 100%)",
-            maskComposite: "intersect",
+              "linear-gradient(to right, transparent 0%, #000 34%, #000 100%)",
           }}
         >
           <SceneImage src={sceneSrc} />
         </motion.div>
-        <div className="absolute inset-y-0 left-0 z-[2] w-[4%] bg-gradient-to-r from-[#673de6] from-[30%] to-transparent" />
-        <div className="absolute inset-x-0 top-0 z-[2] h-[3%] bg-gradient-to-b from-[#6d28d9] from-[35%] to-transparent" />
-        <div className="absolute inset-y-0 right-0 z-[2] w-[1.2%] bg-gradient-to-l from-[#673de6] to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 z-[2] h-[4%] bg-gradient-to-t from-[#673de6] via-[#673de6]/30 to-transparent" />
+        <div className="absolute inset-y-0 left-0 z-[2] w-[42%] bg-gradient-to-r from-[#673de6] from-[8%] via-[#673de6]/78 to-transparent" />
+        <div className="absolute inset-x-0 top-0 z-[2] h-[10%] bg-gradient-to-b from-[#6d28d9]/55 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 z-[2] h-[22%] bg-gradient-to-t from-[#673de6] via-[#673de6]/55 to-transparent" />
       </div>
 
-      <div className="hb-shell relative z-20 grid w-full flex-1 grid-cols-1 pt-3 pb-3 sm:pt-2 lg:grid-cols-[minmax(0,0.42fr)_minmax(0,0.58fr)] lg:items-center lg:gap-6 lg:pb-2 xl:grid-cols-[minmax(0,0.4fr)_minmax(0,0.6fr)]">
-        <div className="relative w-full min-w-0 self-center lg:pb-6">
+      <div className="hb-shell relative z-20 grid w-full flex-1 grid-cols-1 overflow-visible pt-3 pb-3 sm:pt-2 lg:grid-cols-[minmax(0,0.48fr)_minmax(0,0.52fr)] lg:items-center lg:gap-4 lg:pb-2 xl:grid-cols-[minmax(0,0.46fr)_minmax(0,0.54fr)]">
+        <div className="relative z-30 w-full min-w-0 self-center overflow-visible lg:max-w-none lg:pb-6">
           <motion.p
             initial={reduceMotion ? false : { opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -155,28 +192,25 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
             initial={reduceMotion ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.12 }}
-            className="mt-5 flex w-full flex-col gap-1.5 rounded-[22px] border border-white/25 bg-white/15 p-2 shadow-[0_14px_40px_rgba(15,23,42,0.18)] backdrop-blur-xl sm:flex-row sm:items-center sm:gap-1.5 sm:rounded-full sm:p-1.5"
+            className="relative z-30 mt-6 flex w-full max-w-none flex-col gap-2 rounded-[28px] border border-white/40 bg-white/22 p-2.5 shadow-[0_22px_60px_rgba(15,23,42,0.24)] backdrop-blur-2xl sm:flex-row sm:items-center sm:gap-2 sm:rounded-full sm:p-2 lg:w-[min(158%,54rem)] xl:w-[min(170%,58rem)]"
           >
-            <div className="flex min-w-0 flex-1 items-center gap-2 px-2 sm:px-3">
-              <Search
-                className="size-[18px] shrink-0 text-white/70"
-                aria-hidden
-              />
+            <div className="flex min-w-0 flex-1 items-center gap-2.5 px-3 sm:px-4">
+              <Search className="size-5 shrink-0 text-white/80" aria-hidden />
               <input
                 value={domain}
                 onChange={(e) => setDomain(e.target.value)}
-                placeholder={searchPlaceholder}
-                aria-label={searchPlaceholder}
-                className="min-w-0 flex-1 bg-transparent py-2 text-[14px] text-white outline-none placeholder:text-white/55 sm:py-0 sm:text-[15px]"
+                placeholder={reduceMotion ? TYPING_COPY : `${typed}|`}
+                aria-label={TYPING_COPY}
+                className="min-w-0 flex-1 bg-transparent py-2.5 text-[15px] text-white outline-none placeholder:text-white/70 sm:py-1 sm:text-[16px]"
               />
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <label className="relative min-w-0 flex-1 sm:flex-none">
                 <span className="sr-only">Domain extension</span>
                 <select
                   value={tld}
                   onChange={(e) => setTld(e.target.value)}
-                  className="h-11 w-full appearance-none rounded-full border border-white/20 bg-white py-0 pr-8 pl-3 text-[13px] font-semibold text-slate-800 outline-none sm:h-10 sm:w-auto"
+                  className="h-12 w-full appearance-none rounded-full border border-white/20 bg-white py-0 pr-9 pl-4 text-[14px] font-semibold text-slate-800 outline-none sm:h-12 sm:w-auto"
                 >
                   {tldChoices.map((option) => (
                     <option key={option} value={option}>
@@ -185,13 +219,13 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
                   ))}
                 </select>
                 <ChevronDown
-                  className="pointer-events-none absolute top-1/2 right-2.5 size-3.5 -translate-y-1/2 text-slate-400"
+                  className="pointer-events-none absolute top-1/2 right-3 size-3.5 -translate-y-1/2 text-slate-400"
                   aria-hidden
                 />
               </label>
               <button
                 type="submit"
-                className="inline-flex h-11 flex-1 items-center justify-center gap-1.5 rounded-full bg-white px-4 text-[13.5px] font-semibold text-slate-950 shadow-[0_10px_24px_rgba(15,23,42,0.18)] transition hover:bg-white/90 sm:h-10 sm:flex-none sm:px-5"
+                className="inline-flex h-12 flex-1 items-center justify-center gap-1.5 rounded-full bg-white px-5 text-[14.5px] font-bold text-slate-950 shadow-[0_10px_24px_rgba(15,23,42,0.18)] transition hover:bg-white/90 sm:flex-none sm:px-6"
               >
                 {searchButtonLabel}
                 <ArrowRight className="size-4" aria-hidden />
@@ -252,12 +286,10 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
           className="relative mt-5 w-full lg:hidden"
           aria-hidden
         >
-          <div className="relative aspect-[5/4] w-full overflow-hidden rounded-[22px] sm:rounded-[28px]">
+          <div className="relative aspect-[5/4] w-full overflow-hidden">
             <SceneImage src={sceneSrc} />
-            <div className="pointer-events-none absolute inset-y-0 left-0 w-[12%] bg-gradient-to-r from-[#673de6] to-transparent" />
-            <div className="pointer-events-none absolute inset-y-0 right-0 w-[10%] bg-gradient-to-l from-[#4c1d95] to-transparent" />
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-[10%] bg-gradient-to-b from-[#6d28d9] to-transparent" />
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[14%] bg-gradient-to-t from-[#4c1d95] to-transparent" />
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-[28%] bg-gradient-to-r from-[#673de6] to-transparent" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[22%] bg-gradient-to-t from-[#673de6] to-transparent" />
           </div>
         </motion.div>
 
