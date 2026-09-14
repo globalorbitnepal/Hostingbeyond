@@ -3060,7 +3060,8 @@ export function mergeHomeSections(
       if (!match) return fallback;
       const stale =
         /^web\s/i.test(match.name || "") ||
-        /50%\s*off/i.test(match.discountBadge || "");
+        !/70%\s*off/i.test(match.discountBadge || "") ||
+        /save\s*50%/i.test(match.discountBadge || "");
       if (stale) {
         return {
           ...fallback,
@@ -3436,6 +3437,12 @@ export function mergeHomeSections(
       saveBadge:
         stored.hostingPlans?.saveBadge?.trim() ||
         defaults.hostingPlans.saveBadge,
+      annualToggleLabel: /50%/.test(
+        stored.hostingPlans?.annualToggleLabel || "",
+      )
+        ? defaults.hostingPlans.annualToggleLabel
+        : stored.hostingPlans?.annualToggleLabel?.trim() ||
+          defaults.hostingPlans.annualToggleLabel,
       defaultBilling:
         stored.hostingPlans?.defaultBilling === "monthly"
           ? "monthly"
