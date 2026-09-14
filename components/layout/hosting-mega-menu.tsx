@@ -12,6 +12,8 @@ type HostingItem = {
   description: string;
   logo: string;
   logoAlt: string;
+  tile: string;
+  fit?: "cover" | "wide";
 };
 
 const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
@@ -26,6 +28,7 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
           "Fast nginx-powered sites with SSL, backups and 24/7 support.",
         logo: "/images/nav-brands/nginx.svg",
         logoAlt: "NGINX",
+        tile: "bg-[#ecfdf3]",
       },
       {
         href: routes.cloud,
@@ -33,6 +36,7 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         description: "Scale on Docker-ready cloud nodes when traffic jumps.",
         logo: "/images/nav-brands/docker.svg",
         logoAlt: "Docker",
+        tile: "bg-[#eff6ff]",
       },
       {
         href: `${routes.hosting}/wordpress`,
@@ -40,6 +44,7 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         description: "Official WordPress stack, tuned for speed and updates.",
         logo: "/images/nav-brands/wordpress.svg",
         logoAlt: "WordPress",
+        tile: "bg-[#e8f4f8]",
       },
       {
         href: `${routes.hosting}/ecommerce`,
@@ -47,6 +52,7 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         description: "WooCommerce-ready checkout with NVMe and free SSL.",
         logo: "/images/nav-brands/woocommerce.svg",
         logoAlt: "WooCommerce",
+        tile: "bg-[#f3e8ff]",
       },
     ],
   },
@@ -60,6 +66,7 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         description: "Run Python apps with the official CPython runtime.",
         logo: "/images/nav-brands/python.svg",
         logoAlt: "Python",
+        tile: "bg-[#eff6ff]",
       },
       {
         href: `${routes.hosting}?stack=nodejs`,
@@ -67,6 +74,7 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         description: "Native Node.js for APIs, Next.js and realtime apps.",
         logo: "/images/nav-brands/nodedotjs.svg",
         logoAlt: "Node.js",
+        tile: "bg-[#ecfdf3]",
       },
       {
         href: `${routes.hosting}?stack=nestjs`,
@@ -74,6 +82,7 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         description: "Production NestJS servers with Node.js and TypeScript.",
         logo: "/images/nav-brands/nestjs.svg",
         logoAlt: "NestJS",
+        tile: "bg-[#fff1f2]",
       },
       {
         href: `${routes.hosting}?stack=django`,
@@ -81,6 +90,7 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         description: "Django projects on Linux with Python, SSL and backups.",
         logo: "/images/nav-brands/django.svg",
         logoAlt: "Django",
+        tile: "bg-[#ecfdf5]",
       },
     ],
   },
@@ -94,6 +104,8 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         description: "Low-latency KVM instances in European data centers.",
         logo: "/images/nav-brands/europe-flag.svg",
         logoAlt: "European Union",
+        tile: "bg-[#003399]",
+        fit: "cover",
       },
       {
         href: `${routes.vps}?storage=nvme`,
@@ -101,6 +113,7 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         description: "NVMe Express storage for databases and heavy I/O.",
         logo: "/images/nav-brands/nvme.svg",
         logoAlt: "NVMe Express",
+        tile: "bg-[#0B1F33]",
       },
       {
         href: `${routes.vps}?hypervisor=kvm`,
@@ -108,6 +121,7 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         description: "Full-root KVM virtualization with Linux or your ISO.",
         logo: "/images/nav-brands/proxmox.svg",
         logoAlt: "Proxmox",
+        tile: "bg-[#fff7ed]",
       },
     ],
   },
@@ -121,6 +135,8 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         description: "White-label plans with cPanel to grow your own clients.",
         logo: "/images/nav-brands/cpanel.svg",
         logoAlt: "cPanel",
+        tile: "bg-[#fff7ed]",
+        fit: "wide",
       },
       {
         href: `${routes.hosting}?panel=plesk`,
@@ -129,6 +145,8 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
           "Plesk for teams that want WordPress and mail in one panel.",
         logo: "/images/nav-brands/plesk.svg",
         logoAlt: "Plesk",
+        tile: "bg-[#ecfeff]",
+        fit: "wide",
       },
       {
         href: `${routes.vps}?os=linux`,
@@ -136,6 +154,7 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         description: "Tux-native Linux VPS and cloud nodes, ready in minutes.",
         logo: "/images/nav-brands/linux.svg",
         logoAlt: "Linux",
+        tile: "bg-[#0f172a]",
       },
     ],
   },
@@ -174,14 +193,26 @@ export function HostingMegaMenu({
                     onClick={onNavigate}
                     className="group flex items-start gap-3 rounded-2xl px-2 py-2.5 transition hover:bg-slate-50"
                   >
-                    <span className="mt-0.5 inline-flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white shadow-[0_6px_14px_-8px_rgba(15,23,42,0.35)] ring-1 ring-slate-200/90">
+                    <span
+                      className={cn(
+                        "mt-0.5 inline-flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full shadow-[0_8px_16px_-10px_rgba(15,23,42,0.4)] ring-1 ring-slate-200/80",
+                        item.tile,
+                      )}
+                    >
                       <Image
-                        src={item.logo}
+                        src={`${item.logo}?v=logo2`}
                         alt={item.logoAlt}
-                        width={28}
-                        height={28}
+                        width={40}
+                        height={40}
                         unoptimized
-                        className="h-[30px] w-[30px] object-contain"
+                        className={cn(
+                          "object-contain",
+                          item.fit === "cover"
+                            ? "h-full w-full object-cover"
+                            : item.fit === "wide"
+                              ? "h-[18px] w-[30px]"
+                              : "h-[28px] w-[28px]",
+                        )}
                       />
                     </span>
                     <span className="min-w-0">
