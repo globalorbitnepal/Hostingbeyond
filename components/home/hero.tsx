@@ -31,7 +31,7 @@ function SceneImage({ src, className }: { src?: string; className?: string }) {
       priority
       unoptimized
       sizes="100vw"
-      className={cn("object-cover object-[68%_38%]", className)}
+      className={cn("object-cover object-[64%_36%]", className)}
     />
   );
 }
@@ -137,7 +137,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
           initial={reduceMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.55 }}
-          className="absolute inset-y-0 right-0 left-[16%] xl:left-[12%]"
+          className="absolute inset-y-0 right-0 left-[28%] xl:left-[24%]"
         >
           <SceneImage src={sceneSrc} />
         </motion.div>

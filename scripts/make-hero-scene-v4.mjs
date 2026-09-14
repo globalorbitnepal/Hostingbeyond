@@ -44,15 +44,15 @@ for (let y = 0; y < h; y++) {
     const nx = x / (w - 1);
     const ny = y / (h - 1);
 
-    const speaker = nx > 0.36 && nx < 0.93 && ny > 0.02 && ny < 0.9;
-    const leftMix = 1 - smoothstep(0.02, 0.3, nx);
-    const topMix = 1 - smoothstep(0.0, 0.1, ny);
-    const botMix = smoothstep(0.86, 1, ny);
-    const rightMix = smoothstep(0.94, 1, nx);
-    const cornerTL = (1 - smoothstep(0, 0.22, nx)) * (1 - smoothstep(0, 0.16, ny));
-    const cornerBR = smoothstep(0.88, 1, nx) * smoothstep(0.82, 1, ny);
+    const speaker = nx > 0.4 && nx < 0.94 && ny > 0.02 && ny < 0.9;
+    const leftMix = 1 - smoothstep(0.04, 0.42, nx);
+    const topMix = 1 - smoothstep(0.0, 0.09, ny);
+    const botMix = smoothstep(0.88, 1, ny);
+    const rightMix = smoothstep(0.95, 1, nx);
+    const cornerTL = (1 - smoothstep(0, 0.28, nx)) * (1 - smoothstep(0, 0.18, ny));
+    const cornerBR = smoothstep(0.9, 1, nx) * smoothstep(0.84, 1, ny);
 
-    let tint = Math.max(leftMix * 0.92, topMix * 0.55, botMix * 0.78, rightMix * 0.42);
+    let tint = Math.max(leftMix * 0.96, topMix * 0.5, botMix * 0.74, rightMix * 0.38);
     tint = Math.max(tint, cornerTL * 0.85, cornerBR * 0.5);
     if (speaker) tint *= 0.08;
 
@@ -63,7 +63,7 @@ for (let y = 0; y < h; y++) {
     if (tint > 0.01) [r, g, b] = mix(r, g, b, tint, bg);
 
     let alpha = 255;
-    const leftA = smoothstep(0.0, 0.16, nx);
+    const leftA = smoothstep(0.0, 0.22, nx);
     const topA = smoothstep(0.0, 0.07, ny);
     const botA = 1 - smoothstep(0.9, 1, ny);
     const rightA = 1 - smoothstep(0.97, 1, nx);
