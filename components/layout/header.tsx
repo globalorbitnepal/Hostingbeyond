@@ -10,6 +10,7 @@ import { routes } from "@/config/routes";
 import { CountryLanguageSelector } from "@/components/locale/country-language-selector";
 import { useLocale } from "@/components/locale/locale-provider";
 import { Logo } from "@/components/shared/logo";
+import { DomainsMegaMenu } from "@/components/layout/domains-mega-menu";
 import { cn } from "@/lib/utils";
 
 function localizeNavLabel(
@@ -60,9 +61,24 @@ function BeyondAiNavLink({
   );
 }
 
-function NavDropdown({ item, label }: { item: NavItem; label: string }) {
+function NavDropdown({
+  item,
+  label,
+  megaOpen,
+  onMegaOpen,
+  onMegaLeave,
+  onDismissMega,
+}: {
+  item: NavItem;
+  label: string;
+  megaOpen?: boolean;
+  onMegaOpen?: () => void;
+  onMegaLeave?: () => void;
+  onDismissMega?: () => void;
+}) {
   const [open, setOpen] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isDomains = item.label === "Domains";
 
   const clearClose = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -75,13 +91,45 @@ function NavDropdown({ item, label }: { item: NavItem; label: string }) {
   useEffect(() => () => clearClose(), []);
 
   if (item.label === "Beyond AI") {
-    return <BeyondAiNavLink href={item.href} />;
+    return (
+      <span onMouseEnter={onDismissMega}>
+        <BeyondAiNavLink href={item.href} />
+      </span>
+    );
+  }
+
+  if (isDomains && onMegaOpen) {
+    return (
+      <button
+        type="button"
+        className={cn(
+          "inline-flex items-center gap-1 text-[15px] font-bold tracking-[-0.015em] whitespace-nowrap transition-colors duration-150 xl:text-[16px]",
+          megaOpen ? "text-slate-950" : "text-slate-800 hover:text-slate-950",
+        )}
+        aria-expanded={Boolean(megaOpen)}
+        aria-controls="hb-domains-mega"
+        onMouseEnter={onMegaOpen}
+        onFocus={onMegaOpen}
+        onMouseLeave={onMegaLeave}
+        onClick={onMegaOpen}
+      >
+        {label}
+        <ChevronDown
+          className={cn(
+            "mt-px size-[14px] shrink-0 text-slate-500 transition-transform duration-200",
+            megaOpen && "rotate-180",
+          )}
+          aria-hidden
+        />
+      </button>
+    );
   }
 
   if (!item.children?.length) {
     return (
       <Link
         href={item.href}
+        onMouseEnter={onDismissMega}
         className="text-[15px] font-bold tracking-[-0.015em] whitespace-nowrap text-slate-800 transition-colors duration-150 hover:text-slate-950 xl:text-[16px]"
       >
         {label}
@@ -93,6 +141,7 @@ function NavDropdown({ item, label }: { item: NavItem; label: string }) {
     <div
       className="relative"
       onMouseEnter={() => {
+        onDismissMega?.();
         clearClose();
         setOpen(true);
       }}
@@ -180,6 +229,26 @@ export function SiteHeader({
   const { t, preferences } = useLocale();
   const [open, setOpen] = useState(false);
   const [mobileSection, setMobileSection] = useState<string | null>(null);
+  const [domainsMega, setDomainsMega] = useState(false);
+  const megaCloseRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const cancelMegaClose = () => {
+    if (megaCloseRef.current) clearTimeout(megaCloseRef.current);
+  };
+  const openDomainsMega = () => {
+    cancelMegaClose();
+    setDomainsMega(true);
+  };
+  const scheduleMegaClose = () => {
+    cancelMegaClose();
+    megaCloseRef.current = setTimeout(() => setDomainsMega(false), 180);
+  };
+  const dismissDomainsMega = () => {
+    cancelMegaClose();
+    setDomainsMega(false);
+  };
+
+  useEffect(() => () => cancelMegaClose(), []);
 
   const resolvedLogin =
     preferences.language === "en" ? loginLabel || "Login" : t.nav.login;
@@ -216,6 +285,15 @@ export function SiteHeader({
   })();
 
   useEffect(() => {
+    if (!domainsMega) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") dismissDomainsMega();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [domainsMega]);
+
+  useEffect(() => {
     if (!open) return;
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
@@ -230,7 +308,7 @@ export function SiteHeader({
 
   return (
     <header className="relative z-50 w-full shrink-0 bg-transparent pt-2.5 pb-1 sm:pt-4">
-      <div className="hb-shell">
+      <div className="hb-shell relative">
         <div className="mx-auto flex h-[56px] w-full items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 shadow-[0_10px_40px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-2xl sm:h-[70px] sm:gap-3 sm:px-5 lg:px-6">
           <div className="min-w-0 flex-1 lg:min-w-[210px] lg:flex-none xl:min-w-[270px]">
             <Logo
@@ -249,6 +327,16 @@ export function SiteHeader({
                 key={item.label}
                 item={item}
                 label={localizeNavLabel(item.label, t.nav)}
+                megaOpen={item.label === "Domains" ? domainsMega : false}
+                onMegaOpen={
+                  item.label === "Domains" ? openDomainsMega : undefined
+                }
+                onMegaLeave={
+                  item.label === "Domains" ? scheduleMegaClose : undefined
+                }
+                onDismissMega={
+                  item.label === "Domains" ? undefined : dismissDomainsMega
+                }
               />
             ))}
           </nav>
@@ -286,6 +374,23 @@ export function SiteHeader({
             </button>
           </div>
         </div>
+
+        <AnimatePresence>
+          {domainsMega ? (
+            <motion.div
+              id="hb-domains-mega"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 6 }}
+              transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute top-[calc(100%-2px)] right-0 left-0 z-40 hidden pt-3 lg:block"
+              onMouseEnter={openDomainsMega}
+              onMouseLeave={scheduleMegaClose}
+            >
+              <DomainsMegaMenu onNavigate={dismissDomainsMega} />
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
       </div>
 
       <AnimatePresence>
@@ -305,7 +410,8 @@ export function SiteHeader({
               >
                 {filteredNav.map((item) => {
                   const label = localizeNavLabel(item.label, t.nav);
-                  const hasChildren = Boolean(item.children?.length);
+                  const hasChildren =
+                    Boolean(item.children?.length) || item.label === "Domains";
                   return (
                     <div key={item.label}>
                       {hasChildren ? (
@@ -334,18 +440,30 @@ export function SiteHeader({
                                 animate={{ height: "auto", opacity: 1 }}
                                 exit={{ height: 0, opacity: 0 }}
                                 transition={{ duration: 0.15 }}
-                                className="overflow-hidden pl-4"
+                                className={cn(
+                                  "overflow-hidden",
+                                  item.label === "Domains"
+                                    ? "px-1 pb-3"
+                                    : "pl-4",
+                                )}
                               >
-                                {item.children!.map((child) => (
-                                  <Link
-                                    key={child.href}
-                                    href={child.href}
-                                    className="block rounded-lg px-3 py-2.5 text-[13.5px] text-slate-600 hover:text-slate-950"
-                                    onClick={() => setOpen(false)}
-                                  >
-                                    {child.label}
-                                  </Link>
-                                ))}
+                                {item.label === "Domains" ? (
+                                  <DomainsMegaMenu
+                                    compact
+                                    onNavigate={() => setOpen(false)}
+                                  />
+                                ) : (
+                                  item.children!.map((child) => (
+                                    <Link
+                                      key={child.href}
+                                      href={child.href}
+                                      className="block rounded-lg px-3 py-2.5 text-[13.5px] text-slate-600 hover:text-slate-950"
+                                      onClick={() => setOpen(false)}
+                                    >
+                                      {child.label}
+                                    </Link>
+                                  ))
+                                )}
                               </motion.div>
                             ) : null}
                           </AnimatePresence>
