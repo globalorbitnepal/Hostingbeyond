@@ -18,7 +18,7 @@ const FALLBACK_TEASERS = [
   { tld: ".dev", priceLabel: "$3.99/yr", visible: true },
 ] as const;
 
-const SCENE_SRC = "/images/hero-speaker-scene-v3.png";
+const SCENE_SRC = "/images/hero-speaker-scene-v4.png";
 const TYPING_COPY = "Find the perfect domain for your brand";
 
 function SceneImage({ src, className }: { src?: string; className?: string }) {
@@ -30,11 +30,8 @@ function SceneImage({ src, className }: { src?: string; className?: string }) {
       fill
       priority
       unoptimized
-      sizes="(max-width: 1024px) 100vw, 72vw"
-      className={cn(
-        "scale-[1.1] object-cover object-[48%_10%] contrast-[1.06] saturate-[1.12]",
-        className,
-      )}
+      sizes="100vw"
+      className={cn("object-cover object-[68%_38%]", className)}
     />
   );
 }
@@ -118,10 +115,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
 
   const [tld, setTld] = useState(tldChoices[0] || ".com");
 
-  const sceneSrc =
-    content?.speakerImage?.trim() ||
-    content?.backgroundImage?.trim() ||
-    SCENE_SRC;
+  const sceneSrc = SCENE_SRC;
 
   const onSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -137,33 +131,16 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
       {/* Desktop scene — zoom locked */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 z-[1] hidden overflow-hidden lg:inset-y-0 lg:top-0 lg:right-0 lg:bottom-0 lg:left-[22%] lg:block xl:left-[20%]"
+        className="pointer-events-none absolute inset-0 z-[1] hidden overflow-hidden lg:block"
       >
         <motion.div
           initial={reduceMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.55 }}
-          className="absolute inset-0"
-          style={{
-            WebkitMaskImage:
-              "linear-gradient(to right, transparent 0%, #000 22%, #000 100%)",
-            maskImage:
-              "linear-gradient(to right, transparent 0%, #000 22%, #000 100%)",
-          }}
+          className="absolute inset-y-0 right-0 left-[16%] xl:left-[12%]"
         >
           <SceneImage src={sceneSrc} />
         </motion.div>
-        <div
-          className="absolute inset-y-0 left-0 z-[2] w-[38%]"
-          style={{
-            background:
-              "linear-gradient(90deg, #673de6 0%, rgba(103,61,230,0.72) 28%, rgba(103,61,230,0) 100%)",
-          }}
-        />
-        <div className="absolute inset-x-0 top-0 z-[2] h-[8%] bg-gradient-to-b from-[#6d28d9]/50 to-transparent" />
-        <div className="absolute top-0 right-0 z-[2] h-[20%] w-[24%] bg-gradient-to-bl from-[#6d28d9]/70 to-transparent" />
-        <div className="absolute inset-y-0 right-0 z-[2] w-[5%] bg-gradient-to-l from-[#6d28d9]/45 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 z-[2] h-[14%] bg-gradient-to-t from-[#4c1d95] via-[#673de6]/70 to-transparent" />
       </div>
 
       <div className="hb-shell relative z-20 grid w-full flex-1 grid-cols-1 overflow-visible pt-3 pb-3 sm:pt-2 lg:grid-cols-[minmax(0,0.48fr)_minmax(0,0.52fr)] lg:items-center lg:gap-4 lg:pb-2 xl:grid-cols-[minmax(0,0.46fr)_minmax(0,0.54fr)]">
@@ -294,10 +271,8 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
           className="relative mt-5 w-full lg:hidden"
           aria-hidden
         >
-          <div className="relative aspect-[5/4] w-full overflow-hidden">
-            <SceneImage src={sceneSrc} />
-            <div className="pointer-events-none absolute inset-y-0 left-0 w-[28%] bg-gradient-to-r from-[#673de6] to-transparent" />
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[22%] bg-gradient-to-t from-[#673de6] to-transparent" />
+          <div className="relative aspect-[16/10] w-full overflow-hidden">
+            <SceneImage src={sceneSrc} className="object-[60%_35%]" />
           </div>
         </motion.div>
 
