@@ -2351,8 +2351,8 @@ export function defaultHomeSections(): CmsHomeSections {
       searchPlaceholder: "Find your perfect domain name...",
       searchButtonLabel: "Search",
       bulkSearchLabel: "Bulk Search",
-      backgroundImage: "/images/hero-speaker-scene-v4.png",
-      speakerImage: "/images/hero-speaker-scene-v4.png",
+      backgroundImage: "/images/hero-speaker-scene-v5.png",
+      speakerImage: "/images/hero-speaker-scene-v5.png",
       glassPanelLeft: "Ideas\nHost\nGrow\nBeyond",
       glassPanelRight: "Global Infrastructure for a Brighter Tomorrow",
       domainPricing: [
