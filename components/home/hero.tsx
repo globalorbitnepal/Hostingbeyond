@@ -244,13 +244,13 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
           initial={reduceMotion ? false : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.14 }}
-          className="relative mt-4 aspect-[16/9] w-full lg:hidden"
+          className="relative mt-4 -mr-[var(--hb-shell-pad)] -ml-[var(--hb-shell-pad)] aspect-[5/4] w-[calc(100%+2*var(--hb-shell-pad))] lg:hidden"
           aria-hidden
           style={{
             WebkitMaskImage:
-              "linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%)",
+              "linear-gradient(to bottom, transparent 0%, #000 10%, #000 90%, transparent 100%)",
             maskImage:
-              "linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%)",
+              "linear-gradient(to bottom, transparent 0%, #000 10%, #000 90%, transparent 100%)",
           }}
         >
           <Image
@@ -260,7 +260,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
             priority
             unoptimized
             sizes="100vw"
-            className="object-cover object-[74%_34%]"
+            className="scale-[1.15] object-cover object-[82%_26%]"
           />
         </motion.div>
       </div>
