@@ -67,7 +67,7 @@ export function HeroJourneySlider() {
   }, [reduce]);
 
   return (
-    <section className="relative z-20 pb-10 sm:pb-14">
+    <section className="relative z-20 bg-[#4c1d95] py-12 sm:py-16">
       <div className="hb-shell">
         <div className="mb-4 flex flex-wrap justify-center gap-2">
           {slides.map((slide, slideIndex) => (

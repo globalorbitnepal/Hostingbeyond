@@ -115,10 +115,10 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
         >
           <SceneImage src={sceneSrc} />
         </motion.div>
-        <div className="absolute inset-y-0 left-0 z-[2] w-[8%] bg-gradient-to-r from-[#673de6] from-[20%] to-transparent" />
+        <div className="absolute inset-y-0 left-0 z-[2] w-[4%] bg-gradient-to-r from-[#673de6] from-[30%] to-transparent" />
         <div className="absolute inset-x-0 top-0 z-[2] h-[3%] bg-gradient-to-b from-[#6d28d9] from-[35%] to-transparent" />
-        <div className="absolute inset-y-0 right-0 z-[2] w-[1.2%] bg-gradient-to-l from-[#4c1d95] to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 z-[2] h-[8%] bg-gradient-to-t from-[#4c1d95] via-[#673de6]/40 to-transparent" />
+        <div className="absolute inset-y-0 right-0 z-[2] w-[1.2%] bg-gradient-to-l from-[#673de6] to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 z-[2] h-[4%] bg-gradient-to-t from-[#673de6] via-[#673de6]/30 to-transparent" />
       </div>
 
       <div className="hb-shell relative z-20 grid w-full flex-1 grid-cols-1 pt-3 pb-3 sm:pt-2 lg:grid-cols-[minmax(0,0.42fr)_minmax(0,0.58fr)] lg:items-center lg:gap-6 lg:pb-2 xl:grid-cols-[minmax(0,0.4fr)_minmax(0,0.6fr)]">
@@ -266,7 +266,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
 
       {/* Slim feature glass bar */}
       <div className="relative z-30 mt-auto shrink-0 pt-1 pb-4 sm:pb-4">
-        <div className="pointer-events-none absolute inset-x-0 -top-8 h-8 bg-gradient-to-b from-transparent to-[#4c1d95]/40" />
+        <div className="pointer-events-none absolute inset-x-0 -top-8 h-8 bg-gradient-to-b from-transparent to-[#673de6]/50" />
         <div className="hb-shell">
           <div className="relative w-full overflow-hidden rounded-[22px] border border-white/25 bg-white/92 shadow-[0_8px_24px_rgba(15,23,42,0.18)] backdrop-blur-xl lg:rounded-full">
             <div

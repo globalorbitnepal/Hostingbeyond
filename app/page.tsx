@@ -21,7 +21,7 @@ export default async function HomePage() {
 
   return (
     <div className="overflow-x-hidden bg-[#f6f2ff]">
-      <div className="bg-white">
+      <div className="hb-hero-hostinger relative flex min-h-0 flex-col lg:min-h-svh">
         <SiteHeader
           navigation={sections.navigation}
           loginLabel={settings.loginLabel}
@@ -30,11 +30,9 @@ export default async function HomePage() {
           getStartedHref={settings.getStartedHref}
           logoPath={settings.logoPath}
         />
-      </div>
-      <div className="hb-hero-hostinger relative flex min-h-0 flex-col">
         {sections.hero.visible ? <HeroSection content={sections.hero} /> : null}
-        <HeroJourneySlider />
       </div>
+      <HeroJourneySlider />
 
       {sections.solutions ? (
         <SolutionsSection content={sections.solutions} />
