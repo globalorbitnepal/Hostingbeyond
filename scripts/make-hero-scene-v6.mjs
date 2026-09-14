@@ -55,8 +55,34 @@ for (let y = 0; y < h; y++) {
   }
 }
 
-await sharp(data, { raw: { width: w, height: h, channels: ch } })
+const tinted = await sharp(data, { raw: { width: w, height: h, channels: ch } })
+  .png()
+  .toBuffer();
+
+/**
+ * Extra headroom above the cap: stretch the topmost row upward. Its colour
+ * equals the plate's first row, so the join is invisible.
+ */
+const padTop = Math.round(h * 0.04);
+const headroom = await sharp(tinted)
+  .extract({ left: 0, top: 0, width: w, height: 1 })
+  .resize(w, padTop, { fit: "fill" })
+  .png()
+  .toBuffer();
+
+await sharp({
+  create: {
+    width: w,
+    height: h + padTop,
+    channels: 4,
+    background: { r: 76, g: 29, b: 149, alpha: 1 },
+  },
+})
+  .composite([
+    { input: headroom, left: 0, top: 0 },
+    { input: tinted, left: 0, top: padTop },
+  ])
   .webp({ quality: 94, effort: 6 })
   .toFile(OUT);
 
-console.log("wrote", OUT, `${w}x${h}`);
+console.log("wrote", OUT, `${w}x${h + padTop}`);
