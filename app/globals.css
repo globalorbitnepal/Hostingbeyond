@@ -148,7 +148,8 @@
       background-image: url("/images/hero-speaker-v6.webp");
       background-repeat: no-repeat;
       background-size: cover;
-      background-position: center top;
+      /* Anchored right/top: any crop eats the empty purple, never the subject. */
+      background-position: right top;
     }
   }
 
