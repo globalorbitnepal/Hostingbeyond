@@ -99,7 +99,7 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         href: `${routes.vps}?storage=nvme`,
         title: "NVMe VPS",
         description: "NVMe Express storage for databases and heavy I/O.",
-        logo: "/images/partners/nvme.svg",
+        logo: "/images/nav-brands/nvme.svg",
         logoAlt: "NVMe Express",
       },
       {
@@ -181,7 +181,7 @@ export function HostingMegaMenu({
                         width={28}
                         height={28}
                         unoptimized
-                        className="h-7 w-7 object-contain"
+                        className="h-[30px] w-[30px] object-contain"
                       />
                     </span>
                     <span className="min-w-0">
