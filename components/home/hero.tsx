@@ -146,16 +146,21 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
           className="absolute inset-0"
           style={{
             WebkitMaskImage:
-              "linear-gradient(to right, transparent 0%, #000 34%, #000 100%)",
+              "linear-gradient(to right, transparent 0%, #000 44%, #000 100%), linear-gradient(to bottom, transparent 0%, #000 10%, #000 86%, transparent 100%)",
+            WebkitMaskComposite: "source-in",
             maskImage:
-              "linear-gradient(to right, transparent 0%, #000 34%, #000 100%)",
+              "linear-gradient(to right, transparent 0%, #000 44%, #000 100%), linear-gradient(to bottom, transparent 0%, #000 10%, #000 86%, transparent 100%)",
+            maskComposite: "intersect",
           }}
         >
           <SceneImage src={sceneSrc} />
         </motion.div>
-        <div className="absolute inset-y-0 left-0 z-[2] w-[42%] bg-gradient-to-r from-[#673de6] from-[8%] via-[#673de6]/78 to-transparent" />
-        <div className="absolute inset-x-0 top-0 z-[2] h-[10%] bg-gradient-to-b from-[#6d28d9]/55 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 z-[2] h-[22%] bg-gradient-to-t from-[#673de6] via-[#673de6]/55 to-transparent" />
+        <div className="absolute inset-y-0 left-0 z-[2] w-[58%] bg-gradient-to-r from-[#673de6] from-[0%] via-[#673de6]/45 via-[#673de6]/90 via-[28%] via-[52%] to-transparent" />
+        <div className="absolute inset-y-[8%] left-[6%] z-[2] h-[84%] w-[28%] bg-[#673de6]/55 blur-3xl" />
+        <div className="absolute inset-x-0 top-0 z-[2] h-[26%] bg-gradient-to-b from-[#6d28d9] from-[0%] via-[#6d28d9]/75 via-[38%] to-transparent" />
+        <div className="absolute top-0 right-0 z-[2] h-[48%] w-[42%] bg-gradient-to-bl from-[#6d28d9] from-[8%] via-[#6d28d9]/60 via-[42%] to-transparent" />
+        <div className="absolute inset-y-0 right-0 z-[2] w-[14%] bg-gradient-to-l from-[#6d28d9] via-[#673de6]/40 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 z-[2] h-[28%] bg-gradient-to-t from-[#4c1d95] from-[20%] via-[#673de6]/90 via-[55%] to-transparent" />
       </div>
 
       <div className="hb-shell relative z-20 grid w-full flex-1 grid-cols-1 overflow-visible pt-3 pb-3 sm:pt-2 lg:grid-cols-[minmax(0,0.48fr)_minmax(0,0.52fr)] lg:items-center lg:gap-4 lg:pb-2 xl:grid-cols-[minmax(0,0.46fr)_minmax(0,0.54fr)]">
@@ -298,7 +303,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
 
       {/* Slim feature glass bar */}
       <div className="relative z-30 mt-auto shrink-0 pt-1 pb-4 sm:pb-4">
-        <div className="pointer-events-none absolute inset-x-0 -top-8 h-8 bg-gradient-to-b from-transparent to-[#673de6]/50" />
+        <div className="pointer-events-none absolute inset-x-0 -top-16 bottom-0 bg-gradient-to-t from-[#4c1d95] from-[18%] via-[#673de6] via-[55%] to-transparent" />
         <div className="hb-shell">
           <div className="relative w-full overflow-hidden rounded-[22px] border border-white/25 bg-white/92 shadow-[0_8px_24px_rgba(15,23,42,0.18)] backdrop-blur-xl lg:rounded-full">
             <div
