@@ -115,10 +115,10 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
         >
           <SceneImage src={sceneSrc} />
         </motion.div>
-        <div className="absolute inset-y-0 left-0 z-[2] w-[4%] bg-gradient-to-r from-[#b5d3f2] from-[30%] to-transparent" />
-        <div className="absolute inset-x-0 top-0 z-[2] h-[3%] bg-gradient-to-b from-[#b5d3f2] from-[35%] to-transparent" />
-        <div className="absolute inset-y-0 right-0 z-[2] w-[1.2%] bg-gradient-to-l from-[#b5d3f2] to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 z-[2] h-[4%] bg-gradient-to-t from-[#b5d3f2] via-[#b5d3f2]/30 to-transparent" />
+        <div className="absolute inset-y-0 left-0 z-[2] w-[8%] bg-gradient-to-r from-[#673de6] from-[20%] to-transparent" />
+        <div className="absolute inset-x-0 top-0 z-[2] h-[3%] bg-gradient-to-b from-[#6d28d9] from-[35%] to-transparent" />
+        <div className="absolute inset-y-0 right-0 z-[2] w-[1.2%] bg-gradient-to-l from-[#4c1d95] to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 z-[2] h-[8%] bg-gradient-to-t from-[#4c1d95] via-[#673de6]/40 to-transparent" />
       </div>
 
       <div className="hb-shell relative z-20 grid w-full flex-1 grid-cols-1 pt-3 pb-3 sm:pt-2 lg:grid-cols-[minmax(0,0.42fr)_minmax(0,0.58fr)] lg:items-center lg:gap-6 lg:pb-2 xl:grid-cols-[minmax(0,0.4fr)_minmax(0,0.6fr)]">
@@ -126,7 +126,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
           <motion.p
             initial={reduceMotion ? false : { opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-[10px] font-bold tracking-[0.2em] text-slate-500 uppercase sm:text-[12px]"
+            className="text-[10px] font-bold tracking-[0.2em] text-white/70 uppercase sm:text-[12px]"
           >
             {eyebrow}
           </motion.p>
@@ -135,19 +135,17 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
             initial={reduceMotion ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.04 }}
-            className="font-heading mt-2 text-[clamp(1.7rem,4.2vw,4.25rem)] leading-[1.08] font-extrabold tracking-[-0.04em] text-slate-950"
+            className="font-heading mt-2 text-[clamp(1.7rem,4.2vw,4.25rem)] leading-[1.08] font-extrabold tracking-[-0.04em] text-white"
           >
             <span className="block">{headline}</span>
-            <span className="mt-0.5 block bg-gradient-to-r from-[#7c3aed] via-[#4f46e5] to-[#2563eb] bg-clip-text text-transparent">
-              {accent}
-            </span>
+            <span className="mt-0.5 block text-white/90">{accent}</span>
           </motion.h1>
 
           <motion.p
             initial={reduceMotion ? false : { opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.08 }}
-            className="mt-3 w-full text-[14px] leading-relaxed text-slate-600 sm:text-[15.5px] xl:text-[16.5px]"
+            className="mt-3 w-full text-[14px] leading-relaxed text-white/78 sm:text-[15.5px] xl:text-[16.5px]"
           >
             {description}
           </motion.p>
@@ -157,11 +155,11 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
             initial={reduceMotion ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.12 }}
-            className="mt-5 flex w-full flex-col gap-1.5 rounded-[22px] border border-white/80 bg-white/90 p-2 shadow-[0_14px_40px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,0.95)] backdrop-blur-xl sm:flex-row sm:items-center sm:gap-1.5 sm:rounded-full sm:p-1.5"
+            className="mt-5 flex w-full flex-col gap-1.5 rounded-[22px] border border-white/25 bg-white/15 p-2 shadow-[0_14px_40px_rgba(15,23,42,0.18)] backdrop-blur-xl sm:flex-row sm:items-center sm:gap-1.5 sm:rounded-full sm:p-1.5"
           >
             <div className="flex min-w-0 flex-1 items-center gap-2 px-2 sm:px-3">
               <Search
-                className="size-[18px] shrink-0 text-slate-400"
+                className="size-[18px] shrink-0 text-white/70"
                 aria-hidden
               />
               <input
@@ -169,7 +167,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
                 onChange={(e) => setDomain(e.target.value)}
                 placeholder={searchPlaceholder}
                 aria-label={searchPlaceholder}
-                className="min-w-0 flex-1 bg-transparent py-2 text-[14px] text-slate-800 outline-none placeholder:text-slate-400 sm:py-0 sm:text-[15px]"
+                className="min-w-0 flex-1 bg-transparent py-2 text-[14px] text-white outline-none placeholder:text-white/55 sm:py-0 sm:text-[15px]"
               />
             </div>
             <div className="flex items-center gap-1.5">
@@ -178,7 +176,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
                 <select
                   value={tld}
                   onChange={(e) => setTld(e.target.value)}
-                  className="h-11 w-full appearance-none rounded-full border border-slate-200/80 bg-slate-50/90 py-0 pr-8 pl-3 text-[13px] font-semibold text-slate-700 outline-none sm:h-10 sm:w-auto"
+                  className="h-11 w-full appearance-none rounded-full border border-white/20 bg-white py-0 pr-8 pl-3 text-[13px] font-semibold text-slate-800 outline-none sm:h-10 sm:w-auto"
                 >
                   {tldChoices.map((option) => (
                     <option key={option} value={option}>
@@ -193,7 +191,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
               </label>
               <button
                 type="submit"
-                className="inline-flex h-11 flex-1 items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-[#7c3aed] to-[#2563eb] px-4 text-[13.5px] font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.28)] transition hover:brightness-105 sm:h-10 sm:flex-none sm:px-5"
+                className="inline-flex h-11 flex-1 items-center justify-center gap-1.5 rounded-full bg-white px-4 text-[13.5px] font-semibold text-slate-950 shadow-[0_10px_24px_rgba(15,23,42,0.18)] transition hover:bg-white/90 sm:h-10 sm:flex-none sm:px-5"
               >
                 {searchButtonLabel}
                 <ArrowRight className="size-4" aria-hidden />
@@ -220,12 +218,24 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
                   className={cn(
                     "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12.5px] shadow-[0_4px_14px_rgba(15,23,42,0.04)] transition sm:px-3.5 sm:text-[13px]",
                     active
-                      ? "border-sky-300 bg-sky-50"
-                      : "border-slate-200/90 bg-white hover:border-sky-200",
+                      ? "border-white bg-white"
+                      : "border-white/25 bg-white/10 hover:bg-white/20",
                   )}
                 >
-                  <span className="font-extrabold text-[#2563eb]">{value}</span>
-                  <span className="font-bold text-slate-600">
+                  <span
+                    className={cn(
+                      "font-extrabold",
+                      active ? "text-[#673de6]" : "text-white",
+                    )}
+                  >
+                    {value}
+                  </span>
+                  <span
+                    className={cn(
+                      "font-bold",
+                      active ? "text-slate-700" : "text-white/80",
+                    )}
+                  >
                     {item.priceLabel}
                   </span>
                 </button>
@@ -244,10 +254,10 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
         >
           <div className="relative aspect-[5/4] w-full overflow-hidden rounded-[22px] sm:rounded-[28px]">
             <SceneImage src={sceneSrc} />
-            <div className="pointer-events-none absolute inset-y-0 left-0 w-[12%] bg-gradient-to-r from-[#b5d3f2] to-transparent" />
-            <div className="pointer-events-none absolute inset-y-0 right-0 w-[10%] bg-gradient-to-l from-[#b5d3f2] to-transparent" />
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-[10%] bg-gradient-to-b from-[#b5d3f2] to-transparent" />
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[14%] bg-gradient-to-t from-[#b5d3f2] to-transparent" />
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-[12%] bg-gradient-to-r from-[#673de6] to-transparent" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-[10%] bg-gradient-to-l from-[#4c1d95] to-transparent" />
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-[10%] bg-gradient-to-b from-[#6d28d9] to-transparent" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[14%] bg-gradient-to-t from-[#4c1d95] to-transparent" />
           </div>
         </motion.div>
 
@@ -255,13 +265,13 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
       </div>
 
       {/* Slim feature glass bar */}
-      <div className="relative z-30 mt-auto shrink-0 bg-[#b5d3f2] pt-1 pb-4 sm:pb-4">
-        <div className="pointer-events-none absolute inset-x-0 -top-8 h-8 bg-gradient-to-b from-transparent to-[#b5d3f2]" />
+      <div className="relative z-30 mt-auto shrink-0 pt-1 pb-4 sm:pb-4">
+        <div className="pointer-events-none absolute inset-x-0 -top-8 h-8 bg-gradient-to-b from-transparent to-[#4c1d95]/40" />
         <div className="hb-shell">
-          <div className="relative w-full overflow-hidden rounded-[22px] border border-[#7aadd8]/70 bg-[linear-gradient(180deg,rgba(165,200,232,0.92)_0%,rgba(181,211,242,0.82)_48%,rgba(170,205,236,0.88)_100%)] shadow-[0_8px_24px_rgba(60,120,170,0.16)] backdrop-blur-xl lg:rounded-full">
+          <div className="relative w-full overflow-hidden rounded-[22px] border border-white/25 bg-white/92 shadow-[0_8px_24px_rgba(15,23,42,0.18)] backdrop-blur-xl lg:rounded-full">
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-0 rounded-[22px] bg-[radial-gradient(ellipse_at_50%_0%,rgba(140,195,235,0.4),transparent_58%)] lg:rounded-full"
+              className="pointer-events-none absolute inset-0 rounded-[22px] bg-[radial-gradient(ellipse_at_50%_0%,rgba(103,61,230,0.08),transparent_58%)] lg:rounded-full"
             />
             <div className="relative">
               <HeroFeatureBar bar={content?.featureBar} />

@@ -387,7 +387,7 @@ export function AiAssistantSection({
   const reduceMotion = useReducedMotion();
 
   return (
-    <section className="hb-home-section hb-home-section--ice">
+    <section className="hb-home-section hb-home-section--lavender">
       <div
         aria-hidden
         className="pointer-events-none absolute top-[-12%] right-[-8%] h-[62%] w-[48%] rounded-full bg-[radial-gradient(ellipse,rgba(186,210,255,0.4),transparent_72%)] blur-3xl"
@@ -468,7 +468,7 @@ export function AiAssistantSection({
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link
                 href={data.primaryCtaHref}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-6 text-[14px] font-bold text-white shadow-[0_12px_28px_rgba(37,99,235,0.32)]"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#673de6] px-6 text-[14px] font-bold text-white shadow-[0_12px_28px_rgba(103,61,230,0.32)]"
               >
                 {data.primaryCtaLabel}
                 <ArrowRight className="size-4" />

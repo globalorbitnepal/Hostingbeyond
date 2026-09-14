@@ -9,6 +9,7 @@ type Props = {
   words: string[];
   tail?: string;
   description: string;
+  tone?: "light" | "dark";
 };
 
 export function SectionStoryBand({
@@ -17,6 +18,7 @@ export function SectionStoryBand({
   words,
   tail,
   description,
+  tone = "light",
 }: Props) {
   const reduceMotion = useReducedMotion();
   const list = words.filter(Boolean);
@@ -34,16 +36,38 @@ export function SectionStoryBand({
   const word = list[index] ?? list[0] ?? "";
 
   return (
-    <div className="hb-story-band">
+    <div
+      className={
+        tone === "dark" ? "hb-story-band hb-story-band--dark" : "hb-story-band"
+      }
+    >
       <div className="hb-shell">
-        <p className="text-center text-[11px] font-bold tracking-[0.28em] text-slate-500 uppercase">
+        <p
+          className={
+            tone === "dark"
+              ? "text-center text-[11px] font-bold tracking-[0.28em] text-white/55 uppercase"
+              : "text-center text-[11px] font-bold tracking-[0.28em] text-slate-500 uppercase"
+          }
+        >
           {eyebrow}
         </p>
-        <h2 className="font-heading mt-2 flex flex-wrap items-baseline justify-center gap-x-2 text-center text-[clamp(1.45rem,3.1vw,2.45rem)] leading-[1.15] font-extrabold tracking-[-0.045em] text-slate-950">
+        <h2
+          className={
+            tone === "dark"
+              ? "font-heading mt-2 flex flex-wrap items-baseline justify-center gap-x-2 text-center text-[clamp(1.45rem,3.1vw,2.45rem)] leading-[1.15] font-extrabold tracking-[-0.045em] text-white"
+              : "font-heading mt-2 flex flex-wrap items-baseline justify-center gap-x-2 text-center text-[clamp(1.45rem,3.1vw,2.45rem)] leading-[1.15] font-extrabold tracking-[-0.045em] text-slate-950"
+          }
+        >
           <span>{lead}</span>
           <span className="relative inline-block h-[1.2em] overflow-hidden">
             {reduceMotion || list.length < 2 ? (
-              <span className="bg-gradient-to-r from-[#2563eb] via-[#4f46e5] to-[#7c3aed] bg-clip-text text-transparent">
+              <span
+                className={
+                  tone === "dark"
+                    ? "bg-gradient-to-r from-[#c4b5fd] via-[#a78bfa] to-white bg-clip-text text-transparent"
+                    : "bg-gradient-to-r from-[#673de6] via-[#7c3aed] to-[#4f46e5] bg-clip-text text-transparent"
+                }
+              >
                 {word}
               </span>
             ) : (
@@ -54,7 +78,11 @@ export function SectionStoryBand({
                   animate={{ y: "0%", opacity: 1 }}
                   exit={{ y: "-80%", opacity: 0 }}
                   transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
-                  className="inline-block bg-gradient-to-r from-[#2563eb] via-[#4f46e5] to-[#7c3aed] bg-clip-text text-transparent"
+                  className={
+                    tone === "dark"
+                      ? "inline-block bg-gradient-to-r from-[#c4b5fd] via-[#a78bfa] to-white bg-clip-text text-transparent"
+                      : "inline-block bg-gradient-to-r from-[#673de6] via-[#7c3aed] to-[#4f46e5] bg-clip-text text-transparent"
+                  }
                 >
                   {word}
                 </motion.span>
@@ -63,7 +91,13 @@ export function SectionStoryBand({
           </span>
           {tail ? <span>{tail}</span> : null}
         </h2>
-        <p className="mx-auto mt-2 max-w-2xl text-center text-[14.5px] leading-relaxed text-slate-600 sm:text-[15.5px]">
+        <p
+          className={
+            tone === "dark"
+              ? "mx-auto mt-2 max-w-2xl text-center text-[14.5px] leading-relaxed text-white/70 sm:text-[15.5px]"
+              : "mx-auto mt-2 max-w-2xl text-center text-[14.5px] leading-relaxed text-slate-600 sm:text-[15.5px]"
+          }
+        >
           {description}
         </p>
       </div>

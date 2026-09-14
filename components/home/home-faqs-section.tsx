@@ -47,7 +47,7 @@ export function HomeFaqsSection({ content }: { content?: CmsHomeFaqsContent }) {
   if (!data.visible || groups.length === 0) return null;
 
   return (
-    <section className="hb-home-section hb-home-section--ice">
+    <section className="hb-home-section hb-home-section--lavender">
       <div
         aria-hidden
         className="pointer-events-none absolute top-[-18%] right-[-10%] h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(147,197,253,0.32),transparent_68%)] blur-2xl"

@@ -323,7 +323,7 @@ export function BusinessEmailSection({
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link
                 href={data.primaryCtaHref}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2563eb] to-[#4f46e5] px-6 text-[14px] font-bold text-white shadow-[0_12px_28px_rgba(37,99,235,0.32)]"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#673de6] px-6 text-[14px] font-bold text-white shadow-[0_12px_28px_rgba(103,61,230,0.32)]"
               >
                 <Mail className="size-4" />
                 {data.primaryCtaLabel}

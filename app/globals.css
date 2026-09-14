@@ -117,13 +117,38 @@
   }
 
   .hb-home-section--sheet {
-    background: #f7fbff;
+    background: #f6f2ff;
+  }
+
+  .hb-home-section--plum {
+    background: #1b1233;
+    color: #fff;
+  }
+
+  .hb-home-section--lavender {
+    background: #f6f2ff;
+  }
+
+  .hb-hero-hostinger {
+    position: relative;
+    isolation: isolate;
+    background:
+      radial-gradient(
+        ellipse at 50% -10%,
+        rgba(196, 181, 253, 0.38),
+        transparent 52%
+      ),
+      linear-gradient(180deg, #6d28d9 0%, #673de6 42%, #4c1d95 100%);
   }
 
   .hb-story-band {
     position: relative;
     padding-block: clamp(1.1rem, 2vw, 1.65rem);
-    background: #f4f8fd;
+    background: #f6f2ff;
+  }
+
+  .hb-story-band--dark {
+    background: #1b1233;
   }
 }
 

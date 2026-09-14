@@ -134,7 +134,7 @@ export function HeroFeatureBar({ bar }: { bar?: CmsHeroFeatureBar }) {
         <div key={item.id} className="flex shrink-0 items-center">
           <div
             aria-hidden
-            className="mx-2 hidden h-7 w-px bg-[#8eb8de]/50 sm:mx-2.5 sm:block lg:mx-3"
+            className="mx-2 hidden h-7 w-px bg-violet-200/80 sm:mx-2.5 sm:block lg:mx-3"
           />
           <div className="flex items-center gap-2">
             <FeatureIcon
@@ -157,11 +157,11 @@ export function HeroFeatureBar({ bar }: { bar?: CmsHeroFeatureBar }) {
       <div className="ml-auto flex shrink-0 items-center lg:ml-0">
         <div
           aria-hidden
-          className="mr-2.5 hidden h-7 w-px bg-[#8eb8de]/50 sm:block lg:mr-3"
+          className="mr-2.5 hidden h-7 w-px bg-violet-200/80 sm:block lg:mr-3"
         />
         <Link
           href={data.ctaHref || routes.hosting}
-          className="inline-flex h-8 items-center gap-1.5 rounded-full bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-3.5 text-[12px] font-semibold whitespace-nowrap text-white shadow-[0_8px_18px_rgba(37,99,235,0.28)] transition hover:brightness-105 sm:h-9 sm:px-4 sm:text-[13px]"
+          className="inline-flex h-8 items-center gap-1.5 rounded-full bg-[#673de6] px-3.5 text-[12px] font-semibold whitespace-nowrap text-white shadow-[0_8px_18px_rgba(103,61,230,0.35)] transition hover:brightness-105 sm:h-9 sm:px-4 sm:text-[13px]"
         >
           {data.ctaLabel}
           <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.4} />

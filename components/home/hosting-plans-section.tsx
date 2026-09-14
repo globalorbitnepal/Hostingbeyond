@@ -159,8 +159,8 @@ function PlanCard({
         className={cn(
           "mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full text-[14px] font-bold transition",
           popular
-            ? "bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-white shadow-[0_12px_24px_rgba(79,70,229,0.32)] hover:brightness-105"
-            : "border border-slate-200 bg-white text-slate-800 shadow-[0_8px_18px_-14px_rgba(15,23,42,0.35)] hover:border-blue-200 hover:text-[#1d4ed8]",
+            ? "bg-[#673de6] text-white shadow-[0_12px_24px_rgba(103,61,230,0.35)] hover:brightness-105"
+            : "border border-slate-200 bg-white text-slate-800 shadow-[0_8px_18px_-14px_rgba(15,23,42,0.35)] hover:border-violet-200 hover:text-[#673de6]",
         )}
       >
         {plan.ctaLabel || "Get Started"}
@@ -280,7 +280,7 @@ export function HostingPlansSection({
                 className={cn(
                   "rounded-full px-4 py-2 text-[13px] font-semibold transition",
                   billing === "annually"
-                    ? "bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-white shadow-[0_8px_16px_rgba(79,70,229,0.28)]"
+                    ? "bg-[#673de6] text-white shadow-[0_8px_16px_rgba(103,61,230,0.32)]"
                     : "text-slate-500 hover:text-slate-900",
                 )}
               >

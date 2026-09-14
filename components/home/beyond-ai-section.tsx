@@ -346,7 +346,7 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
   const reduceMotion = useReducedMotion();
 
   return (
-    <section className="hb-home-section hb-home-section--mist">
+    <section className="hb-home-section hb-home-section--lavender">
       <div className="hb-shell relative z-10">
         <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-8 xl:gap-12">
           <motion.div
