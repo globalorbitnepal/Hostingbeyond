@@ -11,6 +11,10 @@ import { CountryLanguageSelector } from "@/components/locale/country-language-se
 import { useLocale } from "@/components/locale/locale-provider";
 import { Logo } from "@/components/shared/logo";
 import { DomainsMegaMenu } from "@/components/layout/domains-mega-menu";
+import {
+  HostingMegaMenu,
+  isHostingNavLabel,
+} from "@/components/layout/hosting-mega-menu";
 import { cn } from "@/lib/utils";
 
 function localizeNavLabel(
@@ -78,7 +82,12 @@ function NavDropdown({
 }) {
   const [open, setOpen] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isDomains = item.label === "Domains";
+  const megaKind =
+    item.label === "Domains"
+      ? "domains"
+      : isHostingNavLabel(item.label)
+        ? "hosting"
+        : null;
 
   const clearClose = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -98,7 +107,7 @@ function NavDropdown({
     );
   }
 
-  if (isDomains && onMegaOpen) {
+  if (megaKind && onMegaOpen) {
     return (
       <button
         type="button"
@@ -107,7 +116,9 @@ function NavDropdown({
           megaOpen ? "text-slate-950" : "text-slate-800 hover:text-slate-950",
         )}
         aria-expanded={Boolean(megaOpen)}
-        aria-controls="hb-domains-mega"
+        aria-controls={
+          megaKind === "domains" ? "hb-domains-mega" : "hb-hosting-mega"
+        }
         onMouseEnter={onMegaOpen}
         onFocus={onMegaOpen}
         onMouseLeave={onMegaLeave}
@@ -229,23 +240,23 @@ export function SiteHeader({
   const { t, preferences } = useLocale();
   const [open, setOpen] = useState(false);
   const [mobileSection, setMobileSection] = useState<string | null>(null);
-  const [domainsMega, setDomainsMega] = useState(false);
+  const [mega, setMega] = useState<"domains" | "hosting" | null>(null);
   const megaCloseRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const cancelMegaClose = () => {
     if (megaCloseRef.current) clearTimeout(megaCloseRef.current);
   };
-  const openDomainsMega = () => {
+  const openMega = (kind: "domains" | "hosting") => {
     cancelMegaClose();
-    setDomainsMega(true);
+    setMega(kind);
   };
   const scheduleMegaClose = () => {
     cancelMegaClose();
-    megaCloseRef.current = setTimeout(() => setDomainsMega(false), 180);
+    megaCloseRef.current = setTimeout(() => setMega(null), 180);
   };
-  const dismissDomainsMega = () => {
+  const dismissMega = () => {
     cancelMegaClose();
-    setDomainsMega(false);
+    setMega(null);
   };
 
   useEffect(() => () => cancelMegaClose(), []);
@@ -285,13 +296,13 @@ export function SiteHeader({
   })();
 
   useEffect(() => {
-    if (!domainsMega) return;
+    if (!mega) return;
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") dismissDomainsMega();
+      if (e.key === "Escape") dismissMega();
     };
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [domainsMega]);
+  }, [mega]);
 
   useEffect(() => {
     if (!open) return;
@@ -328,15 +339,29 @@ export function SiteHeader({
                   key={item.label}
                   item={item}
                   label={localizeNavLabel(item.label, t.nav)}
-                  megaOpen={item.label === "Domains" ? domainsMega : false}
+                  megaOpen={
+                    item.label === "Domains"
+                      ? mega === "domains"
+                      : isHostingNavLabel(item.label)
+                        ? mega === "hosting"
+                        : false
+                  }
                   onMegaOpen={
-                    item.label === "Domains" ? openDomainsMega : undefined
+                    item.label === "Domains"
+                      ? () => openMega("domains")
+                      : isHostingNavLabel(item.label)
+                        ? () => openMega("hosting")
+                        : undefined
                   }
                   onMegaLeave={
-                    item.label === "Domains" ? scheduleMegaClose : undefined
+                    item.label === "Domains" || isHostingNavLabel(item.label)
+                      ? scheduleMegaClose
+                      : undefined
                   }
                   onDismissMega={
-                    item.label === "Domains" ? undefined : dismissDomainsMega
+                    item.label === "Domains" || isHostingNavLabel(item.label)
+                      ? undefined
+                      : dismissMega
                   }
                 />
               ))}
@@ -377,7 +402,7 @@ export function SiteHeader({
           </div>
 
           <AnimatePresence>
-            {domainsMega ? (
+            {mega === "domains" ? (
               <motion.div
                 id="hb-domains-mega"
                 initial={{ opacity: 0, y: 8 }}
@@ -385,10 +410,24 @@ export function SiteHeader({
                 exit={{ opacity: 0, y: 6 }}
                 transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
                 className="absolute top-[calc(100%-2px)] right-0 left-0 z-40 hidden pt-3 lg:block"
-                onMouseEnter={openDomainsMega}
+                onMouseEnter={() => openMega("domains")}
                 onMouseLeave={scheduleMegaClose}
               >
-                <DomainsMegaMenu onNavigate={dismissDomainsMega} />
+                <DomainsMegaMenu onNavigate={dismissMega} />
+              </motion.div>
+            ) : null}
+            {mega === "hosting" ? (
+              <motion.div
+                id="hb-hosting-mega"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 6 }}
+                transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute top-[calc(100%-2px)] right-0 left-0 z-40 hidden pt-3 lg:block"
+                onMouseEnter={() => openMega("hosting")}
+                onMouseLeave={scheduleMegaClose}
+              >
+                <HostingMegaMenu onNavigate={dismissMega} />
               </motion.div>
             ) : null}
           </AnimatePresence>
@@ -413,7 +452,9 @@ export function SiteHeader({
                 {filteredNav.map((item) => {
                   const label = localizeNavLabel(item.label, t.nav);
                   const hasChildren =
-                    Boolean(item.children?.length) || item.label === "Domains";
+                    Boolean(item.children?.length) ||
+                    item.label === "Domains" ||
+                    isHostingNavLabel(item.label);
                   return (
                     <div key={item.label}>
                       {hasChildren ? (
@@ -444,13 +485,19 @@ export function SiteHeader({
                                 transition={{ duration: 0.15 }}
                                 className={cn(
                                   "overflow-hidden",
-                                  item.label === "Domains"
+                                  item.label === "Domains" ||
+                                    isHostingNavLabel(item.label)
                                     ? "px-1 pb-3"
                                     : "pl-4",
                                 )}
                               >
                                 {item.label === "Domains" ? (
                                   <DomainsMegaMenu
+                                    compact
+                                    onNavigate={() => setOpen(false)}
+                                  />
+                                ) : isHostingNavLabel(item.label) ? (
+                                  <HostingMegaMenu
                                     compact
                                     onNavigate={() => setOpen(false)}
                                   />
