@@ -135,15 +135,12 @@ export function DomainsMegaMenu({
 
         <div
           className={cn(
-            "relative overflow-hidden",
-            compact
-              ? "m-4 mt-0 rounded-[22px]"
-              : "lg:w-[min(34%,380px)] lg:shrink-0",
+            compact ? "m-4 mt-0" : "lg:flex lg:w-[min(36%,400px)] lg:shrink-0",
           )}
         >
           <div
             className={cn(
-              "relative flex h-full min-h-[248px] flex-col justify-between overflow-hidden bg-[linear-gradient(155deg,#2563eb_0%,#4f46e5_52%,#7c3aed_100%)] p-6 text-white sm:p-7",
+              "relative flex min-h-[248px] flex-1 flex-col justify-between overflow-hidden bg-[linear-gradient(155deg,#2563eb_0%,#4f46e5_52%,#7c3aed_100%)] p-6 text-white sm:p-7",
               compact ? "rounded-[22px]" : "",
             )}
           >
