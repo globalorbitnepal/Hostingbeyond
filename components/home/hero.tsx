@@ -31,7 +31,7 @@ function SceneImage({ src, className }: { src?: string; className?: string }) {
       priority
       unoptimized
       sizes="100vw"
-      className={cn("object-cover object-[64%_36%]", className)}
+      className={cn("object-cover object-[62%_48%]", className)}
     />
   );
 }
@@ -138,6 +138,14 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.55 }}
           className="absolute inset-y-0 right-0 left-[28%] xl:left-[24%]"
+          style={{
+            WebkitMaskImage:
+              "linear-gradient(to right, transparent 0%, #000 12%, #000 100%), linear-gradient(to bottom, transparent 0%, #000 7%, #000 93%, transparent 100%)",
+            WebkitMaskComposite: "source-in",
+            maskImage:
+              "linear-gradient(to right, transparent 0%, #000 12%, #000 100%), linear-gradient(to bottom, transparent 0%, #000 7%, #000 93%, transparent 100%)",
+            maskComposite: "intersect",
+          }}
         >
           <SceneImage src={sceneSrc} />
         </motion.div>
