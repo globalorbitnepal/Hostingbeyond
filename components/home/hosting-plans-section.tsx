@@ -216,7 +216,7 @@ export function HostingPlansSection({
     icon: typeof Headphones;
   }>;
 
-  const guarantees = (data.guarantees ?? []).filter(Boolean);
+  const guarantees = (data.guarantees ?? []).filter(Boolean).slice(0, 4);
 
   return (
     <section className="hb-home-section hb-home-section--sheet">
@@ -307,17 +307,17 @@ export function HostingPlansSection({
         </div>
 
         {guarantees.length > 0 ? (
-          <div className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-7 grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {guarantees.map((item) => (
               <div
                 key={item.id}
-                className="flex items-start gap-3 rounded-[22px] border border-white bg-white/90 px-4 py-4 shadow-[0_14px_36px_-28px_rgba(37,80,130,0.45)]"
+                className="flex h-full items-start gap-3 rounded-[22px] border border-white bg-white px-4 py-4 shadow-[0_16px_40px_-28px_rgba(37,80,130,0.42)]"
               >
-                <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-[#eef4ff] text-[#2563eb]">
-                  <GuaranteeIcon icon={item.icon} className="size-5" />
+                <span className="mt-0.5 inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-[#eef4ff] text-[#2563eb]">
+                  <GuaranteeIcon icon={item.icon} className="size-[18px]" />
                 </span>
-                <span>
-                  <span className="block text-[14px] leading-snug font-extrabold text-slate-950">
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[13.5px] leading-snug font-extrabold text-slate-950">
                     {item.title}
                   </span>
                   <span className="mt-1 block text-[12.5px] leading-snug text-slate-500">
