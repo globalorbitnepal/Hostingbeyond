@@ -3144,7 +3144,8 @@ export function mergeHomeSections(
       storedGuarantees
         .filter(
           (item) =>
-            !defaults.hostingPlans.guarantees.some((fb) => fb.id === item.id),
+            !defaults.hostingPlans.guarantees.some((fb) => fb.id === item.id) &&
+            !/uptime/i.test(item.title || ""),
         )
         .map((item, index) => ({
           ...defaults.hostingPlans.guarantees[0],
