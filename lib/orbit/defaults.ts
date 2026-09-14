@@ -3129,8 +3129,8 @@ export function mergeHomeSections(
       ? value
       : fallback;
 
-  const guarantees: CmsHostingGuarantee[] = defaults.hostingPlans.guarantees
-    .map((fallback) => {
+  const guarantees: CmsHostingGuarantee[] =
+    defaults.hostingPlans.guarantees.map((fallback) => {
       const match = storedGuarantees.find((item) => item.id === fallback.id);
       if (!match) return fallback;
       return {
@@ -3139,21 +3139,7 @@ export function mergeHomeSections(
         id: match.id || fallback.id,
         icon: guaranteeIcon(match.icon, fallback.icon),
       };
-    })
-    .concat(
-      storedGuarantees
-        .filter(
-          (item) =>
-            !defaults.hostingPlans.guarantees.some((fb) => fb.id === item.id) &&
-            !/uptime/i.test(item.title || ""),
-        )
-        .map((item, index) => ({
-          ...defaults.hostingPlans.guarantees[0],
-          ...item,
-          id: item.id || `guarantee-extra-${index}`,
-          icon: guaranteeIcon(item.icon, "shield"),
-        })),
-    );
+    });
 
   const storedTypeCards = Array.isArray(stored.hostingTypes?.cards)
     ? stored.hostingTypes!.cards
