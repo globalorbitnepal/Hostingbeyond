@@ -260,7 +260,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
             priority
             unoptimized
             sizes="100vw"
-            className="scale-[1.15] object-cover object-[82%_26%]"
+            className="scale-[1.08] object-cover object-[71%_24%]"
           />
         </motion.div>
       </div>
