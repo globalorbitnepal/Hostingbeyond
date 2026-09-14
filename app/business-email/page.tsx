@@ -7,7 +7,7 @@ import { getHomeSections, getSiteSettings } from "@/lib/orbit/content";
 export const metadata: Metadata = {
   title: "Professional business email for your brand | HostingBeyond Mail",
   description:
-    "Create a professional business email on your domain from $0.02/mo. AI writing, secure mail hosting, and easy migration on HostingBeyond.",
+    "Create a professional business email on your domain from $0.37/mo. AI writing, secure mail hosting, and easy migration on HostingBeyond.",
 };
 
 export default async function BusinessEmailPage() {
@@ -17,14 +17,8 @@ export default async function BusinessEmailPage() {
   ]);
 
   return (
-    <div className="min-h-dvh overflow-x-hidden bg-[#f4f8fd]">
-      <div className="relative bg-[#b5d3f2]">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-[linear-gradient(165deg,#b5d3f2_0%,#c5daf0_48%,#f4f8fd_100%)]" />
-        </div>
+    <div className="min-h-dvh overflow-x-hidden bg-[#07070c]">
+      <div className="bg-white">
         <SiteHeader
           navigation={sections.navigation}
           loginLabel={settings.loginLabel}
@@ -33,8 +27,8 @@ export default async function BusinessEmailPage() {
           getStartedHref={settings.getStartedHref}
           logoPath={settings.logoPath}
         />
-        <BusinessEmailPageView />
       </div>
+      <BusinessEmailPageView />
       {sections.footer?.visible !== false ? (
         <SiteFooter content={sections.footer} logoPath={settings.logoPath} />
       ) : null}

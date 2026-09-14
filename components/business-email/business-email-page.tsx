@@ -5,10 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
-  Bot,
   Check,
   Clock,
-  Inbox,
   Lock,
   Mail,
   Minus,
@@ -20,61 +18,74 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
+import { MailWorkspace } from "@/components/business-email/mail-workspace";
 import { routes } from "@/config/routes";
 import { cn } from "@/lib/utils";
-
-const PRICE = "$0.02";
 
 const plans = [
   {
     id: "starter",
     name: "Starter",
-    bestFor: "Solo founders",
-    original: "$0.99",
-    off: "98% off",
-    mailboxes: "1 mailbox",
-    storage: "5 GB per mailbox",
-    extras: "5 aliases · 5 forwards",
-    features: [
-      "Custom domain address",
-      "Spam, virus & phishing filters",
-      "Webmail + mobile apps",
-      "Catch-all for mistyped addresses",
-    ],
+    bestFor: "solo entrepreneurs",
+    original: "$2.99",
+    price: "$0.37",
+    off: "88% off",
+    renew: "$1.57",
+    mailboxes: "1 mailbox included",
+    storage: "5 GB storage per mailbox",
+    extras: "5 forwarding rules · 5 email aliases",
+    features: ["Agentic Mail", "Spam, virus & phishing protection"],
   },
   {
     id: "standard",
     name: "Standard",
-    bestFor: "Small teams ready to scale",
-    original: "$1.99",
-    off: "99% off",
+    bestFor: "small businesses ready to scale",
+    original: "$3.99",
+    price: "$0.97",
+    off: "76% off",
+    renew: "$2.77",
     popular: true,
-    mailboxes: "Up to 10 mailboxes",
-    storage: "20 GB per mailbox",
-    extras: "20 aliases · 20 forwards",
+    mailboxes: "1 mailbox included",
+    storage: "20 GB storage per mailbox",
+    extras: "20 forwarding rules · 10 email aliases",
     features: [
-      "Everything in Starter",
-      "AI write, reply & summarize",
-      "Open tracking on sends",
-      "Priority inbox search",
+      "Search, reply, summarize, and write with AI — unlimited",
+      "See who opened your emails",
+      "Smart AI-driven replies",
+      "Agentic Mail",
     ],
   },
   {
     id: "premium",
     name: "Premium",
-    bestFor: "Teams that scale",
-    original: "$2.99",
-    off: "99% off",
-    mailboxes: "Unlimited mailboxes",
-    storage: "50 GB per mailbox",
-    extras: "50 aliases · 50 forwards",
+    bestFor: "teams that scale",
+    original: "$5.99",
+    price: "$1.97",
+    off: "67% off",
+    renew: "$3.97",
+    mailboxes: "1 mailbox included",
+    storage: "50 GB storage per mailbox",
+    extras: "50 forwarding rules · 30 email aliases",
     features: [
-      "Everything in Standard",
       "Free domain for 1 year",
-      "Link & file-open tracking",
-      "Shared inboxes & audit logs",
+      "Track link clicks and file opens",
+      "Search, reply, summarize, and write with AI — unlimited",
+      "See who opened your emails",
+      "Agentic Mail",
     ],
   },
+];
+
+const included = [
+  "Spam, virus, phishing protection",
+  "Access email on any app or device",
+  "Track mailbox activity with audit logs",
+  "Keep data safe with encryption in transit",
+  "Easily migrate your emails",
+  "Set auto-replies when you are away",
+  "Forward emails to any other address",
+  "Catch emails sent to mistyped addresses",
+  "Fast, clean, easy-to-use webmail",
 ];
 
 const impressionTabs = [
@@ -82,592 +93,717 @@ const impressionTabs = [
     id: "setup",
     label: "Set-up",
     title: "Easy setup and migration",
-    body: "Connect Outlook, Gmail, and Apple Mail. Import folders and contacts — no DNS drama on our stack.",
     points: [
-      "Connect to apps you already use",
-      "Bring old mail with you in a few clicks",
+      "Connect to email apps like Outlook, Gmail, and more",
+      "Bring your old and current emails with you",
       "Ready in minutes — no specialist required",
     ],
-    image: "/images/business-email/migration.png",
-    alt: "Team moving mailboxes onto HostingBeyond",
+    image: "/images/business-email/people/p-laptop.jpg",
+    alt: "Team setting up business email on a laptop",
   },
   {
     id: "time",
     label: "Save time",
-    title: "AI that writes in your voice",
-    body: "Set your tone once. Drafts, replies, and summaries stay on-brand so you leave the inbox faster.",
+    title: "Write in your voice, not a template",
     points: [
-      "Personalized writing style",
-      "Reply and summarize in seconds",
-      "Search like you speak",
+      "Set tone once — Friendly, Professional, or Concise",
+      "Drafts, replies, and summaries in a few seconds",
+      "Search the inbox the way you speak",
     ],
-    image: "/images/business-email/ai-inbox.png",
-    alt: "AI compose panel in HostingBeyond Mail",
+    image: "/images/business-email/people/p-phone.jpg",
+    alt: "People collaborating over a professional inbox",
   },
   {
     id: "scale",
     label: "Scale",
-    title: "Look like a real company",
-    body: "Every send carries you@yourbrand.com, a signature, and the same HostingBeyond account as your site.",
+    title: "The inbox that scales with you",
     points: [
-      "Custom domain on every mailbox",
-      "Signatures that match your card",
-      "Add seats without switching vendors",
+      "Up to 50 GB inbox space (or more if you need it)",
+      "Send up to 3,000 emails per day",
+      "Add and share extra storage across mailboxes",
     ],
-    image: "/images/business-email/signature.png",
-    alt: "Branded card and phone showing a professional email",
-  },
-];
-
-const included = [
-  "Spam, virus, phishing protection",
-  "Access email on any app or device",
-  "Migrate mailboxes without an IT project",
-  "Encrypted delivery & optional 2FA",
-  "Auto-replies when you are away",
-  "Forwarding and catch-all addresses",
-  "Fast, clean webmail",
-  "Audit-friendly mailbox activity",
-];
-
-const inboxRows = [
-  {
-    name: "Priya Shah",
-    preview: "Invoice for Studio Apex — please review",
-    time: "10:24",
-    unread: true,
+    image: "/images/business-email/people/p-desk.jpg",
+    alt: "Bright office ready for a growing team",
   },
   {
-    name: "Marcus Chen",
-    preview: "Re: launch checklist for Friday",
-    time: "9:15",
-  },
-  {
-    name: "Elena Rossi",
-    preview: "Welcome to HostingBeyond Mail",
-    time: "Yesterday",
+    id: "agents",
+    label: "Agents",
+    title: "Mail that works with your agents",
+    points: [
+      "Dedicated addresses for automations",
+      "Webhooks when a message lands",
+      "Allow and block lists for sender control",
+    ],
+    image: "/images/business-email/people/p-team.jpg",
+    alt: "Team reviewing a branded mailbox together",
   },
 ];
 
 const faqs = [
   {
     q: "What is a business email address?",
-    a: "It uses your own domain — like you@yourbrand.com — instead of a free inbox. Clients see your brand in every send.",
+    a: "A custom business email uses your own domain — you@yourbrand.com — instead of a free provider. It helps you look professional and keep every send on-brand.",
   },
   {
     q: "What is email hosting?",
-    a: "Email hosting stores, sends, and receives mail on dedicated servers. HostingBeyond Mail works with or without a website on the same account.",
+    a: "Email hosting stores, sends, and receives mail on dedicated servers. HostingBeyond Mail works with or without a website on the same account. Hosting plans can also include mailboxes.",
   },
   {
-    q: "Why not a free Gmail or Outlook address?",
-    a: "Clients trust a branded address more. You also keep work separate from personal mail and improve how messages land in the inbox.",
+    q: "Why do I need a business email instead of a free email account?",
+    a: "Clients are more likely to trust and reply to a branded address than a free inbox. You also keep work separate from personal mail and improve how messages land.",
   },
   {
     q: "How much does HostingBeyond Mail cost?",
-    a: "Every mailbox plan is $0.02 per month. Add storage or move up a plan as the team grows. 30-day money-back. Cancel anytime.",
+    a: "Plans start at $0.37 per mailbox per month on a 48-month term. Standard is $0.97/mo and Premium is $1.97/mo. You can add storage or change plans as you grow.",
   },
   {
-    q: "How do I create a mailbox?",
-    a: "Pick a plan, connect a domain you already own (or register one here), then choose a name and password. Webmail is ready immediately.",
+    q: "How do I create a business email address?",
+    a: "Choose a plan, connect a domain you already own (or register one here), then pick a mailbox name and password. Webmail is ready as soon as DNS is in place.",
   },
   {
-    q: "Can I migrate my current inbox?",
-    a: "Yes. Import mail, folders, and contacts from Gmail, Outlook, and most IMAP providers in a few clicks.",
+    q: "Can I migrate my existing emails?",
+    a: "Yes. After you create a mailbox, import mail, folders, and contacts from Gmail, Outlook, and most IMAP providers in a few clicks.",
   },
   {
-    q: "Will it work on my phone?",
-    a: "Use webmail in the browser or add the mailbox to Gmail, Outlook, Apple Mail, and Android.",
+    q: "Will my business email work on mobile and with Gmail or Outlook?",
+    a: "Use webmail in the browser, or add the mailbox to Gmail, Outlook, Apple Mail, and Android. Setup guides cover the common clients.",
   },
   {
-    q: "Is business email secure?",
-    a: "Plans include spam and phishing filters, encrypted transport, and optional two-factor sign-in.",
+    q: "Does HostingBeyond Mail provide backup and recovery?",
+    a: "We recommend regular mailbox backups. Deleted items can be restored from trash within the retention window, and you can export mail anytime.",
   },
   {
-    q: "Can I turn AI off?",
-    a: "Yes. Writing, summaries, search assistance, and agents can be disabled per mailbox.",
+    q: "Is business email hosting secure?",
+    a: "Plans include spam and virus filters, encrypted transport, and optional two-factor sign-in.",
+  },
+  {
+    q: "Can AI be disabled?",
+    a: "Yes. Writing, replies, summaries, search assistance, and agents can be turned off per mailbox.",
+  },
+  {
+    q: "Can I use HostingBeyond Mail with AI agents and automation tools?",
+    a: "Yes. Agentic Mail gives automations a dedicated address, webhook triggers, and allow/block controls. It plugs into n8n, Make, Zapier, and similar tools.",
   },
 ];
 
-function LiveInbox({ reduce }: { reduce: boolean | null }) {
-  return (
-    <motion.div
-      className="overflow-hidden rounded-[22px] border border-white/90 bg-white/95 shadow-[0_22px_50px_-22px_rgba(15,23,42,0.5)] backdrop-blur-xl"
-      animate={reduce ? undefined : { y: [0, -10, 0] }}
-      transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
-    >
-      <div className="flex items-center gap-2 border-b border-slate-100 px-3 py-2">
-        <span className="size-2 rounded-full bg-[#ff5f57]" />
-        <span className="size-2 rounded-full bg-[#febc2e]" />
-        <span className="size-2 rounded-full bg-[#28c840]" />
-        <p className="ml-1 inline-flex items-center gap-1 text-[11px] font-extrabold text-slate-900">
-          <Mail className="size-3 text-[#4f46e5]" />
-          you@yourbrand.com
-        </p>
-      </div>
-      <div className="space-y-1.5 p-2.5">
-        {inboxRows.map((row, index) => (
-          <motion.div
-            key={row.name}
-            initial={reduce ? false : { opacity: 0, x: 12 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.15 * index }}
-            className={cn(
-              "flex items-center gap-2 rounded-xl px-2 py-1.5",
-              row.unread ? "bg-[#eef2ff]" : "bg-slate-50",
-            )}
-          >
-            <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#2563eb] to-[#7c3aed] text-[10px] font-bold text-white">
-              {row.name.charAt(0)}
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-[11px] font-extrabold text-slate-900">
-                {row.name}
-              </span>
-              <span className="block truncate text-[10px] text-slate-500">
-                {row.preview}
-              </span>
-            </span>
-            <span className="text-[9px] font-semibold text-slate-400">
-              {row.time}
-            </span>
-          </motion.div>
-        ))}
-        <div className="rounded-xl border border-dashed border-indigo-200 bg-[#f8f7ff] px-2.5 py-2">
-          <p className="text-[10px] font-bold tracking-wide text-[#4f46e5] uppercase">
-            Beyond AI draft
-          </p>
-          <p className="mt-0.5 text-[11px] leading-snug text-slate-600">
-            Thanks Priya — invoice looks good. Sending payment today.
-          </p>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
+const reviews = [
+  {
+    quote:
+      "Domains, WordPress, and mail in one place — the rate is the reason we moved, the inbox is why we stayed.",
+    name: "Amina Koirala",
+    photo: "/images/business-email/people/p-woman.jpg",
+  },
+  {
+    quote:
+      "I need mail that just works: no outages, easy renewals, and a branded address clients actually trust.",
+    name: "Daniel Mercer",
+    photo: "/images/business-email/people/p-man.jpg",
+  },
+  {
+    quote:
+      "Setup took minutes. We imported years of Gmail history without hiring anyone.",
+    name: "Sofia Alvarez",
+    photo: "/images/business-email/people/p-woman2.jpg",
+  },
+];
 
 export function BusinessEmailPageView() {
   const reduce = useReducedMotion();
-  const [openFaq, setOpenFaq] = useState(0);
   const [tab, setTab] = useState(impressionTabs[0].id);
-  const activeTab =
+  const [openFaq, setOpenFaq] = useState(0);
+  const [term, setTerm] = useState("48");
+  const active =
     impressionTabs.find((item) => item.id === tab) ?? impressionTabs[0];
 
   return (
     <>
-      <section className="hb-shell relative pt-8 pb-16 sm:pt-12 sm:pb-24">
-        <div className="grid items-center gap-10 lg:grid-cols-[1.02fr_0.98fr] lg:gap-8">
-          <div>
-            <p className="inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/70 px-3 py-1 text-[11px] font-bold tracking-[0.2em] text-slate-500 uppercase shadow-sm">
-              <Mail className="size-3.5 text-[#4f46e5]" />
+      <section className="relative overflow-hidden bg-[#07070c] text-white">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_20%_0%,rgba(103,61,230,0.28),transparent_42%),radial-gradient(ellipse_at_90%_40%,rgba(37,99,235,0.18),transparent_40%)]"
+        />
+        <div className="hb-shell relative grid items-center gap-10 py-12 lg:grid-cols-[0.92fr_1.08fr] lg:gap-8 lg:py-16">
+          <motion.div
+            initial={reduce ? false : { opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <p className="text-[13px] font-bold tracking-wide text-[#c4b5fd]">
               HostingBeyond Mail
             </p>
-            <h1 className="font-heading mt-4 text-[clamp(2.15rem,5.2vw,4.25rem)] leading-[1.04] font-extrabold tracking-[-0.05em] text-slate-950">
-              Business email that{" "}
-              <span className="bg-gradient-to-r from-[#2563eb] via-[#4f46e5] to-[#7c3aed] bg-clip-text text-transparent">
-                builds trust
-              </span>
+            <h1 className="font-heading mt-3 text-[clamp(2.4rem,5.4vw,4.4rem)] leading-[1.02] font-extrabold tracking-[-0.05em]">
+              Business email that builds trust
             </h1>
-            <p className="mt-4 max-w-xl text-[16px] leading-relaxed text-slate-600 sm:text-[17.5px]">
-              Send from you@yourbrand.com — not a free inbox. AI writes with
-              you. From {PRICE}/mo per mailbox.
-            </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Link
-                href="#plans"
-                className="inline-flex h-12 items-center gap-2 rounded-full bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-5 text-[14.5px] font-bold text-white shadow-[0_14px_28px_rgba(79,70,229,0.32)]"
-              >
-                <Sparkles className="size-4" />
-                Work faster with AI
-              </Link>
-              <Link
-                href="#impression"
-                className="inline-flex h-12 items-center gap-2 rounded-full border border-white bg-white/80 px-5 text-[14.5px] font-bold text-slate-800 shadow-sm"
-              >
-                Look professional
-                <ArrowRight className="size-4" />
-              </Link>
-            </div>
-            <ul className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-[13px] font-semibold text-slate-600">
-              <li className="inline-flex items-center gap-1.5">
-                <Check className="size-4 text-emerald-600" /> 30-day money-back
+            <ul className="mt-6 space-y-2 text-[15px] text-white/80">
+              <li className="flex items-center gap-2">
+                <Check className="size-4 text-emerald-400" />
+                Work faster with built-in AI
               </li>
-              <li className="inline-flex items-center gap-1.5">
-                <Check className="size-4 text-emerald-600" /> Cancel anytime
-              </li>
-              <li className="inline-flex items-center gap-1.5">
-                <Check className="size-4 text-emerald-600" /> 24/7 support
+              <li className="flex items-center gap-2">
+                <Check className="size-4 text-emerald-400" />
+                Look professional with a personal domain
               </li>
             </ul>
-          </div>
-
+            <Link
+              href="#pricing"
+              className="mt-7 inline-flex h-12 items-center rounded-md bg-[#673de6] px-6 text-[15px] font-bold text-white shadow-[0_12px_30px_rgba(103,61,230,0.45)]"
+            >
+              Choose plan
+            </Link>
+            <p className="mt-4 flex items-center gap-2 text-[13px] text-white/55">
+              <Shield className="size-4" />
+              30-day money-back guarantee
+            </p>
+          </motion.div>
           <motion.div
-            className="relative mx-auto w-full max-w-[560px] lg:max-w-none"
-            initial={reduce ? false : { opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+            initial={reduce ? false : { opacity: 0, x: 24 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.55 }}
+            className="relative"
           >
-            <div className="overflow-hidden rounded-[32px] border border-white/80 shadow-[0_32px_80px_-28px_rgba(37,80,130,0.5)]">
-              <Image
-                src="/images/business-email/hero-professional.png"
-                alt="Professional using HostingBeyond business email"
-                width={1280}
-                height={720}
-                priority
-                className="h-auto w-full object-cover"
-              />
-            </div>
-            <div className="absolute -bottom-8 left-2 hidden w-[min(78%,340px)] sm:block lg:-left-8">
-              <LiveInbox reduce={reduce} />
-            </div>
+            <MailWorkspace />
           </motion.div>
         </div>
       </section>
 
       <section
         id="impression"
-        className="hb-home-section hb-home-section--white"
+        className="relative overflow-hidden bg-[#1b1233] py-16 text-white sm:py-20"
       >
-        <div className="hb-shell grid items-center gap-10 lg:grid-cols-2">
-          <div>
-            <p className="text-[11px] font-bold tracking-[0.22em] text-slate-500 uppercase">
-              Make the right impression
-            </p>
-            <h2 className="font-heading mt-3 text-[clamp(1.7rem,3.4vw,2.8rem)] leading-[1.12] font-extrabold tracking-[-0.04em] text-slate-950">
-              Every send should look like{" "}
-              <span className="bg-gradient-to-r from-[#2563eb] to-[#7c3aed] bg-clip-text text-transparent">
-                your brand
-              </span>
-            </h2>
-            <div className="mt-6 flex flex-wrap gap-2">
-              {impressionTabs.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => setTab(item.id)}
-                  className={cn(
-                    "rounded-full px-4 py-2 text-[13px] font-bold transition",
-                    tab === item.id
-                      ? "bg-slate-950 text-white"
-                      : "border border-slate-200 bg-white text-slate-600",
-                  )}
+        <div className="hb-shell">
+          <h2 className="font-heading text-center text-[clamp(2rem,4.5vw,3.4rem)] font-extrabold tracking-[-0.045em]">
+            Make the right impression
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-center text-[16px] leading-relaxed text-white/70">
+            Every email you send says something about your business. Stand out
+            with your own domain and a signature that reflects your brand.
+          </p>
+
+          <div className="mt-10 grid items-center gap-10 lg:grid-cols-[0.95fr_1.05fr]">
+            <div>
+              <div className="flex flex-wrap gap-2">
+                {impressionTabs.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setTab(item.id)}
+                    className={cn(
+                      "rounded-full px-4 py-2 text-[13px] font-bold",
+                      tab === item.id
+                        ? "bg-white text-slate-950"
+                        : "bg-white/10 text-white/80",
+                    )}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={active.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
                 >
-                  {item.label}
-                </button>
-              ))}
+                  <h3 className="mt-7 text-[clamp(1.5rem,3vw,2.15rem)] font-extrabold">
+                    {active.title}
+                  </h3>
+                  <ul className="mt-5 space-y-3">
+                    {active.points.map((line) => (
+                      <li
+                        key={line}
+                        className="flex items-start gap-2 text-[15px] text-white/80"
+                      >
+                        <Check className="mt-0.5 size-4 shrink-0 text-emerald-400" />
+                        {line}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link
+                    href="#pricing"
+                    className="mt-7 inline-flex h-11 items-center rounded-md bg-[#673de6] px-5 text-[14px] font-bold"
+                  >
+                    Choose plan
+                  </Link>
+                </motion.div>
+              </AnimatePresence>
             </div>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.2 }}
-              >
-                <h3 className="mt-6 text-[1.25rem] font-extrabold text-slate-950">
-                  {activeTab.title}
-                </h3>
-                <p className="mt-2 text-[15.5px] leading-relaxed text-slate-600">
-                  {activeTab.body}
-                </p>
-                <ul className="mt-5 space-y-3">
-                  {activeTab.points.map((line) => (
-                    <li
-                      key={line}
-                      className="flex items-start gap-2.5 text-[14.5px] font-medium text-slate-700"
-                    >
-                      <span className="mt-0.5 inline-flex size-5 items-center justify-center rounded-full bg-[#e8f1ff] text-[#2563eb]">
-                        <Check className="size-3" strokeWidth={3} />
-                      </span>
-                      {line}
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  href="#plans"
-                  className="mt-6 inline-flex items-center gap-1.5 text-[14px] font-extrabold text-[#4f46e5]"
+
+            <div className="relative min-h-[380px]">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={active.image}
+                  initial={{ opacity: 0, x: 30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.45 }}
+                  className="overflow-hidden rounded-[28px]"
                 >
-                  Choose plan
-                  <ArrowRight className="size-4" />
-                </Link>
+                  <Image
+                    src={active.image}
+                    alt={active.alt}
+                    width={1400}
+                    height={933}
+                    className="h-[420px] w-full object-cover"
+                  />
+                </motion.div>
+              </AnimatePresence>
+              <motion.div
+                className="absolute top-6 -left-4 max-w-[230px] rounded-2xl border border-white/15 bg-[#2a2150]/95 p-3 shadow-2xl backdrop-blur"
+                animate={reduce ? undefined : { y: [0, -10, 0] }}
+                transition={{ duration: 5, repeat: Infinity }}
+              >
+                <p className="text-[10px] font-bold tracking-wide text-white/50 uppercase">
+                  New message
+                </p>
+                <p className="mt-1 text-[12px] font-semibold">
+                  To: jessica@portal.co
+                </p>
+                <p className="text-[12px] text-white/70">
+                  Following up on our proposal
+                </p>
+                <span className="mt-2 inline-flex rounded-full bg-[#673de6] px-2 py-0.5 text-[10px] font-bold">
+                  Sending
+                </span>
               </motion.div>
-            </AnimatePresence>
+              <motion.div
+                className="absolute right-2 bottom-8 max-w-[210px] rounded-2xl border border-white/15 bg-white p-3 text-slate-900 shadow-2xl"
+                animate={reduce ? undefined : { y: [0, 12, 0] }}
+                transition={{ duration: 6, repeat: Infinity }}
+              >
+                <p className="text-[11px] font-extrabold">
+                  Manage your writing style
+                </p>
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {["Casual", "Professional", "Friendly", "Concise"].map(
+                    (tone) => (
+                      <span
+                        key={tone}
+                        className={cn(
+                          "rounded-full px-2 py-0.5 text-[10px] font-bold",
+                          tone === "Professional"
+                            ? "bg-[#673de6] text-white"
+                            : "bg-slate-100 text-slate-600",
+                        )}
+                      >
+                        {tone}
+                      </span>
+                    ),
+                  )}
+                </div>
+              </motion.div>
+            </div>
           </div>
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab.image}
-              className="overflow-hidden rounded-[28px] border border-slate-100 shadow-[0_24px_60px_-32px_rgba(37,80,130,0.45)]"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -12 }}
-            >
-              <Image
-                src={activeTab.image}
-                alt={activeTab.alt}
-                width={1200}
-                height={900}
-                className="h-auto w-full object-cover"
-              />
-            </motion.div>
-          </AnimatePresence>
         </div>
       </section>
 
-      <section id="plans" className="hb-home-section hb-home-section--sheet">
+      <section id="pricing" className="bg-[#f4f8fd] py-16 sm:py-20">
         <div className="hb-shell">
-          <div className="mx-auto max-w-2xl text-center">
-            <p className="text-[11px] font-bold tracking-[0.22em] text-slate-500 uppercase">
-              Purchase your AI-powered plan
-            </p>
-            <h2 className="font-heading mt-3 text-[clamp(1.7rem,3.4vw,2.85rem)] font-extrabold tracking-[-0.04em] text-slate-950">
-              From {PRICE}
-              <span className="text-[1.15rem] font-bold text-slate-500">
-                /mo
-              </span>{" "}
-              on every mailbox
-            </h2>
-            <div className="mt-5 flex flex-wrap justify-center gap-2">
-              {[
-                "30-day money-back",
-                "Cancel anytime",
-                "24/7 support",
-                "Lowest rate on all plans",
-              ].map((chip) => (
-                <span
-                  key={chip}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-white bg-white px-3 py-1.5 text-[12px] font-bold text-slate-600 shadow-sm"
-                >
-                  <Check className="size-3.5 text-emerald-600" />
-                  {chip}
-                </span>
-              ))}
-            </div>
+          <h2 className="font-heading text-center text-[clamp(1.85rem,3.6vw,2.9rem)] font-extrabold tracking-[-0.04em] text-slate-950">
+            Purchase your AI-powered business email plan
+          </h2>
+          <div className="mt-5 flex flex-wrap justify-center gap-x-6 gap-y-2 text-[13px] font-semibold text-slate-600">
+            <span className="inline-flex items-center gap-1.5">
+              <Check className="size-4 text-emerald-600" />
+              30-day money-back guarantee
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Check className="size-4 text-emerald-600" />
+              Cancel anytime
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Check className="size-4 text-emerald-600" />
+              24/7 support
+            </span>
           </div>
-          <div className="mt-9 grid gap-4 md:grid-cols-3">
+          <div className="mt-6 flex justify-center">
+            <label className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[13px] font-semibold text-slate-700">
+              Period
+              <select
+                value={term}
+                onChange={(event) => setTerm(event.target.value)}
+                className="bg-transparent font-bold text-slate-950 outline-none"
+              >
+                <option value="48">48 months</option>
+                <option value="24">24 months</option>
+                <option value="12">12 months</option>
+              </select>
+            </label>
+          </div>
+
+          <div className="mt-10 grid gap-4 lg:grid-cols-3">
             {plans.map((plan, index) => (
               <motion.article
                 key={plan.id}
-                initial={reduce ? false : { opacity: 0, y: 16 }}
+                initial={reduce ? false : { opacity: 0, y: 18 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: index * 0.06 }}
+                transition={{ delay: index * 0.05 }}
                 className={cn(
-                  "relative flex h-full flex-col rounded-[26px] border bg-white p-6",
+                  "relative flex flex-col rounded-[28px] border bg-white p-6",
                   plan.popular
-                    ? "border-indigo-200 shadow-[0_28px_60px_-28px_rgba(79,70,229,0.4)] ring-1 ring-indigo-100"
-                    : "border-slate-200/90 shadow-[0_16px_40px_-28px_rgba(37,80,130,0.4)]",
+                    ? "border-[#d9d1ff] shadow-[0_24px_60px_-28px_rgba(103,61,230,0.45)] ring-1 ring-[#ece7ff]"
+                    : "border-slate-200",
                 )}
               >
-                <p className="absolute top-4 right-4 rounded-full bg-[#ecfdf3] px-2 py-0.5 text-[10px] font-extrabold text-emerald-700 uppercase">
+                <span className="absolute top-5 right-5 rounded-full bg-[#ecfdf3] px-2 py-0.5 text-[11px] font-extrabold text-emerald-700">
                   {plan.off}
-                </p>
+                </span>
                 {plan.popular ? (
-                  <p className="mb-3 inline-flex self-start rounded-full bg-[#eef2ff] px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-[#4f46e5] uppercase">
+                  <p className="mb-3 text-[11px] font-extrabold tracking-wide text-[#673de6] uppercase">
                     Most popular
                   </p>
                 ) : (
-                  <p className="mb-3 text-[10px] font-extrabold tracking-wide text-slate-400 uppercase">
-                    Mailbox plan
-                  </p>
+                  <p className="mb-3 h-[17px]" />
                 )}
-                <h3 className="font-heading text-[1.45rem] font-extrabold text-slate-950">
+                <h3 className="font-heading text-[1.7rem] font-extrabold text-slate-950">
                   {plan.name}
                 </h3>
                 <p className="mt-1 text-[13px] text-slate-500">
-                  {plan.bestFor}
+                  Best for: {plan.bestFor}
                 </p>
-                <p className="mt-4 text-[13px] text-slate-400 line-through">
+                <p className="mt-5 text-[14px] text-slate-400 line-through">
                   {plan.original}
                 </p>
                 <p className="flex items-end gap-1">
-                  <span className="text-[2.35rem] leading-none font-extrabold text-[#2563eb]">
-                    {PRICE}
+                  <span className="text-[2.6rem] leading-none font-extrabold text-slate-950">
+                    {term === "12"
+                      ? plan.renew
+                      : term === "24"
+                        ? plan.id === "starter"
+                          ? "$0.67"
+                          : plan.id === "standard"
+                            ? "$1.47"
+                            : "$2.47"
+                        : plan.price}
                   </span>
-                  <span className="pb-1 text-[13px] font-semibold text-slate-500">
+                  <span className="pb-1 text-[14px] font-semibold text-slate-500">
                     /mo
                   </span>
                 </p>
-                <p className="mt-2 text-[12.5px] text-slate-500">
-                  {plan.mailboxes} · {plan.storage}
+                <p className="mt-2 text-[12px] leading-relaxed text-slate-500">
+                  Price per mailbox. For {term}-month term. Renews at{" "}
+                  {plan.renew}
+                  /mo for 48-month term.
                 </p>
-                <p className="text-[12px] text-slate-400">{plan.extras}</p>
+                <p className="mt-4 text-[13.5px] font-semibold text-slate-700">
+                  {plan.mailboxes}
+                </p>
+                <p className="text-[13.5px] text-slate-600">{plan.storage}</p>
+                <p className="text-[13px] text-slate-500">{plan.extras}</p>
                 <Link
                   href={routes.signup}
                   className={cn(
-                    "mt-5 inline-flex h-11 items-center justify-center rounded-full text-[14px] font-bold",
+                    "mt-5 inline-flex h-11 items-center justify-center rounded-md text-[14px] font-bold",
                     plan.popular
-                      ? "bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-white"
-                      : "border border-slate-200 bg-white text-slate-800",
+                      ? "bg-[#673de6] text-white"
+                      : "border border-slate-200 text-slate-900",
                   )}
                 >
                   Choose plan
                 </Link>
-                <ul className="mt-5 flex-1 space-y-2">
-                  {plan.features.map((f) => (
+                <p className="mt-5 text-[12px] font-bold tracking-wide text-slate-400 uppercase">
+                  Benefits
+                </p>
+                <ul className="mt-2 space-y-2">
+                  {plan.features.map((item) => (
                     <li
-                      key={f}
-                      className="flex items-start gap-2 text-[13.5px] text-slate-600"
+                      key={item}
+                      className="flex gap-2 text-[13.5px] text-slate-600"
                     >
-                      <Check className="mt-0.5 size-4 shrink-0 text-[#2563eb]" />
-                      {f}
+                      <Check className="mt-0.5 size-4 shrink-0 text-[#673de6]" />
+                      {item}
                     </li>
                   ))}
                 </ul>
               </motion.article>
             ))}
           </div>
-          <p className="mx-auto mt-6 max-w-2xl text-center text-[12.5px] text-slate-500">
-            Price per mailbox. Same {PRICE}/mo on Starter, Standard, and
-            Premium. Renews at the same rate until you change plan.
-          </p>
-        </div>
-      </section>
 
-      <section className="hb-home-section hb-home-section--white">
-        <div className="hb-shell">
-          <h2 className="font-heading text-center text-[clamp(1.55rem,3vw,2.4rem)] font-extrabold tracking-[-0.04em] text-slate-950">
-            Every plan includes the essentials — and more
-          </h2>
-          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <h3 className="font-heading mt-14 text-center text-[1.45rem] font-extrabold text-slate-950">
+            Every plan has everything you need and more
+          </h3>
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {included.map((item) => (
               <p
                 key={item}
-                className="flex items-start gap-2 rounded-[18px] border border-slate-100 bg-[#f7fbff] px-3.5 py-3 text-[13.5px] font-medium text-slate-700"
+                className="flex items-start gap-2 rounded-2xl bg-white px-4 py-3 text-[14px] font-medium text-slate-700"
               >
                 <Check className="mt-0.5 size-4 shrink-0 text-emerald-600" />
                 {item}
               </p>
             ))}
           </div>
+          <p className="mt-6 text-center text-[12.5px] text-slate-500">
+            All plans are paid upfront. The monthly rate reflects the total plan
+            price divided by the number of months in your plan.
+          </p>
         </div>
       </section>
 
-      <section className="hb-home-section hb-home-section--ice">
-        <div className="hb-shell grid items-center gap-10 lg:grid-cols-2">
-          <motion.div
-            className="overflow-hidden rounded-[28px] border border-white shadow-[0_24px_60px_-32px_rgba(37,80,130,0.45)]"
-            animate={reduce ? undefined : { y: [0, 10, 0] }}
-            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-          >
-            <Image
-              src="/images/business-email/ai-write.png"
-              alt="AI helping write a professional email"
-              width={1200}
-              height={900}
-              className="h-auto w-full"
-            />
-          </motion.div>
-          <div>
-            <p className="inline-flex items-center gap-2 text-[11px] font-bold tracking-[0.22em] text-slate-500 uppercase">
-              <Bot className="size-3.5 text-[#7c3aed]" />
-              Work smarter with AI
-            </p>
-            <h2 className="font-heading mt-3 text-[clamp(1.7rem,3.4vw,2.8rem)] font-extrabold tracking-[-0.04em] text-slate-950">
-              Less inbox. More actual work.
-            </h2>
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              {[
-                {
-                  title: "Writes in your voice",
-                  body: "Set your tone once. Drafts sound like you — not a generic bot.",
-                  icon: Sparkles,
-                },
-                {
-                  title: "Reply in seconds",
-                  body: "Summarize a thread and send a clean answer without leaving mail.",
-                  icon: Zap,
-                },
-                {
-                  title: "Search like you speak",
-                  body: "Ask for last week’s invoice. Find it — no folder hunting.",
-                  icon: Search,
-                },
-                {
-                  title: "Works with your apps",
-                  body: "Outlook, Gmail, Apple Mail — keep the clients your team knows.",
-                  icon: Inbox,
-                },
-              ].map((card) => {
-                const Icon = card.icon;
-                return (
-                  <article
-                    key={card.title}
-                    className="rounded-[20px] border border-white bg-white/80 p-4 shadow-sm"
+      <section className="bg-[#1b1233] py-16 text-white sm:py-20">
+        <div className="hb-shell">
+          <p className="text-center text-[12px] font-bold tracking-[0.2em] text-[#c4b5fd] uppercase">
+            Save time
+          </p>
+          <h2 className="font-heading mt-3 text-center text-[clamp(2rem,4vw,3.1rem)] font-extrabold">
+            Work smarter with AI
+          </h2>
+          <div className="mt-10 grid gap-4 lg:grid-cols-3">
+            <article className="rounded-[28px] bg-[#2a2150] p-6">
+              <div className="flex min-h-[160px] flex-wrap content-center gap-2">
+                {["Friendly", "Professional", "Concise"].map((tone, i) => (
+                  <motion.span
+                    key={tone}
+                    animate={
+                      reduce ? undefined : { y: [0, i === 1 ? -8 : 6, 0] }
+                    }
+                    transition={{ duration: 3 + i, repeat: Infinity }}
+                    className={cn(
+                      "rounded-full px-4 py-2 text-[14px] font-bold",
+                      tone === "Professional"
+                        ? "bg-white text-[#673de6]"
+                        : "bg-white/10",
+                    )}
                   >
-                    <Icon className="size-5 text-[#4f46e5]" />
-                    <h3 className="mt-2 text-[15px] font-extrabold text-slate-950">
-                      {card.title}
-                    </h3>
-                    <p className="mt-1 text-[13px] leading-snug text-slate-500">
-                      {card.body}
-                    </p>
-                  </article>
-                );
-              })}
-            </div>
+                    {tone === "Professional" ? `✓ ${tone}` : tone}
+                  </motion.span>
+                ))}
+              </div>
+              <h3 className="mt-4 text-[1.2rem] font-extrabold">
+                Personalized AI
+              </h3>
+              <p className="mt-2 text-[14px] leading-relaxed text-white/70">
+                Describe your tone and style — just once. It remembers and
+                writes like you every time.
+              </p>
+            </article>
+            <article className="rounded-[28px] bg-[#2a2150] p-6">
+              <div className="relative min-h-[160px]">
+                <div className="space-y-2 opacity-40">
+                  <p className="h-8 rounded-full bg-white/10" />
+                  <p className="h-8 rounded-full bg-white/10" />
+                  <p className="h-8 rounded-full bg-white/10" />
+                </div>
+                <motion.p
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white px-4 py-2 text-[14px] font-bold text-slate-900"
+                  animate={reduce ? undefined : { scale: [1, 1.04, 1] }}
+                  transition={{ duration: 2.2, repeat: Infinity }}
+                >
+                  ✦ Accept Thursday
+                </motion.p>
+              </div>
+              <h3 className="mt-4 text-[1.2rem] font-extrabold">
+                Write & reply in seconds
+              </h3>
+              <p className="mt-2 text-[14px] leading-relaxed text-white/70">
+                AI writes, replies, and summarizes so you spend less time in the
+                inbox.
+              </p>
+            </article>
+            <article className="rounded-[28px] bg-[#2a2150] p-6">
+              <div className="flex min-h-[160px] items-center justify-center">
+                <motion.div
+                  className="flex w-full items-center gap-2 rounded-full bg-white/10 px-4 py-3"
+                  animate={reduce ? undefined : { x: [0, 8, 0] }}
+                  transition={{ duration: 3.5, repeat: Infinity }}
+                >
+                  <Search className="size-4" />
+                  <span className="text-[13px] text-white/70">
+                    invoice from last week
+                  </span>
+                </motion.div>
+              </div>
+              <h3 className="mt-4 text-[1.2rem] font-extrabold">
+                Search like you speak
+              </h3>
+              <p className="mt-2 text-[14px] leading-relaxed text-white/70">
+                Find any email instantly. No scrolling, no getting lost.
+              </p>
+            </article>
+          </div>
+          <div className="mt-8 text-center">
+            <Link
+              href="#pricing"
+              className="inline-flex h-11 items-center rounded-md bg-[#673de6] px-6 text-[14px] font-bold"
+            >
+              Choose plan
+            </Link>
           </div>
         </div>
       </section>
 
-      <section className="hb-home-section hb-home-section--white">
+      <section className="bg-white py-16 sm:py-20">
+        <div className="hb-shell">
+          <h2 className="font-heading text-center text-[clamp(1.8rem,3.4vw,2.7rem)] font-extrabold tracking-[-0.04em] text-slate-950">
+            Bring your favorite AI assistant into your inbox
+          </h2>
+          <div className="mt-10 grid gap-4 md:grid-cols-2">
+            <article className="rounded-[28px] border border-slate-200 p-6">
+              <p className="text-[12px] font-bold tracking-wide text-[#673de6] uppercase">
+                ChatGPT
+              </p>
+              <h3 className="mt-2 text-[1.35rem] font-extrabold text-slate-950">
+                HostingBeyond Mail for ChatGPT
+              </h3>
+              <p className="mt-3 text-[15px] leading-relaxed text-slate-600">
+                Add the Mail app in ChatGPT and manage the inbox without leaving
+                the chat. Summarize unread mail, find last week’s thread, or
+                send a reply from the conversation.
+              </p>
+              <Link
+                href={routes.beyondAi}
+                className="mt-5 inline-flex items-center gap-1 text-[14px] font-extrabold text-[#673de6]"
+              >
+                Install app
+                <ArrowRight className="size-4" />
+              </Link>
+            </article>
+            <article className="rounded-[28px] border border-slate-200 p-6">
+              <p className="text-[12px] font-bold tracking-wide text-[#673de6] uppercase">
+                Claude
+              </p>
+              <h3 className="mt-2 text-[1.35rem] font-extrabold text-slate-950">
+                HostingBeyond Mail for Claude
+              </h3>
+              <p className="mt-3 text-[15px] leading-relaxed text-slate-600">
+                Link the mailbox through the official connector and let Claude
+                read, send, and manage mail from the conversation.
+              </p>
+              <Link
+                href={routes.beyondAi}
+                className="mt-5 inline-flex items-center gap-1 text-[14px] font-extrabold text-[#673de6]"
+              >
+                Connect to Claude
+                <ArrowRight className="size-4" />
+              </Link>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-[#f4f8fd] py-16 sm:py-20">
         <div className="hb-shell grid items-center gap-10 lg:grid-cols-2">
           <div>
-            <p className="text-[11px] font-bold tracking-[0.22em] text-slate-500 uppercase">
+            <h2 className="font-heading text-[clamp(1.8rem,3.4vw,2.8rem)] font-extrabold tracking-[-0.04em] text-slate-950">
               Bring your inbox with you
-            </p>
-            <h2 className="font-heading mt-3 text-[clamp(1.7rem,3.4vw,2.7rem)] font-extrabold tracking-[-0.04em] text-slate-950">
-              Moving from Gmail or Outlook? Keep the history.
             </h2>
-            <p className="mt-4 text-[15.5px] leading-relaxed text-slate-600">
-              Import mail, folders, and contacts almost instantly. Beyond Agent
-              walks DNS and mailbox setup so you are not stuck in a panel.
+            <p className="mt-4 text-[16px] leading-relaxed text-slate-600">
+              Moving from another provider? Import emails, folders, and contacts
+              almost instantly with Beyond Agent — your mailbox assistant.
             </p>
             <Link
               href={routes.signup}
-              className="mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-slate-950 px-5 text-[14px] font-bold text-white"
+              className="mt-6 inline-flex h-11 items-center rounded-md bg-[#673de6] px-5 text-[14px] font-bold text-white"
             >
               Migrate mailbox
-              <ArrowRight className="size-4" />
             </Link>
           </div>
-          <div className="overflow-hidden rounded-[28px] border border-slate-100 shadow-[0_24px_60px_-32px_rgba(37,80,130,0.4)]">
+          <div className="overflow-hidden rounded-[28px]">
             <Image
-              src="/images/business-email/migration.png"
-              alt="Professionals migrating business email"
-              width={1200}
-              height={675}
-              className="h-auto w-full"
+              src="/images/business-email/people/p-team.jpg"
+              alt="Team migrating mailboxes together"
+              width={1400}
+              height={933}
+              className="h-[340px] w-full object-cover"
             />
           </div>
         </div>
       </section>
 
-      <section className="hb-home-section hb-home-section--mist">
-        <div className="hb-shell grid gap-4 sm:grid-cols-3">
+      <section className="bg-white py-16 sm:py-20">
+        <div className="hb-shell grid items-center gap-10 lg:grid-cols-2">
+          <div className="overflow-hidden rounded-[28px]">
+            <Image
+              src="/images/business-email/people/p-laptop.jpg"
+              alt="Marketers reviewing campaign results"
+              width={1400}
+              height={933}
+              className="h-[340px] w-full object-cover"
+            />
+          </div>
+          <div>
+            <h2 className="font-heading text-[clamp(1.8rem,3.4vw,2.8rem)] font-extrabold tracking-[-0.04em] text-slate-950">
+              Go even further with email marketing
+            </h2>
+            <p className="mt-4 text-[16px] leading-relaxed text-slate-600">
+              Already have the inbox? Send campaigns, grow the list, and track
+              performance with Beyond Reach — the marketing tool that sits next
+              to HostingBeyond Mail.
+            </p>
+            <Link
+              href={routes.beyondAi}
+              className="mt-6 inline-flex h-11 items-center gap-2 rounded-md border border-slate-200 px-5 text-[14px] font-bold text-slate-900"
+            >
+              Explore Reach
+              <ArrowRight className="size-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-[#07070c] py-16 text-white sm:py-20">
+        <div className="hb-shell">
+          <h2 className="font-heading text-center text-[clamp(1.8rem,3.4vw,2.8rem)] font-extrabold">
+            Join founders who switched their inbox
+          </h2>
+          <div className="mt-10 grid gap-4 md:grid-cols-3">
+            {reviews.map((item) => (
+              <article
+                key={item.name}
+                className="rounded-[24px] bg-white/5 p-5 ring-1 ring-white/10"
+              >
+                <p className="text-[15px] leading-relaxed text-white/80">
+                  “{item.quote}”
+                </p>
+                <div className="mt-5 flex items-center gap-3">
+                  <span className="relative size-11 overflow-hidden rounded-full">
+                    <Image
+                      src={item.photo}
+                      alt=""
+                      fill
+                      className="object-cover object-top"
+                    />
+                  </span>
+                  <p className="text-[14px] font-bold">{item.name}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white py-16 sm:py-20">
+        <div className="hb-shell grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
             {
-              icon: Shield,
-              title: "Stay private",
-              body: "Encrypted delivery, phishing filters, and 2FA on the account.",
+              icon: Sparkles,
+              title: "Set up services",
+              body: "Connect domains and configure DNS without a ticket.",
             },
             {
-              icon: Lock,
-              title: "One HostingBeyond login",
-              body: "Domains, hosting, and mail in the same panel — not three vendors.",
+              icon: Zap,
+              title: "Fix common issues",
+              body: "Beyond Agent walks technical steps in the panel.",
             },
             {
               icon: Clock,
-              title: "Live in minutes",
-              body: "Create a mailbox, add DNS records we show you, start sending.",
+              title: "Launch faster",
+              body: "Mailbox and site in the same account, same login.",
+            },
+            {
+              icon: Lock,
+              title: "Human backup",
+              body: "24/7 support when the agent should hand off.",
             },
           ].map((item) => {
             const Icon = item.icon;
             return (
               <article
                 key={item.title}
-                className="rounded-[24px] border border-white bg-white p-5"
+                className="rounded-[22px] border border-slate-200 p-5"
               >
-                <Icon className="size-6 text-[#2563eb]" />
-                <h3 className="mt-3 text-[17px] font-extrabold text-slate-950">
+                <Icon className="size-6 text-[#673de6]" />
+                <h3 className="mt-3 text-[16px] font-extrabold text-slate-950">
                   {item.title}
                 </h3>
                 <p className="mt-1.5 text-[14px] text-slate-600">{item.body}</p>
@@ -677,11 +813,14 @@ export function BusinessEmailPageView() {
         </div>
       </section>
 
-      <section className="hb-home-section hb-home-section--white">
+      <section className="bg-[#f4f8fd] py-16 sm:py-20">
         <div className="hb-shell mx-auto max-w-3xl">
-          <h2 className="font-heading text-center text-[clamp(1.6rem,3vw,2.5rem)] font-extrabold text-slate-950">
+          <h2 className="font-heading text-center text-[clamp(1.7rem,3vw,2.5rem)] font-extrabold text-slate-950">
             Business email FAQs
           </h2>
+          <p className="mt-2 text-center text-[15px] text-slate-500">
+            Answers about creating and managing a professional mailbox.
+          </p>
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
@@ -699,15 +838,26 @@ export function BusinessEmailPageView() {
                   {
                     "@type": "Product",
                     name: "HostingBeyond Mail",
-                    description:
-                      "Professional business email on your domain with AI writing tools.",
-                    offers: plans.map((plan) => ({
-                      "@type": "Offer",
-                      name: plan.name,
-                      price: "0.02",
-                      priceCurrency: "USD",
-                      availability: "https://schema.org/InStock",
-                    })),
+                    offers: [
+                      {
+                        "@type": "Offer",
+                        name: "Starter",
+                        price: "0.37",
+                        priceCurrency: "USD",
+                      },
+                      {
+                        "@type": "Offer",
+                        name: "Standard",
+                        price: "0.97",
+                        priceCurrency: "USD",
+                      },
+                      {
+                        "@type": "Offer",
+                        name: "Premium",
+                        price: "1.97",
+                        priceCurrency: "USD",
+                      },
+                    ],
                   },
                 ],
               }),
@@ -719,7 +869,7 @@ export function BusinessEmailPageView() {
               return (
                 <div
                   key={item.q}
-                  className="overflow-hidden rounded-[18px] border border-slate-100 bg-[#f7fbff]"
+                  className="overflow-hidden rounded-[16px] bg-white"
                 >
                   <button
                     type="button"
@@ -754,24 +904,21 @@ export function BusinessEmailPageView() {
         </div>
       </section>
 
-      <section className="hb-home-section pb-20">
+      <section className="bg-[#673de6] py-16 text-center text-white">
         <div className="hb-shell">
-          <div className="overflow-hidden rounded-[32px] bg-gradient-to-r from-[#1d4ed8] via-[#4f46e5] to-[#7c3aed] px-6 py-12 text-center text-white sm:px-10">
-            <h2 className="font-heading text-[clamp(1.7rem,3.2vw,2.6rem)] font-extrabold tracking-[-0.04em]">
-              Start today from {PRICE}/mo
-            </h2>
-            <p className="mx-auto mt-3 max-w-xl text-[15.5px] text-white/85">
-              Branded mail, AI drafts, and 24/7 support — on the same account as
-              your hosting.
-            </p>
-            <Link
-              href="#plans"
-              className="mt-7 inline-flex h-12 items-center gap-2 rounded-full bg-white px-6 text-[14.5px] font-extrabold text-slate-950"
-            >
-              Choose plan
-              <ArrowRight className="size-4" />
-            </Link>
-          </div>
+          <h2 className="font-heading text-[clamp(1.8rem,3.4vw,2.7rem)] font-extrabold">
+            Start today
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-[16px] text-white/85">
+            Get branded business email running now. Grow with AI tools and 24/7
+            support — from $0.37/mo.
+          </p>
+          <Link
+            href="#pricing"
+            className="mt-7 inline-flex h-12 items-center rounded-md bg-white px-6 text-[15px] font-extrabold text-slate-950"
+          >
+            Choose plan
+          </Link>
         </div>
       </section>
     </>
