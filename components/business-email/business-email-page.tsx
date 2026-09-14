@@ -98,8 +98,8 @@ const impressionTabs = [
       "Bring your old and current emails with you",
       "Ready in minutes — no specialist required",
     ],
-    image: "/images/business-email/people/p-laptop.jpg",
-    alt: "Team setting up business email on a laptop",
+    image: "/images/business-email/people/be-team.webp",
+    alt: "Team setting up business email on their laptops",
   },
   {
     id: "time",
@@ -110,8 +110,8 @@ const impressionTabs = [
       "Drafts, replies, and summaries in a few seconds",
       "Search the inbox the way you speak",
     ],
-    image: "/images/business-email/people/p-phone.jpg",
-    alt: "People collaborating over a professional inbox",
+    image: "/images/business-email/people/be-inbox.webp",
+    alt: "Customer reading a branded inbox on her phone",
   },
   {
     id: "scale",
@@ -122,8 +122,8 @@ const impressionTabs = [
       "Send up to 3,000 emails per day",
       "Add and share extra storage across mailboxes",
     ],
-    image: "/images/business-email/people/p-desk.jpg",
-    alt: "Bright office ready for a growing team",
+    image: "/images/business-email/people/be-highfive.webp",
+    alt: "Founders celebrating a growing mailbox plan",
   },
   {
     id: "agents",
@@ -134,7 +134,7 @@ const impressionTabs = [
       "Webhooks when a message lands",
       "Allow and block lists for sender control",
     ],
-    image: "/images/business-email/people/p-team.jpg",
+    image: "/images/business-email/people/be-team.webp",
     alt: "Team reviewing a branded mailbox together",
   },
 ];
@@ -700,10 +700,10 @@ export function BusinessEmailPageView() {
           </div>
           <div className="overflow-hidden rounded-[28px]">
             <Image
-              src="/images/business-email/people/p-team.jpg"
-              alt="Team migrating mailboxes together"
-              width={1400}
-              height={933}
+              src="/images/business-email/people/be-inbox.webp"
+              alt="Mailbox imported and ready to read on a phone"
+              width={1600}
+              height={900}
               className="h-[340px] w-full object-cover"
             />
           </div>
@@ -714,10 +714,10 @@ export function BusinessEmailPageView() {
         <div className="hb-shell grid items-center gap-10 lg:grid-cols-2">
           <div className="overflow-hidden rounded-[28px]">
             <Image
-              src="/images/business-email/people/p-laptop.jpg"
-              alt="Marketers reviewing campaign results"
-              width={1400}
-              height={933}
+              src="/images/business-email/people/be-highfive.webp"
+              alt="Marketers celebrating campaign results"
+              width={1600}
+              height={692}
               className="h-[340px] w-full object-cover"
             />
           </div>
