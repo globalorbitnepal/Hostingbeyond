@@ -141,6 +141,17 @@
       linear-gradient(180deg, #6d28d9 0%, #673de6 42%, #4c1d95 100%);
   }
 
+  /* Desktop: the speaker plate is the hero background, so no photo frame shows. */
+  @media (min-width: 1024px) {
+    .hb-hero-hostinger {
+      background-color: #4c1d95;
+      background-image: url("/images/hero-speaker-v6.webp");
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: 66% 24%;
+    }
+  }
+
   .hb-story-band {
     position: relative;
     padding-block: clamp(1.1rem, 2vw, 1.65rem);

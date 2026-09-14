@@ -18,23 +18,8 @@ const FALLBACK_TEASERS = [
   { tld: ".dev", priceLabel: "$3.99/yr", visible: true },
 ] as const;
 
-const SCENE_SRC = "/images/hero-speaker-scene-v5.png";
+const SCENE_SRC = "/images/hero-speaker-v6.webp";
 const TYPING_COPY = "Find the perfect domain for your brand";
-
-function SceneImage({ src, className }: { src?: string; className?: string }) {
-  const imageSrc = src?.trim() || SCENE_SRC;
-  return (
-    <Image
-      src={imageSrc}
-      alt=""
-      fill
-      priority
-      unoptimized
-      sizes="(max-width: 1024px) 100vw, 58vw"
-      className={cn("object-cover object-[78%_32%]", className)}
-    />
-  );
-}
 
 function useTypedPlaceholder(active: boolean, reduce: boolean | null) {
   const [text, setText] = useState(reduce ? TYPING_COPY : "");
@@ -115,8 +100,6 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
 
   const [tld, setTld] = useState(tldChoices[0] || ".com");
 
-  const sceneSrc = SCENE_SRC;
-
   const onSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const raw = domain.trim().replace(/^\.+/, "");
@@ -128,24 +111,13 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
 
   return (
     <section className="relative z-10 flex min-h-0 flex-1 flex-col">
-      {/* Desktop scene — zoom locked */}
+      <link rel="preload" as="image" href={SCENE_SRC} fetchPriority="high" />
+
+      {/* Readability scrim over the empty left side of the hero photo */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-[1] hidden overflow-hidden lg:block"
-      >
-        <motion.div
-          initial={reduceMotion ? false : { opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.45 }}
-          className="absolute inset-y-0 right-0 w-[min(62%,52rem)] xl:w-[min(58%,56rem)]"
-        >
-          <SceneImage src={sceneSrc} />
-          <div className="absolute inset-y-0 left-0 z-[2] w-[28%] bg-gradient-to-r from-[#673de6] via-[#673de6]/55 to-transparent" />
-          <div className="absolute inset-x-0 top-0 z-[2] h-[10%] bg-gradient-to-b from-[#6d28d9]/70 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 z-[2] h-[16%] bg-gradient-to-t from-[#4c1d95] via-[#673de6]/50 to-transparent" />
-          <div className="absolute inset-y-0 right-0 z-[2] w-[6%] bg-gradient-to-l from-[#6d28d9]/35 to-transparent" />
-        </motion.div>
-      </div>
+        className="pointer-events-none absolute inset-y-0 left-0 z-[1] hidden w-[62%] bg-gradient-to-r from-[#3c1178]/72 via-[#4c1d95]/28 to-transparent lg:block"
+      />
 
       <div className="hb-shell relative z-20 grid w-full flex-1 grid-cols-1 overflow-visible pt-3 pb-3 sm:pt-2 lg:grid-cols-[minmax(0,0.48fr)_minmax(0,0.52fr)] lg:items-center lg:gap-4 lg:pb-2 xl:grid-cols-[minmax(0,0.46fr)_minmax(0,0.54fr)]">
         <div className="relative z-30 w-full min-w-0 self-center overflow-visible lg:max-w-none lg:pb-6">
@@ -267,20 +239,30 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
           </motion.div>
         </div>
 
-        {/* Mobile speaker — clear, uncropped, below copy */}
+        {/* Mobile speaker — the desktop hero paints this photo as its background */}
         <motion.div
           initial={reduceMotion ? false : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.14 }}
-          className="relative mt-5 w-full lg:hidden"
+          className="relative mt-4 aspect-[16/9] w-full lg:hidden"
           aria-hidden
+          style={{
+            WebkitMaskImage:
+              "linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%)",
+            maskImage:
+              "linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%)",
+          }}
         >
-          <div className="relative aspect-[16/10] w-full overflow-hidden">
-            <SceneImage src={sceneSrc} className="object-[70%_28%]" />
-          </div>
+          <Image
+            src={SCENE_SRC}
+            alt=""
+            fill
+            priority
+            unoptimized
+            sizes="100vw"
+            className="object-cover object-[62%_30%]"
+          />
         </motion.div>
-
-        <div className="hidden lg:block" aria-hidden />
       </div>
 
       {/* Slim feature glass bar */}
