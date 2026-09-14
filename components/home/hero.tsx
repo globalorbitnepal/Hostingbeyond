@@ -116,7 +116,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
       {/* Readability scrim over the empty left side of the hero photo */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-y-0 left-0 z-[1] hidden w-[62%] bg-gradient-to-r from-[#3c1178]/72 via-[#4c1d95]/28 to-transparent lg:block"
+        className="pointer-events-none absolute inset-y-0 left-0 z-[1] hidden w-[58%] bg-gradient-to-r from-[#3c1178]/55 via-[#4c1d95]/18 to-transparent lg:block"
       />
 
       <div className="hb-shell relative z-20 grid w-full flex-1 grid-cols-1 overflow-visible pt-3 pb-3 sm:pt-2 lg:grid-cols-[minmax(0,0.48fr)_minmax(0,0.52fr)] lg:items-center lg:gap-4 lg:pb-2 xl:grid-cols-[minmax(0,0.46fr)_minmax(0,0.54fr)]">
@@ -260,7 +260,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
             priority
             unoptimized
             sizes="100vw"
-            className="object-cover object-[62%_30%]"
+            className="object-cover object-[74%_34%]"
           />
         </motion.div>
       </div>
