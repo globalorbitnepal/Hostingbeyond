@@ -96,16 +96,16 @@
     box-sizing: border-box;
   }
 
-  /* Homepage chapters — tight, alternating surfaces */
+  /* Homepage chapters — Hostinger-tight, one continuous canvas */
   .hb-home-section {
     position: relative;
     isolation: isolate;
     overflow: hidden;
-    padding-block: clamp(2.4rem, 4.2vw, 3.85rem);
+    padding-block: clamp(1.45rem, 2.6vw, 2.35rem);
   }
 
   .hb-home-section--ice {
-    background: linear-gradient(180deg, #f4f8fd 0%, #eaf2fb 100%);
+    background: #f4f8fd;
   }
 
   .hb-home-section--white {
@@ -113,23 +113,17 @@
   }
 
   .hb-home-section--mist {
-    background:
-      radial-gradient(
-        ellipse 58% 48% at 92% 12%,
-        rgba(147, 197, 253, 0.28),
-        transparent 62%
-      ),
-      linear-gradient(180deg, #e8f1fb 0%, #f6faff 100%);
+    background: linear-gradient(180deg, #f4f8fd 0%, #eef4fb 100%);
   }
 
   .hb-home-section--sheet {
-    background:
-      radial-gradient(
-        ellipse 70% 40% at 0% 0%,
-        rgba(219, 234, 254, 0.7),
-        transparent 55%
-      ),
-      #ffffff;
+    background: #f7fbff;
+  }
+
+  .hb-story-band {
+    position: relative;
+    padding-block: clamp(1.1rem, 2vw, 1.65rem);
+    background: #f4f8fd;
   }
 }
 

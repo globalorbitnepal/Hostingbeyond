@@ -365,7 +365,7 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
               ) : null}
             </div>
 
-            <h2 className="font-heading mt-6 text-[clamp(1.85rem,4vw,3.4rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-slate-950">
+            <h2 className="font-heading mt-3 text-[clamp(1.85rem,4vw,3.4rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-slate-950">
               {(titleLines.length ? titleLines : [data.title]).map((line) => (
                 <span key={line} className="block">
                   {line}

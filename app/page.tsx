@@ -10,6 +10,7 @@ import {
   HomeFaqsSection,
 } from "@/components/home";
 import { PartnerLogoStrip } from "@/components/home/partner-logo-strip";
+import { SectionStoryBand } from "@/components/home/section-story-band";
 import { getHomeSections, getSiteSettings } from "@/lib/orbit/content";
 
 export default async function HomePage() {
@@ -46,22 +47,58 @@ export default async function HomePage() {
       {sections.solutions ? (
         <SolutionsSection content={sections.solutions} />
       ) : null}
+      <SectionStoryBand
+        eyebrow="One platform"
+        lead="Everything you need to"
+        words={["host", "launch", "grow", "scale"]}
+        description="Domains, NVMe hosting, business email, and Beyond AI in one HostingBeyond account — not five vendors taped together."
+      />
       <PartnerLogoStrip partners={sections.hero.technologyPartners} />
+      <SectionStoryBand
+        eyebrow="Start here"
+        lead="Plans built to"
+        words={["go live", "stay fast", "stay online"]}
+        description="Choose a plan. SSL, backups, and 24/7 support ship with it so the site can go public the same day."
+      />
       {sections.hostingPlans?.visible !== false ? (
         <HostingPlansSection content={sections.hostingPlans} />
       ) : null}
+      <SectionStoryBand
+        eyebrow="Beyond hosting"
+        lead="Then let AI"
+        words={["write", "design", "publish", "iterate"]}
+        description="Beyond AI turns a prompt into pages you host on the same stack — no extra platform to learn."
+      />
       {sections.beyondAi?.visible !== false ? (
         <BeyondAiSection content={sections.beyondAi} />
       ) : null}
+      <SectionStoryBand
+        eyebrow="Look professional"
+        lead="Email that"
+        words={["builds trust", "wins clients", "stays yours"]}
+        description="Business mail on your own domain, next to hosting — not a free inbox beside a serious brand."
+      />
       {sections.businessEmail?.visible !== false ? (
         <BusinessEmailSection content={sections.businessEmail} />
       ) : null}
+      <SectionStoryBand
+        eyebrow="Always on"
+        lead="Help that"
+        words={["answers", "migrates", "fixes", "stays"]}
+        description="Real people and the HostingBeyond assistant in the panel, whenever the site needs a hand."
+      />
       {sections.aiAssistant?.visible !== false ? (
         <AiAssistantSection content={sections.aiAssistant} />
       ) : null}
       {sections.whyChoose?.visible !== false ? (
         <WhyChooseSection content={sections.whyChoose} />
       ) : null}
+      <SectionStoryBand
+        eyebrow="Before you buy"
+        lead="Clear answers before you"
+        words={["migrate", "launch", "scale"]}
+        description="Hosting and SEO questions written for real buyers — and for search."
+      />
       {sections.homeFaqs?.visible !== false ? (
         <HomeFaqsSection content={sections.homeFaqs} />
       ) : null}
