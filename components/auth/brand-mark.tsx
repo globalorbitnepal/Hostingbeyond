@@ -3,7 +3,7 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 export function BrandMark({
-  src = "/logo/hostingbeyond-logo-v5.png",
+  src = "/logo/hostingbeyond-logo-v6.png",
   className,
 }: {
   src?: string;
@@ -11,10 +11,10 @@ export function BrandMark({
 }) {
   return (
     <Image
-      src={src || "/logo/hostingbeyond-logo-v5.png"}
+      src={src || "/logo/hostingbeyond-logo-v6.png"}
       alt="HostingBeyond"
-      width={1400}
-      height={232}
+      width={981}
+      height={182}
       priority
       unoptimized
       className={cn(

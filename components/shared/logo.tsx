@@ -19,7 +19,7 @@ type LogoProps = {
 export function Logo({
   className,
   href = "/",
-  src = "/logo/hostingbeyond-logo-v5.png",
+  src = "/logo/hostingbeyond-logo-v6.png",
   variant = "image",
 }: LogoProps) {
   const content =
@@ -31,8 +31,8 @@ export function Logo({
       <Image
         src={src}
         alt="HostingBeyond"
-        width={1400}
-        height={232}
+        width={981}
+        height={182}
         priority
         unoptimized
         className={cn(

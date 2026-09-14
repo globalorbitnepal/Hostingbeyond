@@ -32,7 +32,9 @@ export default async function HomePage() {
         />
         {sections.hero.visible ? <HeroSection content={sections.hero} /> : null}
       </div>
-      <HeroJourneySlider />
+      {sections.journey?.visible !== false ? (
+        <HeroJourneySlider content={sections.journey} />
+      ) : null}
 
       {sections.solutions ? (
         <SolutionsSection content={sections.solutions} />

@@ -130,10 +130,10 @@ export function SiteFooter({
               {/* Native img — same file as the header, no Next crop in a shrinking grid. */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/logo/hostingbeyond-logo-v5.png"
+                src="/logo/hostingbeyond-logo-v6.png"
                 alt="HostingBeyond"
-                width={1400}
-                height={232}
+                width={981}
+                height={182}
                 className="h-10 w-auto max-w-[min(100%,300px)] object-contain object-left sm:h-11"
                 draggable={false}
               />

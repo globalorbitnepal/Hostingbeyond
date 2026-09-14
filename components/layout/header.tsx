@@ -324,7 +324,7 @@ export function SiteHeader({
           <div className="mx-auto flex h-[56px] w-full items-center gap-2 rounded-full border border-white/90 bg-white/[0.92] px-3 shadow-[0_12px_40px_rgba(15,23,42,0.14),inset_0_1px_0_rgba(255,255,255,1)] backdrop-blur-2xl backdrop-saturate-150 sm:h-[70px] sm:gap-3 sm:px-5 lg:px-6">
             <div className="min-w-0 flex-1 lg:min-w-[210px] lg:flex-none xl:min-w-[270px]">
               <Logo
-                src="/logo/hostingbeyond-logo-v5.png"
+                src="/logo/hostingbeyond-logo-v6.png"
                 variant="image"
                 className="h-[26px] max-w-[min(100%,150px)] sm:h-[32px] sm:max-w-[240px] lg:h-[34px] lg:max-w-[260px] xl:h-[38px] xl:max-w-[300px]"
               />

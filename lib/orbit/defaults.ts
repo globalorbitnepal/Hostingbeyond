@@ -541,8 +541,30 @@ export type CmsFooterContent = {
   copyright: string;
 };
 
+export type CmsJourneySlide = {
+  id: string;
+  visible: boolean;
+  order: number;
+  label: string;
+  title: string;
+  body: string;
+  badge: string;
+  image: string;
+  imagePosition: string;
+  alt: string;
+  ctaLabel: string;
+  ctaHref: string;
+};
+
+export type CmsJourneyContent = {
+  visible: boolean;
+  autoplaySeconds: number;
+  slides: CmsJourneySlide[];
+};
+
 export type CmsHomeSections = {
   hero: CmsHeroContent;
+  journey: CmsJourneyContent;
   solutions: CmsSolutionsContent;
   products: CmsProductsContent;
   hostingTypes: CmsHostingTypesContent;
@@ -600,7 +622,7 @@ export type CmsLoginPage = {
 
 export function defaultLoginPage(): CmsLoginPage {
   return {
-    logoPath: "/logo/hostingbeyond-logo-v5.png",
+    logoPath: "/logo/hostingbeyond-logo-v6.png",
     tagline: "",
     copyright: "© 2025 HostingBeyond. All rights reserved.",
     badge: "Everything You Need, All in One Place",
@@ -734,7 +756,7 @@ export function mergeLoginPage(
     logoPath:
       stored.logoPath && stored.logoPath.includes("/uploads")
         ? stored.logoPath
-        : "/logo/hostingbeyond-logo-v5.png",
+        : "/logo/hostingbeyond-logo-v6.png",
   };
 }
 
@@ -746,7 +768,7 @@ export function defaultSiteSettings(): CmsSiteSettings {
     url: siteConfig.url,
     locale: siteConfig.locale,
     twitterHandle: siteConfig.twitterHandle,
-    logoPath: "/logo/hostingbeyond-logo-v5.png",
+    logoPath: "/logo/hostingbeyond-logo-v6.png",
     ogImagePath: "/images/hero-speaker-light.png",
     loginLabel: "Login",
     getStartedLabel: "Get Started",
@@ -2339,6 +2361,71 @@ export function defaultHeroFeatureBar(): CmsHeroFeatureBar {
   };
 }
 
+export function defaultJourneySection(): CmsJourneyContent {
+  return {
+    visible: true,
+    autoplaySeconds: 5.2,
+    slides: [
+      {
+        id: "discover",
+        visible: true,
+        order: 0,
+        label: "Discover",
+        title: "One panel for domains, hosting, and mail.",
+        body: "See every site, inbox, and renewal the moment you log in.",
+        badge: "",
+        image: "/images/journey/discover.webp",
+        imagePosition: "50% 50%",
+        alt: "HostingBeyond dashboard open on a laptop",
+        ctaLabel: "Explore the panel",
+        ctaHref: routes.hosting,
+      },
+      {
+        id: "create",
+        visible: true,
+        order: 1,
+        label: "Create",
+        title: "You direct. Beyond AI builds it live.",
+        body: "Describe the site, keep prompting, and launch the same day.",
+        badge: "",
+        image: "/images/journey/create.webp",
+        imagePosition: "50% 40%",
+        alt: "Team celebrating a new website launch",
+        ctaLabel: "Create with AI",
+        ctaHref: routes.beyondAi,
+      },
+      {
+        id: "scale",
+        visible: true,
+        order: 2,
+        label: "Scale",
+        title: "NVMe hosting that grows with the team.",
+        body: "Free SSL, daily backups, and instant upgrades on every plan.",
+        badge: "",
+        image: "/images/journey/scale.webp",
+        imagePosition: "50% 45%",
+        alt: "Team working together on HostingBeyond laptops",
+        ctaLabel: "Learn more",
+        ctaHref: routes.hosting,
+      },
+      {
+        id: "beyond",
+        visible: true,
+        order: 3,
+        label: "Beyond",
+        title: "Branded mail and AI help, always on.",
+        body: "Business inboxes, AI drafts, and 24/7 humans behind them.",
+        badge: "",
+        image: "/images/journey/beyond.webp",
+        imagePosition: "50% 45%",
+        alt: "Customer reading branded business email on a phone",
+        ctaLabel: "Learn more",
+        ctaHref: routes.businessEmail,
+      },
+    ],
+  };
+}
+
 export function defaultHomeSections(): CmsHomeSections {
   return {
     hero: {
@@ -2401,6 +2488,7 @@ export function defaultHomeSections(): CmsHomeSections {
         "Get premium domains, professional email, and blazing-fast hosting at unbeatable prices.",
       offers: defaultOffers(),
     },
+    journey: defaultJourneySection(),
     hostingTypes: defaultHostingTypesSection(),
     hostingPlans: defaultHostingPlansSection(),
     beyondAi: defaultBeyondAiSection(),
@@ -2701,6 +2789,45 @@ function mergeWhyChooseSection(
     ...stored,
     visible: stored.visible !== false,
     items: items.sort((a, b) => a.order - b.order),
+  };
+}
+
+function mergeJourneySection(
+  stored?: Partial<CmsJourneyContent> | null,
+): CmsJourneyContent {
+  const defaults = defaultJourneySection();
+  if (!stored) return defaults;
+  const storedSlides = Array.isArray(stored.slides) ? stored.slides : [];
+  const slides =
+    storedSlides.length > 0
+      ? storedSlides.map((slide, index) => {
+          const fallback = defaults.slides[index % defaults.slides.length];
+          const text = (value: unknown, alternative: string) =>
+            typeof value === "string" && value.trim() ? value : alternative;
+          return {
+            id: slide.id || fallback.id || `journey-${index}`,
+            visible: slide.visible !== false,
+            order: typeof slide.order === "number" ? slide.order : index,
+            label: text(slide.label, fallback.label),
+            title: text(slide.title, fallback.title),
+            body: text(slide.body, fallback.body),
+            badge: typeof slide.badge === "string" ? slide.badge : "",
+            image: text(slide.image, fallback.image),
+            imagePosition: text(slide.imagePosition, fallback.imagePosition),
+            alt: text(slide.alt, fallback.alt),
+            ctaLabel: text(slide.ctaLabel, fallback.ctaLabel),
+            ctaHref: text(slide.ctaHref, fallback.ctaHref),
+          } satisfies CmsJourneySlide;
+        })
+      : defaults.slides;
+  const autoplaySeconds =
+    typeof stored.autoplaySeconds === "number" && stored.autoplaySeconds > 0
+      ? stored.autoplaySeconds
+      : defaults.autoplaySeconds;
+  return {
+    visible: stored.visible !== false,
+    autoplaySeconds,
+    slides: slides.sort((a, b) => a.order - b.order),
   };
 }
 
@@ -3368,6 +3495,7 @@ export function mergeHomeSections(
     ...defaults,
     ...stored,
     hero,
+    journey: mergeJourneySection(stored.journey),
     solutions: {
       ...defaults.solutions,
       ...stored.solutions,

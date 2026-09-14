@@ -1,70 +1,44 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
-import { routes } from "@/config/routes";
+import { defaultJourneySection } from "@/lib/orbit/defaults";
+import type { CmsJourneyContent } from "@/lib/orbit/defaults";
 import { cn } from "@/lib/utils";
 
-const slides = [
-  {
-    id: "build",
-    label: "Build",
-    title: "You direct. Beyond AI builds it live.",
-    body: "Describe the site. Keep prompting until the page looks like your brand.",
-    image: "/images/business-email/people/p-laptop.jpg",
-    alt: "People building a site together",
-    href: routes.beyondAi,
-    overlay: "prompt",
-  },
-  {
-    id: "launch",
-    label: "Launch",
-    title: "Go live on NVMe hosting the same day.",
-    body: "SSL, backups, and a domain in one HostingBeyond account.",
-    image: "/images/business-email/people/p-phone.jpg",
-    alt: "Team reviewing a live site",
-    href: routes.hosting,
-    overlay: "launch",
-  },
-  {
-    id: "grow",
-    label: "Grow",
-    title: "Mail and campaigns that keep customers coming back.",
-    body: "Branded inboxes and AI drafts next to the same hosting stack.",
-    image: "/images/business-email/people/p-team.jpg",
-    alt: "Team growing a business online",
-    href: routes.businessEmail,
-    overlay: "grow",
-  },
-  {
-    id: "manage",
-    label: "Manage",
-    title: "Your AI co-worker. In the panel, on every plan.",
-    body: "Migrate, fix, and manage through chat — humans still on 24/7.",
-    image: "/images/business-email/people/p-desk.jpg",
-    alt: "Bright workspace for managing hosting",
-    href: routes.beyondAi,
-    overlay: "manage",
-  },
-] as const;
-
-export function HeroJourneySlider() {
+export function HeroJourneySlider({
+  content,
+}: {
+  content?: CmsJourneyContent;
+}) {
   const reduce = useReducedMotion();
   const [index, setIndex] = useState(0);
-  const active = slides[index];
+
+  const data = content ?? defaultJourneySection();
+  const slides = useMemo(
+    () =>
+      data.slides
+        .filter((slide) => slide.visible !== false)
+        .sort((a, b) => a.order - b.order),
+    [data.slides],
+  );
+
+  const active = slides[Math.min(index, Math.max(slides.length - 1, 0))];
 
   useEffect(() => {
-    if (reduce) return;
+    if (reduce || slides.length < 2) return;
     const timer = window.setInterval(
       () => setIndex((current) => (current + 1) % slides.length),
-      5200,
+      Math.max(1.5, data.autoplaySeconds) * 1000,
     );
     return () => window.clearInterval(timer);
-  }, [reduce]);
+  }, [reduce, slides.length, data.autoplaySeconds]);
+
+  if (!slides.length || !active) return null;
 
   return (
     <section className="relative z-20 bg-[#4c1d95] py-12 sm:py-16">
@@ -105,23 +79,16 @@ export function HeroJourneySlider() {
                     alt={slide.alt}
                     fill
                     sizes="(max-width: 1024px) 50vw, 25vw"
+                    style={{ objectPosition: slide.imagePosition }}
                     className={cn(
                       "object-cover transition duration-700",
                       on ? "scale-100" : "scale-[1.04]",
                     )}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#1b1233]/80 via-transparent to-transparent" />
-                  {slide.overlay === "prompt" ? (
-                    <div className="absolute inset-x-4 bottom-4 flex items-center gap-2 rounded-full bg-white/95 px-3 py-2 shadow-lg">
-                      <Sparkles className="size-4 text-[#673de6]" />
-                      <span className="text-[12px] font-semibold text-slate-700">
-                        Create a studio site…
-                      </span>
-                    </div>
-                  ) : null}
-                  {slide.overlay === "launch" ? (
-                    <p className="absolute top-4 left-4 rounded-full bg-[#673de6] px-3 py-1 text-[11px] font-bold text-white">
-                      Live in minutes
+                  {slide.badge ? (
+                    <p className="absolute top-4 left-4 rounded-full bg-[#673de6] px-3 py-1 text-[11px] font-bold text-white shadow-lg">
+                      {slide.badge}
                     </p>
                   ) : null}
                 </div>
@@ -142,13 +109,15 @@ export function HeroJourneySlider() {
               {active.title}
             </h2>
             <p className="mt-2 text-[15px] text-white/75">{active.body}</p>
-            <Link
-              href={active.href}
-              className="mt-4 inline-flex items-center gap-1.5 text-[14px] font-extrabold text-white"
-            >
-              {active.label === "Build" ? "Create with AI" : "Learn more"}
-              <ArrowRight className="size-4" />
-            </Link>
+            {active.ctaLabel ? (
+              <Link
+                href={active.ctaHref || "/"}
+                className="mt-4 inline-flex items-center gap-1.5 text-[14px] font-extrabold text-white"
+              >
+                {active.ctaLabel}
+                <ArrowRight className="size-4" />
+              </Link>
+            ) : null}
           </motion.div>
         </AnimatePresence>
       </div>

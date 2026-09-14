@@ -8,6 +8,7 @@ import { BusinessEmailEditor } from "@/components/orbit/business-email-editor";
 import { FooterEditor } from "@/components/orbit/footer-editor";
 import { HomeFaqsEditor } from "@/components/orbit/home-faqs-editor";
 import { OrbitImageField } from "@/components/orbit/image-field";
+import { JourneyEditor } from "@/components/orbit/journey-editor";
 import { SolutionsEditor } from "@/components/orbit/solutions-editor";
 import { WhyChooseEditor } from "@/components/orbit/why-choose-editor";
 import {
@@ -17,6 +18,7 @@ import {
   defaultFooterSection,
   defaultHomeFaqsSection,
   defaultHeroFeatureBar,
+  defaultJourneySection,
   defaultTechnologyPartners,
   defaultWhyChooseSection,
   type CmsDomainTld,
@@ -532,6 +534,16 @@ export default function OrbitContentPage() {
           }}
         />
       </section>
+
+      <JourneyEditor
+        value={sections.journey ?? defaultJourneySection()}
+        onChange={(journey) => setSections({ ...sections, journey })}
+        onPersist={(journey) => {
+          const current = sectionsRef.current;
+          if (!current) return;
+          commitHome({ ...current, journey });
+        }}
+      />
 
       {sections.solutions ? (
         <SolutionsEditor

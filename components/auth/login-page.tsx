@@ -69,7 +69,7 @@ export function AuthPageView({
   const features = (content.features ?? []).slice(0, 4);
   const backgroundImage =
     content.backgroundImage?.trim() || "/images/hero-atmosphere.jpg";
-  const logoSrc = content.logoPath?.trim() || "/logo/hostingbeyond-logo-v5.png";
+  const logoSrc = content.logoPath?.trim() || "/logo/hostingbeyond-logo-v6.png";
   const duration = reduceMotion ? 0 : 0.45;
   const delay = reduceMotion ? 0 : 0.08;
   const isSignup = mode === "signup";
