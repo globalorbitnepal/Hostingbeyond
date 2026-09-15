@@ -80,7 +80,7 @@ function MailInbox({ content }: { content: CmsBusinessEmailContent }) {
         <span className="size-2.5 rounded-full bg-[#febc2e]" />
         <span className="size-2.5 rounded-full bg-[#28c840]" />
         <p className="ml-2 flex items-center gap-1.5 text-[12px] font-extrabold text-slate-900">
-          <Mail className="size-3.5 text-[#4f46e5]" />
+          <Mail className="size-3.5 text-[#673de6]" />
           {content.mailTitle}
         </p>
       </div>
@@ -88,7 +88,7 @@ function MailInbox({ content }: { content: CmsBusinessEmailContent }) {
         <aside className="hidden w-[118px] border-r border-white/70 bg-white/40 p-3 sm:block">
           <button
             type="button"
-            className="mb-3 inline-flex h-8 w-full items-center justify-center gap-1 rounded-full bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-[11px] font-bold text-white"
+            className="mb-3 inline-flex h-8 w-full items-center justify-center gap-1 rounded-full bg-gradient-to-r from-[#673de6] to-[#2f1c6a] text-[11px] font-bold text-white"
           >
             <PenLine className="size-3" />
             {content.composeLabel}
@@ -99,7 +99,7 @@ function MailInbox({ content }: { content: CmsBusinessEmailContent }) {
               <p
                 key={item.label}
                 className={`flex items-center justify-between rounded-lg px-2 py-1.5 text-[11px] font-semibold ${
-                  item.active ? "bg-[#eef4ff] text-slate-900" : "text-slate-500"
+                  item.active ? "bg-[#f4f5ff] text-slate-900" : "text-slate-500"
                 }`}
               >
                 <span className="inline-flex items-center gap-1.5">
@@ -237,7 +237,7 @@ function MailStage({ content }: { content: CmsBusinessEmailContent }) {
       </div>
 
       <div className="absolute top-[16%] left-[4%] z-30 hidden items-center gap-2 rounded-full border border-white/80 bg-white/90 px-3 py-1.5 shadow-[0_10px_28px_rgba(15,23,42,0.12)] backdrop-blur-xl sm:flex">
-        <span className="inline-flex size-6 items-center justify-center rounded-full bg-[#eef2ff] text-[#4f46e5]">
+        <span className="inline-flex size-6 items-center justify-center rounded-full bg-[#f4f5ff] text-[#673de6]">
           <Mail className="size-3.5" />
         </span>
         <span className="text-[12px] font-bold text-slate-800">
@@ -258,7 +258,7 @@ export function BusinessEmailSection({
   const reduceMotion = useReducedMotion();
 
   return (
-    <section className="hb-home-section hb-home-section--white">
+    <section className="hb-home-section hb-home-section--lavender">
       <div className="hb-shell relative z-10">
         <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:gap-10 xl:gap-14">
           <motion.div
@@ -278,14 +278,14 @@ export function BusinessEmailSection({
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
           >
-            <span className="inline-flex w-fit items-center gap-2 rounded-full bg-[#eef2ff] px-3.5 py-1.5 text-[12px] font-bold tracking-[0.04em] text-[#4f46e5]">
+            <span className="inline-flex w-fit items-center gap-2 rounded-full bg-[#f4f5ff] px-3.5 py-1.5 text-[12px] font-bold tracking-[0.04em] text-[#673de6]">
               <Mail className="size-3.5" aria-hidden />
               {data.badge}
             </span>
 
             <h2 className="font-heading mt-5 text-[clamp(1.9rem,3.8vw,3.15rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-[#2f1c6a]">
               <span className="block">{data.title}</span>
-              <span className="block bg-gradient-to-r from-[#2563eb] via-[#4f46e5] to-[#7c3aed] bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-[#673de6] via-[#7c3aed] to-[#2f1c6a] bg-clip-text text-transparent">
                 {data.titleAccent}
               </span>
             </h2>
@@ -302,7 +302,7 @@ export function BusinessEmailSection({
                     key={item.id}
                     className="flex items-start gap-3 rounded-2xl border border-slate-200/80 bg-[#f8fbff] px-3.5 py-3.5"
                   >
-                    <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-white text-[#2563eb] shadow-[0_8px_18px_rgba(37,80,130,0.08)] ring-1 ring-slate-100">
+                    <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-white text-[#673de6] shadow-[0_8px_18px_rgba(37,80,130,0.08)] ring-1 ring-slate-100">
                       <Icon className="size-[18px]" />
                     </span>
                     <span className="min-w-0 pt-0.5">
@@ -343,7 +343,7 @@ export function BusinessEmailSection({
                 .filter(Boolean)
                 .map((item) => (
                   <span key={item} className="inline-flex items-center gap-1.5">
-                    <Check className="size-3.5 text-[#2563eb]" />
+                    <Check className="size-3.5 text-[#673de6]" />
                     {item}
                   </span>
                 ))}
@@ -356,7 +356,7 @@ export function BusinessEmailSection({
             const Icon = featureIcons[item.icon] ?? Globe;
             return (
               <article key={item.id} className="flex gap-3">
-                <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[#eef4ff] text-[#2563eb]">
+                <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[#f4f5ff] text-[#673de6]">
                   <Icon className="size-5" />
                 </span>
                 <div>

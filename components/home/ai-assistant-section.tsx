@@ -229,7 +229,7 @@ function AssistantChat({ content }: { content: CmsAiAssistantContent }) {
     <div className="overflow-hidden rounded-[28px] border border-white/80 bg-white/70 shadow-[0_32px_80px_-28px_rgba(37,80,130,0.45)] backdrop-blur-2xl sm:rounded-[32px]">
       <div className="flex items-center justify-between gap-3 border-b border-white/70 px-4 py-3">
         <div className="flex items-center gap-2.5">
-          <span className="inline-flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-[#38bdf8] to-[#2563eb] text-white">
+          <span className="inline-flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-[#7b5cff] to-[#673de6] text-white">
             <Sparkles className="size-4" />
           </span>
           <span>
@@ -250,7 +250,7 @@ function AssistantChat({ content }: { content: CmsAiAssistantContent }) {
       </div>
 
       <div className="space-y-3 p-4">
-        <div className="max-w-[92%] rounded-2xl bg-[#eef4ff] px-3.5 py-3">
+        <div className="max-w-[92%] rounded-2xl bg-[#f4f5ff] px-3.5 py-3">
           <p className="min-h-[22px] text-[15px] font-extrabold text-slate-900">
             {chars[0]}
             <Caret on={active === 0} />
@@ -271,7 +271,7 @@ function AssistantChat({ content }: { content: CmsAiAssistantContent }) {
                 type="button"
                 className="flex w-full items-center gap-2 rounded-full border border-white/80 bg-white/90 px-3 py-2 text-left text-[12px] font-semibold text-slate-700 shadow-[0_8px_18px_rgba(37,80,130,0.06)]"
               >
-                <Icon className="size-3.5 shrink-0 text-[#2563eb]" />
+                <Icon className="size-3.5 shrink-0 text-[#673de6]" />
                 <span className="min-w-0 truncate">
                   {chars[lineIndex]}
                   <Caret on={active === lineIndex} />
@@ -359,7 +359,7 @@ function AssistantStage({ content }: { content: CmsAiAssistantContent }) {
               key={stat.id}
               className="flex items-center gap-2 rounded-2xl border border-white/80 bg-white/80 px-2.5 py-2 shadow-[0_12px_30px_rgba(37,80,130,0.12)] backdrop-blur-xl"
             >
-              <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-xl bg-[#eef4ff] text-[#2563eb]">
+              <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-xl bg-[#f4f5ff] text-[#673de6]">
                 <Icon className="size-4" />
               </span>
               <span>
@@ -435,7 +435,7 @@ export function AiAssistantSection({
 
             <h2 className="font-heading mt-6 text-[clamp(1.85rem,4vw,3.4rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-[#2f1c6a]">
               <span className="block">{data.title}</span>
-              <span className="block bg-gradient-to-r from-[#2563eb] via-[#4f46e5] to-[#7c3aed] bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-[#673de6] via-[#7c3aed] to-[#2f1c6a] bg-clip-text text-transparent">
                 {data.titleAccent}
               </span>
             </h2>
@@ -449,7 +449,7 @@ export function AiAssistantSection({
                 const Icon = highlightIcons[item.icon] ?? Zap;
                 return (
                   <div key={item.id} className="flex items-start gap-3">
-                    <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl border border-white/80 bg-white/80 text-[#2563eb] shadow-[0_8px_20px_rgba(37,80,130,0.08)]">
+                    <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl border border-white/80 bg-white/80 text-[#673de6] shadow-[0_8px_20px_rgba(37,80,130,0.08)]">
                       <Icon className="size-[18px]" />
                     </span>
                     <span>

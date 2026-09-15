@@ -6,6 +6,7 @@ import { ArrowRight } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 
 import { routes } from "@/config/routes";
+import { hbSpring } from "@/lib/motion";
 
 const tiles = [
   {
@@ -42,41 +43,42 @@ export function PowerTilesSection() {
   const reduce = useReducedMotion();
 
   return (
-    <section className="hb-home-section hb-home-section--ice">
+    <section className="hb-home-section hb-home-section--white">
       <div className="hb-shell">
         <motion.div
           initial={reduce ? false : { opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.4 }}
+          transition={hbSpring}
           className="max-w-3xl"
         >
-          <h2 className="font-heading text-[clamp(1.7rem,3.4vw,2.85rem)] leading-[1.12] font-extrabold tracking-[-0.045em] text-[#2f1c6a]">
+          <h2 className="font-heading text-[clamp(1.85rem,3.6vw,3.1rem)] leading-[1.08] font-extrabold tracking-[-0.05em] text-[#2f1c6a]">
             More power when you need it
           </h2>
-          <p className="mt-3 text-[15.5px] leading-relaxed text-slate-600">
-            Same purple platform. Extra horsepower for agencies, apps, and
-            workloads that outgrow shared hosting.
+          <p className="mt-3 text-[16px] leading-relaxed text-[#727586]">
+            Extra horsepower for agencies, apps, and workloads that outgrow
+            shared hosting — same purple platform.
           </p>
         </motion.div>
 
-        <div className="mt-8 grid gap-4 md:grid-cols-2">
+        <div className="mt-10 grid gap-4 md:grid-cols-2">
           {tiles.map((tile, index) => (
             <motion.div
               key={tile.id}
-              initial={reduce ? false : { opacity: 0, y: 20 }}
+              initial={reduce ? false : { opacity: 0, y: 22 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.2 }}
-              transition={{ delay: reduce ? 0 : index * 0.07, duration: 0.45 }}
+              transition={{ delay: reduce ? 0 : index * 0.07, duration: 0.5 }}
             >
               <Link
                 href={tile.href}
-                className="group grid overflow-hidden rounded-[28px] bg-white ring-1 ring-[#e4e0ff] transition hover:-translate-y-0.5 hover:shadow-[0_24px_50px_-28px_rgba(47,28,106,0.4)] sm:grid-cols-[1.1fr_0.9fr]"
+                className="group grid overflow-hidden rounded-[20px] bg-white transition duration-500 hover:-translate-y-1 hover:shadow-[0_28px_50px_-28px_rgba(47,28,106,0.4)] sm:grid-cols-[1.15fr_0.85fr]"
               >
-                <div className="flex flex-col justify-center px-6 py-6">
+                <div className="flex flex-col justify-center px-6 py-7">
                   <h3 className="text-[18px] font-extrabold text-[#2f1c6a]">
                     {tile.title}
                   </h3>
-                  <p className="mt-1.5 text-[14px] leading-relaxed text-slate-600">
+                  <p className="mt-1.5 text-[14px] leading-relaxed text-[#727586]">
                     {tile.body}
                   </p>
                   <span className="mt-4 inline-flex items-center gap-1 text-[14px] font-extrabold text-[#673de6]">
@@ -84,13 +86,13 @@ export function PowerTilesSection() {
                     <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
                   </span>
                 </div>
-                <div className="relative min-h-[160px]">
+                <div className="relative min-h-[180px]">
                   <Image
                     src={tile.image}
                     alt=""
                     fill
                     sizes="(max-width: 768px) 100vw, 30vw"
-                    className="object-cover transition duration-700 group-hover:scale-[1.04]"
+                    className="object-cover transition duration-700 group-hover:scale-[1.06]"
                   />
                 </div>
               </Link>

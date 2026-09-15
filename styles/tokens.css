@@ -5,9 +5,11 @@
 :root {
   --hb-bg: #0a1630;
   --hb-navy: #0c1a36;
-  --hb-blue: #2f6bff;
-  --hb-purple: #7c3aed;
-  --hb-white: #f8fafc;
+  --hb-blue: #673de6;
+  --hb-purple: #673de6;
+  --hb-ink: #2f1c6a;
+  --hb-wash: #f4f5ff;
+  --hb-white: #ffffff;
   --hb-muted: #c5d0e6;
   --hb-glass: rgba(255, 255, 255, 0.08);
   --hb-glass-strong: rgba(18, 32, 62, 0.55);
@@ -15,7 +17,7 @@
   --hb-border-blue: rgba(37, 99, 235, 0.35);
   --hb-glow-blue: rgba(37, 99, 235, 0.32);
   --hb-glow-purple: rgba(124, 58, 237, 0.28);
-  --hb-gradient: linear-gradient(105deg, #2563eb 0%, #7c3aed 100%);
+  --hb-gradient: linear-gradient(105deg, #673de6 0%, #2f1c6a 100%);
   --hb-logo-width: 272px;
   --hb-header-radius: 26px;
   --hb-header-blur: 28px;

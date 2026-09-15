@@ -91,7 +91,7 @@ export default async function HomePage() {
       <StorySplitSection
         eyebrow="Grow"
         heading="Bring customers back after you launch"
-        tone="ice"
+        tone="white"
         imageFirst
         slides={[
           {

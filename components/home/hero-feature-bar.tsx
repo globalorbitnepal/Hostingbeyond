@@ -22,10 +22,10 @@ function IconTile({
   const tones = {
     white:
       "border border-slate-200/80 bg-white shadow-[0_2px_10px_rgba(60,120,170,0.14)]",
-    sky: "bg-[#d6e8f8] text-[#2563eb]",
+    sky: "bg-[#f4f5ff] text-[#673de6]",
     green: "bg-[#d8f3e4] text-[#16a34a]",
     violet:
-      "bg-gradient-to-br from-[#7c3aed]/15 to-[#2563eb]/20 text-[#4f46e5]",
+      "bg-gradient-to-br from-[#673de6]/15 to-[#2f1c6a]/10 text-[#673de6]",
     orange:
       "border border-orange-100/90 bg-white shadow-[0_2px_12px_rgba(255,108,44,0.22)]",
     blue: "border border-sky-100/90 bg-white shadow-[0_2px_12px_rgba(33,117,155,0.18)]",
@@ -123,7 +123,7 @@ export function HeroFeatureBar({ bar }: { bar?: CmsHeroFeatureBar }) {
           </p>
           <p className="text-[12px] font-bold text-slate-900 sm:text-[13px]">
             {data.offerTitle}{" "}
-            <span className="bg-gradient-to-r from-[#7c3aed] to-[#2563eb] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#673de6] to-[#2f1c6a] bg-clip-text text-transparent">
               {data.offerHighlight}
             </span>
           </p>

@@ -65,7 +65,7 @@ export function SectionStoryBand({
                 className={
                   tone === "dark"
                     ? "bg-gradient-to-r from-[#c4b5fd] via-[#a78bfa] to-white bg-clip-text text-transparent"
-                    : "bg-gradient-to-r from-[#673de6] via-[#7c3aed] to-[#4f46e5] bg-clip-text text-transparent"
+                    : "bg-gradient-to-r from-[#673de6] via-[#7c3aed] to-[#2f1c6a] bg-clip-text text-transparent"
                 }
               >
                 {word}
@@ -81,7 +81,7 @@ export function SectionStoryBand({
                   className={
                     tone === "dark"
                       ? "inline-block bg-gradient-to-r from-[#c4b5fd] via-[#a78bfa] to-white bg-clip-text text-transparent"
-                      : "inline-block bg-gradient-to-r from-[#673de6] via-[#7c3aed] to-[#4f46e5] bg-clip-text text-transparent"
+                      : "inline-block bg-gradient-to-r from-[#673de6] via-[#7c3aed] to-[#2f1c6a] bg-clip-text text-transparent"
                   }
                 >
                   {word}

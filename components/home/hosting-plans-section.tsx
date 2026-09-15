@@ -50,10 +50,10 @@ function PlanGlyph({ plan }: { plan: CmsHostingPlan }) {
       className={cn(
         "inline-flex size-11 items-center justify-center rounded-2xl shadow-[0_8px_18px_-12px_rgba(37,99,235,0.45)]",
         popular
-          ? "bg-[#eef2ff] text-[#4f46e5]"
+          ? "bg-[#f4f5ff] text-[#673de6]"
           : plan.accent === "purple"
             ? "bg-[#faf5ff] text-[#c026d3]"
-            : "bg-[#eef6ff] text-[#2563eb]",
+            : "bg-[#f4f5ff] text-[#673de6]",
       )}
     >
       <Icon className="size-5" strokeWidth={1.85} aria-hidden />
@@ -81,8 +81,8 @@ function PlanCard({
     plan.accent === "purple"
       ? "text-[#c026d3]"
       : popular
-        ? "text-[#4f46e5]"
-        : "text-[#2563eb]";
+        ? "text-[#673de6]"
+        : "text-[#673de6]";
 
   return (
     <motion.article
@@ -93,8 +93,8 @@ function PlanCard({
       className={cn(
         "relative flex h-full flex-col rounded-[26px] border bg-white p-5 transition duration-300 sm:p-6",
         popular
-          ? "z-10 border-indigo-200/90 bg-[linear-gradient(180deg,#f5f3ff_0%,#ffffff_42%)] shadow-[0_28px_60px_-28px_rgba(79,70,229,0.45)] ring-1 ring-indigo-100 hover:-translate-y-1"
-          : "border-slate-200/90 shadow-[0_18px_44px_-30px_rgba(37,80,130,0.4)] hover:-translate-y-0.5 hover:shadow-[0_22px_48px_-28px_rgba(37,80,130,0.5)]",
+          ? "z-10 border-[#d9d2ff] bg-[linear-gradient(180deg,#f4f5ff_0%,#ffffff_42%)] shadow-[0_28px_60px_-28px_rgba(103,61,230,0.42)] ring-1 ring-[#eaeaff] hover:-translate-y-1"
+          : "border-[#eaeaff] shadow-[0_18px_44px_-30px_rgba(47,28,106,0.28)] hover:-translate-y-0.5 hover:shadow-[0_22px_48px_-28px_rgba(47,28,106,0.38)]",
       )}
     >
       <div className="flex items-start justify-between gap-3">
@@ -105,7 +105,7 @@ function PlanCard({
             </span>
           ) : null}
           {popular && plan.popularLabel ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#eef2ff] px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-[#4f46e5] uppercase">
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#f4f5ff] px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-[#673de6] uppercase">
               <Star className="size-3 fill-current" aria-hidden />
               {plan.popularLabel}
             </span>
@@ -173,7 +173,7 @@ function PlanCard({
             key={feature}
             className="flex items-start gap-2.5 text-[13.5px] leading-snug text-slate-600"
           >
-            <span className="mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-[#e8f1ff] text-[#2563eb]">
+            <span className="mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-[#f4f5ff] text-[#673de6]">
               <Check className="size-2.5" strokeWidth={3} aria-hidden />
             </span>
             <span>{feature}</span>
@@ -223,13 +223,13 @@ export function HostingPlansSection({
       <div className="hb-shell relative z-10">
         <div className="mx-auto max-w-3xl text-center">
           <p className="inline-flex items-center gap-2 rounded-full border border-white bg-white/80 px-3 py-1 text-[11px] font-bold tracking-[0.22em] text-slate-500 uppercase shadow-[0_8px_20px_-14px_rgba(37,80,130,0.4)]">
-            <Layers className="size-3.5 text-[#2563eb]" aria-hidden />
+            <Layers className="size-3.5 text-[#673de6]" aria-hidden />
             {data.eyebrow}
           </p>
           <h2 className="font-heading mt-3 text-[clamp(1.7rem,3.6vw,3.15rem)] leading-[1.12] font-extrabold tracking-[-0.045em] text-[#2f1c6a]">
             {data.title}{" "}
             {data.titleAccent ? (
-              <span className="bg-gradient-to-r from-[#2563eb] via-[#4f46e5] to-[#7c3aed] bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[#673de6] via-[#7c3aed] to-[#2f1c6a] bg-clip-text text-transparent">
                 {data.titleAccent}
               </span>
             ) : null}
@@ -252,7 +252,7 @@ export function HostingPlansSection({
                     />
                   ) : null}
                   <span className="inline-flex items-center gap-2 text-[13px] font-semibold text-slate-700">
-                    <Icon className="size-4 text-[#2563eb]" aria-hidden />
+                    <Icon className="size-4 text-[#673de6]" aria-hidden />
                     {item.label}
                   </span>
                 </li>
@@ -313,7 +313,7 @@ export function HostingPlansSection({
                 key={item.id}
                 className="flex h-full items-start gap-3 rounded-[22px] border border-white bg-white px-4 py-4 shadow-[0_16px_40px_-28px_rgba(37,80,130,0.42)]"
               >
-                <span className="mt-0.5 inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-[#eef4ff] text-[#2563eb]">
+                <span className="mt-0.5 inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-[#f4f5ff] text-[#673de6]">
                   <GuaranteeIcon icon={item.icon} className="size-[18px]" />
                 </span>
                 <span className="min-w-0 flex-1">

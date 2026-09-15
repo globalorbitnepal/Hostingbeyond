@@ -74,7 +74,7 @@ export function WhyChooseSection({
           </p>
           <h2 className="font-heading mt-3 text-[clamp(1.75rem,3.6vw,3.15rem)] leading-[1.12] font-extrabold tracking-[-0.045em] text-[#2f1c6a]">
             {data.title}{" "}
-            <span className="bg-gradient-to-r from-[#2563eb] via-[#4f46e5] to-[#7c3aed] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#673de6] via-[#7c3aed] to-[#2f1c6a] bg-clip-text text-transparent">
               {data.titleAccent}
             </span>
           </h2>
@@ -82,12 +82,12 @@ export function WhyChooseSection({
             {data.description}
           </p>
           {data.handwrittenNote ? (
-            <p className="font-hand mt-3 text-[15px] font-semibold text-[#4f46e5] xl:hidden">
+            <p className="font-hand mt-3 text-[15px] font-semibold text-[#673de6] xl:hidden">
               {data.handwrittenNote}
             </p>
           ) : null}
           {data.handwrittenNote ? (
-            <p className="font-hand absolute -top-2 -right-2 hidden rotate-6 text-[15px] leading-tight font-semibold whitespace-pre-line text-[#4f46e5] xl:block">
+            <p className="font-hand absolute -top-2 -right-2 hidden rotate-6 text-[15px] leading-tight font-semibold whitespace-pre-line text-[#673de6] xl:block">
               {data.handwrittenNote}
             </p>
           ) : null}
@@ -111,7 +111,7 @@ export function WhyChooseSection({
                 className="rounded-[22px] border border-slate-100 bg-white p-4 shadow-[0_14px_40px_-28px_rgba(37,80,130,0.35)] sm:p-5"
               >
                 <div className="flex items-start gap-3">
-                  <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl bg-[#eef4ff] text-[#2563eb]">
+                  <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl bg-[#f4f5ff] text-[#673de6]">
                     <Icon className="size-[18px]" strokeWidth={1.9} />
                   </span>
                   <span className="pt-1 text-[11px] font-bold tracking-wide text-slate-300">

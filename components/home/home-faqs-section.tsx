@@ -63,7 +63,7 @@ export function HomeFaqsSection({ content }: { content?: CmsHomeFaqsContent }) {
           </p>
           <h2 className="font-heading mt-3 text-[clamp(1.75rem,3.6vw,3.15rem)] leading-[1.12] font-extrabold tracking-[-0.045em] text-[#2f1c6a]">
             {data.title}{" "}
-            <span className="bg-gradient-to-r from-[#2563eb] via-[#4f46e5] to-[#7c3aed] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#673de6] via-[#7c3aed] to-[#2f1c6a] bg-clip-text text-transparent">
               {data.titleAccent}
             </span>
           </h2>
@@ -71,12 +71,12 @@ export function HomeFaqsSection({ content }: { content?: CmsHomeFaqsContent }) {
             {data.description}
           </p>
           {data.handwrittenNote ? (
-            <p className="font-hand mt-3 text-[15px] leading-tight font-semibold whitespace-pre-line text-[#4f46e5] xl:hidden">
+            <p className="font-hand mt-3 text-[15px] leading-tight font-semibold whitespace-pre-line text-[#673de6] xl:hidden">
               {data.handwrittenNote}
             </p>
           ) : null}
           {data.handwrittenNote ? (
-            <p className="font-hand absolute top-0 -right-4 hidden max-w-[9rem] rotate-6 text-left text-[15px] leading-tight font-semibold whitespace-pre-line text-[#4f46e5] xl:block">
+            <p className="font-hand absolute top-0 -right-4 hidden max-w-[9rem] rotate-6 text-left text-[15px] leading-tight font-semibold whitespace-pre-line text-[#673de6] xl:block">
               {data.handwrittenNote}
             </p>
           ) : null}
@@ -95,7 +95,7 @@ export function HomeFaqsSection({ content }: { content?: CmsHomeFaqsContent }) {
               >
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5">
-                    <span className="inline-flex size-9 items-center justify-center rounded-xl bg-[#eef4ff] text-[#2563eb]">
+                    <span className="inline-flex size-9 items-center justify-center rounded-xl bg-[#f4f5ff] text-[#673de6]">
                       <Icon className="size-4" />
                     </span>
                     <h3 className="text-[16px] font-extrabold tracking-tight text-slate-950">
@@ -122,7 +122,7 @@ export function HomeFaqsSection({ content }: { content?: CmsHomeFaqsContent }) {
                           onClick={() => setOpenId(open ? null : key)}
                           className="flex w-full items-start gap-3 px-3.5 py-3.5 text-left sm:px-4"
                         >
-                          <span className="mt-0.5 text-[12px] font-extrabold text-[#4f46e5]">
+                          <span className="mt-0.5 text-[12px] font-extrabold text-[#673de6]">
                             {number}
                           </span>
                           <span className="min-w-0 flex-1 text-[14px] leading-snug font-bold text-slate-900 sm:text-[15px]">
@@ -162,7 +162,7 @@ export function HomeFaqsSection({ content }: { content?: CmsHomeFaqsContent }) {
             <button
               type="button"
               onClick={() => setExpanded((value) => !value)}
-              className="inline-flex h-12 items-center justify-center rounded-full bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-6 text-[14px] font-bold text-white shadow-[0_12px_28px_rgba(37,99,235,0.32)]"
+              className="inline-flex h-12 items-center justify-center rounded-full bg-gradient-to-r from-[#673de6] to-[#2f1c6a] px-6 text-[14px] font-bold text-white shadow-[0_12px_28px_rgba(37,99,235,0.32)]"
             >
               {expanded ? "Show fewer FAQs" : data.ctaLabel}
             </button>

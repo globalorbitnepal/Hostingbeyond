@@ -89,7 +89,7 @@ function SitePhoto({
     return (
       <div
         className={cn(
-          "h-full w-full bg-[linear-gradient(160deg,#7dd3fc_0%,#4f46e5_48%,#0f172a_100%)]",
+          "h-full w-full bg-[linear-gradient(160deg,#c4b5fd_0%,#673de6_48%,#2f1c6a_100%)]",
           className,
         )}
       />
@@ -256,7 +256,7 @@ function DashboardPreview({ content }: { content: CmsBeyondAiContent }) {
               key={tool.label}
               className="flex size-[68px] flex-col items-center justify-center rounded-2xl border border-white/80 bg-white/70 text-center shadow-[0_12px_30px_rgba(37,80,130,0.12)] backdrop-blur-xl"
             >
-              <Icon className="size-4 text-[#4f46e5]" />
+              <Icon className="size-4 text-[#673de6]" />
               <span className="mt-1 text-[9px] font-bold text-slate-600">
                 {tool.label}
               </span>
@@ -276,10 +276,10 @@ function DashboardPreview({ content }: { content: CmsBeyondAiContent }) {
           <span className="size-2.5 rounded-full bg-[#28c840]" />
           <div className="ml-3 flex min-w-0 items-center gap-4 text-[11px] font-semibold text-slate-400">
             <span className="flex items-center gap-1.5 text-slate-800">
-              <Sparkles className="size-3.5 text-[#4f46e5]" />
+              <Sparkles className="size-3.5 text-[#673de6]" />
               {content.badge}
             </span>
-            <span className="hidden text-[#2563eb] sm:inline">Sites</span>
+            <span className="hidden text-[#673de6] sm:inline">Sites</span>
             <span className="hidden md:inline">Templates</span>
             <span className="hidden md:inline">AI Assistant</span>
           </div>
@@ -290,7 +290,7 @@ function DashboardPreview({ content }: { content: CmsBeyondAiContent }) {
             <h3 className="text-[15px] font-extrabold tracking-tight text-slate-900">
               {content.dashboardTitle}
             </h3>
-            <span className="inline-flex h-8 items-center rounded-full bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-3 text-[11px] font-bold text-white">
+            <span className="inline-flex h-8 items-center rounded-full bg-gradient-to-r from-[#673de6] to-[#2f1c6a] px-3 text-[11px] font-bold text-white">
               + New Website
             </span>
           </div>
@@ -314,7 +314,7 @@ function DashboardPreview({ content }: { content: CmsBeyondAiContent }) {
           {[40, 55, 48, 72, 64, 88, 76].map((h, i) => (
             <span
               key={i}
-              className="w-1.5 rounded-full bg-gradient-to-t from-[#2563eb] to-[#7dd3fc]"
+              className="w-1.5 rounded-full bg-gradient-to-t from-[#673de6] to-[#c4b5fd]"
               style={{ height: `${h}%` }}
             />
           ))}
@@ -323,7 +323,7 @@ function DashboardPreview({ content }: { content: CmsBeyondAiContent }) {
 
       <div className="absolute right-2 -bottom-2 z-20 hidden w-[210px] rounded-2xl border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(237,233,254,0.9))] p-3.5 shadow-[0_16px_40px_rgba(79,70,229,0.16)] backdrop-blur-xl sm:block md:right-12">
         <p className="mb-2 flex items-center gap-1.5 text-[12px] font-extrabold text-slate-900">
-          <Cloud className="size-3.5 text-[#2563eb]" />
+          <Cloud className="size-3.5 text-[#673de6]" />
           {content.saasTitle}
         </p>
         {content.saasItems.map((item) => (
@@ -331,7 +331,7 @@ function DashboardPreview({ content }: { content: CmsBeyondAiContent }) {
             key={item}
             className="flex items-center gap-1.5 text-[11px] font-medium text-slate-600"
           >
-            <Check className="size-3 text-[#2563eb]" />
+            <Check className="size-3 text-[#673de6]" />
             {item}
           </p>
         ))}
@@ -359,7 +359,7 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
             <div className="flex flex-wrap items-center gap-2.5">
               <BeyondAiBadge text={data.badge} />
               {data.badgeSecondary ? (
-                <span className="rounded-full border border-white/80 bg-white/70 px-3.5 py-1.5 text-[12px] font-bold text-[#4f46e5] shadow-[0_8px_22px_rgba(79,70,229,0.08)] backdrop-blur-xl">
+                <span className="rounded-full border border-white/80 bg-white/70 px-3.5 py-1.5 text-[12px] font-bold text-[#673de6] shadow-[0_8px_22px_rgba(79,70,229,0.08)] backdrop-blur-xl">
                   {data.badgeSecondary}
                 </span>
               ) : null}
@@ -371,7 +371,7 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
                   {line}
                 </span>
               ))}
-              <span className="block bg-gradient-to-r from-[#2563eb] via-[#4f46e5] to-[#7c3aed] bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-[#673de6] via-[#7c3aed] to-[#2f1c6a] bg-clip-text text-transparent">
                 {data.titleAccent}
               </span>
             </h2>
@@ -388,7 +388,7 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
                     key={item.id}
                     className="flex items-start gap-2.5 rounded-2xl border border-white/70 bg-white/55 px-2 py-2 shadow-[0_10px_24px_rgba(37,80,130,0.06)] backdrop-blur-xl sm:flex-col sm:items-center sm:bg-transparent sm:px-0 sm:py-0 sm:text-center sm:shadow-none"
                   >
-                    <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl border border-white/80 bg-white/80 text-[#2563eb] shadow-[0_8px_20px_rgba(37,80,130,0.08)]">
+                    <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl border border-white/80 bg-white/80 text-[#673de6] shadow-[0_8px_20px_rgba(37,80,130,0.08)]">
                       <Icon className="size-[18px]" />
                     </span>
                     <span>
@@ -407,7 +407,7 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link
                 href={data.primaryCtaHref}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2563eb] to-[#4f46e5] px-6 text-[14px] font-bold text-white shadow-[0_12px_28px_rgba(37,99,235,0.32)]"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#673de6] to-[#5025d1] px-6 text-[14px] font-bold text-white shadow-[0_12px_28px_rgba(37,99,235,0.32)]"
               >
                 <Sparkles className="size-4" />
                 {data.primaryCtaLabel}
@@ -427,7 +427,7 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
                 .filter(Boolean)
                 .map((item) => (
                   <span key={item} className="inline-flex items-center gap-1">
-                    <Check className="size-3.5 text-[#2563eb]" />
+                    <Check className="size-3.5 text-[#673de6]" />
                     {item}
                   </span>
                 ))}
@@ -453,7 +453,7 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
                 key={item.id}
                 className="flex gap-3 rounded-2xl px-3 py-3 sm:px-4"
               >
-                <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[#eef4ff] text-[#2563eb]">
+                <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[#f4f5ff] text-[#673de6]">
                   <Icon className="size-5" />
                 </span>
                 <div>

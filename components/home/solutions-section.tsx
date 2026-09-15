@@ -22,10 +22,10 @@ export function SolutionsSection({
   return (
     <section
       aria-labelledby="hb-solutions-heading"
-      className="relative overflow-hidden bg-[#1b1233] pt-8 pb-10 sm:pt-10 sm:pb-12 lg:pt-12 lg:pb-14"
+      className="relative overflow-hidden bg-[linear-gradient(180deg,#2f1c6a_0%,#5025d1_42%,#f4f5ff_100%)] pt-10 pb-12 sm:pt-12 sm:pb-14 lg:pt-14 lg:pb-16"
     >
       <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,#1b1233_0%,#2a2150_55%,#f6f2ff_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,#2f1c6a_0%,#5025d1_48%,#f4f5ff_100%)]" />
         <div className="absolute top-[8%] left-[-10%] h-[50%] w-[45%] rounded-full bg-[radial-gradient(ellipse,rgba(167,139,250,0.28),transparent_68%)] blur-3xl" />
         <div className="absolute right-[-12%] bottom-[12%] h-[46%] w-[42%] rounded-full bg-[radial-gradient(ellipse,rgba(103,61,230,0.2),transparent_70%)] blur-3xl" />
       </div>

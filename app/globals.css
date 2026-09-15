@@ -104,29 +104,20 @@
     padding-block: clamp(3.2rem, 6vw, 5.5rem);
   }
 
-  .hb-home-section--ice {
-    background: #f4f8fd;
+  .hb-home-section--ice,
+  .hb-home-section--mist,
+  .hb-home-section--sheet,
+  .hb-home-section--lavender {
+    background: #f4f5ff;
   }
 
   .hb-home-section--white {
     background: #ffffff;
   }
 
-  .hb-home-section--mist {
-    background: linear-gradient(180deg, #f4f8fd 0%, #eef4fb 100%);
-  }
-
-  .hb-home-section--sheet {
-    background: #f6f2ff;
-  }
-
   .hb-home-section--plum {
-    background: #1b1233;
+    background: linear-gradient(180deg, #673de6 0%, #2f1c6a 100%);
     color: #fff;
-  }
-
-  .hb-home-section--lavender {
-    background: #f6f2ff;
   }
 
   .hb-hero-hostinger {
@@ -134,11 +125,30 @@
     isolation: isolate;
     background:
       radial-gradient(
-        ellipse at 50% -10%,
-        rgba(196, 181, 253, 0.38),
-        transparent 52%
+        ellipse at 50% -8%,
+        rgba(255, 255, 255, 0.22),
+        transparent 46%
       ),
-      linear-gradient(180deg, #6d28d9 0%, #673de6 42%, #4c1d95 100%);
+      linear-gradient(
+        180deg,
+        #7b5cff 0%,
+        #673de6 38%,
+        #5025d1 72%,
+        #2f1c6a 100%
+      );
+  }
+
+  .hb-ken {
+    animation: hb-ken 7s ease-out forwards;
+  }
+
+  @keyframes hb-ken {
+    from {
+      transform: scale(1.1);
+    }
+    to {
+      transform: scale(1);
+    }
   }
 
   /* Desktop: the speaker plate is the hero background, so no photo frame shows. */
@@ -156,11 +166,11 @@
   .hb-story-band {
     position: relative;
     padding-block: clamp(1.1rem, 2vw, 1.65rem);
-    background: #f6f2ff;
+    background: #f4f5ff;
   }
 
   .hb-story-band--dark {
-    background: #1b1233;
+    background: #2f1c6a;
   }
 }
 
