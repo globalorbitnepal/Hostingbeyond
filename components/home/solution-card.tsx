@@ -34,65 +34,47 @@ const STAGES: Record<
     file: string;
     prompt: string;
     kind: "prompt" | "domain";
-    headline: string;
-    lines: string[];
   }
 > = {
   "web-hosting": {
     file: "web-hosting.png",
     prompt: "Launch your website in minutes",
     kind: "prompt",
-    headline: "Web Hosting",
-    lines: ["NVMe SSD speed", "Free SSL included", "99.9% uptime"],
   },
   "cloud-hosting": {
     file: "cloud-hosting.png",
     prompt: "Scale across 12 global regions",
     kind: "prompt",
-    headline: "Cloud Hosting",
-    lines: ["Auto-scale nodes", "Anycast DNS", "Load balanced"],
   },
   "ecommerce-hosting": {
     file: "ecommerce.png",
     prompt: "Checkout that never drops",
     kind: "prompt",
-    headline: "eCommerce Hosting",
-    lines: ["Cart speed", "Secure pay", "PCI ready"],
   },
   "wordpress-hosting": {
     file: "wordpress.png",
     prompt: "WordPress, turbocharged",
     kind: "prompt",
-    headline: "WordPress Hosting",
-    lines: ["1-click WordPress", "Staging copies", "LiteSpeed cache"],
   },
   "reseller-hosting": {
     file: "reseller.png",
     prompt: "Sell hosting under your brand",
     kind: "prompt",
-    headline: "Reseller Hosting",
-    lines: ["White label", "Your pricing", "Client accounts"],
   },
   "business-email": {
     file: "business-email.png",
     prompt: "you@yourbrand.com is ready",
     kind: "prompt",
-    headline: "Business Email",
-    lines: ["Custom domain", "AI inbox", "Spam shield"],
   },
   vps: {
     file: "vps.png",
     prompt: "Root access. Isolated compute.",
     kind: "prompt",
-    headline: "VPS Hosting",
-    lines: ["Full root", "NVMe disks", "DDoS shield"],
   },
   domains: {
     file: "domains.png",
     prompt: "yourbrand",
     kind: "domain",
-    headline: "Domain Services",
-    lines: [".com .net .io", "DNS included", "Privacy lock"],
   },
 };
 
@@ -108,20 +90,18 @@ export function SolutionCard({ product, paused, priority }: Props) {
     file: "",
     prompt: product.name,
     kind: "prompt" as const,
-    headline: product.name,
-    lines: [product.category],
   };
   const plate = stage.file
-    ? `/images/home/solutions/${stage.file}?v=3`
+    ? `/images/home/solutions/${stage.file}?v=4`
     : product.images.find((image) => image.visible !== false)?.url || "";
 
   return (
-    <article className="group relative flex h-full min-h-[430px] flex-col overflow-hidden rounded-[32px] border border-white/35 bg-white/12 shadow-[0_28px_70px_-32px_rgba(15,10,40,0.55)] backdrop-blur-2xl transition-transform duration-500 ease-out hover:-translate-y-1 motion-reduce:transform-none lg:min-h-[470px]">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-[32px] border border-white/35 bg-white/12 shadow-[0_28px_70px_-32px_rgba(15,10,40,0.55)] backdrop-blur-2xl transition-transform duration-500 ease-out hover:-translate-y-1 motion-reduce:transform-none">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/70 to-transparent"
       />
-      <div className="flex min-h-[420px] flex-1 flex-col lg:min-h-[460px] lg:flex-row lg:items-stretch">
+      <div className="flex flex-1 flex-col lg:flex-row lg:items-center">
         <div className="flex min-w-0 flex-1 flex-col px-6 pt-6 pb-4 sm:px-8 sm:pt-8 sm:pb-5">
           <div className="flex items-center justify-between gap-3">
             <p className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.2em] text-white/70 uppercase">
@@ -151,17 +131,15 @@ export function SolutionCard({ product, paused, priority }: Props) {
             <ArrowRight className="size-4" />
           </Link>
         </div>
-        <div className="relative mx-5 mb-5 h-[210px] w-[calc(100%-2.5rem)] shrink-0 overflow-hidden rounded-[24px] border border-white/35 bg-white/10 ring-1 ring-white/20 sm:mx-6 sm:mb-6 sm:h-[250px] sm:w-[calc(100%-3rem)] lg:my-6 lg:mr-6 lg:ml-0 lg:h-auto lg:min-h-[280px] lg:w-[min(52%,28rem)] lg:flex-none">
+        <div className="relative mx-5 mb-5 aspect-[4/3] w-[calc(100%-2.5rem)] shrink-0 overflow-hidden rounded-[24px] border border-white/35 bg-[#1a0b3a] ring-1 ring-white/20 sm:mx-6 sm:mb-6 sm:w-[calc(100%-3rem)] lg:my-6 lg:mr-6 lg:ml-0 lg:w-[min(50%,26rem)]">
           <SolutionImageCarousel
             src={plate}
             alt={product.name}
             overlayText={stage.prompt}
             overlayKind={stage.kind}
-            headline={stage.headline}
-            lines={stage.lines}
             paused={paused}
             priority={priority}
-            sizes="(max-width: 640px) 92vw, (max-width: 1024px) 70vw, 480px"
+            sizes="(max-width: 640px) 92vw, (max-width: 1024px) 70vw, 420px"
             className="absolute inset-0 h-full w-full"
           />
         </div>

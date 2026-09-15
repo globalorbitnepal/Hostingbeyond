@@ -109,21 +109,28 @@ export function GlassBand({
 export function GlassPromptBar({
   text,
   playing = true,
+  className,
 }: {
   text: string;
   playing?: boolean;
+  className?: string;
 }) {
   const reduce = useReducedMotion();
   const typed = useTyped(text, playing, reduce, true);
 
   return (
-    <div className="absolute inset-x-4 bottom-5 sm:inset-x-7">
-      <div className="flex items-center gap-2 rounded-full border border-white/70 bg-white/90 px-4 py-3 shadow-[0_16px_40px_rgba(47,28,106,0.2)] backdrop-blur-xl">
-        <p className="min-w-0 flex-1 truncate text-[13px] font-semibold text-[#2f1c6a] sm:text-[15px]">
+    <div
+      className={cn(
+        "absolute inset-x-3 bottom-3 z-30 sm:inset-x-4 sm:bottom-4",
+        className,
+      )}
+    >
+      <div className="flex items-center gap-2 rounded-full border border-white/70 bg-white/92 px-3 py-2 shadow-[0_16px_40px_rgba(47,28,106,0.2)] backdrop-blur-xl sm:px-4 sm:py-2.5">
+        <p className="min-w-0 flex-1 truncate text-[12px] font-semibold text-[#2f1c6a] sm:text-[14px]">
           {typed}
           <span className="hb-caret ml-0.5 inline-block h-[1em] w-[2px] bg-[#673de6] align-[-2px]" />
         </p>
-        <span className="grid size-8 shrink-0 place-items-center rounded-full bg-gradient-to-r from-[#2563eb] to-[#673de6] text-sm font-bold text-white">
+        <span className="grid size-7 shrink-0 place-items-center rounded-full bg-gradient-to-r from-[#2563eb] to-[#673de6] text-sm font-bold text-white sm:size-8">
           →
         </span>
       </div>
@@ -135,26 +142,31 @@ export function GlassDomainBar({
   domain,
   tld = ".com",
   playing = true,
+  className,
 }: {
   domain: string;
   tld?: string;
   playing?: boolean;
+  className?: string;
 }) {
   const reduce = useReducedMotion();
   const typed = useTyped(domain, playing, reduce, true);
 
   return (
     <motion.div
-      className="absolute inset-x-4 top-1/2 -translate-y-1/2 sm:inset-x-6"
-      animate={reduce ? undefined : { y: playing ? [0, -6, 0] : 0 }}
-      transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+      className={cn(
+        "absolute inset-x-3 bottom-3 z-30 sm:inset-x-4 sm:bottom-4",
+        className,
+      )}
+      animate={reduce ? undefined : { y: playing ? [0, -4, 0] : 0 }}
+      transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
     >
-      <div className="flex overflow-hidden rounded-[22px] border border-white/80 bg-white shadow-[0_24px_50px_rgba(15,23,42,0.2)]">
-        <p className="flex-1 truncate px-4 py-3.5 text-[16px] font-semibold tracking-tight text-[#0c1a36] sm:text-[20px]">
+      <div className="flex overflow-hidden rounded-[18px] border border-white/80 bg-white shadow-[0_24px_50px_rgba(15,23,42,0.2)]">
+        <p className="flex-1 truncate px-3 py-2.5 text-[14px] font-semibold tracking-tight text-[#0c1a36] sm:px-4 sm:text-[16px]">
           {typed}
           <span className="hb-caret ml-0.5 inline-block h-[1em] w-[2px] bg-[#673de6] align-[-2px]" />
         </p>
-        <span className="flex items-center bg-[#f4f5ff] px-4 text-[15px] font-extrabold text-[#673de6] sm:text-[18px]">
+        <span className="flex items-center bg-[#f4f5ff] px-3 text-[13px] font-extrabold text-[#673de6] sm:px-4 sm:text-[15px]">
           {tld}
         </span>
       </div>

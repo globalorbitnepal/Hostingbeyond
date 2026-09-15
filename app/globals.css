@@ -200,16 +200,16 @@
   }
 
   .hb-video-card {
-    animation: hb-video-card 8.5s ease-in-out infinite alternate;
+    animation: hb-video-card 10s ease-in-out infinite alternate;
     will-change: transform;
   }
 
   @keyframes hb-video-card {
     from {
-      transform: scale(1.2) translate3d(0, 0, 0);
+      transform: scale(1.045) translate3d(0, 0, 0);
     }
     to {
-      transform: scale(1.04) translate3d(-3.2%, 1.8%, 0);
+      transform: scale(1) translate3d(-0.8%, 0.5%, 0);
     }
   }
 
