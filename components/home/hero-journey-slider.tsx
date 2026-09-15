@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Check, ShoppingCart, Sparkles } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 import { defaultJourneySection } from "@/lib/orbit/defaults";
@@ -145,40 +145,126 @@ function GrowScene({
   berry: string;
   playing: boolean;
 }) {
+  const reduce = useReducedMotion();
+  const motionOn = playing && !reduce;
+  const [picked, setPicked] = useState(0);
+
+  useEffect(() => {
+    if (!motionOn) return;
+    const timer = window.setInterval(() => {
+      setPicked((current) => (current + 1) % 3);
+    }, 1600);
+    return () => window.clearInterval(timer);
+  }, [motionOn]);
+
   const items = [
-    { src: citrus, name: "Citrus sparkling", price: "$4" },
-    { src: tropical, name: "Tropical mix", price: "$4" },
-    { src: berry, name: "Berry fizz", price: "$5" },
+    { src: citrus, name: "Citrus sparkling", type: "Can", price: "$25" },
+    { src: tropical, name: "Tropical mix", type: "Can", price: "$30" },
+    { src: berry, name: "Berry fizz", type: "Can", price: "$35" },
   ];
+  const cartCount = motionOn ? picked + 1 : 1;
+
   return (
-    <div className="absolute inset-0 bg-[linear-gradient(180deg,#f7f4ff_0%,#eef4ff_100%)] p-3 sm:p-4">
-      <div className="flex h-full flex-col justify-center gap-2.5">
-        {items.map((item, index) => (
-          <motion.div
-            key={item.name}
-            className="flex items-center gap-3 rounded-[18px] bg-white/90 px-3 py-2.5 shadow-[0_10px_24px_rgba(47,28,106,0.08)] ring-1 ring-white"
-            animate={
-              playing ? { x: [8, 0], opacity: [0.4, 1] } : { x: 0, opacity: 1 }
-            }
-            transition={{
-              delay: index * 0.18,
-              duration: 0.7,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-          >
-            <span className="relative size-12 overflow-hidden rounded-2xl bg-[#f4f5ff] sm:size-14">
-              <Image src={item.src} alt="" fill className="object-cover" />
+    <div className="absolute inset-0 overflow-hidden bg-[#eef2ff]">
+      <Image
+        src="/images/journey/build-cans.png"
+        alt=""
+        fill
+        sizes="(max-width: 1024px) 100vw, 42vw"
+        className={cn(
+          "object-cover object-center opacity-[0.42]",
+          motionOn ? "hb-video-card" : "scale-[1.06]",
+        )}
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-white/82 via-white/70 to-[#eef2ff]/88" />
+
+      <div className="relative z-10 flex h-full flex-col">
+        <div className="flex items-center gap-1.5 border-b border-white/80 bg-white/88 px-2 py-1.5 backdrop-blur-xl sm:px-2.5">
+          <span className="size-1.5 rounded-full bg-[#ff5f57] sm:size-2" />
+          <span className="size-1.5 rounded-full bg-[#febc2e] sm:size-2" />
+          <span className="size-1.5 rounded-full bg-[#28c840] sm:size-2" />
+          <span className="ml-1 min-w-0 flex-1 truncate rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-semibold text-slate-500 sm:text-[10px]">
+            yourshop.com/store
+          </span>
+          <span className="relative grid size-6 place-items-center rounded-full bg-[#673de6] text-white">
+            <ShoppingCart className="size-3" />
+            <span className="absolute -top-1 -right-1 grid size-3.5 place-items-center rounded-full bg-[#2563eb] text-[8px] font-extrabold">
+              {cartCount}
             </span>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-[13px] font-extrabold text-[#0c1a36]">
-                {item.name}
-              </span>
-              <span className="text-[12px] font-semibold text-[#673de6]">
-                {item.price}
-              </span>
-            </span>
-          </motion.div>
-        ))}
+          </span>
+        </div>
+
+        <div className="flex items-center justify-between px-2.5 pt-2 sm:px-3">
+          <p className="text-[10px] font-extrabold tracking-tight text-[#2f1c6a] sm:text-[11px]">
+            Book from store
+          </p>
+          <span className="rounded-full bg-white/90 px-2 py-0.5 text-[9px] font-bold text-[#673de6] shadow-sm">
+            Add product
+          </span>
+        </div>
+
+        <div className="flex min-h-0 flex-1 flex-col justify-center gap-1.5 p-2 sm:gap-2 sm:p-2.5">
+          {items.map((item, index) => {
+            const selected = index === picked;
+            return (
+              <motion.div
+                key={item.name}
+                className={cn(
+                  "flex items-center gap-2 rounded-[16px] bg-white/92 px-2 py-1.5 shadow-[0_10px_24px_rgba(47,28,106,0.1)] ring-1 sm:gap-2.5 sm:px-2.5 sm:py-2",
+                  selected ? "ring-[#673de6]/45" : "ring-white/90",
+                )}
+                animate={
+                  motionOn
+                    ? {
+                        x: selected ? [6, 0] : 0,
+                        scale: selected ? 1.02 : 1,
+                      }
+                    : { x: 0, scale: 1 }
+                }
+                transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <span className="relative size-10 shrink-0 overflow-hidden rounded-xl bg-[#f4f5ff] sm:size-12">
+                  <Image src={item.src} alt="" fill className="object-cover" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[11px] font-extrabold text-[#0c1a36] sm:text-[12px]">
+                    {item.name}
+                  </span>
+                  <span className="mt-0.5 flex flex-wrap items-center gap-1">
+                    <span className="rounded-full bg-emerald-50 px-1.5 py-px text-[8px] font-bold text-emerald-600 sm:text-[9px]">
+                      In stock
+                    </span>
+                    <span className="text-[8px] font-semibold text-slate-400 sm:text-[9px]">
+                      {item.type}
+                    </span>
+                  </span>
+                </span>
+                <span className="shrink-0 text-right">
+                  <span className="block text-[12px] font-extrabold text-[#673de6] sm:text-[13px]">
+                    {item.price}
+                  </span>
+                  <span
+                    className={cn(
+                      "mt-0.5 inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[8px] font-extrabold sm:text-[9px]",
+                      selected
+                        ? "bg-emerald-500 text-white"
+                        : "bg-[#673de6] text-white",
+                    )}
+                  >
+                    {selected ? (
+                      <>
+                        <Check className="size-2.5" />
+                        Booked
+                      </>
+                    ) : (
+                      "Add to cart"
+                    )}
+                  </span>
+                </span>
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
