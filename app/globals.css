@@ -199,6 +199,20 @@
     }
   }
 
+  .hb-video {
+    animation: hb-video 16s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+
+  @keyframes hb-video {
+    from {
+      transform: scale(1.16) translate3d(0, 0, 0);
+    }
+    to {
+      transform: scale(1.06) translate3d(-2.4%, 1.2%, 0);
+    }
+  }
+
   .hb-ken {
     animation: hb-ken 8.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     will-change: transform;

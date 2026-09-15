@@ -14,6 +14,7 @@ export function GlassVideoFrame({
   overlay,
   className,
   sizes = "(max-width: 1024px) 100vw, 50vw",
+  loop = false,
 }: {
   src: string;
   alt: string;
@@ -21,6 +22,7 @@ export function GlassVideoFrame({
   overlay?: ReactNode;
   className?: string;
   sizes?: string;
+  loop?: boolean;
 }) {
   const reduce = useReducedMotion();
 
@@ -38,11 +40,45 @@ export function GlassVideoFrame({
         sizes={sizes}
         className={cn(
           "object-cover",
-          playing && !reduce ? "hb-ken" : "scale-[1.04]",
+          playing && !reduce ? (loop ? "hb-video" : "hb-ken") : "scale-[1.06]",
         )}
       />
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#2f1c6a]/28 via-transparent to-white/8" />
       {overlay}
+    </div>
+  );
+}
+
+export function GlassVideoStage({
+  src,
+  alt,
+  overlay,
+  children,
+  className,
+}: {
+  src: string;
+  alt: string;
+  overlay?: ReactNode;
+  children?: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "relative aspect-[16/10] min-h-[260px] w-full sm:min-h-[320px] lg:min-h-[380px]",
+        className,
+      )}
+    >
+      <GlassVideoFrame
+        src={src}
+        alt={alt}
+        loop
+        playing
+        overlay={overlay}
+        className="absolute inset-0 h-full min-h-0 rounded-[32px] border-white/50 ring-1 ring-white/25"
+        sizes="(max-width: 1024px) 100vw, 52vw"
+      />
+      {children}
     </div>
   );
 }

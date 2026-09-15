@@ -1,19 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
   Check,
-  ChevronLeft,
-  ChevronRight,
   Cloud,
-  FolderKanban,
   Gauge,
   Globe,
   Layers,
-  LayoutGrid,
   Play,
   Rocket,
   Sparkles,
@@ -32,7 +27,11 @@ import {
   type CmsBeyondAiHighlight,
   type CmsBeyondAiSite,
 } from "@/lib/orbit/defaults";
-import { GlassBand, GlassPromptBar } from "./glass-video-frame";
+import {
+  GlassBand,
+  GlassPromptBar,
+  GlassVideoStage,
+} from "./glass-video-frame";
 
 const highlightIcons: Record<CmsBeyondAiHighlight["icon"], typeof Zap> = {
   zap: Zap,
@@ -47,13 +46,6 @@ const featureIcons: Record<CmsBeyondAiFeature["icon"], typeof Wand2> = {
   users: Users,
   gauge: Gauge,
 };
-
-const tools = [
-  { label: "AI Generate", icon: Sparkles },
-  { label: "Customize", icon: LayoutGrid },
-  { label: "Templates", icon: FolderKanban },
-  { label: "Publish", icon: Globe },
-];
 
 function BeyondAiBadge({ text }: { text: string }) {
   const parts = text.trim().split(/\s+/).filter(Boolean);
@@ -112,139 +104,21 @@ function SitePhoto({
   );
 }
 
-function SiteSlider({ sites }: { sites: CmsBeyondAiSite[] }) {
-  const reduceMotion = useReducedMotion();
-  const [index, setIndex] = useState(0);
-  const [hovered, setHovered] = useState(false);
-  const slides = sites.filter((site) => site.visible !== false);
-
-  useEffect(() => {
-    if (reduceMotion || hovered || slides.length < 2) return;
-    const timer = window.setInterval(() => {
-      setIndex((current) => (current + 1) % slides.length);
-    }, 5000);
-    return () => window.clearInterval(timer);
-  }, [hovered, reduceMotion, slides.length]);
-
-  useEffect(() => {
-    if (index >= slides.length) setIndex(0);
-  }, [index, slides.length]);
-
-  if (!slides.length) return null;
-
-  const active = slides[index] ?? slides[0];
-
-  function go(direction: -1 | 1) {
-    setIndex(
-      (current) => (current + direction + slides.length) % slides.length,
-    );
-  }
-
-  return (
-    <div
-      className="relative overflow-hidden rounded-[22px] border border-white/70 bg-slate-950/5 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      <div className="relative aspect-[16/10] min-h-[210px] w-full sm:min-h-[240px]">
-        {slides.map((slide, slideIndex) => (
-          <div
-            key={slide.id}
-            className={cn(
-              "absolute inset-0 transition-[opacity,transform] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
-              slideIndex === index
-                ? "z-[1] scale-100 opacity-100"
-                : "pointer-events-none z-0 scale-[1.03] opacity-0",
-              reduceMotion && "transition-none",
-            )}
-          >
-            <SitePhoto
-              site={slide}
-              sizes="(max-width: 1024px) 100vw, 560px"
-              priority={slideIndex === 0}
-              className={
-                slideIndex === index && !reduceMotion ? "hb-ken" : undefined
-              }
-            />
-          </div>
-        ))}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(15,23,42,0.08)_0%,transparent_28%,rgba(15,23,42,0.42)_100%)]"
-        />
-        <div className="absolute right-3 bottom-14 left-3 z-10 flex items-end justify-between gap-3">
-          <div className="min-w-0 rounded-2xl border border-white/25 bg-white/18 px-3 py-2 backdrop-blur-xl">
-            <p className="truncate text-[13px] font-extrabold text-white">
-              {active.name}
-            </p>
-            <p className="truncate text-[11px] text-white/80">
-              {active.domain}
-            </p>
-          </div>
-          <p className="inline-flex items-center gap-1 rounded-full border border-emerald-200/40 bg-emerald-500/90 px-2.5 py-1 text-[10px] font-bold text-white shadow-[0_8px_18px_rgba(16,185,129,0.28)]">
-            <span className="size-1.5 rounded-full bg-white" />
-            {active.status}
-          </p>
-        </div>
-      </div>
-
-      {slides.length > 1 ? (
-        <>
-          <button
-            type="button"
-            aria-label="Previous website"
-            onClick={() => go(-1)}
-            className="absolute top-1/2 left-2 z-20 inline-flex size-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/70 bg-white/80 text-slate-800 shadow-[0_10px_24px_rgba(15,23,42,0.16)] backdrop-blur-xl"
-          >
-            <ChevronLeft className="size-4" />
-          </button>
-          <button
-            type="button"
-            aria-label="Next website"
-            onClick={() => go(1)}
-            className="absolute top-1/2 right-2 z-20 inline-flex size-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/70 bg-white/80 text-slate-800 shadow-[0_10px_24px_rgba(15,23,42,0.16)] backdrop-blur-xl"
-          >
-            <ChevronRight className="size-4" />
-          </button>
-          <div className="absolute top-3 left-1/2 z-20 flex -translate-x-1/2 gap-1.5">
-            {slides.map((slide, slideIndex) => (
-              <button
-                key={slide.id}
-                type="button"
-                aria-label={`Show ${slide.name}`}
-                onClick={() => setIndex(slideIndex)}
-                className={cn(
-                  "h-1.5 rounded-full transition-all duration-300",
-                  slideIndex === index
-                    ? "w-5 bg-white"
-                    : "w-1.5 bg-white/55 hover:bg-white/80",
-                )}
-              />
-            ))}
-          </div>
-        </>
-      ) : null}
-      <GlassPromptBar
-        text="Create a stunning hotel website with AI"
-        playing={!reduceMotion && !hovered}
-      />
-    </div>
-  );
-}
-
 function DashboardPreview({ content }: { content: CmsBeyondAiContent }) {
   const sites = [...content.sites]
     .filter((site) => site.visible !== false)
-    .sort((a, b) => a.order - b.order);
+    .sort((a, b) => a.order - b.order)
+    .slice(0, 3);
 
   return (
-    <div className="relative mx-auto w-full max-w-[640px] lg:ml-auto lg:max-w-none">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -inset-6 rounded-[40px] bg-[radial-gradient(ellipse_at_center,rgba(124,58,237,0.16),transparent_62%)] blur-2xl"
-      />
-
-      <div className="absolute -top-3 right-2 z-20 hidden items-center gap-2 rounded-full border border-white/80 bg-white/80 px-3 py-1.5 text-[11px] font-semibold text-slate-700 shadow-[0_10px_28px_rgba(15,23,42,0.12)] backdrop-blur-xl sm:flex md:right-8">
+    <GlassVideoStage
+      src="/images/home/beyond-ai-stage.png"
+      alt="Designer building a website with Beyond AI"
+      overlay={
+        <GlassPromptBar text="Create a stunning hotel website with AI" />
+      }
+    >
+      <div className="absolute top-4 right-4 z-20 hidden items-center gap-2 rounded-full border border-white/70 bg-white/90 px-3 py-1.5 text-[11px] font-semibold text-slate-700 shadow-[0_10px_28px_rgba(15,23,42,0.12)] backdrop-blur-xl sm:flex">
         <span className="inline-flex size-5 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
           <Check className="size-3" strokeWidth={2.4} />
         </span>
@@ -255,96 +129,19 @@ function DashboardPreview({ content }: { content: CmsBeyondAiContent }) {
           </span>
         </span>
       </div>
-
-      <div className="absolute top-16 -right-2 z-20 hidden flex-col gap-2 xl:flex">
-        {tools.map((tool) => {
-          const Icon = tool.icon;
-          return (
-            <div
-              key={tool.label}
-              className="flex size-[68px] flex-col items-center justify-center rounded-2xl border border-white/80 bg-white/70 text-center shadow-[0_12px_30px_rgba(37,80,130,0.12)] backdrop-blur-xl"
-            >
-              <Icon className="size-4 text-[#673de6]" />
-              <span className="mt-1 text-[9px] font-bold text-slate-600">
-                {tool.label}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="relative overflow-hidden rounded-[28px] border border-white/80 bg-white/55 shadow-[0_32px_80px_-28px_rgba(37,80,130,0.5)] backdrop-blur-2xl sm:rounded-[32px]">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.55),transparent_38%)]"
-        />
-        <div className="relative flex items-center gap-2 border-b border-white/70 px-4 py-2.5">
-          <span className="size-2.5 rounded-full bg-[#ff5f57]" />
-          <span className="size-2.5 rounded-full bg-[#febc2e]" />
-          <span className="size-2.5 rounded-full bg-[#28c840]" />
-          <div className="ml-3 flex min-w-0 items-center gap-4 text-[11px] font-semibold text-slate-400">
-            <span className="flex items-center gap-1.5 text-slate-800">
-              <Sparkles className="size-3.5 text-[#673de6]" />
-              {content.badge}
-            </span>
-            <span className="hidden text-[#673de6] sm:inline">Sites</span>
-            <span className="hidden md:inline">Templates</span>
-            <span className="hidden md:inline">AI Assistant</span>
-          </div>
-        </div>
-
-        <div className="relative p-3 sm:p-4">
-          <div className="mb-3 flex items-center justify-between gap-2">
-            <h3 className="text-[15px] font-extrabold tracking-tight text-slate-900">
-              {content.dashboardTitle}
-            </h3>
-            <span className="inline-flex h-8 items-center rounded-full bg-gradient-to-r from-[#2563eb] to-[#673de6] px-3 text-[11px] font-bold text-white">
-              + New Website
-            </span>
-          </div>
-          <SiteSlider sites={sites} />
-        </div>
-      </div>
-
-      <div className="absolute -bottom-3 left-2 z-20 flex items-center gap-3 rounded-2xl border border-white/80 bg-white/85 px-4 py-3 shadow-[0_14px_36px_rgba(37,80,130,0.16)] backdrop-blur-xl sm:left-8 sm:px-5">
-        <div>
-          <p className="text-[11px] font-semibold text-slate-400">
-            {content.statsLabel}
-          </p>
-          <p className="text-[28px] leading-none font-extrabold text-slate-950">
-            {content.statsValue}
-          </p>
-          <p className="mt-1 text-[11px] font-semibold text-emerald-600">
-            {content.statsHint}
-          </p>
-        </div>
-        <div className="flex h-12 items-end gap-1 pb-0.5">
-          {[40, 55, 48, 72, 64, 88, 76].map((h, i) => (
+      {sites.length ? (
+        <div className="absolute bottom-20 left-4 z-20 hidden gap-2 sm:flex">
+          {sites.map((site) => (
             <span
-              key={i}
-              className="w-1.5 rounded-full bg-gradient-to-t from-[#673de6] to-[#c4b5fd]"
-              style={{ height: `${h}%` }}
-            />
+              key={site.id}
+              className="relative h-14 w-20 overflow-hidden rounded-xl border border-white/50 shadow-lg"
+            >
+              <SitePhoto site={site} sizes="80px" className="hb-video" />
+            </span>
           ))}
         </div>
-      </div>
-
-      <div className="absolute right-2 -bottom-2 z-20 hidden w-[210px] rounded-2xl border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(237,233,254,0.9))] p-3.5 shadow-[0_16px_40px_rgba(79,70,229,0.16)] backdrop-blur-xl sm:block md:right-12">
-        <p className="mb-2 flex items-center gap-1.5 text-[12px] font-extrabold text-slate-900">
-          <Cloud className="size-3.5 text-[#673de6]" />
-          {content.saasTitle}
-        </p>
-        {content.saasItems.map((item) => (
-          <p
-            key={item}
-            className="flex items-center gap-1.5 text-[11px] font-medium text-slate-600"
-          >
-            <Check className="size-3 text-[#673de6]" />
-            {item}
-          </p>
-        ))}
-      </div>
-    </div>
+      ) : null}
+    </GlassVideoStage>
   );
 }
 

@@ -1186,7 +1186,7 @@ export function defaultBusinessEmailSection(): CmsBusinessEmailContent {
     toastLabel: "Connected",
     mailTitle: "Global Mail",
     composeLabel: "Compose",
-    imageUrl: "/images/business-email/woman.png",
+    imageUrl: "/images/home/business-email-stage.png",
     imageAlt: "Professional using HostingBeyond business email on a laptop",
     highlights: [
       {
@@ -1310,7 +1310,7 @@ export function defaultAiAssistantSection(): CmsAiAssistantContent {
     botStatus: "Online",
     helloTitle: "Hello! 👋",
     helloSubtitle: "How can I help you today?",
-    imageUrl: "/images/ai-assistant/man.png",
+    imageUrl: "/images/home/ai-hosting-stage.png",
     imageAlt: "Customer chatting with HostingBeyond AI on a phone",
     partners: [
       { id: "claude", label: "Claude AI" },
@@ -3039,6 +3039,7 @@ function mergeBusinessEmailSection(
         typeof stored.imageUrl === "string" ? stored.imageUrl.trim() : "";
       if (
         !url ||
+        url.includes("/images/business-email/woman.png") ||
         url.includes("/images/business-email/woman.jpg") ||
         url.includes("/images/business-email/stage.png")
       ) {
@@ -3369,10 +3370,18 @@ function mergeAiAssistantSection(
     ...defaults,
     ...stored,
     visible: stored.visible !== false,
-    imageUrl:
-      typeof stored.imageUrl === "string" && stored.imageUrl.trim()
-        ? stored.imageUrl
-        : defaults.imageUrl,
+    imageUrl: (() => {
+      const url =
+        typeof stored.imageUrl === "string" ? stored.imageUrl.trim() : "";
+      if (
+        !url ||
+        url.includes("/images/ai-assistant/man.png") ||
+        url.includes("/images/ai-assistant/man.jpg")
+      ) {
+        return defaults.imageUrl;
+      }
+      return url;
+    })(),
     partners:
       Array.isArray(stored.partners) && stored.partners.length > 0
         ? stored.partners.map((item, index) => {

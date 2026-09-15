@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -17,15 +16,13 @@ import {
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 
-import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
 import {
   defaultAiAssistantSection,
   type CmsAiAssistantContent,
   type CmsAiAssistantHighlight,
   type CmsAiAssistantPrompt,
-  type CmsAiAssistantStat,
 } from "@/lib/orbit/defaults";
-import { GlassBand, GlassChatChips } from "./glass-video-frame";
+import { GlassBand, GlassVideoStage } from "./glass-video-frame";
 
 function PartnerMark({ id }: { id: string }) {
   const className = "size-[22px] shrink-0 sm:size-6";
@@ -141,12 +138,6 @@ const promptIcons: Record<CmsAiAssistantPrompt["icon"], typeof Globe> = {
   layers: Layers,
   search: Search,
   refresh: RefreshCw,
-};
-
-const statIcons: Record<CmsAiAssistantStat["icon"], typeof Globe> = {
-  globe: Globe,
-  layers: Layers,
-  users: Users,
 };
 
 function useChatScript(
@@ -287,104 +278,19 @@ function AssistantChat({ content }: { content: CmsAiAssistantContent }) {
 }
 
 function AssistantStage({ content }: { content: CmsAiAssistantContent }) {
-  const photoSrc = content.imageUrl.includes("?")
-    ? content.imageUrl
-    : `${content.imageUrl}?v=scene5`;
+  const src =
+    !content.imageUrl || content.imageUrl.includes("ai-assistant/man")
+      ? "/images/home/ai-hosting-stage.png"
+      : content.imageUrl.split("?")[0];
 
   return (
-    <div className="relative mx-auto min-h-[600px] w-full overflow-visible sm:min-h-[680px] lg:ml-auto lg:min-h-[740px]">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-16 -right-24 h-[120%] w-[90%] rounded-full bg-[radial-gradient(ellipse_at_70%_40%,rgba(186,210,255,0.45),transparent_70%)] blur-3xl"
-      />
-
-      {content.imageUrl ? (
-        <div className="absolute inset-y-0 right-[-6%] left-[4%] z-10">
-          <Image
-            src={photoSrc}
-            alt={content.imageAlt}
-            fill
-            priority
-            sizes="(max-width: 1024px) 100vw, 58vw"
-            unoptimized={
-              isRuntimeMediaSrc(content.imageUrl) ||
-              content.imageUrl.includes(".png")
-            }
-            className="object-contain object-right-bottom"
-          />
+    <GlassVideoStage src={src} alt={content.imageAlt}>
+      <div className="absolute top-4 left-4 z-20 w-[min(92%,320px)] sm:top-5 sm:left-5">
+        <div className="origin-top-left scale-[0.84] sm:scale-90">
+          <AssistantChat content={content} />
         </div>
-      ) : null}
-
-      <GlassChatChips
-        playing
-        className="right-3 left-auto hidden w-[230px] sm:block"
-        lines={[
-          content.prompts[0]?.label || "I want to migrate to HostingBeyond",
-          content.prompts[1]?.label || "I want to create a website",
-        ]}
-      />
-
-      <div className="absolute top-[16%] left-0 z-20 w-[90%] max-w-[332px] sm:top-[18%] sm:w-[48%]">
-        <AssistantChat content={content} />
       </div>
-
-      {content.handwrittenNote ? (
-        <div className="absolute top-3 right-2 z-30 hidden w-[150px] xl:block">
-          <svg
-            aria-hidden
-            viewBox="0 0 64 36"
-            className="absolute -top-1 -left-10 h-9 w-16 text-[#7dd3fc]"
-          >
-            <path
-              d="M4 28 C 18 4, 42 6, 58 18"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-            />
-            <path
-              d="M50 12 L58 18 L49 22"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          <p className="text-right font-serif text-[13px] leading-[1.25] text-[#38bdf8] italic">
-            {content.handwrittenNote.split("\n").map((line) => (
-              <span key={line} className="block">
-                {line}
-              </span>
-            ))}
-          </p>
-        </div>
-      ) : null}
-
-      <div className="absolute top-[28%] right-0 z-30 hidden w-[168px] flex-col gap-2 xl:flex">
-        {content.stats.map((stat) => {
-          const Icon = statIcons[stat.icon] ?? Globe;
-          return (
-            <div
-              key={stat.id}
-              className="flex items-center gap-2 rounded-2xl border border-white/80 bg-white/80 px-2.5 py-2 shadow-[0_12px_30px_rgba(37,80,130,0.12)] backdrop-blur-xl"
-            >
-              <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-xl bg-[#f4f5ff] text-[#673de6]">
-                <Icon className="size-4" />
-              </span>
-              <span>
-                <span className="block text-[11px] font-extrabold text-slate-900">
-                  {stat.title}
-                </span>
-                <span className="block text-[10px] text-slate-500">
-                  {stat.subtitle}
-                </span>
-              </span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
+    </GlassVideoStage>
   );
 }
 
@@ -494,7 +400,7 @@ export function AiAssistantSection({
           </motion.div>
 
           <motion.div
-            className="relative min-h-[600px] sm:min-h-[680px] lg:min-h-[740px]"
+            className="relative"
             initial={reduceMotion ? false : { opacity: 0, x: 32 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, amount: 0.2 }}

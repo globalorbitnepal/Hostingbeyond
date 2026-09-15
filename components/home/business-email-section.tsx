@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -23,14 +22,17 @@ import {
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 
-import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
 import {
   defaultBusinessEmailSection,
   type CmsBusinessEmailContent,
   type CmsBusinessEmailFeature,
   type CmsBusinessEmailHighlight,
 } from "@/lib/orbit/defaults";
-import { GlassBand, GlassPromptBar } from "./glass-video-frame";
+import {
+  GlassBand,
+  GlassPromptBar,
+  GlassVideoStage,
+} from "./glass-video-frame";
 
 const highlightIcons: Record<CmsBusinessEmailHighlight["icon"], typeof Shield> =
   {
@@ -46,23 +48,6 @@ const featureIcons: Record<CmsBusinessEmailFeature["icon"], typeof Globe> = {
   headphones: Headphones,
   users: Users,
 };
-
-const cities = [
-  {
-    city: "New York",
-    status: "Connected",
-    top: "28%",
-    left: "22%",
-    photo: "/images/business-email/ny.png",
-  },
-  {
-    city: "London",
-    status: "Connected",
-    top: "22%",
-    left: "48%",
-    photo: "/images/business-email/london.png",
-  },
-];
 
 const sidebar = [
   { label: "Inbox", count: "12", active: true, icon: Inbox },
@@ -154,100 +139,23 @@ function MailInbox({ content }: { content: CmsBusinessEmailContent }) {
 }
 
 function MailStage({ content }: { content: CmsBusinessEmailContent }) {
+  const src =
+    content.imageUrl?.includes("woman.") || !content.imageUrl
+      ? "/images/home/business-email-stage.png"
+      : content.imageUrl;
+
   return (
-    <div className="relative mx-auto min-h-[560px] w-full max-w-[760px] sm:min-h-[620px] lg:mx-0 lg:min-h-[700px] lg:max-w-none">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_30%_40%,rgba(147,197,253,0.28),transparent_58%)]"
-      />
-
-      <div className="absolute top-[2%] left-[-4%] z-[5] aspect-[16/9] w-[108%] max-w-[820px]">
-        <Image
-          src="/images/business-email/map.png"
-          alt=""
-          fill
-          unoptimized
-          sizes="(max-width: 1024px) 90vw, 58vw"
-          className="object-contain object-left opacity-90"
-        />
-        <svg
-          aria-hidden
-          viewBox="0 0 100 56"
-          className="pointer-events-none absolute inset-0 h-full w-full text-sky-400/50"
-        >
-          <path
-            d="M26 20C38 14 46 16 52 16C64 16 74 18 82 20"
-            fill="none"
-            stroke="currentColor"
-            strokeDasharray="1.2 1.8"
-            strokeWidth="0.35"
-          />
-          <path
-            d="M26 20C40 28 58 32 82 34"
-            fill="none"
-            stroke="currentColor"
-            strokeDasharray="1.2 1.8"
-            strokeWidth="0.35"
-          />
-        </svg>
-        {cities.map((city) => (
-          <div
-            key={city.city}
-            className="absolute z-10 hidden items-center gap-2 lg:flex"
-            style={{ top: city.top, left: city.left }}
-          >
-            <span className="relative size-9 overflow-hidden rounded-full border-2 border-white shadow-[0_8px_18px_rgba(79,70,229,0.22)]">
-              <Image
-                src={city.photo}
-                alt=""
-                fill
-                unoptimized
-                sizes="36px"
-                className="object-cover object-top"
-              />
-            </span>
-            <span className="rounded-xl border border-white/80 bg-white/90 px-2 py-1 text-[10px] leading-tight shadow-sm backdrop-blur-xl">
-              <span className="block font-bold text-slate-800">
-                {city.city}
-              </span>
-              <span className="text-slate-500">{city.status}</span>
-            </span>
-          </div>
-        ))}
-      </div>
-
-      {content.imageUrl ? (
-        <div className="absolute right-[-2%] bottom-[-6%] z-10 h-[98%] w-[88%] sm:right-[-1%] sm:w-[82%] lg:w-[80%]">
-          <Image
-            src={content.imageUrl}
-            alt={content.imageAlt}
-            fill
-            priority
-            sizes="(max-width: 1024px) 92vw, 52vw"
-            unoptimized={
-              isRuntimeMediaSrc(content.imageUrl) ||
-              content.imageUrl.endsWith(".png")
-            }
-            className="[mask-image:linear-gradient(180deg,transparent_2%,#000_14%,#000_86%,transparent_100%),linear-gradient(90deg,transparent_0%,#000_16%,#000_92%,transparent_100%)] [mask-composite:intersect] object-contain object-bottom [-webkit-mask-composite:source-in] [-webkit-mask-image:linear-gradient(180deg,transparent_2%,#000_14%,#000_86%,transparent_100%),linear-gradient(90deg,transparent_0%,#000_16%,#000_92%,transparent_100%)]"
-          />
+    <GlassVideoStage
+      src={src}
+      alt={content.imageAlt}
+      overlay={<GlassPromptBar text="you@yourbrand.com is ready" />}
+    >
+      <div className="absolute top-4 left-4 z-20 w-[min(92%,340px)] sm:top-6 sm:left-6">
+        <div className="origin-top-left scale-[0.82] sm:scale-90">
+          <MailInbox content={content} />
         </div>
-      ) : null}
-
-      <div className="absolute top-[34%] left-0 z-20 w-[90%] max-w-[380px] sm:top-[28%] sm:w-[58%]">
-        <MailInbox content={content} />
       </div>
-
-      <div className="absolute top-[16%] left-[4%] z-30 hidden items-center gap-2 rounded-full border border-white/80 bg-white/90 px-3 py-1.5 shadow-[0_10px_28px_rgba(15,23,42,0.12)] backdrop-blur-xl sm:flex">
-        <span className="inline-flex size-6 items-center justify-center rounded-full bg-[#f4f5ff] text-[#673de6]">
-          <Mail className="size-3.5" />
-        </span>
-        <span className="text-[12px] font-bold text-slate-800">
-          {content.toastEmail}
-        </span>
-        <Check className="size-4 text-emerald-500" strokeWidth={2.6} />
-      </div>
-      <GlassPromptBar text="you@yourbrand.com is ready" playing />
-    </div>
+    </GlassVideoStage>
   );
 }
 
