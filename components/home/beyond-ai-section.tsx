@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -16,22 +17,16 @@ import {
   Wand2,
   Zap,
 } from "lucide-react";
-import { motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
-import { cn } from "@/lib/utils";
-import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
 import {
   defaultBeyondAiSection,
   type CmsBeyondAiContent,
   type CmsBeyondAiFeature,
   type CmsBeyondAiHighlight,
-  type CmsBeyondAiSite,
 } from "@/lib/orbit/defaults";
-import {
-  GlassBand,
-  GlassPromptBar,
-  GlassVideoStage,
-} from "./glass-video-frame";
+import { GlassBand, GlassPromptBar } from "./glass-video-frame";
+import { cn } from "@/lib/utils";
 
 const highlightIcons: Record<CmsBeyondAiHighlight["icon"], typeof Zap> = {
   zap: Zap,
@@ -67,81 +62,117 @@ function BeyondAiBadge({ text }: { text: string }) {
   );
 }
 
-function SitePhoto({
-  site,
-  className,
-  sizes,
-  priority = false,
-}: {
-  site: CmsBeyondAiSite;
-  className?: string;
-  sizes: string;
-  priority?: boolean;
-}) {
-  if (!site.imageUrl) {
-    return (
-      <div
-        className={cn(
-          "h-full w-full bg-[linear-gradient(160deg,#c4b5fd_0%,#673de6_48%,#2f1c6a_100%)]",
-          className,
-        )}
-      />
-    );
-  }
-
-  return (
-    <div className="relative h-full w-full">
-      <Image
-        src={site.imageUrl}
-        alt={site.imageAlt || site.name}
-        fill
-        sizes={sizes}
-        priority={priority}
-        unoptimized={isRuntimeMediaSrc(site.imageUrl)}
-        className={cn("object-cover object-center", className)}
-      />
-    </div>
-  );
-}
+const CREATE_FRAMES = [
+  {
+    src: "/images/home/beyond-ai/hotel.png",
+    prompt: "Create a luxury hotel website with a pool hero",
+    label: "Hotel",
+  },
+  {
+    src: "/images/home/beyond-ai/trek.png",
+    prompt: "Design a trekking adventure landing page",
+    label: "Adventure",
+  },
+  {
+    src: "/images/home/beyond-ai/business.png",
+    prompt: "Build a modern business website in one prompt",
+    label: "Business",
+  },
+] as const;
 
 function DashboardPreview({ content }: { content: CmsBeyondAiContent }) {
-  const sites = [...content.sites]
-    .filter((site) => site.visible !== false)
-    .sort((a, b) => a.order - b.order)
-    .slice(0, 3);
+  const reduceMotion = useReducedMotion();
+  const [index, setIndex] = useState(0);
+  const frame = CREATE_FRAMES[index] ?? CREATE_FRAMES[0];
+
+  useEffect(() => {
+    if (reduceMotion) return;
+    const timer = window.setInterval(() => {
+      setIndex((current) => (current + 1) % CREATE_FRAMES.length);
+    }, 5200);
+    return () => window.clearInterval(timer);
+  }, [reduceMotion]);
 
   return (
-    <GlassVideoStage
-      src="/images/home/beyond-ai-stage.png"
-      alt="Designer building a website with Beyond AI"
-      overlay={
-        <GlassPromptBar text="Create a stunning hotel website with AI" />
-      }
-    >
-      <div className="absolute top-4 right-4 z-20 hidden items-center gap-2 rounded-full border border-white/70 bg-white/90 px-3 py-1.5 text-[11px] font-semibold text-slate-700 shadow-[0_10px_28px_rgba(15,23,42,0.12)] backdrop-blur-xl sm:flex">
-        <span className="inline-flex size-5 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-          <Check className="size-3" strokeWidth={2.4} />
-        </span>
-        <span>
-          {content.toastTitle}
-          <span className="block text-[10px] font-medium text-slate-400">
-            {content.toastSubtitle}
+    <div className="relative aspect-[16/10] min-h-[260px] w-full overflow-hidden rounded-[32px] border border-white/50 bg-white/10 shadow-[0_32px_70px_-28px_rgba(15,10,40,0.45)] ring-1 ring-white/25 backdrop-blur-2xl sm:min-h-[320px] lg:min-h-[380px]">
+      <AnimatePresence initial={false} mode="sync">
+        <motion.div
+          key={frame.src}
+          className="absolute inset-0"
+          initial={reduceMotion ? false : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.7 }}
+        >
+          <Image
+            src={`${frame.src}?v=1`}
+            alt={`${frame.label} website created by AI`}
+            fill
+            sizes="(max-width: 1024px) 100vw, 52vw"
+            unoptimized
+            className={cn(
+              "object-cover object-center",
+              !reduceMotion && "hb-video",
+            )}
+            priority={index === 0}
+          />
+        </motion.div>
+      </AnimatePresence>
+
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#2f1c6a]/35 via-transparent to-white/10" />
+
+      <div className="absolute inset-x-3 top-3 z-20 flex items-center justify-between gap-2 sm:inset-x-4 sm:top-4">
+        <div className="inline-flex items-center gap-2 rounded-full border border-white/50 bg-white/88 px-3 py-1.5 shadow-sm backdrop-blur-xl">
+          <span className="size-2 animate-pulse rounded-full bg-[#673de6]" />
+          <span className="text-[11px] font-bold text-[#2f1c6a]">
+            AI is creating your website
           </span>
-        </span>
-      </div>
-      {sites.length ? (
-        <div className="absolute bottom-20 left-4 z-20 hidden gap-2 sm:flex">
-          {sites.map((site) => (
-            <span
-              key={site.id}
-              className="relative h-14 w-20 overflow-hidden rounded-xl border border-white/50 shadow-lg"
-            >
-              <SitePhoto site={site} sizes="80px" className="hb-video" />
-            </span>
-          ))}
         </div>
-      ) : null}
-    </GlassVideoStage>
+        <div className="inline-flex items-center gap-2 rounded-full border border-white/50 bg-white/90 px-3 py-1.5 text-[11px] font-semibold text-slate-700 shadow-sm backdrop-blur-xl">
+          <span className="inline-flex size-5 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+            <Check className="size-3" strokeWidth={2.4} />
+          </span>
+          <span>
+            {content.toastTitle}
+            <span className="block text-[10px] font-medium text-slate-400">
+              {content.toastSubtitle}
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <div className="absolute bottom-20 left-3 z-20 flex gap-2 sm:left-4">
+        {CREATE_FRAMES.map((item, itemIndex) => (
+          <button
+            key={item.src}
+            type="button"
+            aria-label={`Show ${item.label} website`}
+            onClick={() => setIndex(itemIndex)}
+            className={cn(
+              "relative h-12 w-[4.5rem] overflow-hidden rounded-xl border shadow-lg sm:h-14 sm:w-20",
+              itemIndex === index
+                ? "border-white ring-2 ring-white/80"
+                : "border-white/40 opacity-80 hover:opacity-100",
+            )}
+          >
+            <Image
+              src={`${item.src}?v=1`}
+              alt={`${item.label} preview`}
+              fill
+              sizes="80px"
+              unoptimized
+              className="object-cover"
+            />
+          </button>
+        ))}
+      </div>
+
+      <GlassPromptBar
+        key={frame.prompt}
+        text={frame.prompt}
+        playing={!reduceMotion}
+      />
+    </div>
   );
 }
 
