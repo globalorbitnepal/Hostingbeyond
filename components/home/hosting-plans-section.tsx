@@ -12,6 +12,7 @@ import {
   Lock,
   Rocket,
   Shield,
+  Sparkles,
   Star,
   Zap,
 } from "lucide-react";
@@ -50,10 +51,10 @@ function PlanGlyph({ plan }: { plan: CmsHostingPlan }) {
       className={cn(
         "inline-flex size-11 items-center justify-center rounded-2xl shadow-[0_8px_18px_-12px_rgba(37,99,235,0.45)]",
         popular
-          ? "bg-[#f4f5ff] text-[#673de6]"
+          ? "bg-white/45 text-[#673de6] ring-1 ring-white/80"
           : plan.accent === "purple"
-            ? "bg-[#faf5ff] text-[#c026d3]"
-            : "bg-[#f4f5ff] text-[#673de6]",
+            ? "bg-white/35 text-[#7c3aed] ring-1 ring-white/70"
+            : "bg-white/35 text-[#673de6] ring-1 ring-white/70",
       )}
     >
       <Icon className="size-5" strokeWidth={1.85} aria-hidden />
@@ -91,12 +92,20 @@ function PlanCard({
       viewport={{ once: true, margin: "-40px" }}
       transition={{ delay, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       className={cn(
-        "relative flex h-full flex-col rounded-[26px] border p-5 backdrop-blur-xl transition duration-300 sm:p-6",
+        "relative flex h-full flex-col overflow-hidden rounded-[28px] border p-5 backdrop-blur-2xl transition duration-300 sm:p-6",
         popular
-          ? "z-10 border-white/70 bg-[linear-gradient(180deg,rgba(244,245,255,0.92)_0%,rgba(255,255,255,0.78)_48%)] shadow-[0_28px_60px_-28px_rgba(103,61,230,0.48)] ring-1 ring-[#c4b5fd]/70 hover:-translate-y-1"
-          : "border-white/80 bg-white/62 shadow-[0_18px_44px_-30px_rgba(47,28,106,0.32)] hover:-translate-y-0.5 hover:shadow-[0_22px_48px_-28px_rgba(47,28,106,0.42)]",
+          ? "z-10 border-white/70 bg-[linear-gradient(165deg,rgba(255,255,255,0.58)_0%,rgba(237,233,254,0.42)_46%,rgba(255,255,255,0.34)_100%)] shadow-[0_32px_70px_-32px_rgba(103,61,230,0.55)] ring-1 ring-[#ddd6fe]/90 hover:-translate-y-1"
+          : "border-white/55 bg-white/28 shadow-[0_24px_56px_-32px_rgba(79,70,229,0.38)] ring-1 ring-white/60 hover:-translate-y-0.5 hover:bg-white/36 hover:shadow-[0_28px_60px_-30px_rgba(79,70,229,0.46)]",
       )}
     >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-16 left-1/2 h-36 w-44 -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(196,181,253,0.45),transparent_70%)] blur-2xl"
+      />
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-wrap items-center gap-1.5">
           {plan.discountBadge ? (
@@ -152,6 +161,19 @@ function PlanCard({
             <span className="font-bold text-emerald-600">{save}</span>
           ) : null}
         </div>
+        {plan.domainPerk?.trim() ? (
+          <p className="mt-2 text-[12.5px] font-semibold tracking-tight text-[#5b21b6]">
+            {plan.domainPerk}
+          </p>
+        ) : null}
+        {isAnnual && plan.annualCredit?.trim() ? (
+          <p className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-white/70 bg-white/45 px-2.5 py-1 text-[11.5px] font-extrabold text-[#673de6] shadow-[0_8px_18px_-12px_rgba(103,61,230,0.45)]">
+            <Sparkles className="size-3" aria-hidden />
+            {plan.annualCredit}
+          </p>
+        ) : (
+          <div className="mt-1.5 h-[26px]" />
+        )}
       </div>
 
       <Link
@@ -160,7 +182,7 @@ function PlanCard({
           "mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full text-[14px] font-bold transition",
           popular
             ? "bg-gradient-to-r from-[#2563eb] to-[#673de6] text-white shadow-[0_12px_24px_rgba(103,61,230,0.35)] hover:brightness-105"
-            : "border border-white/80 bg-white/80 text-slate-800 shadow-[0_8px_18px_-14px_rgba(15,23,42,0.35)] hover:border-violet-200 hover:text-[#673de6]",
+            : "border border-white/70 bg-white/40 text-slate-800 shadow-[0_8px_18px_-14px_rgba(15,23,42,0.28)] backdrop-blur-xl hover:border-violet-200 hover:bg-white/55 hover:text-[#673de6]",
         )}
       >
         {plan.ctaLabel || "Get Started"}
@@ -173,7 +195,7 @@ function PlanCard({
             key={feature}
             className="flex items-start gap-2.5 text-[13.5px] leading-snug text-slate-600"
           >
-            <span className="mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-[#f4f5ff] text-[#673de6]">
+            <span className="mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-white/55 text-[#673de6] ring-1 ring-white/70">
               <Check className="size-2.5" strokeWidth={3} aria-hidden />
             </span>
             <span>{feature}</span>
@@ -219,7 +241,7 @@ export function HostingPlansSection({
   const guarantees = (data.guarantees ?? []).filter(Boolean).slice(0, 4);
 
   return (
-    <section className="hb-home-section hb-home-section--sheet">
+    <section className="hb-home-section hb-home-section--mist">
       <div className="hb-shell relative z-10">
         <div className="mx-auto max-w-3xl text-center">
           <p className="inline-flex items-center gap-2 rounded-full border border-white bg-white/80 px-3 py-1 text-[11px] font-bold tracking-[0.22em] text-slate-500 uppercase shadow-[0_8px_20px_-14px_rgba(37,80,130,0.4)]">
@@ -311,9 +333,9 @@ export function HostingPlansSection({
             {guarantees.map((item) => (
               <div
                 key={item.id}
-                className="flex h-full items-start gap-3 rounded-[22px] border border-white/80 bg-white/65 px-4 py-4 shadow-[0_16px_40px_-28px_rgba(37,80,130,0.42)] backdrop-blur-xl"
+                className="flex h-full items-start gap-3 rounded-[22px] border border-white/55 bg-white/30 px-4 py-4 shadow-[0_16px_40px_-28px_rgba(79,70,229,0.38)] ring-1 ring-white/60 backdrop-blur-2xl"
               >
-                <span className="mt-0.5 inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-[#f4f5ff] text-[#673de6]">
+                <span className="mt-0.5 inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-white/45 text-[#673de6] ring-1 ring-white/70">
                   <GuaranteeIcon icon={item.icon} className="size-[18px]" />
                 </span>
                 <span className="min-w-0 flex-1">

@@ -138,6 +138,10 @@ export type CmsHostingPlan = {
   originalMonthly: string;
   billedMonthly: string;
   saveMonthly: string;
+  /** Shown on every plan card, usually under billed/save. */
+  domainPerk: string;
+  /** Shown only when Annually is selected. */
+  annualCredit: string;
   features: string[];
   ctaLabel: string;
   ctaHref: string;
@@ -884,6 +888,8 @@ function defaultHostingPlans(): CmsHostingPlan[] {
       originalMonthly: "",
       billedMonthly: "Billed monthly",
       saveMonthly: "",
+      domainPerk: "Domain — free for 1 year",
+      annualCredit: "$2 Beyond AI Credit",
       features: [
         "1 Website",
         "10 GB NVMe SSD Storage",
@@ -916,6 +922,8 @@ function defaultHostingPlans(): CmsHostingPlan[] {
       originalMonthly: "",
       billedMonthly: "Billed monthly",
       saveMonthly: "",
+      domainPerk: "Domain — free for 1 year",
+      annualCredit: "$4 Beyond AI Credit",
       features: [
         "5 Websites",
         "20 GB NVMe SSD Storage",
@@ -949,6 +957,8 @@ function defaultHostingPlans(): CmsHostingPlan[] {
       originalMonthly: "",
       billedMonthly: "Billed monthly",
       saveMonthly: "",
+      domainPerk: "Domain — free for 1 year",
+      annualCredit: "$7 Beyond AI Credit",
       features: [
         "Unlimited Websites",
         "40 GB NVMe SSD Storage",
@@ -983,6 +993,8 @@ function defaultHostingPlans(): CmsHostingPlan[] {
       originalMonthly: "",
       billedMonthly: "Billed monthly",
       saveMonthly: "",
+      domainPerk: "Domain — free for 1 year",
+      annualCredit: "$12 Beyond AI Credit",
       features: [
         "Unlimited Websites",
         "60 GB NVMe SSD Storage",
@@ -3554,17 +3566,6 @@ export function mergeHomeSections(
     .map((fallback) => {
       const match = storedPlans.find((item) => item.id === fallback.id);
       if (!match) return fallback;
-      const stale =
-        /^web\s/i.test(match.name || "") ||
-        !/70%\s*off/i.test(match.discountBadge || "") ||
-        /save\s*50%/i.test(match.discountBadge || "");
-      if (stale) {
-        return {
-          ...fallback,
-          visible: match.visible ?? true,
-          order: typeof match.order === "number" ? match.order : fallback.order,
-        };
-      }
       return {
         ...fallback,
         ...match,
@@ -3580,6 +3581,14 @@ export function mergeHomeSections(
           typeof match.saveMonthly === "string"
             ? match.saveMonthly
             : fallback.saveMonthly,
+        domainPerk:
+          typeof match.domainPerk === "string"
+            ? match.domainPerk
+            : fallback.domainPerk,
+        annualCredit:
+          typeof match.annualCredit === "string"
+            ? match.annualCredit
+            : fallback.annualCredit,
         features: Array.isArray(match.features)
           ? match.features.filter(Boolean)
           : fallback.features,
@@ -3602,6 +3611,12 @@ export function mergeHomeSections(
           typeof extra.saveAnnually === "string" ? extra.saveAnnually : "",
         saveMonthly:
           typeof extra.saveMonthly === "string" ? extra.saveMonthly : "",
+        domainPerk:
+          typeof extra.domainPerk === "string"
+            ? extra.domainPerk
+            : "Domain — free for 1 year",
+        annualCredit:
+          typeof extra.annualCredit === "string" ? extra.annualCredit : "",
         features: Array.isArray(extra.features) ? extra.features : [],
         visible: extra.visible ?? true,
         order: typeof extra.order === "number" ? extra.order : plans.length,
@@ -3625,17 +3640,25 @@ export function mergeHomeSections(
       ? value
       : fallback;
 
-  const guarantees: CmsHostingGuarantee[] =
-    defaults.hostingPlans.guarantees.map((fallback) => {
-      const match = storedGuarantees.find((item) => item.id === fallback.id);
-      if (!match) return fallback;
-      return {
-        ...fallback,
-        ...match,
-        id: match.id || fallback.id,
-        icon: guaranteeIcon(match.icon, fallback.icon),
-      };
-    });
+  const guarantees: CmsHostingGuarantee[] = (
+    storedGuarantees.length > 0
+      ? storedGuarantees
+      : defaults.hostingPlans.guarantees
+  ).map((item, index) => {
+    const fallback =
+      defaults.hostingPlans.guarantees.find((g) => g.id === item.id) ??
+      defaults.hostingPlans.guarantees[
+        index % defaults.hostingPlans.guarantees.length
+      ];
+    return {
+      ...fallback,
+      ...item,
+      id: item.id || fallback.id || `guarantee-${index}`,
+      title: item.title || fallback.title,
+      description: item.description || fallback.description,
+      icon: guaranteeIcon(item.icon, fallback.icon),
+    };
+  });
 
   const storedTypeCards = Array.isArray(stored.hostingTypes?.cards)
     ? stored.hostingTypes!.cards

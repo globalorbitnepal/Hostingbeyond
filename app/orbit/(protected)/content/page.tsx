@@ -1040,22 +1040,22 @@ export default function OrbitContentPage() {
           <div>
             <h2 className="font-semibold">Web Hosting Plans & Price</h2>
             <p className="mt-0.5 text-xs text-slate-500">
-              Full A–Z editor for the pricing section on the homepage.
+              Full A–Z editor: add, edit, reorder, or remove plans. Image-style
+              glass cards on the homepage update after Save home.
             </p>
           </div>
           <label className="flex items-center gap-2 text-xs text-slate-500">
             <input
               type="checkbox"
               checked={sections.hostingPlans?.visible !== false}
-              onChange={(e) =>
-                setSections({
-                  ...sections,
-                  hostingPlans: {
-                    ...sections.hostingPlans,
-                    visible: e.target.checked,
-                  },
-                })
-              }
+              onChange={(e) => {
+                const hostingPlans = {
+                  ...sections.hostingPlans,
+                  visible: e.target.checked,
+                };
+                setSections({ ...sections, hostingPlans });
+                commitHome({ ...sections, hostingPlans });
+              }}
             />
             Visible
           </label>
@@ -1220,13 +1220,23 @@ export default function OrbitContentPage() {
               if (target < 0 || target >= plans.length) return;
               const [item] = plans.splice(index, 1);
               plans.splice(target, 0, item);
-              setSections({
-                ...sections,
-                hostingPlans: {
-                  ...sections.hostingPlans,
-                  plans: plans.map((p, order) => ({ ...p, order })),
-                },
-              });
+              const hostingPlans = {
+                ...sections.hostingPlans,
+                plans: plans.map((p, order) => ({ ...p, order })),
+              };
+              setSections({ ...sections, hostingPlans });
+              commitHome({ ...sections, hostingPlans });
+            }}
+            onRemove={() => {
+              const plans = sections.hostingPlans.plans.filter(
+                (_, i) => i !== index,
+              );
+              const hostingPlans = {
+                ...sections.hostingPlans,
+                plans: plans.map((p, order) => ({ ...p, order })),
+              };
+              setSections({ ...sections, hostingPlans });
+              commitHome({ ...sections, hostingPlans });
             }}
           />
         ))}
@@ -1235,37 +1245,38 @@ export default function OrbitContentPage() {
           type="button"
           onClick={() => {
             const plans = sections.hostingPlans?.plans ?? [];
-            setSections({
-              ...sections,
-              hostingPlans: {
-                ...sections.hostingPlans,
-                plans: [
-                  ...plans,
-                  {
-                    id: `plan-${Date.now()}`,
-                    visible: true,
-                    order: plans.length,
-                    name: "New Plan",
-                    tagline: "Short plan description.",
-                    discountBadge: "70% OFF",
-                    popular: false,
-                    popularLabel: "",
-                    accent: "blue",
-                    priceAnnually: "$0.00",
-                    originalAnnually: "$0.00",
-                    billedAnnually: "Billed annually",
-                    saveAnnually: "",
-                    priceMonthly: "$0.00",
-                    originalMonthly: "",
-                    billedMonthly: "Billed monthly",
-                    saveMonthly: "",
-                    features: ["Feature 1"],
-                    ctaLabel: "Get Started",
-                    ctaHref: "/get-started",
-                  },
-                ],
-              },
-            });
+            const hostingPlans = {
+              ...sections.hostingPlans,
+              plans: [
+                ...plans,
+                {
+                  id: `plan-${Date.now()}`,
+                  visible: true,
+                  order: plans.length,
+                  name: "New Plan",
+                  tagline: "Short plan description.",
+                  discountBadge: "70% OFF",
+                  popular: false,
+                  popularLabel: "",
+                  accent: "blue" as const,
+                  priceAnnually: "$0.00",
+                  originalAnnually: "$0.00",
+                  billedAnnually: "Billed annually",
+                  saveAnnually: "",
+                  priceMonthly: "$0.00",
+                  originalMonthly: "",
+                  billedMonthly: "Billed monthly",
+                  saveMonthly: "",
+                  domainPerk: "Domain — free for 1 year",
+                  annualCredit: "",
+                  features: ["Feature 1"],
+                  ctaLabel: "Get Started",
+                  ctaHref: "/get-started",
+                },
+              ],
+            };
+            setSections({ ...sections, hostingPlans });
+            commitHome({ ...sections, hostingPlans });
           }}
           className="rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-500 hover:text-slate-900"
         >
@@ -1327,8 +1338,42 @@ export default function OrbitContentPage() {
                   });
                 }}
               />
+              <button
+                type="button"
+                onClick={() => {
+                  const guarantees = sections.hostingPlans.guarantees.filter(
+                    (_, i) => i !== index,
+                  );
+                  const hostingPlans = { ...sections.hostingPlans, guarantees };
+                  setSections({ ...sections, hostingPlans });
+                  commitHome({ ...sections, hostingPlans });
+                }}
+                className="rounded-lg border border-red-200 px-2 py-1 text-xs text-red-600"
+              >
+                Remove card
+              </button>
             </div>
           ))}
+          <button
+            type="button"
+            onClick={() => {
+              const guarantees = [
+                ...(sections.hostingPlans.guarantees ?? []),
+                {
+                  id: `guarantee-${Date.now()}`,
+                  title: "New guarantee",
+                  description: "Short supporting line.",
+                  icon: "shield" as const,
+                },
+              ];
+              const hostingPlans = { ...sections.hostingPlans, guarantees };
+              setSections({ ...sections, hostingPlans });
+              commitHome({ ...sections, hostingPlans });
+            }}
+            className="rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-500 hover:text-slate-900"
+          >
+            + Add guarantee card
+          </button>
         </div>
       </section>
 
@@ -2002,10 +2047,12 @@ function HostingPlanEditor({
   plan,
   onChange,
   onMove,
+  onRemove,
 }: {
   plan: CmsHostingPlan;
   onChange: (patch: Partial<CmsHostingPlan>) => void;
   onMove: (direction: -1 | 1) => void;
+  onRemove: () => void;
 }) {
   return (
     <div className="space-y-3 rounded-xl border border-slate-200 p-4">
@@ -2043,6 +2090,13 @@ function HostingPlanEditor({
             className="rounded-lg border border-slate-200 px-2 py-1 text-xs"
           >
             ↓
+          </button>
+          <button
+            type="button"
+            onClick={onRemove}
+            className="rounded-lg border border-red-200 px-2 py-1 text-xs text-red-600"
+          >
+            Remove
           </button>
         </div>
       </div>
@@ -2117,6 +2171,16 @@ function HostingPlanEditor({
           label="Monthly save text"
           value={plan.saveMonthly}
           onChange={(value) => onChange({ saveMonthly: value })}
+        />
+        <Field
+          label="Perk line (all billing, e.g. Domain — free for 1 year)"
+          value={plan.domainPerk ?? ""}
+          onChange={(value) => onChange({ domainPerk: value })}
+        />
+        <Field
+          label="Annual-only bonus (e.g. $2 Beyond AI Credit)"
+          value={plan.annualCredit ?? ""}
+          onChange={(value) => onChange({ annualCredit: value })}
         />
         <Field
           label="CTA text"

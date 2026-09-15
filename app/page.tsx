@@ -14,7 +14,6 @@ import {
   ProofSliderSection,
   CloseCtaSection,
 } from "@/components/home";
-import { PartnerLogoStrip } from "@/components/home/partner-logo-strip";
 import { HeroJourneySlider } from "@/components/home/hero-journey-slider";
 import { getHomeSections, getSiteSettings } from "@/lib/orbit/content";
 
@@ -53,7 +52,6 @@ export default async function HomePage() {
       {sections.solutions ? (
         <SolutionsSection content={sections.solutions} />
       ) : null}
-      <PartnerLogoStrip partners={sections.hero.technologyPartners} />
       {sections.hostingPlans?.visible !== false ? (
         <HostingPlansSection content={sections.hostingPlans} />
       ) : null}
