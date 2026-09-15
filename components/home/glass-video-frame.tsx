@@ -47,6 +47,29 @@ export function GlassVideoFrame({
   );
 }
 
+export function GlassBand({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <section
+      className={cn(
+        "relative overflow-hidden bg-[linear-gradient(180deg,#2563eb_0%,#4f46e5_32%,#673de6_68%,#3d1d9a_100%)] py-16 sm:py-20",
+        className,
+      )}
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_-8%,rgba(255,255,255,0.2),transparent_52%)]"
+      />
+      {children}
+    </section>
+  );
+}
+
 export function GlassPromptBar({
   text,
   playing = true,
@@ -106,12 +129,16 @@ export function GlassDomainBar({
 export function GlassChatChips({
   lines,
   playing = true,
+  className,
 }: {
   lines: string[];
   playing?: boolean;
+  className?: string;
 }) {
   return (
-    <div className="absolute inset-x-4 bottom-5 space-y-2">
+    <div
+      className={cn("absolute inset-x-4 bottom-5 z-20 space-y-2", className)}
+    >
       {lines.map((line, index) => (
         <motion.p
           key={line}

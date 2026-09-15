@@ -25,6 +25,7 @@ import {
   type CmsAiAssistantPrompt,
   type CmsAiAssistantStat,
 } from "@/lib/orbit/defaults";
+import { GlassBand, GlassChatChips } from "./glass-video-frame";
 
 function PartnerMark({ id }: { id: string }) {
   const className = "size-[22px] shrink-0 sm:size-6";
@@ -314,6 +315,15 @@ function AssistantStage({ content }: { content: CmsAiAssistantContent }) {
         </div>
       ) : null}
 
+      <GlassChatChips
+        playing
+        className="right-3 left-auto hidden w-[230px] sm:block"
+        lines={[
+          content.prompts[0]?.label || "I want to migrate to HostingBeyond",
+          content.prompts[1]?.label || "I want to create a website",
+        ]}
+      />
+
       <div className="absolute top-[16%] left-0 z-20 w-[90%] max-w-[332px] sm:top-[18%] sm:w-[48%]">
         <AssistantChat content={content} />
       </div>
@@ -387,10 +397,10 @@ export function AiAssistantSection({
   const reduceMotion = useReducedMotion();
 
   return (
-    <section className="hb-home-section hb-home-section--sheet">
+    <GlassBand>
       <div
         aria-hidden
-        className="pointer-events-none absolute top-[-12%] right-[-8%] h-[62%] w-[48%] rounded-full bg-[radial-gradient(ellipse,rgba(186,210,255,0.4),transparent_72%)] blur-3xl"
+        className="pointer-events-none absolute top-[-12%] right-[-8%] h-[62%] w-[48%] rounded-full bg-[radial-gradient(ellipse,rgba(186,210,255,0.28),transparent_72%)] blur-3xl"
       />
 
       <div className="hb-shell relative z-10">
@@ -403,12 +413,12 @@ export function AiAssistantSection({
               {index > 0 ? (
                 <span
                   aria-hidden
-                  className="mx-2.5 h-4 w-px shrink-0 bg-slate-300/90 sm:mx-4"
+                  className="mx-2.5 h-4 w-px shrink-0 bg-white/30 sm:mx-4"
                 />
               ) : null}
               <span className="inline-flex items-center gap-1.5 sm:gap-2">
                 <PartnerMark id={partner.id} />
-                <span className="text-[12.5px] font-semibold tracking-tight whitespace-nowrap text-slate-800 sm:text-[14px]">
+                <span className="text-[12.5px] font-semibold tracking-tight whitespace-nowrap text-white sm:text-[14px]">
                   {partner.label}
                 </span>
               </span>
@@ -424,7 +434,7 @@ export function AiAssistantSection({
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
           >
-            <span className="hb-ai-nav hb-ai-nav--section inline-flex items-center justify-center gap-2 rounded-full border border-white/80 bg-white/55 text-slate-950 backdrop-blur-xl">
+            <span className="hb-ai-nav hb-ai-nav--section inline-flex items-center justify-center gap-2 rounded-full border border-white/30 bg-white/15 text-white backdrop-blur-xl">
               <span className="hb-ai-nav__shine" aria-hidden />
               <Sparkles
                 className="hb-ai-nav__spark size-4 shrink-0 text-[#7c3aed]"
@@ -433,14 +443,14 @@ export function AiAssistantSection({
               <span>{data.badge}</span>
             </span>
 
-            <h2 className="font-heading mt-6 text-[clamp(1.85rem,4vw,3.4rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-[#2f1c6a]">
+            <h2 className="font-heading mt-6 text-[clamp(1.85rem,4vw,3.4rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-white">
               <span className="block">{data.title}</span>
-              <span className="block bg-gradient-to-r from-[#2563eb] via-[#673de6] to-[#7c3aed] bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-[#bfdbfe] via-white to-[#ddd6fe] bg-clip-text text-transparent">
                 {data.titleAccent}
               </span>
             </h2>
 
-            <p className="mt-4 max-w-md text-[15px] leading-relaxed text-slate-600 sm:text-[16.5px]">
+            <p className="mt-4 max-w-md text-[15px] leading-relaxed text-white/75 sm:text-[16.5px]">
               {data.description}
             </p>
 
@@ -449,14 +459,14 @@ export function AiAssistantSection({
                 const Icon = highlightIcons[item.icon] ?? Zap;
                 return (
                   <div key={item.id} className="flex items-start gap-3">
-                    <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl border border-white/80 bg-white/80 text-[#673de6] shadow-[0_8px_20px_rgba(37,80,130,0.08)]">
+                    <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl border border-white/25 bg-white/15 text-white shadow-[0_8px_20px_rgba(15,10,40,0.12)]">
                       <Icon className="size-[18px]" />
                     </span>
                     <span>
-                      <span className="block text-[14px] font-extrabold text-slate-900">
+                      <span className="block text-[14px] font-extrabold text-white">
                         {item.title}
                       </span>
-                      <span className="block text-[13px] text-slate-500">
+                      <span className="block text-[13px] text-white/65">
                         {item.subtitle}
                       </span>
                     </span>
@@ -468,14 +478,14 @@ export function AiAssistantSection({
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link
                 href={data.primaryCtaHref}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#673de6] px-6 text-[14px] font-bold text-white shadow-[0_12px_28px_rgba(103,61,230,0.32)]"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2563eb] to-[#673de6] px-6 text-[14px] font-bold text-white shadow-[0_12px_28px_rgba(37,99,235,0.32)]"
               >
                 {data.primaryCtaLabel}
                 <ArrowRight className="size-4" />
               </Link>
               <Link
                 href={data.secondaryCtaHref}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-white/80 bg-white/80 px-5 text-[14px] font-bold text-slate-800 shadow-[0_10px_24px_rgba(37,80,130,0.08)] backdrop-blur-xl"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-white/30 bg-white/15 px-5 text-[14px] font-bold text-white shadow-[0_10px_24px_rgba(15,10,40,0.12)] backdrop-blur-xl"
               >
                 <Play className="size-4 fill-current" />
                 {data.secondaryCtaLabel}
@@ -484,7 +494,7 @@ export function AiAssistantSection({
           </motion.div>
 
           <motion.div
-            className="relative min-h-[600px] overflow-hidden rounded-[28px] border border-white/45 shadow-[0_32px_70px_-28px_rgba(47,28,106,0.38)] sm:min-h-[680px] lg:min-h-[740px]"
+            className="relative min-h-[600px] sm:min-h-[680px] lg:min-h-[740px]"
             initial={reduceMotion ? false : { opacity: 0, x: 32 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, amount: 0.2 }}
@@ -494,6 +504,6 @@ export function AiAssistantSection({
           </motion.div>
         </div>
       </div>
-    </section>
+    </GlassBand>
   );
 }

@@ -32,6 +32,7 @@ import {
   type CmsBeyondAiHighlight,
   type CmsBeyondAiSite,
 } from "@/lib/orbit/defaults";
+import { GlassBand, GlassPromptBar } from "./glass-video-frame";
 
 const highlightIcons: Record<CmsBeyondAiHighlight["icon"], typeof Zap> = {
   zap: Zap,
@@ -161,6 +162,9 @@ function SiteSlider({ sites }: { sites: CmsBeyondAiSite[] }) {
               site={slide}
               sizes="(max-width: 1024px) 100vw, 560px"
               priority={slideIndex === 0}
+              className={
+                slideIndex === index && !reduceMotion ? "hb-ken" : undefined
+              }
             />
           </div>
         ))}
@@ -168,7 +172,7 @@ function SiteSlider({ sites }: { sites: CmsBeyondAiSite[] }) {
           aria-hidden
           className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(15,23,42,0.08)_0%,transparent_28%,rgba(15,23,42,0.42)_100%)]"
         />
-        <div className="absolute right-3 bottom-3 left-3 z-10 flex items-end justify-between gap-3">
+        <div className="absolute right-3 bottom-14 left-3 z-10 flex items-end justify-between gap-3">
           <div className="min-w-0 rounded-2xl border border-white/25 bg-white/18 px-3 py-2 backdrop-blur-xl">
             <p className="truncate text-[13px] font-extrabold text-white">
               {active.name}
@@ -220,6 +224,10 @@ function SiteSlider({ sites }: { sites: CmsBeyondAiSite[] }) {
           </div>
         </>
       ) : null}
+      <GlassPromptBar
+        text="Create a stunning hotel website with AI"
+        playing={!reduceMotion && !hovered}
+      />
     </div>
   );
 }
@@ -346,7 +354,7 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
   const reduceMotion = useReducedMotion();
 
   return (
-    <section className="hb-home-section hb-home-section--mist">
+    <GlassBand>
       <div className="hb-shell relative z-10">
         <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-8 xl:gap-12">
           <motion.div
@@ -365,18 +373,18 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
               ) : null}
             </div>
 
-            <h2 className="font-heading mt-3 text-[clamp(1.85rem,4vw,3.4rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-[#2f1c6a]">
+            <h2 className="font-heading mt-3 text-[clamp(1.85rem,4vw,3.4rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-white">
               {(titleLines.length ? titleLines : [data.title]).map((line) => (
                 <span key={line} className="block">
                   {line}
                 </span>
               ))}
-              <span className="block bg-gradient-to-r from-[#2563eb] via-[#673de6] to-[#7c3aed] bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-[#bfdbfe] via-white to-[#ddd6fe] bg-clip-text text-transparent">
                 {data.titleAccent}
               </span>
             </h2>
 
-            <p className="mt-4 max-w-md text-[15px] leading-relaxed text-slate-600 sm:text-[16.5px]">
+            <p className="mt-4 max-w-md text-[15px] leading-relaxed text-white/75 sm:text-[16.5px]">
               {data.description}
             </p>
 
@@ -386,16 +394,16 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
                 return (
                   <div
                     key={item.id}
-                    className="flex items-start gap-2.5 rounded-2xl border border-white/70 bg-white/55 px-2 py-2 shadow-[0_10px_24px_rgba(37,80,130,0.06)] backdrop-blur-xl sm:flex-col sm:items-center sm:bg-transparent sm:px-0 sm:py-0 sm:text-center sm:shadow-none"
+                    className="flex items-start gap-2.5 rounded-2xl border border-white/25 bg-white/12 px-2 py-2 shadow-[0_10px_24px_rgba(15,10,40,0.12)] backdrop-blur-xl sm:flex-col sm:items-center sm:px-2 sm:py-3 sm:text-center"
                   >
-                    <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl border border-white/80 bg-white/80 text-[#673de6] shadow-[0_8px_20px_rgba(37,80,130,0.08)]">
+                    <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl border border-white/30 bg-white/20 text-white shadow-[0_8px_20px_rgba(15,10,40,0.12)]">
                       <Icon className="size-[18px]" />
                     </span>
                     <span>
-                      <span className="block text-[12px] font-extrabold text-slate-900">
+                      <span className="block text-[12px] font-extrabold text-white">
                         {item.title}
                       </span>
-                      <span className="block text-[11px] text-slate-500">
+                      <span className="block text-[11px] text-white/65">
                         {item.subtitle}
                       </span>
                     </span>
@@ -415,19 +423,19 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
               </Link>
               <Link
                 href={data.secondaryCtaHref}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-white/80 bg-white/80 px-5 text-[14px] font-bold text-slate-800 shadow-[0_10px_24px_rgba(37,80,130,0.08)] backdrop-blur-xl"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-white/30 bg-white/15 px-5 text-[14px] font-bold text-white shadow-[0_10px_24px_rgba(15,10,40,0.12)] backdrop-blur-xl"
               >
                 <Play className="size-4 fill-current" />
                 {data.secondaryCtaLabel}
               </Link>
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] font-semibold text-slate-500">
+            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] font-semibold text-white/70">
               {[data.trust1, data.trust2, data.trust3]
                 .filter(Boolean)
                 .map((item) => (
                   <span key={item} className="inline-flex items-center gap-1">
-                    <Check className="size-3.5 text-[#673de6]" />
+                    <Check className="size-3.5 text-[#93c5fd]" />
                     {item}
                   </span>
                 ))}
@@ -435,7 +443,7 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
           </motion.div>
 
           <motion.div
-            className="relative overflow-hidden rounded-[28px] border border-white/45 pb-8 shadow-[0_32px_70px_-28px_rgba(47,28,106,0.4)] backdrop-blur-2xl sm:pb-4 lg:pb-0"
+            className="relative pb-8 sm:pb-4 lg:pb-0"
             initial={reduceMotion ? false : { opacity: 0, x: 36 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, amount: 0.25 }}
@@ -445,7 +453,7 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
           </motion.div>
         </div>
 
-        <div className="mt-6 grid gap-3 rounded-[28px] border border-white/80 bg-white/70 p-3 shadow-[0_18px_50px_-28px_rgba(37,80,130,0.32)] backdrop-blur-2xl sm:mt-8 sm:grid-cols-2 lg:grid-cols-4 lg:p-4">
+        <div className="mt-6 grid gap-3 rounded-[28px] border border-white/25 bg-white/12 p-3 shadow-[0_18px_50px_-28px_rgba(15,10,40,0.35)] backdrop-blur-2xl sm:mt-8 sm:grid-cols-2 lg:grid-cols-4 lg:p-4">
           {data.features.map((item) => {
             const Icon = featureIcons[item.icon] ?? Wand2;
             return (
@@ -453,14 +461,14 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
                 key={item.id}
                 className="flex gap-3 rounded-2xl px-3 py-3 sm:px-4"
               >
-                <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[#f4f5ff] text-[#673de6]">
+                <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-white/15 text-white">
                   <Icon className="size-5" />
                 </span>
                 <div>
-                  <h3 className="text-[14px] font-extrabold tracking-tight text-slate-950">
+                  <h3 className="text-[14px] font-extrabold tracking-tight text-white">
                     {item.title}
                   </h3>
-                  <p className="mt-1 text-[12px] leading-relaxed text-slate-500">
+                  <p className="mt-1 text-[12px] leading-relaxed text-white/65">
                     {item.description}
                   </p>
                 </div>
@@ -469,6 +477,6 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
           })}
         </div>
       </div>
-    </section>
+    </GlassBand>
   );
 }

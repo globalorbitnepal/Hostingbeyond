@@ -30,6 +30,7 @@ import {
   type CmsBusinessEmailFeature,
   type CmsBusinessEmailHighlight,
 } from "@/lib/orbit/defaults";
+import { GlassBand, GlassPromptBar } from "./glass-video-frame";
 
 const highlightIcons: Record<CmsBusinessEmailHighlight["icon"], typeof Shield> =
   {
@@ -245,6 +246,7 @@ function MailStage({ content }: { content: CmsBusinessEmailContent }) {
         </span>
         <Check className="size-4 text-emerald-500" strokeWidth={2.6} />
       </div>
+      <GlassPromptBar text="you@yourbrand.com is ready" playing />
     </div>
   );
 }
@@ -258,11 +260,11 @@ export function BusinessEmailSection({
   const reduceMotion = useReducedMotion();
 
   return (
-    <section className="hb-home-section hb-home-section--aurora">
+    <GlassBand>
       <div className="hb-shell relative z-10">
         <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:gap-10 xl:gap-14">
           <motion.div
-            className="relative order-2 overflow-hidden rounded-[28px] border border-white/45 shadow-[0_32px_70px_-28px_rgba(47,28,106,0.38)] backdrop-blur-2xl lg:order-1"
+            className="relative order-2 lg:order-1"
             initial={reduceMotion ? false : { opacity: 0, x: -28 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, amount: 0.25 }}
@@ -278,19 +280,19 @@ export function BusinessEmailSection({
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
           >
-            <span className="inline-flex w-fit items-center gap-2 rounded-full bg-[#f4f5ff] px-3.5 py-1.5 text-[12px] font-bold tracking-[0.04em] text-[#673de6]">
+            <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/30 bg-white/15 px-3.5 py-1.5 text-[12px] font-bold tracking-[0.04em] text-white backdrop-blur-xl">
               <Mail className="size-3.5" aria-hidden />
               {data.badge}
             </span>
 
-            <h2 className="font-heading mt-5 text-[clamp(1.9rem,3.8vw,3.15rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-[#2f1c6a]">
+            <h2 className="font-heading mt-5 text-[clamp(1.9rem,3.8vw,3.15rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-white">
               <span className="block">{data.title}</span>
-              <span className="block bg-gradient-to-r from-[#2563eb] via-[#673de6] to-[#7c3aed] bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-[#bfdbfe] via-white to-[#ddd6fe] bg-clip-text text-transparent">
                 {data.titleAccent}
               </span>
             </h2>
 
-            <p className="mt-4 text-[15.5px] leading-7 text-slate-600 sm:text-[16.5px]">
+            <p className="mt-4 text-[15.5px] leading-7 text-white/75 sm:text-[16.5px]">
               {data.description}
             </p>
 
@@ -300,17 +302,17 @@ export function BusinessEmailSection({
                 return (
                   <div
                     key={item.id}
-                    className="flex items-start gap-3 rounded-2xl border border-slate-200/80 bg-[#f8fbff] px-3.5 py-3.5"
+                    className="flex items-start gap-3 rounded-2xl border border-white/25 bg-white/12 px-3.5 py-3.5 backdrop-blur-xl"
                   >
-                    <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-white text-[#673de6] shadow-[0_8px_18px_rgba(37,80,130,0.08)] ring-1 ring-slate-100">
+                    <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-white/20 text-white shadow-[0_8px_18px_rgba(15,10,40,0.12)] ring-1 ring-white/25">
                       <Icon className="size-[18px]" />
                     </span>
                     <span className="min-w-0 pt-0.5">
-                      <span className="block text-[13.5px] font-extrabold tracking-tight text-slate-950">
+                      <span className="block text-[13.5px] font-extrabold tracking-tight text-white">
                         {item.title}
                       </span>
                       {item.subtitle ? (
-                        <span className="mt-0.5 block text-[12.5px] leading-snug text-slate-500">
+                        <span className="mt-0.5 block text-[12.5px] leading-snug text-white/65">
                           {item.subtitle}
                         </span>
                       ) : null}
@@ -323,7 +325,7 @@ export function BusinessEmailSection({
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link
                 href={data.primaryCtaHref}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#673de6] px-6 text-[14px] font-bold text-white shadow-[0_12px_28px_rgba(103,61,230,0.32)]"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2563eb] to-[#673de6] px-6 text-[14px] font-bold text-white shadow-[0_12px_28px_rgba(37,99,235,0.32)]"
               >
                 <Mail className="size-4" />
                 {data.primaryCtaLabel}
@@ -331,19 +333,19 @@ export function BusinessEmailSection({
               </Link>
               <Link
                 href={data.secondaryCtaHref}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-5 text-[14px] font-bold text-slate-800 shadow-[0_8px_20px_rgba(15,23,42,0.04)]"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-white/30 bg-white/15 px-5 text-[14px] font-bold text-white shadow-[0_8px_20px_rgba(15,10,40,0.12)] backdrop-blur-xl"
               >
                 <Play className="size-4 fill-current" />
                 {data.secondaryCtaLabel}
               </Link>
             </div>
 
-            <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[12.5px] font-semibold text-slate-500">
+            <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[12.5px] font-semibold text-white/70">
               {[data.trust1, data.trust2, data.trust3]
                 .filter(Boolean)
                 .map((item) => (
                   <span key={item} className="inline-flex items-center gap-1.5">
-                    <Check className="size-3.5 text-[#673de6]" />
+                    <Check className="size-3.5 text-[#93c5fd]" />
                     {item}
                   </span>
                 ))}
@@ -351,20 +353,20 @@ export function BusinessEmailSection({
           </motion.div>
         </div>
 
-        <div className="mt-8 grid gap-6 border-t border-slate-200/80 pt-7 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-8 grid gap-6 border-t border-white/20 pt-7 sm:grid-cols-2 lg:grid-cols-4">
           {data.features.map((item) => {
             const Icon = featureIcons[item.icon] ?? Globe;
             return (
               <article key={item.id} className="flex gap-3">
-                <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[#f4f5ff] text-[#673de6]">
+                <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-white/15 text-white">
                   <Icon className="size-5" />
                 </span>
                 <div>
-                  <h3 className="text-[14px] font-extrabold tracking-tight text-slate-950">
+                  <h3 className="text-[14px] font-extrabold tracking-tight text-white">
                     {item.title}
                   </h3>
                   {item.description ? (
-                    <p className="mt-1 text-[12px] leading-relaxed text-slate-500">
+                    <p className="mt-1 text-[12px] leading-relaxed text-white/65">
                       {item.description}
                     </p>
                   ) : null}
@@ -374,6 +376,6 @@ export function BusinessEmailSection({
           })}
         </div>
       </div>
-    </section>
+    </GlassBand>
   );
 }
