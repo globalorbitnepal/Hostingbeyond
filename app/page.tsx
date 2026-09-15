@@ -44,10 +44,10 @@ export default async function HomePage() {
           logoPath={settings.logoPath}
         />
         {sections.hero.visible ? <HeroSection content={sections.hero} /> : null}
+        {sections.journey?.visible !== false ? (
+          <HeroJourneySlider content={sections.journey} />
+        ) : null}
       </div>
-      {sections.journey?.visible !== false ? (
-        <HeroJourneySlider content={sections.journey} />
-      ) : null}
 
       <div className="hb-mist-run">
         {sections.solutions ? (
