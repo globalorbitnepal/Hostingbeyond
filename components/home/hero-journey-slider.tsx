@@ -370,7 +370,7 @@ export function HeroJourneySlider({
     <section className="hb-hero-continue relative z-20 overflow-hidden pt-8 pb-14 sm:pt-10 sm:pb-16">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(255,255,255,0.28),transparent_52%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(255,255,255,0.18),transparent_52%)]"
       />
       <div className="hb-shell relative">
         <div className="mb-7 flex flex-wrap justify-center gap-2">
