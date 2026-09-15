@@ -105,14 +105,65 @@
   }
 
   .hb-home-section--ice,
-  .hb-home-section--mist,
+  .hb-home-section--mist {
+    background:
+      radial-gradient(
+        ellipse at 6% -8%,
+        rgba(96, 165, 250, 0.55),
+        transparent 48%
+      ),
+      radial-gradient(
+        ellipse at 96% 108%,
+        rgba(139, 92, 246, 0.38),
+        transparent 50%
+      ),
+      linear-gradient(180deg, #dbeafe 0%, #ede9fe 46%, #e0e7ff 100%);
+  }
+
+  .hb-home-section--aurora {
+    background:
+      radial-gradient(
+        ellipse at 88% -12%,
+        rgba(103, 61, 230, 0.32),
+        transparent 50%
+      ),
+      radial-gradient(
+        ellipse at 4% 92%,
+        rgba(37, 99, 235, 0.26),
+        transparent 52%
+      ),
+      linear-gradient(180deg, #e8eeff 0%, #f3eeff 54%, #e6f0ff 100%);
+  }
+
   .hb-home-section--sheet,
   .hb-home-section--lavender {
-    background: #f4f5ff;
+    background:
+      radial-gradient(
+        ellipse at 50% -22%,
+        rgba(167, 139, 250, 0.55),
+        transparent 56%
+      ),
+      radial-gradient(
+        ellipse at 100% 78%,
+        rgba(96, 165, 250, 0.34),
+        transparent 48%
+      ),
+      linear-gradient(180deg, #ece7ff 0%, #e8f1ff 100%);
   }
 
   .hb-home-section--white {
-    background: #ffffff;
+    background:
+      radial-gradient(
+        ellipse at 100% 0%,
+        rgba(147, 197, 253, 0.38),
+        transparent 44%
+      ),
+      radial-gradient(
+        ellipse at 0% 100%,
+        rgba(167, 139, 250, 0.28),
+        transparent 46%
+      ),
+      linear-gradient(180deg, #eef4ff 0%, #f4f0ff 100%);
   }
 
   .hb-home-section--plum {
@@ -139,15 +190,16 @@
   }
 
   .hb-ken {
-    animation: hb-ken 7s ease-out forwards;
+    animation: hb-ken 8.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    will-change: transform;
   }
 
   @keyframes hb-ken {
     from {
-      transform: scale(1.1);
+      transform: scale(1.14) translate3d(1.4%, 0, 0);
     }
     to {
-      transform: scale(1);
+      transform: scale(1.02) translate3d(0, 0, 0);
     }
   }
 

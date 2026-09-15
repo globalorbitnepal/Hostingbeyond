@@ -9,7 +9,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { defaultJourneySection } from "@/lib/orbit/defaults";
 import type { CmsJourneyContent } from "@/lib/orbit/defaults";
 import { cn } from "@/lib/utils";
-import { hbCopy } from "@/lib/motion";
+import { hbCopy, hbSlide } from "@/lib/motion";
 
 export function HeroJourneySlider({
   content,
@@ -76,7 +76,40 @@ export function HeroJourneySlider({
           ))}
         </div>
 
-        <div className="grid items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="relative overflow-hidden rounded-[28px] border border-white/20 shadow-[0_40px_80px_-32px_rgba(0,0,0,0.55)]">
+          <div className="relative aspect-[16/7] min-h-[220px] w-full sm:min-h-[280px]">
+            <AnimatePresence initial={false} custom={direction}>
+              <motion.div
+                key={active.id}
+                custom={direction}
+                variants={hbSlide}
+                initial={reduce ? false : "enter"}
+                animate="center"
+                exit={reduce ? undefined : "exit"}
+                transition={{ duration: 0.72, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute inset-0"
+              >
+                <Image
+                  src={active.image}
+                  alt={active.alt}
+                  fill
+                  priority
+                  sizes="100vw"
+                  style={{ objectPosition: active.imagePosition }}
+                  className={cn("object-cover", reduce ? "" : "hb-ken")}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#2f1c6a]/70 via-[#2f1c6a]/10 to-transparent" />
+                {active.badge ? (
+                  <p className="absolute top-5 left-5 rounded-full bg-gradient-to-r from-[#2563eb] to-[#673de6] px-3.5 py-1 text-[11px] font-bold text-white shadow-lg">
+                    {active.badge}
+                  </p>
+                ) : null}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
+
+        <div className="mt-4 grid items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {slides.map((slide, slideIndex) => {
             const on = slideIndex === index;
             return (
@@ -87,31 +120,28 @@ export function HeroJourneySlider({
                 layout
                 transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
                 className={cn(
-                  "relative overflow-hidden rounded-[20px] text-left",
+                  "relative overflow-hidden rounded-[18px] text-left",
                   on
                     ? "shadow-[0_28px_50px_-24px_rgba(0,0,0,0.55)] ring-2 ring-white"
-                    : "opacity-80 ring-1 ring-white/10",
+                    : "opacity-75 ring-1 ring-white/10 hover:opacity-95",
                 )}
               >
-                <div className="relative h-[220px] sm:h-[250px]">
+                <div className="relative h-[118px] sm:h-[132px]">
                   <Image
                     src={slide.image}
-                    alt={slide.alt}
+                    alt=""
                     fill
                     sizes="(max-width: 1024px) 50vw, 25vw"
                     style={{ objectPosition: slide.imagePosition }}
                     className={cn(
                       "object-cover transition duration-[900ms] ease-out",
-                      on ? "scale-100" : "scale-[1.06]",
-                      on && !reduce ? "hb-ken" : "",
+                      on ? "scale-100" : "scale-[1.08]",
                     )}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#2f1c6a]/75 via-transparent to-transparent" />
-                  {slide.badge ? (
-                    <p className="absolute top-4 left-4 rounded-full bg-[#673de6] px-3 py-1 text-[11px] font-bold text-white shadow-lg">
-                      {slide.badge}
-                    </p>
-                  ) : null}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#2f1c6a]/80 via-transparent to-transparent" />
+                  <p className="absolute right-0 bottom-2 left-0 px-3 text-[12px] font-extrabold text-white">
+                    {slide.label}
+                  </p>
                 </div>
               </motion.button>
             );

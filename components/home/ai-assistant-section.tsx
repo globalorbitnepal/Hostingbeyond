@@ -387,7 +387,7 @@ export function AiAssistantSection({
   const reduceMotion = useReducedMotion();
 
   return (
-    <section className="hb-home-section hb-home-section--lavender">
+    <section className="hb-home-section hb-home-section--sheet">
       <div
         aria-hidden
         className="pointer-events-none absolute top-[-12%] right-[-8%] h-[62%] w-[48%] rounded-full bg-[radial-gradient(ellipse,rgba(186,210,255,0.4),transparent_72%)] blur-3xl"
@@ -435,7 +435,7 @@ export function AiAssistantSection({
 
             <h2 className="font-heading mt-6 text-[clamp(1.85rem,4vw,3.4rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-[#2f1c6a]">
               <span className="block">{data.title}</span>
-              <span className="block bg-gradient-to-r from-[#673de6] via-[#7c3aed] to-[#2f1c6a] bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-[#2563eb] via-[#673de6] to-[#7c3aed] bg-clip-text text-transparent">
                 {data.titleAccent}
               </span>
             </h2>

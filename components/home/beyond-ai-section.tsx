@@ -290,7 +290,7 @@ function DashboardPreview({ content }: { content: CmsBeyondAiContent }) {
             <h3 className="text-[15px] font-extrabold tracking-tight text-slate-900">
               {content.dashboardTitle}
             </h3>
-            <span className="inline-flex h-8 items-center rounded-full bg-gradient-to-r from-[#673de6] to-[#2f1c6a] px-3 text-[11px] font-bold text-white">
+            <span className="inline-flex h-8 items-center rounded-full bg-gradient-to-r from-[#2563eb] to-[#673de6] px-3 text-[11px] font-bold text-white">
               + New Website
             </span>
           </div>
@@ -346,7 +346,7 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
   const reduceMotion = useReducedMotion();
 
   return (
-    <section className="hb-home-section hb-home-section--lavender">
+    <section className="hb-home-section hb-home-section--mist">
       <div className="hb-shell relative z-10">
         <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-8 xl:gap-12">
           <motion.div
@@ -371,7 +371,7 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
                   {line}
                 </span>
               ))}
-              <span className="block bg-gradient-to-r from-[#673de6] via-[#7c3aed] to-[#2f1c6a] bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-[#2563eb] via-[#673de6] to-[#7c3aed] bg-clip-text text-transparent">
                 {data.titleAccent}
               </span>
             </h2>
@@ -407,7 +407,7 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link
                 href={data.primaryCtaHref}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#673de6] to-[#5025d1] px-6 text-[14px] font-bold text-white shadow-[0_12px_28px_rgba(37,99,235,0.32)]"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2563eb] to-[#673de6] px-6 text-[14px] font-bold text-white shadow-[0_12px_28px_rgba(37,99,235,0.32)]"
               >
                 <Sparkles className="size-4" />
                 {data.primaryCtaLabel}

@@ -141,7 +141,7 @@ export function PartnerLogoStrip({
   return (
     <div
       className={cn(
-        "relative z-10 -mt-px w-full overflow-hidden bg-[#f4f5ff] py-3 sm:py-4",
+        "relative z-10 -mt-px w-full overflow-hidden bg-[linear-gradient(90deg,#eef4ff,#f6f2ff,#eef4ff)] py-3 sm:py-4",
         className,
       )}
       role="region"

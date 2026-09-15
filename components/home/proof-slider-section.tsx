@@ -1,40 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 import { hbSlide } from "@/lib/motion";
+import {
+  defaultProofSection,
+  type CmsProofContent,
+} from "@/lib/orbit/defaults";
 
-const quotes = [
-  {
-    id: "amina",
-    quote:
-      "HostingBeyond AI makes development incredibly fast. I can design, prototype, and launch without wasting a weekend.",
-    name: "Amina Koirala",
-    role: "Studio founder",
-    image: "/images/journey/create.webp",
-  },
-  {
-    id: "daniel",
-    quote:
-      "Domains, WordPress, and mail in one panel. The rate is why we moved. The inbox is why we stayed.",
-    name: "Daniel Mercer",
-    role: "Agency lead",
-    image: "/images/journey/scale.webp",
-  },
-  {
-    id: "sofia",
-    quote:
-      "I explained what I wanted, and Beyond AI did the rest. The site was live in a couple of hours.",
-    name: "Sofia Alvarez",
-    role: "Shop owner",
-    image: "/images/journey/beyond.webp",
-  },
-];
-
-export function ProofSliderSection() {
+export function ProofSliderSection({ content }: { content?: CmsProofContent }) {
   const reduce = useReducedMotion();
+  const data = content ?? defaultProofSection();
+  const quotes = useMemo(
+    () =>
+      data.quotes
+        .filter((quote) => quote.visible !== false)
+        .sort((a, b) => a.order - b.order),
+    [data.quotes],
+  );
   const [[index, direction], setPage] = useState([0, 0]);
   const active = quotes[index];
 
@@ -44,21 +29,23 @@ export function ProofSliderSection() {
   }
 
   useEffect(() => {
-    if (reduce) return;
+    if (reduce || quotes.length < 2) return;
     const timer = window.setInterval(() => {
       setPage(([current]) => [(current + 1) % quotes.length, 1]);
     }, 6200);
     return () => window.clearInterval(timer);
-  }, [reduce]);
+  }, [reduce, quotes.length]);
+
+  if (!data.visible || !active) return null;
 
   return (
-    <section className="hb-home-section hb-home-section--white">
+    <section className="hb-home-section hb-home-section--sheet">
       <div className="hb-shell">
-        <h2 className="font-heading mx-auto max-w-3xl text-center text-[clamp(1.85rem,3.6vw,3.1rem)] leading-[1.08] font-extrabold tracking-[-0.05em] text-[#2f1c6a]">
-          See what customers are creating with HostingBeyond
+        <h2 className="font-heading mx-auto max-w-3xl text-center text-[clamp(1.85rem,3.6vw,3.1rem)] leading-[1.08] font-extrabold tracking-[-0.05em] text-[#0c1a36]">
+          {data.title}
         </h2>
 
-        <div className="relative mx-auto mt-10 max-w-4xl overflow-hidden rounded-[20px] bg-[#f4f5ff]">
+        <div className="relative mx-auto mt-10 max-w-4xl overflow-hidden rounded-[24px] border border-white/80 bg-white/70 shadow-[0_32px_70px_-36px_rgba(37,80,130,0.4)] backdrop-blur-xl">
           <AnimatePresence initial={false} custom={direction} mode="wait">
             <motion.article
               key={active.id}
@@ -71,13 +58,13 @@ export function ProofSliderSection() {
               className="grid md:grid-cols-[1.15fr_0.85fr]"
             >
               <div className="flex flex-col justify-center px-6 py-10 sm:px-12">
-                <p className="text-[18px] leading-relaxed font-medium text-[#2f1c6a] sm:text-[22px]">
+                <p className="text-[18px] leading-relaxed font-medium text-[#0c1a36] sm:text-[22px]">
                   “{active.quote}”
                 </p>
-                <p className="mt-6 text-[15px] font-extrabold text-[#2f1c6a]">
+                <p className="mt-6 text-[15px] font-extrabold text-[#0c1a36]">
                   {active.name}
                 </p>
-                <p className="text-[13px] font-semibold text-[#727586]">
+                <p className="text-[13px] font-semibold text-slate-500">
                   {active.role}
                 </p>
               </div>
@@ -103,8 +90,8 @@ export function ProofSliderSection() {
               onClick={() => goTo(itemIndex)}
               className={
                 itemIndex === index
-                  ? "h-2 w-8 rounded-full bg-[#673de6] transition-all"
-                  : "h-2 w-2 rounded-full bg-[#d9d2ff] transition-all hover:bg-[#b9a6ff]"
+                  ? "h-2 w-8 rounded-full bg-gradient-to-r from-[#2563eb] to-[#673de6] transition-all"
+                  : "h-2 w-2 rounded-full bg-[#c7d2fe] transition-all hover:bg-[#a5b4fc]"
               }
             />
           ))}

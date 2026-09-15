@@ -123,7 +123,7 @@ export function HeroFeatureBar({ bar }: { bar?: CmsHeroFeatureBar }) {
           </p>
           <p className="text-[12px] font-bold text-slate-900 sm:text-[13px]">
             {data.offerTitle}{" "}
-            <span className="bg-gradient-to-r from-[#673de6] to-[#2f1c6a] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#2563eb] to-[#673de6] bg-clip-text text-transparent">
               {data.offerHighlight}
             </span>
           </p>

@@ -7,18 +7,30 @@ import { BeyondAiEditor } from "@/components/orbit/beyond-ai-editor";
 import { BusinessEmailEditor } from "@/components/orbit/business-email-editor";
 import { FooterEditor } from "@/components/orbit/footer-editor";
 import { HomeFaqsEditor } from "@/components/orbit/home-faqs-editor";
+import {
+  CloseCtaEditor,
+  ProofEditor,
+  StoryBandEditor,
+} from "@/components/orbit/home-band-editors";
 import { OrbitImageField } from "@/components/orbit/image-field";
 import { JourneyEditor } from "@/components/orbit/journey-editor";
+import { MediaCardsEditor } from "@/components/orbit/media-cards-editor";
 import { SolutionsEditor } from "@/components/orbit/solutions-editor";
 import { WhyChooseEditor } from "@/components/orbit/why-choose-editor";
 import {
   defaultAiAssistantSection,
   defaultBeyondAiSection,
   defaultBusinessEmailSection,
+  defaultCloseCtaSection,
+  defaultControlStorySection,
+  defaultEssentialsSection,
   defaultFooterSection,
+  defaultGrowStorySection,
   defaultHomeFaqsSection,
   defaultHeroFeatureBar,
   defaultJourneySection,
+  defaultPowerTilesSection,
+  defaultProofSection,
   defaultTechnologyPartners,
   defaultWhyChooseSection,
   type CmsDomainTld,
@@ -30,6 +42,7 @@ import {
   type CmsLoginFeature,
   type CmsLoginPage,
   type CmsProductOffer,
+  type CmsSiteSettings,
   type CmsTechPartner,
 } from "@/lib/orbit/defaults";
 import { readResponseError } from "@/lib/orbit/read-response-error";
@@ -37,6 +50,7 @@ import { readResponseError } from "@/lib/orbit/read-response-error";
 export default function OrbitContentPage() {
   const [sections, setSections] = useState<CmsHomeSections | null>(null);
   const [login, setLogin] = useState<CmsLoginPage | null>(null);
+  const [brand, setBrand] = useState<CmsSiteSettings | null>(null);
   const [status, setStatus] = useState("");
   const [saving, setSaving] = useState(false);
   const [savingLogin, setSavingLogin] = useState(false);
@@ -45,15 +59,20 @@ export default function OrbitContentPage() {
 
   useEffect(() => {
     void (async () => {
-      const [homeRes, loginRes] = await Promise.all([
+      const [homeRes, loginRes, settingsRes] = await Promise.all([
         fetch("/api/orbit/content/home"),
         fetch("/api/orbit/content/login"),
+        fetch("/api/orbit/settings"),
       ]);
       const homeJson = await homeRes.json();
       const loginJson = await loginRes.json();
       if (homeRes.ok) setSections(homeJson.sections);
       else setStatus(homeJson.error || "Failed to load content");
       if (loginRes.ok) setLogin(loginJson.login);
+      if (settingsRes.ok) {
+        const settingsJson = await settingsRes.json();
+        if (settingsJson.settings) setBrand(settingsJson.settings);
+      }
     })();
   }, []);
 
@@ -170,10 +189,40 @@ export default function OrbitContentPage() {
         <div>
           <h1 className="text-2xl font-bold">Website Content</h1>
           <p className="mt-1 text-sm text-slate-500">
-            Full editor for every homepage section — text, images, and prices.
-            Hide items instead of deleting. Uploaded files stay in Media
-            forever.
+            Card-wise editor for every homepage section — titles, copy, images
+            (upload / replace / clear), links, hide, reorder. Header logo lives
+            in Settings too.
           </p>
+          <nav className="mt-3 flex flex-wrap gap-2 text-[11px] font-semibold">
+            {[
+              ["#orbit-header", "Header / logo"],
+              ["#orbit-hero", "Hero"],
+              ["#orbit-journey", "Journey strip"],
+              ["#orbit-solutions", "Solutions"],
+              ["#orbit-products", "Service cards"],
+              ["#orbit-plans", "Hosting plans"],
+              ["#orbit-essentials", "Essentials cards"],
+              ["#orbit-beyond-ai", "Beyond AI"],
+              ["#orbit-control", "WordPress / Templates"],
+              ["#orbit-email", "Business Email"],
+              ["#orbit-grow", "Ecommerce / Mail"],
+              ["#orbit-ai", "AI hosting"],
+              ["#orbit-power", "Power tiles"],
+              ["#orbit-why", "Why choose"],
+              ["#orbit-proof", "Reviews"],
+              ["#orbit-cta", "Closing CTA"],
+              ["#orbit-faqs", "FAQs"],
+              ["#orbit-footer", "Footer"],
+            ].map(([href, label]) => (
+              <a
+                key={href}
+                href={href}
+                className="rounded-full bg-slate-100 px-2.5 py-1 text-slate-600 hover:bg-slate-200"
+              >
+                {label}
+              </a>
+            ))}
+          </nav>
         </div>
         <div className="flex gap-2">
           <a
@@ -215,8 +264,73 @@ export default function OrbitContentPage() {
         </p>
       ) : null}
 
+      {brand ? (
+        <section
+          id="orbit-header"
+          className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5"
+        >
+          <div>
+            <h2 className="font-semibold">Header / brand</h2>
+            <p className="mt-0.5 text-xs text-slate-500">
+              Logo used in the header, footer, and login. Replace or clear from
+              the media library.
+            </p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <OrbitImageField
+              label="Site logo"
+              value={brand.logoPath}
+              onChange={(logoPath) => setBrand({ ...brand, logoPath })}
+              onCommit={(logoPath) => {
+                const next = { ...brand, logoPath };
+                setBrand(next);
+                void fetch("/api/orbit/settings", {
+                  method: "PUT",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ settings: next }),
+                }).then((res) =>
+                  setStatus(res.ok ? "Header logo saved" : "Logo save failed"),
+                );
+              }}
+            />
+            <div className="grid gap-3">
+              {(
+                [
+                  ["loginLabel", "Login label"],
+                  ["getStartedLabel", "Get Started label"],
+                ] as const
+              ).map(([key, label]) => (
+                <label
+                  key={key}
+                  className="block text-xs font-semibold tracking-wide text-slate-500 uppercase"
+                >
+                  {label}
+                  <input
+                    value={String(brand[key] ?? "")}
+                    onChange={(event) =>
+                      setBrand({ ...brand, [key]: event.target.value })
+                    }
+                    onBlur={() =>
+                      void fetch("/api/orbit/settings", {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ settings: brand }),
+                      })
+                    }
+                    className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 outline-none"
+                  />
+                </label>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       {/* HERO */}
-      <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5">
+      <section
+        id="orbit-hero"
+        className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5"
+      >
         <div className="flex items-center justify-between">
           <h2 className="font-semibold">Hero section</h2>
           <label className="flex items-center gap-2 text-xs text-slate-500">
@@ -535,30 +649,37 @@ export default function OrbitContentPage() {
         />
       </section>
 
-      <JourneyEditor
-        value={sections.journey ?? defaultJourneySection()}
-        onChange={(journey) => setSections({ ...sections, journey })}
-        onPersist={(journey) => {
-          const current = sectionsRef.current;
-          if (!current) return;
-          commitHome({ ...current, journey });
-        }}
-      />
-
-      {sections.solutions ? (
-        <SolutionsEditor
-          value={sections.solutions}
-          onChange={(solutions) => setSections({ ...sections, solutions })}
-          onPersist={(solutions) => {
+      <div id="orbit-journey">
+        <JourneyEditor
+          value={sections.journey ?? defaultJourneySection()}
+          onChange={(journey) => setSections({ ...sections, journey })}
+          onPersist={(journey) => {
             const current = sectionsRef.current;
             if (!current) return;
-            commitHome({ ...current, solutions });
+            commitHome({ ...current, journey });
           }}
         />
-      ) : null}
+      </div>
+
+      <div id="orbit-solutions">
+        {sections.solutions ? (
+          <SolutionsEditor
+            value={sections.solutions}
+            onChange={(solutions) => setSections({ ...sections, solutions })}
+            onPersist={(solutions) => {
+              const current = sectionsRef.current;
+              if (!current) return;
+              commitHome({ ...current, solutions });
+            }}
+          />
+        ) : null}
+      </div>
 
       {/* PRODUCTS */}
-      <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5">
+      <section
+        id="orbit-products"
+        className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5"
+      >
         <div className="flex items-center justify-between">
           <h2 className="font-semibold">Service cards section</h2>
           <label className="flex items-center gap-2 text-xs text-slate-500">
@@ -903,7 +1024,10 @@ export default function OrbitContentPage() {
       </section>
 
       {/* HOSTING PLANS */}
-      <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5">
+      <section
+        id="orbit-plans"
+        className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5"
+      >
         <div className="flex items-center justify-between">
           <div>
             <h2 className="font-semibold">Web Hosting Plans & Price</h2>
@@ -1200,67 +1324,228 @@ export default function OrbitContentPage() {
         </div>
       </section>
 
-      <BeyondAiEditor
-        value={sections.beyondAi ?? defaultBeyondAiSection()}
-        onChange={(beyondAi) => setSections({ ...sections, beyondAi })}
-        onPersist={(beyondAi) => {
-          const current = sectionsRef.current;
-          if (!current) return;
-          commitHome({ ...current, beyondAi });
-        }}
-      />
+      <div id="orbit-essentials">
+        <MediaCardsEditor
+          title="Essentials cards"
+          hint="Hosting, Domains, Business email, Migration — 4 cards under plans."
+          visible={(sections.essentials ?? defaultEssentialsSection()).visible}
+          heading={(sections.essentials ?? defaultEssentialsSection()).title}
+          description={
+            (sections.essentials ?? defaultEssentialsSection()).description
+          }
+          cards={(sections.essentials ?? defaultEssentialsSection()).cards}
+          onVisible={(visible) => {
+            const essentials = {
+              ...(sections.essentials ?? defaultEssentialsSection()),
+              visible,
+            };
+            setSections({ ...sections, essentials });
+            commitHome({ ...sections, essentials });
+          }}
+          onHeading={(title) =>
+            setSections({
+              ...sections,
+              essentials: {
+                ...(sections.essentials ?? defaultEssentialsSection()),
+                title,
+              },
+            })
+          }
+          onDescription={(description) =>
+            setSections({
+              ...sections,
+              essentials: {
+                ...(sections.essentials ?? defaultEssentialsSection()),
+                description,
+              },
+            })
+          }
+          onCards={(cards, persist) => {
+            const essentials = {
+              ...(sections.essentials ?? defaultEssentialsSection()),
+              cards,
+            };
+            setSections({ ...sections, essentials });
+            if (persist) commitHome({ ...sections, essentials });
+          }}
+        />
+      </div>
 
-      <BusinessEmailEditor
-        value={sections.businessEmail ?? defaultBusinessEmailSection()}
-        onChange={(businessEmail) =>
-          setSections({ ...sections, businessEmail })
-        }
-        onPersist={(businessEmail) => {
-          const current = sectionsRef.current;
-          if (!current) return;
-          commitHome({ ...current, businessEmail });
-        }}
-      />
+      <div id="orbit-beyond-ai">
+        <BeyondAiEditor
+          value={sections.beyondAi ?? defaultBeyondAiSection()}
+          onChange={(beyondAi) => setSections({ ...sections, beyondAi })}
+          onPersist={(beyondAi) => {
+            const current = sectionsRef.current;
+            if (!current) return;
+            commitHome({ ...current, beyondAi });
+          }}
+        />
+      </div>
 
-      <AiAssistantEditor
-        value={sections.aiAssistant ?? defaultAiAssistantSection()}
-        onChange={(aiAssistant) => setSections({ ...sections, aiAssistant })}
-        onPersist={(aiAssistant) => {
-          const current = sectionsRef.current;
-          if (!current) return;
-          commitHome({ ...current, aiAssistant });
-        }}
-      />
+      <div id="orbit-control">
+        <StoryBandEditor
+          title="WordPress / Templates slider"
+          hint="Hands-on control band — tabs, copy, and images."
+          value={sections.controlStory ?? defaultControlStorySection()}
+          onChange={(controlStory) =>
+            setSections({ ...sections, controlStory })
+          }
+          onPersist={(controlStory) => {
+            const current = sectionsRef.current;
+            if (!current) return;
+            commitHome({ ...current, controlStory });
+          }}
+        />
+      </div>
 
-      <WhyChooseEditor
-        value={sections.whyChoose ?? defaultWhyChooseSection()}
-        onChange={(whyChoose) => setSections({ ...sections, whyChoose })}
-        onPersist={(whyChoose) => {
-          const current = sectionsRef.current;
-          if (!current) return;
-          commitHome({ ...current, whyChoose });
-        }}
-      />
+      <div id="orbit-email">
+        <BusinessEmailEditor
+          value={sections.businessEmail ?? defaultBusinessEmailSection()}
+          onChange={(businessEmail) =>
+            setSections({ ...sections, businessEmail })
+          }
+          onPersist={(businessEmail) => {
+            const current = sectionsRef.current;
+            if (!current) return;
+            commitHome({ ...current, businessEmail });
+          }}
+        />
+      </div>
 
-      <HomeFaqsEditor
-        value={sections.homeFaqs ?? defaultHomeFaqsSection()}
-        onChange={(homeFaqs) => setSections({ ...sections, homeFaqs })}
-        onPersist={(homeFaqs) => {
-          const current = sectionsRef.current;
-          if (!current) return;
-          commitHome({ ...current, homeFaqs });
-        }}
-      />
+      <div id="orbit-grow">
+        <StoryBandEditor
+          title="Ecommerce / Email marketing slider"
+          hint="Grow band — two slides with images and CTAs."
+          value={sections.growStory ?? defaultGrowStorySection()}
+          onChange={(growStory) => setSections({ ...sections, growStory })}
+          onPersist={(growStory) => {
+            const current = sectionsRef.current;
+            if (!current) return;
+            commitHome({ ...current, growStory });
+          }}
+        />
+      </div>
 
-      <FooterEditor
-        value={sections.footer ?? defaultFooterSection()}
-        onChange={(footer) => setSections({ ...sections, footer })}
-        onPersist={(footer) => {
-          const current = sectionsRef.current;
-          if (!current) return;
-          commitHome({ ...current, footer });
-        }}
-      />
+      <div id="orbit-ai">
+        <AiAssistantEditor
+          value={sections.aiAssistant ?? defaultAiAssistantSection()}
+          onChange={(aiAssistant) => setSections({ ...sections, aiAssistant })}
+          onPersist={(aiAssistant) => {
+            const current = sectionsRef.current;
+            if (!current) return;
+            commitHome({ ...current, aiAssistant });
+          }}
+        />
+      </div>
+
+      <div id="orbit-power">
+        <MediaCardsEditor
+          title="Power tiles"
+          hint="VPS, Cloud, Web app, Agency — two-by-two cards."
+          addLabel="Add tile"
+          visible={(sections.powerTiles ?? defaultPowerTilesSection()).visible}
+          heading={(sections.powerTiles ?? defaultPowerTilesSection()).title}
+          description={
+            (sections.powerTiles ?? defaultPowerTilesSection()).description
+          }
+          cards={(sections.powerTiles ?? defaultPowerTilesSection()).tiles}
+          onVisible={(visible) => {
+            const powerTiles = {
+              ...(sections.powerTiles ?? defaultPowerTilesSection()),
+              visible,
+            };
+            setSections({ ...sections, powerTiles });
+            commitHome({ ...sections, powerTiles });
+          }}
+          onHeading={(title) =>
+            setSections({
+              ...sections,
+              powerTiles: {
+                ...(sections.powerTiles ?? defaultPowerTilesSection()),
+                title,
+              },
+            })
+          }
+          onDescription={(description) =>
+            setSections({
+              ...sections,
+              powerTiles: {
+                ...(sections.powerTiles ?? defaultPowerTilesSection()),
+                description,
+              },
+            })
+          }
+          onCards={(tiles, persist) => {
+            const powerTiles = {
+              ...(sections.powerTiles ?? defaultPowerTilesSection()),
+              tiles,
+            };
+            setSections({ ...sections, powerTiles });
+            if (persist) commitHome({ ...sections, powerTiles });
+          }}
+        />
+      </div>
+
+      <div id="orbit-why">
+        <WhyChooseEditor
+          value={sections.whyChoose ?? defaultWhyChooseSection()}
+          onChange={(whyChoose) => setSections({ ...sections, whyChoose })}
+          onPersist={(whyChoose) => {
+            const current = sectionsRef.current;
+            if (!current) return;
+            commitHome({ ...current, whyChoose });
+          }}
+        />
+      </div>
+
+      <div id="orbit-proof">
+        <ProofEditor
+          value={sections.proof ?? defaultProofSection()}
+          onChange={(proof) => setSections({ ...sections, proof })}
+          onPersist={(proof) => {
+            const current = sectionsRef.current;
+            if (!current) return;
+            commitHome({ ...current, proof });
+          }}
+        />
+      </div>
+
+      <div id="orbit-cta">
+        <CloseCtaEditor
+          value={sections.closeCta ?? defaultCloseCtaSection()}
+          onChange={(closeCta) => setSections({ ...sections, closeCta })}
+          onPersist={(closeCta) => {
+            const current = sectionsRef.current;
+            if (!current) return;
+            commitHome({ ...current, closeCta });
+          }}
+        />
+      </div>
+
+      <div id="orbit-faqs">
+        <HomeFaqsEditor
+          value={sections.homeFaqs ?? defaultHomeFaqsSection()}
+          onChange={(homeFaqs) => setSections({ ...sections, homeFaqs })}
+          onPersist={(homeFaqs) => {
+            const current = sectionsRef.current;
+            if (!current) return;
+            commitHome({ ...current, homeFaqs });
+          }}
+        />
+      </div>
+
+      <div id="orbit-footer">
+        <FooterEditor
+          value={sections.footer ?? defaultFooterSection()}
+          onChange={(footer) => setSections({ ...sections, footer })}
+          onPersist={(footer) => {
+            const current = sectionsRef.current;
+            if (!current) return;
+            commitHome({ ...current, footer });
+          }}
+        />
+      </div>
 
       {/* LOGIN PAGE */}
       {login ? (

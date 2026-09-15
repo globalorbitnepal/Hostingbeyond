@@ -91,10 +91,10 @@ function PlanCard({
       viewport={{ once: true, margin: "-40px" }}
       transition={{ delay, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       className={cn(
-        "relative flex h-full flex-col rounded-[26px] border bg-white p-5 transition duration-300 sm:p-6",
+        "relative flex h-full flex-col rounded-[26px] border p-5 backdrop-blur-xl transition duration-300 sm:p-6",
         popular
-          ? "z-10 border-[#d9d2ff] bg-[linear-gradient(180deg,#f4f5ff_0%,#ffffff_42%)] shadow-[0_28px_60px_-28px_rgba(103,61,230,0.42)] ring-1 ring-[#eaeaff] hover:-translate-y-1"
-          : "border-[#eaeaff] shadow-[0_18px_44px_-30px_rgba(47,28,106,0.28)] hover:-translate-y-0.5 hover:shadow-[0_22px_48px_-28px_rgba(47,28,106,0.38)]",
+          ? "z-10 border-white/70 bg-[linear-gradient(180deg,rgba(244,245,255,0.92)_0%,rgba(255,255,255,0.78)_48%)] shadow-[0_28px_60px_-28px_rgba(103,61,230,0.48)] ring-1 ring-[#c4b5fd]/70 hover:-translate-y-1"
+          : "border-white/80 bg-white/62 shadow-[0_18px_44px_-30px_rgba(47,28,106,0.32)] hover:-translate-y-0.5 hover:shadow-[0_22px_48px_-28px_rgba(47,28,106,0.42)]",
       )}
     >
       <div className="flex items-start justify-between gap-3">
@@ -159,8 +159,8 @@ function PlanCard({
         className={cn(
           "mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full text-[14px] font-bold transition",
           popular
-            ? "bg-[#673de6] text-white shadow-[0_12px_24px_rgba(103,61,230,0.35)] hover:brightness-105"
-            : "border border-slate-200 bg-white text-slate-800 shadow-[0_8px_18px_-14px_rgba(15,23,42,0.35)] hover:border-violet-200 hover:text-[#673de6]",
+            ? "bg-gradient-to-r from-[#2563eb] to-[#673de6] text-white shadow-[0_12px_24px_rgba(103,61,230,0.35)] hover:brightness-105"
+            : "border border-white/80 bg-white/80 text-slate-800 shadow-[0_8px_18px_-14px_rgba(15,23,42,0.35)] hover:border-violet-200 hover:text-[#673de6]",
         )}
       >
         {plan.ctaLabel || "Get Started"}
@@ -229,7 +229,7 @@ export function HostingPlansSection({
           <h2 className="font-heading mt-3 text-[clamp(1.7rem,3.6vw,3.15rem)] leading-[1.12] font-extrabold tracking-[-0.045em] text-[#2f1c6a]">
             {data.title}{" "}
             {data.titleAccent ? (
-              <span className="bg-gradient-to-r from-[#673de6] via-[#7c3aed] to-[#2f1c6a] bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[#2563eb] via-[#673de6] to-[#7c3aed] bg-clip-text text-transparent">
                 {data.titleAccent}
               </span>
             ) : null}
@@ -280,7 +280,7 @@ export function HostingPlansSection({
                 className={cn(
                   "rounded-full px-4 py-2 text-[13px] font-semibold transition",
                   billing === "annually"
-                    ? "bg-[#673de6] text-white shadow-[0_8px_16px_rgba(103,61,230,0.32)]"
+                    ? "bg-gradient-to-r from-[#2563eb] to-[#673de6] text-white shadow-[0_8px_16px_rgba(103,61,230,0.32)]"
                     : "text-slate-500 hover:text-slate-900",
                 )}
               >
@@ -311,7 +311,7 @@ export function HostingPlansSection({
             {guarantees.map((item) => (
               <div
                 key={item.id}
-                className="flex h-full items-start gap-3 rounded-[22px] border border-white bg-white px-4 py-4 shadow-[0_16px_40px_-28px_rgba(37,80,130,0.42)]"
+                className="flex h-full items-start gap-3 rounded-[22px] border border-white/80 bg-white/65 px-4 py-4 shadow-[0_16px_40px_-28px_rgba(37,80,130,0.42)] backdrop-blur-xl"
               >
                 <span className="mt-0.5 inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-[#f4f5ff] text-[#673de6]">
                   <GuaranteeIcon icon={item.icon} className="size-[18px]" />

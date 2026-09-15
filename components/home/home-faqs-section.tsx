@@ -47,7 +47,7 @@ export function HomeFaqsSection({ content }: { content?: CmsHomeFaqsContent }) {
   if (!data.visible || groups.length === 0) return null;
 
   return (
-    <section className="hb-home-section hb-home-section--lavender">
+    <section className="hb-home-section hb-home-section--aurora">
       <div
         aria-hidden
         className="pointer-events-none absolute top-[-18%] right-[-10%] h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(147,197,253,0.32),transparent_68%)] blur-2xl"
@@ -63,7 +63,7 @@ export function HomeFaqsSection({ content }: { content?: CmsHomeFaqsContent }) {
           </p>
           <h2 className="font-heading mt-3 text-[clamp(1.75rem,3.6vw,3.15rem)] leading-[1.12] font-extrabold tracking-[-0.045em] text-[#2f1c6a]">
             {data.title}{" "}
-            <span className="bg-gradient-to-r from-[#673de6] via-[#7c3aed] to-[#2f1c6a] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#2563eb] via-[#673de6] to-[#7c3aed] bg-clip-text text-transparent">
               {data.titleAccent}
             </span>
           </h2>
@@ -91,7 +91,7 @@ export function HomeFaqsSection({ content }: { content?: CmsHomeFaqsContent }) {
             return (
               <div
                 key={group.id}
-                className="rounded-[28px] border border-white/80 bg-white/90 p-4 shadow-[0_22px_60px_-36px_rgba(37,80,130,0.45)] sm:p-5"
+                className="rounded-[28px] border border-white/80 bg-white/62 p-4 shadow-[0_22px_60px_-36px_rgba(37,80,130,0.45)] backdrop-blur-xl sm:p-5"
               >
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5">
@@ -114,7 +114,7 @@ export function HomeFaqsSection({ content }: { content?: CmsHomeFaqsContent }) {
                     return (
                       <div
                         key={item.id}
-                        className="overflow-hidden rounded-2xl border border-slate-100 bg-white"
+                        className="overflow-hidden rounded-2xl border border-white/70 bg-white/70"
                       >
                         <button
                           type="button"
@@ -162,7 +162,7 @@ export function HomeFaqsSection({ content }: { content?: CmsHomeFaqsContent }) {
             <button
               type="button"
               onClick={() => setExpanded((value) => !value)}
-              className="inline-flex h-12 items-center justify-center rounded-full bg-gradient-to-r from-[#673de6] to-[#2f1c6a] px-6 text-[14px] font-bold text-white shadow-[0_12px_28px_rgba(37,99,235,0.32)]"
+              className="inline-flex h-12 items-center justify-center rounded-full bg-gradient-to-r from-[#2563eb] to-[#673de6] px-6 text-[14px] font-bold text-white shadow-[0_12px_28px_rgba(37,99,235,0.32)]"
             >
               {expanded ? "Show fewer FAQs" : data.ctaLabel}
             </button>

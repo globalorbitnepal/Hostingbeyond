@@ -57,7 +57,7 @@ export function WhyChooseSection({
   if (!data.visible || items.length === 0) return null;
 
   return (
-    <section className="hb-home-section hb-home-section--white">
+    <section className="hb-home-section hb-home-section--mist">
       <div
         aria-hidden
         className="pointer-events-none absolute -top-24 left-[-12%] h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(147,197,253,0.35),transparent_68%)] blur-2xl"
@@ -74,7 +74,7 @@ export function WhyChooseSection({
           </p>
           <h2 className="font-heading mt-3 text-[clamp(1.75rem,3.6vw,3.15rem)] leading-[1.12] font-extrabold tracking-[-0.045em] text-[#2f1c6a]">
             {data.title}{" "}
-            <span className="bg-gradient-to-r from-[#673de6] via-[#7c3aed] to-[#2f1c6a] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#2563eb] via-[#673de6] to-[#7c3aed] bg-clip-text text-transparent">
               {data.titleAccent}
             </span>
           </h2>
@@ -108,7 +108,7 @@ export function WhyChooseSection({
                   delay: reduceMotion ? 0 : Math.min(index * 0.03, 0.24),
                   ease: [0.22, 1, 0.36, 1],
                 }}
-                className="rounded-[22px] border border-slate-100 bg-white p-4 shadow-[0_14px_40px_-28px_rgba(37,80,130,0.35)] sm:p-5"
+                className="rounded-[22px] border border-white/80 bg-white/65 p-4 shadow-[0_14px_40px_-28px_rgba(37,80,130,0.4)] backdrop-blur-xl sm:p-5"
               >
                 <div className="flex items-start gap-3">
                   <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl bg-[#f4f5ff] text-[#673de6]">

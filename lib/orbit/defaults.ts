@@ -562,6 +562,78 @@ export type CmsJourneyContent = {
   slides: CmsJourneySlide[];
 };
 
+export type CmsMediaCard = {
+  id: string;
+  visible: boolean;
+  order: number;
+  title: string;
+  body: string;
+  image: string;
+  alt: string;
+  ctaLabel: string;
+  ctaHref: string;
+};
+
+export type CmsEssentialsContent = {
+  visible: boolean;
+  title: string;
+  description: string;
+  cards: CmsMediaCard[];
+};
+
+export type CmsStorySlide = {
+  id: string;
+  visible: boolean;
+  order: number;
+  label: string;
+  title: string;
+  body: string;
+  ctaLabel: string;
+  ctaHref: string;
+  image: string;
+  alt: string;
+};
+
+export type CmsStoryBandContent = {
+  visible: boolean;
+  eyebrow: string;
+  heading: string;
+  imageFirst: boolean;
+  slides: CmsStorySlide[];
+};
+
+export type CmsPowerTilesContent = {
+  visible: boolean;
+  title: string;
+  description: string;
+  tiles: CmsMediaCard[];
+};
+
+export type CmsProofQuote = {
+  id: string;
+  visible: boolean;
+  order: number;
+  quote: string;
+  name: string;
+  role: string;
+  image: string;
+};
+
+export type CmsProofContent = {
+  visible: boolean;
+  title: string;
+  quotes: CmsProofQuote[];
+};
+
+export type CmsCloseCtaContent = {
+  visible: boolean;
+  title: string;
+  description: string;
+  ctaLabel: string;
+  ctaHref: string;
+  trust: string;
+};
+
 export type CmsHomeSections = {
   hero: CmsHeroContent;
   journey: CmsJourneyContent;
@@ -569,10 +641,16 @@ export type CmsHomeSections = {
   products: CmsProductsContent;
   hostingTypes: CmsHostingTypesContent;
   hostingPlans: CmsHostingPlansContent;
+  essentials: CmsEssentialsContent;
   beyondAi: CmsBeyondAiContent;
+  controlStory: CmsStoryBandContent;
   businessEmail: CmsBusinessEmailContent;
+  growStory: CmsStoryBandContent;
   aiAssistant: CmsAiAssistantContent;
+  powerTiles: CmsPowerTilesContent;
   whyChoose: CmsWhyChooseContent;
+  proof: CmsProofContent;
+  closeCta: CmsCloseCtaContent;
   homeFaqs: CmsHomeFaqsContent;
   footer: CmsFooterContent;
   navigation: typeof mainNavigation;
@@ -2426,6 +2504,237 @@ export function defaultJourneySection(): CmsJourneyContent {
   };
 }
 
+export function defaultEssentialsSection(): CmsEssentialsContent {
+  return {
+    visible: true,
+    title: "Set up the essentials to go online",
+    description:
+      "Domain, hosting, mail, and a free move — everything you need in one HostingBeyond account.",
+    cards: [
+      {
+        id: "hosting",
+        visible: true,
+        order: 0,
+        title: "Hosting",
+        body: "Fast, secure NVMe hosting for your site.",
+        image: "/images/home/wordpress.webp",
+        alt: "WordPress site running on HostingBeyond",
+        ctaLabel: "Learn more",
+        ctaHref: routes.hosting,
+      },
+      {
+        id: "domains",
+        visible: true,
+        order: 1,
+        title: "Domains",
+        body: "Find and register the right domain for your brand.",
+        image: "/images/home/domains.webp",
+        alt: "Searching for a domain name",
+        ctaLabel: "Learn more",
+        ctaHref: routes.domains,
+      },
+      {
+        id: "email",
+        visible: true,
+        order: 2,
+        title: "Business email",
+        body: "Build trust with email on your own domain.",
+        image: "/images/journey/beyond.webp",
+        alt: "Branded inbox on a phone",
+        ctaLabel: "Learn more",
+        ctaHref: routes.businessEmail,
+      },
+      {
+        id: "migrate",
+        visible: true,
+        order: 3,
+        title: "Free website migration",
+        body: "Move your existing site to HostingBeyond — we handle it.",
+        image: "/images/journey/create.webp",
+        alt: "Team celebrating a successful site move",
+        ctaLabel: "Learn more",
+        ctaHref: routes.beyondAi,
+      },
+    ],
+  };
+}
+
+export function defaultControlStorySection(): CmsStoryBandContent {
+  return {
+    visible: true,
+    eyebrow: "Hands-on control",
+    heading: "Want more control over what you build?",
+    imageFirst: false,
+    slides: [
+      {
+        id: "wordpress",
+        visible: true,
+        order: 0,
+        label: "WordPress",
+        title: "Hosting for WordPress",
+        body: "AI-assisted, plugin-rich, fully managed WordPress on NVMe — 1-click install, free SSL, and daily backups.",
+        ctaLabel: "Explore WordPress hosting",
+        ctaHref: routes.hosting,
+        image: "/images/home/wordpress.webp",
+        alt: "WordPress editor on a laptop",
+      },
+      {
+        id: "templates",
+        visible: true,
+        order: 1,
+        label: "Templates",
+        title: "Designer-made templates",
+        body: "Start from a niche-ready layout, then keep prompting Beyond AI until it looks like your brand.",
+        ctaLabel: "Explore templates",
+        ctaHref: routes.beyondAi,
+        image: "/images/home/templates.webp",
+        alt: "Website template gallery on a studio monitor",
+      },
+    ],
+  };
+}
+
+export function defaultGrowStorySection(): CmsStoryBandContent {
+  return {
+    visible: true,
+    eyebrow: "Grow",
+    heading: "Bring customers back after you launch",
+    imageFirst: true,
+    slides: [
+      {
+        id: "shop",
+        visible: true,
+        order: 0,
+        label: "Ecommerce",
+        title: "Grow sales and keep more of what you earn",
+        body: "Sell with branded checkout, 0% platform transaction fees on hosting, and a store that sits next to your mail.",
+        ctaLabel: "Explore ecommerce hosting",
+        ctaHref: routes.hosting,
+        image: "/images/home/ecommerce.webp",
+        alt: "Founder packing orders beside an ecommerce dashboard",
+      },
+      {
+        id: "mail",
+        visible: true,
+        order: 1,
+        label: "Email marketing",
+        title: "Campaigns from the same branded inbox",
+        body: "Draft, send, and follow up with Beyond Reach — AI writes, you approve, customers come back.",
+        ctaLabel: "Explore business email",
+        ctaHref: routes.businessEmail,
+        image: "/images/journey/beyond.webp",
+        alt: "Customer reading a branded campaign on a phone",
+      },
+    ],
+  };
+}
+
+export function defaultPowerTilesSection(): CmsPowerTilesContent {
+  return {
+    visible: true,
+    title: "More power when you need it",
+    description:
+      "Extra horsepower for agencies, apps, and workloads that outgrow shared hosting — same purple-blue platform.",
+    tiles: [
+      {
+        id: "vps",
+        visible: true,
+        order: 0,
+        title: "AI-managed VPS",
+        body: "Run projects on a VPS with full root access and NVMe speed.",
+        image: "/images/home/vps.webp",
+        alt: "Developer workstation with VPS dashboards",
+        ctaLabel: "Explore",
+        ctaHref: routes.vps,
+      },
+      {
+        id: "cloud",
+        visible: true,
+        order: 1,
+        title: "Cloud hosting",
+        body: "Scale with more power when traffic spikes — no rebuild required.",
+        image: "/images/home/wordpress.webp",
+        alt: "Cloud hosting workspace",
+        ctaLabel: "Explore",
+        ctaHref: routes.cloud,
+      },
+      {
+        id: "apps",
+        visible: true,
+        order: 2,
+        title: "Web app deploy",
+        body: "Ship Node.js apps from GitHub onto the same HostingBeyond stack.",
+        image: "/images/journey/discover.webp",
+        alt: "HostingBeyond dashboard",
+        ctaLabel: "Explore",
+        ctaHref: routes.hosting,
+      },
+      {
+        id: "agency",
+        visible: true,
+        order: 3,
+        title: "Agency hosting",
+        body: "One account to share access, manage client sites, and stay in control.",
+        image: "/images/journey/scale.webp",
+        alt: "Agency team working together",
+        ctaLabel: "Explore",
+        ctaHref: routes.hosting,
+      },
+    ],
+  };
+}
+
+export function defaultProofSection(): CmsProofContent {
+  return {
+    visible: true,
+    title: "See what customers are creating with HostingBeyond",
+    quotes: [
+      {
+        id: "amina",
+        visible: true,
+        order: 0,
+        quote:
+          "HostingBeyond AI makes development incredibly fast. I can design, prototype, and launch without wasting a weekend.",
+        name: "Amina Koirala",
+        role: "Studio founder",
+        image: "/images/journey/create.webp",
+      },
+      {
+        id: "daniel",
+        visible: true,
+        order: 1,
+        quote:
+          "Domains, WordPress, and mail in one panel. The rate is why we moved. The inbox is why we stayed.",
+        name: "Daniel Mercer",
+        role: "Agency lead",
+        image: "/images/journey/scale.webp",
+      },
+      {
+        id: "sofia",
+        visible: true,
+        order: 2,
+        quote:
+          "I explained what I wanted, and Beyond AI did the rest. The site was live in a couple of hours.",
+        name: "Sofia Alvarez",
+        role: "Shop owner",
+        image: "/images/journey/beyond.webp",
+      },
+    ],
+  };
+}
+
+export function defaultCloseCtaSection(): CmsCloseCtaContent {
+  return {
+    visible: true,
+    title: "Imagined it. Now make it real.",
+    description:
+      "Build, host, mail, and grow from one HostingBeyond account — with Beyond AI on every plan.",
+    ctaLabel: "Get started",
+    ctaHref: routes.getStarted,
+    trust: "30-day money-back guarantee",
+  };
+}
+
 export function defaultHomeSections(): CmsHomeSections {
   return {
     hero: {
@@ -2491,10 +2800,16 @@ export function defaultHomeSections(): CmsHomeSections {
     journey: defaultJourneySection(),
     hostingTypes: defaultHostingTypesSection(),
     hostingPlans: defaultHostingPlansSection(),
+    essentials: defaultEssentialsSection(),
     beyondAi: defaultBeyondAiSection(),
+    controlStory: defaultControlStorySection(),
     businessEmail: defaultBusinessEmailSection(),
+    growStory: defaultGrowStorySection(),
     aiAssistant: defaultAiAssistantSection(),
+    powerTiles: defaultPowerTilesSection(),
     whyChoose: defaultWhyChooseSection(),
+    proof: defaultProofSection(),
+    closeCta: defaultCloseCtaSection(),
     homeFaqs: defaultHomeFaqsSection(),
     footer: defaultFooterSection(),
     navigation: mainNavigation.map((item) => ({
@@ -2828,6 +3143,140 @@ function mergeJourneySection(
     visible: stored.visible !== false,
     autoplaySeconds,
     slides: slides.sort((a, b) => a.order - b.order),
+  };
+}
+
+function mergeMediaCards(
+  stored: CmsMediaCard[] | undefined,
+  defaults: CmsMediaCard[],
+): CmsMediaCard[] {
+  const list = Array.isArray(stored) && stored.length ? stored : defaults;
+  return list
+    .map((card, index) => {
+      const fallback = defaults[index % defaults.length];
+      const text = (value: unknown, alternative: string) =>
+        typeof value === "string" && value.trim() ? value : alternative;
+      return {
+        id: card.id || fallback.id || `card-${index}`,
+        visible: card.visible !== false,
+        order: typeof card.order === "number" ? card.order : index,
+        title: text(card.title, fallback.title),
+        body: text(card.body, fallback.body),
+        image: text(card.image, fallback.image),
+        alt: text(card.alt, fallback.alt),
+        ctaLabel: text(card.ctaLabel, fallback.ctaLabel),
+        ctaHref: text(card.ctaHref, fallback.ctaHref),
+      } satisfies CmsMediaCard;
+    })
+    .sort((a, b) => a.order - b.order);
+}
+
+function mergeEssentialsSection(
+  stored?: Partial<CmsEssentialsContent> | null,
+): CmsEssentialsContent {
+  const defaults = defaultEssentialsSection();
+  if (!stored) return defaults;
+  return {
+    visible: stored.visible !== false,
+    title: stored.title?.trim() || defaults.title,
+    description: stored.description?.trim() || defaults.description,
+    cards: mergeMediaCards(stored.cards, defaults.cards),
+  };
+}
+
+function mergeStoryBandSection(
+  stored: Partial<CmsStoryBandContent> | null | undefined,
+  factory: () => CmsStoryBandContent,
+): CmsStoryBandContent {
+  const defaults = factory();
+  if (!stored) return defaults;
+  const storedSlides = Array.isArray(stored.slides) ? stored.slides : [];
+  const slides =
+    storedSlides.length > 0
+      ? storedSlides.map((slide, index) => {
+          const fallback = defaults.slides[index % defaults.slides.length];
+          const text = (value: unknown, alternative: string) =>
+            typeof value === "string" && value.trim() ? value : alternative;
+          return {
+            id: slide.id || fallback.id || `story-${index}`,
+            visible: slide.visible !== false,
+            order: typeof slide.order === "number" ? slide.order : index,
+            label: text(slide.label, fallback.label),
+            title: text(slide.title, fallback.title),
+            body: text(slide.body, fallback.body),
+            ctaLabel: text(slide.ctaLabel, fallback.ctaLabel),
+            ctaHref: text(slide.ctaHref, fallback.ctaHref),
+            image: text(slide.image, fallback.image),
+            alt: text(slide.alt, fallback.alt),
+          } satisfies CmsStorySlide;
+        })
+      : defaults.slides;
+  return {
+    visible: stored.visible !== false,
+    eyebrow: stored.eyebrow?.trim() || defaults.eyebrow,
+    heading: stored.heading?.trim() || defaults.heading,
+    imageFirst: Boolean(stored.imageFirst ?? defaults.imageFirst),
+    slides: slides.sort((a, b) => a.order - b.order),
+  };
+}
+
+function mergePowerTilesSection(
+  stored?: Partial<CmsPowerTilesContent> | null,
+): CmsPowerTilesContent {
+  const defaults = defaultPowerTilesSection();
+  if (!stored) return defaults;
+  return {
+    visible: stored.visible !== false,
+    title: stored.title?.trim() || defaults.title,
+    description: stored.description?.trim() || defaults.description,
+    tiles: mergeMediaCards(stored.tiles, defaults.tiles),
+  };
+}
+
+function mergeProofSection(
+  stored?: Partial<CmsProofContent> | null,
+): CmsProofContent {
+  const defaults = defaultProofSection();
+  if (!stored) return defaults;
+  const storedQuotes = Array.isArray(stored.quotes) ? stored.quotes : [];
+  const quotes =
+    storedQuotes.length > 0
+      ? storedQuotes.map((quote, index) => {
+          const fallback = defaults.quotes[index % defaults.quotes.length];
+          const text = (value: unknown, alternative: string) =>
+            typeof value === "string" && value.trim() ? value : alternative;
+          return {
+            id: quote.id || fallback.id || `quote-${index}`,
+            visible: quote.visible !== false,
+            order: typeof quote.order === "number" ? quote.order : index,
+            quote: text(quote.quote, fallback.quote),
+            name: text(quote.name, fallback.name),
+            role: text(quote.role, fallback.role),
+            image: text(quote.image, fallback.image),
+          } satisfies CmsProofQuote;
+        })
+      : defaults.quotes;
+  return {
+    visible: stored.visible !== false,
+    title: stored.title?.trim() || defaults.title,
+    quotes: quotes.sort((a, b) => a.order - b.order),
+  };
+}
+
+function mergeCloseCtaSection(
+  stored?: Partial<CmsCloseCtaContent> | null,
+): CmsCloseCtaContent {
+  const defaults = defaultCloseCtaSection();
+  if (!stored) return defaults;
+  const text = (value: unknown, alternative: string) =>
+    typeof value === "string" && value.trim() ? value : alternative;
+  return {
+    visible: stored.visible !== false,
+    title: text(stored.title, defaults.title),
+    description: text(stored.description, defaults.description),
+    ctaLabel: text(stored.ctaLabel, defaults.ctaLabel),
+    ctaHref: text(stored.ctaHref, defaults.ctaHref),
+    trust: text(stored.trust, defaults.trust),
   };
 }
 
@@ -3565,10 +4014,19 @@ export function mergeHomeSections(
       plans: plans.sort((a, b) => a.order - b.order),
       guarantees,
     },
+    essentials: mergeEssentialsSection(stored.essentials),
     beyondAi: mergeBeyondAiSection(stored.beyondAi),
+    controlStory: mergeStoryBandSection(
+      stored.controlStory,
+      defaultControlStorySection,
+    ),
     businessEmail: mergeBusinessEmailSection(stored.businessEmail),
+    growStory: mergeStoryBandSection(stored.growStory, defaultGrowStorySection),
     aiAssistant: mergeAiAssistantSection(stored.aiAssistant),
+    powerTiles: mergePowerTilesSection(stored.powerTiles),
     whyChoose: mergeWhyChooseSection(stored.whyChoose),
+    proof: mergeProofSection(stored.proof),
+    closeCta: mergeCloseCtaSection(stored.closeCta),
     homeFaqs: mergeHomeFaqsSection(stored.homeFaqs),
     footer: mergeFooterSection(stored.footer),
     // Drop legacy top-level Cloud & VPS — those live under Hosting now.

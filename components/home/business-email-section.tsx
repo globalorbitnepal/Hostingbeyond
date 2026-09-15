@@ -88,7 +88,7 @@ function MailInbox({ content }: { content: CmsBusinessEmailContent }) {
         <aside className="hidden w-[118px] border-r border-white/70 bg-white/40 p-3 sm:block">
           <button
             type="button"
-            className="mb-3 inline-flex h-8 w-full items-center justify-center gap-1 rounded-full bg-gradient-to-r from-[#673de6] to-[#2f1c6a] text-[11px] font-bold text-white"
+            className="mb-3 inline-flex h-8 w-full items-center justify-center gap-1 rounded-full bg-gradient-to-r from-[#2563eb] to-[#673de6] text-[11px] font-bold text-white"
           >
             <PenLine className="size-3" />
             {content.composeLabel}
@@ -258,7 +258,7 @@ export function BusinessEmailSection({
   const reduceMotion = useReducedMotion();
 
   return (
-    <section className="hb-home-section hb-home-section--lavender">
+    <section className="hb-home-section hb-home-section--aurora">
       <div className="hb-shell relative z-10">
         <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:gap-10 xl:gap-14">
           <motion.div
@@ -285,7 +285,7 @@ export function BusinessEmailSection({
 
             <h2 className="font-heading mt-5 text-[clamp(1.9rem,3.8vw,3.15rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-[#2f1c6a]">
               <span className="block">{data.title}</span>
-              <span className="block bg-gradient-to-r from-[#673de6] via-[#7c3aed] to-[#2f1c6a] bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-[#2563eb] via-[#673de6] to-[#7c3aed] bg-clip-text text-transparent">
                 {data.titleAccent}
               </span>
             </h2>
