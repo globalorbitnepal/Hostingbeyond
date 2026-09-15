@@ -213,6 +213,46 @@
     }
   }
 
+  .hb-sites-up {
+    animation: hb-sites-up 26s linear infinite;
+    will-change: transform;
+  }
+
+  .hb-sites-down {
+    animation: hb-sites-down 30s linear infinite;
+    will-change: transform;
+  }
+
+  @keyframes hb-sites-up {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(-50%);
+    }
+  }
+
+  @keyframes hb-sites-down {
+    from {
+      transform: translateY(-50%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hb-sites-up,
+    .hb-sites-down {
+      animation: none;
+    }
+  }
+
+  .hb-video {
+    animation: hb-video 16s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+
   @keyframes hb-video {
     from {
       transform: scale(1.16) translate3d(0, 0, 0);
