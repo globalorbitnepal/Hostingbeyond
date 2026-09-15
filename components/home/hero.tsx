@@ -272,8 +272,8 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
 
       {/* Slim feature glass bar */}
       <div className="relative z-30 mt-auto shrink-0 pt-1 pb-4 sm:pb-4">
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-[#673de6] to-transparent" />
-        <div className="pointer-events-none absolute inset-x-0 -top-6 h-6 bg-gradient-to-b from-transparent to-[#673de6]/25" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-[#5025d1] to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 -top-6 h-6 bg-gradient-to-b from-transparent to-[#5025d1]/20" />
         <div className="hb-shell">
           <div className="relative w-full overflow-hidden rounded-[22px] border border-white/25 bg-white/92 shadow-[0_8px_24px_rgba(15,23,42,0.18)] backdrop-blur-xl lg:rounded-full">
             <div
