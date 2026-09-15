@@ -114,7 +114,7 @@ export function GlassPromptBar({
   playing?: boolean;
 }) {
   const reduce = useReducedMotion();
-  const typed = useTyped(text, playing, reduce);
+  const typed = useTyped(text, playing, reduce, true);
 
   return (
     <div className="absolute inset-x-4 bottom-5 sm:inset-x-7">
@@ -141,7 +141,7 @@ export function GlassDomainBar({
   playing?: boolean;
 }) {
   const reduce = useReducedMotion();
-  const typed = useTyped(domain, playing, reduce);
+  const typed = useTyped(domain, playing, reduce, true);
 
   return (
     <motion.div

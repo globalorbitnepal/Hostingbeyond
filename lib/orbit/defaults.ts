@@ -3745,7 +3745,9 @@ export function mergeHomeSections(
             icon: solutionIcon(item.icon, fallback.icon),
             visible: item.visible !== false,
             order: typeof item.order === "number" ? item.order : index,
-            images: mergeSolutionImages(item.images, fallback.images),
+            images: fallback.images.length
+              ? fallback.images
+              : mergeSolutionImages(item.images, fallback.images),
           } satisfies CmsSolutionProduct;
         })
       : defaultSolutionProducts;

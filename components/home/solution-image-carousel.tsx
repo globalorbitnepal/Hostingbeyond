@@ -4,15 +4,15 @@ import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
 
 import { cn } from "@/lib/utils";
-import type { CmsSolutionImage } from "@/lib/orbit/defaults";
-import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
 import { GlassDomainBar, GlassPromptBar } from "./glass-video-frame";
 
 type Props = {
-  images: CmsSolutionImage[];
+  src: string;
+  alt: string;
   overlayText: string;
   overlayKind?: "prompt" | "domain";
-  chips?: string[];
+  headline: string;
+  lines: string[];
   paused?: boolean;
   className?: string;
   sizes: string;
@@ -20,23 +20,21 @@ type Props = {
 };
 
 export function SolutionImageCarousel({
-  images,
+  src,
+  alt,
   overlayText,
   overlayKind = "prompt",
-  chips = [],
+  headline,
+  lines,
   paused = false,
   className,
   sizes,
   priority = false,
 }: Props) {
   const reduceMotion = useReducedMotion();
-  const slides = images
-    .filter((image) => image.visible !== false && image.url.trim())
-    .sort((a, b) => a.order - b.order);
-  const slide = slides[0];
   const playing = !paused && !reduceMotion;
 
-  if (!slide) {
+  if (!src) {
     return (
       <div
         className={cn(
@@ -44,59 +42,57 @@ export function SolutionImageCarousel({
           className,
         )}
       >
-        Upload a product image in Orbit
+        Missing category visual
       </div>
     );
   }
 
-  const mediaClass = cn(
-    "absolute inset-0 h-full w-full object-cover object-center",
-    playing ? "hb-video" : "scale-[1.08]",
-  );
-
   return (
     <div
       className={cn(
-        "relative h-full min-h-[210px] w-full overflow-hidden",
+        "relative h-full min-h-[210px] w-full overflow-hidden bg-[#12082a]",
         className,
       )}
     >
-      {isRuntimeMediaSrc(slide.url) ? (
-        // Runtime Orbit files must skip next/image so every device hits /uploads directly.
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={slide.url} alt={slide.alt || ""} className={mediaClass} />
-      ) : (
-        <Image
-          src={slide.url}
-          alt={slide.alt || ""}
-          fill
-          sizes={sizes}
-          priority={priority}
-          unoptimized
-          className={mediaClass}
-        />
-      )}
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        sizes={sizes}
+        priority={priority}
+        unoptimized
+        className={cn(
+          "absolute inset-0 h-full w-full object-cover object-center",
+          playing ? "hb-video-card" : "scale-[1.08]",
+        )}
+      />
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(47,28,106,0.08)_0%,transparent_38%,rgba(15,10,40,0.42)_100%)]"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(15,10,40,0.18)_0%,rgba(15,10,40,0.08)_36%,rgba(15,10,40,0.58)_100%)]"
       />
 
-      {chips.length > 0 ? (
-        <div className="absolute top-3 left-3 z-20 flex max-w-[92%] flex-wrap gap-1.5">
-          {chips.map((chip, index) => (
-            <motion.span
-              key={chip}
-              className="rounded-full border border-white/45 bg-white/85 px-2.5 py-1 text-[10px] font-bold tracking-wide text-[#2f1c6a] uppercase shadow-sm backdrop-blur-xl"
-              animate={
-                playing ? { y: [6, 0], opacity: [0, 1] } : { y: 0, opacity: 1 }
-              }
-              transition={{ delay: 0.12 * index, duration: 0.4 }}
+      <div className="absolute inset-x-3 top-3 z-20 max-w-[92%] sm:inset-x-4">
+        <p className="font-heading text-[18px] leading-tight font-extrabold tracking-tight text-white drop-shadow-[0_8px_18px_rgba(15,10,40,0.45)] sm:text-[22px]">
+          {headline}
+        </p>
+        <div className="mt-2 space-y-1">
+          {lines.map((line, index) => (
+            <motion.p
+              key={line}
+              className="flex items-center gap-1.5 text-[11px] font-semibold text-white/90 sm:text-[12px]"
+              animate={playing ? { opacity: [0.35, 1, 0.35] } : { opacity: 1 }}
+              transition={{
+                duration: 2.8,
+                delay: index * 0.35,
+                repeat: playing ? Infinity : 0,
+              }}
             >
-              {chip}
-            </motion.span>
+              <span className="size-1.5 shrink-0 rounded-full bg-[#93c5fd]" />
+              {line}
+            </motion.p>
           ))}
         </div>
-      ) : null}
+      </div>
 
       {overlayKind === "domain" ? (
         <GlassDomainBar domain={overlayText} tld=".com" playing={playing} />

@@ -30,47 +30,69 @@ const ICONS = {
 
 const STAGES: Record<
   string,
-  { prompt: string; kind: "prompt" | "domain"; chips: string[] }
+  {
+    file: string;
+    prompt: string;
+    kind: "prompt" | "domain";
+    headline: string;
+    lines: string[];
+  }
 > = {
   "web-hosting": {
+    file: "web-hosting.png",
     prompt: "Launch your website in minutes",
     kind: "prompt",
-    chips: ["NVMe SSD", "Free SSL", "99.9% uptime"],
+    headline: "Web Hosting",
+    lines: ["NVMe SSD speed", "Free SSL included", "99.9% uptime"],
   },
   "cloud-hosting": {
+    file: "cloud-hosting.png",
     prompt: "Scale across 12 global regions",
     kind: "prompt",
-    chips: ["Auto-scale", "Anycast DNS", "Load balanced"],
+    headline: "Cloud Hosting",
+    lines: ["Auto-scale nodes", "Anycast DNS", "Load balanced"],
   },
   "ecommerce-hosting": {
+    file: "ecommerce.png",
     prompt: "Checkout that never drops",
     kind: "prompt",
-    chips: ["PCI ready", "Cart speed", "Secure pay"],
+    headline: "eCommerce Hosting",
+    lines: ["Cart speed", "Secure pay", "PCI ready"],
   },
   "wordpress-hosting": {
+    file: "wordpress.png",
     prompt: "WordPress, turbocharged",
     kind: "prompt",
-    chips: ["1-click WP", "Staging", "LiteSpeed"],
+    headline: "WordPress Hosting",
+    lines: ["1-click WordPress", "Staging copies", "LiteSpeed cache"],
   },
   "reseller-hosting": {
+    file: "reseller.png",
     prompt: "Sell hosting under your brand",
     kind: "prompt",
-    chips: ["White label", "WHM", "Your prices"],
+    headline: "Reseller Hosting",
+    lines: ["White label", "Your pricing", "Client accounts"],
   },
   "business-email": {
+    file: "business-email.png",
     prompt: "you@yourbrand.com is ready",
     kind: "prompt",
-    chips: ["Custom domain", "AI inbox", "Spam shield"],
+    headline: "Business Email",
+    lines: ["Custom domain", "AI inbox", "Spam shield"],
   },
   vps: {
+    file: "vps.png",
     prompt: "Root access. Isolated compute.",
     kind: "prompt",
-    chips: ["Full root", "NVMe", "DDoS shield"],
+    headline: "VPS Hosting",
+    lines: ["Full root", "NVMe disks", "DDoS shield"],
   },
   domains: {
+    file: "domains.png",
     prompt: "yourbrand",
     kind: "domain",
-    chips: [".com", ".net", ".io"],
+    headline: "Domain Services",
+    lines: [".com .net .io", "DNS included", "Privacy lock"],
   },
 };
 
@@ -83,10 +105,15 @@ type Props = {
 export function SolutionCard({ product, paused, priority }: Props) {
   const Icon = ICONS[product.icon] ?? Server;
   const stage = STAGES[product.id] ?? {
+    file: "",
     prompt: product.name,
     kind: "prompt" as const,
-    chips: [product.category],
+    headline: product.name,
+    lines: [product.category],
   };
+  const plate = stage.file
+    ? `/images/home/solutions/${stage.file}?v=3`
+    : product.images.find((image) => image.visible !== false)?.url || "";
 
   return (
     <article className="group relative flex h-full min-h-[430px] flex-col overflow-hidden rounded-[32px] border border-white/35 bg-white/12 shadow-[0_28px_70px_-32px_rgba(15,10,40,0.55)] backdrop-blur-2xl transition-transform duration-500 ease-out hover:-translate-y-1 motion-reduce:transform-none lg:min-h-[470px]">
@@ -126,10 +153,12 @@ export function SolutionCard({ product, paused, priority }: Props) {
         </div>
         <div className="relative mx-5 mb-5 h-[210px] w-[calc(100%-2.5rem)] shrink-0 overflow-hidden rounded-[24px] border border-white/35 bg-white/10 ring-1 ring-white/20 sm:mx-6 sm:mb-6 sm:h-[250px] sm:w-[calc(100%-3rem)] lg:my-6 lg:mr-6 lg:ml-0 lg:h-auto lg:min-h-[280px] lg:w-[min(52%,28rem)] lg:flex-none">
           <SolutionImageCarousel
-            images={product.images}
+            src={plate}
+            alt={product.name}
             overlayText={stage.prompt}
             overlayKind={stage.kind}
-            chips={stage.chips}
+            headline={stage.headline}
+            lines={stage.lines}
             paused={paused}
             priority={priority}
             sizes="(max-width: 640px) 92vw, (max-width: 1024px) 70vw, 480px"

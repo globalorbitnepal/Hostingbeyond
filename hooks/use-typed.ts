@@ -6,6 +6,7 @@ export function useTyped(
   text: string,
   playing: boolean,
   reduce: boolean | null,
+  loop = false,
 ) {
   const [count, setCount] = useState(reduce || !playing ? text.length : 0);
 
@@ -14,15 +15,35 @@ export function useTyped(
       setCount(text.length);
       return;
     }
-    setCount(0);
+
+    let cancelled = false;
+    let timeout = 0;
     let i = 0;
-    const timer = window.setInterval(() => {
-      i += 1;
-      setCount(i);
-      if (i >= text.length) window.clearInterval(timer);
-    }, 42);
-    return () => window.clearInterval(timer);
-  }, [text, playing, reduce]);
+    setCount(0);
+
+    function tick() {
+      if (cancelled) return;
+      if (i < text.length) {
+        i += 1;
+        setCount(i);
+        timeout = window.setTimeout(tick, 38);
+        return;
+      }
+      if (!loop) return;
+      timeout = window.setTimeout(() => {
+        if (cancelled) return;
+        i = 0;
+        setCount(0);
+        timeout = window.setTimeout(tick, 260);
+      }, 1700);
+    }
+
+    timeout = window.setTimeout(tick, 220);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeout);
+    };
+  }, [text, playing, reduce, loop]);
 
   return text.slice(0, count);
 }
