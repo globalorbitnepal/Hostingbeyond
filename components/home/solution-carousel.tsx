@@ -141,7 +141,7 @@ export function SolutionCarousel({ products }: Props) {
             interacting.current = true;
             scrollToIndex(index - 1);
           }}
-          className="inline-flex size-11 items-center justify-center rounded-full border border-slate-200/90 bg-white text-slate-600 shadow-sm transition hover:border-slate-300 hover:text-slate-900"
+          className="inline-flex size-11 items-center justify-center rounded-full border border-white/30 bg-white/15 text-white shadow-sm backdrop-blur-xl transition hover:bg-white/25"
         >
           <ChevronLeft className="size-5" />
         </button>
@@ -164,8 +164,8 @@ export function SolutionCarousel({ products }: Props) {
               className={cn(
                 "h-2 rounded-full transition-all duration-300",
                 productIndex === index
-                  ? "w-6 bg-gradient-to-r from-[var(--hb-blue)] to-[var(--hb-purple)]"
-                  : "w-2 bg-slate-300 hover:bg-slate-400",
+                  ? "w-6 bg-white"
+                  : "w-2 bg-white/35 hover:bg-white/55",
               )}
             />
           ))}
@@ -177,7 +177,7 @@ export function SolutionCarousel({ products }: Props) {
             interacting.current = true;
             scrollToIndex(index + 1);
           }}
-          className="inline-flex size-11 items-center justify-center rounded-full border border-slate-200/90 bg-white text-slate-600 shadow-sm transition hover:border-slate-300 hover:text-slate-900"
+          className="inline-flex size-11 items-center justify-center rounded-full border border-white/30 bg-white/15 text-white shadow-sm backdrop-blur-xl transition hover:bg-white/25"
         >
           <ChevronRight className="size-5" />
         </button>

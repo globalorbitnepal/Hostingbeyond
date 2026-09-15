@@ -2030,13 +2030,17 @@ function solutionImages(
   }));
 }
 
-function defaultSolutionsSection(): CmsSolutionsContent {
-  const atmosphere = "/images/hero-atmosphere.jpg";
-  const cloud = "/images/hosting/cloud.jpg";
-  const ecommerce = "/images/hosting/ecommerce.jpg";
-  const wordpress = "/images/hosting/wordpress.jpg";
-  const reseller = "/images/hosting/reseller.jpg";
+function solutionPlate(id: string, alt: string): CmsSolutionImage[] {
+  return solutionImages([
+    {
+      id: `${id}-stage`,
+      url: `/images/home/solutions/${id}.png`,
+      alt,
+    },
+  ]);
+}
 
+function defaultSolutionsSection(): CmsSolutionsContent {
   return {
     visible: true,
     eyebrow: "Our solutions",
@@ -2059,23 +2063,10 @@ function defaultSolutionsSection(): CmsSolutionsContent {
         icon: "server",
         ctaLabel: "Explore Web Hosting",
         ctaHref: routes.hosting,
-        images: solutionImages([
-          {
-            id: "web-1",
-            url: atmosphere,
-            alt: "HostingBeyond data-center lobby and server infrastructure",
-          },
-          {
-            id: "web-2",
-            url: cloud,
-            alt: "Global cloud network for HostingBeyond web hosting",
-          },
-          {
-            id: "web-3",
-            url: wordpress,
-            alt: "Published website environment on HostingBeyond hosting",
-          },
-        ]),
+        images: solutionPlate(
+          "web-hosting",
+          "Glass website canvas for HostingBeyond web hosting",
+        ),
       },
       {
         id: "cloud-hosting",
@@ -2089,23 +2080,10 @@ function defaultSolutionsSection(): CmsSolutionsContent {
         icon: "cloud",
         ctaLabel: "Explore Cloud Hosting",
         ctaHref: routes.cloud,
-        images: solutionImages([
-          {
-            id: "cloud-1",
-            url: cloud,
-            alt: "Global infrastructure visual for HostingBeyond cloud hosting",
-          },
-          {
-            id: "cloud-2",
-            url: atmosphere,
-            alt: "Server infrastructure supporting HostingBeyond cloud platforms",
-          },
-          {
-            id: "cloud-3",
-            url: reseller,
-            alt: "Managed workspace running on HostingBeyond cloud hosting",
-          },
-        ]),
+        images: solutionPlate(
+          "cloud-hosting",
+          "Global glass network for HostingBeyond cloud hosting",
+        ),
       },
       {
         id: "ecommerce-hosting",
@@ -2119,23 +2097,10 @@ function defaultSolutionsSection(): CmsSolutionsContent {
         icon: "cart",
         ctaLabel: "Explore eCommerce",
         ctaHref: `${routes.hosting}/ecommerce`,
-        images: solutionImages([
-          {
-            id: "ecom-1",
-            url: ecommerce,
-            alt: "Product photography for a HostingBeyond eCommerce storefront",
-          },
-          {
-            id: "ecom-2",
-            url: cloud,
-            alt: "Infrastructure behind HostingBeyond eCommerce hosting",
-          },
-          {
-            id: "ecom-3",
-            url: atmosphere,
-            alt: "Secure hosting environment for online stores",
-          },
-        ]),
+        images: solutionPlate(
+          "ecommerce",
+          "Glass storefront dashboard for HostingBeyond eCommerce hosting",
+        ),
       },
       {
         id: "wordpress-hosting",
@@ -2149,23 +2114,10 @@ function defaultSolutionsSection(): CmsSolutionsContent {
         icon: "wordpress",
         ctaLabel: "Explore WordPress",
         ctaHref: `${routes.hosting}/wordpress`,
-        images: solutionImages([
-          {
-            id: "wp-1",
-            url: wordpress,
-            alt: "Website visual for HostingBeyond WordPress hosting",
-          },
-          {
-            id: "wp-2",
-            url: atmosphere,
-            alt: "Infrastructure supporting HostingBeyond WordPress sites",
-          },
-          {
-            id: "wp-3",
-            url: cloud,
-            alt: "Cloud-backed WordPress hosting on HostingBeyond",
-          },
-        ]),
+        images: solutionPlate(
+          "wordpress",
+          "WordPress editor canvas for HostingBeyond WordPress hosting",
+        ),
       },
       {
         id: "reseller-hosting",
@@ -2179,23 +2131,10 @@ function defaultSolutionsSection(): CmsSolutionsContent {
         icon: "users",
         ctaLabel: "Explore Reseller",
         ctaHref: `${routes.hosting}/reseller`,
-        images: solutionImages([
-          {
-            id: "res-1",
-            url: reseller,
-            alt: "Studio brand visual for HostingBeyond reseller hosting",
-          },
-          {
-            id: "res-2",
-            url: cloud,
-            alt: "Network capacity for HostingBeyond reseller plans",
-          },
-          {
-            id: "res-3",
-            url: atmosphere,
-            alt: "Infrastructure available to HostingBeyond resellers",
-          },
-        ]),
+        images: solutionPlate(
+          "reseller",
+          "White-label control panel for HostingBeyond reseller hosting",
+        ),
       },
       {
         id: "business-email",
@@ -2209,23 +2148,10 @@ function defaultSolutionsSection(): CmsSolutionsContent {
         icon: "mail",
         ctaLabel: "Explore Business Email",
         ctaHref: routes.businessEmail,
-        images: solutionImages([
-          {
-            id: "mail-1",
-            url: atmosphere,
-            alt: "Professional environment for HostingBeyond business email",
-          },
-          {
-            id: "mail-2",
-            url: cloud,
-            alt: "Connected infrastructure for HostingBeyond email",
-          },
-          {
-            id: "mail-3",
-            url: wordpress,
-            alt: "Branded online presence paired with HostingBeyond email",
-          },
-        ]),
+        images: solutionPlate(
+          "business-email",
+          "HostingBeyond Mail inbox for business email",
+        ),
       },
       {
         id: "vps",
@@ -2239,23 +2165,10 @@ function defaultSolutionsSection(): CmsSolutionsContent {
         icon: "cpu",
         ctaLabel: "Explore VPS",
         ctaHref: routes.vps,
-        images: solutionImages([
-          {
-            id: "vps-1",
-            url: atmosphere,
-            alt: "Server racks for HostingBeyond VPS hosting",
-          },
-          {
-            id: "vps-2",
-            url: cloud,
-            alt: "Isolated compute capacity on HostingBeyond VPS",
-          },
-          {
-            id: "vps-3",
-            url: reseller,
-            alt: "Managed server workspace on HostingBeyond VPS",
-          },
-        ]),
+        images: solutionPlate(
+          "vps",
+          "Isolated server rack for HostingBeyond VPS hosting",
+        ),
       },
       {
         id: "domains",
@@ -2269,23 +2182,10 @@ function defaultSolutionsSection(): CmsSolutionsContent {
         icon: "globe",
         ctaLabel: "Explore Domains",
         ctaHref: routes.domains,
-        images: solutionImages([
-          {
-            id: "dom-1",
-            url: cloud,
-            alt: "Global network visual for HostingBeyond domain services",
-          },
-          {
-            id: "dom-2",
-            url: wordpress,
-            alt: "Website identity connected to a HostingBeyond domain",
-          },
-          {
-            id: "dom-3",
-            url: atmosphere,
-            alt: "Infrastructure behind HostingBeyond domain services",
-          },
-        ]),
+        images: solutionPlate(
+          "domains",
+          "Domain search canvas for HostingBeyond domain services",
+        ),
       },
     ],
   };
@@ -3796,6 +3696,13 @@ export function mergeHomeSections(
       ? value
       : fallback;
 
+  const isLegacySolutionImage = (url: string) => {
+    if (!url.trim()) return true;
+    if (url.includes("/images/home/solutions/")) return false;
+    if (url.includes("/uploads/")) return false;
+    return true;
+  };
+
   const mergeSolutionImages = (
     storedImages: CmsSolutionImage[] | undefined,
     fallbackImages: CmsSolutionImage[],
@@ -3803,11 +3710,16 @@ export function mergeHomeSections(
     if (!Array.isArray(storedImages) || storedImages.length === 0) {
       return fallbackImages;
     }
+    const allLegacy = storedImages.every((image) =>
+      isLegacySolutionImage(typeof image.url === "string" ? image.url : ""),
+    );
+    if (allLegacy) return fallbackImages;
     return storedImages.map((image, index) => {
       const fallback = fallbackImages[index] ?? fallbackImages[0];
+      const url = typeof image.url === "string" ? image.url : "";
       return {
         id: image.id || fallback?.id || `image-${index}`,
-        url: typeof image.url === "string" ? image.url : (fallback?.url ?? ""),
+        url: isLegacySolutionImage(url) ? (fallback?.url ?? "") : url,
         alt: typeof image.alt === "string" ? image.alt : (fallback?.alt ?? ""),
         visible: image.visible !== false,
         order: typeof image.order === "number" ? image.order : index,

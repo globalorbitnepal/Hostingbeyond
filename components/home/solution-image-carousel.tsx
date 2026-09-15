@@ -1,15 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Image from "next/image";
-import { useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
 import { cn } from "@/lib/utils";
 import type { CmsSolutionImage } from "@/lib/orbit/defaults";
 import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
+import { GlassDomainBar, GlassPromptBar } from "./glass-video-frame";
 
 type Props = {
   images: CmsSolutionImage[];
+  overlayText: string;
+  overlayKind?: "prompt" | "domain";
+  chips?: string[];
   paused?: boolean;
   className?: string;
   sizes: string;
@@ -18,6 +21,9 @@ type Props = {
 
 export function SolutionImageCarousel({
   images,
+  overlayText,
+  overlayKind = "prompt",
+  chips = [],
   paused = false,
   className,
   sizes,
@@ -27,26 +33,14 @@ export function SolutionImageCarousel({
   const slides = images
     .filter((image) => image.visible !== false && image.url.trim())
     .sort((a, b) => a.order - b.order);
-  const [index, setIndex] = useState(0);
-  const [hovered, setHovered] = useState(false);
+  const slide = slides[0];
+  const playing = !paused && !reduceMotion;
 
-  useEffect(() => {
-    if (reduceMotion || paused || hovered || slides.length < 2) return;
-    const timer = window.setInterval(() => {
-      setIndex((current) => (current + 1) % slides.length);
-    }, 5200);
-    return () => window.clearInterval(timer);
-  }, [hovered, paused, reduceMotion, slides.length]);
-
-  useEffect(() => {
-    if (index >= slides.length) setIndex(0);
-  }, [index, slides.length]);
-
-  if (slides.length === 0) {
+  if (!slide) {
     return (
       <div
         className={cn(
-          "flex h-full items-center justify-center bg-gradient-to-br from-[#d7e8f8] to-[#eef4fb] text-sm text-slate-400",
+          "flex h-full items-center justify-center bg-white/10 text-sm text-white/60",
           className,
         )}
       >
@@ -55,68 +49,60 @@ export function SolutionImageCarousel({
     );
   }
 
+  const mediaClass = cn(
+    "absolute inset-0 h-full w-full object-cover object-center",
+    playing ? "hb-video" : "scale-[1.08]",
+  );
+
   return (
     <div
       className={cn(
         "relative h-full min-h-[210px] w-full overflow-hidden",
         className,
       )}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
     >
-      {slides.map((slide, slideIndex) => {
-        const active = slideIndex === index;
-        const imgClass = cn(
-          "absolute inset-0 h-full w-full object-cover object-center transition-[opacity,transform] duration-[1400ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
-          active
-            ? "z-[1] scale-100 opacity-100"
-            : "pointer-events-none z-0 scale-[1.02] opacity-0",
-          reduceMotion && "transition-none",
-        );
-        return isRuntimeMediaSrc(slide.url) ? (
-          // Runtime Orbit files must skip next/image so every device hits /uploads directly.
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            key={slide.id || slide.url}
-            src={slide.url}
-            alt={slide.alt || ""}
-            className={imgClass}
-          />
-        ) : (
-          <Image
-            key={slide.id || slide.url}
-            src={slide.url}
-            alt={slide.alt || ""}
-            fill
-            sizes={sizes}
-            priority={priority && slideIndex === 0}
-            unoptimized
-            className={imgClass}
-          />
-        );
-      })}
+      {isRuntimeMediaSrc(slide.url) ? (
+        // Runtime Orbit files must skip next/image so every device hits /uploads directly.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={slide.url} alt={slide.alt || ""} className={mediaClass} />
+      ) : (
+        <Image
+          src={slide.url}
+          alt={slide.alt || ""}
+          fill
+          sizes={sizes}
+          priority={priority}
+          unoptimized
+          className={mediaClass}
+        />
+      )}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.08)_0%,transparent_32%,rgba(15,40,70,0.18)_100%)]"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(47,28,106,0.08)_0%,transparent_38%,rgba(15,10,40,0.42)_100%)]"
       />
-      {slides.length > 1 ? (
-        <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
-          {slides.map((slide, slideIndex) => (
-            <button
-              key={slide.id || `${slide.url}-${slideIndex}`}
-              type="button"
-              aria-label={`Show image ${slideIndex + 1}`}
-              onClick={() => setIndex(slideIndex)}
-              className={cn(
-                "h-1.5 rounded-full transition-all duration-300",
-                slideIndex === index
-                  ? "w-4 bg-gradient-to-r from-[var(--hb-blue)] to-[var(--hb-purple)]"
-                  : "w-1.5 bg-white/70 hover:bg-white",
-              )}
-            />
+
+      {chips.length > 0 ? (
+        <div className="absolute top-3 left-3 z-20 flex max-w-[92%] flex-wrap gap-1.5">
+          {chips.map((chip, index) => (
+            <motion.span
+              key={chip}
+              className="rounded-full border border-white/45 bg-white/85 px-2.5 py-1 text-[10px] font-bold tracking-wide text-[#2f1c6a] uppercase shadow-sm backdrop-blur-xl"
+              animate={
+                playing ? { y: [6, 0], opacity: [0, 1] } : { y: 0, opacity: 1 }
+              }
+              transition={{ delay: 0.12 * index, duration: 0.4 }}
+            >
+              {chip}
+            </motion.span>
           ))}
         </div>
       ) : null}
+
+      {overlayKind === "domain" ? (
+        <GlassDomainBar domain={overlayText} tld=".com" playing={playing} />
+      ) : (
+        <GlassPromptBar text={overlayText} playing={playing} />
+      )}
     </div>
   );
 }

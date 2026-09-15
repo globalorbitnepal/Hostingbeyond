@@ -22,12 +22,12 @@ export function SolutionsSection({
   return (
     <section
       aria-labelledby="hb-solutions-heading"
-      className="relative overflow-hidden bg-[linear-gradient(180deg,#3d1d9a_0%,#5025d1_38%,#e8eeff_100%)] pt-10 pb-12 sm:pt-12 sm:pb-14 lg:pt-14 lg:pb-16"
+      className="relative overflow-hidden bg-[linear-gradient(180deg,#2563eb_0%,#4f46e5_34%,#673de6_68%,#3d1d9a_100%)] pt-10 pb-12 sm:pt-12 sm:pb-14 lg:pt-14 lg:pb-16"
     >
       <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,#3d1d9a_0%,#5025d1_48%,#e8eeff_100%)]" />
-        <div className="absolute top-[8%] left-[-10%] h-[50%] w-[45%] rounded-full bg-[radial-gradient(ellipse,rgba(167,139,250,0.28),transparent_68%)] blur-3xl" />
-        <div className="absolute right-[-12%] bottom-[12%] h-[46%] w-[42%] rounded-full bg-[radial-gradient(ellipse,rgba(103,61,230,0.2),transparent_70%)] blur-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_-8%,rgba(255,255,255,0.2),transparent_52%)]" />
+        <div className="absolute top-[8%] left-[-10%] h-[50%] w-[45%] rounded-full bg-[radial-gradient(ellipse,rgba(186,210,255,0.28),transparent_68%)] blur-3xl" />
+        <div className="absolute right-[-12%] bottom-[12%] h-[46%] w-[42%] rounded-full bg-[radial-gradient(ellipse,rgba(196,181,253,0.22),transparent_70%)] blur-3xl" />
       </div>
 
       <motion.div
@@ -67,7 +67,7 @@ export function SolutionsSection({
             {content.ctaLabel.trim() && content.ctaHref.trim() ? (
               <Link
                 href={content.ctaHref}
-                className="mt-5 inline-flex min-h-12 items-center gap-2 rounded-full bg-[#673de6] px-5 text-[15px] font-semibold text-white shadow-[0_10px_28px_rgba(103,61,230,0.35)] transition hover:brightness-110"
+                className="mt-5 inline-flex min-h-12 items-center gap-2 rounded-full border border-white/30 bg-white/15 px-5 text-[15px] font-semibold text-white shadow-[0_10px_28px_rgba(15,10,40,0.18)] backdrop-blur-xl transition hover:bg-white/25"
               >
                 {content.ctaLabel}
                 <ArrowRight className="size-4" />
