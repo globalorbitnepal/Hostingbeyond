@@ -108,7 +108,7 @@ export function WhyChooseSection({
                   delay: reduceMotion ? 0 : Math.min(index * 0.03, 0.24),
                   ease: [0.22, 1, 0.36, 1],
                 }}
-                className="rounded-[22px] border border-white/80 bg-white/65 p-4 shadow-[0_14px_40px_-28px_rgba(37,80,130,0.4)] backdrop-blur-xl sm:p-5"
+                className="rounded-[22px] border border-white/80 bg-white/65 p-4 shadow-[0_14px_40px_-28px_rgba(37,80,130,0.4)] backdrop-blur-xl transition duration-500 hover:-translate-y-1 sm:p-5"
               >
                 <div className="flex items-start gap-3">
                   <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl bg-[#f4f5ff] text-[#673de6]">

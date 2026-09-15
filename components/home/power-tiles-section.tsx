@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
@@ -10,6 +9,7 @@ import {
   type CmsPowerTilesContent,
 } from "@/lib/orbit/defaults";
 import { hbSpring } from "@/lib/motion";
+import { GlassPromptBar, GlassVideoFrame } from "./glass-video-frame";
 
 export function PowerTilesSection({
   content,
@@ -25,8 +25,8 @@ export function PowerTilesSection({
   if (!data.visible || !tiles.length) return null;
 
   return (
-    <section className="hb-home-section hb-home-section--aurora">
-      <div className="hb-shell">
+    <section className="relative overflow-hidden bg-[linear-gradient(180deg,#3d1d9a_0%,#5025d1_36%,#e8eeff_100%)] pt-16 pb-12 sm:pt-20">
+      <div className="hb-shell relative">
         <motion.div
           initial={reduce ? false : { opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -34,10 +34,10 @@ export function PowerTilesSection({
           transition={hbSpring}
           className="max-w-3xl"
         >
-          <h2 className="font-heading text-[clamp(1.85rem,3.6vw,3.1rem)] leading-[1.08] font-extrabold tracking-[-0.05em] text-[#0c1a36]">
+          <h2 className="font-heading text-[clamp(1.85rem,3.6vw,3.1rem)] leading-[1.08] font-extrabold tracking-[-0.05em] text-white">
             {data.title}
           </h2>
-          <p className="mt-3 text-[16px] leading-relaxed text-slate-600">
+          <p className="mt-3 text-[16px] leading-relaxed text-white/75">
             {data.description}
           </p>
         </motion.div>
@@ -53,27 +53,30 @@ export function PowerTilesSection({
             >
               <Link
                 href={tile.ctaHref}
-                className="group grid overflow-hidden rounded-[24px] border border-white/80 bg-white/75 shadow-[0_24px_50px_-32px_rgba(37,80,130,0.4)] backdrop-blur-xl transition duration-500 hover:-translate-y-1 hover:shadow-[0_28px_50px_-28px_rgba(103,61,230,0.38)] sm:grid-cols-[1.15fr_0.85fr]"
+                className="group grid overflow-hidden rounded-[28px] border border-white/40 bg-white/12 shadow-[0_28px_60px_-28px_rgba(15,10,40,0.45)] backdrop-blur-2xl transition duration-500 hover:-translate-y-1 sm:grid-cols-[1.05fr_0.95fr]"
               >
                 <div className="flex flex-col justify-center px-6 py-7">
-                  <h3 className="text-[18px] font-extrabold text-[#0c1a36]">
+                  <h3 className="text-[18px] font-extrabold text-white">
                     {tile.title}
                   </h3>
-                  <p className="mt-1.5 text-[14px] leading-relaxed text-slate-600">
+                  <p className="mt-1.5 text-[14px] leading-relaxed text-white/75">
                     {tile.body}
                   </p>
-                  <span className="mt-4 inline-flex items-center gap-1 text-[14px] font-extrabold text-[#2563eb]">
+                  <span className="mt-4 inline-flex items-center gap-1 text-[14px] font-extrabold text-white">
                     {tile.ctaLabel}
-                    <ArrowRight className="size-4 text-[#673de6] transition group-hover:translate-x-0.5" />
+                    <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
                   </span>
                 </div>
-                <div className="relative min-h-[180px]">
-                  <Image
+                <div className="relative min-h-[200px]">
+                  <GlassVideoFrame
                     src={tile.image}
                     alt={tile.alt}
-                    fill
+                    playing={!reduce}
+                    className="absolute inset-0 h-full min-h-0 rounded-none border-0 shadow-none"
                     sizes="(max-width: 768px) 100vw, 30vw"
-                    className="object-cover transition duration-700 group-hover:scale-[1.06]"
+                    overlay={
+                      <GlassPromptBar text={tile.title} playing={!reduce} />
+                    }
                   />
                 </div>
               </Link>

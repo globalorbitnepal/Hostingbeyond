@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
-import { hbSlide } from "@/lib/motion";
+import { hbCopy } from "@/lib/motion";
 import {
   defaultProofSection,
   type CmsProofContent,
 } from "@/lib/orbit/defaults";
+import { GlassVideoFrame } from "./glass-video-frame";
 
 export function ProofSliderSection({ content }: { content?: CmsProofContent }) {
   const reduce = useReducedMotion();
@@ -39,46 +39,48 @@ export function ProofSliderSection({ content }: { content?: CmsProofContent }) {
   if (!data.visible || !active) return null;
 
   return (
-    <section className="hb-home-section hb-home-section--sheet">
-      <div className="hb-shell">
-        <h2 className="font-heading mx-auto max-w-3xl text-center text-[clamp(1.85rem,3.6vw,3.1rem)] leading-[1.08] font-extrabold tracking-[-0.05em] text-[#0c1a36]">
+    <section className="relative overflow-hidden bg-[linear-gradient(180deg,#673de6_0%,#5025d1_55%,#2f1c6a_100%)] py-16 sm:py-20">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(255,255,255,0.16),transparent_52%)]"
+      />
+      <div className="hb-shell relative">
+        <h2 className="font-heading mx-auto max-w-3xl text-center text-[clamp(1.85rem,3.6vw,3.1rem)] leading-[1.08] font-extrabold tracking-[-0.05em] text-white">
           {data.title}
         </h2>
 
-        <div className="relative mx-auto mt-10 max-w-4xl overflow-hidden rounded-[24px] border border-white/80 bg-white/70 shadow-[0_32px_70px_-36px_rgba(37,80,130,0.4)] backdrop-blur-xl">
-          <AnimatePresence initial={false} custom={direction} mode="wait">
-            <motion.article
+        <div className="mx-auto mt-10 grid max-w-5xl items-center gap-6 overflow-hidden rounded-[28px] border border-white/35 bg-white/12 p-3 shadow-[0_32px_70px_-28px_rgba(15,10,40,0.5)] backdrop-blur-2xl md:grid-cols-[1.1fr_0.9fr] md:p-4">
+          <AnimatePresence mode="wait" custom={direction}>
+            <motion.div
               key={active.id}
               custom={direction}
-              variants={hbSlide}
+              variants={hbCopy}
               initial={reduce ? false : "enter"}
               animate="center"
               exit={reduce ? undefined : "exit"}
-              transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-              className="grid md:grid-cols-[1.15fr_0.85fr]"
+              transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+              className="flex flex-col justify-center px-4 py-8 sm:px-8"
             >
-              <div className="flex flex-col justify-center px-6 py-10 sm:px-12">
-                <p className="text-[18px] leading-relaxed font-medium text-[#0c1a36] sm:text-[22px]">
-                  “{active.quote}”
-                </p>
-                <p className="mt-6 text-[15px] font-extrabold text-[#0c1a36]">
-                  {active.name}
-                </p>
-                <p className="text-[13px] font-semibold text-slate-500">
-                  {active.role}
-                </p>
-              </div>
-              <div className="relative min-h-[240px] md:min-h-[320px]">
-                <Image
-                  src={active.image}
-                  alt=""
-                  fill
-                  sizes="(max-width: 768px) 100vw, 40vw"
-                  className={reduce ? "object-cover" : "hb-ken object-cover"}
-                />
-              </div>
-            </motion.article>
+              <p className="text-[18px] leading-relaxed font-medium text-white sm:text-[22px]">
+                “{active.quote}”
+              </p>
+              <p className="mt-6 text-[15px] font-extrabold text-white">
+                {active.name}
+              </p>
+              <p className="text-[13px] font-semibold text-white/65">
+                {active.role}
+              </p>
+            </motion.div>
           </AnimatePresence>
+          <div className="relative min-h-[240px] md:min-h-[320px]">
+            <GlassVideoFrame
+              src={active.image}
+              alt=""
+              playing={!reduce}
+              className="absolute inset-0 h-full min-h-0"
+              sizes="(max-width: 768px) 100vw, 40vw"
+            />
+          </div>
         </div>
 
         <div className="mt-6 flex justify-center gap-2">
@@ -90,8 +92,8 @@ export function ProofSliderSection({ content }: { content?: CmsProofContent }) {
               onClick={() => goTo(itemIndex)}
               className={
                 itemIndex === index
-                  ? "h-2 w-8 rounded-full bg-gradient-to-r from-[#2563eb] to-[#673de6] transition-all"
-                  : "h-2 w-2 rounded-full bg-[#c7d2fe] transition-all hover:bg-[#a5b4fc]"
+                  ? "h-2 w-8 rounded-full bg-white transition-all"
+                  : "h-2 w-2 rounded-full bg-white/35 transition-all hover:bg-white/60"
               }
             />
           ))}

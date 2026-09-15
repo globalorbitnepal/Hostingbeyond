@@ -262,7 +262,7 @@ export function BusinessEmailSection({
       <div className="hb-shell relative z-10">
         <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:gap-10 xl:gap-14">
           <motion.div
-            className="relative order-2 lg:order-1"
+            className="relative order-2 overflow-hidden rounded-[28px] border border-white/45 shadow-[0_32px_70px_-28px_rgba(47,28,106,0.38)] backdrop-blur-2xl lg:order-1"
             initial={reduceMotion ? false : { opacity: 0, x: -28 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, amount: 0.25 }}

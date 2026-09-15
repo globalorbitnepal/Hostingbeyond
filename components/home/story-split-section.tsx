@@ -1,14 +1,19 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 import { cn } from "@/lib/utils";
-import { hbCopy, hbSlide, hbSpring } from "@/lib/motion";
+import { hbCopy, hbSpring } from "@/lib/motion";
 import type { CmsStoryBandContent } from "@/lib/orbit/defaults";
+import {
+  GlassChatChips,
+  GlassDomainBar,
+  GlassPromptBar,
+  GlassVideoFrame,
+} from "./glass-video-frame";
 
 export function StorySplitSection({
   content,
@@ -44,16 +49,25 @@ export function StorySplitSection({
 
   if (!content.visible || !active) return null;
 
-  const toneClass =
-    tone === "aurora"
-      ? "hb-home-section--aurora"
-      : tone === "sheet"
-        ? "hb-home-section--sheet"
-        : "hb-home-section--mist";
+  const overlay =
+    tone === "mist" ? (
+      <GlassDomainBar domain="launchsitetoday" playing={!reduce} />
+    ) : tone === "aurora" ? (
+      <GlassChatChips
+        playing={!reduce}
+        lines={["Migrate my site", "Draft a campaign"]}
+      />
+    ) : (
+      <GlassPromptBar text={active.title} playing={!reduce} />
+    );
 
   return (
-    <section className={cn("hb-home-section", toneClass)}>
-      <div className="hb-shell grid items-center gap-8 lg:grid-cols-2 lg:gap-14">
+    <section className="relative overflow-hidden bg-[linear-gradient(180deg,#673de6_0%,#5025d1_48%,#3d1d9a_100%)] py-16 sm:py-20">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(255,255,255,0.16),transparent_52%)]"
+      />
+      <div className="hb-shell relative grid items-center gap-8 lg:grid-cols-2 lg:gap-14">
         <motion.div
           className={cn(imageFirst ? "lg:order-2" : "lg:order-1")}
           initial={reduce ? false : { opacity: 0, x: imageFirst ? 36 : -36 }}
@@ -62,11 +76,11 @@ export function StorySplitSection({
           transition={hbSpring}
         >
           {content.eyebrow ? (
-            <p className="text-[12px] font-bold tracking-[0.22em] text-[#2563eb] uppercase">
+            <p className="text-[12px] font-bold tracking-[0.22em] text-white/60 uppercase">
               {content.eyebrow}
             </p>
           ) : null}
-          <h2 className="font-heading mt-2 text-[clamp(1.85rem,3.6vw,3.1rem)] leading-[1.08] font-extrabold tracking-[-0.05em] text-[#0c1a36]">
+          <h2 className="font-heading mt-2 text-[clamp(1.85rem,3.6vw,3.1rem)] leading-[1.08] font-extrabold tracking-[-0.05em] text-white">
             {content.heading}
           </h2>
 
@@ -78,10 +92,10 @@ export function StorySplitSection({
                   type="button"
                   onClick={() => goTo(slideIndex)}
                   className={cn(
-                    "rounded-full px-4 py-2 text-[13px] font-bold transition duration-300",
+                    "rounded-full px-4 py-2 text-[13px] font-bold backdrop-blur-xl transition duration-300",
                     index === slideIndex
-                      ? "bg-gradient-to-r from-[#2563eb] to-[#673de6] text-white shadow-[0_12px_24px_rgba(37,99,235,0.28)]"
-                      : "bg-white/80 text-[#0c1a36] ring-1 ring-white hover:bg-white",
+                      ? "bg-white text-[#2f1c6a] shadow-[0_12px_24px_rgba(0,0,0,0.18)]"
+                      : "bg-white/12 text-white/90 ring-1 ring-white/20 hover:bg-white/20",
                   )}
                 >
                   {slide.label}
@@ -101,15 +115,15 @@ export function StorySplitSection({
                 exit={reduce ? undefined : "exit"}
                 transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
               >
-                <h3 className="text-[1.45rem] font-extrabold tracking-tight text-[#0c1a36]">
+                <h3 className="text-[1.45rem] font-extrabold tracking-tight text-white">
                   {active.title}
                 </h3>
-                <p className="mt-2 max-w-lg text-[16px] leading-relaxed text-slate-600">
+                <p className="mt-2 max-w-lg text-[16px] leading-relaxed text-white/75">
                   {active.body}
                 </p>
                 <Link
                   href={active.ctaHref}
-                  className="mt-6 inline-flex h-12 items-center gap-2 rounded-full bg-gradient-to-r from-[#2563eb] to-[#673de6] px-6 text-[14px] font-bold text-white shadow-[0_12px_28px_rgba(103,61,230,0.32)]"
+                  className="mt-6 inline-flex h-12 items-center gap-2 rounded-full bg-white px-6 text-[14px] font-bold text-[#2f1c6a] shadow-[0_12px_28px_rgba(0,0,0,0.16)]"
                 >
                   {active.ctaLabel}
                   <ArrowRight className="size-4" />
@@ -121,7 +135,7 @@ export function StorySplitSection({
 
         <motion.div
           className={cn(
-            "relative overflow-hidden rounded-[24px] border border-white/80 bg-white/50 shadow-[0_40px_80px_-40px_rgba(37,80,130,0.5)]",
+            "relative aspect-[16/10] w-full",
             imageFirst ? "lg:order-1" : "lg:order-2",
           )}
           initial={reduce ? false : { opacity: 0, x: imageFirst ? -36 : 36 }}
@@ -129,28 +143,14 @@ export function StorySplitSection({
           viewport={{ once: true, amount: 0.25 }}
           transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
         >
-          <div className="relative aspect-[16/10] w-full">
-            <AnimatePresence initial={false} custom={direction}>
-              <motion.div
-                key={active.image}
-                custom={direction}
-                variants={hbSlide}
-                initial={reduce ? false : "enter"}
-                animate="center"
-                exit={reduce ? undefined : "exit"}
-                transition={{ duration: 0.58, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute inset-0"
-              >
-                <Image
-                  src={active.image}
-                  alt={active.alt}
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  className={cn("object-cover", reduce ? "" : "hb-ken")}
-                />
-              </motion.div>
-            </AnimatePresence>
-          </div>
+          <GlassVideoFrame
+            key={active.image}
+            src={active.image}
+            alt={active.alt}
+            playing={!reduce}
+            className="absolute inset-0 h-full min-h-0"
+            overlay={overlay}
+          />
         </motion.div>
       </div>
     </section>

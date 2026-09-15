@@ -435,7 +435,7 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
           </motion.div>
 
           <motion.div
-            className="relative pb-8 sm:pb-4 lg:pb-0"
+            className="relative overflow-hidden rounded-[28px] border border-white/45 pb-8 shadow-[0_32px_70px_-28px_rgba(47,28,106,0.4)] backdrop-blur-2xl sm:pb-4 lg:pb-0"
             initial={reduceMotion ? false : { opacity: 0, x: 36 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, amount: 0.25 }}

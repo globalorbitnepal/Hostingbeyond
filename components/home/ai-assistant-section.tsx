@@ -484,7 +484,7 @@ export function AiAssistantSection({
           </motion.div>
 
           <motion.div
-            className="relative min-h-[600px] sm:min-h-[680px] lg:min-h-[740px]"
+            className="relative min-h-[600px] overflow-hidden rounded-[28px] border border-white/45 shadow-[0_32px_70px_-28px_rgba(47,28,106,0.38)] sm:min-h-[680px] lg:min-h-[740px]"
             initial={reduceMotion ? false : { opacity: 0, x: 32 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, amount: 0.2 }}
