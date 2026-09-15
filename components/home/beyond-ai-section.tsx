@@ -17,15 +17,16 @@ import {
   Wand2,
   Zap,
 } from "lucide-react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
+import { useTyped } from "@/hooks/use-typed";
 import {
   defaultBeyondAiSection,
   type CmsBeyondAiContent,
   type CmsBeyondAiFeature,
   type CmsBeyondAiHighlight,
 } from "@/lib/orbit/defaults";
-import { GlassBand, GlassPromptBar } from "./glass-video-frame";
+import { GlassBand } from "./glass-video-frame";
 import { cn } from "@/lib/utils";
 
 const highlightIcons: Record<CmsBeyondAiHighlight["icon"], typeof Zap> = {
@@ -62,116 +63,205 @@ function BeyondAiBadge({ text }: { text: string }) {
   );
 }
 
-const CREATE_FRAMES = [
-  {
-    src: "/images/home/beyond-ai/hotel.png",
-    prompt: "Create a luxury hotel website with a pool hero",
-    label: "Hotel",
-  },
-  {
-    src: "/images/home/beyond-ai/trek.png",
-    prompt: "Design a trekking adventure landing page",
-    label: "Adventure",
-  },
-  {
-    src: "/images/home/beyond-ai/business.png",
-    prompt: "Build a modern business website in one prompt",
-    label: "Business",
-  },
-] as const;
+const PROMPT = "Create a luxury hotel website with a pool hero";
+const HEADLINE = "Azure Pool Retreat";
 
 function DashboardPreview({ content }: { content: CmsBeyondAiContent }) {
+  const [cycle, setCycle] = useState(0);
+  return (
+    <AiCreateFilm
+      key={cycle}
+      content={content}
+      onComplete={() => setCycle((value) => value + 1)}
+    />
+  );
+}
+
+function AiCreateFilm({
+  content,
+  onComplete,
+}: {
+  content: CmsBeyondAiContent;
+  onComplete: () => void;
+}) {
   const reduceMotion = useReducedMotion();
-  const [index, setIndex] = useState(0);
-  const frame = CREATE_FRAMES[index] ?? CREATE_FRAMES[0];
+  const [phase, setPhase] = useState(reduceMotion ? 5 : 0);
+  const prompt = useTyped(PROMPT, !reduceMotion, reduceMotion, false);
+  const headline = useTyped(
+    HEADLINE,
+    !reduceMotion && phase >= 3,
+    reduceMotion,
+    false,
+  );
 
   useEffect(() => {
-    if (reduceMotion) return;
-    const timer = window.setInterval(() => {
-      setIndex((current) => (current + 1) % CREATE_FRAMES.length);
-    }, 5200);
-    return () => window.clearInterval(timer);
+    if (reduceMotion) {
+      setPhase(5);
+      return;
+    }
+    const timers = [
+      window.setTimeout(() => setPhase(1), 1500),
+      window.setTimeout(() => setPhase(2), 2600),
+      window.setTimeout(() => setPhase(3), 4200),
+      window.setTimeout(() => setPhase(4), 6200),
+      window.setTimeout(() => setPhase(5), 7800),
+      window.setTimeout(onComplete, 10800),
+    ];
+    return () => timers.forEach((id) => window.clearTimeout(id));
+    // Restart only when this film mounts (parent bumps `key`).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reduceMotion]);
 
   return (
-    <div className="relative aspect-[16/10] min-h-[260px] w-full overflow-hidden rounded-[32px] border border-white/50 bg-white/10 shadow-[0_32px_70px_-28px_rgba(15,10,40,0.45)] ring-1 ring-white/25 backdrop-blur-2xl sm:min-h-[320px] lg:min-h-[380px]">
-      <AnimatePresence initial={false} mode="sync">
-        <motion.div
-          key={frame.src}
-          className="absolute inset-0"
-          initial={reduceMotion ? false : { opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.7 }}
-        >
-          <Image
-            src={`${frame.src}?v=1`}
-            alt={`${frame.label} website created by AI`}
-            fill
-            sizes="(max-width: 1024px) 100vw, 52vw"
-            unoptimized
-            className={cn(
-              "object-cover object-center",
-              !reduceMotion && "hb-video",
-            )}
-            priority={index === 0}
-          />
-        </motion.div>
-      </AnimatePresence>
-
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#2f1c6a]/35 via-transparent to-white/10" />
-
-      <div className="absolute inset-x-3 top-3 z-20 flex items-center justify-between gap-2 sm:inset-x-4 sm:top-4">
-        <div className="inline-flex items-center gap-2 rounded-full border border-white/50 bg-white/88 px-3 py-1.5 shadow-sm backdrop-blur-xl">
-          <span className="size-2 animate-pulse rounded-full bg-[#673de6]" />
-          <span className="text-[11px] font-bold text-[#2f1c6a]">
-            AI is creating your website
+    <div className="relative aspect-[16/10] min-h-[260px] w-full overflow-hidden rounded-[32px] border border-white/50 bg-white/12 shadow-[0_32px_70px_-28px_rgba(15,10,40,0.45)] ring-1 ring-white/25 backdrop-blur-2xl sm:min-h-[320px] lg:min-h-[380px]">
+      <div className="absolute inset-3 overflow-hidden rounded-[22px] border border-white/40 bg-[#eef1f8] shadow-[0_18px_40px_-24px_rgba(15,10,40,0.45)] sm:inset-4">
+        <div className="relative flex h-8 items-center gap-1.5 border-b border-black/5 bg-white/90 px-3">
+          <span className="size-2 rounded-full bg-[#ff5f57]" />
+          <span className="size-2 rounded-full bg-[#febc2e]" />
+          <span className="size-2 rounded-full bg-[#28c840]" />
+          <span className="ml-2 text-[10px] font-bold tracking-wide text-slate-500 uppercase">
+            {phase < 5 ? "Generating layout" : "Website live"}
           </span>
-        </div>
-        <div className="inline-flex items-center gap-2 rounded-full border border-white/50 bg-white/90 px-3 py-1.5 text-[11px] font-semibold text-slate-700 shadow-sm backdrop-blur-xl">
-          <span className="inline-flex size-5 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-            <Check className="size-3" strokeWidth={2.4} />
-          </span>
-          <span>
-            {content.toastTitle}
-            <span className="block text-[10px] font-medium text-slate-400">
-              {content.toastSubtitle}
-            </span>
-          </span>
-        </div>
-      </div>
-
-      <div className="absolute bottom-20 left-3 z-20 flex gap-2 sm:left-4">
-        {CREATE_FRAMES.map((item, itemIndex) => (
-          <button
-            key={item.src}
-            type="button"
-            aria-label={`Show ${item.label} website`}
-            onClick={() => setIndex(itemIndex)}
-            className={cn(
-              "relative h-12 w-[4.5rem] overflow-hidden rounded-xl border shadow-lg sm:h-14 sm:w-20",
-              itemIndex === index
-                ? "border-white ring-2 ring-white/80"
-                : "border-white/40 opacity-80 hover:opacity-100",
-            )}
-          >
-            <Image
-              src={`${item.src}?v=1`}
-              alt={`${item.label} preview`}
-              fill
-              sizes="80px"
-              unoptimized
-              className="object-cover"
+          <span className="ml-auto h-1.5 w-24 overflow-hidden rounded-full bg-slate-200">
+            <motion.span
+              className="block h-full rounded-full bg-gradient-to-r from-[#2563eb] to-[#673de6]"
+              initial={{ width: "8%" }}
+              animate={{
+                width:
+                  phase >= 5
+                    ? "100%"
+                    : phase >= 4
+                      ? "82%"
+                      : phase >= 3
+                        ? "58%"
+                        : phase >= 2
+                          ? "36%"
+                          : "14%",
+              }}
+              transition={{ duration: 0.45 }}
             />
-          </button>
-        ))}
+          </span>
+        </div>
+
+        <div className="relative h-[calc(100%-2rem)] overflow-hidden bg-white">
+          {phase >= 1 && phase < 2 ? (
+            <div className="absolute inset-4 space-y-3">
+              <div className="h-4 w-1/3 animate-pulse rounded bg-slate-200" />
+              <div className="h-[42%] animate-pulse rounded-2xl bg-slate-200" />
+              <div className="grid grid-cols-3 gap-2">
+                <div className="h-16 animate-pulse rounded-xl bg-slate-200" />
+                <div className="h-16 animate-pulse rounded-xl bg-slate-200" />
+                <div className="h-16 animate-pulse rounded-xl bg-slate-200" />
+              </div>
+            </div>
+          ) : null}
+
+          {phase >= 2 ? (
+            <motion.div
+              className="absolute inset-0"
+              initial={reduceMotion ? false : { opacity: 0, scale: 1.08 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.7 }}
+            >
+              <Image
+                src="/images/home/beyond-ai/hotel.png"
+                alt="Luxury hotel hero on the generated website"
+                fill
+                sizes="(max-width: 1024px) 100vw, 52vw"
+                unoptimized
+                className={cn(
+                  "object-cover object-center",
+                  !reduceMotion && "hb-video",
+                )}
+                priority
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#12082a]/70 via-[#12082a]/10 to-black/20" />
+            </motion.div>
+          ) : null}
+
+          {phase >= 3 ? (
+            <motion.div
+              className="absolute inset-x-4 top-3 z-10 flex items-center justify-between text-[10px] font-semibold text-white sm:text-[11px]"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <span>Stay · Suites · Dining</span>
+              <span className="rounded-full bg-white/20 px-2.5 py-1 backdrop-blur-md">
+                Book
+              </span>
+            </motion.div>
+          ) : null}
+
+          {phase >= 3 ? (
+            <div className="absolute inset-x-4 top-[22%] z-10 sm:top-[26%]">
+              <p className="font-heading text-[clamp(1.15rem,2.6vw,1.85rem)] leading-tight font-extrabold tracking-tight text-white drop-shadow">
+                {headline}
+                {phase === 3 && !reduceMotion ? (
+                  <span className="hb-caret ml-0.5 inline-block h-[0.9em] w-[2px] bg-white align-[-2px]" />
+                ) : null}
+              </p>
+              {phase >= 4 ? (
+                <motion.p
+                  className="mt-1.5 max-w-[28ch] text-[11px] text-white/85 sm:text-[12px]"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  Infinity pool. Ocean light. One prompt.
+                </motion.p>
+              ) : null}
+            </div>
+          ) : null}
+
+          {phase >= 4 ? (
+            <div className="absolute inset-x-3 bottom-3 z-10 grid grid-cols-3 gap-1.5 sm:inset-x-4 sm:gap-2">
+              {["Ocean suite", "Spa dusk", "Private dining"].map(
+                (label, cardIndex) => (
+                  <motion.p
+                    key={label}
+                    className="rounded-xl border border-white/40 bg-white/18 px-2 py-2 text-center text-[9px] font-bold text-white backdrop-blur-md sm:text-[10px]"
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: cardIndex * 0.12 }}
+                  >
+                    {label}
+                  </motion.p>
+                ),
+              )}
+            </div>
+          ) : null}
+
+          {phase >= 5 ? (
+            <motion.div
+              className="absolute top-3 right-3 z-20 inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/92 px-3 py-1.5 text-[11px] font-semibold text-slate-700 shadow-sm"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <span className="inline-flex size-5 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                <Check className="size-3" strokeWidth={2.4} />
+              </span>
+              <span>
+                {content.toastTitle}
+                <span className="block text-[10px] font-medium text-slate-400">
+                  {content.toastSubtitle}
+                </span>
+              </span>
+            </motion.div>
+          ) : null}
+        </div>
       </div>
 
-      <GlassPromptBar
-        key={frame.prompt}
-        text={frame.prompt}
-        playing={!reduceMotion}
-      />
+      <div className="absolute inset-x-3 bottom-3 z-30 sm:inset-x-4 sm:bottom-4">
+        <div className="flex items-center gap-2 rounded-full border border-white/70 bg-white/92 px-3 py-2 shadow-[0_16px_40px_rgba(47,28,106,0.2)] backdrop-blur-xl sm:px-4 sm:py-2.5">
+          <Sparkles className="size-4 shrink-0 text-[#673de6]" />
+          <p className="min-w-0 flex-1 truncate text-[12px] font-semibold text-[#2f1c6a] sm:text-[14px]">
+            {reduceMotion ? PROMPT : prompt}
+            <span className="hb-caret ml-0.5 inline-block h-[1em] w-[2px] bg-[#673de6] align-[-2px]" />
+          </p>
+          <span className="grid size-7 shrink-0 place-items-center rounded-full bg-gradient-to-r from-[#2563eb] to-[#673de6] text-sm font-bold text-white sm:size-8">
+            →
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
