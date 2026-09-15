@@ -4,10 +4,12 @@ import Image from "next/image";
 import { useReducedMotion } from "framer-motion";
 
 import { cn } from "@/lib/utils";
+import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
 import { GlassDomainBar, GlassPromptBar } from "./glass-video-frame";
 
 type Props = {
   src: string;
+  srcB?: string;
   alt: string;
   overlayText: string;
   overlayKind?: "prompt" | "domain";
@@ -20,23 +22,24 @@ type Props = {
 
 export function SolutionImageCarousel({
   src,
+  srcB,
   alt,
   overlayText,
   overlayKind = "prompt",
   chromeLabel,
-  paused = false,
   className,
   sizes,
   priority = false,
 }: Props) {
   const reduceMotion = useReducedMotion();
-  const playing = !paused && !reduceMotion;
+  const film = Boolean(srcB) && !reduceMotion;
+  const playing = !reduceMotion;
 
   if (!src) {
     return (
       <div
         className={cn(
-          "flex h-full items-center justify-center bg-white/10 text-sm text-white/60",
+          "flex h-full items-center justify-center bg-white/10 text-sm text-slate-500",
           className,
         )}
       >
@@ -58,9 +61,22 @@ export function SolutionImageCarousel({
         fill
         sizes={sizes}
         priority={priority}
-        unoptimized
-        className={cn("object-cover object-center", playing && "hb-video-card")}
+        unoptimized={isRuntimeMediaSrc(src)}
+        className={cn(
+          "object-cover object-center",
+          film ? "hb-sol-film-a" : playing ? "hb-video" : "scale-[1.08]",
+        )}
       />
+      {film ? (
+        <Image
+          src={srcB!}
+          alt=""
+          fill
+          sizes={sizes}
+          unoptimized={isRuntimeMediaSrc(srcB)}
+          className="hb-sol-film-b object-cover object-center"
+        />
+      ) : null}
 
       <div className="absolute inset-x-0 top-0 z-20 flex h-8 items-center gap-1.5 border-b border-black/5 bg-white/88 px-3 backdrop-blur-md">
         <span className="size-2 rounded-full bg-[#ff5f57]" />

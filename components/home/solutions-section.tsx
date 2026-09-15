@@ -22,12 +22,11 @@ export function SolutionsSection({
   return (
     <section
       aria-labelledby="hb-solutions-heading"
-      className="relative overflow-hidden bg-[linear-gradient(180deg,#2563eb_0%,#4f46e5_34%,#673de6_68%,#3d1d9a_100%)] pt-10 pb-12 sm:pt-12 sm:pb-14 lg:pt-14 lg:pb-16"
+      className="hb-home-section hb-home-section--mist pt-10 pb-12 sm:pt-12 sm:pb-14 lg:pt-14 lg:pb-16"
     >
       <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_-8%,rgba(255,255,255,0.2),transparent_52%)]" />
-        <div className="absolute top-[8%] left-[-10%] h-[50%] w-[45%] rounded-full bg-[radial-gradient(ellipse,rgba(186,210,255,0.28),transparent_68%)] blur-3xl" />
-        <div className="absolute right-[-12%] bottom-[12%] h-[46%] w-[42%] rounded-full bg-[radial-gradient(ellipse,rgba(196,181,253,0.22),transparent_70%)] blur-3xl" />
+        <div className="absolute -top-24 left-[-12%] h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(147,197,253,0.35),transparent_68%)] blur-2xl" />
+        <div className="absolute right-[-8%] bottom-[-20%] h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(167,139,250,0.16),transparent_70%)] blur-2xl" />
       </div>
 
       <motion.div
@@ -42,18 +41,18 @@ export function SolutionsSection({
       >
         <div className="flex flex-col items-center text-center lg:flex-row lg:items-center lg:justify-between lg:gap-10 lg:text-left">
           <div className="w-full min-w-0 lg:flex-1">
-            <p className="text-[11px] font-bold tracking-[0.28em] text-white/55 uppercase sm:text-[12px]">
+            <p className="text-[11px] font-bold tracking-[0.28em] text-slate-500 uppercase sm:text-[12px]">
               {content.eyebrow}
             </p>
             <h2
               id="hb-solutions-heading"
               className="font-heading mt-3 text-[clamp(1.7rem,3.6vw,3.55rem)] leading-[1.12] font-extrabold tracking-[-0.045em] text-balance lg:whitespace-nowrap"
             >
-              <span className="text-white">{content.title}</span>
+              <span className="text-[#2f1c6a]">{content.title}</span>
               {content.titleAccent ? (
                 <>
                   {" "}
-                  <span className="bg-gradient-to-r from-[#c4b5fd] via-[#a78bfa] to-white bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-[#2563eb] via-[#673de6] to-[#7c3aed] bg-clip-text text-transparent">
                     {content.titleAccent}
                   </span>
                 </>
@@ -61,13 +60,13 @@ export function SolutionsSection({
             </h2>
           </div>
           <div className="mt-4 flex w-full max-w-[40rem] flex-col items-center lg:mt-0 lg:max-w-[28rem] lg:items-end lg:text-right">
-            <p className="text-[15px] leading-relaxed text-white/70 sm:text-[16.5px] lg:text-[17px]">
+            <p className="text-[15px] leading-relaxed text-slate-600 sm:text-[16.5px] lg:text-[17px]">
               {content.description}
             </p>
             {content.ctaLabel.trim() && content.ctaHref.trim() ? (
               <Link
                 href={content.ctaHref}
-                className="mt-5 inline-flex min-h-12 items-center gap-2 rounded-full border border-white/30 bg-white/15 px-5 text-[15px] font-semibold text-white shadow-[0_10px_28px_rgba(15,10,40,0.18)] backdrop-blur-xl transition hover:bg-white/25"
+                className="mt-5 inline-flex min-h-12 items-center gap-2 rounded-full border border-white/80 bg-white/70 px-5 text-[15px] font-semibold text-[#2f1c6a] shadow-[0_10px_28px_rgba(15,10,40,0.08)] backdrop-blur-xl transition hover:bg-white"
               >
                 {content.ctaLabel}
                 <ArrowRight className="size-4" />

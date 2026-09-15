@@ -141,7 +141,7 @@ export function SolutionCarousel({ products }: Props) {
             interacting.current = true;
             scrollToIndex(index - 1);
           }}
-          className="inline-flex size-11 items-center justify-center rounded-full border border-white/30 bg-white/15 text-white shadow-sm backdrop-blur-xl transition hover:bg-white/25"
+          className="inline-flex size-11 items-center justify-center rounded-full border border-white/80 bg-white/70 text-[#2f1c6a] shadow-sm backdrop-blur-xl transition hover:bg-white"
         >
           <ChevronLeft className="size-5" />
         </button>
@@ -164,8 +164,8 @@ export function SolutionCarousel({ products }: Props) {
               className={cn(
                 "h-2 rounded-full transition-all duration-300",
                 productIndex === index
-                  ? "w-6 bg-white"
-                  : "w-2 bg-white/35 hover:bg-white/55",
+                  ? "w-6 bg-[#673de6]"
+                  : "w-2 bg-[#c4b5fd] hover:bg-[#a78bfa]",
               )}
             />
           ))}
@@ -177,7 +177,7 @@ export function SolutionCarousel({ products }: Props) {
             interacting.current = true;
             scrollToIndex(index + 1);
           }}
-          className="inline-flex size-11 items-center justify-center rounded-full border border-white/30 bg-white/15 text-white shadow-sm backdrop-blur-xl transition hover:bg-white/25"
+          className="inline-flex size-11 items-center justify-center rounded-full border border-white/80 bg-white/70 text-[#2f1c6a] shadow-sm backdrop-blur-xl transition hover:bg-white"
         >
           <ChevronRight className="size-5" />
         </button>
