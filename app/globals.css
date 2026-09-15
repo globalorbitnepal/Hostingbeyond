@@ -189,6 +189,16 @@
       );
   }
 
+  .hb-caret {
+    animation: hb-caret 0.9s step-end infinite;
+  }
+
+  @keyframes hb-caret {
+    50% {
+      opacity: 0;
+    }
+  }
+
   .hb-ken {
     animation: hb-ken 8.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     will-change: transform;
