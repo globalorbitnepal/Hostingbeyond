@@ -226,7 +226,7 @@ export function HostingPlansSection({
             <Layers className="size-3.5 text-[#2563eb]" aria-hidden />
             {data.eyebrow}
           </p>
-          <h2 className="font-heading mt-3 text-[clamp(1.7rem,3.6vw,3.15rem)] leading-[1.12] font-extrabold tracking-[-0.045em] text-slate-950">
+          <h2 className="font-heading mt-3 text-[clamp(1.7rem,3.6vw,3.15rem)] leading-[1.12] font-extrabold tracking-[-0.045em] text-[#2f1c6a]">
             {data.title}{" "}
             {data.titleAccent ? (
               <span className="bg-gradient-to-r from-[#2563eb] via-[#4f46e5] to-[#7c3aed] bg-clip-text text-transparent">

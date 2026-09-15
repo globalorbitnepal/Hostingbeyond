@@ -101,7 +101,7 @@
     position: relative;
     isolation: isolate;
     overflow: hidden;
-    padding-block: clamp(1.45rem, 2.6vw, 2.35rem);
+    padding-block: clamp(3.2rem, 6vw, 5.5rem);
   }
 
   .hb-home-section--ice {

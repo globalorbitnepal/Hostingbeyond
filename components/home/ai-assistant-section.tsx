@@ -433,7 +433,7 @@ export function AiAssistantSection({
               <span>{data.badge}</span>
             </span>
 
-            <h2 className="font-heading mt-6 text-[clamp(1.85rem,4vw,3.4rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-slate-950">
+            <h2 className="font-heading mt-6 text-[clamp(1.85rem,4vw,3.4rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-[#2f1c6a]">
               <span className="block">{data.title}</span>
               <span className="block bg-gradient-to-r from-[#2563eb] via-[#4f46e5] to-[#7c3aed] bg-clip-text text-transparent">
                 {data.titleAccent}

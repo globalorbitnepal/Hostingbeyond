@@ -283,7 +283,7 @@ export function BusinessEmailSection({
               {data.badge}
             </span>
 
-            <h2 className="font-heading mt-5 text-[clamp(1.9rem,3.8vw,3.15rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-slate-950">
+            <h2 className="font-heading mt-5 text-[clamp(1.9rem,3.8vw,3.15rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-[#2f1c6a]">
               <span className="block">{data.title}</span>
               <span className="block bg-gradient-to-r from-[#2563eb] via-[#4f46e5] to-[#7c3aed] bg-clip-text text-transparent">
                 {data.titleAccent}

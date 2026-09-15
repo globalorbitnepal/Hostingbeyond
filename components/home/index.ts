@@ -8,3 +8,8 @@ export { BusinessEmailSection } from "./business-email-section";
 export { AiAssistantSection } from "./ai-assistant-section";
 export { WhyChooseSection } from "./why-choose-section";
 export { HomeFaqsSection } from "./home-faqs-section";
+export { EssentialsSection } from "./essentials-section";
+export { StorySplitSection } from "./story-split-section";
+export { PowerTilesSection } from "./power-tiles-section";
+export { ProofSliderSection } from "./proof-slider-section";
+export { CloseCtaSection } from "./close-cta-section";

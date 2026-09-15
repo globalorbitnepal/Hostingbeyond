@@ -72,7 +72,7 @@ export function WhyChooseSection({
           <p className="text-[11px] font-bold tracking-[0.28em] text-slate-500 uppercase">
             {data.eyebrow}
           </p>
-          <h2 className="font-heading mt-3 text-[clamp(1.75rem,3.6vw,3.15rem)] leading-[1.12] font-extrabold tracking-[-0.045em] text-slate-950">
+          <h2 className="font-heading mt-3 text-[clamp(1.75rem,3.6vw,3.15rem)] leading-[1.12] font-extrabold tracking-[-0.045em] text-[#2f1c6a]">
             {data.title}{" "}
             <span className="bg-gradient-to-r from-[#2563eb] via-[#4f46e5] to-[#7c3aed] bg-clip-text text-transparent">
               {data.titleAccent}
