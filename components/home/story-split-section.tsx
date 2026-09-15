@@ -14,6 +14,7 @@ import {
   GlassPromptBar,
   GlassVideoFrame,
 } from "./glass-video-frame";
+import { TemplateStudio } from "./story-template-studio";
 
 export function StorySplitSection({
   content,
@@ -48,18 +49,6 @@ export function StorySplitSection({
   }, [reduce, slides.length]);
 
   if (!content.visible || !active) return null;
-
-  const overlay =
-    tone === "mist" ? (
-      <GlassDomainBar domain="launchsitetoday" playing={!reduce} />
-    ) : tone === "aurora" ? (
-      <GlassChatChips
-        playing={!reduce}
-        lines={["Migrate my site", "Draft a campaign"]}
-      />
-    ) : (
-      <GlassPromptBar text={active.title} playing={!reduce} />
-    );
 
   return (
     <section className="relative overflow-hidden bg-[linear-gradient(180deg,#673de6_0%,#5025d1_48%,#3d1d9a_100%)] py-16 sm:py-20">
@@ -143,14 +132,41 @@ export function StorySplitSection({
           viewport={{ once: true, amount: 0.25 }}
           transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
         >
-          <GlassVideoFrame
-            key={active.image}
-            src={active.image}
-            alt={active.alt}
-            playing={!reduce}
-            className="absolute inset-0 h-full min-h-0"
-            overlay={overlay}
-          />
+          {active.id === "templates" ? (
+            <TemplateStudio playing={!reduce} />
+          ) : (
+            <GlassVideoFrame
+              key={active.image}
+              src={
+                active.image.includes("templates.webp")
+                  ? "/images/home/wordpress.webp"
+                  : active.image
+              }
+              alt={active.alt}
+              playing={!reduce}
+              loop
+              className="absolute inset-0 h-full min-h-0"
+              overlay={
+                tone === "mist" ? (
+                  <GlassDomainBar domain="yourbrand" playing={!reduce} />
+                ) : tone === "aurora" ? (
+                  <GlassChatChips
+                    playing={!reduce}
+                    lines={["Migrate my site", "Draft a campaign"]}
+                  />
+                ) : (
+                  <GlassPromptBar
+                    text={
+                      active.id === "wordpress"
+                        ? "Install WordPress in one click"
+                        : active.title
+                    }
+                    playing={!reduce}
+                  />
+                )
+              }
+            />
+          )}
         </motion.div>
       </div>
     </section>

@@ -2487,8 +2487,8 @@ export function defaultControlStorySection(): CmsStoryBandContent {
         body: "Start from a niche-ready layout, then keep prompting Beyond AI until it looks like your brand.",
         ctaLabel: "Explore templates",
         ctaHref: routes.beyondAi,
-        image: "/images/home/templates.webp",
-        alt: "Website template gallery on a studio monitor",
+        image: "/images/home/templates-hb.png",
+        alt: "HostingBeyond designer template gallery",
       },
     ],
   };
@@ -3107,7 +3107,12 @@ function mergeStoryBandSection(
             body: text(slide.body, fallback.body),
             ctaLabel: text(slide.ctaLabel, fallback.ctaLabel),
             ctaHref: text(slide.ctaHref, fallback.ctaHref),
-            image: text(slide.image, fallback.image),
+            image:
+              typeof slide.image === "string" &&
+              (slide.image.includes("templates.webp") ||
+                /hostinger/i.test(slide.image))
+                ? fallback.image
+                : text(slide.image, fallback.image),
             alt: text(slide.alt, fallback.alt),
           } satisfies CmsStorySlide;
         })
