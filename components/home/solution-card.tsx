@@ -92,7 +92,7 @@ export function SolutionCard({ product, paused, priority }: Props) {
     kind: "prompt" as const,
   };
   const plate = stage.file
-    ? `/images/home/solutions/${stage.file}?v=4`
+    ? `/images/home/solutions/${stage.file}?v=5`
     : product.images.find((image) => image.visible !== false)?.url || "";
 
   return (
@@ -137,9 +137,10 @@ export function SolutionCard({ product, paused, priority }: Props) {
             alt={product.name}
             overlayText={stage.prompt}
             overlayKind={stage.kind}
+            chromeLabel={product.category}
             paused={paused}
             priority={priority}
-            sizes="(max-width: 640px) 92vw, (max-width: 1024px) 70vw, 420px"
+            sizes="(max-width: 640px) 92vw, (max-width: 1024px) 70vw, 416px"
             className="absolute inset-0 h-full w-full"
           />
         </div>

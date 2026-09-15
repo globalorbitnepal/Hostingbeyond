@@ -11,6 +11,7 @@ type Props = {
   alt: string;
   overlayText: string;
   overlayKind?: "prompt" | "domain";
+  chromeLabel: string;
   paused?: boolean;
   className?: string;
   sizes: string;
@@ -22,6 +23,7 @@ export function SolutionImageCarousel({
   alt,
   overlayText,
   overlayKind = "prompt",
+  chromeLabel,
   paused = false,
   className,
   sizes,
@@ -46,7 +48,7 @@ export function SolutionImageCarousel({
   return (
     <div
       className={cn(
-        "relative h-full w-full overflow-hidden bg-[#1a0b3a]",
+        "relative h-full w-full overflow-hidden bg-[#12082a]",
         className,
       )}
     >
@@ -57,14 +59,21 @@ export function SolutionImageCarousel({
         sizes={sizes}
         priority={priority}
         unoptimized
-        className={cn(
-          "object-cover object-center",
-          playing ? "hb-video-card" : "scale-[1.02]",
-        )}
+        className={cn("object-cover object-center", playing && "hb-video-card")}
       />
+
+      <div className="absolute inset-x-0 top-0 z-20 flex h-8 items-center gap-1.5 border-b border-black/5 bg-white/88 px-3 backdrop-blur-md">
+        <span className="size-2 rounded-full bg-[#ff5f57]" />
+        <span className="size-2 rounded-full bg-[#febc2e]" />
+        <span className="size-2 rounded-full bg-[#28c840]" />
+        <span className="ml-2 truncate text-[11px] font-semibold tracking-tight text-slate-600">
+          {chromeLabel}
+        </span>
+      </div>
+
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#12082a]/55 to-transparent"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/35 to-transparent"
       />
 
       {overlayKind === "domain" ? (
