@@ -48,12 +48,8 @@ function PlanGlyph({ plan }: { plan: CmsHostingPlan }) {
   return (
     <span
       className={cn(
-        "inline-flex size-11 items-center justify-center rounded-2xl shadow-[0_8px_18px_-12px_rgba(37,99,235,0.45)]",
-        popular
-          ? "bg-white/45 text-[#673de6] ring-1 ring-white/80"
-          : plan.accent === "purple"
-            ? "bg-white/35 text-[#7c3aed] ring-1 ring-white/70"
-            : "bg-white/35 text-[#673de6] ring-1 ring-white/70",
+        "inline-flex size-11 items-center justify-center rounded-2xl text-[#673de6] shadow-[0_10px_22px_-14px_rgba(103,61,230,0.55)] ring-1",
+        popular ? "bg-white/80 ring-white/90" : "bg-white/70 ring-white/75",
       )}
     >
       <Icon className="size-5" strokeWidth={1.85} aria-hidden />
@@ -106,8 +102,8 @@ function PlanCard({
       className={cn(
         "relative flex h-full flex-col overflow-hidden rounded-[28px] border p-5 backdrop-blur-2xl transition duration-300 sm:p-6",
         popular
-          ? "z-10 border-white/80 bg-[linear-gradient(165deg,rgba(255,255,255,0.52)_0%,rgba(237,233,254,0.34)_50%,rgba(255,255,255,0.28)_100%)] shadow-[0_32px_70px_-28px_rgba(103,61,230,0.5)] ring-1 ring-white/85 hover:-translate-y-1"
-          : "border-white/40 bg-[linear-gradient(180deg,rgba(47,28,106,0.14)_0%,rgba(255,255,255,0.16)_42%,rgba(47,28,106,0.1)_100%)] shadow-[0_24px_56px_-32px_rgba(47,28,106,0.42)] ring-1 ring-white/45 hover:-translate-y-0.5",
+          ? "z-10 border-white/90 bg-[linear-gradient(165deg,rgba(255,255,255,0.86)_0%,rgba(244,245,255,0.78)_48%,rgba(237,233,254,0.72)_100%)] shadow-[0_36px_70px_-28px_rgba(47,28,106,0.48)] ring-1 ring-[#673de6]/20 hover:-translate-y-1"
+          : "border-white/75 bg-[linear-gradient(180deg,rgba(255,255,255,0.72)_0%,rgba(244,241,255,0.62)_100%)] shadow-[0_28px_56px_-30px_rgba(47,28,106,0.4)] ring-1 ring-white/80 hover:-translate-y-0.5",
       )}
     >
       <div
@@ -121,12 +117,12 @@ function PlanCard({
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-wrap items-center gap-1.5">
           {plan.discountBadge ? (
-            <span className="rounded-full border border-white/50 bg-white/25 px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-slate-600 uppercase backdrop-blur-xl">
+            <span className="rounded-full border border-[#673de6]/15 bg-white/80 px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-[#673de6] uppercase">
               {plan.discountBadge}
             </span>
           ) : null}
           {popular && plan.popularLabel ? (
-            <span className="inline-flex items-center gap-1 rounded-full border border-white/70 bg-white/40 px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-[#673de6] uppercase backdrop-blur-xl">
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#673de6] px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-white uppercase shadow-[0_8px_16px_rgba(103,61,230,0.35)]">
               <Star className="size-3 fill-current" aria-hidden />
               {plan.popularLabel}
             </span>
@@ -135,11 +131,11 @@ function PlanCard({
         <PlanGlyph plan={plan} />
       </div>
 
-      <h3 className="font-heading mt-4 text-[1.35rem] font-extrabold tracking-[-0.03em] text-slate-950 sm:text-[1.5rem]">
+      <h3 className="font-heading mt-4 text-[1.35rem] font-extrabold tracking-[-0.03em] text-[#2f1c6a] sm:text-[1.5rem]">
         {plan.name}
       </h3>
       {plan.tagline ? (
-        <p className="mt-1 min-h-[2.6rem] text-[13.5px] leading-snug text-slate-500">
+        <p className="mt-1 min-h-[2.6rem] text-[13.5px] leading-snug text-slate-600">
           {plan.tagline}
         </p>
       ) : (
@@ -163,7 +159,7 @@ function PlanCard({
           </span>
         </p>
         <div className="mt-2 flex min-h-[1.35rem] flex-wrap items-center gap-x-2 gap-y-1 text-[12px] font-medium">
-          {billed ? <span className="text-slate-500">{billed}</span> : null}
+          {billed ? <span className="text-slate-600">{billed}</span> : null}
           {save ? (
             <span className="font-bold text-emerald-600">{save}</span>
           ) : null}
@@ -176,7 +172,7 @@ function PlanCard({
           "mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full text-[14px] font-bold transition",
           popular
             ? "bg-gradient-to-r from-[#2563eb] to-[#673de6] text-white shadow-[0_12px_24px_rgba(103,61,230,0.35)] hover:brightness-105"
-            : "border border-white/70 bg-white/40 text-slate-800 shadow-[0_8px_18px_-14px_rgba(15,23,42,0.28)] backdrop-blur-xl hover:border-violet-200 hover:bg-white/55 hover:text-[#673de6]",
+            : "border border-white/80 bg-white/85 text-[#2f1c6a] shadow-[0_10px_22px_-14px_rgba(47,28,106,0.35)] backdrop-blur-xl hover:border-[#673de6]/30 hover:text-[#673de6]",
         )}
       >
         {plan.ctaLabel || "Get Started"}
@@ -184,12 +180,17 @@ function PlanCard({
       </Link>
 
       <ul className="mt-5 flex flex-1 flex-col gap-2.5">
-        {list.map((feature) => (
+        {list.map((feature, index) => (
           <li
             key={feature}
-            className="flex items-start gap-2.5 text-[13.5px] leading-snug text-slate-600"
+            className={cn(
+              "flex items-start gap-2.5 text-[13.5px] leading-snug",
+              index < extras.length
+                ? "font-semibold text-[#2f1c6a]"
+                : "font-medium text-slate-700",
+            )}
           >
-            <span className="mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-white/40 text-[#673de6] ring-1 ring-white/60">
+            <span className="mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-[#673de6]/10 text-[#673de6] ring-1 ring-[#673de6]/15">
               <Check className="size-2.5" strokeWidth={3} aria-hidden />
             </span>
             <span>{feature}</span>
@@ -327,16 +328,16 @@ export function HostingPlansSection({
             {guarantees.map((item) => (
               <div
                 key={item.id}
-                className="flex h-full items-start gap-3 rounded-[22px] border border-white/50 bg-white/18 px-4 py-4 shadow-[0_18px_44px_-28px_rgba(47,28,106,0.4)] ring-1 ring-white/55 backdrop-blur-2xl"
+                className="flex h-full items-start gap-3 rounded-[22px] border border-white/80 bg-white/65 px-4 py-4 shadow-[0_18px_44px_-28px_rgba(47,28,106,0.38)] ring-1 ring-white/80 backdrop-blur-2xl"
               >
-                <span className="mt-0.5 inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-white/45 text-[#673de6] ring-1 ring-white/70">
+                <span className="mt-0.5 inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-white text-[#673de6] ring-1 ring-white/80">
                   <GuaranteeIcon icon={item.icon} className="size-[18px]" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[13.5px] leading-snug font-extrabold text-slate-950">
+                  <span className="block text-[13.5px] leading-snug font-extrabold text-[#2f1c6a]">
                     {item.title}
                   </span>
-                  <span className="mt-1 block text-[12.5px] leading-snug text-slate-500">
+                  <span className="mt-1 block text-[12.5px] leading-snug text-slate-600">
                     {item.description}
                   </span>
                 </span>
