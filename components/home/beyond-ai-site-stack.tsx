@@ -5,8 +5,16 @@ import { useReducedMotion } from "framer-motion";
 
 import { useTyped } from "@/hooks/use-typed";
 import { cn } from "@/lib/utils";
+import type { CmsBeyondAiSite } from "@/lib/orbit/defaults";
 
-const SITES = [
+type SiteVisual = {
+  name: string;
+  kicker: string;
+  src: string;
+  theme: string;
+};
+
+const FALLBACK_SITES: SiteVisual[] = [
   {
     name: "Azure Stay",
     kicker: "Hotel",
@@ -37,9 +45,30 @@ const SITES = [
     src: "/images/home/solutions/wordpress.png",
     theme: "from-[#1e1b4b]/65",
   },
-] as const;
+];
 
-function SiteCard({ site }: { site: (typeof SITES)[number] }) {
+const THEMES = [
+  "from-[#12082a]/70",
+  "from-[#0b1f14]/70",
+  "from-[#0f172a]/70",
+  "from-[#2f1c6a]/65",
+  "from-[#1e1b4b]/65",
+];
+
+function toVisuals(sites?: CmsBeyondAiSite[]): SiteVisual[] {
+  const fromCms = (sites ?? [])
+    .filter((site) => site.visible !== false && site.imageUrl?.trim())
+    .sort((a, b) => a.order - b.order)
+    .map((site, index) => ({
+      name: site.name || "Site",
+      kicker: site.status || site.domain || "Live",
+      src: site.imageUrl.trim(),
+      theme: THEMES[index % THEMES.length],
+    }));
+  return fromCms.length ? fromCms : FALLBACK_SITES;
+}
+
+function SiteCard({ site }: { site: SiteVisual }) {
   return (
     <article className="mb-4 overflow-hidden rounded-[22px] border border-white/80 bg-white shadow-[0_18px_40px_-18px_rgba(15,23,42,0.35)]">
       <div className="flex h-7 items-center gap-1.5 border-b border-slate-100 bg-white px-2.5">
@@ -78,20 +107,21 @@ function SiteCard({ site }: { site: (typeof SITES)[number] }) {
   );
 }
 
-export function BeyondAiSiteStack() {
+export function BeyondAiSiteStack({ sites }: { sites?: CmsBeyondAiSite[] }) {
   const reduce = useReducedMotion();
+  const visuals = toVisuals(sites);
   const typed = useTyped(
     "Create a luxury hotel website with a pool hero",
     !reduce,
     reduce,
     true,
   );
-  const colA = [...SITES, ...SITES];
+  const colA = [...visuals, ...visuals];
   const colB = [
-    ...SITES.slice(2),
-    ...SITES.slice(0, 2),
-    ...SITES.slice(2),
-    ...SITES.slice(0, 2),
+    ...visuals.slice(2),
+    ...visuals.slice(0, 2),
+    ...visuals.slice(2),
+    ...visuals.slice(0, 2),
   ];
 
   return (

@@ -18,7 +18,7 @@ const FALLBACK_TEASERS = [
   { tld: ".dev", priceLabel: "$3.99/yr", visible: true },
 ] as const;
 
-const SCENE_SRC = "/images/hero-speaker-v6.webp";
+const SCENE_FALLBACK = "/images/hero-speaker-v6.webp";
 const TYPING_COPY = "Find the perfect domain for your brand";
 
 function useTypedPlaceholder(active: boolean, reduce: boolean | null) {
@@ -109,9 +109,14 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
       : routes.domains;
   };
 
+  const speakerSrc =
+    content?.speakerImage?.trim() ||
+    content?.backgroundImage?.trim() ||
+    SCENE_FALLBACK;
+
   return (
     <section className="relative z-10 flex min-h-0 flex-1 flex-col">
-      <link rel="preload" as="image" href={SCENE_SRC} fetchPriority="high" />
+      <link rel="preload" as="image" href={speakerSrc} fetchPriority="high" />
 
       {/* Readability scrim over the empty left side of the hero photo */}
       <div
@@ -254,7 +259,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
           }}
         >
           <Image
-            src={SCENE_SRC}
+            src={speakerSrc}
             alt=""
             fill
             priority

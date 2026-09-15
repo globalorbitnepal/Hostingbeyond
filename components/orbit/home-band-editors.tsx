@@ -340,6 +340,20 @@ export function CloseCtaEditor({
         value={value.description}
         onChange={(description) => patch({ description })}
       />
+      <div className="grid gap-3 sm:grid-cols-2">
+        <OrbitImageField
+          label="Left store visual"
+          value={value.leftImage}
+          onChange={(leftImage) => patch({ leftImage })}
+          onCommit={(leftImage) => patch({ leftImage }, true)}
+        />
+        <OrbitImageField
+          label="Right store visual"
+          value={value.rightImage}
+          onChange={(rightImage) => patch({ rightImage })}
+          onCommit={(rightImage) => patch({ rightImage }, true)}
+        />
+      </div>
     </section>
   );
 }

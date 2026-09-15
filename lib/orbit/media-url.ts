@@ -7,3 +7,11 @@ export function isRuntimeMediaSrc(src: string | null | undefined) {
     src.includes("/uploads/")
   );
 }
+
+export function resolveCmsImage(
+  src: string | null | undefined,
+  fallback: string,
+) {
+  const value = typeof src === "string" ? src.trim() : "";
+  return value || fallback;
+}

@@ -499,6 +499,14 @@ export default function OrbitContentPage() {
               hero: { ...sections.hero, featureBar },
             })
           }
+          onPersist={(featureBar) => {
+            const current = sectionsRef.current;
+            if (!current) return;
+            commitHome({
+              ...current,
+              hero: { ...current.hero, featureBar },
+            });
+          }}
         />
       </section>
 
@@ -2133,22 +2141,27 @@ function HostingPlanEditor({
 function HeroFeatureBarEditor({
   bar,
   onChange,
+  onPersist,
 }: {
   bar: CmsHeroFeatureBar;
   onChange: (bar: CmsHeroFeatureBar) => void;
+  onPersist?: (bar: CmsHeroFeatureBar) => void;
 }) {
   const items = [...(bar.items ?? [])].sort((a, b) => a.order - b.order);
   const updateItem = (
     index: number,
     patch: Partial<(typeof items)[number]>,
+    persist = false,
   ) => {
     const next = items.map((item, i) =>
       i === index ? { ...item, ...patch } : item,
     );
-    onChange({
+    const merged = {
       ...bar,
       items: next.map((item, order) => ({ ...item, order })),
-    });
+    };
+    onChange(merged);
+    if (persist) onPersist?.(merged);
   };
 
   return (
@@ -2209,6 +2222,7 @@ function HeroFeatureBarEditor({
             label="Icon image"
             value={item.iconUrl}
             onChange={(url) => updateItem(index, { iconUrl: url })}
+            onCommit={(url) => updateItem(index, { iconUrl: url }, true)}
           />
         </div>
       ))}

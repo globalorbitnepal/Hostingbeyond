@@ -66,6 +66,7 @@ function BuildScene({
         src={image}
         alt={alt}
         fill
+        unoptimized
         sizes="(max-width: 1024px) 100vw, 42vw"
         className={cn(
           "object-cover",
@@ -108,6 +109,7 @@ function LaunchScene({
         src={image}
         alt=""
         fill
+        unoptimized
         sizes="(max-width: 1024px) 100vw, 28vw"
         className={cn(
           "object-cover",
@@ -138,11 +140,13 @@ function GrowScene({
   citrus,
   tropical,
   berry,
+  shopBg,
   playing,
 }: {
   citrus: string;
   tropical: string;
   berry: string;
+  shopBg: string;
   playing: boolean;
 }) {
   const reduce = useReducedMotion();
@@ -167,10 +171,11 @@ function GrowScene({
   return (
     <div className="absolute inset-0 overflow-hidden bg-[#eef2ff]">
       <Image
-        src="/images/journey/build-cans.png"
+        src={shopBg}
         alt=""
         fill
         sizes="(max-width: 1024px) 100vw, 42vw"
+        unoptimized
         className={cn(
           "object-cover object-center opacity-[0.42]",
           motionOn ? "hb-video-card" : "scale-[1.06]",
@@ -306,10 +311,9 @@ function ManageScene({ playing }: { playing: boolean }) {
 }
 
 function scenePhoto(slide: CmsJourneySlide, fallback: string) {
-  const src = slide.image || "";
-  if (!src || /\/journey\/(discover|create|scale|beyond)\./i.test(src)) {
-    return fallback;
-  }
+  const src = slide.image?.trim() || "";
+  if (!src) return fallback;
+  if (/\/journey\/(discover|create|scale|beyond)\./i.test(src)) return fallback;
   return src;
 }
 
@@ -415,6 +419,7 @@ export function HeroJourneySlider({
                 ) : null}
                 {kind === "grow" ? (
                   <GrowScene
+                    shopBg={scenePhoto(slide, "/images/journey/build-cans.png")}
                     citrus="/images/journey/product-can-citrus.png"
                     tropical="/images/journey/product-can-tropical.png"
                     berry="/images/journey/product-can-berry.png"

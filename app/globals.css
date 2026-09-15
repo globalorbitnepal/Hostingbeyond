@@ -280,7 +280,10 @@
   @media (min-width: 1024px) {
     .hb-hero-hostinger {
       background-color: #4c1d95;
-      background-image: url("/images/hero-speaker-v6.webp");
+      background-image: var(
+        --hb-hero-photo,
+        url("/images/hero-speaker-v6.webp")
+      );
       background-repeat: no-repeat;
       background-size: cover;
       /* Anchored right/top: any crop eats the empty purple, never the subject. */

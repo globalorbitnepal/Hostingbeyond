@@ -47,8 +47,9 @@ export function JourneyEditor({ value, onChange, onPersist }: Props) {
         <div>
           <h2 className="font-semibold">Journey strip (under hero)</h2>
           <p className="mt-0.5 text-xs text-slate-500">
-            Glass stage under the hero (Build / domain / shop / AI). Tab labels,
-            copy, links, and optional photos for the first two cards.
+            Glass stage under the hero. Replace any slide image here — Discover,
+            Create, Scale (shop background), and Beyond. Uploads go live on
+            save.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">

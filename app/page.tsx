@@ -18,15 +18,24 @@ import { PartnerLogoStrip } from "@/components/home/partner-logo-strip";
 import { HeroJourneySlider } from "@/components/home/hero-journey-slider";
 import { getHomeSections, getSiteSettings } from "@/lib/orbit/content";
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const [sections, settings] = await Promise.all([
     getHomeSections(),
     getSiteSettings(),
   ]);
+  const heroPhoto =
+    sections.hero.speakerImage?.trim() ||
+    sections.hero.backgroundImage?.trim() ||
+    "/images/hero-speaker-v6.webp";
 
   return (
     <div className="overflow-x-hidden bg-[#e8eeff]">
-      <div className="hb-hero-hostinger relative flex min-h-0 flex-col lg:min-h-svh">
+      <div
+        className="hb-hero-hostinger relative flex min-h-0 flex-col lg:min-h-svh"
+        style={{ ["--hb-hero-photo" as string]: `url("${heroPhoto}")` }}
+      >
         <SiteHeader
           navigation={sections.navigation}
           loginLabel={settings.loginLabel}

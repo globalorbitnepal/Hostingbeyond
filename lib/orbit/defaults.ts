@@ -632,6 +632,8 @@ export type CmsCloseCtaContent = {
   ctaLabel: string;
   ctaHref: string;
   trust: string;
+  leftImage: string;
+  rightImage: string;
 };
 
 export type CmsHomeSections = {
@@ -2632,6 +2634,8 @@ export function defaultCloseCtaSection(): CmsCloseCtaContent {
     ctaLabel: "Get started",
     ctaHref: routes.getStarted,
     trust: "30-day money-back guarantee",
+    leftImage: "/images/journey/build-cans.png",
+    rightImage: "/images/journey/launch-can.png",
   };
 }
 
@@ -3183,6 +3187,8 @@ function mergeCloseCtaSection(
     ctaLabel: text(stored.ctaLabel, defaults.ctaLabel),
     ctaHref: text(stored.ctaHref, defaults.ctaHref),
     trust: text(stored.trust, defaults.trust),
+    leftImage: text(stored.leftImage, defaults.leftImage),
+    rightImage: text(stored.rightImage, defaults.rightImage),
   };
 }
 
@@ -3750,9 +3756,7 @@ export function mergeHomeSections(
             icon: solutionIcon(item.icon, fallback.icon),
             visible: item.visible !== false,
             order: typeof item.order === "number" ? item.order : index,
-            images: fallback.images.length
-              ? fallback.images
-              : mergeSolutionImages(item.images, fallback.images),
+            images: mergeSolutionImages(item.images, fallback.images),
           } satisfies CmsSolutionProduct;
         })
       : defaultSolutionProducts;

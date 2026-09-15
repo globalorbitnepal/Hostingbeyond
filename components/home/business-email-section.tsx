@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -17,6 +18,7 @@ import {
 import { motion, useReducedMotion } from "framer-motion";
 
 import { MailWorkspace } from "@/components/business-email/mail-workspace";
+import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
 import {
   defaultBusinessEmailSection,
   type CmsBusinessEmailContent,
@@ -39,7 +41,26 @@ const featureIcons: Record<CmsBusinessEmailFeature["icon"], typeof Globe> = {
   users: Users,
 };
 
-function MailStage() {
+function MailStage({ imageUrl }: { imageUrl?: string }) {
+  const src = imageUrl?.trim() ?? "";
+  const custom =
+    Boolean(src) && !/business-email-stage|woman\.(png|jpg|webp)/i.test(src);
+  if (custom) {
+    return (
+      <div className="relative aspect-[16/10] overflow-hidden rounded-[32px] border border-white/80 bg-white/70 p-2 shadow-[0_32px_70px_-28px_rgba(15,10,40,0.22)] ring-1 ring-white/60 backdrop-blur-2xl sm:p-2.5">
+        <div className="relative h-full min-h-[220px] overflow-hidden rounded-[24px]">
+          <Image
+            src={src}
+            alt=""
+            fill
+            unoptimized={isRuntimeMediaSrc(src)}
+            sizes="(max-width: 1024px) 100vw, 58vw"
+            className="object-cover"
+          />
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="relative overflow-hidden rounded-[32px] border border-white/80 bg-white/70 p-2 shadow-[0_32px_70px_-28px_rgba(15,10,40,0.22)] ring-1 ring-white/60 backdrop-blur-2xl sm:p-2.5">
       <MailWorkspace compact />
@@ -75,7 +96,7 @@ export function BusinessEmailSection({
             viewport={{ once: true, amount: 0.25 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
-            <MailStage />
+            <MailStage imageUrl={data.imageUrl} />
           </motion.div>
 
           <motion.div

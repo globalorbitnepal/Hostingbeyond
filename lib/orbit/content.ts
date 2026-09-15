@@ -1,3 +1,5 @@
+import { revalidatePath, unstable_noStore as noStore } from "next/cache";
+
 import { prisma } from "@/lib/prisma";
 import {
   defaultHomeSections,
@@ -11,6 +13,7 @@ import {
 } from "@/lib/orbit/defaults";
 
 export async function getSiteSettings(): Promise<CmsSiteSettings> {
+  noStore();
   try {
     const row = await prisma.siteSettings.findUnique({
       where: { id: "default" },
@@ -26,14 +29,18 @@ export async function getSiteSettings(): Promise<CmsSiteSettings> {
 }
 
 export async function saveSiteSettings(data: CmsSiteSettings) {
-  return prisma.siteSettings.upsert({
+  const row = await prisma.siteSettings.upsert({
     where: { id: "default" },
     create: { id: "default", data },
     update: { data },
   });
+  revalidatePath("/");
+  revalidatePath("/orbit/content");
+  return row;
 }
 
 export async function getHomeSections(): Promise<CmsHomeSections> {
+  noStore();
   try {
     const page = await prisma.pageContent.findUnique({
       where: { slug: "home" },
@@ -47,7 +54,7 @@ export async function getHomeSections(): Promise<CmsHomeSections> {
 
 export async function saveHomeSections(sections: CmsHomeSections) {
   const normalized = mergeHomeSections(sections);
-  return prisma.pageContent.upsert({
+  const row = await prisma.pageContent.upsert({
     where: { slug: "home" },
     create: {
       slug: "home",
@@ -62,6 +69,9 @@ export async function saveHomeSections(sections: CmsHomeSections) {
     },
     update: { sections: normalized },
   });
+  revalidatePath("/");
+  revalidatePath("/orbit/content");
+  return row;
 }
 
 export async function getLoginPage(): Promise<CmsLoginPage> {
@@ -78,7 +88,7 @@ export async function getLoginPage(): Promise<CmsLoginPage> {
 
 export async function saveLoginPage(data: CmsLoginPage) {
   const normalized = mergeLoginPage(data);
-  return prisma.pageContent.upsert({
+  const row = await prisma.pageContent.upsert({
     where: { slug: "login" },
     create: {
       slug: "login",
@@ -93,6 +103,9 @@ export async function saveLoginPage(data: CmsLoginPage) {
     },
     update: { sections: normalized },
   });
+  revalidatePath("/");
+  revalidatePath("/login");
+  return row;
 }
 
 export async function listPages() {

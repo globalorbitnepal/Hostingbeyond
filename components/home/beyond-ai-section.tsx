@@ -169,7 +169,7 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
             viewport={{ once: true, amount: 0.25 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
-            <BeyondAiSiteStack />
+            <BeyondAiSiteStack sites={data.sites} />
           </motion.div>
         </div>
 

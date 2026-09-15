@@ -15,6 +15,7 @@ import {
 
 import { cn } from "@/lib/utils";
 import type { CmsSolutionProduct } from "@/lib/orbit/defaults";
+import { resolveCmsImage } from "@/lib/orbit/media-url";
 import { SolutionImageCarousel } from "./solution-image-carousel";
 
 const ICONS = {
@@ -91,9 +92,11 @@ export function SolutionCard({ product, paused, priority }: Props) {
     prompt: product.name,
     kind: "prompt" as const,
   };
-  const plate = stage.file
-    ? `/images/home/solutions/${stage.file}?v=5`
-    : product.images.find((image) => image.visible !== false)?.url || "";
+  const cmsPlate = product.images.find((image) => image.visible !== false)?.url;
+  const plate = resolveCmsImage(
+    cmsPlate,
+    stage.file ? `/images/home/solutions/${stage.file}` : "",
+  );
 
   return (
     <article className="group relative flex h-full flex-col overflow-hidden rounded-[32px] border border-white/35 bg-white/12 shadow-[0_28px_70px_-32px_rgba(15,10,40,0.55)] backdrop-blur-2xl transition-transform duration-500 ease-out hover:-translate-y-1 motion-reduce:transform-none">

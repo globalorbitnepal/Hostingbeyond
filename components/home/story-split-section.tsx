@@ -132,7 +132,10 @@ export function StorySplitSection({
           viewport={{ once: true, amount: 0.25 }}
           transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
         >
-          {active.id === "templates" ? (
+          {active.id === "templates" &&
+          (!active.image?.trim() ||
+            active.image.includes("templates.webp") ||
+            active.image.includes("/images/home/templates")) ? (
             <TemplateStudio playing={!reduce} />
           ) : (
             <GlassVideoFrame

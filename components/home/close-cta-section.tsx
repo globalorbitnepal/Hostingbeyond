@@ -53,14 +53,14 @@ export function CloseCtaSection({ content }: { content?: CmsCloseCtaContent }) {
         </motion.div>
         <div className="grid grid-cols-2 gap-3">
           <GlassVideoFrame
-            src="/images/journey/build-cans.png"
+            src={data.leftImage || "/images/journey/build-cans.png"}
             alt=""
             loop
             className="col-span-1 h-[160px] min-h-0 sm:h-[200px]"
             overlay={<GlassPromptBar text="Launch my brand" />}
           />
           <GlassVideoFrame
-            src="/images/journey/launch-can.png"
+            src={data.rightImage || "/images/journey/launch-can.png"}
             alt=""
             loop
             className="col-span-1 h-[160px] min-h-0 sm:h-[200px]"

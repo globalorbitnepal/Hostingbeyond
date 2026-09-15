@@ -27,13 +27,12 @@ type Props = {
 };
 
 export function SolutionsEditor({ value, onChange, onPersist }: Props) {
-  const [openId, setOpenId] = useState<string | null>(value.products[0]?.id ?? null);
+  const [openId, setOpenId] = useState<string | null>(
+    value.products[0]?.id ?? null,
+  );
   const products = [...value.products].sort((a, b) => a.order - b.order);
 
-  function patchSection(
-    patch: Partial<CmsSolutionsContent>,
-    persist = false,
-  ) {
+  function patchSection(patch: Partial<CmsSolutionsContent>, persist = false) {
     const next = { ...value, ...patch };
     onChange(next);
     if (persist) onPersist?.(next);
@@ -85,8 +84,8 @@ export function SolutionsEditor({ value, onChange, onPersist }: Props) {
         <div>
           <h2 className="font-semibold">Solutions carousel</h2>
           <p className="mt-0.5 text-xs text-slate-500">
-            Large product showcase directly below the hero. Each product can have
-            multiple images.
+            Large product showcase directly below the hero. Each product can
+            have multiple images.
           </p>
         </div>
         <label className="flex items-center gap-2 text-xs text-slate-500">
@@ -94,7 +93,7 @@ export function SolutionsEditor({ value, onChange, onPersist }: Props) {
             type="checkbox"
             checked={value.visible}
             onChange={(event) =>
-              patchSection({ visible: event.target.checked })
+              patchSection({ visible: event.target.checked }, true)
             }
           />
           Visible
@@ -335,7 +334,10 @@ export function SolutionsEditor({ value, onChange, onPersist }: Props) {
                                   if (imageIndex === 0) return;
                                   const images = [...product.images];
                                   [images[imageIndex - 1], images[imageIndex]] =
-                                    [images[imageIndex], images[imageIndex - 1]];
+                                    [
+                                      images[imageIndex],
+                                      images[imageIndex - 1],
+                                    ];
                                   updateImages(index, images);
                                 }}
                                 className="rounded-lg border border-slate-200 px-2 py-1 text-xs"
@@ -349,7 +351,10 @@ export function SolutionsEditor({ value, onChange, onPersist }: Props) {
                                     return;
                                   const images = [...product.images];
                                   [images[imageIndex + 1], images[imageIndex]] =
-                                    [images[imageIndex], images[imageIndex + 1]];
+                                    [
+                                      images[imageIndex],
+                                      images[imageIndex + 1],
+                                    ];
                                   updateImages(index, images);
                                 }}
                                 className="rounded-lg border border-slate-200 px-2 py-1 text-xs"

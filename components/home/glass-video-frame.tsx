@@ -5,6 +5,7 @@ import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
 
 import { useTyped } from "@/hooks/use-typed";
+import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
 import { cn } from "@/lib/utils";
 
 export function GlassVideoFrame({
@@ -38,6 +39,7 @@ export function GlassVideoFrame({
         alt={alt}
         fill
         sizes={sizes}
+        unoptimized={isRuntimeMediaSrc(src)}
         className={cn(
           "object-cover",
           playing && !reduce ? (loop ? "hb-video" : "hb-ken") : "scale-[1.06]",
