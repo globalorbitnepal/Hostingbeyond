@@ -88,7 +88,7 @@ const incoming = {
   body: "Hi Tom,\n\nPlease review the attached invoice for May. Happy to hop on a call if anything looks off.\n\nPriya",
 };
 
-export function MailWorkspace() {
+export function MailWorkspace({ compact = false }: { compact?: boolean }) {
   const reduce = useReducedMotion();
   const [rows, setRows] = useState(seedMail);
   const [selected, setSelected] = useState(seedMail[0].id);
@@ -163,7 +163,12 @@ export function MailWorkspace() {
   }, [phase, reduce]);
 
   return (
-    <div className="relative overflow-hidden rounded-[22px] border border-white/10 bg-[#f6f7fb] shadow-[0_40px_80px_-28px_rgba(0,0,0,0.65)]">
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-[22px] border border-white/10 bg-[#f6f7fb] shadow-[0_40px_80px_-28px_rgba(0,0,0,0.65)]",
+        compact && "shadow-[0_24px_50px_-24px_rgba(15,10,40,0.5)]",
+      )}
+    >
       <div className="flex items-center gap-2 border-b border-slate-200/80 bg-white px-3 py-2">
         <span className="size-2.5 rounded-full bg-[#ff5f57]" />
         <span className="size-2.5 rounded-full bg-[#febc2e]" />
@@ -181,8 +186,19 @@ export function MailWorkspace() {
         </span>
       </div>
 
-      <div className="grid min-h-[420px] lg:grid-cols-[148px_minmax(0,1fr)_minmax(0,1.05fr)]">
-        <aside className="hidden border-r border-slate-200 bg-[#f3f0ff] p-3 lg:block">
+      <div
+        className={cn(
+          "grid min-h-[420px] lg:grid-cols-[148px_minmax(0,1fr)_minmax(0,1.05fr)]",
+          compact &&
+            "min-h-[320px] sm:min-h-[360px] md:grid-cols-[122px_minmax(0,1fr)_minmax(0,1.05fr)] lg:min-h-[392px] lg:grid-cols-[128px_minmax(0,1fr)_minmax(0,1.05fr)]",
+        )}
+      >
+        <aside
+          className={cn(
+            "hidden border-r border-slate-200 bg-[#f3f0ff] p-3 lg:block",
+            compact && "md:block",
+          )}
+        >
           <button
             type="button"
             className="mb-3 inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-full bg-[#673de6] text-[12px] font-bold text-white"
@@ -190,7 +206,14 @@ export function MailWorkspace() {
             <PenLine className="size-3.5" />
             New message
           </button>
-          {folders.map((item) => {
+          {(compact
+            ? folders.filter((item) =>
+                ["inbox", "drafts", "sent", "starred", "trash"].includes(
+                  item.id,
+                ),
+              )
+            : folders
+          ).map((item) => {
             const Icon = item.icon;
             const on = item.id === "inbox";
             return (
@@ -213,13 +236,17 @@ export function MailWorkspace() {
               </p>
             );
           })}
-          <p className="mt-4 px-2 text-[10px] font-bold tracking-wide text-slate-400 uppercase">
-            Folders
-          </p>
-          <p className="mt-1 flex items-center gap-1.5 px-2 text-[11px] text-slate-500">
-            <Folder className="size-3.5" />
-            Clients
-          </p>
+          {compact ? null : (
+            <>
+              <p className="mt-4 px-2 text-[10px] font-bold tracking-wide text-slate-400 uppercase">
+                Folders
+              </p>
+              <p className="mt-1 flex items-center gap-1.5 px-2 text-[11px] text-slate-500">
+                <Folder className="size-3.5" />
+                Clients
+              </p>
+            </>
+          )}
         </aside>
 
         <div className="border-r border-slate-200 bg-white">
@@ -374,9 +401,11 @@ export function MailWorkspace() {
           </AnimatePresence>
         </div>
       </div>
-      <p className="pointer-events-none absolute -right-2 -bottom-8 hidden text-slate-200 lg:block">
-        <Paperclip className="size-24 rotate-12 opacity-20" />
-      </p>
+      {compact ? null : (
+        <p className="pointer-events-none absolute -right-2 -bottom-8 hidden text-slate-200 lg:block">
+          <Paperclip className="size-24 rotate-12 opacity-20" />
+        </p>
+      )}
     </div>
   );
 }

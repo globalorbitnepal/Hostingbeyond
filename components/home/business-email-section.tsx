@@ -4,35 +4,27 @@ import Link from "next/link";
 import {
   ArrowRight,
   Check,
-  FileText,
   Globe,
   Headphones,
-  Inbox,
   Layers,
   Lock,
   Mail,
-  PenLine,
   Play,
-  Search,
   Shield,
-  Star,
-  Trash2,
   Users,
   Zap,
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 
+import { MailWorkspace } from "@/components/business-email/mail-workspace";
 import {
   defaultBusinessEmailSection,
   type CmsBusinessEmailContent,
   type CmsBusinessEmailFeature,
   type CmsBusinessEmailHighlight,
 } from "@/lib/orbit/defaults";
-import {
-  GlassBand,
-  GlassPromptBar,
-  GlassVideoStage,
-} from "./glass-video-frame";
+import { cn } from "@/lib/utils";
+import { GlassBand } from "./glass-video-frame";
 
 const highlightIcons: Record<CmsBusinessEmailHighlight["icon"], typeof Shield> =
   {
@@ -49,113 +41,22 @@ const featureIcons: Record<CmsBusinessEmailFeature["icon"], typeof Globe> = {
   users: Users,
 };
 
-const sidebar = [
-  { label: "Inbox", count: "12", active: true, icon: Inbox },
-  { label: "Starred", icon: Star },
-  { label: "Sent", icon: Mail },
-  { label: "Drafts", icon: FileText },
-  { label: "Spam", icon: Shield },
-  { label: "Trash", icon: Trash2 },
-];
+function MailStage() {
+  const reduceMotion = useReducedMotion();
 
-function MailInbox({ content }: { content: CmsBusinessEmailContent }) {
   return (
-    <div className="overflow-hidden rounded-[28px] border border-white/80 bg-white/60 shadow-[0_32px_80px_-28px_rgba(37,80,130,0.48)] backdrop-blur-2xl sm:rounded-[32px]">
-      <div className="relative flex items-center gap-2 border-b border-white/70 px-4 py-2.5">
-        <span className="size-2.5 rounded-full bg-[#ff5f57]" />
-        <span className="size-2.5 rounded-full bg-[#febc2e]" />
-        <span className="size-2.5 rounded-full bg-[#28c840]" />
-        <p className="ml-2 flex items-center gap-1.5 text-[12px] font-extrabold text-slate-900">
-          <Mail className="size-3.5 text-[#673de6]" />
-          {content.mailTitle}
-        </p>
-      </div>
-      <div className="flex">
-        <aside className="hidden w-[118px] border-r border-white/70 bg-white/40 p-3 sm:block">
-          <button
-            type="button"
-            className="mb-3 inline-flex h-8 w-full items-center justify-center gap-1 rounded-full bg-gradient-to-r from-[#2563eb] to-[#673de6] text-[11px] font-bold text-white"
-          >
-            <PenLine className="size-3" />
-            {content.composeLabel}
-          </button>
-          {sidebar.map((item) => {
-            const Icon = item.icon;
-            return (
-              <p
-                key={item.label}
-                className={`flex items-center justify-between rounded-lg px-2 py-1.5 text-[11px] font-semibold ${
-                  item.active ? "bg-[#f4f5ff] text-slate-900" : "text-slate-500"
-                }`}
-              >
-                <span className="inline-flex items-center gap-1.5">
-                  <Icon className="size-3" />
-                  {item.label}
-                </span>
-                {item.count ? (
-                  <span className="rounded-full bg-slate-900 px-1.5 text-[9px] text-white">
-                    {item.count}
-                  </span>
-                ) : null}
-              </p>
-            );
-          })}
-        </aside>
-        <div className="min-w-0 flex-1 p-3">
-          <div className="mb-3 flex h-8 items-center gap-2 rounded-full border border-white/80 bg-white/70 px-3 text-[11px] text-slate-400">
-            <Search className="size-3.5" />
-            Search emails…
-          </div>
-          <div className="space-y-2">
-            {content.messages.map((message) => (
-              <div
-                key={message.id}
-                className="flex items-center gap-2.5 rounded-2xl bg-white/75 px-2 py-2"
-              >
-                <span
-                  className="inline-flex size-8 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white"
-                  style={{ background: message.accent }}
-                >
-                  {message.sender.charAt(0)}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[11px] font-extrabold text-slate-900">
-                    {message.sender}
-                  </span>
-                  <span className="block truncate text-[10px] text-slate-500">
-                    {message.preview}
-                  </span>
-                </span>
-                <span className="shrink-0 text-[9px] font-semibold text-slate-400">
-                  {message.time}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+    <div className="relative overflow-hidden rounded-[32px] border border-white/50 bg-white/10 p-2 shadow-[0_32px_70px_-28px_rgba(15,10,40,0.45)] ring-1 ring-white/25 backdrop-blur-2xl sm:p-2.5">
+      <div
+        aria-hidden
+        className={cn(
+          "pointer-events-none absolute -inset-10 bg-[radial-gradient(ellipse_at_18%_20%,rgba(191,219,254,0.5),transparent_52%),radial-gradient(ellipse_at_86%_88%,rgba(196,181,253,0.42),transparent_48%)]",
+          !reduceMotion && "hb-video",
+        )}
+      />
+      <div className="relative z-10">
+        <MailWorkspace compact />
       </div>
     </div>
-  );
-}
-
-function MailStage({ content }: { content: CmsBusinessEmailContent }) {
-  const src =
-    content.imageUrl?.includes("woman.") || !content.imageUrl
-      ? "/images/home/business-email-stage.png"
-      : content.imageUrl;
-
-  return (
-    <GlassVideoStage
-      src={src}
-      alt={content.imageAlt}
-      overlay={<GlassPromptBar text="you@yourbrand.com is ready" />}
-    >
-      <div className="absolute top-4 left-4 z-20 w-[min(92%,340px)] sm:top-6 sm:left-6">
-        <div className="origin-top-left scale-[0.82] sm:scale-90">
-          <MailInbox content={content} />
-        </div>
-      </div>
-    </GlassVideoStage>
   );
 }
 
@@ -170,7 +71,7 @@ export function BusinessEmailSection({
   return (
     <GlassBand>
       <div className="hb-shell relative z-10">
-        <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:gap-10 xl:gap-14">
+        <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1.28fr)_minmax(0,0.72fr)] lg:gap-10 xl:gap-12">
           <motion.div
             className="relative order-2 lg:order-1"
             initial={reduceMotion ? false : { opacity: 0, x: -28 }}
@@ -178,7 +79,7 @@ export function BusinessEmailSection({
             viewport={{ once: true, amount: 0.25 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
-            <MailStage content={data} />
+            <MailStage />
           </motion.div>
 
           <motion.div

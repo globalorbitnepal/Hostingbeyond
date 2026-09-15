@@ -1184,10 +1184,10 @@ export function defaultBusinessEmailSection(): CmsBusinessEmailContent {
     trust3: "99.9% uptime SLA",
     toastEmail: "you@yourcompany.com",
     toastLabel: "Connected",
-    mailTitle: "Global Mail",
+    mailTitle: "HostingBeyond Mail",
     composeLabel: "Compose",
     imageUrl: "/images/home/business-email-stage.png",
-    imageAlt: "Professional using HostingBeyond business email on a laptop",
+    imageAlt: "HostingBeyond Mail inbox",
     highlights: [
       {
         id: "domain",

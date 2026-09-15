@@ -4,11 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
-  Globe,
   Layers,
   Play,
-  RefreshCw,
-  Search,
   Shield,
   Sparkles,
   Users,
@@ -20,7 +17,6 @@ import {
   defaultAiAssistantSection,
   type CmsAiAssistantContent,
   type CmsAiAssistantHighlight,
-  type CmsAiAssistantPrompt,
 } from "@/lib/orbit/defaults";
 import { GlassBand, GlassVideoStage } from "./glass-video-frame";
 
@@ -133,13 +129,6 @@ const highlightIcons: Record<CmsAiAssistantHighlight["icon"], typeof Zap> = {
   users: Users,
 };
 
-const promptIcons: Record<CmsAiAssistantPrompt["icon"], typeof Globe> = {
-  globe: Globe,
-  layers: Layers,
-  search: Search,
-  refresh: RefreshCw,
-};
-
 function useChatScript(
   lines: string[],
   speed = 34,
@@ -218,60 +207,70 @@ function AssistantChat({ content }: { content: CmsAiAssistantContent }) {
   const { chars, active } = useChatScript(lines);
 
   return (
-    <div className="overflow-hidden rounded-[28px] border border-white/80 bg-white/70 shadow-[0_32px_80px_-28px_rgba(37,80,130,0.45)] backdrop-blur-2xl sm:rounded-[32px]">
-      <div className="flex items-center justify-between gap-3 border-b border-white/70 px-4 py-3">
-        <div className="flex items-center gap-2.5">
-          <span className="inline-flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-[#7b5cff] to-[#673de6] text-white">
-            <Sparkles className="size-4" />
+    <div className="overflow-hidden rounded-[34px] border border-white/80 bg-[#0b0b10] shadow-[0_28px_60px_-24px_rgba(15,10,40,0.7)] ring-1 ring-black/20">
+      <div className="bg-[#f2f2f7]">
+        <div className="flex items-center justify-between px-5 pt-2.5 pb-1">
+          <span className="text-[11px] font-bold tracking-tight text-slate-900">
+            9:41
           </span>
-          <span>
-            <span className="block text-[13px] font-extrabold text-slate-900">
-              {content.botName}
-            </span>
-            <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
-              <span className="size-1.5 rounded-full bg-emerald-500" />
-              {content.botStatus}
+          <span className="flex items-center gap-1 text-slate-900">
+            <span className="h-1.5 w-4 rounded-[1px] bg-slate-900/80" />
+            <span className="h-2 w-1.5 rounded-sm bg-slate-900/70" />
+            <span className="h-2.5 w-4 rounded-[3px] border border-slate-900/80">
+              <span className="ml-px block h-full w-[70%] bg-emerald-500" />
             </span>
           </span>
         </div>
-        <span className="grid grid-cols-3 gap-0.5 p-1">
-          {Array.from({ length: 9 }).map((_, index) => (
-            <span key={index} className="size-1 rounded-full bg-slate-300" />
-          ))}
-        </span>
+        <div className="flex items-center gap-2 border-b border-black/5 px-3 pb-2">
+          <span className="inline-flex size-8 items-center justify-center rounded-full bg-gradient-to-br from-[#2563eb] to-[#673de6] text-white">
+            <Sparkles className="size-3.5" />
+          </span>
+          <span className="min-w-0 flex-1 text-center">
+            <span className="block truncate text-[12px] font-extrabold text-slate-900">
+              {content.botName}
+            </span>
+            <span className="block text-[10px] font-medium text-slate-500">
+              {content.botStatus}
+            </span>
+          </span>
+          <span className="size-8" />
+        </div>
       </div>
 
-      <div className="space-y-3 p-4">
-        <div className="max-w-[92%] rounded-2xl bg-[#f4f5ff] px-3.5 py-3">
-          <p className="min-h-[22px] text-[15px] font-extrabold text-slate-900">
+      <div className="flex min-h-[210px] flex-col gap-1.5 bg-[#e8e8ed] px-2.5 py-3">
+        <div className="max-w-[88%] self-start rounded-[18px] rounded-bl-sm bg-white px-3 py-2 shadow-[0_1px_0_rgba(0,0,0,0.04)]">
+          <p className="min-h-[16px] text-[13px] font-semibold tracking-[-0.01em] text-slate-900">
             {chars[0]}
             <Caret on={active === 0} />
           </p>
-          <p className="mt-1 min-h-[18px] text-[12px] text-slate-500">
+          <p className="mt-0.5 min-h-[14px] text-[11px] leading-snug text-slate-500">
             {chars[1]}
             <Caret on={active === 1} />
           </p>
         </div>
 
-        <div className="space-y-2">
-          {content.prompts.map((prompt, index) => {
-            const Icon = promptIcons[prompt.icon] ?? Globe;
-            const lineIndex = index + 2;
-            return (
-              <button
-                key={prompt.id}
-                type="button"
-                className="flex w-full items-center gap-2 rounded-full border border-white/80 bg-white/90 px-3 py-2 text-left text-[12px] font-semibold text-slate-700 shadow-[0_8px_18px_rgba(37,80,130,0.06)]"
-              >
-                <Icon className="size-3.5 shrink-0 text-[#673de6]" />
-                <span className="min-w-0 truncate">
-                  {chars[lineIndex]}
-                  <Caret on={active === lineIndex} />
-                </span>
-              </button>
-            );
-          })}
+        {content.prompts.map((prompt, index) => {
+          const lineIndex = index + 2;
+          return (
+            <p
+              key={prompt.id}
+              className="max-w-[86%] self-end rounded-[18px] rounded-br-sm bg-[#0A84FF] px-3 py-2 text-left text-[11.5px] leading-snug font-medium text-white"
+            >
+              {chars[lineIndex]}
+              <Caret on={active === lineIndex} />
+            </p>
+          );
+        })}
+      </div>
+
+      <div className="bg-[#f2f2f7] px-4 pt-1.5 pb-2.5">
+        <div className="flex items-center gap-2 rounded-full border border-black/10 bg-white px-3 py-1.5">
+          <span className="flex-1 text-[11px] text-slate-400">iMessage</span>
+          <span className="inline-flex size-6 items-center justify-center rounded-full bg-[#0A84FF] text-[11px] font-bold text-white">
+            ↑
+          </span>
         </div>
+        <span className="mx-auto mt-2 block h-1 w-24 rounded-full bg-slate-900/80" />
       </div>
     </div>
   );
@@ -284,11 +283,13 @@ function AssistantStage({ content }: { content: CmsAiAssistantContent }) {
       : content.imageUrl.split("?")[0];
 
   return (
-    <GlassVideoStage src={src} alt={content.imageAlt}>
-      <div className="absolute top-4 left-4 z-20 w-[min(92%,320px)] sm:top-5 sm:left-5">
-        <div className="origin-top-left scale-[0.84] sm:scale-90">
-          <AssistantChat content={content} />
-        </div>
+    <GlassVideoStage
+      src={src}
+      alt={content.imageAlt}
+      className="lg:min-h-[420px] [&_img]:object-[68%_center]"
+    >
+      <div className="pointer-events-none absolute inset-y-3 right-2 z-20 flex w-[min(46%,228px)] items-center sm:right-4 sm:w-[214px] lg:right-5 lg:w-[228px]">
+        <AssistantChat content={content} />
       </div>
     </GlassVideoStage>
   );
