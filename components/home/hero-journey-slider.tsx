@@ -8,29 +8,9 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 import { defaultJourneySection } from "@/lib/orbit/defaults";
 import type { CmsJourneyContent, CmsJourneySlide } from "@/lib/orbit/defaults";
+import { useTyped } from "@/hooks/use-typed";
 import { cn } from "@/lib/utils";
 import { hbCopy } from "@/lib/motion";
-
-function useTyped(text: string, playing: boolean, reduce: boolean | null) {
-  const [count, setCount] = useState(reduce || !playing ? text.length : 0);
-
-  useEffect(() => {
-    if (reduce || !playing) {
-      setCount(text.length);
-      return;
-    }
-    setCount(0);
-    let i = 0;
-    const timer = window.setInterval(() => {
-      i += 1;
-      setCount(i);
-      if (i >= text.length) window.clearInterval(timer);
-    }, 42);
-    return () => window.clearInterval(timer);
-  }, [text, playing, reduce]);
-
-  return text.slice(0, count);
-}
 
 function GlassCard({
   active,
@@ -75,9 +55,10 @@ function BuildScene({
   reduce: boolean | null;
 }) {
   const prompt = useTyped(
-    "Create a website for my sunglasses business",
+    "Create a website for my beverage packaging studio",
     playing,
     reduce,
+    true,
   );
   return (
     <div className="absolute inset-0">
@@ -88,7 +69,7 @@ function BuildScene({
         sizes="(max-width: 1024px) 100vw, 42vw"
         className={cn(
           "object-cover",
-          playing && !reduce ? "hb-ken" : "scale-[1.04]",
+          playing && !reduce ? "hb-video-card" : "scale-[1.04]",
         )}
       />
       <div className="absolute inset-0 bg-gradient-to-t from-[#2f1c6a]/35 via-transparent to-white/5" />
@@ -120,7 +101,7 @@ function LaunchScene({
   playing: boolean;
   reduce: boolean | null;
 }) {
-  const domain = useTyped("launchsitetoday", playing, reduce);
+  const domain = useTyped("launchsitetoday", playing, reduce, true);
   return (
     <div className="absolute inset-0">
       <Image
@@ -128,7 +109,10 @@ function LaunchScene({
         alt=""
         fill
         sizes="(max-width: 1024px) 100vw, 28vw"
-        className={cn("object-cover", playing && !reduce ? "hb-ken" : "")}
+        className={cn(
+          "object-cover",
+          playing && !reduce ? "hb-video-card" : "",
+        )}
       />
       <div className="absolute inset-0 bg-[#2563eb]/10" />
       <motion.div
@@ -151,18 +135,20 @@ function LaunchScene({
 }
 
 function GrowScene({
-  classic,
-  round,
+  citrus,
+  tropical,
+  berry,
   playing,
 }: {
-  classic: string;
-  round: string;
+  citrus: string;
+  tropical: string;
+  berry: string;
   playing: boolean;
 }) {
   const items = [
-    { src: classic, name: "Classic shades", price: "$48" },
-    { src: round, name: "Sunnys key clip", price: "$18" },
-    { src: round, name: "Round shades", price: "$36" },
+    { src: citrus, name: "Citrus sparkling", price: "$4" },
+    { src: tropical, name: "Tropical mix", price: "$4" },
+    { src: berry, name: "Berry fizz", price: "$5" },
   ];
   return (
     <div className="absolute inset-0 bg-[linear-gradient(180deg,#f7f4ff_0%,#eef4ff_100%)] p-3 sm:p-4">
@@ -328,7 +314,7 @@ export function HeroJourneySlider({
               >
                 {kind === "build" ? (
                   <BuildScene
-                    image={scenePhoto(slide, "/images/journey/build-towel.png")}
+                    image={scenePhoto(slide, "/images/journey/build-cans.png")}
                     alt={slide.alt}
                     playing={on}
                     reduce={reduce}
@@ -336,15 +322,16 @@ export function HeroJourneySlider({
                 ) : null}
                 {kind === "launch" ? (
                   <LaunchScene
-                    image={scenePhoto(slide, "/images/journey/launch-sky.png")}
+                    image={scenePhoto(slide, "/images/journey/launch-can.png")}
                     playing={on}
                     reduce={reduce}
                   />
                 ) : null}
                 {kind === "grow" ? (
                   <GrowScene
-                    classic="/images/journey/product-classic.png"
-                    round="/images/journey/product-round.png"
+                    citrus="/images/journey/product-can-citrus.png"
+                    tropical="/images/journey/product-can-tropical.png"
+                    berry="/images/journey/product-can-berry.png"
                     playing={on}
                   />
                 ) : null}
