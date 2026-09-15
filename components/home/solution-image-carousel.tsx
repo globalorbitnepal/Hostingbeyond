@@ -6,7 +6,6 @@ import { useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
 import { GlassDomainBar, GlassPromptBar } from "./glass-video-frame";
-import { SolutionStageFilm } from "./solution-stage-film";
 
 type Props = {
   src: string;
@@ -15,7 +14,6 @@ type Props = {
   overlayText: string;
   overlayKind?: "prompt" | "domain";
   chromeLabel: string;
-  filmId?: string;
   paused?: boolean;
   className?: string;
   sizes: string;
@@ -29,7 +27,6 @@ export function SolutionImageCarousel({
   overlayText,
   overlayKind = "prompt",
   chromeLabel,
-  filmId,
   paused = false,
   className,
   sizes,
@@ -81,8 +78,6 @@ export function SolutionImageCarousel({
           className="hb-sol-film-b object-cover object-center"
         />
       ) : null}
-
-      {filmId ? <SolutionStageFilm id={filmId} playing={playing} /> : null}
 
       <div className="absolute inset-x-0 top-0 z-20 flex h-8 items-center gap-1.5 border-b border-black/5 bg-white/88 px-3 backdrop-blur-md">
         <span className="size-2 rounded-full bg-[#ff5f57]" />

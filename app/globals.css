@@ -120,6 +120,35 @@
       linear-gradient(180deg, #dbeafe 0%, #ede9fe 46%, #e0e7ff 100%);
   }
 
+  .hb-mist-run {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background:
+      radial-gradient(
+        ellipse at 8% 0%,
+        rgba(96, 165, 250, 0.5),
+        transparent 42%
+      ),
+      radial-gradient(
+        ellipse at 92% 100%,
+        rgba(139, 92, 246, 0.32),
+        transparent 46%
+      ),
+      linear-gradient(
+        180deg,
+        #dbeafe 0%,
+        #e8eeff 38%,
+        #ede9fe 62%,
+        #e0e7ff 100%
+      );
+  }
+
+  .hb-home-section--on-mist {
+    background: transparent !important;
+    overflow: visible;
+  }
+
   .hb-home-section--aurora {
     background:
       radial-gradient(

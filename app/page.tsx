@@ -49,12 +49,14 @@ export default async function HomePage() {
         <HeroJourneySlider content={sections.journey} />
       ) : null}
 
-      {sections.solutions ? (
-        <SolutionsSection content={sections.solutions} />
-      ) : null}
-      {sections.hostingPlans?.visible !== false ? (
-        <HostingPlansSection content={sections.hostingPlans} />
-      ) : null}
+      <div className="hb-mist-run">
+        {sections.solutions ? (
+          <SolutionsSection content={sections.solutions} />
+        ) : null}
+        {sections.hostingPlans?.visible !== false ? (
+          <HostingPlansSection content={sections.hostingPlans} />
+        ) : null}
+      </div>
 
       <EssentialsSection content={sections.essentials} />
 

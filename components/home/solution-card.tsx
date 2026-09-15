@@ -154,7 +154,6 @@ export function SolutionCard({ product, paused, priority }: Props) {
             overlayText={stage.prompt}
             overlayKind={stage.kind}
             chromeLabel={product.category}
-            filmId={product.id}
             paused={paused}
             priority={priority}
             sizes="(max-width: 640px) 92vw, (max-width: 1024px) 70vw, 416px"

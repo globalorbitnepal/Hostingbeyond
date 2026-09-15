@@ -241,7 +241,7 @@ export function HostingPlansSection({
   const guarantees = (data.guarantees ?? []).filter(Boolean).slice(0, 4);
 
   return (
-    <section className="hb-home-section hb-home-section--mist">
+    <section className="hb-home-section hb-home-section--on-mist pt-6 sm:pt-8">
       <div className="hb-shell relative z-10">
         <div className="mx-auto max-w-3xl text-center">
           <p className="inline-flex items-center gap-2 rounded-full border border-white bg-white/80 px-3 py-1 text-[11px] font-bold tracking-[0.22em] text-slate-500 uppercase shadow-[0_8px_20px_-14px_rgba(37,80,130,0.4)]">

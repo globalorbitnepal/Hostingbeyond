@@ -22,13 +22,8 @@ export function SolutionsSection({
   return (
     <section
       aria-labelledby="hb-solutions-heading"
-      className="hb-home-section hb-home-section--mist pt-10 pb-12 sm:pt-12 sm:pb-14 lg:pt-14 lg:pb-16"
+      className="hb-home-section hb-home-section--on-mist pt-10 pb-8 sm:pt-12 sm:pb-9 lg:pt-14 lg:pb-10"
     >
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-24 left-[-12%] h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(147,197,253,0.35),transparent_68%)] blur-2xl" />
-        <div className="absolute right-[-8%] bottom-[-20%] h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(167,139,250,0.16),transparent_70%)] blur-2xl" />
-      </div>
-
       <motion.div
         initial={reduceMotion ? false : { opacity: 0, y: 18 }}
         whileInView={{ opacity: 1, y: 0 }}
