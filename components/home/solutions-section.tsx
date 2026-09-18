@@ -22,7 +22,7 @@ export function SolutionsSection({
   return (
     <section
       aria-labelledby="hb-solutions-heading"
-      className="hb-home-section hb-band-cream pt-10 pb-8 sm:pt-12 sm:pb-9 lg:pt-14 lg:pb-10"
+      className="hb-home-section hb-band-cream pt-12 pb-10 sm:pt-14 sm:pb-12 lg:pt-16 lg:pb-14"
     >
       <motion.div
         initial={reduceMotion ? false : { opacity: 0, y: 18 }}

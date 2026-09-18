@@ -5,15 +5,12 @@ import { useReducedMotion } from "framer-motion";
 
 import { cn } from "@/lib/utils";
 import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
-import { GlassDomainBar, GlassPromptBar } from "./glass-video-frame";
 
 type Props = {
   src: string;
   srcB?: string;
   alt: string;
-  overlayText: string;
-  overlayKind?: "prompt" | "domain";
-  chromeLabel: string;
+  cropClass?: string;
   paused?: boolean;
   className?: string;
   sizes: string;
@@ -24,9 +21,7 @@ export function SolutionImageCarousel({
   src,
   srcB,
   alt,
-  overlayText,
-  overlayKind = "prompt",
-  chromeLabel,
+  cropClass = "object-center",
   paused = false,
   className,
   sizes,
@@ -40,7 +35,7 @@ export function SolutionImageCarousel({
     return (
       <div
         className={cn(
-          "flex h-full items-center justify-center bg-white/10 text-sm text-slate-500",
+          "flex h-full items-center justify-center bg-[#12082a] text-sm text-white/60",
           className,
         )}
       >
@@ -52,7 +47,7 @@ export function SolutionImageCarousel({
   return (
     <div
       className={cn(
-        "relative h-full w-full overflow-hidden bg-[#12082a]",
+        "relative h-full w-full overflow-hidden bg-[#0b0718]",
         className,
       )}
     >
@@ -64,8 +59,13 @@ export function SolutionImageCarousel({
         priority={priority}
         unoptimized={isRuntimeMediaSrc(src)}
         className={cn(
-          "object-cover object-center",
-          film ? "hb-sol-film-a" : playing ? "hb-video" : "scale-[1.08]",
+          "object-cover",
+          cropClass,
+          film
+            ? "hb-sol-film-a"
+            : playing
+              ? "hb-sol-screen-pan"
+              : "scale-[1.04]",
         )}
       />
       {film ? (
@@ -75,29 +75,13 @@ export function SolutionImageCarousel({
           fill
           sizes={sizes}
           unoptimized={isRuntimeMediaSrc(srcB)}
-          className="hb-sol-film-b object-cover object-center"
+          className={cn("hb-sol-film-b object-cover", cropClass)}
         />
       ) : null}
-
-      <div className="absolute inset-x-0 top-0 z-20 flex h-8 items-center gap-1.5 border-b border-black/5 bg-white/88 px-3 backdrop-blur-md">
-        <span className="size-2 rounded-full bg-[#ff5f57]" />
-        <span className="size-2 rounded-full bg-[#febc2e]" />
-        <span className="size-2 rounded-full bg-[#28c840]" />
-        <span className="ml-2 truncate text-[11px] font-semibold tracking-tight text-slate-600">
-          {chromeLabel}
-        </span>
-      </div>
-
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/35 to-transparent"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.08)_0%,transparent_18%,transparent_72%,rgba(12,8,32,0.18)_100%)]"
       />
-
-      {overlayKind === "domain" ? (
-        <GlassDomainBar domain={overlayText} tld=".com" playing={playing} />
-      ) : (
-        <GlassPromptBar text={overlayText} playing={playing} />
-      )}
     </div>
   );
 }
