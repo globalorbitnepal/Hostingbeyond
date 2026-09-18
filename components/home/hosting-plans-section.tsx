@@ -6,6 +6,8 @@ import {
   ArrowRight,
   Box,
   Check,
+  Cloud,
+  Crown,
   Globe,
   Headphones,
   Layers,
@@ -42,17 +44,18 @@ function GuaranteeIcon({
 }
 
 function PlanGlyph({ plan }: { plan: CmsHostingPlan }) {
-  const stacked = plan.id === "plus" || plan.id === "pro" || plan.popular;
-  const Icon = stacked ? Layers : Box;
   const popular = Boolean(plan.popular);
+  const Icon =
+    plan.id === "ultimate"
+      ? Rocket
+      : popular || plan.id === "pro"
+        ? Crown
+        : plan.id === "plus"
+          ? Layers
+          : Box;
   return (
-    <span
-      className={cn(
-        "inline-flex size-11 items-center justify-center rounded-2xl text-[#673de6] shadow-[0_10px_22px_-14px_rgba(103,61,230,0.55)] ring-1",
-        popular ? "bg-white/80 ring-white/90" : "bg-white/70 ring-white/75",
-      )}
-    >
-      <Icon className="size-5" strokeWidth={1.85} aria-hidden />
+    <span className="inline-flex size-10 items-center justify-center rounded-full bg-white text-[#673de6] shadow-[0_10px_22px_-12px_rgba(47,28,106,0.45)] ring-1 ring-white">
+      <Icon className="size-[18px]" strokeWidth={1.9} aria-hidden />
     </span>
   );
 }
@@ -100,10 +103,10 @@ function PlanCard({
       viewport={{ once: true, margin: "-40px" }}
       transition={{ delay, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       className={cn(
-        "relative flex h-full flex-col overflow-hidden rounded-[28px] border p-5 backdrop-blur-2xl transition duration-300 sm:p-6",
+        "relative flex h-full flex-col overflow-hidden rounded-[26px] border p-5 transition duration-300 sm:p-5",
         popular
-          ? "z-10 border-white/90 bg-[linear-gradient(165deg,rgba(255,255,255,0.86)_0%,rgba(244,245,255,0.78)_48%,rgba(237,233,254,0.72)_100%)] shadow-[0_36px_70px_-28px_rgba(47,28,106,0.48)] ring-1 ring-[#673de6]/20 hover:-translate-y-1"
-          : "border-white/75 bg-[linear-gradient(180deg,rgba(255,255,255,0.72)_0%,rgba(244,241,255,0.62)_100%)] shadow-[0_28px_56px_-30px_rgba(47,28,106,0.4)] ring-1 ring-white/80 hover:-translate-y-0.5",
+          ? "z-10 border-white bg-[linear-gradient(180deg,#ffffff_0%,#f4f0ff_100%)] shadow-[0_28px_50px_-18px_rgba(47,28,106,0.55)] ring-2 ring-[#a78bfa]/70 hover:-translate-y-1"
+          : "border-white/90 bg-[linear-gradient(180deg,#ffffff_0%,#f6f3ff_100%)] shadow-[0_22px_40px_-22px_rgba(47,28,106,0.45)] hover:-translate-y-0.5",
       )}
     >
       <div
@@ -117,7 +120,7 @@ function PlanCard({
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-wrap items-center gap-1.5">
           {plan.discountBadge ? (
-            <span className="rounded-full border border-[#673de6]/15 bg-white/80 px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-[#673de6] uppercase">
+            <span className="rounded-full bg-[#673de6] px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-white uppercase">
               {plan.discountBadge}
             </span>
           ) : null}
@@ -131,37 +134,40 @@ function PlanCard({
         <PlanGlyph plan={plan} />
       </div>
 
-      <h3 className="font-heading mt-4 text-[1.35rem] font-extrabold tracking-[-0.03em] text-[#2f1c6a] sm:text-[1.5rem]">
+      <h3 className="font-heading mt-4 text-[1.4rem] font-extrabold tracking-[-0.03em] text-[#2f1c6a]">
         {plan.name}
       </h3>
       {plan.tagline ? (
-        <p className="mt-1 min-h-[2.6rem] text-[13.5px] leading-snug text-slate-600">
+        <p className="mt-1 min-h-[2.5rem] text-[13px] leading-snug text-[#475569]">
           {plan.tagline}
         </p>
       ) : (
-        <div className="min-h-[2.6rem]" />
+        <div className="min-h-[2.5rem]" />
       )}
 
-      <div className="mt-4">
+      <div className="mt-3">
         {original ? (
-          <p className="text-[13px] font-medium text-slate-400 line-through">
+          <p className="text-[13px] font-semibold text-[#94a3b8] line-through">
             {original}
           </p>
         ) : (
           <p className="h-[20px]" />
         )}
         <p className="mt-0.5 flex items-end gap-1.5">
-          <span className="text-[clamp(1.85rem,2.8vw,2.35rem)] leading-none font-extrabold tracking-tight text-[#673de6]">
+          <span
+            className={cn(
+              "text-[2.15rem] leading-none font-extrabold tracking-tight",
+              popular ? "text-[#1e1b4b]" : "text-[#673de6]",
+            )}
+          >
             {price}
           </span>
-          <span className="pb-1 text-[13px] font-semibold text-slate-500">
-            /mo
-          </span>
+          <span className="pb-1 text-[13px] font-bold text-[#64748b]">/mo</span>
         </p>
-        <div className="mt-2 flex min-h-[1.35rem] flex-wrap items-center gap-x-2 gap-y-1 text-[12px] font-medium">
-          {billed ? <span className="text-slate-600">{billed}</span> : null}
+        <div className="mt-2 flex min-h-[1.35rem] flex-wrap items-center gap-x-2 gap-y-1 text-[12px] font-semibold">
+          {billed ? <span className="text-[#475569]">{billed}</span> : null}
           {save ? (
-            <span className="font-bold text-emerald-600">{save}</span>
+            <span className="font-extrabold text-[#16a34a]">{save}</span>
           ) : null}
         </div>
       </div>
@@ -171,8 +177,8 @@ function PlanCard({
         className={cn(
           "mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full text-[14px] font-bold transition",
           popular
-            ? "bg-gradient-to-r from-[#2563eb] to-[#673de6] text-white shadow-[0_12px_24px_rgba(103,61,230,0.35)] hover:brightness-105"
-            : "border border-white/80 bg-white/85 text-[#2f1c6a] shadow-[0_10px_22px_-14px_rgba(47,28,106,0.35)] backdrop-blur-xl hover:border-[#673de6]/30 hover:text-[#673de6]",
+            ? "bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-white shadow-[0_12px_24px_rgba(103,61,230,0.38)] hover:brightness-105"
+            : "bg-white text-[#2f1c6a] shadow-[0_8px_18px_-10px_rgba(47,28,106,0.35)] ring-1 ring-[#e9e4ff] hover:text-[#673de6]",
         )}
       >
         {plan.ctaLabel || "Get Started"}
@@ -184,14 +190,12 @@ function PlanCard({
           <li
             key={feature}
             className={cn(
-              "flex items-start gap-2.5 text-[13.5px] leading-snug",
-              index < extras.length
-                ? "font-semibold text-[#2f1c6a]"
-                : "font-medium text-slate-700",
+              "flex items-start gap-2.5 text-[13px] leading-snug text-[#1e1b4b]",
+              index < extras.length ? "font-semibold" : "font-medium",
             )}
           >
-            <span className="mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-[#673de6]/10 text-[#673de6] ring-1 ring-[#673de6]/15">
-              <Check className="size-2.5" strokeWidth={3} aria-hidden />
+            <span className="mt-0.5 inline-flex size-[18px] shrink-0 items-center justify-center rounded-full bg-[#673de6] text-white">
+              <Check className="size-2.5" strokeWidth={3.2} aria-hidden />
             </span>
             <span>{feature}</span>
           </li>
@@ -219,58 +223,89 @@ export function HostingPlansSection({
 
   const chips = [
     data.supportLabel
-      ? { id: "support", label: data.supportLabel, icon: Headphones }
+      ? {
+          id: "support",
+          label: data.supportLabel,
+          hint: "Real people, always here",
+          icon: Headphones,
+        }
       : null,
     data.activationLabel
-      ? { id: "activation", label: data.activationLabel, icon: Zap }
+      ? {
+          id: "activation",
+          label: data.activationLabel,
+          hint: "Get online in minutes",
+          icon: Zap,
+        }
       : null,
     data.uptimeLabel
-      ? { id: "uptime", label: data.uptimeLabel, icon: Shield }
+      ? {
+          id: "uptime",
+          label: data.uptimeLabel,
+          hint: "Your website, always online",
+          icon: Shield,
+        }
       : null,
+    {
+      id: "scale",
+      label: "Easy Scalability",
+      hint: "Upgrade anytime, no downtime",
+      icon: Cloud,
+    },
   ].filter(Boolean) as Array<{
     id: string;
     label: string;
+    hint: string;
     icon: typeof Headphones;
   }>;
 
   const guarantees = (data.guarantees ?? []).filter(Boolean).slice(0, 4);
 
   return (
-    <section className="hb-home-section hb-band-purple pt-6 sm:pt-8">
+    <section className="hb-home-section hb-band-purple relative overflow-hidden pt-10 pb-10 sm:pt-12 sm:pb-12">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-24 -left-16 h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.22),transparent_64%)] blur-2xl"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute top-10 -right-20 h-80 w-80 rounded-full bg-[radial-gradient(circle,rgba(147,197,253,0.28),transparent_62%)] blur-2xl"
+      />
       <div className="hb-shell relative z-10">
         <div className="mx-auto max-w-3xl text-center">
-          <p className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/12 px-3 py-1 text-[11px] font-bold tracking-[0.22em] text-white/80 uppercase backdrop-blur-md">
-            <Layers className="size-3.5 text-white" aria-hidden />
+          <p className="inline-flex items-center gap-2 rounded-full border border-white/35 bg-white/12 px-3.5 py-1 text-[11px] font-bold tracking-[0.18em] text-white uppercase">
             {data.eyebrow}
           </p>
-          <h2 className="font-heading mt-3 text-[clamp(1.7rem,3.6vw,3.15rem)] leading-[1.12] font-extrabold tracking-[-0.045em] text-white">
+          <h2 className="font-heading mt-4 text-[clamp(1.85rem,3.8vw,3.2rem)] leading-[1.12] font-extrabold tracking-[-0.045em] text-white">
             {data.title}{" "}
             {data.titleAccent ? (
-              <span className="bg-gradient-to-r from-[#bfdbfe] via-white to-[#ddd6fe] bg-clip-text text-transparent">
-                {data.titleAccent}
-              </span>
+              <span className="text-[#c7d7ff]">{data.titleAccent}</span>
             ) : null}
           </h2>
-          <p className="mt-3 text-[15px] leading-relaxed text-white/75 sm:text-[16px]">
+          <p className="mx-auto mt-3 max-w-2xl text-[15px] leading-relaxed text-white sm:text-[16px]">
             {data.description}
           </p>
         </div>
 
-        <div className="mt-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <ul className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 lg:justify-start">
-            {chips.map((item, index) => {
+        <div className="mt-7 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <ul className="flex flex-wrap items-start justify-center gap-x-5 gap-y-3 lg:justify-start">
+            {chips.map((item) => {
               const Icon = item.icon;
               return (
-                <li key={item.id} className="flex items-center gap-3">
-                  {index > 0 ? (
-                    <span
-                      aria-hidden
-                      className="hidden h-4 w-px bg-white/20 sm:block"
-                    />
-                  ) : null}
-                  <span className="inline-flex items-center gap-2 text-[13px] font-semibold text-white/85">
-                    <Icon className="size-4 text-white" aria-hidden />
-                    {item.label}
+                <li key={item.id} className="flex items-start gap-2.5">
+                  <Icon
+                    className="mt-0.5 size-4 shrink-0 text-white"
+                    aria-hidden
+                  />
+                  <span className="min-w-0">
+                    <span className="block text-[13px] leading-tight font-extrabold text-white">
+                      {item.label}
+                    </span>
+                    {item.hint ? (
+                      <span className="mt-0.5 block text-[11.5px] leading-tight text-white/80">
+                        {item.hint}
+                      </span>
+                    ) : null}
                   </span>
                 </li>
               );
@@ -278,15 +313,15 @@ export function HostingPlansSection({
           </ul>
 
           <div className="flex flex-wrap items-center justify-center gap-2 lg:justify-end">
-            <div className="inline-flex items-center rounded-full border border-white/20 bg-white/12 p-1 backdrop-blur-md">
+            <div className="inline-flex items-center rounded-full border border-white/25 bg-[#2f1c6a]/35 p-1">
               <button
                 type="button"
                 onClick={() => setBilling("monthly")}
                 className={cn(
-                  "rounded-full px-4 py-2 text-[13px] font-semibold transition",
+                  "rounded-full px-4 py-1.5 text-[13px] font-bold transition",
                   billing === "monthly"
                     ? "bg-white text-[#2f1c6a]"
-                    : "text-white/70 hover:text-white",
+                    : "text-white hover:text-white",
                 )}
               >
                 {data.monthlyToggleLabel || "Monthly"}
@@ -295,17 +330,17 @@ export function HostingPlansSection({
                 type="button"
                 onClick={() => setBilling("annually")}
                 className={cn(
-                  "rounded-full px-4 py-2 text-[13px] font-semibold transition",
+                  "rounded-full px-4 py-1.5 text-[13px] font-bold transition",
                   billing === "annually"
-                    ? "bg-white text-[#2f1c6a] shadow-[0_8px_16px_rgba(15,10,40,0.18)]"
-                    : "text-white/70 hover:text-white",
+                    ? "bg-[#f0abfc] text-[#4a044e]"
+                    : "text-white hover:text-white",
                 )}
               >
                 {data.annualToggleLabel || "Annually"}
               </button>
             </div>
             {data.saveBadge ? (
-              <span className="rounded-full bg-emerald-50 px-3 py-1.5 text-[12px] font-extrabold text-emerald-600">
+              <span className="rounded-full bg-[#f0abfc] px-3 py-1.5 text-[12px] font-extrabold text-[#4a044e]">
                 {data.saveBadge}
               </span>
             ) : null}
@@ -328,16 +363,16 @@ export function HostingPlansSection({
             {guarantees.map((item) => (
               <div
                 key={item.id}
-                className="flex h-full items-start gap-3 rounded-[22px] border border-white/80 bg-white/65 px-4 py-4 shadow-[0_18px_44px_-28px_rgba(47,28,106,0.38)] ring-1 ring-white/80 backdrop-blur-2xl"
+                className="flex h-full items-start gap-3 rounded-[22px] border border-white/25 bg-white/10 px-4 py-3.5 backdrop-blur-md"
               >
-                <span className="mt-0.5 inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-white text-[#673de6] ring-1 ring-white/80">
+                <span className="mt-0.5 inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-white/12 text-white ring-1 ring-white/25">
                   <GuaranteeIcon icon={item.icon} className="size-[18px]" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[13.5px] leading-snug font-extrabold text-[#2f1c6a]">
+                  <span className="block text-[13.5px] leading-snug font-extrabold text-white">
                     {item.title}
                   </span>
-                  <span className="mt-1 block text-[12.5px] leading-snug text-slate-600">
+                  <span className="mt-1 block text-[12.5px] leading-snug text-white/80">
                     {item.description}
                   </span>
                 </span>
