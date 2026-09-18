@@ -28,10 +28,21 @@ function pinRegion(country: string) {
   return country.split(" ")[0] || country;
 }
 
+const BUNDLED_PLATES: Record<string, string> = {
+  luxe: "/images/home/beyond-ai/luxe-stay.jpg",
+  alpine: "/images/home/beyond-ai/alpine-trails.jpg",
+  desert: "/images/home/beyond-ai/desert-dunes.jpg",
+  ocean: "/images/home/beyond-ai/ocean-escapes.jpg",
+};
+
 function visibleSites(sites?: CmsBeyondAiSite[]) {
   const fromCms = (sites ?? [])
     .filter((site) => site.visible !== false && site.imageUrl?.trim())
-    .sort((a, b) => a.order - b.order);
+    .sort((a, b) => a.order - b.order)
+    .map((site) => ({
+      ...site,
+      imageUrl: BUNDLED_PLATES[site.id] ?? site.imageUrl,
+    }));
   const defaults = defaultBeyondAiSection().sites;
   return (fromCms.length ? fromCms : defaults).slice(0, 4);
 }
