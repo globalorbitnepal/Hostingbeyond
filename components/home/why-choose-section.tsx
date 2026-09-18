@@ -69,23 +69,23 @@ export function WhyChooseSection({
 
       <div className="hb-shell relative z-10">
         <div className="relative mx-auto max-w-3xl text-center">
-          <p className="text-[11px] font-bold tracking-[0.28em] text-white/60 uppercase">
+          <p className="text-[11px] font-bold tracking-[0.28em] text-white uppercase">
             {data.eyebrow}
           </p>
           <h2 className="font-heading mt-3 text-[clamp(1.75rem,3.6vw,3.15rem)] leading-[1.12] font-extrabold tracking-[-0.045em] text-white">
             {data.title}{" "}
-            <span className="text-white/80">{data.titleAccent}</span>
+            <span className="text-[#c4b5fd]">{data.titleAccent}</span>
           </h2>
-          <p className="mt-3 text-[15px] leading-relaxed text-white/75 sm:text-[16.5px]">
+          <p className="mt-3 text-[15px] leading-relaxed text-white/90 sm:text-[16.5px]">
             {data.description}
           </p>
           {data.handwrittenNote ? (
-            <p className="font-hand mt-3 text-[15px] font-semibold text-white/90 xl:hidden">
+            <p className="font-hand mt-3 text-[15px] font-semibold text-white xl:hidden">
               {data.handwrittenNote}
             </p>
           ) : null}
           {data.handwrittenNote ? (
-            <p className="font-hand absolute -top-2 -right-2 hidden rotate-6 text-[15px] leading-tight font-semibold whitespace-pre-line text-white/90 xl:block">
+            <p className="font-hand absolute -top-2 -right-2 hidden rotate-6 text-[15px] leading-tight font-semibold whitespace-pre-line text-white xl:block">
               {data.handwrittenNote}
             </p>
           ) : null}
@@ -106,20 +106,20 @@ export function WhyChooseSection({
                   delay: reduceMotion ? 0 : Math.min(index * 0.03, 0.24),
                   ease: [0.22, 1, 0.36, 1],
                 }}
-                className="rounded-[22px] border border-white/80 bg-white/65 p-4 shadow-[0_14px_40px_-28px_rgba(37,80,130,0.4)] backdrop-blur-xl transition duration-500 hover:-translate-y-1 sm:p-5"
+                className="rounded-[22px] border border-[#e4dcff] bg-white p-4 shadow-[0_16px_36px_-22px_rgba(47,28,106,0.28)] transition duration-500 hover:-translate-y-1 sm:p-5"
               >
-                <div className="flex items-start gap-3">
-                  <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl bg-[#f4f5ff] text-[#673de6]">
+                <div className="flex items-start justify-between gap-3">
+                  <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl bg-[#f3eeff] text-[#673de6]">
                     <Icon className="size-[18px]" strokeWidth={1.9} />
                   </span>
-                  <span className="pt-1 text-[11px] font-bold tracking-wide text-slate-300">
+                  <span className="pt-1 text-[11px] font-extrabold tracking-wide text-[#673de6]">
                     {number}
                   </span>
                 </div>
-                <h3 className="mt-3 text-[14.5px] leading-snug font-extrabold tracking-tight text-slate-950">
+                <h3 className="mt-3 text-[14.5px] leading-snug font-extrabold tracking-tight text-[#2f1c6a]">
                   {item.title}
                 </h3>
-                <p className="mt-1.5 text-[12.5px] leading-relaxed text-slate-500">
+                <p className="mt-1.5 text-[12.5px] leading-relaxed text-slate-600">
                   {item.description}
                 </p>
               </motion.article>
