@@ -59,9 +59,12 @@ export function SolutionsEditor({ value, onChange, onPersist }: Props) {
     const next = [...products];
     const [item] = next.splice(index, 1);
     next.splice(target, 0, item);
-    patchSection({
-      products: next.map((product, order) => ({ ...product, order })),
-    });
+    patchSection(
+      {
+        products: next.map((product, order) => ({ ...product, order })),
+      },
+      true,
+    );
   }
 
   function updateImages(
@@ -105,26 +108,31 @@ export function SolutionsEditor({ value, onChange, onPersist }: Props) {
           label="Eyebrow"
           value={value.eyebrow}
           onChange={(eyebrow) => patchSection({ eyebrow })}
+          onCommit={(eyebrow) => patchSection({ eyebrow }, true)}
         />
         <Field
           label="Section CTA label"
           value={value.ctaLabel}
           onChange={(ctaLabel) => patchSection({ ctaLabel })}
+          onCommit={(ctaLabel) => patchSection({ ctaLabel }, true)}
         />
         <Field
           label="Heading"
           value={value.title}
           onChange={(title) => patchSection({ title })}
+          onCommit={(title) => patchSection({ title }, true)}
         />
         <Field
           label="Highlighted heading"
           value={value.titleAccent}
           onChange={(titleAccent) => patchSection({ titleAccent })}
+          onCommit={(titleAccent) => patchSection({ titleAccent }, true)}
         />
         <Field
           label="Section CTA URL"
           value={value.ctaHref}
           onChange={(ctaHref) => patchSection({ ctaHref })}
+          onCommit={(ctaHref) => patchSection({ ctaHref }, true)}
         />
       </div>
       <label className="block text-xs font-semibold tracking-wide text-slate-500 uppercase">
@@ -133,6 +141,9 @@ export function SolutionsEditor({ value, onChange, onPersist }: Props) {
           value={value.description}
           onChange={(event) =>
             patchSection({ description: event.target.value })
+          }
+          onBlur={(event) =>
+            patchSection({ description: event.target.value }, true)
           }
           rows={3}
           className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-normal tracking-normal text-slate-900 normal-case outline-none"
@@ -164,7 +175,11 @@ export function SolutionsEditor({ value, onChange, onPersist }: Props) {
                       type="checkbox"
                       checked={product.visible}
                       onChange={(event) =>
-                        updateProduct(index, { visible: event.target.checked })
+                        updateProduct(
+                          index,
+                          { visible: event.target.checked },
+                          true,
+                        )
                       }
                     />
                     Active
@@ -186,9 +201,12 @@ export function SolutionsEditor({ value, onChange, onPersist }: Props) {
                   <button
                     type="button"
                     onClick={() =>
-                      patchSection({
-                        products: products.filter((_, i) => i !== index),
-                      })
+                      patchSection(
+                        {
+                          products: products.filter((_, i) => i !== index),
+                        },
+                        true,
+                      )
                     }
                     className="rounded-lg border border-red-200 bg-white px-2 py-1 text-xs text-red-600"
                   >
@@ -210,26 +228,39 @@ export function SolutionsEditor({ value, onChange, onPersist }: Props) {
                         onChange={(category) =>
                           updateProduct(index, { category })
                         }
+                        onCommit={(category) =>
+                          updateProduct(index, { category }, true)
+                        }
                       />
                       <Field
                         label="Product name"
                         value={product.name}
                         onChange={(name) => updateProduct(index, { name })}
+                        onCommit={(name) =>
+                          updateProduct(index, { name }, true)
+                        }
                       />
                       <Field
                         label="Badge"
                         value={product.badge}
                         onChange={(badge) => updateProduct(index, { badge })}
+                        onCommit={(badge) =>
+                          updateProduct(index, { badge }, true)
+                        }
                       />
                       <label className="block text-xs font-semibold tracking-wide text-slate-500 uppercase">
                         Icon
                         <select
                           value={product.icon}
                           onChange={(event) =>
-                            updateProduct(index, {
-                              icon: event.target
-                                .value as CmsSolutionProduct["icon"],
-                            })
+                            updateProduct(
+                              index,
+                              {
+                                icon: event.target
+                                  .value as CmsSolutionProduct["icon"],
+                              },
+                              true,
+                            )
                           }
                           className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-normal tracking-normal text-slate-900 normal-case"
                         >
@@ -250,6 +281,15 @@ export function SolutionsEditor({ value, onChange, onPersist }: Props) {
                             description: event.target.value,
                           })
                         }
+                        onBlur={(event) =>
+                          updateProduct(
+                            index,
+                            {
+                              description: event.target.value,
+                            },
+                            true,
+                          )
+                        }
                         rows={3}
                         className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-normal tracking-normal text-slate-900 normal-case outline-none"
                       />
@@ -267,12 +307,18 @@ export function SolutionsEditor({ value, onChange, onPersist }: Props) {
                         onChange={(ctaLabel) =>
                           updateProduct(index, { ctaLabel })
                         }
+                        onCommit={(ctaLabel) =>
+                          updateProduct(index, { ctaLabel }, true)
+                        }
                       />
                       <Field
                         label="CTA URL"
                         value={product.ctaHref}
                         onChange={(ctaHref) =>
                           updateProduct(index, { ctaHref })
+                        }
+                        onCommit={(ctaHref) =>
+                          updateProduct(index, { ctaHref }, true)
                         }
                       />
                     </div>
@@ -286,16 +332,20 @@ export function SolutionsEditor({ value, onChange, onPersist }: Props) {
                       <button
                         type="button"
                         onClick={() =>
-                          updateImages(index, [
-                            ...product.images,
-                            {
-                              id: `img-${Date.now()}`,
-                              url: "",
-                              alt: product.name,
-                              visible: true,
-                              order: product.images.length,
-                            },
-                          ])
+                          updateImages(
+                            index,
+                            [
+                              ...product.images,
+                              {
+                                id: `img-${Date.now()}`,
+                                url: "",
+                                alt: product.name,
+                                visible: true,
+                                order: product.images.length,
+                              },
+                            ],
+                            true,
+                          )
                         }
                         className="rounded-lg border border-slate-200 px-2 py-1 text-xs"
                       >
@@ -323,7 +373,7 @@ export function SolutionsEditor({ value, onChange, onPersist }: Props) {
                                       ...image,
                                       visible: event.target.checked,
                                     };
-                                    updateImages(index, images);
+                                    updateImages(index, images, true);
                                   }}
                                 />
                                 Active
@@ -338,7 +388,7 @@ export function SolutionsEditor({ value, onChange, onPersist }: Props) {
                                       images[imageIndex],
                                       images[imageIndex - 1],
                                     ];
-                                  updateImages(index, images);
+                                  updateImages(index, images, true);
                                 }}
                                 className="rounded-lg border border-slate-200 px-2 py-1 text-xs"
                               >
@@ -355,7 +405,7 @@ export function SolutionsEditor({ value, onChange, onPersist }: Props) {
                                       images[imageIndex],
                                       images[imageIndex + 1],
                                     ];
-                                  updateImages(index, images);
+                                  updateImages(index, images, true);
                                 }}
                                 className="rounded-lg border border-slate-200 px-2 py-1 text-xs"
                               >
@@ -394,6 +444,11 @@ export function SolutionsEditor({ value, onChange, onPersist }: Props) {
                               images[imageIndex] = { ...image, alt };
                               updateImages(index, images);
                             }}
+                            onCommit={(alt) => {
+                              const images = [...product.images];
+                              images[imageIndex] = { ...image, alt };
+                              updateImages(index, images, true);
+                            }}
                           />
                         </div>
                       ))}
@@ -409,24 +464,27 @@ export function SolutionsEditor({ value, onChange, onPersist }: Props) {
       <button
         type="button"
         onClick={() =>
-          patchSection({
-            products: [
-              ...products,
-              {
-                id: `solution-${Date.now()}`,
-                visible: true,
-                order: products.length,
-                category: "New product",
-                name: "New product",
-                description: "",
-                badge: "",
-                icon: "server",
-                ctaLabel: "Explore",
-                ctaHref: "/",
-                images: [],
-              },
-            ],
-          })
+          patchSection(
+            {
+              products: [
+                ...products,
+                {
+                  id: `solution-${Date.now()}`,
+                  visible: true,
+                  order: products.length,
+                  category: "New product",
+                  name: "New product",
+                  description: "",
+                  badge: "",
+                  icon: "server",
+                  ctaLabel: "Explore",
+                  ctaHref: "/",
+                  images: [],
+                },
+              ],
+            },
+            true,
+          )
         }
         className="rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-500 hover:text-slate-900"
       >
@@ -440,10 +498,12 @@ function Field({
   label,
   value,
   onChange,
+  onCommit,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  onCommit?: (value: string) => void;
 }) {
   return (
     <label className="block text-xs font-semibold tracking-wide text-slate-500 uppercase">
@@ -451,6 +511,7 @@ function Field({
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        onBlur={(event) => onCommit?.(event.target.value)}
         className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-normal tracking-normal text-slate-900 normal-case outline-none"
       />
     </label>

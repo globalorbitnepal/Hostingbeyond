@@ -28,40 +28,21 @@ const ICONS = {
   globe: Globe2,
 } as const;
 
-const STAGES: Record<string, { file: string; cropClass: string }> = {
-  "web-hosting": {
-    file: "web-hosting-screen.png",
-    cropClass: "object-[62%_48%]",
-  },
-  "cloud-hosting": {
-    file: "cloud-hosting-screen.png",
-    cropClass: "object-[50%_50%]",
-  },
-  "ecommerce-hosting": {
-    file: "ecommerce-screen.png",
-    cropClass: "object-[50%_78%]",
-  },
-  "wordpress-hosting": {
-    file: "wordpress-screen.png",
-    cropClass: "object-[50%_70%]",
-  },
-  "reseller-hosting": {
-    file: "reseller-screen.png",
-    cropClass: "object-[50%_50%]",
-  },
-  "business-email": {
-    file: "business-email-screen.png",
-    cropClass: "object-[50%_62%]",
-  },
-  vps: {
-    file: "vps-screen.png",
-    cropClass: "object-[50%_50%]",
-  },
-  domains: {
-    file: "domains-screen.png",
-    cropClass: "object-[50%_20%]",
-  },
+const CROP: Record<string, string> = {
+  "web-hosting-screen.png": "object-[62%_48%]",
+  "cloud-hosting-screen.png": "object-[50%_50%]",
+  "ecommerce-screen.png": "object-[50%_78%]",
+  "wordpress-screen.png": "object-[50%_70%]",
+  "reseller-screen.png": "object-[50%_50%]",
+  "business-email-screen.png": "object-[50%_62%]",
+  "vps-screen.png": "object-[50%_50%]",
+  "domains-screen.png": "object-[50%_20%]",
 };
+
+function cropFor(url: string) {
+  const file = url.split("/").pop() ?? "";
+  return CROP[file] ?? "object-center";
+}
 
 type Props = {
   product: CmsSolutionProduct;
@@ -71,11 +52,12 @@ type Props = {
 
 export function SolutionCard({ product, paused, priority }: Props) {
   const Icon = ICONS[product.icon] ?? Server;
-  const stage = STAGES[product.id] ?? {
-    file: "",
-    cropClass: "object-center",
-  };
-  const plate = stage.file ? `/images/home/solutions/${stage.file}` : "";
+  const shots = (product.images ?? [])
+    .filter((image) => image.visible !== false && image.url.trim())
+    .sort((a, b) => a.order - b.order);
+  const plate = shots[0]?.url ?? "";
+  const plateB = shots[1]?.url;
+  const alt = shots[0]?.alt?.trim() || `${product.name} screen`;
 
   return (
     <article className="group relative flex h-full flex-col overflow-hidden rounded-[28px] border border-white/80 bg-white/72 shadow-[0_24px_60px_-32px_rgba(47,28,106,0.4)] ring-1 ring-white/90 backdrop-blur-2xl transition-transform duration-500 ease-out hover:-translate-y-1 motion-reduce:transform-none">
@@ -116,15 +98,22 @@ export function SolutionCard({ product, paused, priority }: Props) {
         <div className="relative mx-4 mb-4 aspect-[4/3] w-[calc(100%-2rem)] shrink-0 sm:mx-5 sm:mb-5 sm:w-[calc(100%-2.5rem)] lg:my-5 lg:mr-5 lg:ml-0 lg:w-[min(46%,20.5rem)]">
           <div className="hb-sol-display absolute inset-0 overflow-hidden">
             <div className="hb-sol-display-glass absolute inset-[6px] overflow-hidden">
-              <SolutionImageCarousel
-                src={plate}
-                alt={`${product.name} live screen`}
-                cropClass={stage.cropClass}
-                paused={paused}
-                priority={priority}
-                sizes="(max-width: 640px) 88vw, (max-width: 1024px) 42vw, 328px"
-                className="absolute inset-0 h-full w-full"
-              />
+              {plate ? (
+                <SolutionImageCarousel
+                  src={plate}
+                  srcB={plateB}
+                  alt={alt}
+                  cropClass={cropFor(plate)}
+                  paused={paused}
+                  priority={priority}
+                  sizes="(max-width: 640px) 88vw, (max-width: 1024px) 42vw, 328px"
+                  className="absolute inset-0 h-full w-full"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center bg-[#12082a] px-4 text-center text-[12px] font-semibold text-white/55">
+                  No image
+                </div>
+              )}
             </div>
           </div>
         </div>

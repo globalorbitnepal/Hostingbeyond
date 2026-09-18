@@ -226,7 +226,7 @@ export function HostingPlansSection({
       ? {
           id: "support",
           label: data.supportLabel,
-          hint: "Real people, always here",
+          hint: data.supportHint,
           icon: Headphones,
         }
       : null,
@@ -234,7 +234,7 @@ export function HostingPlansSection({
       ? {
           id: "activation",
           label: data.activationLabel,
-          hint: "Get online in minutes",
+          hint: data.activationHint,
           icon: Zap,
         }
       : null,
@@ -242,20 +242,22 @@ export function HostingPlansSection({
       ? {
           id: "uptime",
           label: data.uptimeLabel,
-          hint: "Your website, always online",
+          hint: data.uptimeHint,
           icon: Shield,
         }
       : null,
-    {
-      id: "scale",
-      label: "Easy Scalability",
-      hint: "Upgrade anytime, no downtime",
-      icon: Cloud,
-    },
+    data.scaleLabel
+      ? {
+          id: "scale",
+          label: data.scaleLabel,
+          hint: data.scaleHint,
+          icon: Cloud,
+        }
+      : null,
   ].filter(Boolean) as Array<{
     id: string;
     label: string;
-    hint: string;
+    hint?: string;
     icon: typeof Headphones;
   }>;
 
@@ -332,7 +334,7 @@ export function HostingPlansSection({
                 className={cn(
                   "rounded-full px-4 py-1.5 text-[13px] font-bold transition",
                   billing === "annually"
-                    ? "bg-[#f0abfc] text-[#4a044e]"
+                    ? "bg-emerald-400 text-emerald-950"
                     : "text-white hover:text-white",
                 )}
               >
@@ -340,7 +342,7 @@ export function HostingPlansSection({
               </button>
             </div>
             {data.saveBadge ? (
-              <span className="rounded-full bg-[#f0abfc] px-3 py-1.5 text-[12px] font-extrabold text-[#4a044e]">
+              <span className="rounded-full bg-emerald-400 px-3 py-1.5 text-[12px] font-extrabold text-emerald-950">
                 {data.saveBadge}
               </span>
             ) : null}

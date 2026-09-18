@@ -119,6 +119,19 @@ export default function OrbitContentPage() {
     void save(next);
   }
 
+  function patchHostingPlans(
+    patch: Partial<NonNullable<CmsHomeSections["hostingPlans"]>>,
+    persist = false,
+  ) {
+    const current = sectionsRef.current;
+    if (!current?.hostingPlans) return;
+    const hostingPlans = { ...current.hostingPlans, ...patch };
+    const next = { ...current, hostingPlans };
+    sectionsRef.current = next;
+    setSections(next);
+    if (persist) void save(next);
+  }
+
   async function saveLogin(nextLogin?: CmsLoginPage) {
     const payload = nextLogin ?? login;
     if (!payload) return;
@@ -1065,47 +1078,38 @@ export default function OrbitContentPage() {
           <Field
             label="Eyebrow"
             value={sections.hostingPlans?.eyebrow ?? ""}
-            onChange={(value) =>
-              setSections({
-                ...sections,
-                hostingPlans: { ...sections.hostingPlans, eyebrow: value },
-              })
-            }
+            onChange={(value) => patchHostingPlans({ eyebrow: value })}
+            onCommit={(value) => patchHostingPlans({ eyebrow: value }, true)}
           />
           <Field
             label="Default billing (annually / monthly)"
             value={sections.hostingPlans?.defaultBilling ?? "annually"}
             onChange={(value) =>
-              setSections({
-                ...sections,
-                hostingPlans: {
-                  ...sections.hostingPlans,
+              patchHostingPlans({
+                defaultBilling: value === "monthly" ? "monthly" : "annually",
+              })
+            }
+            onCommit={(value) =>
+              patchHostingPlans(
+                {
                   defaultBilling: value === "monthly" ? "monthly" : "annually",
                 },
-              })
+                true,
+              )
             }
           />
           <Field
             label="Title"
             value={sections.hostingPlans?.title ?? ""}
-            onChange={(value) =>
-              setSections({
-                ...sections,
-                hostingPlans: { ...sections.hostingPlans, title: value },
-              })
-            }
+            onChange={(value) => patchHostingPlans({ title: value })}
+            onCommit={(value) => patchHostingPlans({ title: value }, true)}
           />
           <Field
-            label="Title accent (gradient text)"
+            label="Title accent"
             value={sections.hostingPlans?.titleAccent ?? ""}
-            onChange={(value) =>
-              setSections({
-                ...sections,
-                hostingPlans: {
-                  ...sections.hostingPlans,
-                  titleAccent: value,
-                },
-              })
+            onChange={(value) => patchHostingPlans({ titleAccent: value })}
+            onCommit={(value) =>
+              patchHostingPlans({ titleAccent: value }, true)
             }
           />
         </div>
@@ -1113,91 +1117,93 @@ export default function OrbitContentPage() {
         <TextArea
           label="Description"
           value={sections.hostingPlans?.description ?? ""}
-          onChange={(value) =>
-            setSections({
-              ...sections,
-              hostingPlans: { ...sections.hostingPlans, description: value },
-            })
-          }
+          onChange={(value) => patchHostingPlans({ description: value })}
+          onCommit={(value) => patchHostingPlans({ description: value }, true)}
         />
 
         <div className="grid gap-3 md:grid-cols-2">
           <Field
             label="Support label"
             value={sections.hostingPlans?.supportLabel ?? ""}
-            onChange={(value) =>
-              setSections({
-                ...sections,
-                hostingPlans: {
-                  ...sections.hostingPlans,
-                  supportLabel: value,
-                },
-              })
+            onChange={(value) => patchHostingPlans({ supportLabel: value })}
+            onCommit={(value) =>
+              patchHostingPlans({ supportLabel: value }, true)
+            }
+          />
+          <Field
+            label="Support hint"
+            value={sections.hostingPlans?.supportHint ?? ""}
+            onChange={(value) => patchHostingPlans({ supportHint: value })}
+            onCommit={(value) =>
+              patchHostingPlans({ supportHint: value }, true)
             }
           />
           <Field
             label="Activation label"
             value={sections.hostingPlans?.activationLabel ?? ""}
-            onChange={(value) =>
-              setSections({
-                ...sections,
-                hostingPlans: {
-                  ...sections.hostingPlans,
-                  activationLabel: value,
-                },
-              })
+            onChange={(value) => patchHostingPlans({ activationLabel: value })}
+            onCommit={(value) =>
+              patchHostingPlans({ activationLabel: value }, true)
+            }
+          />
+          <Field
+            label="Activation hint"
+            value={sections.hostingPlans?.activationHint ?? ""}
+            onChange={(value) => patchHostingPlans({ activationHint: value })}
+            onCommit={(value) =>
+              patchHostingPlans({ activationHint: value }, true)
             }
           />
           <Field
             label="Uptime label"
             value={sections.hostingPlans?.uptimeLabel ?? ""}
-            onChange={(value) =>
-              setSections({
-                ...sections,
-                hostingPlans: {
-                  ...sections.hostingPlans,
-                  uptimeLabel: value,
-                },
-              })
+            onChange={(value) => patchHostingPlans({ uptimeLabel: value })}
+            onCommit={(value) =>
+              patchHostingPlans({ uptimeLabel: value }, true)
             }
+          />
+          <Field
+            label="Uptime hint"
+            value={sections.hostingPlans?.uptimeHint ?? ""}
+            onChange={(value) => patchHostingPlans({ uptimeHint: value })}
+            onCommit={(value) => patchHostingPlans({ uptimeHint: value }, true)}
+          />
+          <Field
+            label="Scale label"
+            value={sections.hostingPlans?.scaleLabel ?? ""}
+            onChange={(value) => patchHostingPlans({ scaleLabel: value })}
+            onCommit={(value) => patchHostingPlans({ scaleLabel: value }, true)}
+          />
+          <Field
+            label="Scale hint"
+            value={sections.hostingPlans?.scaleHint ?? ""}
+            onChange={(value) => patchHostingPlans({ scaleHint: value })}
+            onCommit={(value) => patchHostingPlans({ scaleHint: value }, true)}
           />
           <Field
             label="Save badge (next to billing toggle)"
             value={sections.hostingPlans?.saveBadge ?? ""}
-            onChange={(value) =>
-              setSections({
-                ...sections,
-                hostingPlans: {
-                  ...sections.hostingPlans,
-                  saveBadge: value,
-                },
-              })
-            }
+            onChange={(value) => patchHostingPlans({ saveBadge: value })}
+            onCommit={(value) => patchHostingPlans({ saveBadge: value }, true)}
           />
           <Field
             label="Annual toggle helper text"
             value={sections.hostingPlans?.annualToggleLabel ?? ""}
             onChange={(value) =>
-              setSections({
-                ...sections,
-                hostingPlans: {
-                  ...sections.hostingPlans,
-                  annualToggleLabel: value,
-                },
-              })
+              patchHostingPlans({ annualToggleLabel: value })
+            }
+            onCommit={(value) =>
+              patchHostingPlans({ annualToggleLabel: value }, true)
             }
           />
           <Field
             label="Monthly toggle label"
             value={sections.hostingPlans?.monthlyToggleLabel ?? ""}
             onChange={(value) =>
-              setSections({
-                ...sections,
-                hostingPlans: {
-                  ...sections.hostingPlans,
-                  monthlyToggleLabel: value,
-                },
-              })
+              patchHostingPlans({ monthlyToggleLabel: value })
+            }
+            onCommit={(value) =>
+              patchHostingPlans({ monthlyToggleLabel: value }, true)
             }
           />
         </div>
@@ -1207,12 +1213,17 @@ export default function OrbitContentPage() {
             key={plan.id}
             plan={plan}
             onChange={(patch) => {
-              const plans = [...sections.hostingPlans.plans];
+              const current = sectionsRef.current;
+              if (!current?.hostingPlans) return;
+              const plans = [...current.hostingPlans.plans];
               plans[index] = { ...plans[index], ...patch };
-              setSections({
-                ...sections,
-                hostingPlans: { ...sections.hostingPlans, plans },
-              });
+              const hostingPlans = { ...current.hostingPlans, plans };
+              const next = { ...current, hostingPlans };
+              sectionsRef.current = next;
+              setSections(next);
+            }}
+            onPersist={() => {
+              if (sectionsRef.current) commitHome(sectionsRef.current);
             }}
             onMove={(direction) => {
               const target = index + direction;
@@ -2046,11 +2057,13 @@ function HostingTypeCardEditor({
 function HostingPlanEditor({
   plan,
   onChange,
+  onPersist,
   onMove,
   onRemove,
 }: {
   plan: CmsHostingPlan;
   onChange: (patch: Partial<CmsHostingPlan>) => void;
+  onPersist?: () => void;
   onMove: (direction: -1 | 1) => void;
   onRemove: () => void;
 }) {
@@ -2065,7 +2078,10 @@ function HostingPlanEditor({
             <input
               type="checkbox"
               checked={plan.visible !== false}
-              onChange={(e) => onChange({ visible: e.target.checked })}
+              onChange={(e) => {
+                onChange({ visible: e.target.checked });
+                onPersist?.();
+              }}
             />
             Visible
           </label>
@@ -2073,7 +2089,10 @@ function HostingPlanEditor({
             <input
               type="checkbox"
               checked={Boolean(plan.popular)}
-              onChange={(e) => onChange({ popular: e.target.checked })}
+              onChange={(e) => {
+                onChange({ popular: e.target.checked });
+                onPersist?.();
+              }}
             />
             Most popular
           </label>
@@ -2106,21 +2125,25 @@ function HostingPlanEditor({
           label="Plan name"
           value={plan.name}
           onChange={(value) => onChange({ name: value })}
+          onCommit={() => onPersist?.()}
         />
         <Field
           label="Tagline"
           value={plan.tagline}
           onChange={(value) => onChange({ tagline: value })}
+          onCommit={() => onPersist?.()}
         />
         <Field
           label="Discount badge"
           value={plan.discountBadge}
           onChange={(value) => onChange({ discountBadge: value })}
+          onCommit={() => onPersist?.()}
         />
         <Field
           label="Popular label"
           value={plan.popularLabel}
           onChange={(value) => onChange({ popularLabel: value })}
+          onCommit={() => onPersist?.()}
         />
         <Field
           label="Accent (blue / purple / gradient)"
@@ -2131,72 +2154,86 @@ function HostingPlanEditor({
                 value === "purple" || value === "gradient" ? value : "blue",
             })
           }
+          onCommit={() => onPersist?.()}
         />
         <Field
           label="Annual price /mo"
           value={plan.priceAnnually}
           onChange={(value) => onChange({ priceAnnually: value })}
+          onCommit={() => onPersist?.()}
         />
         <Field
           label="Annual original (strikethrough)"
           value={plan.originalAnnually}
           onChange={(value) => onChange({ originalAnnually: value })}
+          onCommit={() => onPersist?.()}
         />
         <Field
           label="Billed annually text"
           value={plan.billedAnnually}
           onChange={(value) => onChange({ billedAnnually: value })}
+          onCommit={() => onPersist?.()}
         />
         <Field
           label="Annual save text"
           value={plan.saveAnnually}
           onChange={(value) => onChange({ saveAnnually: value })}
+          onCommit={() => onPersist?.()}
         />
         <Field
           label="Monthly price /mo"
           value={plan.priceMonthly}
           onChange={(value) => onChange({ priceMonthly: value })}
+          onCommit={() => onPersist?.()}
         />
         <Field
           label="Monthly original (strikethrough)"
           value={plan.originalMonthly}
           onChange={(value) => onChange({ originalMonthly: value })}
+          onCommit={() => onPersist?.()}
         />
         <Field
           label="Billed monthly text"
           value={plan.billedMonthly}
           onChange={(value) => onChange({ billedMonthly: value })}
+          onCommit={() => onPersist?.()}
         />
         <Field
           label="Monthly save text"
           value={plan.saveMonthly}
           onChange={(value) => onChange({ saveMonthly: value })}
+          onCommit={() => onPersist?.()}
         />
         <Field
           label="Perk line (all billing, e.g. Domain — free for 1 year)"
           value={plan.domainPerk ?? ""}
           onChange={(value) => onChange({ domainPerk: value })}
+          onCommit={() => onPersist?.()}
         />
         <Field
           label="Annual-only bonus (e.g. $2 Beyond AI Credit)"
           value={plan.annualCredit ?? ""}
           onChange={(value) => onChange({ annualCredit: value })}
+          onCommit={() => onPersist?.()}
         />
         <Field
           label="CTA text"
           value={plan.ctaLabel}
           onChange={(value) => onChange({ ctaLabel: value })}
+          onCommit={() => onPersist?.()}
         />
         <Field
           label="CTA link"
           value={plan.ctaHref}
           onChange={(value) => onChange({ ctaHref: value })}
+          onCommit={() => onPersist?.()}
         />
       </div>
 
       <FeatureEditor
         features={plan.features}
         onChange={(features) => onChange({ features })}
+        onCommit={() => onPersist?.()}
       />
     </div>
   );
@@ -2479,9 +2516,11 @@ function TechPartnersEditor({
 function FeatureEditor({
   features,
   onChange,
+  onCommit,
 }: {
   features: string[];
   onChange: (features: string[]) => void;
+  onCommit?: () => void;
 }) {
   return (
     <div className="space-y-2 rounded-xl border border-slate-200 p-3">
@@ -2491,7 +2530,10 @@ function FeatureEditor({
         </p>
         <button
           type="button"
-          onClick={() => onChange([...features, "New feature"])}
+          onClick={() => {
+            onChange([...features, "New feature"]);
+            onCommit?.();
+          }}
           className="rounded-lg border border-slate-200 px-2 py-1 text-xs"
         >
           Add feature
@@ -2506,6 +2548,7 @@ function FeatureEditor({
               next[index] = event.target.value;
               onChange(next);
             }}
+            onBlur={() => onCommit?.()}
             className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none"
           />
           <button
@@ -2536,7 +2579,10 @@ function FeatureEditor({
           </button>
           <button
             type="button"
-            onClick={() => onChange(features.filter((_, i) => i !== index))}
+            onClick={() => {
+              onChange(features.filter((_, i) => i !== index));
+              onCommit?.();
+            }}
             className="rounded-lg border border-slate-200 px-2 text-xs text-red-600"
           >
             ✕
@@ -2551,10 +2597,12 @@ function Field({
   label,
   value,
   onChange,
+  onCommit,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  onCommit?: (value: string) => void;
 }) {
   return (
     <label className="block text-xs font-semibold tracking-wide text-slate-500 uppercase">
@@ -2562,6 +2610,7 @@ function Field({
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        onBlur={(event) => onCommit?.(event.target.value)}
         className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-normal tracking-normal text-slate-900 normal-case outline-none focus:border-[var(--hb-blue)]/40"
       />
     </label>
@@ -2572,10 +2621,12 @@ function TextArea({
   label,
   value,
   onChange,
+  onCommit,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  onCommit?: (value: string) => void;
 }) {
   return (
     <label className="block text-xs font-semibold tracking-wide text-slate-500 uppercase">
@@ -2583,6 +2634,7 @@ function TextArea({
       <textarea
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        onBlur={(event) => onCommit?.(event.target.value)}
         rows={3}
         className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-normal tracking-normal text-slate-900 normal-case outline-none focus:border-[var(--hb-blue)]/40"
       />

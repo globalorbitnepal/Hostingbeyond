@@ -161,8 +161,13 @@ export type CmsHostingPlansContent = {
   titleAccent: string;
   description: string;
   supportLabel: string;
+  supportHint: string;
   activationLabel: string;
+  activationHint: string;
   uptimeLabel: string;
+  uptimeHint: string;
+  scaleLabel: string;
+  scaleHint: string;
   saveBadge: string;
   annualToggleLabel: string;
   monthlyToggleLabel: string;
@@ -1023,8 +1028,13 @@ function defaultHostingPlansSection(): CmsHostingPlansContent {
     description:
       "Powerful hosting for individuals, businesses and growing brands. Choose the perfect plan and start building your online presence today.",
     supportLabel: "24/7 Expert Support",
+    supportHint: "Real people, always here",
     activationLabel: "Instant Activation",
+    activationHint: "Get online in minutes",
     uptimeLabel: "99.9% Uptime",
+    uptimeHint: "Your website, always online",
+    scaleLabel: "Easy Scalability",
+    scaleHint: "Upgrade anytime, no downtime",
     saveBadge: "Save 70%",
     annualToggleLabel: "Annually",
     monthlyToggleLabel: "Monthly",
@@ -2048,7 +2058,7 @@ function solutionPlate(id: string, alt: string): CmsSolutionImage[] {
   return solutionImages([
     {
       id: `${id}-stage`,
-      url: `/images/home/solutions/${id}.png`,
+      url: `/images/home/solutions/${id}-screen.png`,
       alt,
     },
   ]);
@@ -3730,30 +3740,36 @@ export function mergeHomeSections(
       ? value
       : fallback;
 
-  const isLegacySolutionImage = (url: string) => {
-    if (!url.trim()) return true;
-    if (url.includes("/images/home/solutions/")) return false;
-    if (url.includes("/uploads/")) return false;
-    return true;
+  const defaultSolutionScreens: Record<string, string> = {
+    "/images/home/solutions/web-hosting.png":
+      "/images/home/solutions/web-hosting-screen.png",
+    "/images/home/solutions/cloud-hosting.png":
+      "/images/home/solutions/cloud-hosting-screen.png",
+    "/images/home/solutions/ecommerce.png":
+      "/images/home/solutions/ecommerce-screen.png",
+    "/images/home/solutions/wordpress.png":
+      "/images/home/solutions/wordpress-screen.png",
+    "/images/home/solutions/reseller.png":
+      "/images/home/solutions/reseller-screen.png",
+    "/images/home/solutions/business-email.png":
+      "/images/home/solutions/business-email-screen.png",
+    "/images/home/solutions/vps.png": "/images/home/solutions/vps-screen.png",
+    "/images/home/solutions/domains.png":
+      "/images/home/solutions/domains-screen.png",
   };
 
   const mergeSolutionImages = (
     storedImages: CmsSolutionImage[] | undefined,
     fallbackImages: CmsSolutionImage[],
   ): CmsSolutionImage[] => {
-    if (!Array.isArray(storedImages) || storedImages.length === 0) {
-      return fallbackImages;
-    }
-    const allLegacy = storedImages.every((image) =>
-      isLegacySolutionImage(typeof image.url === "string" ? image.url : ""),
-    );
-    if (allLegacy) return fallbackImages;
+    if (!Array.isArray(storedImages)) return fallbackImages;
     return storedImages.map((image, index) => {
       const fallback = fallbackImages[index] ?? fallbackImages[0];
-      const url = typeof image.url === "string" ? image.url : "";
+      const raw = typeof image.url === "string" ? image.url.trim() : "";
+      const url = defaultSolutionScreens[raw] ?? raw;
       return {
         id: image.id || fallback?.id || `image-${index}`,
-        url: isLegacySolutionImage(url) ? (fallback?.url ?? "") : url,
+        url,
         alt: typeof image.alt === "string" ? image.alt : (fallback?.alt ?? ""),
         visible: image.visible !== false,
         order: typeof image.order === "number" ? image.order : index,
@@ -3950,9 +3966,24 @@ export function mergeHomeSections(
         ? defaults.hostingPlans.supportLabel
         : stored.hostingPlans?.supportLabel ||
           defaults.hostingPlans.supportLabel,
+      supportHint:
+        stored.hostingPlans?.supportHint?.trim() ||
+        defaults.hostingPlans.supportHint,
+      activationHint:
+        stored.hostingPlans?.activationHint?.trim() ||
+        defaults.hostingPlans.activationHint,
       uptimeLabel:
         stored.hostingPlans?.uptimeLabel?.trim() ||
         defaults.hostingPlans.uptimeLabel,
+      uptimeHint:
+        stored.hostingPlans?.uptimeHint?.trim() ||
+        defaults.hostingPlans.uptimeHint,
+      scaleLabel:
+        stored.hostingPlans?.scaleLabel?.trim() ||
+        defaults.hostingPlans.scaleLabel,
+      scaleHint:
+        stored.hostingPlans?.scaleHint?.trim() ||
+        defaults.hostingPlans.scaleHint,
       saveBadge:
         stored.hostingPlans?.saveBadge?.trim() ||
         defaults.hostingPlans.saveBadge,
