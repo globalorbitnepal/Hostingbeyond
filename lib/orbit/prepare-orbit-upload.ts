@@ -1,7 +1,7 @@
 "use client";
 
-const MAX_EDGE = 1920;
-const TARGET_BYTES = 900_000;
+const MAX_EDGE = 1600;
+const TARGET_BYTES = 650_000;
 
 function loadImage(file: File) {
   return new Promise<HTMLImageElement>((resolve, reject) => {
@@ -39,38 +39,60 @@ function canvasToBlob(
   });
 }
 
-/** Shrink photos so nginx/Next never 413 on Orbit image replace. */
+async function drawToJpeg(
+  image: HTMLImageElement,
+  edge: number,
+  quality: number,
+) {
+  const scale = Math.min(1, edge / Math.max(image.width, image.height));
+  const width = Math.max(1, Math.round(image.width * scale));
+  const height = Math.max(1, Math.round(image.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Could not compress this image.");
+  ctx.drawImage(image, 0, 0, width, height);
+  return canvasToBlob(canvas, "image/jpeg", quality);
+}
+
+/** Shrink photos so nginx's 1 MB default never returns HTTP 413. */
 export async function prepareOrbitUpload(file: File) {
+  if (/\.(heic|heif)$/i.test(file.name) || /heic|heif/i.test(file.type)) {
+    throw new Error(
+      "HEIC/HEIF photos are not supported. Convert to JPG or PNG and try again.",
+    );
+  }
+  const looksImage =
+    file.type.startsWith("image/") ||
+    /\.(jpe?g|png|webp|gif|bmp|avif)$/i.test(file.name);
   if (
-    !file.type.startsWith("image/") ||
+    !looksImage ||
     file.type === "image/svg+xml" ||
     file.type === "image/gif"
   ) {
-    return file;
-  }
-
-  try {
-    const image = await loadImage(file);
-    const scale = Math.min(1, MAX_EDGE / Math.max(image.width, image.height));
-    const width = Math.max(1, Math.round(image.width * scale));
-    const height = Math.max(1, Math.round(image.height * scale));
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return file;
-    ctx.drawImage(image, 0, 0, width, height);
-
-    let quality = 0.86;
-    let blob = await canvasToBlob(canvas, "image/jpeg", quality);
-    while (blob.size > TARGET_BYTES && quality > 0.55) {
-      quality -= 0.08;
-      blob = await canvasToBlob(canvas, "image/jpeg", quality);
+    if (file.size > TARGET_BYTES) {
+      throw new Error(
+        "This file is too large to upload. Use a JPG or PNG under 1 MB.",
+      );
     }
-
-    const name = file.name.replace(/\.[^.]+$/, "") + ".jpg";
-    return new File([blob], name, { type: "image/jpeg" });
-  } catch {
     return file;
   }
+
+  const image = await loadImage(file);
+  let edge = MAX_EDGE;
+  let quality = 0.82;
+  let blob = await drawToJpeg(image, edge, quality);
+  while (blob.size > TARGET_BYTES && (edge > 720 || quality > 0.5)) {
+    if (quality > 0.55) quality -= 0.1;
+    else edge = Math.round(edge * 0.82);
+    blob = await drawToJpeg(image, edge, quality);
+  }
+  if (blob.size > TARGET_BYTES) {
+    throw new Error(
+      "This image is still too large after compression. Try a smaller crop or JPG.",
+    );
+  }
+  const name = file.name.replace(/\.[^.]+$/, "") + ".jpg";
+  return new File([blob], name, { type: "image/jpeg" });
 }

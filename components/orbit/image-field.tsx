@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { readResponseError } from "@/lib/orbit/read-response-error";
-import { prepareOrbitUpload } from "@/lib/orbit/prepare-orbit-upload";
+import { uploadOrbitFile } from "@/lib/orbit/upload-orbit-file";
 
 type ImageFieldProps = {
   label: string;
@@ -46,36 +46,9 @@ export function OrbitImageField({
     setError("");
     setStatus(`Uploading ${file.name}…`);
     try {
-      const ready = await prepareOrbitUpload(file);
-      const form = new FormData();
-      form.set("file", ready);
-      form.set("alt", label);
-      const res = await fetch("/api/orbit/media", {
-        method: "POST",
-        body: form,
-      });
-      if (!res.ok) {
-        const parsed = await readResponseError(res, "Upload failed");
-        setStatus("");
-        setError(parsed.text);
-        return;
-      }
-      const json = (await res.json()) as {
-        error?: string;
-        details?: string;
-        asset?: { url: string };
-      };
-      if (!json.asset?.url) {
-        setStatus("");
-        setError(
-          [json.error || "Upload did not return an image URL.", json.details]
-            .filter(Boolean)
-            .join("\n"),
-        );
-        return;
-      }
-      commit(json.asset.url);
-      setStatus(`Saved: ${json.asset.url}`);
+      const url = await uploadOrbitFile(file, label);
+      commit(url);
+      setStatus(`Saved: ${url}`);
     } catch (caught) {
       setStatus("");
       setError(

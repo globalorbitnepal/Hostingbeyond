@@ -12,6 +12,7 @@ import {
   mimeFromFilename,
   saveUploadFile,
 } from "@/lib/orbit/uploads";
+import { saveOrbitChunk } from "@/lib/orbit/chunk-upload";
 
 export const runtime = "nodejs";
 
@@ -147,38 +148,85 @@ export async function POST(request: NextRequest) {
   if (!admin) return unauthorizedJson();
 
   const form = await request.formData();
-  const file = form.get("file");
   const alt = String(form.get("alt") ?? "");
+  const uploadId = String(form.get("uploadId") ?? "").trim();
+  const chunk = form.get("chunk");
 
-  if (!(file instanceof File)) {
-    return NextResponse.json({ error: "Missing file" }, { status: 400 });
+  let bytes: Buffer;
+  let originalName: string;
+  let mimeType: string;
+
+  if (uploadId && chunk instanceof File) {
+    const index = Number(form.get("index"));
+    const total = Number(form.get("total"));
+    originalName = String(form.get("name") ?? chunk.name ?? "upload.jpg");
+    mimeType = String(form.get("type") ?? chunk.type ?? "");
+    if (!isAllowedUpload(mimeType, originalName)) {
+      return NextResponse.json(
+        { error: describeUploadRejection(mimeType, originalName) },
+        { status: 400 },
+      );
+    }
+    try {
+      const assembled = await saveOrbitChunk({
+        uploadId,
+        index,
+        total,
+        chunk: Buffer.from(await chunk.arrayBuffer()),
+      });
+      if (!assembled) {
+        return NextResponse.json({ pending: true });
+      }
+      bytes = assembled;
+    } catch (error) {
+      return NextResponse.json(
+        {
+          error:
+            error instanceof Error ? error.message : "Invalid upload chunk.",
+        },
+        { status: 400 },
+      );
+    }
+  } else {
+    const file = form.get("file");
+    if (!(file instanceof File)) {
+      return NextResponse.json({ error: "Missing file" }, { status: 400 });
+    }
+    originalName = file.name;
+    mimeType = file.type;
+    if (!isAllowedUpload(mimeType, originalName)) {
+      return NextResponse.json(
+        {
+          error: describeUploadRejection(file.type, file.name),
+          details: `Received ${file.name || "unnamed file"} (${file.type || "unknown type"}, ${(file.size / 1024).toFixed(1)} KB)`,
+        },
+        { status: 400 },
+      );
+    }
+    if (file.size > MAX_BYTES) {
+      return NextResponse.json(
+        {
+          error: `File too large (${(file.size / (1024 * 1024)).toFixed(1)} MB). Maximum is 32 MB.`,
+          details: file.name,
+        },
+        { status: 400 },
+      );
+    }
+    bytes = Buffer.from(await file.arrayBuffer());
   }
 
-  if (!isAllowedUpload(file.type, file.name)) {
+  if (bytes.length > MAX_BYTES) {
     return NextResponse.json(
-      {
-        error: describeUploadRejection(file.type, file.name),
-        details: `Received ${file.name || "unnamed file"} (${file.type || "unknown type"}, ${(file.size / 1024).toFixed(1)} KB)`,
-      },
-      { status: 400 },
-    );
-  }
-
-  if (file.size > MAX_BYTES) {
-    return NextResponse.json(
-      {
-        error: `File too large (${(file.size / (1024 * 1024)).toFixed(1)} MB). Maximum is 32 MB.`,
-        details: file.name,
-      },
+      { error: "File too large after upload." },
       { status: 400 },
     );
   }
 
   try {
-    const mimeType = file.type || mimeFromFilename(file.name, "image/png");
-    const safeExt = extensionForUpload(file.name, mimeType);
+    const resolvedMime =
+      mimeType || mimeFromFilename(originalName, "image/jpeg");
+    const safeExt = extensionForUpload(originalName, resolvedMime);
     const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${safeExt}`;
-    const bytes = Buffer.from(await file.arrayBuffer());
     await saveUploadFile(filename, bytes);
     const url = `/uploads/${filename}`;
 
@@ -186,9 +234,9 @@ export async function POST(request: NextRequest) {
       id: filename,
       filename,
       url,
-      originalName: file.name.slice(0, 180),
-      mimeType,
-      size: file.size,
+      originalName: originalName.slice(0, 180),
+      mimeType: resolvedMime,
+      size: bytes.length,
       alt: alt.slice(0, 200),
       source: "upload" as const,
     };
@@ -199,8 +247,8 @@ export async function POST(request: NextRequest) {
           data: {
             filename,
             originalName: asset.originalName,
-            mimeType,
-            size: file.size,
+            mimeType: resolvedMime,
+            size: bytes.length,
             alt: asset.alt,
             url,
           },

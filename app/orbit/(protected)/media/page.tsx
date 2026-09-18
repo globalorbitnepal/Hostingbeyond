@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { readResponseError } from "@/lib/orbit/read-response-error";
-import { prepareOrbitUpload } from "@/lib/orbit/prepare-orbit-upload";
+import { uploadOrbitFile } from "@/lib/orbit/upload-orbit-file";
 
 type Asset = {
   id: string;
@@ -43,25 +43,16 @@ export default function OrbitMediaPage() {
   async function onUpload(file: File | null, input: HTMLInputElement) {
     if (!file) return;
     setStatus("Uploading…");
-    const ready = await prepareOrbitUpload(file);
-    const form = new FormData();
-    form.set("file", ready);
-    form.set("alt", alt);
-    const res = await fetch("/api/orbit/media", { method: "POST", body: form });
-    input.value = "";
-    if (!res.ok) {
-      const parsed = await readResponseError(res, "Upload failed");
-      setStatus(parsed.text);
-      return;
+    try {
+      await uploadOrbitFile(file, alt);
+      input.value = "";
+      setAlt("");
+      setStatus("Uploaded — file is kept permanently");
+      await load();
+    } catch (caught) {
+      input.value = "";
+      setStatus(caught instanceof Error ? caught.message : "Upload failed");
     }
-    const json = await res.json();
-    if (!json.asset?.url) {
-      setStatus(json.error || json.details || "Upload did not return a URL");
-      return;
-    }
-    setAlt("");
-    setStatus("Uploaded — file is kept permanently");
-    await load();
   }
 
   return (
