@@ -74,7 +74,7 @@ function SiteCard({ site, index }: { site: CmsBeyondAiSite; index: number }) {
           unoptimized
           className="object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/78 via-black/25 to-black/5" />
         <div className="absolute inset-x-3 bottom-2.5 flex items-end justify-between gap-2">
           <div className="min-w-0">
             <p className="font-heading text-[15px] leading-[1.05] font-extrabold tracking-tight text-white drop-shadow sm:text-[17px]">
