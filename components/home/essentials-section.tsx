@@ -25,7 +25,7 @@ export function EssentialsSection({
   if (!data.visible || !cards.length) return null;
 
   return (
-    <section className="relative overflow-hidden bg-[linear-gradient(180deg,#5b35e0_0%,#673de6_28%,#e8eeff_100%)] pt-16 pb-12 sm:pt-20">
+    <section className="hb-band-cream relative overflow-hidden pt-16 pb-12 sm:pt-20">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(255,255,255,0.16),transparent_46%)]"
@@ -38,10 +38,10 @@ export function EssentialsSection({
           transition={hbSpring}
           className="mx-auto max-w-3xl text-center"
         >
-          <h2 className="font-heading text-[clamp(1.85rem,3.6vw,3.1rem)] leading-[1.08] font-extrabold tracking-[-0.05em] text-white">
+          <h2 className="font-heading text-[clamp(1.85rem,3.6vw,3.1rem)] leading-[1.08] font-extrabold tracking-[-0.05em] text-[#2f1c6a]">
             {data.title}
           </h2>
-          <p className="mt-3 text-[16px] leading-relaxed text-white/75">
+          <p className="mt-3 text-[16px] leading-relaxed text-slate-600">
             {data.description}
           </p>
         </motion.div>

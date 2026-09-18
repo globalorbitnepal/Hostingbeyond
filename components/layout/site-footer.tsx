@@ -67,7 +67,7 @@ export function SiteFooter({
     .sort((a, b) => a.order - b.order);
 
   return (
-    <footer className="relative isolate overflow-hidden bg-[linear-gradient(180deg,#f4f8fd_0%,#eef4fb_55%,#f8fbff_100%)] pt-5 pb-7 text-slate-700">
+    <footer className="hb-band-cream relative isolate overflow-hidden pt-5 pb-7 text-slate-700">
       <div
         aria-hidden
         className="pointer-events-none absolute -top-24 left-[-8%] h-64 w-72 rounded-full bg-[radial-gradient(circle,rgba(147,197,253,0.32),transparent_68%)] blur-2xl"

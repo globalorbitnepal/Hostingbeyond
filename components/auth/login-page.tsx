@@ -129,7 +129,7 @@ export function AuthPageView({
   }
 
   return (
-    <div className="relative min-h-dvh overflow-x-hidden bg-[#F6F8FC] text-slate-900">
+    <div className="hb-band-cream relative min-h-dvh overflow-x-hidden text-slate-900">
       <div
         className="pointer-events-none absolute inset-0 bg-cover bg-center"
         style={{

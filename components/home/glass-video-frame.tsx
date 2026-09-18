@@ -95,7 +95,7 @@ export function GlassBand({
   return (
     <section
       className={cn(
-        "relative overflow-hidden bg-[linear-gradient(180deg,#2563eb_0%,#4f46e5_32%,#673de6_68%,#3d1d9a_100%)] py-16 sm:py-20",
+        "hb-band-purple relative overflow-hidden py-16 sm:py-20",
         className,
       )}
     >

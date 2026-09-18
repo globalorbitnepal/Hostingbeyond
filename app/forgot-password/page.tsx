@@ -11,7 +11,7 @@ export default function ForgotPasswordPage() {
   const [sent, setSent] = useState(false);
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-[#F6F8FC] px-5 py-10">
+    <div className="hb-band-cream flex min-h-dvh flex-col items-center justify-center px-5 py-10">
       <Link href="/" className="mb-8">
         <BrandMark />
       </Link>

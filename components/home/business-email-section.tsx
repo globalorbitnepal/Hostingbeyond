@@ -77,7 +77,7 @@ export function BusinessEmailSection({
   const reduceMotion = useReducedMotion();
 
   return (
-    <section className="hb-home-section hb-home-section--mist">
+    <section className="hb-home-section hb-band-purple">
       <div
         aria-hidden
         className="pointer-events-none absolute -top-24 left-[-12%] h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(147,197,253,0.35),transparent_68%)] blur-2xl"
@@ -106,19 +106,17 @@ export function BusinessEmailSection({
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
           >
-            <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/80 bg-white/70 px-3.5 py-1.5 text-[12px] font-bold tracking-[0.04em] text-[#673de6] backdrop-blur-xl">
+            <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/35 bg-white/15 px-3.5 py-1.5 text-[12px] font-bold tracking-[0.04em] text-white backdrop-blur-xl">
               <Mail className="size-3.5" aria-hidden />
               {data.badge}
             </span>
 
-            <h2 className="font-heading mt-5 text-[clamp(1.9rem,3.8vw,3.15rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-[#2f1c6a]">
+            <h2 className="font-heading mt-5 text-[clamp(1.9rem,3.8vw,3.15rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-white">
               <span className="block">{data.title}</span>
-              <span className="block bg-gradient-to-r from-[#2563eb] via-[#673de6] to-[#7c3aed] bg-clip-text text-transparent">
-                {data.titleAccent}
-              </span>
+              <span className="block text-white/85">{data.titleAccent}</span>
             </h2>
 
-            <p className="mt-4 text-[15.5px] leading-7 text-slate-600 sm:text-[16.5px]">
+            <p className="mt-4 text-[15.5px] leading-7 text-white/75 sm:text-[16.5px]">
               {data.description}
             </p>
 
@@ -151,7 +149,7 @@ export function BusinessEmailSection({
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link
                 href={data.primaryCtaHref}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2563eb] to-[#673de6] px-6 text-[14px] font-bold text-white shadow-[0_12px_28px_rgba(37,99,235,0.32)]"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-white px-6 text-[14px] font-bold text-[#2f1c6a] shadow-[0_12px_28px_rgba(0,0,0,0.16)]"
               >
                 <Mail className="size-4" />
                 {data.primaryCtaLabel}
@@ -166,7 +164,7 @@ export function BusinessEmailSection({
               </Link>
             </div>
 
-            <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[12.5px] font-semibold text-slate-500">
+            <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[12.5px] font-semibold text-white/70">
               {[data.trust1, data.trust2, data.trust3]
                 .filter(Boolean)
                 .map((item) => (
@@ -188,11 +186,11 @@ export function BusinessEmailSection({
                   <Icon className="size-5" />
                 </span>
                 <div>
-                  <h3 className="text-[14px] font-extrabold tracking-tight text-[#2f1c6a]">
+                  <h3 className="text-[14px] font-extrabold tracking-tight text-white">
                     {item.title}
                   </h3>
                   {item.description ? (
-                    <p className="mt-1 text-[12px] leading-relaxed text-slate-500">
+                    <p className="mt-1 text-[12px] leading-relaxed text-white/70">
                       {item.description}
                     </p>
                   ) : null}

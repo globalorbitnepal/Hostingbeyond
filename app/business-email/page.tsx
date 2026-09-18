@@ -17,8 +17,8 @@ export default async function BusinessEmailPage() {
   ]);
 
   return (
-    <div className="min-h-dvh overflow-x-hidden bg-[#07070c]">
-      <div className="bg-white">
+    <div className="hb-band-cream min-h-dvh overflow-x-hidden">
+      <div className="hb-band-purple">
         <SiteHeader
           navigation={sections.navigation}
           loginLabel={settings.loginLabel}

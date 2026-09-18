@@ -17,7 +17,7 @@ export default async function AccountPage() {
   if (!user) redirect("/login");
 
   return (
-    <div className="min-h-dvh bg-[#F6F8FC] px-5 py-8 sm:px-8">
+    <div className="hb-band-cream min-h-dvh px-5 py-8 sm:px-8">
       <div className="mx-auto max-w-3xl">
         <div className="flex items-center justify-between gap-4">
           <Link href="/">

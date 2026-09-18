@@ -50,24 +50,24 @@ export function OrbitShell({
   }
 
   return (
-    <div className="min-h-dvh bg-[#f4f7fb] text-slate-900">
+    <div className="min-h-dvh bg-[#e8eeff] text-slate-900">
       <div className="mx-auto flex min-h-dvh max-w-[1600px]">
         <aside
           className={cn(
-            "fixed inset-y-0 left-0 z-40 w-72 border-r border-slate-200 bg-white p-4 transition-transform lg:static lg:translate-x-0",
+            "hb-band-purple fixed inset-y-0 left-0 z-40 w-72 border-r border-white/15 p-4 text-white transition-transform lg:static lg:translate-x-0",
             open ? "translate-x-0" : "-translate-x-full",
           )}
         >
           <div className="mb-8 flex items-center justify-between px-2">
             <div>
               <HostingBeyondLogo className="h-7 w-auto" />
-              <p className="mt-2 text-[10px] font-semibold tracking-[0.22em] text-slate-400 uppercase">
+              <p className="mt-2 text-[10px] font-semibold tracking-[0.22em] text-white/55 uppercase">
                 Orbit
               </p>
             </div>
             <button
               type="button"
-              className="rounded-lg border border-slate-200 p-2 lg:hidden"
+              className="rounded-lg border border-white/25 p-2 lg:hidden"
               onClick={() => setOpen(false)}
             >
               <X className="size-4" />
@@ -88,8 +88,8 @@ export function OrbitShell({
                   className={cn(
                     "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition",
                     active
-                      ? "bg-[var(--hb-blue)]/10 text-[var(--hb-blue)]"
-                      : "text-slate-500 hover:bg-slate-50 hover:text-slate-900",
+                      ? "bg-white text-[#2f1c6a] shadow-[0_10px_24px_rgba(0,0,0,0.16)]"
+                      : "text-white/75 hover:bg-white/10 hover:text-white",
                   )}
                 >
                   <item.icon className="size-4" />
@@ -101,7 +101,7 @@ export function OrbitShell({
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur-xl sm:px-6">
+          <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-white/70 bg-white/70 px-4 py-3 backdrop-blur-xl sm:px-6">
             <div className="flex items-center gap-3">
               <button
                 type="button"
@@ -135,7 +135,9 @@ export function OrbitShell({
             </div>
           </header>
 
-          <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+          <main className="hb-band-cream flex-1 px-4 py-6 sm:px-6 lg:px-8">
+            {children}
+          </main>
         </div>
       </div>
       {open ? (

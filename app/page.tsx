@@ -49,14 +49,12 @@ export default async function HomePage() {
         <HeroJourneySlider content={sections.journey} />
       ) : null}
 
-      <div className="hb-mist-run">
-        {sections.solutions ? (
-          <SolutionsSection content={sections.solutions} />
-        ) : null}
-        {sections.hostingPlans?.visible !== false ? (
-          <HostingPlansSection content={sections.hostingPlans} />
-        ) : null}
-      </div>
+      {sections.solutions ? (
+        <SolutionsSection content={sections.solutions} />
+      ) : null}
+      {sections.hostingPlans?.visible !== false ? (
+        <HostingPlansSection content={sections.hostingPlans} />
+      ) : null}
 
       <EssentialsSection content={sections.essentials} />
 
@@ -70,7 +68,7 @@ export default async function HomePage() {
         <BusinessEmailSection content={sections.businessEmail} />
       ) : null}
 
-      <StorySplitSection content={sections.growStory} tone="mist" />
+      <StorySplitSection content={sections.growStory} tone="sheet" />
 
       {sections.aiAssistant?.visible !== false ? (
         <AiAssistantSection content={sections.aiAssistant} />

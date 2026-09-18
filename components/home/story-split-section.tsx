@@ -50,8 +50,15 @@ export function StorySplitSection({
 
   if (!content.visible || !active) return null;
 
+  const cream = tone === "sheet";
+
   return (
-    <section className="relative overflow-hidden bg-[linear-gradient(180deg,#673de6_0%,#5025d1_48%,#3d1d9a_100%)] py-16 sm:py-20">
+    <section
+      className={cn(
+        "relative overflow-hidden py-16 sm:py-20",
+        cream ? "hb-band-cream" : "hb-band-purple",
+      )}
+    >
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(255,255,255,0.16),transparent_52%)]"
@@ -65,11 +72,21 @@ export function StorySplitSection({
           transition={hbSpring}
         >
           {content.eyebrow ? (
-            <p className="text-[12px] font-bold tracking-[0.22em] text-white/60 uppercase">
+            <p
+              className={cn(
+                "text-[12px] font-bold tracking-[0.22em] uppercase",
+                cream ? "text-slate-500" : "text-white/60",
+              )}
+            >
               {content.eyebrow}
             </p>
           ) : null}
-          <h2 className="font-heading mt-2 text-[clamp(1.85rem,3.6vw,3.1rem)] leading-[1.08] font-extrabold tracking-[-0.05em] text-white">
+          <h2
+            className={cn(
+              "font-heading mt-2 text-[clamp(1.85rem,3.6vw,3.1rem)] leading-[1.08] font-extrabold tracking-[-0.05em]",
+              cream ? "text-[#2f1c6a]" : "text-white",
+            )}
+          >
             {content.heading}
           </h2>
 
@@ -83,8 +100,12 @@ export function StorySplitSection({
                   className={cn(
                     "rounded-full px-4 py-2 text-[13px] font-bold backdrop-blur-xl transition duration-300",
                     index === slideIndex
-                      ? "bg-white text-[#2f1c6a] shadow-[0_12px_24px_rgba(0,0,0,0.18)]"
-                      : "bg-white/12 text-white/90 ring-1 ring-white/20 hover:bg-white/20",
+                      ? cream
+                        ? "bg-[#2f1c6a] text-white shadow-[0_12px_24px_rgba(47,28,106,0.18)]"
+                        : "bg-white text-[#2f1c6a] shadow-[0_12px_24px_rgba(0,0,0,0.18)]"
+                      : cream
+                        ? "bg-white/70 text-[#2f1c6a] ring-1 ring-white/80 hover:bg-white"
+                        : "bg-white/12 text-white/90 ring-1 ring-white/20 hover:bg-white/20",
                   )}
                 >
                   {slide.label}
@@ -104,15 +125,30 @@ export function StorySplitSection({
                 exit={reduce ? undefined : "exit"}
                 transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
               >
-                <h3 className="text-[1.45rem] font-extrabold tracking-tight text-white">
+                <h3
+                  className={cn(
+                    "text-[1.45rem] font-extrabold tracking-tight",
+                    cream ? "text-[#2f1c6a]" : "text-white",
+                  )}
+                >
                   {active.title}
                 </h3>
-                <p className="mt-2 max-w-lg text-[16px] leading-relaxed text-white/75">
+                <p
+                  className={cn(
+                    "mt-2 max-w-lg text-[16px] leading-relaxed",
+                    cream ? "text-slate-600" : "text-white/75",
+                  )}
+                >
                   {active.body}
                 </p>
                 <Link
                   href={active.ctaHref}
-                  className="mt-6 inline-flex h-12 items-center gap-2 rounded-full bg-white px-6 text-[14px] font-bold text-[#2f1c6a] shadow-[0_12px_28px_rgba(0,0,0,0.16)]"
+                  className={cn(
+                    "mt-6 inline-flex h-12 items-center gap-2 rounded-full px-6 text-[14px] font-bold shadow-[0_12px_28px_rgba(0,0,0,0.16)]",
+                    cream
+                      ? "bg-[#673de6] text-white"
+                      : "bg-white text-[#2f1c6a]",
+                  )}
                 >
                   {active.ctaLabel}
                   <ArrowRight className="size-4" />

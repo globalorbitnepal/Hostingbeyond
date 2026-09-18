@@ -57,7 +57,7 @@ export function WhyChooseSection({
   if (!data.visible || items.length === 0) return null;
 
   return (
-    <section className="hb-home-section hb-home-section--mist">
+    <section className="hb-home-section hb-band-purple">
       <div
         aria-hidden
         className="pointer-events-none absolute -top-24 left-[-12%] h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(147,197,253,0.35),transparent_68%)] blur-2xl"
@@ -69,25 +69,23 @@ export function WhyChooseSection({
 
       <div className="hb-shell relative z-10">
         <div className="relative mx-auto max-w-3xl text-center">
-          <p className="text-[11px] font-bold tracking-[0.28em] text-slate-500 uppercase">
+          <p className="text-[11px] font-bold tracking-[0.28em] text-white/60 uppercase">
             {data.eyebrow}
           </p>
-          <h2 className="font-heading mt-3 text-[clamp(1.75rem,3.6vw,3.15rem)] leading-[1.12] font-extrabold tracking-[-0.045em] text-[#2f1c6a]">
+          <h2 className="font-heading mt-3 text-[clamp(1.75rem,3.6vw,3.15rem)] leading-[1.12] font-extrabold tracking-[-0.045em] text-white">
             {data.title}{" "}
-            <span className="bg-gradient-to-r from-[#2563eb] via-[#673de6] to-[#7c3aed] bg-clip-text text-transparent">
-              {data.titleAccent}
-            </span>
+            <span className="text-white/80">{data.titleAccent}</span>
           </h2>
-          <p className="mt-3 text-[15px] leading-relaxed text-slate-600 sm:text-[16.5px]">
+          <p className="mt-3 text-[15px] leading-relaxed text-white/75 sm:text-[16.5px]">
             {data.description}
           </p>
           {data.handwrittenNote ? (
-            <p className="font-hand mt-3 text-[15px] font-semibold text-[#673de6] xl:hidden">
+            <p className="font-hand mt-3 text-[15px] font-semibold text-white/90 xl:hidden">
               {data.handwrittenNote}
             </p>
           ) : null}
           {data.handwrittenNote ? (
-            <p className="font-hand absolute -top-2 -right-2 hidden rotate-6 text-[15px] leading-tight font-semibold whitespace-pre-line text-[#673de6] xl:block">
+            <p className="font-hand absolute -top-2 -right-2 hidden rotate-6 text-[15px] leading-tight font-semibold whitespace-pre-line text-white/90 xl:block">
               {data.handwrittenNote}
             </p>
           ) : null}

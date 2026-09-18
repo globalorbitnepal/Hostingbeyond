@@ -40,14 +40,8 @@ export default async function BeyondAiPage() {
   ]);
 
   return (
-    <div className="min-h-dvh overflow-x-hidden bg-[#f4f8fd]">
-      <div className="relative bg-[#b5d3f2]">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-[linear-gradient(165deg,#b5d3f2_0%,#c5daf0_55%,#f4f8fd_100%)]" />
-        </div>
+    <div className="hb-band-cream min-h-dvh overflow-x-hidden">
+      <div className="hb-band-purple relative">
         <SiteHeader
           navigation={sections.navigation}
           loginLabel={settings.loginLabel}
@@ -58,17 +52,14 @@ export default async function BeyondAiPage() {
         />
 
         <section className="hb-shell relative pt-10 pb-16 sm:pt-14 sm:pb-20 lg:pt-16">
-          <p className="text-[11px] font-bold tracking-[0.28em] text-slate-500 uppercase sm:text-[12px]">
+          <p className="text-[11px] font-bold tracking-[0.28em] text-white/60 uppercase sm:text-[12px]">
             Beyond AI
           </p>
           <div className="mt-4 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <h1 className="font-heading max-w-3xl text-[clamp(2rem,4.4vw,3.6rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-slate-950">
-              Build faster with{" "}
-              <span className="bg-gradient-to-r from-[#2563eb] via-[#4f46e5] to-[#7c3aed] bg-clip-text text-transparent">
-                Beyond AI
-              </span>
+            <h1 className="font-heading max-w-3xl text-[clamp(2rem,4.4vw,3.6rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-white">
+              Build faster with <span className="text-white/85">Beyond AI</span>
             </h1>
-            <p className="max-w-md text-[16px] leading-relaxed text-slate-600 lg:text-right lg:text-[17px]">
+            <p className="max-w-md text-[16px] leading-relaxed text-white/75 lg:text-right lg:text-[17px]">
               AI that helps you launch pages, content and sites — then host them
               on HostingBeyond.
             </p>

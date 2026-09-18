@@ -60,14 +60,12 @@ export function OrbitLoginForm() {
       router.refresh();
     } catch (error) {
       setStatus("error");
-      setMessage(
-        error instanceof Error ? error.message : "Invalid access key",
-      );
+      setMessage(error instanceof Error ? error.message : "Invalid access key");
     }
   }
 
   return (
-    <main className="relative min-h-dvh overflow-hidden bg-[#f3f7fc] text-slate-900">
+    <main className="hb-band-cream relative min-h-dvh overflow-hidden text-slate-900">
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div
           className="absolute inset-0 bg-cover bg-center"
@@ -84,7 +82,7 @@ export function OrbitLoginForm() {
           <HostingBeyondLogo className="h-9 w-auto sm:h-10" />
           <Link
             href="/"
-            className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/80 px-3.5 py-2 text-sm font-medium text-slate-600 shadow-sm outline-none backdrop-blur-sm transition hover:border-slate-300 hover:text-slate-900 focus-visible:ring-2 focus-visible:ring-[var(--hb-blue)]/30"
+            className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/80 px-3.5 py-2 text-sm font-medium text-slate-600 shadow-sm backdrop-blur-sm transition outline-none hover:border-slate-300 hover:text-slate-900 focus-visible:ring-2 focus-visible:ring-[var(--hb-blue)]/30"
           >
             <ArrowLeft className="size-4" />
             Back to website
@@ -175,7 +173,7 @@ export function OrbitLoginForm() {
                       aria-describedby={
                         status === "error" ? errorId : undefined
                       }
-                      className="h-12 w-full rounded-full border border-slate-200 bg-slate-50/80 px-11 pr-12 text-sm text-slate-900 outline-none transition-[border-color,box-shadow,background-color] placeholder:text-slate-400 focus-visible:border-[var(--hb-blue)]/55 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-[var(--hb-blue)]/18 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="h-12 w-full rounded-full border border-slate-200 bg-slate-50/80 px-11 pr-12 text-sm text-slate-900 transition-[border-color,box-shadow,background-color] outline-none placeholder:text-slate-400 focus-visible:border-[var(--hb-blue)]/55 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-[var(--hb-blue)]/18 disabled:cursor-not-allowed disabled:opacity-60"
                       placeholder="Enter your Orbit access key"
                       required
                     />
@@ -183,7 +181,7 @@ export function OrbitLoginForm() {
                       type="button"
                       onClick={() => setShowKey((open) => !open)}
                       disabled={submitting}
-                      className="absolute top-1/2 right-1.5 inline-flex size-9 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 outline-none transition-colors hover:text-slate-700 focus-visible:ring-2 focus-visible:ring-[var(--hb-blue)]/35 disabled:opacity-50"
+                      className="absolute top-1/2 right-1.5 inline-flex size-9 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition-colors outline-none hover:text-slate-700 focus-visible:ring-2 focus-visible:ring-[var(--hb-blue)]/35 disabled:opacity-50"
                       aria-label={
                         showKey ? "Hide access key" : "Show access key"
                       }
@@ -201,7 +199,7 @@ export function OrbitLoginForm() {
                 <button
                   type="submit"
                   disabled={submitting || !accessKey.trim()}
-                  className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--hb-blue)] text-sm font-semibold text-white shadow-[0_10px_24px_rgba(47,107,255,0.28)] outline-none transition-[filter,transform,opacity] hover:brightness-105 focus-visible:ring-2 focus-visible:ring-[var(--hb-blue)]/40 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--hb-blue)] text-sm font-semibold text-white shadow-[0_10px_24px_rgba(47,107,255,0.28)] transition-[filter,transform,opacity] outline-none hover:brightness-105 focus-visible:ring-2 focus-visible:ring-[var(--hb-blue)]/40 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {submitting ? (
                     <Loader2 className="size-4 animate-spin" aria-hidden />

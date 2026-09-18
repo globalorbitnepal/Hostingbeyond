@@ -65,7 +65,7 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
   const reduceMotion = useReducedMotion();
 
   return (
-    <section className="hb-home-section hb-home-section--mist">
+    <section className="hb-home-section hb-band-purple">
       <div
         aria-hidden
         className="pointer-events-none absolute -top-24 left-[-12%] h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(147,197,253,0.35),transparent_68%)] blur-2xl"
@@ -93,18 +93,18 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
               ) : null}
             </div>
 
-            <h2 className="font-heading mt-3 text-[clamp(1.85rem,4vw,3.4rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-[#2f1c6a]">
+            <h2 className="font-heading mt-3 text-[clamp(1.85rem,4vw,3.4rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-white">
               {(titleLines.length ? titleLines : [data.title]).map((line) => (
                 <span key={line} className="block">
                   {line}
                 </span>
               ))}
-              <span className="block bg-gradient-to-r from-[#2563eb] via-[#673de6] to-[#7c3aed] bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-white via-[#dbeafe] to-[#c4b5fd] bg-clip-text text-transparent">
                 {data.titleAccent}
               </span>
             </h2>
 
-            <p className="mt-4 max-w-md text-[15px] leading-relaxed text-slate-600 sm:text-[16.5px]">
+            <p className="mt-4 max-w-md text-[15px] leading-relaxed text-white/75 sm:text-[16.5px]">
               {data.description}
             </p>
 
@@ -135,7 +135,7 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link
                 href={data.primaryCtaHref}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2563eb] to-[#673de6] px-6 text-[14px] font-bold text-white shadow-[0_12px_28px_rgba(37,99,235,0.32)]"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-white px-6 text-[14px] font-bold text-[#2f1c6a] shadow-[0_12px_28px_rgba(0,0,0,0.16)]"
               >
                 <Sparkles className="size-4" />
                 {data.primaryCtaLabel}
@@ -150,7 +150,7 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
               </Link>
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] font-semibold text-slate-500">
+            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] font-semibold text-white/70">
               {[data.trust1, data.trust2, data.trust3]
                 .filter(Boolean)
                 .map((item) => (

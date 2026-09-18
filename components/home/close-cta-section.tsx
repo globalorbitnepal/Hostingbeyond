@@ -20,11 +20,7 @@ export function CloseCtaSection({ content }: { content?: CmsCloseCtaContent }) {
   if (!data.visible) return null;
 
   return (
-    <section className="relative overflow-hidden bg-[linear-gradient(180deg,#3b82f6_0%,#2563eb_18%,#673de6_58%,#2f1c6a_100%)] py-20 sm:py-24">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_-10%,rgba(255,255,255,0.22),transparent_48%)]"
-      />
+    <section className="hb-band-purple relative overflow-hidden py-20 sm:py-24">
       <div className="hb-shell relative z-10 mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
         <motion.div
           className="text-center text-white lg:text-left"

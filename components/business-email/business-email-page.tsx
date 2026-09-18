@@ -217,7 +217,7 @@ export function BusinessEmailPageView() {
 
   return (
     <>
-      <section className="relative overflow-hidden bg-[#07070c] text-white">
+      <section className="hb-band-purple relative overflow-hidden text-white">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_20%_0%,rgba(103,61,230,0.28),transparent_42%),radial-gradient(ellipse_at_90%_40%,rgba(37,99,235,0.18),transparent_40%)]"
@@ -540,12 +540,12 @@ export function BusinessEmailPageView() {
         </div>
       </section>
 
-      <section className="bg-[#1b1233] py-16 text-white sm:py-20">
+      <section className="hb-band-cream py-16 sm:py-20">
         <div className="hb-shell">
-          <p className="text-center text-[12px] font-bold tracking-[0.2em] text-[#c4b5fd] uppercase">
+          <p className="text-center text-[12px] font-bold tracking-[0.2em] text-slate-500 uppercase">
             Save time
           </p>
-          <h2 className="font-heading mt-3 text-center text-[clamp(2rem,4vw,3.1rem)] font-extrabold">
+          <h2 className="font-heading mt-3 text-center text-[clamp(2rem,4vw,3.1rem)] font-extrabold text-[#2f1c6a]">
             Work smarter with AI
           </h2>
           <div className="mt-10 grid gap-4 lg:grid-cols-3">
@@ -632,9 +632,9 @@ export function BusinessEmailPageView() {
         </div>
       </section>
 
-      <section className="bg-white py-16 sm:py-20">
+      <section className="hb-band-purple py-16 text-white sm:py-20">
         <div className="hb-shell">
-          <h2 className="font-heading text-center text-[clamp(1.8rem,3.4vw,2.7rem)] font-extrabold tracking-[-0.04em] text-slate-950">
+          <h2 className="font-heading text-center text-[clamp(1.8rem,3.4vw,2.7rem)] font-extrabold tracking-[-0.04em] text-white">
             Bring your favorite AI assistant into your inbox
           </h2>
           <div className="mt-10 grid gap-4 md:grid-cols-2">
@@ -681,7 +681,7 @@ export function BusinessEmailPageView() {
         </div>
       </section>
 
-      <section className="bg-[#f4f8fd] py-16 sm:py-20">
+      <section className="hb-band-cream py-16 sm:py-20">
         <div className="hb-shell grid items-center gap-10 lg:grid-cols-2">
           <div>
             <h2 className="font-heading text-[clamp(1.8rem,3.4vw,2.8rem)] font-extrabold tracking-[-0.04em] text-slate-950">
@@ -710,7 +710,7 @@ export function BusinessEmailPageView() {
         </div>
       </section>
 
-      <section className="bg-white py-16 sm:py-20">
+      <section className="hb-band-purple py-16 text-white sm:py-20">
         <div className="hb-shell grid items-center gap-10 lg:grid-cols-2">
           <div className="overflow-hidden rounded-[28px]">
             <Image
@@ -722,17 +722,17 @@ export function BusinessEmailPageView() {
             />
           </div>
           <div>
-            <h2 className="font-heading text-[clamp(1.8rem,3.4vw,2.8rem)] font-extrabold tracking-[-0.04em] text-slate-950">
+            <h2 className="font-heading text-[clamp(1.8rem,3.4vw,2.8rem)] font-extrabold tracking-[-0.04em] text-white">
               Go even further with email marketing
             </h2>
-            <p className="mt-4 text-[16px] leading-relaxed text-slate-600">
+            <p className="mt-4 text-[16px] leading-relaxed text-white/75">
               Already have the inbox? Send campaigns, grow the list, and track
               performance with Beyond Reach — the marketing tool that sits next
               to HostingBeyond Mail.
             </p>
             <Link
               href={routes.beyondAi}
-              className="mt-6 inline-flex h-11 items-center gap-2 rounded-md border border-slate-200 px-5 text-[14px] font-bold text-slate-900"
+              className="mt-6 inline-flex h-11 items-center gap-2 rounded-md bg-white px-5 text-[14px] font-bold text-[#2f1c6a]"
             >
               Explore Reach
               <ArrowRight className="size-4" />
@@ -741,18 +741,18 @@ export function BusinessEmailPageView() {
         </div>
       </section>
 
-      <section className="bg-[#07070c] py-16 text-white sm:py-20">
+      <section className="hb-band-cream py-16 sm:py-20">
         <div className="hb-shell">
-          <h2 className="font-heading text-center text-[clamp(1.8rem,3.4vw,2.8rem)] font-extrabold">
+          <h2 className="font-heading text-center text-[clamp(1.8rem,3.4vw,2.8rem)] font-extrabold text-[#2f1c6a]">
             Join founders who switched their inbox
           </h2>
           <div className="mt-10 grid gap-4 md:grid-cols-3">
             {reviews.map((item) => (
               <article
                 key={item.name}
-                className="rounded-[24px] bg-white/5 p-5 ring-1 ring-white/10"
+                className="rounded-[24px] bg-white/80 p-5 ring-1 ring-white/80"
               >
-                <p className="text-[15px] leading-relaxed text-white/80">
+                <p className="text-[15px] leading-relaxed text-slate-600">
                   “{item.quote}”
                 </p>
                 <div className="mt-5 flex items-center gap-3">
@@ -772,7 +772,7 @@ export function BusinessEmailPageView() {
         </div>
       </section>
 
-      <section className="bg-white py-16 sm:py-20">
+      <section className="hb-band-purple py-16 sm:py-20">
         <div className="hb-shell grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
             {
@@ -813,7 +813,7 @@ export function BusinessEmailPageView() {
         </div>
       </section>
 
-      <section className="bg-[#f4f8fd] py-16 sm:py-20">
+      <section className="hb-band-cream py-16 sm:py-20">
         <div className="hb-shell mx-auto max-w-3xl">
           <h2 className="font-heading text-center text-[clamp(1.7rem,3vw,2.5rem)] font-extrabold text-slate-950">
             Business email FAQs
@@ -904,7 +904,7 @@ export function BusinessEmailPageView() {
         </div>
       </section>
 
-      <section className="bg-[#673de6] py-16 text-center text-white">
+      <section className="hb-band-purple py-16 text-center text-white">
         <div className="hb-shell">
           <h2 className="font-heading text-[clamp(1.8rem,3.4vw,2.7rem)] font-extrabold">
             Start today
