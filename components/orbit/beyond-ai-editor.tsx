@@ -268,6 +268,13 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
                     imageUrl: "",
                     imageAlt: "",
                     status: "Live",
+                    headline: "",
+                    subhead: "",
+                    cta: "",
+                    country: "",
+                    city: "",
+                    flag: "",
+                    nav: "Home  About  Contact",
                   },
                 ],
               })
@@ -335,6 +342,41 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
               label="Status"
               value={site.status}
               onChange={(status) => updateSite(index, { status })}
+            />
+            <Field
+              label="Headline on photo"
+              value={site.headline ?? ""}
+              onChange={(headline) => updateSite(index, { headline })}
+            />
+            <Field
+              label="Subhead"
+              value={site.subhead ?? ""}
+              onChange={(subhead) => updateSite(index, { subhead })}
+            />
+            <Field
+              label="Photo CTA"
+              value={site.cta ?? ""}
+              onChange={(cta) => updateSite(index, { cta })}
+            />
+            <Field
+              label="Country"
+              value={site.country ?? ""}
+              onChange={(country) => updateSite(index, { country })}
+            />
+            <Field
+              label="City"
+              value={site.city ?? ""}
+              onChange={(city) => updateSite(index, { city })}
+            />
+            <Field
+              label="Flag emoji"
+              value={site.flag ?? ""}
+              onChange={(flag) => updateSite(index, { flag })}
+            />
+            <Field
+              label="Nav items"
+              value={site.nav ?? ""}
+              onChange={(nav) => updateSite(index, { nav })}
             />
             <Field
               label="Image alt"

@@ -185,6 +185,13 @@ export type CmsBeyondAiSite = {
   imageUrl: string;
   imageAlt: string;
   status: string;
+  headline: string;
+  subhead: string;
+  cta: string;
+  country: string;
+  city: string;
+  flag: string;
+  nav: string;
 };
 
 export type CmsBeyondAiHighlight = {
@@ -1130,34 +1137,72 @@ export function defaultBeyondAiSection(): CmsBeyondAiContent {
     ],
     sites: [
       {
-        id: "hotel",
+        id: "luxe",
         visible: true,
         order: 0,
-        name: "Hotel Website",
-        domain: "hotel.com",
-        imageUrl: "/images/home/beyond-ai/hotel.png",
-        imageAlt: "Luxury hotel website preview",
+        name: "LUXE STAY",
+        domain: "luxestay.com",
+        imageUrl: "/images/home/beyond-ai/luxe-stay.jpg",
+        imageAlt: "Luxury villa pool website for LUXE STAY",
         status: "Live",
+        headline: "Luxury Stays\nReimagined",
+        subhead: "Your perfect getaway, anywhere in the USA",
+        cta: "Book Your Stay",
+        country: "United States",
+        city: "New York",
+        flag: "🇺🇸",
+        nav: "Home  Rooms  Offers  Gallery  Contact",
       },
       {
-        id: "trekking",
+        id: "alpine",
         visible: true,
         order: 1,
-        name: "Trekking Adventure",
-        domain: "trekking.com",
-        imageUrl: "/images/home/beyond-ai/trek.png",
-        imageAlt: "Trekking adventure website preview",
+        name: "Alpine Trails",
+        domain: "alpinetrails.com",
+        imageUrl: "/images/home/beyond-ai/alpine-trails.jpg",
+        imageAlt: "Mountain hiking website for Alpine Trails",
         status: "Live",
+        headline: "Adventure\nHas No Limits",
+        subhead: "Explore the world with expert guides",
+        cta: "Plan Your Adventure",
+        country: "United Kingdom",
+        city: "London",
+        flag: "🇬🇧",
+        nav: "Home  Destinations  Tours  Blog  Contact",
       },
       {
-        id: "business",
+        id: "desert",
         visible: true,
         order: 2,
-        name: "Business Site",
-        domain: "business.com",
-        imageUrl: "/images/home/beyond-ai/business.png",
-        imageAlt: "Business website preview",
+        name: "Desert Dunes",
+        domain: "desertdunes.com",
+        imageUrl: "/images/home/beyond-ai/desert-dunes.jpg",
+        imageAlt: "Dubai skyline website for Desert Dunes",
         status: "Live",
+        headline: "Discover\na New Horizon",
+        subhead: "Luxury. Culture. Unforgettable Experiences.",
+        cta: "Explore Dubai",
+        country: "UAE (Dubai)",
+        city: "Dubai",
+        flag: "🇦🇪",
+        nav: "Home  Experiences  Packages  About  Contact",
+      },
+      {
+        id: "ocean",
+        visible: true,
+        order: 3,
+        name: "Ocean Escapes",
+        domain: "oceanescapes.com",
+        imageUrl: "/images/home/beyond-ai/ocean-escapes.jpg",
+        imageAlt: "Tropical overwater bungalow website for Ocean Escapes",
+        status: "Live",
+        headline: "Paradise\nAwaits",
+        subhead: "Experience the beauty of Australia",
+        cta: "View Packages",
+        country: "Australia",
+        city: "Sydney",
+        flag: "🇦🇺",
+        nav: "Home  Destinations  Cruises  Offers  Contact",
       },
     ],
     features: [
@@ -2789,28 +2834,76 @@ function mergeBeyondAiSection(
         })
       : defaults.highlights;
 
+  const legacySiteId: Record<string, string> = {
+    hotel: "luxe",
+    trekking: "alpine",
+    business: "desert",
+  };
+
+  const isLegacyBundled = (url: string) =>
+    /\/images\/home\/beyond-ai\/(hotel|trek|business)\.png$/i.test(url);
+
+  const mergeSite = (
+    fallback: CmsBeyondAiSite,
+    item?: Partial<CmsBeyondAiSite>,
+    index = 0,
+  ): CmsBeyondAiSite => {
+    const rawUrl =
+      typeof item?.imageUrl === "string" ? item.imageUrl.trim() : "";
+    const imageUrl = !rawUrl
+      ? fallback.imageUrl
+      : rawUrl.startsWith("/uploads/")
+        ? rawUrl
+        : isLegacyBundled(rawUrl)
+          ? fallback.imageUrl
+          : rawUrl;
+    const staleName =
+      !item?.name ||
+      /^(Hotel Website|Trekking Adventure|Business Site)$/i.test(item.name);
+    return {
+      ...fallback,
+      ...item,
+      id: item?.id ? (legacySiteId[item.id] ?? item.id) : fallback.id,
+      visible: item?.visible !== false,
+      order: typeof item?.order === "number" ? item.order : index,
+      name: staleName ? fallback.name : item?.name || fallback.name,
+      domain: item?.domain || fallback.domain,
+      imageUrl,
+      imageAlt: item?.imageAlt || fallback.imageAlt,
+      status: item?.status || fallback.status,
+      headline: item?.headline || fallback.headline,
+      subhead: item?.subhead || fallback.subhead,
+      cta: item?.cta || fallback.cta,
+      country: item?.country || fallback.country,
+      city: item?.city || fallback.city,
+      flag: item?.flag || fallback.flag,
+      nav: item?.nav || fallback.nav,
+    };
+  };
+
   const sites =
     Array.isArray(stored.sites) && stored.sites.length > 0
-      ? stored.sites
-          .map((item, index) => {
-            const fallback = defaults.sites[index % defaults.sites.length];
-            return {
-              ...fallback,
-              ...item,
-              id: item.id || fallback.id || `site-${index}`,
-              visible: item.visible !== false,
-              order: typeof item.order === "number" ? item.order : index,
-              name: item.name || fallback.name,
-              domain: item.domain || fallback.domain,
-              imageUrl:
-                typeof item.imageUrl === "string" && item.imageUrl.trim()
-                  ? item.imageUrl
-                  : fallback.imageUrl,
-              imageAlt: item.imageAlt || fallback.imageAlt,
-              status: item.status || fallback.status,
-            } satisfies CmsBeyondAiSite;
-          })
-          .sort((a, b) => a.order - b.order)
+      ? (() => {
+          const remaining = new Map(
+            stored.sites.map((item) => [
+              legacySiteId[item.id] ?? item.id,
+              item,
+            ]),
+          );
+          const fromDefaults = defaults.sites.map((fallback, index) => {
+            const item = remaining.get(fallback.id);
+            remaining.delete(fallback.id);
+            return mergeSite(fallback, item, index);
+          });
+          const extras = [...remaining.values()].map((item, extraIndex) =>
+            mergeSite(
+              defaults.sites[extraIndex % defaults.sites.length],
+              item,
+              defaults.sites.length + extraIndex,
+            ),
+          );
+          return [...fromDefaults, ...extras].sort((a, b) => a.order - b.order);
+        })()
       : defaults.sites;
 
   const features =
