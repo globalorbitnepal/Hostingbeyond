@@ -53,16 +53,16 @@ export function PowerTilesSection({
             >
               <Link
                 href={tile.ctaHref}
-                className="group grid overflow-hidden rounded-[28px] border border-white/40 bg-white/12 shadow-[0_28px_60px_-28px_rgba(15,10,40,0.45)] backdrop-blur-2xl transition duration-500 hover:-translate-y-1 sm:grid-cols-[1.05fr_0.95fr]"
+                className="group grid overflow-hidden rounded-[28px] border border-[#dcd3ff] bg-white shadow-[0_18px_40px_-24px_rgba(47,28,106,0.22)] transition duration-500 hover:-translate-y-1 sm:grid-cols-[1.05fr_0.95fr]"
               >
                 <div className="flex flex-col justify-center px-6 py-7">
-                  <h3 className="text-[18px] font-extrabold text-white">
+                  <h3 className="text-[18px] font-extrabold tracking-tight text-[#2f1c6a]">
                     {tile.title}
                   </h3>
-                  <p className="mt-1.5 text-[14px] leading-relaxed text-white/75">
+                  <p className="mt-1.5 text-[14px] leading-relaxed text-slate-600">
                     {tile.body}
                   </p>
-                  <span className="mt-4 inline-flex items-center gap-1 text-[14px] font-extrabold text-white">
+                  <span className="mt-4 inline-flex items-center gap-1 text-[14px] font-extrabold text-[#673de6]">
                     {tile.ctaLabel}
                     <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
                   </span>

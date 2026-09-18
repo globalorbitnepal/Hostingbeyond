@@ -15,6 +15,7 @@ import {
 import { OrbitImageField } from "@/components/orbit/image-field";
 import { JourneyEditor } from "@/components/orbit/journey-editor";
 import { MediaCardsEditor } from "@/components/orbit/media-cards-editor";
+import { PowerTilesEditor } from "@/components/orbit/power-tiles-editor";
 import { SolutionsEditor } from "@/components/orbit/solutions-editor";
 import { WhyChooseEditor } from "@/components/orbit/why-choose-editor";
 import {
@@ -1504,49 +1505,13 @@ export default function OrbitContentPage() {
       </div>
 
       <div id="orbit-power">
-        <MediaCardsEditor
-          title="Power tiles"
-          hint="VPS, Cloud, Web app, Agency — two-by-two cards."
-          addLabel="Add tile"
-          visible={(sections.powerTiles ?? defaultPowerTilesSection()).visible}
-          heading={(sections.powerTiles ?? defaultPowerTilesSection()).title}
-          description={
-            (sections.powerTiles ?? defaultPowerTilesSection()).description
-          }
-          cards={(sections.powerTiles ?? defaultPowerTilesSection()).tiles}
-          onVisible={(visible) => {
-            const powerTiles = {
-              ...(sections.powerTiles ?? defaultPowerTilesSection()),
-              visible,
-            };
-            setSections({ ...sections, powerTiles });
-            commitHome({ ...sections, powerTiles });
-          }}
-          onHeading={(title) =>
-            setSections({
-              ...sections,
-              powerTiles: {
-                ...(sections.powerTiles ?? defaultPowerTilesSection()),
-                title,
-              },
-            })
-          }
-          onDescription={(description) =>
-            setSections({
-              ...sections,
-              powerTiles: {
-                ...(sections.powerTiles ?? defaultPowerTilesSection()),
-                description,
-              },
-            })
-          }
-          onCards={(tiles, persist) => {
-            const powerTiles = {
-              ...(sections.powerTiles ?? defaultPowerTilesSection()),
-              tiles,
-            };
-            setSections({ ...sections, powerTiles });
-            if (persist) commitHome({ ...sections, powerTiles });
+        <PowerTilesEditor
+          value={sections.powerTiles ?? defaultPowerTilesSection()}
+          onChange={(powerTiles) => setSections({ ...sections, powerTiles })}
+          onPersist={(powerTiles) => {
+            const current = sectionsRef.current;
+            if (!current) return;
+            commitHome({ ...current, powerTiles });
           }}
         />
       </div>
