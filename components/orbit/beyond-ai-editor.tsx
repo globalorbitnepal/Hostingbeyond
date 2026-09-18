@@ -1,5 +1,7 @@
 "use client";
 
+import { useRef } from "react";
+
 import { OrbitImageField } from "@/components/orbit/image-field";
 import type {
   CmsBeyondAiContent,
@@ -29,20 +31,31 @@ type Props = {
 };
 
 export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
-  function patch(next: Partial<CmsBeyondAiContent>, persist = false) {
-    const merged = { ...value, ...next };
+  const latest = useRef(value);
+  latest.current = value;
+
+  function patch(next: Partial<CmsBeyondAiContent>, persistNow = false) {
+    const merged = { ...latest.current, ...next };
+    latest.current = merged;
     onChange(merged);
-    if (persist) onPersist?.(merged);
+    if (persistNow) onPersist?.(merged);
+  }
+
+  function persist() {
+    onPersist?.(latest.current);
   }
 
   function updateSite(
     index: number,
     nextSite: Partial<CmsBeyondAiSite>,
-    persist = false,
+    persistNow = false,
   ) {
     const sites = [...value.sites];
     sites[index] = { ...sites[index], ...nextSite };
-    patch({ sites: sites.map((site, order) => ({ ...site, order })) }, persist);
+    patch(
+      { sites: sites.map((site, order) => ({ ...site, order })) },
+      persistNow,
+    );
   }
 
   function updateHighlight(
@@ -73,115 +86,105 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
   }
 
   return (
-    <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5">
+    <section className="space-y-5 rounded-2xl border border-slate-200 bg-white p-5">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="font-semibold">Beyond AI Builder section</h2>
+          <h2 className="font-semibold">Beyond AI section</h2>
           <p className="mt-0.5 text-xs text-slate-500">
-            Homepage block under Hosting Plans — copy, CTAs, site slider images
-            and feature cards.
+            Full homepage block: badges, copy, CTAs, workspace photo, highlight
+            tiles, and the four bottom features. Save home after text edits;
+            photo uploads save immediately.
           </p>
         </div>
         <label className="flex items-center gap-2 text-xs text-slate-500">
           <input
             type="checkbox"
             checked={value.visible}
-            onChange={(event) => patch({ visible: event.target.checked })}
+            onChange={(event) => patch({ visible: event.target.checked }, true)}
           />
           Visible
         </label>
       </div>
 
+      <OrbitImageField
+        label="Right-side workspace photo"
+        value={value.workspaceImageUrl ?? ""}
+        onChange={(workspaceImageUrl) => patch({ workspaceImageUrl })}
+        onCommit={(workspaceImageUrl) => patch({ workspaceImageUrl }, true)}
+      />
+      <Field
+        label="Workspace photo alt text"
+        value={value.workspaceImageAlt ?? ""}
+        onChange={(workspaceImageAlt) => patch({ workspaceImageAlt })}
+        onBlur={persist}
+      />
+
       <div className="grid gap-3 sm:grid-cols-2">
         <Field
-          label="Badge (header-style animation)"
+          label="Badge"
           value={value.badge}
           onChange={(badge) => patch({ badge })}
+          onBlur={persist}
         />
         <Field
           label="Secondary badge"
           value={value.badgeSecondary}
           onChange={(badgeSecondary) => patch({ badgeSecondary })}
+          onBlur={persist}
         />
         <Field
-          label="Title"
+          label="Title (use a new line before “with”)"
           value={value.title}
           onChange={(title) => patch({ title })}
+          onBlur={persist}
         />
         <Field
           label="Title accent"
           value={value.titleAccent}
           onChange={(titleAccent) => patch({ titleAccent })}
+          onBlur={persist}
         />
         <Field
           label="Primary CTA label"
           value={value.primaryCtaLabel}
           onChange={(primaryCtaLabel) => patch({ primaryCtaLabel })}
+          onBlur={persist}
         />
         <Field
           label="Primary CTA URL"
           value={value.primaryCtaHref}
           onChange={(primaryCtaHref) => patch({ primaryCtaHref })}
+          onBlur={persist}
         />
         <Field
           label="Secondary CTA label"
           value={value.secondaryCtaLabel}
           onChange={(secondaryCtaLabel) => patch({ secondaryCtaLabel })}
+          onBlur={persist}
         />
         <Field
           label="Secondary CTA URL"
           value={value.secondaryCtaHref}
           onChange={(secondaryCtaHref) => patch({ secondaryCtaHref })}
+          onBlur={persist}
         />
         <Field
           label="Trust line 1"
           value={value.trust1}
           onChange={(trust1) => patch({ trust1 })}
+          onBlur={persist}
         />
         <Field
           label="Trust line 2"
           value={value.trust2}
           onChange={(trust2) => patch({ trust2 })}
+          onBlur={persist}
         />
         <Field
           label="Trust line 3"
           value={value.trust3}
           onChange={(trust3) => patch({ trust3 })}
-        />
-        <Field
-          label="Dashboard title"
-          value={value.dashboardTitle}
-          onChange={(dashboardTitle) => patch({ dashboardTitle })}
-        />
-        <Field
-          label="Toast title"
-          value={value.toastTitle}
-          onChange={(toastTitle) => patch({ toastTitle })}
-        />
-        <Field
-          label="Toast subtitle"
-          value={value.toastSubtitle}
-          onChange={(toastSubtitle) => patch({ toastSubtitle })}
-        />
-        <Field
-          label="Stats label"
-          value={value.statsLabel}
-          onChange={(statsLabel) => patch({ statsLabel })}
-        />
-        <Field
-          label="Stats value"
-          value={value.statsValue}
-          onChange={(statsValue) => patch({ statsValue })}
-        />
-        <Field
-          label="Stats hint"
-          value={value.statsHint}
-          onChange={(statsHint) => patch({ statsHint })}
-        />
-        <Field
-          label="SaaS card title"
-          value={value.saasTitle}
-          onChange={(saasTitle) => patch({ saasTitle })}
+          onBlur={persist}
         />
       </div>
 
@@ -190,40 +193,69 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
         <textarea
           value={value.description}
           onChange={(event) => patch({ description: event.target.value })}
+          onBlur={persist}
           rows={4}
           className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-normal tracking-normal text-slate-900 normal-case outline-none"
         />
       </label>
 
-      <label className="block text-xs font-semibold tracking-wide text-slate-500 uppercase">
-        SaaS card items (one per line)
-        <textarea
-          value={value.saasItems.join("\n")}
-          onChange={(event) =>
-            patch({ saasItems: event.target.value.split("\n") })
-          }
-          rows={5}
-          className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-normal tracking-normal text-slate-900 normal-case outline-none"
-        />
-      </label>
-
       <div>
-        <h3 className="text-sm font-semibold text-slate-800">Highlights</h3>
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="text-sm font-semibold text-slate-800">
+            Highlight tiles
+          </h3>
+          <button
+            type="button"
+            onClick={() =>
+              patch({
+                highlights: [
+                  ...value.highlights,
+                  {
+                    id: `highlight-${Date.now()}`,
+                    title: "New highlight",
+                    subtitle: "",
+                    icon: "zap",
+                  },
+                ],
+              })
+            }
+            className="rounded-xl border border-slate-200 px-3 py-1.5 text-xs text-slate-500 hover:text-slate-900"
+          >
+            + Add highlight
+          </button>
+        </div>
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           {value.highlights.map((item, index) => (
             <div
               key={item.id}
               className="space-y-2 rounded-xl border border-slate-200 p-3"
             >
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() =>
+                    patch({
+                      highlights: value.highlights.filter(
+                        (_, highlightIndex) => highlightIndex !== index,
+                      ),
+                    })
+                  }
+                  className="rounded-lg border border-red-100 px-2 py-1 text-xs text-red-500"
+                >
+                  Remove
+                </button>
+              </div>
               <Field
                 label="Title"
                 value={item.title}
                 onChange={(title) => updateHighlight(index, { title })}
+                onBlur={persist}
               />
               <Field
                 label="Subtitle"
                 value={item.subtitle}
                 onChange={(subtitle) => updateHighlight(index, { subtitle })}
+                onBlur={persist}
               />
               <label className="block text-xs font-semibold tracking-wide text-slate-500 uppercase">
                 Icon
@@ -234,6 +266,7 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
                       icon: event.target.value as CmsBeyondAiHighlight["icon"],
                     })
                   }
+                  onBlur={persist}
                   className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-normal tracking-normal text-slate-900 normal-case outline-none"
                 >
                   {HIGHLIGHT_ICONS.map((icon) => (
@@ -248,10 +281,98 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
         </div>
       </div>
 
+      <div>
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="text-sm font-semibold text-slate-800">
+            Bottom features (no glass — same as Business Email)
+          </h3>
+          <button
+            type="button"
+            onClick={() =>
+              patch({
+                features: [
+                  ...value.features,
+                  {
+                    id: `feature-${Date.now()}`,
+                    title: "New feature",
+                    description: "",
+                    icon: "wand",
+                  },
+                ],
+              })
+            }
+            className="rounded-xl border border-slate-200 px-3 py-1.5 text-xs text-slate-500 hover:text-slate-900"
+          >
+            + Add feature
+          </button>
+        </div>
+        <div className="mt-3 grid gap-3 md:grid-cols-2">
+          {value.features.map((item, index) => (
+            <div
+              key={item.id}
+              className="space-y-2 rounded-xl border border-slate-200 p-3"
+            >
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() =>
+                    patch({
+                      features: value.features.filter(
+                        (_, featureIndex) => featureIndex !== index,
+                      ),
+                    })
+                  }
+                  className="rounded-lg border border-red-100 px-2 py-1 text-xs text-red-500"
+                >
+                  Remove
+                </button>
+              </div>
+              <Field
+                label="Title"
+                value={item.title}
+                onChange={(title) => updateFeature(index, { title })}
+                onBlur={persist}
+              />
+              <label className="block text-xs font-semibold tracking-wide text-slate-500 uppercase">
+                Description
+                <textarea
+                  value={item.description}
+                  onChange={(event) =>
+                    updateFeature(index, { description: event.target.value })
+                  }
+                  onBlur={persist}
+                  rows={3}
+                  className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-normal tracking-normal text-slate-900 normal-case outline-none"
+                />
+              </label>
+              <label className="block text-xs font-semibold tracking-wide text-slate-500 uppercase">
+                Icon
+                <select
+                  value={item.icon}
+                  onChange={(event) =>
+                    updateFeature(index, {
+                      icon: event.target.value as CmsBeyondAiFeature["icon"],
+                    })
+                  }
+                  onBlur={persist}
+                  className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-normal tracking-normal text-slate-900 normal-case outline-none"
+                >
+                  {FEATURE_ICONS.map((icon) => (
+                    <option key={icon} value={icon}>
+                      {icon}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-slate-800">
-            Site slider images
+            Extra site images
           </h3>
           <button
             type="button"
@@ -332,56 +453,67 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
               label="Site name"
               value={site.name}
               onChange={(name) => updateSite(index, { name })}
+              onBlur={persist}
             />
             <Field
               label="Domain"
               value={site.domain}
               onChange={(domain) => updateSite(index, { domain })}
+              onBlur={persist}
             />
             <Field
               label="Status"
               value={site.status}
               onChange={(status) => updateSite(index, { status })}
+              onBlur={persist}
             />
             <Field
               label="Headline on photo"
               value={site.headline ?? ""}
               onChange={(headline) => updateSite(index, { headline })}
+              onBlur={persist}
             />
             <Field
               label="Subhead"
               value={site.subhead ?? ""}
               onChange={(subhead) => updateSite(index, { subhead })}
+              onBlur={persist}
             />
             <Field
               label="Photo CTA"
               value={site.cta ?? ""}
               onChange={(cta) => updateSite(index, { cta })}
+              onBlur={persist}
             />
             <Field
               label="Country"
               value={site.country ?? ""}
               onChange={(country) => updateSite(index, { country })}
+              onBlur={persist}
             />
             <Field
               label="City"
               value={site.city ?? ""}
               onChange={(city) => updateSite(index, { city })}
+              onBlur={persist}
             />
             <Field
               label="Flag emoji"
               value={site.flag ?? ""}
               onChange={(flag) => updateSite(index, { flag })}
+              onBlur={persist}
             />
             <Field
               label="Nav items"
               value={site.nav ?? ""}
               onChange={(nav) => updateSite(index, { nav })}
+              onBlur={persist}
             />
             <Field
               label="Image alt"
               value={site.imageAlt}
               onChange={(imageAlt) => updateSite(index, { imageAlt })}
+              onBlur={persist}
             />
             <div className="md:col-span-2">
               <OrbitImageField
@@ -394,53 +526,6 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
           </div>
         ))}
       </div>
-
-      <div>
-        <h3 className="text-sm font-semibold text-slate-800">Feature cards</h3>
-        <div className="mt-3 grid gap-3 md:grid-cols-2">
-          {value.features.map((item, index) => (
-            <div
-              key={item.id}
-              className="space-y-2 rounded-xl border border-slate-200 p-3"
-            >
-              <Field
-                label="Title"
-                value={item.title}
-                onChange={(title) => updateFeature(index, { title })}
-              />
-              <label className="block text-xs font-semibold tracking-wide text-slate-500 uppercase">
-                Description
-                <textarea
-                  value={item.description}
-                  onChange={(event) =>
-                    updateFeature(index, { description: event.target.value })
-                  }
-                  rows={3}
-                  className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-normal tracking-normal text-slate-900 normal-case outline-none"
-                />
-              </label>
-              <label className="block text-xs font-semibold tracking-wide text-slate-500 uppercase">
-                Icon
-                <select
-                  value={item.icon}
-                  onChange={(event) =>
-                    updateFeature(index, {
-                      icon: event.target.value as CmsBeyondAiFeature["icon"],
-                    })
-                  }
-                  className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-normal tracking-normal text-slate-900 normal-case outline-none"
-                >
-                  {FEATURE_ICONS.map((icon) => (
-                    <option key={icon} value={icon}>
-                      {icon}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-          ))}
-        </div>
-      </div>
     </section>
   );
 }
@@ -449,10 +534,12 @@ function Field({
   label,
   value,
   onChange,
+  onBlur,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  onBlur?: () => void;
 }) {
   return (
     <label className="block text-xs font-semibold tracking-wide text-slate-500 uppercase">
@@ -460,6 +547,7 @@ function Field({
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        onBlur={onBlur}
         className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-normal tracking-normal text-slate-900 normal-case outline-none"
       />
     </label>

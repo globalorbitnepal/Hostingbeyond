@@ -230,6 +230,8 @@ export type CmsBeyondAiContent = {
   statsHint: string;
   saasTitle: string;
   saasItems: string[];
+  workspaceImageUrl: string;
+  workspaceImageAlt: string;
   highlights: CmsBeyondAiHighlight[];
   sites: CmsBeyondAiSite[];
   features: CmsBeyondAiFeature[];
@@ -1102,6 +1104,9 @@ export function defaultBeyondAiSection(): CmsBeyondAiContent {
     statsValue: "12",
     statsHint: "+4 this month",
     saasTitle: "Powered by SaaS",
+    workspaceImageUrl: "/images/home/beyond-ai/workspace.jpg",
+    workspaceImageAlt:
+      "Building a Beyond AI website on a laptop at a home desk",
     saasItems: [
       "Your sites, forever",
       "Built-in hosting & domain",
@@ -2929,6 +2934,13 @@ function mergeBeyondAiSection(
     ...defaults,
     ...stored,
     visible: stored.visible !== false,
+    workspaceImageUrl:
+      typeof stored.workspaceImageUrl === "string" &&
+      stored.workspaceImageUrl.trim()
+        ? stored.workspaceImageUrl.trim()
+        : defaults.workspaceImageUrl,
+    workspaceImageAlt:
+      stored.workspaceImageAlt?.trim() || defaults.workspaceImageAlt,
     saasItems: saasItems.length ? saasItems : defaults.saasItems,
     highlights,
     sites,

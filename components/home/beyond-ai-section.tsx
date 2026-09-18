@@ -158,28 +158,30 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
             viewport={{ once: true, amount: 0.25 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
-            <BeyondAiSiteStack />
+            <BeyondAiSiteStack
+              imageUrl={data.workspaceImageUrl}
+              imageAlt={data.workspaceImageAlt}
+            />
           </motion.div>
         </div>
 
-        <div className="mt-8 grid gap-2 rounded-[32px] border border-white/40 bg-white/82 p-3 shadow-[0_18px_50px_-28px_rgba(15,10,40,0.22)] backdrop-blur-2xl sm:mt-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-1 lg:px-5 lg:py-4">
+        <div className="mt-8 grid gap-6 border-t border-[#c4b5fd]/40 pt-7 sm:grid-cols-2 lg:grid-cols-4">
           {data.features.map((item) => {
             const Icon = featureIcons[item.icon] ?? Wand2;
             return (
-              <article
-                key={item.id}
-                className="flex gap-3 rounded-2xl px-3 py-3 sm:px-4"
-              >
-                <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-[#d4c8ff] bg-white text-[#673de6]">
+              <article key={item.id} className="flex gap-3">
+                <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-white/80 text-[#673de6]">
                   <Icon className="size-5" />
                 </span>
                 <div>
-                  <h3 className="text-[14px] font-extrabold tracking-tight text-[#2f1c6a]">
+                  <h3 className="text-[14px] font-extrabold tracking-tight text-white">
                     {item.title}
                   </h3>
-                  <p className="mt-1 text-[12px] leading-relaxed text-slate-500">
-                    {item.description}
-                  </p>
+                  {item.description ? (
+                    <p className="mt-1 text-[12px] leading-relaxed text-white/70">
+                      {item.description}
+                    </p>
+                  ) : null}
                 </div>
               </article>
             );
