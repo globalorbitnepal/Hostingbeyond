@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { readResponseError } from "@/lib/orbit/read-response-error";
+import { prepareOrbitUpload } from "@/lib/orbit/prepare-orbit-upload";
 
 type Asset = {
   id: string;
@@ -42,8 +43,9 @@ export default function OrbitMediaPage() {
   async function onUpload(file: File | null, input: HTMLInputElement) {
     if (!file) return;
     setStatus("Uploading…");
+    const ready = await prepareOrbitUpload(file);
     const form = new FormData();
-    form.set("file", file);
+    form.set("file", ready);
     form.set("alt", alt);
     const res = await fetch("/api/orbit/media", { method: "POST", body: form });
     input.value = "";
@@ -119,7 +121,7 @@ export default function OrbitMediaPage() {
           <p
             className={
               /fail|error|could not/i.test(status)
-                ? "mt-3 whitespace-pre-wrap text-sm text-red-600"
+                ? "mt-3 text-sm whitespace-pre-wrap text-red-600"
                 : "mt-3 text-sm text-emerald-700"
             }
           >

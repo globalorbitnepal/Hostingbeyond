@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { readResponseError } from "@/lib/orbit/read-response-error";
+import { prepareOrbitUpload } from "@/lib/orbit/prepare-orbit-upload";
 
 type ImageFieldProps = {
   label: string;
@@ -43,10 +44,11 @@ export function OrbitImageField({
     if (!file) return;
     setUploading(true);
     setError("");
-    setStatus(`Uploading ${file.name} (${(file.size / 1024).toFixed(1)} KB)…`);
+    setStatus(`Uploading ${file.name}…`);
     try {
+      const ready = await prepareOrbitUpload(file);
       const form = new FormData();
-      form.set("file", file);
+      form.set("file", ready);
       form.set("alt", label);
       const res = await fetch("/api/orbit/media", {
         method: "POST",
@@ -97,7 +99,10 @@ export function OrbitImageField({
           `/api/orbit/media?q=${encodeURIComponent(libraryQuery)}`,
         );
         if (!res.ok) {
-          const parsed = await readResponseError(res, "Could not load media library");
+          const parsed = await readResponseError(
+            res,
+            "Could not load media library",
+          );
           if (!cancelled) setLibraryError(parsed.text);
           return;
         }
@@ -147,11 +152,7 @@ export function OrbitImageField({
       />
       <div className="flex flex-wrap gap-2">
         <label className="inline-flex cursor-pointer items-center rounded-lg border border-[var(--hb-blue)]/30 bg-white px-3 py-1.5 text-xs font-semibold text-[var(--hb-blue)]">
-          {uploading
-            ? "Uploading…"
-            : value
-              ? "Change image"
-              : "Upload image"}
+          {uploading ? "Uploading…" : value ? "Change image" : "Upload image"}
           <input
             type="file"
             accept="image/png,image/jpeg,image/jpg,image/webp,image/gif,image/svg+xml"
@@ -195,7 +196,9 @@ export function OrbitImageField({
             onClick={() => {
               commit("");
               setError("");
-              setStatus("Image cleared from this field. File kept in Media Library.");
+              setStatus(
+                "Image cleared from this field. File kept in Media Library.",
+              );
             }}
             className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900"
           >
@@ -217,9 +220,9 @@ export function OrbitImageField({
       </div>
       {status ? <p className="text-xs text-emerald-700">{status}</p> : null}
       {error ? (
-        <pre className="whitespace-pre-wrap rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
           {error}
-        </pre>
+        </p>
       ) : null}
       {libraryOpen ? (
         <div className="space-y-2 rounded-lg border border-slate-200 bg-white p-2">
@@ -230,9 +233,9 @@ export function OrbitImageField({
             className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none"
           />
           {libraryError ? (
-            <pre className="whitespace-pre-wrap rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+            <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
               {libraryError}
-            </pre>
+            </p>
           ) : null}
           <div className="grid max-h-64 grid-cols-3 gap-2 overflow-y-auto sm:grid-cols-4">
             {library.map((asset) => (
@@ -255,7 +258,8 @@ export function OrbitImageField({
                   className="h-16 w-full object-cover"
                 />
                 <span className="block truncate px-1 py-1 text-[10px] text-slate-500">
-                  {asset.source === "site" ? "Site" : "Upload"} · {asset.originalName}
+                  {asset.source === "site" ? "Site" : "Upload"} ·{" "}
+                  {asset.originalName}
                 </span>
               </button>
             ))}

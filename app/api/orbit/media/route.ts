@@ -15,7 +15,7 @@ import {
 
 export const runtime = "nodejs";
 
-const MAX_BYTES = 8 * 1024 * 1024;
+const MAX_BYTES = 32 * 1024 * 1024;
 
 export async function GET(request: NextRequest) {
   const admin = await requireOrbitAdmin();
@@ -118,7 +118,8 @@ export async function GET(request: NextRequest) {
     .map((asset) => ({
       ...asset,
       source:
-        asset.url.startsWith("/uploads/") || asset.url.startsWith("/api/uploads/")
+        asset.url.startsWith("/uploads/") ||
+        asset.url.startsWith("/api/uploads/")
           ? ("upload" as const)
           : ("site" as const),
     }))
@@ -166,7 +167,7 @@ export async function POST(request: NextRequest) {
   if (file.size > MAX_BYTES) {
     return NextResponse.json(
       {
-        error: `File too large (${(file.size / (1024 * 1024)).toFixed(1)} MB). Maximum is 8 MB.`,
+        error: `File too large (${(file.size / (1024 * 1024)).toFixed(1)} MB). Maximum is 32 MB.`,
         details: file.name,
       },
       { status: 400 },
