@@ -3,14 +3,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { ORBIT_SESSION_COOKIE, verifyOrbitJwt } from "@/lib/orbit/jwt";
 
 /**
- * Relative Location header: behind the reverse proxy, Next builds absolute URLs
- * from the listening host (localhost:3030), which breaks the redirect.
+ * Behind the reverse proxy Next derives request.url from the listening address,
+ * so redirects must be rebuilt from the forwarded host to stay on the site.
  */
-function redirectToOrbit() {
-  return new NextResponse(null, {
-    status: 307,
-    headers: { location: "/orbit" },
-  });
+function redirectToOrbit(request: NextRequest) {
+  const host =
+    request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+  const proto = request.headers.get("x-forwarded-proto") ?? "https";
+  const base = host ? `${proto}://${host}` : request.url;
+  return NextResponse.redirect(new URL("/orbit", base));
 }
 
 export async function middleware(request: NextRequest) {
@@ -26,7 +27,7 @@ export async function middleware(request: NextRequest) {
 
   // Legacy login URL → clean /orbit (no ?next=)
   if (pathname === "/orbit/login" || pathname.startsWith("/orbit/login/")) {
-    return redirectToOrbit();
+    return redirectToOrbit(request);
   }
 
   if (isAuthApi) {
@@ -44,7 +45,7 @@ export async function middleware(request: NextRequest) {
     if (pathname === "/orbit") {
       return NextResponse.next();
     }
-    return redirectToOrbit();
+    return redirectToOrbit(request);
   }
 
   return NextResponse.next();
