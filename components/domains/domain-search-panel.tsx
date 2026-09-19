@@ -14,8 +14,6 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-
 import { routes } from "@/config/routes";
 import type { DomainResult } from "@/lib/domains/availability";
 import { SUGGESTED_TLDS, formatPrice } from "@/lib/domains/tlds";
@@ -190,7 +188,6 @@ export function DomainSearchPanel({
   mode: SearchMode;
   initialQuery?: string;
 }) {
-  const reduce = useReducedMotion();
   const [query, setQuery] = useState(initialQuery);
   const [bulk, setBulk] = useState("");
   const [loading, setLoading] = useState(false);
@@ -404,35 +401,28 @@ export function DomainSearchPanel({
           </div>
         ) : null}
 
-        <AnimatePresence initial={false}>
-          {!loading && results.length > 0 ? (
-            <motion.div
-              initial={reduce ? false : { opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              className="space-y-2.5"
-            >
-              <div className="flex flex-wrap items-center gap-2 text-[12.5px] font-semibold text-slate-500">
-                <BadgeCheck className="size-4 text-[#15803d]" />
-                {availableCount} of {results.length} options are free to
-                register right now.
-              </div>
-              {exact ? <ResultRow result={exact} featured /> : null}
-              {alternatives.length > 0 ? (
-                <>
-                  <p className="pt-2 text-[12px] font-bold tracking-wide text-slate-500 uppercase">
-                    {mode === "bulk" ? "Your list" : "Other great matches"}
-                  </p>
-                  <div className="grid gap-2.5 2xl:grid-cols-2">
-                    {alternatives.map((item) => (
-                      <ResultRow key={item.domain} result={item} />
-                    ))}
-                  </div>
-                </>
-              ) : null}
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
+        {!loading && results.length > 0 ? (
+          <div key={searched} className="hb-fade-up space-y-2.5">
+            <div className="flex flex-wrap items-center gap-2 text-[12.5px] font-semibold text-slate-500">
+              <BadgeCheck className="size-4 text-[#15803d]" />
+              {availableCount} of {results.length} options are free to register
+              right now.
+            </div>
+            {exact ? <ResultRow result={exact} featured /> : null}
+            {alternatives.length > 0 ? (
+              <>
+                <p className="pt-2 text-[12px] font-bold tracking-wide text-slate-500 uppercase">
+                  {mode === "bulk" ? "Your list" : "Other great matches"}
+                </p>
+                <div className="grid gap-2.5 2xl:grid-cols-2">
+                  {alternatives.map((item) => (
+                    <ResultRow key={item.domain} result={item} />
+                  ))}
+                </div>
+              </>
+            ) : null}
+          </div>
+        ) : null}
 
         {!loading && results.length === 0 && !error ? (
           <p className="flex items-start gap-2 text-[13px] leading-relaxed text-slate-500">

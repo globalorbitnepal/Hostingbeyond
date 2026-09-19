@@ -1,6 +1,6 @@
 import { siteConfig } from "@/config/site";
 import type { DomainFaq } from "@/components/domains/domain-faq";
-import { CHEAPEST_TLD, TLD_PRICES } from "@/lib/domains/tlds";
+import type { DomainTldRow } from "@/lib/domains/content";
 
 /**
  * Structured data for the domain search pages. Each page passes its own name,
@@ -12,6 +12,7 @@ export function buildDomainSchema({
   path,
   breadcrumb,
   faqs,
+  prices,
   withSearchAction = false,
 }: {
   name: string;
@@ -19,10 +20,13 @@ export function buildDomainSchema({
   path: string;
   breadcrumb: string;
   faqs: DomainFaq[];
+  prices: DomainTldRow[];
   withSearchAction?: boolean;
 }) {
   const url = new URL(path, siteConfig.url).toString();
-  const highest = [...TLD_PRICES].sort((a, b) => b.register - a.register)[0];
+  const sorted = [...prices].sort((a, b) => a.register - b.register);
+  const cheapest = sorted[0];
+  const highest = sorted[sorted.length - 1];
 
   return [
     {
@@ -80,9 +84,9 @@ export function buildDomainSchema({
       offers: {
         "@type": "AggregateOffer",
         priceCurrency: "USD",
-        lowPrice: CHEAPEST_TLD?.register ?? 0.01,
+        lowPrice: cheapest?.register ?? 0.01,
         highPrice: highest?.register ?? 89.99,
-        offerCount: TLD_PRICES.length,
+        offerCount: prices.length,
         availability: "https://schema.org/InStock",
         url,
       },

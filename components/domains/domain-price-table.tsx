@@ -5,9 +5,9 @@ import Link from "next/link";
 import { Search } from "lucide-react";
 
 import { routes } from "@/config/routes";
+import type { DomainTldRow } from "@/lib/domains/content";
 import {
   TLD_CATEGORIES,
-  TLD_PRICES,
   formatPrice,
   savePercent,
   type TldCategory,
@@ -16,19 +16,27 @@ import { cn } from "@/lib/utils";
 
 type Filter = TldCategory | "all";
 
-export function DomainPriceTable() {
+export function DomainPriceTable({
+  prices,
+  footnote,
+}: {
+  prices: DomainTldRow[];
+  footnote: string;
+}) {
   const [filter, setFilter] = useState<Filter>("popular");
   const [term, setTerm] = useState("");
 
   const rows = useMemo(() => {
     const needle = term.trim().toLowerCase().replace(/^\./, "");
-    return TLD_PRICES.filter((item) => {
-      const inCategory =
-        filter === "all" || item.categories.includes(filter as TldCategory);
-      const matches = !needle || item.tld.slice(1).startsWith(needle);
-      return inCategory && matches;
-    }).sort((a, b) => a.register - b.register);
-  }, [filter, term]);
+    return prices
+      .filter((item) => {
+        const inCategory =
+          filter === "all" || item.categories.includes(filter as TldCategory);
+        const matches = !needle || item.tld.slice(1).startsWith(needle);
+        return inCategory && matches;
+      })
+      .sort((a, b) => a.register - b.register);
+  }, [filter, prices, term]);
 
   return (
     <div className="rounded-[28px] border border-white/70 bg-white p-4 shadow-[0_28px_70px_-40px_rgba(15,10,40,0.5)] sm:p-6">
@@ -156,9 +164,7 @@ export function DomainPriceTable() {
       ) : null}
 
       <p className="mt-4 text-[12px] leading-relaxed text-slate-500">
-        Prices are per year in USD and exclude local taxes and the $0.20 ICANN
-        fee. First-year rates apply to new registrations; renewals use the
-        standard rate shown above. WHOIS privacy and DNS are always free.
+        {footnote}
       </p>
     </div>
   );
