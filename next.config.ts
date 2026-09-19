@@ -37,7 +37,7 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
-        source: "/domain-name-search/:path*",
+        source: "/domain-name-search/:path+",
         destination: "/domain-name-search",
         permanent: false,
       },
