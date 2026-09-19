@@ -29,33 +29,40 @@ import {
  */
 const CMS_TAG = "orbit-content";
 const DOMAIN_SLUG = "domain-search";
+/** Safety net so a bad cache entry can never outlive a few minutes. */
+const CMS_REVALIDATE = 300;
 
 function revalidateContent() {
   revalidateTag(CMS_TAG);
 }
 
+/**
+ * Read failures must never reach the cache: one unavailable database would
+ * otherwise pin the published site to defaults. Errors propagate so nothing is
+ * stored, and the caller falls back for that single request.
+ */
 const readSiteSettings = nextCache(
   async (): Promise<CmsSiteSettings> => {
-    try {
-      const row = await prisma.siteSettings.findUnique({
-        where: { id: "default" },
-      });
-      if (!row) return defaultSiteSettings();
-      return {
-        ...defaultSiteSettings(),
-        ...(row.data as CmsSiteSettings),
-      };
-    } catch {
-      return defaultSiteSettings();
-    }
+    const row = await prisma.siteSettings.findUnique({
+      where: { id: "default" },
+    });
+    if (!row) return defaultSiteSettings();
+    return {
+      ...defaultSiteSettings(),
+      ...(row.data as CmsSiteSettings),
+    };
   },
   ["orbit-site-settings"],
-  { tags: [CMS_TAG] },
+  { tags: [CMS_TAG], revalidate: CMS_REVALIDATE },
 );
 
-export const getSiteSettings = cache((): Promise<CmsSiteSettings> =>
-  readSiteSettings(),
-);
+export const getSiteSettings = cache(async (): Promise<CmsSiteSettings> => {
+  try {
+    return await readSiteSettings();
+  } catch {
+    return defaultSiteSettings();
+  }
+});
 
 export async function saveSiteSettings(data: CmsSiteSettings) {
   const row = await prisma.siteSettings.upsert({
@@ -71,23 +78,23 @@ export async function saveSiteSettings(data: CmsSiteSettings) {
 
 const readHomeSections = nextCache(
   async (): Promise<CmsHomeSections> => {
-    try {
-      const page = await prisma.pageContent.findUnique({
-        where: { slug: "home" },
-      });
-      if (!page) return defaultHomeSections();
-      return mergeHomeSections(page.sections as Partial<CmsHomeSections>);
-    } catch {
-      return defaultHomeSections();
-    }
+    const page = await prisma.pageContent.findUnique({
+      where: { slug: "home" },
+    });
+    if (!page) return defaultHomeSections();
+    return mergeHomeSections(page.sections as Partial<CmsHomeSections>);
   },
   ["orbit-home-sections"],
-  { tags: [CMS_TAG] },
+  { tags: [CMS_TAG], revalidate: CMS_REVALIDATE },
 );
 
-export const getHomeSections = cache((): Promise<CmsHomeSections> =>
-  readHomeSections(),
-);
+export const getHomeSections = cache(async (): Promise<CmsHomeSections> => {
+  try {
+    return await readHomeSections();
+  } catch {
+    return defaultHomeSections();
+  }
+});
 
 export async function saveHomeSections(sections: CmsHomeSections) {
   const normalized = mergeHomeSections(sections);
@@ -114,21 +121,23 @@ export async function saveHomeSections(sections: CmsHomeSections) {
 
 const readLoginPage = nextCache(
   async (): Promise<CmsLoginPage> => {
-    try {
-      const page = await prisma.pageContent.findUnique({
-        where: { slug: "login" },
-      });
-      if (!page) return defaultLoginPage();
-      return mergeLoginPage(page.sections as Partial<CmsLoginPage>);
-    } catch {
-      return defaultLoginPage();
-    }
+    const page = await prisma.pageContent.findUnique({
+      where: { slug: "login" },
+    });
+    if (!page) return defaultLoginPage();
+    return mergeLoginPage(page.sections as Partial<CmsLoginPage>);
   },
   ["orbit-login-page"],
-  { tags: [CMS_TAG] },
+  { tags: [CMS_TAG], revalidate: CMS_REVALIDATE },
 );
 
-export const getLoginPage = cache((): Promise<CmsLoginPage> => readLoginPage());
+export const getLoginPage = cache(async (): Promise<CmsLoginPage> => {
+  try {
+    return await readLoginPage();
+  } catch {
+    return defaultLoginPage();
+  }
+});
 
 export async function saveLoginPage(data: CmsLoginPage) {
   const normalized = mergeLoginPage(data);
@@ -155,23 +164,23 @@ export async function saveLoginPage(data: CmsLoginPage) {
 
 const readDomainContent = nextCache(
   async (): Promise<DomainContent> => {
-    try {
-      const page = await prisma.pageContent.findUnique({
-        where: { slug: DOMAIN_SLUG },
-      });
-      if (!page) return defaultDomainContent();
-      return mergeDomainContent(page.sections as Partial<DomainContent>);
-    } catch {
-      return defaultDomainContent();
-    }
+    const page = await prisma.pageContent.findUnique({
+      where: { slug: DOMAIN_SLUG },
+    });
+    if (!page) return defaultDomainContent();
+    return mergeDomainContent(page.sections as Partial<DomainContent>);
   },
   ["orbit-domain-content"],
-  { tags: [CMS_TAG] },
+  { tags: [CMS_TAG], revalidate: CMS_REVALIDATE },
 );
 
-export const getDomainContent = cache((): Promise<DomainContent> =>
-  readDomainContent(),
-);
+export const getDomainContent = cache(async (): Promise<DomainContent> => {
+  try {
+    return await readDomainContent();
+  } catch {
+    return defaultDomainContent();
+  }
+});
 
 export async function saveDomainContent(content: DomainContent) {
   const normalized = mergeDomainContent(content);
