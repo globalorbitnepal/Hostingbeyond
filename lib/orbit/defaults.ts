@@ -210,6 +210,8 @@ export type CmsBeyondAiFeature = {
 
 export type CmsBeyondAiContent = {
   visible: boolean;
+  /** Homepage always uses the workspace photo. The 2x2 site grid is retired. */
+  visual: "workspace";
   badge: string;
   badgeSecondary: string;
   title: string;
@@ -1084,6 +1086,7 @@ function defaultHostingPlansSection(): CmsHostingPlansContent {
 export function defaultBeyondAiSection(): CmsBeyondAiContent {
   return {
     visible: true,
+    visual: "workspace",
     badge: "Beyond AI",
     badgeSecondary: "Built for Everyone",
     title: "Create Stunning\nWebsites with",
@@ -2934,6 +2937,7 @@ function mergeBeyondAiSection(
     ...defaults,
     ...stored,
     visible: stored.visible !== false,
+    visual: "workspace",
     workspaceImageUrl:
       typeof stored.workspaceImageUrl === "string" &&
       stored.workspaceImageUrl.trim()

@@ -91,9 +91,10 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
         <div>
           <h2 className="font-semibold">Beyond AI section</h2>
           <p className="mt-0.5 text-xs text-slate-500">
-            Full homepage block: badges, copy, CTAs, workspace photo, highlight
-            tiles, and the four bottom features. Save home after text edits;
-            photo uploads save immediately.
+            Live homepage uses the desk-and-laptop workspace photo — not the old
+            2×2 site grid. Edit the photo, copy, highlight tiles, and bottom
+            features here. Photo uploads save immediately; save Home after text
+            edits.
           </p>
         </div>
         <label className="flex items-center gap-2 text-xs text-slate-500">
@@ -107,7 +108,7 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
       </div>
 
       <OrbitImageField
-        label="Right-side workspace photo"
+        label="Live homepage photo (desk + laptop)"
         value={value.workspaceImageUrl ?? ""}
         onChange={(workspaceImageUrl) => patch({ workspaceImageUrl })}
         onCommit={(workspaceImageUrl) => patch({ workspaceImageUrl }, true)}
@@ -369,7 +370,14 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
         </div>
       </div>
 
-      <div className="space-y-3">
+      <details className="space-y-3 rounded-xl border border-slate-200 p-3">
+        <summary className="cursor-pointer text-sm font-semibold text-slate-800">
+          Archived 2×2 site cards — not shown on the homepage
+        </summary>
+        <p className="text-xs text-slate-500">
+          Kept so older uploads are not lost. The live Beyond AI section only
+          uses the workspace photo above.
+        </p>
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-slate-800">
             Extra site images
@@ -525,7 +533,7 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
             </div>
           </div>
         ))}
-      </div>
+      </details>
     </section>
   );
 }
