@@ -19,6 +19,25 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: "/domains",
+        destination: "/domain-name-search",
+        permanent: true,
+      },
+      {
+        source: "/domains/:path*",
+        destination: "/domain-name-search",
+        permanent: true,
+      },
+      {
+        source: "/domain-search",
+        destination: "/domain-name-search",
+        permanent: true,
+      },
+    ];
+  },
   experimental: {
     optimizePackageImports: ["lucide-react", "framer-motion"],
     serverActions: {

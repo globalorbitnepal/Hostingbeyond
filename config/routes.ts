@@ -4,7 +4,8 @@
 
 export const routes = {
   home: "/",
-  domains: "/domains",
+  domains: "/domain-name-search",
+  domainSearch: "/domain-name-search",
   businessEmail: "/business-email",
   hosting: "/hosting",
   vps: "/vps",

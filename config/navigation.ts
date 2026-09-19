@@ -16,10 +16,10 @@ export const mainNavigation: NavItem[] = [
     label: "Domains",
     href: routes.domains,
     children: [
-      { label: "Register Domain", href: `${routes.domains}/register` },
-      { label: "Transfer Domain", href: `${routes.domains}/transfer` },
-      { label: "Domain Pricing", href: `${routes.domains}/pricing` },
-      { label: "WHOIS Lookup", href: `${routes.domains}/whois` },
+      { label: "Domain Name Search", href: routes.domainSearch },
+      { label: "Bulk Domain Search", href: `${routes.domainSearch}#search` },
+      { label: "Domain Pricing", href: `${routes.domainSearch}#pricing` },
+      { label: "Transfer Domain", href: `${routes.domainSearch}#transfer` },
     ],
   },
   {
