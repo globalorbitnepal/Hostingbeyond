@@ -3257,6 +3257,29 @@ function mergeStoryBandSection(
   };
 }
 
+/**
+ * Saved content still links to the retired /domains tree. Rewriting those
+ * hrefs keeps stored menus, cards and footers on the live search page.
+ */
+function retargetLegacyDomainLinks<T>(value: T): T {
+  if (typeof value === "string") {
+    return (
+      /^\/domains(\/|\?|#|$)/.test(value) ? routes.domainSearch : value
+    ) as T;
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => retargetLegacyDomainLinks(item)) as T;
+  }
+  if (value && typeof value === "object") {
+    const next: Record<string, unknown> = {};
+    for (const [key, item] of Object.entries(value)) {
+      next[key] = retargetLegacyDomainLinks(item);
+    }
+    return next as T;
+  }
+  return value;
+}
+
 function mergePowerTilesSection(
   stored?: Partial<CmsPowerTilesContent> | null,
 ): CmsPowerTilesContent {
@@ -4016,7 +4039,7 @@ export function mergeHomeSections(
           /^cloud\s*&\s*vps$/i.test(item.label.trim())),
     );
 
-  return {
+  return retargetLegacyDomainLinks({
     ...defaults,
     ...stored,
     hero,
@@ -4152,5 +4175,5 @@ export function mergeHomeSections(
         };
       });
     })(),
-  };
+  });
 }
