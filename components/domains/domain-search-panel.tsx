@@ -28,6 +28,10 @@ function cartHref(domain: string) {
   return `${routes.getStarted}?domain=${encodeURIComponent(domain)}`;
 }
 
+function parseBulkLines(value: string) {
+  return Math.min(50, value.split(/[\s,;]+/).filter(Boolean).length);
+}
+
 function StatusPill({ status }: { status: DomainResult["status"] }) {
   if (status === "available") {
     return (
@@ -246,7 +250,9 @@ export function DomainSearchPanel({
               key={tab.id}
               type="button"
               role="tab"
+              id={`domain-mode-${tab.id}`}
               aria-selected={active}
+              aria-controls="domain-mode-panel"
               onClick={() => {
                 setMode(tab.id);
                 setError("");
@@ -266,7 +272,13 @@ export function DomainSearchPanel({
       </div>
 
       {mode === "single" ? (
-        <form onSubmit={onSingleSubmit} className="mt-4">
+        <form
+          onSubmit={onSingleSubmit}
+          className="mt-4"
+          id="domain-mode-panel"
+          role="tabpanel"
+          aria-labelledby="domain-mode-single"
+        >
           <label htmlFor="domain-name-search" className="sr-only">
             Search for a domain name
           </label>
@@ -324,7 +336,13 @@ export function DomainSearchPanel({
           </div>
         </form>
       ) : (
-        <form onSubmit={onBulkSubmit} className="mt-4">
+        <form
+          onSubmit={onBulkSubmit}
+          className="mt-4"
+          id="domain-mode-panel"
+          role="tabpanel"
+          aria-labelledby="domain-mode-bulk"
+        >
           <label
             htmlFor="domain-bulk-search"
             className="block text-[12px] font-bold tracking-wide text-slate-500 uppercase"
@@ -341,7 +359,10 @@ export function DomainSearchPanel({
           />
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
             <p className="text-[12.5px] text-slate-500">
-              Ideal for agencies checking a whole brand list at once.
+              Ideal for agencies checking a whole brand list at once ·{" "}
+              <span className="font-bold text-[#4c1d95]">
+                {parseBulkLines(bulk)}/50 names
+              </span>
             </p>
             <button
               type="submit"

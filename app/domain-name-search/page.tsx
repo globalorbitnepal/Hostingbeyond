@@ -265,6 +265,14 @@ export default async function DomainNameSearchPage({
             aria-hidden
             className="pointer-events-none absolute inset-0 bg-[linear-gradient(100deg,rgba(47,28,106,0.95)_0%,rgba(63,32,160,0.7)_42%,rgba(37,99,235,0.18)_100%)]"
           />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -top-16 left-[-10%] h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(147,197,253,0.4),transparent_66%)] blur-2xl"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute bottom-[-25%] left-[18%] h-80 w-80 rounded-full bg-[radial-gradient(circle,rgba(167,139,250,0.3),transparent_68%)] blur-3xl"
+          />
 
           <div className="hb-shell relative z-10">
             <nav aria-label="Breadcrumb" className="mb-5">

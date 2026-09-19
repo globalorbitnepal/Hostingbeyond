@@ -110,7 +110,7 @@ export function DomainVideoSection() {
                         "flex w-full items-start gap-3 rounded-2xl border px-3.5 py-3 text-left transition",
                         active
                           ? "border-white bg-white shadow-[0_16px_34px_-20px_rgba(15,10,40,0.7)]"
-                          : "border-white/45 bg-white/12 hover:bg-white/20",
+                          : "border-white/50 bg-white/18 hover:bg-white/28",
                       )}
                     >
                       <span
@@ -135,7 +135,7 @@ export function DomainVideoSection() {
                         <span
                           className={cn(
                             "mt-0.5 block text-[12.5px] leading-snug",
-                            active ? "text-slate-600" : "text-white/80",
+                            active ? "text-slate-600" : "text-white/90",
                           )}
                         >
                           {item.caption}
