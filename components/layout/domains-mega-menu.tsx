@@ -18,7 +18,7 @@ const GROUPS = [
     label: "Registration & Lookup",
     items: [
       {
-        href: "/#domain-search",
+        href: routes.domainSearch,
         title: "Search Your Domain",
         description:
           "Find a unique name for your brand and start building today.",
@@ -26,10 +26,9 @@ const GROUPS = [
         tone: "blue",
       },
       {
-        href: `${routes.domains}/whois`,
-        title: "WHOIS Lookup",
-        description:
-          "Instantly check domain ownership and registration details.",
+        href: `${routes.domainSearch}#search`,
+        title: "Bulk Domain Search",
+        description: "Check up to 50 names and their prices in one go.",
         icon: ShieldCheck,
         tone: "amber",
       },
@@ -47,7 +46,7 @@ const GROUPS = [
         tone: "cyan",
       },
       {
-        href: `${routes.domains}/transfer`,
+        href: `${routes.domainSearch}#transfer`,
         title: "Transfer Your Domain",
         description:
           "Bring your domain here and manage hosting, mail, and DNS together.",
@@ -111,7 +110,7 @@ function PromoPanel({
       </div>
 
       <Link
-        href="/#domain-search"
+        href={routes.domainSearch}
         onClick={onNavigate}
         className="relative mt-6 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-white text-[13.5px] font-bold text-[#3730a3] shadow-[0_12px_28px_rgba(15,23,42,0.18)] transition hover:bg-indigo-50"
       >

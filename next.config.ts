@@ -36,6 +36,11 @@ const nextConfig: NextConfig = {
         destination: "/domain-name-search",
         permanent: true,
       },
+      {
+        source: "/domain-name-search/:path*",
+        destination: "/domain-name-search",
+        permanent: false,
+      },
     ];
   },
   experimental: {
