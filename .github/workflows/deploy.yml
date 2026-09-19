@@ -205,7 +205,8 @@ jobs:
 
           echo "==> Allowing the runtime user to write the Next cache"
           mkdir -p .next/cache/images .next/cache/fetch-cache
-          chmod -R 0777 .next/cache
+          # Only the top level dirs; entries inside belong to the runtime user.
+          chmod 0777 .next/cache .next/cache/images .next/cache/fetch-cache 2>/dev/null || true
 
           echo "==> Restarting ONLY existing HostingBeyond PM2 process"
           sudo -n -u hostingbeyond -H /usr/local/sbin/hostingbeyond-ctl restart
