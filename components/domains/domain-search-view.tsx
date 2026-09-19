@@ -128,11 +128,11 @@ export function DomainSearchView({
           priority
           sizes="100vw"
           aria-hidden
-          className="pointer-events-none object-cover object-[72%_center] opacity-70 mix-blend-screen"
+          className="pointer-events-none object-cover object-[62%_center] opacity-75 mix-blend-screen"
         />
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[linear-gradient(100deg,rgba(35,18,84,0.96)_0%,rgba(63,32,160,0.78)_44%,rgba(37,99,235,0.2)_100%)]"
+          className="pointer-events-none absolute inset-0 bg-[linear-gradient(100deg,rgba(35,18,84,0.94)_0%,rgba(58,29,150,0.62)_46%,rgba(37,99,235,0.16)_100%)]"
         />
         <div
           aria-hidden
@@ -160,8 +160,8 @@ export function DomainSearchView({
             </ol>
           </nav>
 
-          <div className="grid gap-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-center lg:gap-10">
-            <div className="max-w-xl">
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-start lg:gap-10">
+            <div className="max-w-xl lg:sticky lg:top-24">
               <p className="inline-flex items-center gap-2 rounded-full border border-white/45 bg-white/15 px-3.5 py-1.5 text-[11.5px] font-bold tracking-wide text-white uppercase backdrop-blur-xl">
                 <Sparkles className="size-3.5" />
                 {eyebrow}

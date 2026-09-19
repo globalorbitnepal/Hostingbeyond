@@ -202,7 +202,7 @@ export function formatPrice(value: number) {
 /** Discount shown as a badge, e.g. 95 for "Save 95%". */
 export function savePercent(price: TldPrice) {
   if (price.renew <= 0 || price.register >= price.renew) return 0;
-  return Math.round((1 - price.register / price.renew) * 100);
+  return Math.min(99, Math.round((1 - price.register / price.renew) * 100));
 }
 
 /** Splits "myshop.com" into its name and extension parts. */
