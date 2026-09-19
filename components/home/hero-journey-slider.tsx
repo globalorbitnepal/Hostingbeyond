@@ -275,10 +275,21 @@ function GrowScene({
   );
 }
 
-function ManageScene({ playing }: { playing: boolean }) {
+function ManageScene({ image, playing }: { image?: string; playing: boolean }) {
+  const src = image?.trim() || "";
   return (
     <div className="absolute inset-0 bg-[linear-gradient(180deg,#f8f6ff_0%,#eef3ff_100%)] px-4 py-5">
-      <div className="flex h-full flex-col">
+      {src ? (
+        <Image
+          src={src}
+          alt=""
+          fill
+          unoptimized={src.includes("/uploads/")}
+          sizes="(max-width: 1024px) 100vw, 28vw"
+          className="object-cover opacity-35"
+        />
+      ) : null}
+      <div className="relative flex h-full flex-col">
         <div className="text-center">
           <span className="mx-auto mb-2 grid size-10 place-items-center rounded-2xl bg-gradient-to-br from-[#2563eb] to-[#673de6] text-lg text-white shadow-[0_10px_24px_rgba(103,61,230,0.35)]">
             ✦
@@ -311,10 +322,7 @@ function ManageScene({ playing }: { playing: boolean }) {
 }
 
 function scenePhoto(slide: CmsJourneySlide, fallback: string) {
-  const src = slide.image?.trim() || "";
-  if (!src) return fallback;
-  if (/\/journey\/(discover|create|scale|beyond)\./i.test(src)) return fallback;
-  return src;
+  return slide.image?.trim() || fallback;
 }
 
 function sceneKind(slide: CmsJourneySlide, index: number) {
@@ -426,7 +434,12 @@ export function HeroJourneySlider({
                     playing={on}
                   />
                 ) : null}
-                {kind === "manage" ? <ManageScene playing={on} /> : null}
+                {kind === "manage" ? (
+                  <ManageScene
+                    image={scenePhoto(slide, "/images/journey/beyond.webp")}
+                    playing={on}
+                  />
+                ) : null}
               </GlassCard>
             );
           })}
