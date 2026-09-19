@@ -17,9 +17,7 @@ export const mainNavigation: NavItem[] = [
     href: routes.domains,
     children: [
       { label: "Domain Name Search", href: routes.domainSearch },
-      { label: "Bulk Domain Search", href: `${routes.domainSearch}#search` },
-      { label: "Domain Pricing", href: `${routes.domainSearch}#pricing` },
-      { label: "Transfer Domain", href: `${routes.domainSearch}#transfer` },
+      { label: "Bulk Domain Search", href: routes.bulkDomainSearch },
     ],
   },
   {

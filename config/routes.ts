@@ -6,6 +6,7 @@ export const routes = {
   home: "/",
   domains: "/domain-name-search",
   domainSearch: "/domain-name-search",
+  bulkDomainSearch: "/bulk-domain-search",
   businessEmail: "/business-email",
   hosting: "/hosting",
   vps: "/vps",

@@ -11,6 +11,7 @@ import {
   Loader2,
   Lock,
   Search,
+  Sparkles,
   X,
 } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
@@ -20,16 +21,41 @@ import type { DomainResult } from "@/lib/domains/availability";
 import { SUGGESTED_TLDS, formatPrice } from "@/lib/domains/tlds";
 import { cn } from "@/lib/utils";
 
-type Mode = "single" | "bulk";
+export type SearchMode = "single" | "bulk";
 
 const QUICK_TLDS = SUGGESTED_TLDS.slice(0, 6);
+const BULK_LIMIT = 50;
+
+const MODE_TABS: Array<{
+  id: SearchMode;
+  label: string;
+  href: string;
+  icon: typeof Search;
+}> = [
+  {
+    id: "single",
+    label: "Search a domain",
+    href: routes.domainSearch,
+    icon: Search,
+  },
+  {
+    id: "bulk",
+    label: "Bulk search",
+    href: routes.bulkDomainSearch,
+    icon: Layers,
+  },
+];
 
 function cartHref(domain: string) {
   return `${routes.getStarted}?domain=${encodeURIComponent(domain)}`;
 }
 
-function parseBulkLines(value: string) {
-  return Math.min(50, value.split(/[\s,;]+/).filter(Boolean).length);
+function transferHref(domain: string) {
+  return `${routes.getStarted}?transfer=${encodeURIComponent(domain)}`;
+}
+
+function countBulkLines(value: string) {
+  return Math.min(BULK_LIMIT, value.split(/[\s,;]+/).filter(Boolean).length);
 }
 
 function StatusPill({ status }: { status: DomainResult["status"] }) {
@@ -84,8 +110,8 @@ function ResultRow({
       className={cn(
         "rounded-2xl border p-4 transition",
         featured
-          ? "border-[#c7b8ff] bg-[#f7f4ff] sm:p-5"
-          : "border-slate-200 bg-white hover:border-[#c7b8ff]",
+          ? "border-[#c7b8ff] bg-gradient-to-br from-[#f8f5ff] to-white sm:p-5"
+          : "border-slate-200 bg-white hover:border-[#c7b8ff] hover:shadow-[0_12px_28px_-22px_rgba(47,28,106,0.6)]",
       )}
     >
       <div
@@ -133,7 +159,7 @@ function ResultRow({
             </Link>
           ) : result.status === "taken" ? (
             <Link
-              href="#transfer"
+              href={transferHref(result.domain)}
               className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full border border-[#c7b8ff] bg-white px-5 text-[13.5px] font-bold whitespace-nowrap text-[#4c1d95] transition hover:bg-[#f7f4ff]"
             >
               Transfer it
@@ -158,12 +184,13 @@ function SkeletonRow() {
 }
 
 export function DomainSearchPanel({
+  mode,
   initialQuery = "",
 }: {
+  mode: SearchMode;
   initialQuery?: string;
 }) {
   const reduce = useReducedMotion();
-  const [mode, setMode] = useState<Mode>("single");
   const [query, setQuery] = useState(initialQuery);
   const [bulk, setBulk] = useState("");
   const [loading, setLoading] = useState(false);
@@ -203,8 +230,10 @@ export function DomainSearchPanel({
   );
 
   useEffect(() => {
-    if (initialQuery.trim()) void run({ query: initialQuery });
-  }, [initialQuery, run]);
+    if (mode === "single" && initialQuery.trim()) {
+      void run({ query: initialQuery });
+    }
+  }, [initialQuery, mode, run]);
 
   function onSingleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -218,7 +247,7 @@ export function DomainSearchPanel({
   function onBulkSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!bulk.trim()) {
-      setError("Add one domain per line, up to 50 at a time.");
+      setError(`Add one domain per line, up to ${BULK_LIMIT} at a time.`);
       return;
     }
     void run({ bulk });
@@ -231,32 +260,19 @@ export function DomainSearchPanel({
   ).length;
 
   return (
-    <div className="rounded-[28px] border border-white/60 bg-white p-4 shadow-[0_30px_70px_-30px_rgba(15,10,40,0.55)] sm:rounded-[32px] sm:p-6">
-      <div
-        role="tablist"
-        aria-label="Domain search mode"
+    <div className="rounded-[28px] border border-white/70 bg-white p-4 shadow-[0_34px_80px_-34px_rgba(15,10,40,0.6)] ring-1 ring-black/[0.03] sm:rounded-[32px] sm:p-6">
+      <nav
+        aria-label="Search mode"
         className="flex w-full gap-1 rounded-full bg-[#f3f1ff] p-1"
       >
-        {(
-          [
-            { id: "single", label: "Search a domain", icon: Search },
-            { id: "bulk", label: "Bulk search", icon: Layers },
-          ] as const
-        ).map((tab) => {
+        {MODE_TABS.map((tab) => {
           const Icon = tab.icon;
           const active = mode === tab.id;
           return (
-            <button
+            <Link
               key={tab.id}
-              type="button"
-              role="tab"
-              id={`domain-mode-${tab.id}`}
-              aria-selected={active}
-              aria-controls="domain-mode-panel"
-              onClick={() => {
-                setMode(tab.id);
-                setError("");
-              }}
+              href={tab.href}
+              aria-current={active ? "page" : undefined}
               className={cn(
                 "inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full text-[13px] font-bold transition sm:text-[14px]",
                 active
@@ -266,23 +282,17 @@ export function DomainSearchPanel({
             >
               <Icon className="size-4" />
               {tab.label}
-            </button>
+            </Link>
           );
         })}
-      </div>
+      </nav>
 
       {mode === "single" ? (
-        <form
-          onSubmit={onSingleSubmit}
-          className="mt-4"
-          id="domain-mode-panel"
-          role="tabpanel"
-          aria-labelledby="domain-mode-single"
-        >
+        <form onSubmit={onSingleSubmit} className="mt-4">
           <label htmlFor="domain-name-search" className="sr-only">
             Search for a domain name
           </label>
-          <div className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-2 focus-within:border-[#673de6] sm:flex-row sm:items-center">
+          <div className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-2 transition focus-within:border-[#673de6] focus-within:ring-4 focus-within:ring-[#673de6]/10 sm:flex-row sm:items-center">
             <div className="flex min-w-0 flex-1 items-center gap-2 px-2">
               <Search className="size-5 shrink-0 text-[#673de6]" />
               <input
@@ -299,7 +309,7 @@ export function DomainSearchPanel({
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#2563eb] to-[#673de6] px-6 text-[14px] font-bold text-white transition hover:brightness-110 disabled:opacity-70 sm:h-12"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#2563eb] to-[#673de6] px-6 text-[14px] font-bold text-white shadow-[0_12px_26px_-14px_rgba(37,99,235,0.9)] transition hover:brightness-110 disabled:opacity-70"
             >
               {loading ? (
                 <Loader2 className="size-4 animate-spin" />
@@ -336,38 +346,34 @@ export function DomainSearchPanel({
           </div>
         </form>
       ) : (
-        <form
-          onSubmit={onBulkSubmit}
-          className="mt-4"
-          id="domain-mode-panel"
-          role="tabpanel"
-          aria-labelledby="domain-mode-bulk"
-        >
-          <label
-            htmlFor="domain-bulk-search"
-            className="block text-[12px] font-bold tracking-wide text-slate-500 uppercase"
-          >
-            One domain per line — up to 50
-          </label>
+        <form onSubmit={onBulkSubmit} className="mt-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <label
+              htmlFor="domain-bulk-search"
+              className="text-[12px] font-bold tracking-wide text-slate-500 uppercase"
+            >
+              One domain per line — up to {BULK_LIMIT}
+            </label>
+            <span className="text-[12px] font-bold text-[#4c1d95]">
+              {countBulkLines(bulk)}/{BULK_LIMIT} names
+            </span>
+          </div>
           <textarea
             id="domain-bulk-search"
             value={bulk}
             onChange={(event) => setBulk(event.target.value)}
-            rows={6}
+            rows={7}
             placeholder={"yourbrand.com\nyourbrand.io\nyourbrand.store"}
-            className="mt-2 w-full rounded-2xl border border-slate-200 bg-white p-4 font-mono text-[13.5px] leading-relaxed text-[#1a1035] outline-none focus:border-[#673de6]"
+            className="mt-2 w-full rounded-2xl border border-slate-200 bg-white p-4 font-mono text-[13.5px] leading-relaxed text-[#1a1035] transition outline-none focus:border-[#673de6] focus:ring-4 focus:ring-[#673de6]/10"
           />
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
             <p className="text-[12.5px] text-slate-500">
-              Ideal for agencies checking a whole brand list at once ·{" "}
-              <span className="font-bold text-[#4c1d95]">
-                {parseBulkLines(bulk)}/50 names
-              </span>
+              Built for agencies clearing a whole brand shortlist at once.
             </p>
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex h-12 items-center gap-2 rounded-xl bg-gradient-to-r from-[#2563eb] to-[#673de6] px-6 text-[14px] font-bold text-white transition hover:brightness-110 disabled:opacity-70"
+              className="inline-flex h-12 items-center gap-2 rounded-xl bg-gradient-to-r from-[#2563eb] to-[#673de6] px-6 text-[14px] font-bold text-white shadow-[0_12px_26px_-14px_rgba(37,99,235,0.9)] transition hover:brightness-110 disabled:opacity-70"
             >
               {loading ? (
                 <Loader2 className="size-4 animate-spin" />
@@ -429,9 +435,11 @@ export function DomainSearchPanel({
         </AnimatePresence>
 
         {!loading && results.length === 0 && !error ? (
-          <p className="text-[13px] leading-relaxed text-slate-500">
-            Type any idea — we check {SUGGESTED_TLDS.length} extensions at once
-            and show first-year plus renewal pricing before you buy.
+          <p className="flex items-start gap-2 text-[13px] leading-relaxed text-slate-500">
+            <Sparkles className="mt-0.5 size-4 shrink-0 text-[#673de6]" />
+            {mode === "bulk"
+              ? `Paste your shortlist — we check every line and show first-year plus renewal pricing side by side.`
+              : `Type any idea — we check ${SUGGESTED_TLDS.length} extensions at once and show first-year plus renewal pricing before you buy.`}
           </p>
         ) : null}
       </div>

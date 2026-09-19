@@ -9,6 +9,7 @@ import {
   TLD_CATEGORIES,
   TLD_PRICES,
   formatPrice,
+  savePercent,
   type TldCategory,
 } from "@/lib/domains/tlds";
 import { cn } from "@/lib/utils";
@@ -30,7 +31,7 @@ export function DomainPriceTable() {
   }, [filter, term]);
 
   return (
-    <div className="rounded-[28px] border border-white/70 bg-white p-4 shadow-[0_24px_60px_-34px_rgba(15,10,40,0.35)] sm:p-6">
+    <div className="rounded-[28px] border border-white/70 bg-white p-4 shadow-[0_28px_70px_-40px_rgba(15,10,40,0.5)] sm:p-6">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div
           role="tablist"
@@ -71,66 +72,81 @@ export function DomainPriceTable() {
         </label>
       </div>
 
-      <div className="mt-4 hidden grid-cols-[1fr_repeat(3,0.85fr)_auto] gap-4 border-b border-slate-200 px-4 pb-2 text-[11.5px] font-extrabold tracking-wide text-slate-500 uppercase lg:grid">
+      <div className="mt-4 hidden grid-cols-[1.1fr_repeat(3,0.8fr)_auto] gap-4 border-b border-slate-200 px-4 pb-2 text-[11.5px] font-extrabold tracking-wide text-slate-500 uppercase lg:grid">
         <span>Extension</span>
         <span>First year</span>
-        <span>Renewal</span>
+        <span>Renews at</span>
         <span>Transfer</span>
         <span className="text-right">Register</span>
       </div>
 
       <ul className="mt-2 divide-y divide-slate-100">
-        {rows.map((row) => (
-          <li
-            key={row.tld}
-            className="grid grid-cols-2 items-center gap-3 px-1 py-4 sm:px-4 lg:grid-cols-[1fr_repeat(3,0.85fr)_auto] lg:gap-4"
-          >
-            <div className="col-span-2 lg:col-span-1">
-              <p className="text-[17px] font-extrabold tracking-tight text-[#2f1c6a]">
-                {row.tld}
-              </p>
-              {row.note ? (
-                <p className="mt-0.5 text-[12px] text-slate-500">{row.note}</p>
-              ) : null}
-            </div>
+        {rows.map((row) => {
+          const save = savePercent(row);
+          return (
+            <li
+              key={row.tld}
+              className="grid grid-cols-2 items-center gap-3 px-1 py-4 sm:px-4 lg:grid-cols-[1.1fr_repeat(3,0.8fr)_auto] lg:gap-4"
+            >
+              <div className="col-span-2 lg:col-span-1">
+                <div className="flex items-center gap-2">
+                  <p className="text-[17px] font-extrabold tracking-tight text-[#2f1c6a]">
+                    {row.tld}
+                  </p>
+                  {save >= 40 ? (
+                    <span className="rounded-full bg-[#dcfce7] px-2 py-0.5 text-[10.5px] font-extrabold tracking-wide text-[#15803d] uppercase">
+                      Save {save}%
+                    </span>
+                  ) : null}
+                </div>
+                {row.note ? (
+                  <p className="mt-0.5 text-[12px] text-slate-500">
+                    {row.note}
+                  </p>
+                ) : null}
+              </div>
 
-            <div>
-              <p className="text-[11px] font-bold tracking-wide text-slate-400 uppercase lg:hidden">
-                First year
-              </p>
-              <p className="text-[16px] font-extrabold text-[#15803d]">
-                {formatPrice(row.register)}
-              </p>
-            </div>
+              <div>
+                <p className="text-[11px] font-bold tracking-wide text-slate-400 uppercase lg:hidden">
+                  First year
+                </p>
+                <p className="text-[16px] font-extrabold text-[#15803d]">
+                  {formatPrice(row.register)}
+                </p>
+              </div>
 
-            <div>
-              <p className="text-[11px] font-bold tracking-wide text-slate-400 uppercase lg:hidden">
-                Renewal
-              </p>
-              <p className="text-[14.5px] font-bold text-slate-700">
-                {formatPrice(row.renew)}
-              </p>
-            </div>
+              <div>
+                <p className="text-[11px] font-bold tracking-wide text-slate-400 uppercase lg:hidden">
+                  Renews at
+                </p>
+                <p className="text-[14.5px] font-bold text-slate-700">
+                  {formatPrice(row.renew)}
+                  <span className="text-[11.5px] font-semibold text-slate-400">
+                    /yr
+                  </span>
+                </p>
+              </div>
 
-            <div>
-              <p className="text-[11px] font-bold tracking-wide text-slate-400 uppercase lg:hidden">
-                Transfer
-              </p>
-              <p className="text-[14.5px] font-bold text-slate-700">
-                {formatPrice(row.transfer)}
-              </p>
-            </div>
+              <div>
+                <p className="text-[11px] font-bold tracking-wide text-slate-400 uppercase lg:hidden">
+                  Transfer
+                </p>
+                <p className="text-[14.5px] font-bold text-slate-700">
+                  {formatPrice(row.transfer)}
+                </p>
+              </div>
 
-            <div className="flex justify-end">
-              <Link
-                href={`${routes.getStarted}?tld=${encodeURIComponent(row.tld)}`}
-                className="inline-flex h-10 items-center rounded-full border border-[#c7b8ff] bg-white px-4 text-[13px] font-bold text-[#4c1d95] transition hover:bg-[#f7f4ff]"
-              >
-                Register
-              </Link>
-            </div>
-          </li>
-        ))}
+              <div className="flex justify-end">
+                <Link
+                  href={`${routes.getStarted}?tld=${encodeURIComponent(row.tld)}`}
+                  className="inline-flex h-10 items-center rounded-full border border-[#c7b8ff] bg-white px-4 text-[13px] font-bold text-[#4c1d95] transition hover:bg-[#f7f4ff]"
+                >
+                  Register
+                </Link>
+              </div>
+            </li>
+          );
+        })}
       </ul>
 
       {rows.length === 0 ? (
@@ -140,9 +156,9 @@ export function DomainPriceTable() {
       ) : null}
 
       <p className="mt-4 text-[12px] leading-relaxed text-slate-500">
-        Prices are per year in USD and exclude local taxes. First-year pricing
-        applies to new registrations; renewals use the standard rate shown
-        above.
+        Prices are per year in USD and exclude local taxes and the $0.20 ICANN
+        fee. First-year rates apply to new registrations; renewals use the
+        standard rate shown above. WHOIS privacy and DNS are always free.
       </p>
     </div>
   );

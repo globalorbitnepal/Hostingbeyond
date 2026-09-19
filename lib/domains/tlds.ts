@@ -1,10 +1,11 @@
 /**
- * Domain catalogue used by the domain search page and the search API.
- * Prices are USD per year. `register` is the first-year promo price.
+ * Domain catalogue used by the search pages and the availability API.
+ * Prices are USD per year and mirror current market rates: `register` is the
+ * promotional first-year price, `renew` the standard rate after year one.
  */
 
 export type TldCategory =
-  "popular" | "business" | "tech" | "ecommerce" | "creative";
+  "popular" | "business" | "technology" | "ecommerce" | "creative";
 
 export type TldPrice = {
   tld: string;
@@ -17,172 +18,160 @@ export type TldPrice = {
 
 export const TLD_CATEGORIES: Array<{ id: TldCategory | "all"; label: string }> =
   [
-    { id: "all", label: "All extensions" },
     { id: "popular", label: "Most popular" },
     { id: "business", label: "Business" },
-    { id: "tech", label: "Tech & AI" },
+    { id: "technology", label: "Technology" },
     { id: "ecommerce", label: "Online store" },
     { id: "creative", label: "Creative" },
+    { id: "all", label: "All extensions" },
   ];
 
 export const TLD_PRICES: TldPrice[] = [
   {
     tld: ".com",
-    register: 7.99,
-    renew: 15.99,
-    transfer: 12.99,
+    register: 0.01,
+    renew: 19.99,
+    transfer: 9.99,
     categories: ["popular", "business"],
     note: "The one everyone types first",
   },
   {
-    tld: ".net",
-    register: 6.99,
-    renew: 17.99,
-    transfer: 14.99,
-    categories: ["popular", "tech"],
+    tld: ".online",
+    register: 0.99,
+    renew: 35.99,
+    transfer: 30.99,
+    categories: ["popular", "ecommerce"],
+    note: "Generic and universal",
   },
   {
-    tld: ".org",
-    register: 5.99,
-    renew: 14.99,
-    transfer: 11.99,
-    categories: ["popular", "business"],
+    tld: ".shop",
+    register: 0.99,
+    renew: 39.99,
+    transfer: 34.99,
+    categories: ["ecommerce"],
+    note: "Made for selling",
   },
   {
-    tld: ".io",
-    register: 34.99,
+    tld: ".store",
+    register: 0.99,
     renew: 54.99,
-    transfer: 49.99,
-    categories: ["tech"],
-    note: "Loved by startups and SaaS",
+    transfer: 46.99,
+    categories: ["ecommerce"],
   },
   {
-    tld: ".ai",
-    register: 69.99,
-    renew: 99.99,
-    transfer: 89.99,
-    categories: ["tech"],
+    tld: ".site",
+    register: 0.99,
+    renew: 38.99,
+    transfer: 32.99,
+    categories: ["creative"],
   },
   {
-    tld: ".dev",
-    register: 3.99,
-    renew: 14.99,
-    transfer: 12.99,
-    categories: ["popular", "tech"],
-    note: "HTTPS enforced by default",
-  },
-  {
-    tld: ".app",
-    register: 9.99,
-    renew: 19.99,
-    transfer: 17.99,
-    categories: ["tech"],
+    tld: ".space",
+    register: 0.99,
+    renew: 32.99,
+    transfer: 27.99,
+    categories: ["creative"],
   },
   {
     tld: ".cloud",
-    register: 3.99,
-    renew: 19.99,
-    transfer: 17.99,
-    categories: ["tech"],
+    register: 1.99,
+    renew: 25.99,
+    transfer: 21.99,
+    categories: ["technology"],
   },
   {
-    tld: ".co",
-    register: 9.99,
+    tld: ".xyz",
+    register: 1.99,
+    renew: 18.99,
+    transfer: 14.99,
+    categories: ["popular", "creative"],
+  },
+  {
+    tld: ".icu",
+    register: 1.99,
+    renew: 15.99,
+    transfer: 12.99,
+    categories: ["creative"],
+  },
+  {
+    tld: ".blog",
+    register: 1.99,
     renew: 29.99,
-    transfer: 26.99,
-    categories: ["popular", "business"],
+    transfer: 24.99,
+    categories: ["creative"],
   },
   {
-    tld: ".biz",
-    register: 5.99,
-    renew: 21.99,
-    transfer: 18.99,
+    tld: ".pro",
+    register: 2.99,
+    renew: 31.99,
+    transfer: 23.99,
     categories: ["business"],
   },
   {
     tld: ".info",
     register: 3.99,
-    renew: 24.99,
-    transfer: 19.99,
+    renew: 31.99,
+    transfer: 25.99,
     categories: ["business"],
-  },
-  {
-    tld: ".agency",
-    register: 6.99,
-    renew: 29.99,
-    transfer: 26.99,
-    categories: ["business"],
-  },
-  {
-    tld: ".store",
-    register: 1.99,
-    renew: 39.99,
-    transfer: 34.99,
-    categories: ["ecommerce"],
-    note: "Best value first year",
-  },
-  {
-    tld: ".shop",
-    register: 1.99,
-    renew: 35.99,
-    transfer: 31.99,
-    categories: ["ecommerce"],
-  },
-  {
-    tld: ".online",
-    register: 1.49,
-    renew: 34.99,
-    transfer: 29.99,
-    categories: ["ecommerce", "popular"],
-  },
-  {
-    tld: ".site",
-    register: 1.49,
-    renew: 32.99,
-    transfer: 28.99,
-    categories: ["creative"],
-  },
-  {
-    tld: ".xyz",
-    register: 1.29,
-    renew: 13.99,
-    transfer: 11.99,
-    categories: ["creative", "popular"],
-  },
-  {
-    tld: ".blog",
-    register: 4.99,
-    renew: 29.99,
-    transfer: 26.99,
-    categories: ["creative"],
-  },
-  {
-    tld: ".design",
-    register: 9.99,
-    renew: 49.99,
-    transfer: 44.99,
-    categories: ["creative"],
-  },
-  {
-    tld: ".me",
-    register: 4.99,
-    renew: 24.99,
-    transfer: 21.99,
-    categories: ["creative"],
   },
   {
     tld: ".tech",
-    register: 4.99,
-    renew: 49.99,
-    transfer: 44.99,
-    categories: ["tech"],
+    register: 6.99,
+    renew: 63.99,
+    transfer: 53.99,
+    categories: ["technology"],
   },
   {
-    tld: ".studio",
-    register: 8.99,
-    renew: 32.99,
-    transfer: 29.99,
+    tld: ".me",
+    register: 7.99,
+    renew: 19.99,
+    transfer: 15.99,
     categories: ["creative"],
+  },
+  {
+    tld: ".org",
+    register: 8.99,
+    renew: 17.99,
+    transfer: 12.99,
+    categories: ["popular", "business"],
+  },
+  {
+    tld: ".dev",
+    register: 9.99,
+    renew: 18.99,
+    transfer: 14.99,
+    categories: ["technology"],
+    note: "HTTPS enforced by default",
+  },
+  {
+    tld: ".net",
+    register: 12.74,
+    renew: 17.99,
+    transfer: 14.99,
+    categories: ["popular", "technology"],
+  },
+  {
+    tld: ".co",
+    register: 23.99,
+    renew: 34.99,
+    transfer: 23.99,
+    categories: ["business", "popular"],
+  },
+  {
+    tld: ".io",
+    register: 31.99,
+    renew: 74.99,
+    transfer: 54.99,
+    categories: ["technology"],
+    note: "Loved by startups and SaaS",
+  },
+  {
+    tld: ".ai",
+    register: 89.99,
+    renew: 109.99,
+    transfer: 179.99,
+    categories: ["technology"],
+    note: "Two-year minimum term",
   },
 ];
 
@@ -202,8 +191,18 @@ export const SUGGESTED_TLDS = [
 
 export const PRICE_BY_TLD = new Map(TLD_PRICES.map((item) => [item.tld, item]));
 
+export const CHEAPEST_TLD = [...TLD_PRICES].sort(
+  (a, b) => a.register - b.register,
+)[0];
+
 export function formatPrice(value: number) {
   return `$${value.toFixed(2)}`;
+}
+
+/** Discount shown as a badge, e.g. 95 for "Save 95%". */
+export function savePercent(price: TldPrice) {
+  if (price.renew <= 0 || price.register >= price.renew) return 0;
+  return Math.round((1 - price.register / price.renew) * 100);
 }
 
 /** Splits "myshop.com" into its name and extension parts. */

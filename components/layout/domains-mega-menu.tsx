@@ -26,7 +26,7 @@ const GROUPS = [
         tone: "blue",
       },
       {
-        href: `${routes.domainSearch}#search`,
+        href: routes.bulkDomainSearch,
         title: "Bulk Domain Search",
         description: "Check up to 50 names and their prices in one go.",
         icon: ShieldCheck,
@@ -46,7 +46,7 @@ const GROUPS = [
         tone: "cyan",
       },
       {
-        href: `${routes.domainSearch}#transfer`,
+        href: routes.domainSearch,
         title: "Transfer Your Domain",
         description:
           "Bring your domain here and manage hosting, mail, and DNS together.",
