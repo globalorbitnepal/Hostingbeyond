@@ -4138,7 +4138,19 @@ export function mergeHomeSections(
       if (!next.some((item) => item.label === "Beyond AI")) {
         next.push({ label: "Beyond AI", href: "/beyond-ai" });
       }
-      return next;
+      // Stored menus still point at the retired /domains tree — send those
+      // entries to the domain search page instead of the redirect hop.
+      const domainsItem = defaults.navigation.find(
+        (item) => item.label === "Domains",
+      );
+      return next.map((item) => {
+        if (!/^\/domains(\/|$)/.test(item.href)) return item;
+        return {
+          ...item,
+          href: routes.domainSearch,
+          children: domainsItem?.children?.map((child) => ({ ...child })),
+        };
+      });
     })(),
   };
 }
