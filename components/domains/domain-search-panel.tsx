@@ -69,68 +69,73 @@ function ResultRow({
   featured?: boolean;
 }) {
   const buyable = result.status === "available" || result.status === "premium";
+  const meta = result.message
+    ? result.message
+    : featured
+      ? `Renews at ${formatPrice(result.renew ?? 0)}/yr · free WHOIS privacy · free DNS`
+      : `Renews at ${formatPrice(result.renew ?? 0)}/yr`;
 
   return (
     <div
       className={cn(
-        "flex flex-col gap-3 rounded-2xl border p-4 transition sm:flex-row sm:items-center sm:justify-between sm:gap-4",
+        "rounded-2xl border p-4 transition",
         featured
           ? "border-[#c7b8ff] bg-[#f7f4ff] sm:p-5"
           : "border-slate-200 bg-white hover:border-[#c7b8ff]",
       )}
     >
-      <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-2">
-          <p
-            className={cn(
-              "truncate font-extrabold tracking-tight text-[#1a1035]",
-              featured ? "text-[19px] sm:text-[24px]" : "text-[16px]",
-            )}
-          >
-            {result.name}
-            <span className="text-[#673de6]">{result.tld}</span>
-          </p>
-          <StatusPill status={result.status} />
-        </div>
-        {result.message ? (
-          <p className="mt-1 text-[12.5px] leading-snug text-slate-500">
-            {result.message}
-          </p>
-        ) : (
-          <p className="mt-1 text-[12.5px] leading-snug text-slate-500">
-            Renews at {formatPrice(result.renew ?? 0)}/yr · free WHOIS privacy ·
-            free DNS
-          </p>
+      <div
+        className={cn(
+          "flex flex-col gap-3",
+          featured && "sm:flex-row sm:items-center sm:justify-between sm:gap-4",
         )}
-      </div>
+      >
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+            <p
+              className={cn(
+                "min-w-0 font-extrabold tracking-tight break-words text-[#1a1035]",
+                featured ? "text-[19px] sm:text-[24px]" : "text-[15.5px]",
+              )}
+            >
+              {result.name}
+              <span className="text-[#673de6]">{result.tld}</span>
+            </p>
+            <StatusPill status={result.status} />
+          </div>
+          <p className="mt-1 text-[12.5px] leading-snug text-slate-500">
+            {meta}
+          </p>
+        </div>
 
-      <div className="flex shrink-0 items-center justify-between gap-3 sm:justify-end">
-        {buyable ? (
-          <p className="text-right">
-            <span className="block text-[18px] font-extrabold tracking-tight text-[#1a1035] sm:text-[20px]">
+        <div className="flex shrink-0 items-center justify-between gap-3 sm:justify-end">
+          {buyable ? (
+            <p className="text-[18px] font-extrabold tracking-tight whitespace-nowrap text-[#1a1035] sm:text-[20px]">
               {formatPrice(result.register ?? 0)}
               <span className="text-[12px] font-bold text-slate-500">
                 /1st yr
               </span>
-            </span>
-          </p>
-        ) : null}
-        {buyable ? (
-          <Link
-            href={cartHref(result.domain)}
-            className="inline-flex h-11 items-center gap-1.5 rounded-full bg-[#673de6] px-5 text-[13.5px] font-bold text-white shadow-[0_10px_22px_-10px_rgba(103,61,230,0.85)] transition hover:bg-[#5a31d4]"
-          >
-            Add to cart
-            <ArrowRight className="size-4" />
-          </Link>
-        ) : result.status === "taken" ? (
-          <Link
-            href="#transfer"
-            className="inline-flex h-11 items-center gap-1.5 rounded-full border border-[#c7b8ff] bg-white px-5 text-[13.5px] font-bold text-[#4c1d95] transition hover:bg-[#f7f4ff]"
-          >
-            Transfer it
-          </Link>
-        ) : null}
+            </p>
+          ) : (
+            <span aria-hidden />
+          )}
+          {buyable ? (
+            <Link
+              href={cartHref(result.domain)}
+              className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-[#673de6] px-5 text-[13.5px] font-bold whitespace-nowrap text-white shadow-[0_10px_22px_-10px_rgba(103,61,230,0.85)] transition hover:bg-[#5a31d4]"
+            >
+              Add to cart
+              <ArrowRight className="size-4" />
+            </Link>
+          ) : result.status === "taken" ? (
+            <Link
+              href="#transfer"
+              className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full border border-[#c7b8ff] bg-white px-5 text-[13.5px] font-bold whitespace-nowrap text-[#4c1d95] transition hover:bg-[#f7f4ff]"
+            >
+              Transfer it
+            </Link>
+          ) : null}
+        </div>
       </div>
     </div>
   );
@@ -391,7 +396,7 @@ export function DomainSearchPanel({
                   <p className="pt-2 text-[12px] font-bold tracking-wide text-slate-500 uppercase">
                     {mode === "bulk" ? "Your list" : "Other great matches"}
                   </p>
-                  <div className="grid gap-2.5 lg:grid-cols-2">
+                  <div className="grid gap-2.5 2xl:grid-cols-2">
                     {alternatives.map((item) => (
                       <ResultRow key={item.domain} result={item} />
                     ))}

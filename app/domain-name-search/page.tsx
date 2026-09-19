@@ -238,7 +238,7 @@ export default async function DomainNameSearchPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(buildSchema()) }}
       />
 
-      <div className="hb-hero-hostinger relative">
+      <div className="hb-band-purple relative">
         <SiteHeader
           navigation={sections.navigation}
           loginLabel={settings.loginLabel}
@@ -248,7 +248,10 @@ export default async function DomainNameSearchPage({
           logoPath={settings.logoPath}
         />
 
-        <section id="search" className="relative pt-8 pb-14 sm:pt-12 sm:pb-16">
+        <section
+          id="search"
+          className="relative overflow-hidden pt-8 pb-14 sm:pt-12 sm:pb-16"
+        >
           <Image
             src="/images/domains/hero.jpg"
             alt=""
@@ -256,11 +259,11 @@ export default async function DomainNameSearchPage({
             priority
             sizes="100vw"
             aria-hidden
-            className="pointer-events-none object-cover opacity-45 mix-blend-screen"
+            className="pointer-events-none object-cover object-[75%_center] opacity-60 mix-blend-screen"
           />
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-0 bg-[linear-gradient(100deg,rgba(47,28,106,0.92)_0%,rgba(80,37,209,0.55)_48%,rgba(37,99,235,0.25)_100%)]"
+            className="pointer-events-none absolute inset-0 bg-[linear-gradient(100deg,rgba(47,28,106,0.95)_0%,rgba(63,32,160,0.7)_42%,rgba(37,99,235,0.18)_100%)]"
           />
 
           <div className="hb-shell relative z-10">
@@ -276,7 +279,7 @@ export default async function DomainNameSearchPage({
               </ol>
             </nav>
 
-            <div className="grid gap-8 lg:grid-cols-[minmax(0,0.98fr)_minmax(0,1.02fr)] lg:items-center lg:gap-10">
+            <div className="grid gap-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-center lg:gap-10">
               <div className="max-w-xl">
                 <p className="inline-flex items-center gap-2 rounded-full border border-white/45 bg-white/15 px-3.5 py-1.5 text-[11.5px] font-bold tracking-wide text-white uppercase backdrop-blur-xl">
                   <Sparkles className="size-3.5" />
