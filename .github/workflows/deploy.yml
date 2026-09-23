@@ -241,6 +241,7 @@ jobs:
           echo "==> HostingBeyond deploy completed"
           REMOTE
 
+          "${SSH[@]}" "chmod 700 /tmp/hostingbeyond-gha-deploy.sh"
           echo "==> Running remote deploy script"
           set +e
           "${SSH[@]}" "bash /tmp/hostingbeyond-gha-deploy.sh"
