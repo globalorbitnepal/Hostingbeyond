@@ -127,8 +127,9 @@ jobs:
           ssh-keyscan -4 -p "${VPS_PORT:-22}" -T 10 "${VPS_HOST}" >> "${HOME}/.ssh/known_hosts"
           SSH=(ssh -4 -i "${KEY_FILE}" -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes -o ServerAliveInterval=15 -o ServerAliveCountMax=40 -p "${VPS_PORT:-22}" "${VPS_USER}@${VPS_HOST}")
 
+          REMOTE_SCRIPT="/tmp/hostingbeyond-gha-deploy-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.sh"
           echo "==> Uploading remote deploy script"
-          "${SSH[@]}" "cat > /tmp/hostingbeyond-gha-deploy.sh" <<'REMOTE'
+          "${SSH[@]}" "cat > '${REMOTE_SCRIPT}'" <<'REMOTE'
           #!/bin/bash
           set -euo pipefail
           # Keep the GitHub SSH channel quiet except for heartbeats. Next.js
@@ -143,7 +144,7 @@ jobs:
           }
           heartbeat &
           HEARTBEAT_PID=$!
-          trap 'kill "$HEARTBEAT_PID" 2>/dev/null || true' EXIT
+          trap 'kill "$HEARTBEAT_PID" 2>/dev/null || true; rm -f -- "$0"' EXIT
 
           echo "==> Validating SSH user"
           test "$(id -un)" = "hostingbeyond"
@@ -241,10 +242,10 @@ jobs:
           echo "==> HostingBeyond deploy completed"
           REMOTE
 
-          "${SSH[@]}" "chmod 700 /tmp/hostingbeyond-gha-deploy.sh"
+          "${SSH[@]}" "chmod 700 '${REMOTE_SCRIPT}'"
           echo "==> Running remote deploy script"
           set +e
-          "${SSH[@]}" "bash /tmp/hostingbeyond-gha-deploy.sh"
+          "${SSH[@]}" "bash '${REMOTE_SCRIPT}'"
           REMOTE_STATUS=$?
           set -e
           if [ "$REMOTE_STATUS" -ne 0 ]; then
