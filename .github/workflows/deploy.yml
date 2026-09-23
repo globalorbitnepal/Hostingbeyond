@@ -77,8 +77,8 @@ jobs:
               fail("SSH_IDENTITY_FAIL: VPS_HOST must be the HostingBeyond production IPv4 address")
           if "@" in host:
               fail("SSH_IDENTITY_FAIL: VPS_HOST must be an IP/hostname only, not user@host")
-          if user != "sysadmin":
-              fail("SSH_IDENTITY_FAIL: VPS_USER must be exactly sysadmin (no extra whitespace)")
+          if user != "hostingbeyond":
+              fail("SSH_IDENTITY_FAIL: VPS_USER must be exactly hostingbeyond (no extra whitespace)")
           if port != "22":
               fail("SSH_IDENTITY_FAIL: VPS_PORT must be 22")
 
@@ -102,10 +102,12 @@ jobs:
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
           VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
         run: |
           set -euo pipefail
           export KEY_FILE="${RUNNER_TEMP}/hostingbeyond_gha_ssh_key"
+          trap 'rm -f -- "$KEY_FILE"' EXIT INT TERM ERR
           python3 - <<'PY'
           import os, pathlib, re
           key = os.environ["VPS_SSH_KEY"]
@@ -122,8 +124,8 @@ jobs:
           PY
           mkdir -p "${HOME}/.ssh"
           chmod 700 "${HOME}/.ssh"
-          ssh-keyscan -4 -p 22 -T 10 "${VPS_HOST}" >> "${HOME}/.ssh/known_hosts"
-          SSH=(ssh -4 -i "${KEY_FILE}" -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes -o ServerAliveInterval=15 -o ServerAliveCountMax=40 -p 22 "${VPS_USER}@${VPS_HOST}")
+          ssh-keyscan -4 -p "${VPS_PORT:-22}" -T 10 "${VPS_HOST}" >> "${HOME}/.ssh/known_hosts"
+          SSH=(ssh -4 -i "${KEY_FILE}" -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes -o ServerAliveInterval=15 -o ServerAliveCountMax=40 -p "${VPS_PORT:-22}" "${VPS_USER}@${VPS_HOST}")
 
           echo "==> Uploading remote deploy script"
           "${SSH[@]}" "cat > /tmp/hostingbeyond-gha-deploy.sh" <<'REMOTE'
@@ -132,8 +134,7 @@ jobs:
           # Keep the GitHub SSH channel quiet except for heartbeats. Next.js
           # stdout on bash -s previously caused the client to close (~64s).
           exec 3>&1
-          : > /tmp/hostingbeyond-gha-deploy.log
-          exec > /tmp/hostingbeyond-gha-deploy.log 2>&1
+          exec > >(grep -viE "password|secret|token|database_url|begin |cookie|private key|environment" >&3) 2>&1
           heartbeat() {
             while true; do
               echo "[deploy-heartbeat] $(date -u +%Y-%m-%dT%H:%M:%SZ)" >&3
@@ -145,7 +146,7 @@ jobs:
           trap 'kill "$HEARTBEAT_PID" 2>/dev/null || true' EXIT
 
           echo "==> Validating SSH user"
-          test "$(id -un)" = "sysadmin"
+          test "$(id -un)" = "hostingbeyond"
 
           echo "==> Deploying HostingBeyond"
           echo "==> Target: /srv/apps/hostingbeyond"
@@ -162,7 +163,7 @@ jobs:
           echo "==> Confirming existing PM2 process hostingbeyond"
           test -x /usr/local/sbin/hostingbeyond-ctl
           test -d /home/hostingbeyond/.pm2
-          sudo -n -u hostingbeyond -H /usr/local/sbin/hostingbeyond-ctl status
+          /usr/local/sbin/hostingbeyond-ctl status
 
           echo "==> Syncing origin/main (preserve .env and runtime uploads)"
           git fetch origin main
@@ -197,9 +198,6 @@ jobs:
           echo "==> Typecheck"
           npm run typecheck </dev/null
 
-          echo "==> Applying database migrations"
-          npx prisma migrate deploy </dev/null
-
           echo "==> Building production bundle"
           npm run build </dev/null
 
@@ -209,8 +207,8 @@ jobs:
           chmod 0777 .next/cache .next/cache/images .next/cache/fetch-cache 2>/dev/null || true
 
           echo "==> Restarting ONLY existing HostingBeyond PM2 process"
-          sudo -n -u hostingbeyond -H /usr/local/sbin/hostingbeyond-ctl restart
-          sudo -n -u hostingbeyond -H /usr/local/sbin/hostingbeyond-ctl status
+          /usr/local/sbin/hostingbeyond-ctl restart
+          /usr/local/sbin/hostingbeyond-ctl status
 
           echo "==> Verifying process owner hostingbeyond"
           if ! pgrep -u hostingbeyond -a node >/dev/null 2>&1; then
@@ -248,9 +246,6 @@ jobs:
           "${SSH[@]}" "bash /tmp/hostingbeyond-gha-deploy.sh"
           REMOTE_STATUS=$?
           set -e
-          echo "==> Remote deploy log (secrets filtered)"
-          "${SSH[@]}" 'if test -f /tmp/hostingbeyond-gha-deploy.log; then grep -viE "password|secret|token|database_url|begin |cookie" /tmp/hostingbeyond-gha-deploy.log | tail -n 120; else echo NO_DEPLOY_LOG; fi'
-          rm -f "${KEY_FILE}"
           if [ "$REMOTE_STATUS" -ne 0 ]; then
             echo "REMOTE_DEPLOY_FAIL: exit ${REMOTE_STATUS}"
             exit "$REMOTE_STATUS"
