@@ -22,6 +22,7 @@ import {
 } from "@/components/beyond-ai/ai-model-brand-icons";
 import {
   CoinStack,
+  FreeDeployCloudIcon,
   ModelLogoStack,
   OnDemandCoins,
   PlanCornerCube,
@@ -104,14 +105,9 @@ export function BeyondAiPricingMockup({
             {pricingModelRow.map((m) => (
               <div
                 key={m.id}
-                className="flex w-[80px] flex-col items-center gap-2 sm:w-[88px]"
+                className="flex w-[84px] flex-col items-center gap-2.5 sm:w-[92px]"
               >
-                <div className="flex size-16 items-center justify-center rounded-full border border-[#e9e4ff] bg-white shadow-[0_8px_24px_-12px_rgba(47,28,106,0.2)] sm:size-[72px]">
-                  <AiModelBrandIcon
-                    id={m.id}
-                    size={m.id === "openrouter" ? 34 : 36}
-                  />
-                </div>
+                <AiModelBrandIcon id={m.id} variant="row" />
                 <p className="text-center text-[13px] font-extrabold text-[#2f1c6a] sm:text-[14px]">
                   {m.name}
                 </p>
@@ -151,7 +147,7 @@ export function BeyondAiPricingMockup({
           </span>
         </div>
 
-        <div className="mt-10 grid grid-cols-1 items-stretch gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-10 grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 xl:grid-cols-4">
           {content.plans
             .filter((p) => p.visible)
             .map((plan) => {
@@ -169,10 +165,10 @@ export function BeyondAiPricingMockup({
               const cardInner = (
                 <article
                   className={cn(
-                    "relative flex h-full flex-col rounded-[20px] p-5 sm:p-[22px]",
+                    "relative flex h-full min-h-[520px] flex-col rounded-[24px] p-6 sm:min-h-[540px] sm:p-6",
                     popular
                       ? "bg-[linear-gradient(168deg,#0c1222_0%,#15103a_48%,#0a0614_100%)] text-white"
-                      : "border border-[#e5eaf3] bg-white",
+                      : "border border-[#e9e4ff]/90 bg-white/95 shadow-[0_28px_64px_-32px_rgba(47,28,106,0.22)] backdrop-blur-sm",
                   )}
                 >
                   <div className="absolute top-5 right-5">
@@ -230,10 +226,10 @@ export function BeyondAiPricingMockup({
 
                   <div
                     className={cn(
-                      "mt-5 rounded-xl border px-3 py-3",
+                      "mt-5 rounded-2xl border px-3.5 py-3.5",
                       popular
-                        ? "border-white/10 bg-white/[0.06]"
-                        : "border-[#eef2ff] bg-[#f8fafc]",
+                        ? "border-white/12 bg-white/[0.07] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                        : "border-[#eef2ff] bg-gradient-to-br from-[#f8fafc] to-[#f4f0ff]",
                     )}
                   >
                     <div className="flex items-start gap-3">
@@ -307,13 +303,16 @@ export function BeyondAiPricingMockup({
                     ))}
                     <li
                       className={cn(
-                        "mt-1 flex items-center gap-2 rounded-lg px-2.5 py-2 text-[12px] font-bold",
+                        "mt-2 flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-[12px] font-extrabold tracking-tight",
                         popular
-                          ? "bg-emerald-400/15 text-emerald-200"
-                          : "bg-[#ecfdf5] text-[#047857]",
+                          ? "border-emerald-400/25 bg-gradient-to-r from-emerald-500/20 to-teal-500/10 text-emerald-100"
+                          : "border-emerald-200/80 bg-gradient-to-r from-[#ecfdf5] to-[#f0fdf4] text-[#047857]",
                       )}
                     >
-                      <Cloud className="size-4 shrink-0" strokeWidth={2} />
+                      <FreeDeployCloudIcon
+                        className="size-8 shrink-0"
+                        dark={popular}
+                      />
                       Free Deploy
                     </li>
                     <li
@@ -346,7 +345,7 @@ export function BeyondAiPricingMockup({
               return (
                 <div
                   key={plan.id}
-                  className="shadow-[0_20px_48px_-28px_rgba(15,23,42,0.14)]"
+                  className="transition-transform duration-300 hover:-translate-y-1"
                 >
                   {cardInner}
                 </div>

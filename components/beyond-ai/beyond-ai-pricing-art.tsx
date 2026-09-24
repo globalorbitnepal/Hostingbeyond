@@ -73,10 +73,10 @@ export function PlanCornerCrown({ className }: { className?: string }) {
 
 export function ModelLogoStack({ className }: { className?: string }) {
   const tiles = [
-    { id: "chatgpt", rot: -8, x: 0 },
-    { id: "gemini", rot: 4, x: 28 },
-    { id: "claude", rot: -4, x: 56 },
-    { id: "grok", rot: 10, x: 84 },
+    { id: "chatgpt", src: "/images/ai-assistant/chatgpt.svg", rot: -8, x: 0 },
+    { id: "gemini", src: "/images/ai-assistant/gemini.svg", rot: 4, x: 28 },
+    { id: "claude", src: "/images/ai-assistant/claude.svg", rot: -4, x: 56 },
+    { id: "grok", src: "/images/ai-assistant/grok.png", rot: 10, x: 84 },
   ] as const;
   return (
     <div className={className}>
@@ -84,22 +84,52 @@ export function ModelLogoStack({ className }: { className?: string }) {
         {tiles.map((t, i) => (
           <div
             key={t.id}
-            className="absolute top-2 flex size-14 items-center justify-center rounded-2xl border border-white/80 bg-white/90 shadow-[0_12px_28px_-8px_rgba(47,28,106,0.35)] backdrop-blur-sm"
+            className="absolute top-2 flex size-14 items-center justify-center rounded-2xl border border-white/80 bg-white/95 shadow-[0_12px_28px_-8px_rgba(47,28,106,0.35)] backdrop-blur-sm"
             style={{
               left: t.x,
               zIndex: i + 1,
               transform: `rotate(${t.rot}deg)`,
             }}
           >
-            <img
-              src={`/images/ai-assistant/${t.id === "chatgpt" ? "chatgpt" : t.id}.svg`}
-              alt=""
-              className="size-8 object-contain"
-            />
+            <img src={t.src} alt="" className="size-8 object-contain" />
           </div>
         ))}
       </div>
     </div>
+  );
+}
+
+export function FreeDeployCloudIcon({
+  className,
+  dark,
+}: {
+  className?: string;
+  dark?: boolean;
+}) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden fill="none">
+      <defs>
+        <linearGradient id="fdCloud" x1="4" y1="20" x2="28" y2="8">
+          <stop offset="0%" stopColor={dark ? "#6ee7b7" : "#34d399"} />
+          <stop offset="100%" stopColor={dark ? "#2dd4bf" : "#10b981"} />
+        </linearGradient>
+      </defs>
+      <path
+        fill="url(#fdCloud)"
+        d="M24 22.5H10.5a5.5 5.5 0 0 1-.35-11A7 7 0 0 1 23.5 9.5 5.5 5.5 0 0 1 24 22.5Z"
+      />
+      <path
+        fill={dark ? "#ecfdf5" : "#ffffff"}
+        fillOpacity={dark ? 0.35 : 0.55}
+        d="M12 14.5a4 4 0 0 1 7.8-1.2 3.5 3.5 0 0 1 3.2 5.2H13a2.5 2.5 0 0 1-1-4Z"
+      />
+      <path
+        stroke={dark ? "#a7f3d0" : "#059669"}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        d="M16 18v5M16 23l-2.5-2.5M16 23l2.5-2.5"
+      />
+    </svg>
   );
 }
 
