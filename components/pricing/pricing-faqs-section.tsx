@@ -82,7 +82,7 @@ export function PricingFaqsSection({
 
         <div className="mt-8 flex justify-center">
           <div
-            className="inline-flex max-w-full flex-wrap justify-center gap-2 rounded-[22px] border border-[#e9e4ff] bg-white/90 p-2 shadow-[0_16px_40px_-24px_rgba(47,28,106,0.35)] backdrop-blur-md"
+            className="inline-flex max-w-full [scrollbar-width:none] flex-nowrap justify-center gap-1.5 overflow-x-auto rounded-[22px] border border-[#e9e4ff] bg-white/90 p-2 shadow-[0_16px_40px_-24px_rgba(47,28,106,0.35)] backdrop-blur-md [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             role="tablist"
             aria-label="FAQ categories"
           >
@@ -103,7 +103,7 @@ export function PricingFaqsSection({
                       setOpenId(null);
                     }}
                     className={cn(
-                      "rounded-full px-4 py-2 text-[12px] font-bold transition sm:text-[13px]",
+                      "shrink-0 rounded-full px-3.5 py-2 text-[14.3px] font-extrabold tracking-[-0.02em] whitespace-nowrap transition",
                       selected
                         ? "bg-[#2f1c6a] text-white shadow-md"
                         : "text-[#64748b] hover:bg-[#f4f0ff] hover:text-[#2f1c6a]",

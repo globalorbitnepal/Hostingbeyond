@@ -25,10 +25,10 @@ import {
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 
-import { GlassVideoFrame } from "@/components/home/glass-video-frame";
 import { PricingEcommercePanel } from "@/components/pricing/pricing-ecommerce-panel";
 import { PricingFaqsSection } from "@/components/pricing/pricing-faqs-section";
 import { PricingHighlights } from "@/components/pricing/pricing-highlights";
+import { PricingMotionStage } from "@/components/pricing/pricing-motion-stage";
 import { PricingPlanPanel } from "@/components/pricing/pricing-plan-panel";
 import { useLocale } from "@/components/locale/locale-provider";
 import { routes } from "@/config/routes";
@@ -52,6 +52,17 @@ const categoryIcons: Record<PricingCategoryId, typeof Globe2> = {
   vps: Server,
   "ai-agents": Bot,
   "business-email": Mail,
+};
+
+/** Compact tab labels so all categories stay on one row */
+const categoryTabLabel: Record<PricingCategoryId, string> = {
+  websites: "Websites",
+  ecommerce: "Ecommerce",
+  domains: "Domains",
+  "ai-builder": "AI Builder",
+  vps: "VPS Hosting",
+  "ai-agents": "AI Agents",
+  "business-email": "Business Email",
 };
 
 const trustIcon = {
@@ -96,17 +107,17 @@ function DomainsPricingBlock() {
       <div className="rounded-[28px] border border-[#e9e4ff] bg-[linear-gradient(135deg,#ffffff_0%,#f4f0ff_48%,#eef4ff_100%)] p-6 shadow-[0_24px_48px_-20px_rgba(47,28,106,0.35)] sm:p-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-md">
-            <p className="text-[13px] font-bold tracking-wide text-[#673de6] uppercase">
+            <p className="text-[14px] font-extrabold tracking-wide text-[#673de6] uppercase">
               Domains from
             </p>
             <p className="font-heading mt-2 text-[clamp(2.2rem,4vw,3rem)] font-extrabold tracking-tight text-[#2f1c6a]">
               {basePrice}
-              <span className="text-[1rem] font-bold text-[#64748b]">
+              <span className="text-[1.1rem] font-bold text-[#64748b]">
                 {" "}
                 /year
               </span>
             </p>
-            <p className="mt-2 text-[15px] leading-relaxed text-[#475569]">
+            <p className="mt-2 text-[16.5px] leading-relaxed text-[#475569]">
               Free privacy protection, DNS management, and 24/7 support on every
               domain you register with HostingBeyond.
             </p>
@@ -278,93 +289,75 @@ export function PricingPageView({
 
   return (
     <>
-      <section className="hb-band-purple relative overflow-hidden pt-2 pb-4 sm:pb-6">
+      <section className="hb-band-purple relative overflow-hidden pt-4 pb-5 sm:pt-6 sm:pb-7">
         <div
           aria-hidden
           className="pointer-events-none absolute -top-24 left-1/3 h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.2),transparent_65%)] blur-2xl"
         />
         <div className="hb-shell relative z-10">
-          <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-10">
-            <motion.div
-              initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="text-center lg:text-left"
-            >
-              <p className="inline-flex items-center gap-2 rounded-full border border-white/35 bg-white/12 px-3.5 py-1 text-[11px] font-bold tracking-[0.18em] text-white uppercase">
-                {pricing.heroEyebrow}
-              </p>
-              <h1 className="font-heading mt-4 text-[clamp(2rem,4.5vw,3.35rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-white">
-                {pricing.heroTitle}{" "}
-                <span className="text-[#c7d7ff]">
-                  {pricing.heroTitleAccent}
-                </span>
-              </h1>
-              <p className="mx-auto mt-3 max-w-xl text-[15px] leading-relaxed text-white/90 sm:text-[16px] lg:mx-0">
-                {pricing.heroDescription}
-              </p>
-              <ul className="mt-6 flex flex-wrap justify-center gap-2 lg:justify-start">
-                {pricing.trustPills
-                  .filter((p) => p.visible)
-                  .map((pill) => {
-                    const Icon =
-                      trustIcon[pill.id as keyof typeof trustIcon] ?? Shield;
-                    return (
-                      <li
-                        key={pill.id}
-                        className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-[12px] font-semibold text-white backdrop-blur-md"
-                      >
-                        <Icon className="size-3.5" aria-hidden />
-                        {pill.label}
-                      </li>
-                    );
-                  })}
-              </ul>
-            </motion.div>
-            <motion.div
-              initial={reduceMotion ? false : { opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.55, delay: 0.08 }}
-              className="relative mx-auto w-full max-w-xl lg:max-w-none"
-            >
-              <GlassVideoFrame
-                src={pricing.heroMediaSrc}
-                alt={pricing.heroMediaAlt}
-                playing={!reduceMotion}
-                loop
-                className="min-h-[260px] sm:min-h-[300px]"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-              />
-            </motion.div>
-          </div>
+          <motion.div
+            initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45 }}
+            className="mx-auto max-w-3xl text-center"
+          >
+            <p className="inline-flex items-center gap-2 rounded-full border border-white/35 bg-white/12 px-3.5 py-1 text-[12px] font-extrabold tracking-[0.18em] text-white uppercase">
+              {pricing.heroEyebrow}
+            </p>
+            <h1 className="font-heading mt-4 text-[clamp(2.15rem,4.8vw,3.55rem)] leading-[1.06] font-extrabold tracking-[-0.045em] text-white">
+              {pricing.heroTitle}{" "}
+              <span className="text-[#c7d7ff]">{pricing.heroTitleAccent}</span>
+            </h1>
+            <p className="mx-auto mt-3 max-w-2xl text-[16.5px] leading-relaxed font-medium text-white/92 sm:text-[17.6px]">
+              {pricing.heroDescription}
+            </p>
+            <ul className="mt-6 flex flex-wrap justify-center gap-2">
+              {pricing.trustPills
+                .filter((p) => p.visible)
+                .map((pill) => {
+                  const Icon =
+                    trustIcon[pill.id as keyof typeof trustIcon] ?? Shield;
+                  return (
+                    <li
+                      key={pill.id}
+                      className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-[13px] font-bold text-white backdrop-blur-md"
+                    >
+                      <Icon className="size-3.5" aria-hidden />
+                      {pill.label}
+                    </li>
+                  );
+                })}
+            </ul>
+          </motion.div>
 
-          <div className="mt-10 flex justify-center pb-2">
+          <div className="mt-8 flex justify-center pb-1">
             <div
-              className="sticky top-[4.5rem] z-30 w-full max-w-5xl rounded-[24px] border border-white/30 bg-white/10 p-2 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.45)] backdrop-blur-xl sm:p-2.5"
+              className="sticky top-[4.25rem] z-30 w-full max-w-[min(100%,72rem)] rounded-[22px] border border-white/35 bg-white/12 px-2 py-2 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.45)] backdrop-blur-xl sm:px-3"
               role="tablist"
               aria-label="Pricing categories"
             >
-              <div className="flex flex-wrap items-center justify-center gap-2">
+              <div className="flex [scrollbar-width:none] flex-nowrap items-center justify-center gap-1 overflow-x-auto [-ms-overflow-style:none] sm:gap-1.5 [&::-webkit-scrollbar]:hidden">
                 {categories.map((cat) => {
                   const Icon = categoryIcons[cat.id];
                   const selected = active === cat.id;
+                  const tabLabel = categoryTabLabel[cat.id];
                   return (
                     <button
                       key={cat.id}
                       type="button"
                       role="tab"
                       aria-selected={selected}
+                      title={cat.label}
                       onClick={() => selectCategory(cat.id)}
                       className={cn(
-                        "inline-flex items-center justify-center gap-2 rounded-full px-3.5 py-2.5 text-[12px] font-bold transition sm:px-4 sm:text-[13px]",
+                        "inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full px-2.5 py-2.5 text-[14.3px] font-extrabold tracking-[-0.02em] whitespace-nowrap transition sm:px-3.5",
                         selected
                           ? "bg-white text-[#2f1c6a] shadow-[0_10px_24px_-8px_rgba(0,0,0,0.35)]"
-                          : "text-white/95 hover:bg-white/15",
+                          : "text-white hover:bg-white/15",
                       )}
                     >
-                      <Icon className="size-4 shrink-0" aria-hidden />
-                      <span className="hidden md:inline">{cat.label}</span>
-                      <span className="md:hidden">{cat.shortLabel}</span>
+                      <Icon className="size-[17px] shrink-0" aria-hidden />
+                      {tabLabel}
                     </button>
                   );
                 })}
@@ -380,38 +373,12 @@ export function PricingPageView({
       >
         <div className="hb-shell">
           <div className="mx-auto max-w-3xl text-center">
-            <h2 className="font-heading text-[clamp(1.75rem,3.4vw,2.5rem)] font-extrabold tracking-[-0.04em] text-[#2f1c6a]">
+            <h2 className="font-heading text-[clamp(1.9rem,3.6vw,2.75rem)] font-extrabold tracking-[-0.04em] text-[#2f1c6a]">
               {activeMeta.headline}
             </h2>
-            <p className="mt-3 text-[15px] leading-relaxed text-slate-600">
+            <p className="mt-3 text-[16.5px] leading-relaxed font-medium text-slate-600 sm:text-[17px]">
               {activeMeta.description}
             </p>
-          </div>
-
-          <div className="mt-10 grid items-center gap-8 lg:grid-cols-2">
-            <GlassVideoFrame
-              src={activeMeta.mediaSrc}
-              alt={activeMeta.mediaAlt}
-              playing={!reduceMotion}
-              loop
-              className="min-h-[240px] lg:min-h-[280px]"
-              sizes="(max-width: 1024px) 100vw, 45vw"
-            />
-            <div className="text-center lg:text-left">
-              <h3 className="font-heading text-[1.5rem] font-extrabold text-[#2f1c6a] sm:text-[1.75rem]">
-                {activeMeta.showcaseTitle}
-              </h3>
-              <p className="mt-3 text-[15px] leading-relaxed text-[#64748b]">
-                {activeMeta.showcaseBody}
-              </p>
-              <Link
-                href={routes.getStarted}
-                className="mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-6 text-[14px] font-bold text-white shadow-lg"
-              >
-                Get started
-                <ArrowRight className="size-4" aria-hidden />
-              </Link>
-            </div>
           </div>
 
           <PricingHighlights highlights={activeMeta.highlights} />
@@ -444,13 +411,15 @@ export function PricingPageView({
             ].map((line) => (
               <li
                 key={line}
-                className="flex items-center justify-center gap-2 rounded-2xl border border-[#e9e4ff] bg-white/80 px-4 py-3 text-[13px] font-semibold text-[#2f1c6a]"
+                className="flex items-center justify-center gap-2 rounded-2xl border border-[#e9e4ff] bg-white/80 px-4 py-3 text-[14px] font-bold text-[#2f1c6a]"
               >
                 <Check className="size-4 text-emerald-600" aria-hidden />
                 {line}
               </li>
             ))}
           </ul>
+
+          <PricingMotionStage category={activeMeta} />
         </div>
       </section>
 
@@ -465,13 +434,13 @@ export function PricingPageView({
           <div className="rounded-[28px] border border-white/25 bg-white/10 p-6 backdrop-blur-md sm:p-8">
             <div className="flex flex-col items-start justify-between gap-6 lg:flex-row lg:items-center">
               <div className="max-w-xl">
-                <p className="text-[13px] font-bold tracking-wide text-[#c7d7ff] uppercase">
+                <p className="text-[14px] font-extrabold tracking-wide text-[#c7d7ff] uppercase">
                   {pricing.bottomEyebrow}
                 </p>
-                <h3 className="font-heading mt-2 text-[1.65rem] font-extrabold text-white sm:text-[1.85rem]">
+                <h3 className="font-heading mt-2 text-[1.8rem] font-extrabold text-white sm:text-[2rem]">
                   {pricing.bottomTitle}
                 </h3>
-                <p className="mt-2 text-[14px] leading-relaxed text-white/85">
+                <p className="mt-2 text-[15.4px] leading-relaxed text-white/85">
                   {pricing.bottomBody}
                 </p>
               </div>
