@@ -7,8 +7,7 @@ import {
   Check,
   ChevronRight,
   Cloud,
-  Coins,
-  Crown,
+  Globe,
   Layers,
   Lightbulb,
   Pencil,
@@ -18,8 +17,18 @@ import {
 } from "lucide-react";
 
 import {
+  AiModelBrandIcon,
+  pricingModelRow,
+} from "@/components/beyond-ai/ai-model-brand-icons";
+import {
+  CoinStack,
+  ModelLogoStack,
+  OnDemandCoins,
+  PlanCornerCube,
+  PlanCornerCrown,
+} from "@/components/beyond-ai/beyond-ai-pricing-art";
+import {
   beyondAiCheckoutPath,
-  beyondAiModelsConfig,
   beyondAiPlansConfig,
   type BeyondAiPlanId,
 } from "@/config/beyond-ai-product";
@@ -34,7 +43,8 @@ const planDisplay: Record<
     cta: string;
     features: string[];
     support: string;
-    icon: "none" | "crown" | "users" | "zap";
+    corner: "cube" | "crown" | "users" | "zap";
+    coinVariant: "blue" | "gold";
   }
 > = {
   free: {
@@ -49,7 +59,8 @@ const planDisplay: Record<
       "Basic SEO tools",
     ],
     support: "Community support",
-    icon: "none",
+    corner: "cube",
+    coinVariant: "blue",
   },
   pro: {
     badge: "MOST POPULAR",
@@ -64,7 +75,8 @@ const planDisplay: Record<
       "Custom domain support",
     ],
     support: "Priority support",
-    icon: "crown",
+    corner: "crown",
+    coinVariant: "gold",
   },
   "pro-plus": {
     badge: "GROW FURTHER",
@@ -79,7 +91,8 @@ const planDisplay: Record<
       "Advanced SEO tools",
     ],
     support: "Priority support",
-    icon: "users",
+    corner: "users",
+    coinVariant: "blue",
   },
   ultra: {
     badge: "PREMIUM",
@@ -94,24 +107,29 @@ const planDisplay: Record<
       "Multiple websites & domains",
     ],
     support: "Premium support",
-    icon: "zap",
+    corner: "zap",
+    coinVariant: "blue",
   },
 };
 
-const modelOrbStyles: Record<string, string> = {
-  openai: "bg-[#10a37f]/15 text-[#0d8a6a] ring-[#10a37f]/30",
-  gemini:
-    "bg-gradient-to-br from-[#4285f4]/20 to-[#ea4335]/15 text-[#1a56db] ring-[#4285f4]/25",
-  claude: "bg-[#d97757]/15 text-[#c45c3e] ring-[#d97757]/30",
-  grok: "bg-slate-100 text-slate-800 ring-slate-200",
-};
-
-function PlanIcon({ type, dark }: { type: string; dark?: boolean }) {
-  const cls = cn("size-9", dark ? "text-[#c7d7ff]" : "text-[#673de6]");
-  if (type === "crown") return <Crown className={cls} strokeWidth={1.6} />;
-  if (type === "users") return <Users className={cls} strokeWidth={1.6} />;
-  if (type === "zap") return <Zap className={cls} strokeWidth={1.6} />;
-  return null;
+function PlanCornerIcon({
+  type,
+  popular,
+}: {
+  type: string;
+  popular?: boolean;
+}) {
+  if (type === "cube") {
+    return <PlanCornerCube className="size-11" />;
+  }
+  if (type === "crown") {
+    return (
+      <PlanCornerCrown className="size-12 drop-shadow-[0_0_12px_rgba(251,191,36,0.55)]" />
+    );
+  }
+  const cls = cn("size-10", popular ? "text-[#c4b5fd]" : "text-[#3b82f6]");
+  if (type === "users") return <Users className={cls} strokeWidth={1.5} />;
+  return <Zap className={cls} strokeWidth={1.5} fill="currentColor" />;
 }
 
 export function BeyondAiPricingMockup() {
@@ -121,65 +139,70 @@ export function BeyondAiPricingMockup() {
   return (
     <section
       id="beyond-ai-plans"
-      className="relative scroll-mt-4 overflow-hidden bg-[#f6f8fc] pt-14 pb-8 sm:pt-16"
+      className="relative scroll-mt-4 overflow-hidden bg-[#f8fafc] pt-12 pb-10 sm:pt-14"
     >
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-[55%] bg-[radial-gradient(ellipse_at_30%_100%,rgba(167,139,250,0.35),transparent_55%),radial-gradient(ellipse_at_70%_90%,rgba(59,130,246,0.28),transparent_50%)]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[radial-gradient(ellipse_at_50%_0%,rgba(199,210,254,0.45),transparent_65%)]"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-[50%] bg-[radial-gradient(ellipse_at_25%_100%,rgba(167,139,250,0.32),transparent_55%),radial-gradient(ellipse_at_75%_95%,rgba(96,165,250,0.28),transparent_50%)]"
       />
 
-      <div className="hb-shell relative z-10">
-        <p className="text-center text-[11px] font-extrabold tracking-[0.28em] text-[#673de6]/80 uppercase">
+      <div className="hb-shell relative z-10 max-w-[1240px]">
+        <p className="text-center text-[11px] font-extrabold tracking-[0.32em] text-[#6366f1] uppercase">
           Beyond AI
         </p>
-        <h2 className="font-heading mt-3 text-center text-[clamp(2rem,4.2vw,3.15rem)] font-extrabold tracking-[-0.04em]">
-          <span className="bg-gradient-to-r from-[#1e3a8a] via-[#673de6] to-[#c026d3] bg-clip-text text-transparent">
-            Choose your AI workspace.
+        <h2 className="font-heading mt-3 text-center text-[clamp(2.05rem,4.5vw,3.25rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-[#0f172a]">
+          Choose your{" "}
+          <span className="bg-gradient-to-r from-[#1d4ed8] via-[#7c3aed] to-[#db2777] bg-clip-text text-transparent">
+            AI workspace.
           </span>
         </h2>
-        <p className="mx-auto mt-4 max-w-2xl text-center text-[15px] leading-relaxed text-[#64748b] sm:text-[16px]">
+        <p className="mx-auto mt-4 max-w-[640px] text-center text-[15px] leading-relaxed text-[#64748b] sm:text-[16px]">
           Every plan includes AI credit to build, create and launch with
           powerful AI models — plus{" "}
-          <span className="font-extrabold text-[#2f1c6a]">Free Deploy</span>.
+          <span className="font-extrabold text-[#1e293b]">Free Deploy</span>.
         </p>
 
-        <div className="mt-10 flex flex-wrap items-end justify-center gap-6 sm:gap-10">
-          {beyondAiModelsConfig
-            .filter((m) => m.featured)
-            .map((m) => (
-              <div key={m.id} className="flex flex-col items-center gap-2">
-                <div
-                  className={cn(
-                    "flex size-14 items-center justify-center rounded-full text-[13px] font-extrabold ring-2",
-                    modelOrbStyles[m.id] ?? "bg-[#f4f0ff] text-[#673de6]",
-                  )}
-                >
-                  {m.id === "openai" ? "GPT" : m.shortLabel.slice(0, 2)}
-                </div>
-                <p className="text-[13px] font-extrabold text-[#2f1c6a]">
-                  {m.id === "openai" ? "ChatGPT" : m.shortLabel}
-                </p>
-                <p className="text-[11px] font-medium text-[#94a3b8]">
-                  {m.provider}
-                </p>
+        <div className="mt-11 flex flex-wrap items-end justify-center gap-x-10 gap-y-8 sm:gap-x-14">
+          {pricingModelRow.map((m) => (
+            <div
+              key={m.id}
+              className="flex w-[88px] flex-col items-center gap-2.5"
+            >
+              <div className="flex size-[72px] items-center justify-center rounded-full border border-[#e8ecf4] bg-white shadow-[0_8px_24px_-12px_rgba(15,23,42,0.18)]">
+                <AiModelBrandIcon id={m.id} size={36} />
               </div>
-            ))}
-          <div className="flex flex-col items-center gap-2">
-            <div className="flex size-14 items-center justify-center rounded-full bg-gradient-to-br from-[#2563eb] to-[#7c3aed] text-[13px] font-extrabold text-white ring-2 ring-[#7c3aed]/30">
-              +
+              <p className="text-[14px] font-extrabold text-[#0f172a]">
+                {m.name}
+              </p>
+              <p className="text-[12px] font-medium text-[#94a3b8]">
+                {m.provider}
+              </p>
             </div>
-            <p className="text-[13px] font-extrabold text-[#2f1c6a]">More</p>
+          ))}
+          <div className="flex w-[88px] flex-col items-center gap-2.5">
+            <div className="flex size-[72px] items-center justify-center rounded-full bg-gradient-to-br from-[#2563eb] to-[#7c3aed] shadow-[0_8px_24px_-8px_rgba(99,102,241,0.55)]">
+              <span className="grid grid-cols-2 gap-1 p-1">
+                {[0, 1, 2, 3].map((i) => (
+                  <span key={i} className="size-2 rounded-sm bg-white/90" />
+                ))}
+              </span>
+            </div>
+            <p className="text-[14px] font-extrabold text-[#0f172a]">More</p>
           </div>
         </div>
 
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-          <div className="inline-flex rounded-full border border-[#e2e8f0] bg-white p-1 shadow-sm">
+        <div className="mt-11 flex flex-wrap items-center justify-center gap-3">
+          <div className="inline-flex rounded-full border border-[#e2e8f0] bg-white p-1 shadow-[0_4px_16px_-8px_rgba(15,23,42,0.12)]">
             <button
               type="button"
               onClick={() => setYearly(false)}
               className={cn(
-                "rounded-full px-5 py-2 text-[13px] font-extrabold transition",
-                !yearly ? "bg-[#1e3a8a] text-white" : "text-[#64748b]",
+                "min-w-[96px] rounded-full px-5 py-2.5 text-[13px] font-extrabold transition",
+                !yearly ? "bg-[#0f172a] text-white" : "text-[#64748b]",
               )}
             >
               Monthly
@@ -188,21 +211,19 @@ export function BeyondAiPricingMockup() {
               type="button"
               onClick={() => setYearly(true)}
               className={cn(
-                "rounded-full px-5 py-2 text-[13px] font-extrabold transition",
-                yearly ? "bg-[#1e3a8a] text-white" : "text-[#64748b]",
+                "min-w-[96px] rounded-full px-5 py-2.5 text-[13px] font-extrabold transition",
+                yearly ? "bg-[#0f172a] text-white" : "text-[#64748b]",
               )}
             >
               Yearly
             </button>
           </div>
-          {yearly ? (
-            <span className="rounded-full bg-[#fce7f3] px-3 py-1 text-[12px] font-extrabold text-[#db2777]">
-              Save 20%
-            </span>
-          ) : null}
+          <span className="rounded-full bg-[#fce7f3] px-3 py-1.5 text-[12px] font-extrabold text-[#db2777]">
+            Save 20%
+          </span>
         </div>
 
-        <div className="mt-10 grid grid-cols-1 items-stretch gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-10 grid grid-cols-1 items-stretch gap-5 md:grid-cols-2 xl:grid-cols-4">
           {beyondAiPlansConfig.map((plan) => {
             const meta = planDisplay[plan.id];
             const popular = plan.popular;
@@ -213,22 +234,22 @@ export function BeyondAiPricingMockup() {
                 ? "$0"
                 : `$${monthly % 1 === 0 ? monthly : monthly.toFixed(0)}`;
 
-            return (
+            const cardInner = (
               <article
-                key={plan.id}
                 className={cn(
-                  "relative flex flex-col rounded-[22px] border p-5 shadow-[0_20px_50px_-28px_rgba(47,28,106,0.25)]",
+                  "relative flex h-full flex-col rounded-[20px] p-5 sm:p-[22px]",
                   popular
-                    ? "border-[#a855f7]/60 bg-[linear-gradient(165deg,#0f172a_0%,#1e1b4b_55%,#0c0618_100%)] text-white shadow-[0_28px_60px_-20px_rgba(103,61,230,0.55)] ring-1 ring-[#c084fc]/50 xl:scale-[1.02]"
-                    : "border-[#e8ecf4] bg-white",
+                    ? "bg-[linear-gradient(168deg,#0c1222_0%,#15103a_48%,#0a0614_100%)] text-white"
+                    : "border border-[#e5eaf3] bg-white",
                 )}
               >
-                {meta.icon !== "none" ? (
-                  <PlanIcon type={meta.icon} dark={popular} />
-                ) : null}
+                <div className="absolute top-5 right-5">
+                  <PlanCornerIcon type={meta.corner} popular={popular} />
+                </div>
+
                 <span
                   className={cn(
-                    "mt-2 inline-flex w-fit rounded-full px-2.5 py-1 text-[9px] font-extrabold tracking-wide uppercase",
+                    "inline-flex w-fit rounded-md px-2 py-1 text-[9px] font-extrabold tracking-[0.06em] uppercase",
                     popular
                       ? "bg-[#7c3aed] text-white"
                       : plan.id === "pro-plus"
@@ -238,9 +259,10 @@ export function BeyondAiPricingMockup() {
                 >
                   {meta.badge}
                 </span>
+
                 <h3
                   className={cn(
-                    "font-heading mt-3 text-[1.65rem] font-extrabold tracking-tight",
+                    "font-heading mt-4 pr-12 text-[1.75rem] font-extrabold tracking-[-0.03em]",
                     popular ? "text-white" : "text-[#0f172a]",
                   )}
                 >
@@ -248,16 +270,17 @@ export function BeyondAiPricingMockup() {
                 </h3>
                 <p
                   className={cn(
-                    "mt-1 text-[12px]",
-                    popular ? "text-white/65" : "text-[#94a3b8]",
+                    "mt-1 text-[12px] leading-snug",
+                    popular ? "text-white/60" : "text-[#94a3b8]",
                   )}
                 >
                   {meta.tagline}
                 </p>
-                <p className="mt-4 flex items-baseline gap-1">
+
+                <p className="mt-5 flex items-baseline gap-1">
                   <span
                     className={cn(
-                      "text-[2.1rem] leading-none font-extrabold",
+                      "text-[2.25rem] leading-none font-extrabold tracking-tight",
                       popular ? "text-white" : "text-[#0f172a]",
                     )}
                   >
@@ -265,8 +288,8 @@ export function BeyondAiPricingMockup() {
                   </span>
                   <span
                     className={cn(
-                      "text-[13px] font-semibold",
-                      popular ? "text-white/60" : "text-[#94a3b8]",
+                      "text-[14px] font-semibold",
+                      popular ? "text-white/55" : "text-[#94a3b8]",
                     )}
                   >
                     /month
@@ -275,44 +298,44 @@ export function BeyondAiPricingMockup() {
 
                 <div
                   className={cn(
-                    "mt-4 rounded-xl border p-3",
+                    "mt-5 rounded-xl border px-3 py-3",
                     popular
-                      ? "border-white/10 bg-white/5"
+                      ? "border-white/10 bg-white/[0.06]"
                       : "border-[#eef2ff] bg-[#f8fafc]",
                   )}
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <p
-                      className={cn(
-                        "text-[10px] font-extrabold tracking-wide uppercase",
-                        popular ? "text-white/55" : "text-[#94a3b8]",
-                      )}
-                    >
-                      AI credit
-                    </p>
-                    <Coins
-                      className={cn(
-                        "size-4",
-                        popular ? "text-amber-300" : "text-[#673de6]",
-                      )}
+                  <div className="flex items-start gap-3">
+                    <CoinStack
+                      variant={meta.coinVariant}
+                      className="mt-0.5 h-9 w-11 shrink-0"
                     />
+                    <div className="min-w-0 flex-1">
+                      <p
+                        className={cn(
+                          "text-[9px] font-extrabold tracking-[0.12em] uppercase",
+                          popular ? "text-white/50" : "text-[#94a3b8]",
+                        )}
+                      >
+                        AI credit
+                      </p>
+                      <p
+                        className={cn(
+                          "text-[13px] font-extrabold",
+                          popular ? "text-white" : "text-[#1e1b4b]",
+                        )}
+                      >
+                        ${plan.includedCreditUsd} included
+                      </p>
+                    </div>
                   </div>
-                  <p
-                    className={cn(
-                      "mt-1 text-[13px] font-extrabold",
-                      popular ? "text-white" : "text-[#2f1c6a]",
-                    )}
-                  >
-                    ${plan.includedCreditUsd} included
-                  </p>
                   <div
                     className={cn(
-                      "mt-2 h-2 overflow-hidden rounded-full",
-                      popular ? "bg-white/15" : "bg-[#e9e4ff]",
+                      "mt-2.5 h-2 overflow-hidden rounded-full",
+                      popular ? "bg-white/12" : "bg-[#e9e4ff]",
                     )}
                   >
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-[#3b82f6] to-[#a855f7]"
+                      className="h-full rounded-full bg-gradient-to-r from-[#3b82f6] via-[#6366f1] to-[#a855f7]"
                       style={{ width: `${meta.meterPct}%` }}
                     />
                   </div>
@@ -323,21 +346,21 @@ export function BeyondAiPricingMockup() {
                   className={cn(
                     "mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full text-[13px] font-extrabold transition",
                     popular
-                      ? "bg-white text-[#0f172a] hover:bg-[#f4f0ff]"
-                      : "bg-gradient-to-r from-[#3b82f6] to-[#7c3aed] text-white hover:brightness-105",
+                      ? "bg-white text-[#0f172a] hover:bg-[#f8fafc]"
+                      : "bg-gradient-to-r from-[#2563eb] to-[#4f46e5] text-white hover:brightness-105",
                   )}
                 >
                   {meta.cta}
-                  <ArrowRight className="size-4" />
+                  <ArrowRight className="size-4" strokeWidth={2.5} />
                 </Link>
 
-                <ul className="mt-5 flex flex-1 flex-col gap-2.5">
+                <ul className="mt-5 flex flex-1 flex-col gap-2">
                   {meta.features.map((f) => (
                     <li
                       key={f}
                       className={cn(
                         "flex gap-2 text-[12px] leading-snug",
-                        popular ? "text-white/88" : "text-[#475569]",
+                        popular ? "text-white/90" : "text-[#475569]",
                       )}
                     >
                       <Check
@@ -345,90 +368,103 @@ export function BeyondAiPricingMockup() {
                           "mt-0.5 size-3.5 shrink-0",
                           popular ? "text-[#a78bfa]" : "text-[#3b82f6]",
                         )}
+                        strokeWidth={2.5}
                       />
                       {f}
                     </li>
                   ))}
                   <li
                     className={cn(
-                      "flex items-center gap-2 rounded-lg px-2 py-2 text-[12px] font-bold",
+                      "mt-1 flex items-center gap-2 rounded-lg px-2.5 py-2 text-[12px] font-bold",
                       popular
-                        ? "bg-emerald-500/15 text-emerald-200"
+                        ? "bg-emerald-400/15 text-emerald-200"
                         : "bg-[#ecfdf5] text-[#047857]",
                     )}
                   >
-                    <Cloud className="size-4 shrink-0" />
+                    <Cloud className="size-4 shrink-0" strokeWidth={2} />
                     Free Deploy
                   </li>
                   <li
                     className={cn(
                       "flex gap-2 text-[12px]",
-                      popular ? "text-white/75" : "text-[#64748b]",
+                      popular ? "text-white/70" : "text-[#64748b]",
                     )}
                   >
-                    <Check className="mt-0.5 size-3.5 shrink-0 opacity-60" />
+                    <Check
+                      className="mt-0.5 size-3.5 shrink-0 opacity-50"
+                      strokeWidth={2}
+                    />
                     {meta.support}
                   </li>
                 </ul>
               </article>
             );
+
+            if (popular) {
+              return (
+                <div
+                  key={plan.id}
+                  className="rounded-[22px] bg-gradient-to-b from-[#c084fc] via-[#818cf8] to-[#38bdf8] p-[2px] shadow-[0_32px_64px_-24px_rgba(124,58,237,0.65)] xl:scale-[1.03]"
+                >
+                  {cardInner}
+                </div>
+              );
+            }
+
+            return (
+              <div
+                key={plan.id}
+                className="shadow-[0_20px_48px_-28px_rgba(15,23,42,0.14)]"
+              >
+                {cardInner}
+              </div>
+            );
           })}
         </div>
 
         <div className="mt-8 grid gap-4 lg:grid-cols-2">
-          <div className="rounded-[20px] border border-white/80 bg-white/75 p-6 shadow-[0_16px_40px_-24px_rgba(47,28,106,0.2)] backdrop-blur-md">
-            <div className="flex gap-4">
-              <div className="flex -space-x-2">
-                {[0, 1, 2].map((i) => (
-                  <div
-                    key={i}
-                    className="size-10 rounded-xl border border-white bg-gradient-to-br from-[#c4b5fd] to-[#93c5fd] shadow-md"
-                    style={{ transform: `rotate(${i * 6 - 6}deg)` }}
-                  />
-                ))}
-              </div>
-              <div>
-                <h3 className="font-heading text-[1.1rem] font-extrabold text-[#0f172a]">
-                  One credit balance. Multiple AI models.
-                </h3>
-                <p className="mt-2 text-[13px] leading-relaxed text-[#64748b]">
-                  Use your included AI credit across supported models and choose
-                  the right AI for every task. Usage estimates are shown before
-                  generation.
-                </p>
-              </div>
+          <div className="flex gap-5 rounded-[20px] border border-white bg-white/85 p-6 shadow-[0_16px_40px_-24px_rgba(47,28,106,0.18)] backdrop-blur-md">
+            <ModelLogoStack className="shrink-0" />
+            <div>
+              <p className="text-[10px] font-extrabold tracking-[0.14em] text-[#6366f1] uppercase">
+                AI models
+              </p>
+              <h3 className="font-heading mt-1 text-[1.15rem] leading-snug font-extrabold text-[#0f172a]">
+                One credit balance. Multiple AI models.
+              </h3>
+              <p className="mt-2 text-[13px] leading-relaxed text-[#64748b]">
+                Use your included AI credit across supported models and choose
+                the right AI for every task. Usage estimates are shown before
+                generation.
+              </p>
             </div>
           </div>
-          <div className="rounded-[20px] border border-white/80 bg-white/75 p-6 shadow-[0_16px_40px_-24px_rgba(47,28,106,0.2)] backdrop-blur-md">
-            <p className="text-[10px] font-extrabold tracking-wide text-[#ea580c] uppercase">
-              On-demand
-            </p>
-            <div className="mt-3 flex gap-4">
-              <div className="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-200 to-amber-400 shadow-inner">
-                <Coins className="size-6 text-amber-900" />
-              </div>
-              <div>
-                <h3 className="font-heading text-[1.1rem] font-extrabold text-[#0f172a]">
-                  Need more AI?
-                </h3>
-                <p className="mt-2 text-[13px] leading-relaxed text-[#64748b]">
-                  When your included credit runs out, continue with optional
-                  on-demand usage. Additional usage is only charged after
-                  confirmation.
-                </p>
-                <button
-                  type="button"
-                  className="mt-3 inline-flex items-center gap-1 text-[13px] font-extrabold text-[#673de6]"
-                >
-                  Learn about On-Demand
-                  <ArrowRight className="size-3.5" />
-                </button>
-              </div>
+          <div className="flex gap-5 rounded-[20px] border border-[#fde68a]/60 bg-gradient-to-br from-[#fffbeb] to-[#fff7ed] p-6 shadow-[0_16px_40px_-24px_rgba(245,158,11,0.2)]">
+            <OnDemandCoins className="shrink-0 pt-1" />
+            <div>
+              <p className="text-[10px] font-extrabold tracking-[0.14em] text-[#ea580c] uppercase">
+                On-demand
+              </p>
+              <h3 className="font-heading mt-1 text-[1.15rem] font-extrabold text-[#0f172a]">
+                Need more AI?
+              </h3>
+              <p className="mt-2 text-[13px] leading-relaxed text-[#64748b]">
+                When your included credit runs out, continue with optional
+                on-demand usage. Additional usage is only charged after
+                confirmation.
+              </p>
+              <button
+                type="button"
+                className="mt-4 inline-flex h-10 items-center gap-2 rounded-full border border-[#e2e8f0] bg-white px-4 text-[13px] font-extrabold text-[#0f172a] shadow-sm"
+              >
+                Learn about On-Demand
+                <ArrowRight className="size-3.5" />
+              </button>
             </div>
           </div>
         </div>
 
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-2 rounded-[18px] border border-[#e8ecf4] bg-white/90 px-4 py-4 text-center shadow-sm sm:gap-3 sm:px-6">
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-1 rounded-[18px] border border-[#e8ecf4] bg-white px-3 py-5 shadow-[0_8px_24px_-16px_rgba(15,23,42,0.1)] sm:gap-2 sm:px-6">
           {[
             {
               icon: Lightbulb,
@@ -438,7 +474,7 @@ export function BeyondAiPricingMockup() {
             { icon: Layers, title: "Use AI models", sub: "Build your website" },
             { icon: Pencil, title: "Customize", sub: "Edit and improve" },
             {
-              icon: Cloud,
+              icon: Globe,
               title: "Connect a domain",
               sub: "Free Deploy included",
             },
@@ -446,16 +482,20 @@ export function BeyondAiPricingMockup() {
           ].map((step, i, arr) => {
             const Icon = step.icon;
             return (
-              <span key={step.title} className="inline-flex items-center gap-2">
-                <span className="flex min-w-[100px] flex-col items-center sm:min-w-[120px]">
-                  <Icon className="size-4 text-[#673de6]" />
-                  <span className="mt-1 text-[11px] font-extrabold text-[#2f1c6a]">
+              <span key={step.title} className="inline-flex items-center">
+                <span className="flex min-w-[96px] flex-col items-center px-1 sm:min-w-[118px]">
+                  <span className="flex size-8 items-center justify-center rounded-full bg-[#f4f0ff]">
+                    <Icon className="size-4 text-[#673de6]" strokeWidth={2} />
+                  </span>
+                  <span className="mt-2 text-[11px] font-extrabold text-[#1e1b4b]">
                     {step.title}
                   </span>
-                  <span className="text-[10px] text-[#94a3b8]">{step.sub}</span>
+                  <span className="mt-0.5 text-center text-[10px] leading-tight text-[#94a3b8]">
+                    {step.sub}
+                  </span>
                 </span>
                 {i < arr.length - 1 ? (
-                  <ChevronRight className="hidden size-4 text-[#cbd5e1] sm:block" />
+                  <ChevronRight className="mx-0.5 hidden size-4 text-[#cbd5e1] sm:block" />
                 ) : null}
               </span>
             );
