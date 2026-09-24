@@ -60,7 +60,7 @@ function PlanGlyph({ plan }: { plan: CmsHostingPlan }) {
   );
 }
 
-function PlanCard({
+export function PlanCard({
   plan,
   billing,
   delay,

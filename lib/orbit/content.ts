@@ -115,6 +115,7 @@ export async function saveHomeSections(sections: CmsHomeSections) {
   });
   revalidateContent();
   revalidatePath("/");
+  revalidatePath("/pricing");
   revalidatePath("/orbit/content");
   return row;
 }
