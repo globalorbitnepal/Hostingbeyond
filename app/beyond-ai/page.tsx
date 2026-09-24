@@ -3,7 +3,11 @@ import type { Metadata } from "next";
 import { BeyondAiProductPage } from "@/components/beyond-ai/beyond-ai-product-page";
 import { SiteFooter, SiteHeader } from "@/components/layout";
 import { buildMetadata } from "@/lib/metadata";
-import { getHomeSections, getSiteSettings } from "@/lib/orbit/content";
+import {
+  getBeyondAiPageContent,
+  getHomeSections,
+  getSiteSettings,
+} from "@/lib/orbit/content";
 
 export const metadata: Metadata = buildMetadata({
   title: "Beyond AI — AI Website Builder & Hosting",
@@ -13,9 +17,10 @@ export const metadata: Metadata = buildMetadata({
 });
 
 export default async function BeyondAiPage() {
-  const [sections, settings] = await Promise.all([
+  const [sections, settings, pageContent] = await Promise.all([
     getHomeSections(),
     getSiteSettings(),
+    getBeyondAiPageContent(),
   ]);
 
   return (
@@ -30,7 +35,7 @@ export default async function BeyondAiPage() {
           logoPath={settings.logoPath}
         />
       </div>
-      <BeyondAiProductPage />
+      <BeyondAiProductPage content={pageContent} />
       {sections.footer?.visible !== false ? (
         <SiteFooter content={sections.footer} logoPath={settings.logoPath} />
       ) : null}

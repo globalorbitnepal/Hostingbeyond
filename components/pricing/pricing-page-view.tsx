@@ -124,27 +124,29 @@ function DomainsPricingBlock() {
           </div>
           <form
             onSubmit={onSearch}
-            className="flex w-full max-w-lg flex-col gap-2 sm:flex-row"
+            className="flex w-full max-w-2xl flex-col gap-3 sm:flex-row sm:items-stretch"
           >
             <label className="sr-only" htmlFor="pricing-domain-search">
               Search domain
             </label>
             <div className="relative flex-1">
               <Search
-                className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-[#94a3b8]"
+                className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-[#673de6]"
                 aria-hidden
               />
               <input
                 id="pricing-domain-search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Find your perfect domain"
-                className="h-12 w-full rounded-full border border-[#e9e4ff] bg-white pr-4 pl-10 text-[15px] text-[#1e1b4b] shadow-inner ring-[#673de6]/30 outline-none placeholder:text-[#94a3b8] focus:ring-2"
+                placeholder="e.g. yourbrand.com or mystore"
+                autoComplete="off"
+                spellCheck={false}
+                className="h-14 w-full rounded-2xl border-2 border-[#e9e4ff] bg-white pr-5 pl-12 text-[16px] text-[#1e1b4b] shadow-[0_8px_24px_-12px_rgba(47,28,106,0.15)] ring-[#673de6]/25 outline-none placeholder:text-[#94a3b8] focus:border-[#c4b5fd] focus:ring-4"
               />
             </div>
             <button
               type="submit"
-              className="inline-flex h-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-6 text-[14px] font-bold text-white shadow-[0_12px_24px_rgba(103,61,230,0.35)] hover:brightness-105"
+              className="inline-flex h-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-8 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(103,61,230,0.4)] hover:brightness-105 sm:min-w-[140px]"
             >
               Search
             </button>

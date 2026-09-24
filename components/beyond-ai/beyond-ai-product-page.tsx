@@ -6,8 +6,9 @@ import { ArrowRight, Check } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 
 import { BeyondAiFaqs } from "@/components/beyond-ai/beyond-ai-faqs";
+import { BeyondAiPremiumVideo } from "@/components/beyond-ai/beyond-ai-premium-video";
 import { BeyondAiPricingMockup } from "@/components/beyond-ai/beyond-ai-pricing-mockup";
-import { beyondAiWorkspacePath } from "@/config/beyond-ai-product";
+import type { CmsBeyondAiPageContent } from "@/lib/orbit/beyond-ai-page-content";
 import { cn } from "@/lib/utils";
 
 function HeroDemo({ reduce }: { reduce: boolean }) {
@@ -92,40 +93,42 @@ function HeroDemo({ reduce }: { reduce: boolean }) {
   );
 }
 
-export function BeyondAiProductPage() {
+export function BeyondAiProductPage({
+  content,
+}: {
+  content: CmsBeyondAiPageContent;
+}) {
   const reduce = useReducedMotion();
 
   return (
-    <>
-      <section className="hb-band-purple relative overflow-hidden pt-12 pb-16 sm:pt-16 sm:pb-20">
-        <div className="hb-shell relative z-10 grid items-center gap-10 lg:grid-cols-2">
-          <div>
+    <div className="overflow-x-hidden bg-[#f4f7ff]">
+      <section className="hb-band-purple relative overflow-hidden pt-10 pb-14 sm:pt-14 sm:pb-20">
+        <div className="hb-shell relative z-10 grid items-center gap-8 lg:grid-cols-2 lg:gap-10">
+          <div className="max-w-xl">
             <p className="text-[12px] font-extrabold tracking-[0.22em] text-white/60 uppercase">
-              Beyond AI
+              {content.heroEyebrow}
             </p>
-            <h1 className="font-heading mt-3 text-[clamp(2.2rem,4.8vw,3.5rem)] leading-[1.05] font-extrabold tracking-[-0.045em] text-white">
-              Build with AI.
+            <h1 className="font-heading mt-3 text-[clamp(2rem,4.8vw,3.5rem)] leading-[1.05] font-extrabold tracking-[-0.045em] text-white">
+              {content.heroTitle}
               <br />
-              <span className="text-[#c7d7ff]">Host it here.</span>
+              <span className="text-[#c7d7ff]">{content.heroTitleAccent}</span>
             </h1>
-            <p className="mt-4 max-w-lg text-[16px] leading-relaxed font-medium text-white/88 sm:text-[17px]">
-              Create websites, write code, optimize content and launch your
-              projects with leading AI models — all from one workspace on
-              HostingBeyond.
+            <p className="mt-4 text-[16px] leading-relaxed font-medium text-white/88 sm:text-[17px]">
+              {content.heroDescription}
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
-                href={beyondAiWorkspacePath()}
+                href={content.heroPrimaryHref}
                 className="inline-flex h-12 items-center gap-2 rounded-full bg-white px-6 text-[14px] font-extrabold text-[#2f1c6a] shadow-lg"
               >
-                Start building
+                {content.heroPrimaryLabel}
                 <ArrowRight className="size-4" />
               </Link>
               <a
-                href="#beyond-ai-plans"
+                href={content.heroSecondaryHref}
                 className="inline-flex h-12 items-center rounded-full border border-white/35 px-6 text-[14px] font-extrabold text-white hover:bg-white/10"
               >
-                View plans
+                {content.heroSecondaryLabel}
               </a>
             </div>
           </div>
@@ -133,8 +136,9 @@ export function BeyondAiProductPage() {
         </div>
       </section>
 
-      <BeyondAiPricingMockup />
-      <BeyondAiFaqs />
-    </>
+      <BeyondAiPricingMockup content={content} />
+      <BeyondAiPremiumVideo content={content} />
+      <BeyondAiFaqs content={content} />
+    </div>
   );
 }

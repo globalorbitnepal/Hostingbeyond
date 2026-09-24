@@ -1033,6 +1033,15 @@ function mergeFaqs(
   return defaults.map((item) => ({ ...item, ...byId.get(item.id) }));
 }
 
+function mergePlansById(
+  defaults: CmsHostingPlan[],
+  stored?: CmsHostingPlan[] | null,
+): CmsHostingPlan[] {
+  if (!stored?.length) return defaults;
+  const byId = new Map(stored.map((item) => [item.id, item]));
+  return defaults.map((item) => ({ ...item, ...byId.get(item.id) }));
+}
+
 export function mergePricingPageContent(
   stored?: Partial<CmsPricingPageContent> | null,
 ): CmsPricingPageContent {
@@ -1060,16 +1069,16 @@ export function mergePricingPageContent(
     ecommercePlans: stored.ecommercePlans?.length
       ? stored.ecommercePlans
       : defaults.ecommercePlans,
-    vpsPlans: stored.vpsPlans?.length ? stored.vpsPlans : defaults.vpsPlans,
-    aiBuilderPlans: stored.aiBuilderPlans?.length
-      ? stored.aiBuilderPlans
-      : defaults.aiBuilderPlans,
-    aiAgentPlans: stored.aiAgentPlans?.length
-      ? stored.aiAgentPlans
-      : defaults.aiAgentPlans,
-    businessEmailPlans: stored.businessEmailPlans?.length
-      ? stored.businessEmailPlans
-      : defaults.businessEmailPlans,
+    vpsPlans: mergePlansById(defaults.vpsPlans, stored.vpsPlans),
+    aiBuilderPlans: mergePlansById(
+      defaults.aiBuilderPlans,
+      stored.aiBuilderPlans,
+    ),
+    aiAgentPlans: mergePlansById(defaults.aiAgentPlans, stored.aiAgentPlans),
+    businessEmailPlans: mergePlansById(
+      defaults.businessEmailPlans,
+      stored.businessEmailPlans,
+    ),
   };
 }
 

@@ -377,6 +377,12 @@ export function PricingPageEditor({
               className="space-y-3 rounded-2xl border border-slate-200 bg-white p-5"
             >
               <h2 className="font-semibold">{title}</h2>
+              {key === "aiBuilderPlans" ? (
+                <p className="text-xs text-slate-500">
+                  Keep in sync with Orbit → Beyond AI product page and public
+                  /beyond-ai pricing (Free $0, Pro $20, Pro+ $40, Ultra $100).
+                </p>
+              ) : null}
               {plans.map((plan, index) => (
                 <PlanEditor
                   key={plan.id}

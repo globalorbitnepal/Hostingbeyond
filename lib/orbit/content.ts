@@ -23,6 +23,11 @@ import {
   type CmsSiteSettings,
 } from "@/lib/orbit/defaults";
 import {
+  defaultBeyondAiPageContent,
+  mergeBeyondAiPageContent,
+  type CmsBeyondAiPageContent,
+} from "@/lib/orbit/beyond-ai-page-content";
+import {
   defaultPricingPageContent,
   mergePricingPageContent,
   type CmsPricingPageContent,
@@ -35,6 +40,7 @@ import {
 const CMS_TAG = "orbit-content";
 const DOMAIN_SLUG = "domain-search";
 const PRICING_SLUG = "pricing";
+const BEYOND_AI_PAGE_SLUG = "beyond-ai-product";
 /** Safety net so a bad cache entry can never outlive a few minutes. */
 const CMS_REVALIDATE = 300;
 
@@ -213,6 +219,54 @@ export const getPricingPageContent = cache(
   },
 );
 
+const readBeyondAiPageContent = nextCache(
+  async (): Promise<CmsBeyondAiPageContent> => {
+    const page = await prisma.pageContent.findUnique({
+      where: { slug: BEYOND_AI_PAGE_SLUG },
+    });
+    if (!page) return defaultBeyondAiPageContent();
+    return mergeBeyondAiPageContent(
+      page.sections as Partial<CmsBeyondAiPageContent>,
+    );
+  },
+  ["orbit-beyond-ai-page-content"],
+  { tags: [CMS_TAG], revalidate: CMS_REVALIDATE },
+);
+
+export const getBeyondAiPageContent = cache(
+  async (): Promise<CmsBeyondAiPageContent> => {
+    try {
+      return await readBeyondAiPageContent();
+    } catch {
+      return defaultBeyondAiPageContent();
+    }
+  },
+);
+
+export async function saveBeyondAiPageContent(content: CmsBeyondAiPageContent) {
+  const normalized = mergeBeyondAiPageContent(content);
+  const row = await prisma.pageContent.upsert({
+    where: { slug: BEYOND_AI_PAGE_SLUG },
+    create: {
+      slug: BEYOND_AI_PAGE_SLUG,
+      title: "Beyond AI product",
+      isPublished: true,
+      isVisible: true,
+      sections: normalized,
+      seo: {
+        title: "Beyond AI — HostingBeyond",
+        description:
+          "Build websites with AI models, included credit, and Free Deploy on HostingBeyond.",
+      },
+    },
+    update: { sections: normalized },
+  });
+  revalidateContent();
+  revalidatePath(routes.beyondAi);
+  revalidatePath("/orbit/beyond-ai");
+  return row;
+}
+
 export async function savePricingPageContent(content: CmsPricingPageContent) {
   const normalized = mergePricingPageContent(content);
   const row = await prisma.pageContent.upsert({
@@ -312,6 +366,12 @@ export async function ensureHomeSeeded() {
     });
     if (!pricing) {
       await savePricingPageContent(defaultPricingPageContent());
+    }
+    const beyondAiPage = await prisma.pageContent.findUnique({
+      where: { slug: BEYOND_AI_PAGE_SLUG },
+    });
+    if (!beyondAiPage) {
+      await saveBeyondAiPageContent(defaultBeyondAiPageContent());
     }
   } catch {
     /* DB may be unavailable during local UI work */

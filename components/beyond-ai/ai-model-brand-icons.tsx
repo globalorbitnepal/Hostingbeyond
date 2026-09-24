@@ -8,6 +8,7 @@ const logoSrc: Record<string, string> = {
   gemini: "/images/ai-assistant/gemini.svg",
   claude: "/images/ai-assistant/claude.svg",
   grok: "/images/ai-assistant/grok.svg",
+  openrouter: "/images/ai-assistant/openrouter.svg",
 };
 
 export function AiModelBrandIcon({
@@ -37,4 +38,5 @@ export const pricingModelRow = [
   { id: "gemini", name: "Gemini", provider: "Google" },
   { id: "claude", name: "Claude", provider: "Anthropic" },
   { id: "grok", name: "Grok", provider: "xAI" },
+  { id: "openrouter", name: "OpenRouter", provider: "More models" },
 ] as const;
