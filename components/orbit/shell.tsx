@@ -28,6 +28,7 @@ const nav = [
   { href: "/orbit/content", label: "Website Content", icon: Sparkles },
   { href: "/orbit/domains", label: "Domain Pages", icon: Globe },
   { href: "/orbit/pricing", label: "Pricing Page", icon: Tags },
+  { href: "/orbit/beyond-ai", label: "Beyond AI Product", icon: Sparkles },
   { href: "/orbit/navigation", label: "Navigation", icon: Navigation },
   { href: "/orbit/media", label: "Media Library", icon: ImageIcon },
   { href: "/orbit/seo", label: "SEO", icon: Search },

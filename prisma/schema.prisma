@@ -132,6 +132,41 @@ model CustomerUser {
   updatedAt    DateTime               @updatedAt
   sessions     CustomerSession[]
   accounts     CustomerOAuthAccount[]
+  beyondAi     BeyondAiSubscription?
+  beyondAiProjects BeyondAiProject[]
+}
+
+model BeyondAiSubscription {
+  id                 String       @id @default(cuid())
+  userId             String       @unique
+  user               CustomerUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId             String
+  status             String       @default("active")
+  monthlyCreditUsd   Float
+  creditRemainingUsd Float
+  onDemandEnabled    Boolean      @default(false)
+  onDemandAccruedUsd Float        @default(0)
+  billingInterval    String       @default("monthly")
+  currentPeriodEnd   DateTime?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  @@index([planId])
+  @@index([status])
+}
+
+model BeyondAiProject {
+  id          String       @id @default(cuid())
+  userId      String
+  user        CustomerUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  status      String       @default("draft")
+  domain      String?
+  publishedUrl String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([userId])
 }
 
 model CustomerSession {

@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 
-import { BeyondAiPricingView } from "@/components/beyond-ai/beyond-ai-pricing-view";
-import { SiteFooter } from "@/components/layout";
+import { BeyondAiProductPage } from "@/components/beyond-ai/beyond-ai-product-page";
+import { SiteFooter, SiteHeader } from "@/components/layout";
+import { buildMetadata } from "@/lib/metadata";
 import { getHomeSections, getSiteSettings } from "@/lib/orbit/content";
 
-export const metadata: Metadata = {
-  title: "Beyond AI — Build with 100+ models, host free | HostingBeyond",
+export const metadata: Metadata = buildMetadata({
+  title: "Beyond AI — AI Website Builder & Hosting",
   description:
-    "Beyond AI on HostingBeyond: monthly AI balance, top models, free hosting, and on-demand top-ups. Build sites and go live in minutes.",
-};
+    "Build websites, create content, optimize SEO and launch with powerful AI models — all in one workspace with Hosting Beyond.",
+  path: "/beyond-ai",
+});
 
 export default async function BeyondAiPage() {
   const [sections, settings] = await Promise.all([
@@ -18,7 +20,17 @@ export default async function BeyondAiPage() {
 
   return (
     <div className="min-h-dvh overflow-x-hidden">
-      <BeyondAiPricingView logoPath={settings.logoPath} />
+      <div className="hb-band-purple">
+        <SiteHeader
+          navigation={sections.navigation}
+          loginLabel={settings.loginLabel}
+          loginHref={settings.loginHref}
+          getStartedLabel={settings.getStartedLabel}
+          getStartedHref={settings.getStartedHref}
+          logoPath={settings.logoPath}
+        />
+      </div>
+      <BeyondAiProductPage />
       {sections.footer?.visible !== false ? (
         <SiteFooter content={sections.footer} logoPath={settings.logoPath} />
       ) : null}

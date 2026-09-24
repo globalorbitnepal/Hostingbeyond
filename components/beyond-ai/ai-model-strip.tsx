@@ -1,5 +1,5 @@
+import { beyondAiModelsConfig } from "@/config/beyond-ai-product";
 import { cn } from "@/lib/utils";
-import { beyondAiModelShowcase } from "@/config/beyond-ai-plans";
 
 export function AiModelStrip({
   className,
@@ -8,6 +8,7 @@ export function AiModelStrip({
   className?: string;
   tone?: "light" | "dark";
 }) {
+  const featured = beyondAiModelsConfig.filter((m) => m.featured);
   return (
     <div
       className={cn(
@@ -23,17 +24,17 @@ export function AiModelStrip({
       >
         Models you can use
       </span>
-      {beyondAiModelShowcase.map((m) => (
+      {featured.map((m) => (
         <span
           key={m.id}
-          className={cn(
-            "inline-flex h-9 min-w-[4.5rem] items-center justify-center rounded-xl border border-[#e9e4ff] bg-gradient-to-br px-3 text-[13px] font-extrabold shadow-sm",
-            m.accent,
-          )}
+          className="inline-flex h-9 min-w-[4.5rem] items-center justify-center rounded-xl border border-[#e9e4ff] bg-gradient-to-br from-[#f4f0ff] to-white px-3 text-[13px] font-extrabold text-[#673de6]"
         >
-          {m.label}
+          {m.shortLabel}
         </span>
       ))}
+      <span className="inline-flex h-9 items-center rounded-xl border border-dashed border-[#c4b5fd] px-3 text-[13px] font-extrabold text-[#673de6]">
+        + More models
+      </span>
     </div>
   );
 }
