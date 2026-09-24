@@ -45,6 +45,11 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     optimizePackageImports: ["lucide-react", "framer-motion"],
+    routerBFCache: true,
+    staleTimes: {
+      dynamic: 30,
+      static: 300,
+    },
     serverActions: {
       bodySizeLimit: "32mb",
     },

@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { Caveat, DM_Sans, Geist_Mono, Manrope } from "next/font/google";
 
 import { LocaleProvider } from "@/components/locale/locale-provider";
+import { SiteNavigation } from "@/components/navigation/site-navigation";
 import { LOCALE_COOKIE, parsePreferencesCookie } from "@/lib/i18n/preferences";
 import { buildMetadata } from "@/lib/metadata";
 
@@ -68,6 +69,7 @@ export default async function RootLayout({
         className={`${manrope.variable} ${dmSans.variable} ${geistMono.variable} ${caveat.variable} min-h-dvh bg-black font-sans text-white antialiased`}
       >
         <LocaleProvider initialPreferences={initialPreferences}>
+          <SiteNavigation />
           {children}
         </LocaleProvider>
       </body>
