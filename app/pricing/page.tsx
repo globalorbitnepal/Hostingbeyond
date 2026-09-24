@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 
 import { PricingPageView } from "@/components/pricing/pricing-page-view";
 import { SiteFooter, SiteHeader } from "@/components/layout";
-import { getHomeSections, getSiteSettings } from "@/lib/orbit/content";
+import {
+  getHomeSections,
+  getPricingPageContent,
+  getSiteSettings,
+} from "@/lib/orbit/content";
 
 export const metadata: Metadata = {
   title: "Pricing — HostingBeyond",
@@ -13,9 +17,10 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function PricingPage() {
-  const [sections, settings] = await Promise.all([
+  const [sections, settings, pricing] = await Promise.all([
     getHomeSections(),
     getSiteSettings(),
+    getPricingPageContent(),
   ]);
 
   const hostingPlans = sections.hostingPlans;
@@ -32,7 +37,7 @@ export default async function PricingPage() {
           logoPath={settings.logoPath}
         />
       </div>
-      <PricingPageView hostingPlans={hostingPlans} />
+      <PricingPageView pricing={pricing} hostingPlans={hostingPlans} />
       {sections.footer?.visible !== false ? (
         <SiteFooter content={sections.footer} logoPath={settings.logoPath} />
       ) : null}

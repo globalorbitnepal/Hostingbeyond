@@ -25,19 +25,19 @@ import {
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 
+import { GlassVideoFrame } from "@/components/home/glass-video-frame";
+import { PricingEcommercePanel } from "@/components/pricing/pricing-ecommerce-panel";
+import { PricingFaqsSection } from "@/components/pricing/pricing-faqs-section";
+import { PricingHighlights } from "@/components/pricing/pricing-highlights";
 import { PricingPlanPanel } from "@/components/pricing/pricing-plan-panel";
 import { useLocale } from "@/components/locale/locale-provider";
 import { routes } from "@/config/routes";
-import {
-  aiAgentPlans,
-  aiBuilderPlans,
-  businessEmailCatalogPlans,
-  domainHighlights,
-  ecommercePlanOverrides,
-  pricingCategories,
-  type PricingCategoryId,
-  vpsPlans,
-} from "@/config/pricing-plans";
+import { domainHighlights } from "@/config/pricing-plans";
+import type {
+  CmsPricingPageContent,
+  PricingCategoryId,
+} from "@/lib/orbit/pricing-content";
+import { getCategoryById } from "@/lib/orbit/pricing-content";
 import type {
   CmsHostingPlan,
   CmsHostingPlansContent,
@@ -54,22 +54,28 @@ const categoryIcons: Record<PricingCategoryId, typeof Globe2> = {
   "business-email": Mail,
 };
 
-function parseCategoryFromHash(): PricingCategoryId {
-  const raw = window.location.hash.replace(/^#/, "");
-  const found = pricingCategories.find((c) => c.id === raw);
-  return found?.id ?? "websites";
-}
+const trustIcon = {
+  refund: Shield,
+  support: Headphones,
+  ssl: Lock,
+  ai: Sparkles,
+} as const;
 
-function buildEcommercePlans(plans: CmsHostingPlan[]): CmsHostingPlan[] {
-  return plans.map((plan) => {
-    const override = ecommercePlanOverrides[plan.id];
-    if (!override) return plan;
-    return {
-      ...plan,
-      tagline: override.tagline,
-      features: [...override.extraFeatures, ...plan.features],
-    };
-  });
+function parseCategoryFromHash(): PricingCategoryId {
+  if (typeof window === "undefined") return "websites";
+  const raw = window.location.hash.replace(/^#/, "");
+  const ids: PricingCategoryId[] = [
+    "websites",
+    "ecommerce",
+    "domains",
+    "ai-builder",
+    "vps",
+    "ai-agents",
+    "business-email",
+  ];
+  return ids.includes(raw as PricingCategoryId)
+    ? (raw as PricingCategoryId)
+    : "websites";
 }
 
 function DomainsPricingBlock() {
@@ -87,7 +93,7 @@ function DomainsPricingBlock() {
 
   return (
     <div className="space-y-8">
-      <div className="rounded-[28px] border border-white/80 bg-[linear-gradient(135deg,#ffffff_0%,#f4f0ff_48%,#eef4ff_100%)] p-6 shadow-[0_24px_48px_-20px_rgba(47,28,106,0.35)] sm:p-8">
+      <div className="rounded-[28px] border border-[#e9e4ff] bg-[linear-gradient(135deg,#ffffff_0%,#f4f0ff_48%,#eef4ff_100%)] p-6 shadow-[0_24px_48px_-20px_rgba(47,28,106,0.35)] sm:p-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-md">
             <p className="text-[13px] font-bold tracking-wide text-[#673de6] uppercase">
@@ -159,45 +165,28 @@ function DomainsPricingBlock() {
           </Link>
         ))}
       </div>
-
-      <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {[
-          "Free domain privacy protection",
-          "Easy DNS & forwarding",
-          "Transfer lock & security",
-          "Bulk search for agencies",
-          "Connect to hosting in one click",
-          "24/7 domain specialists",
-        ].map((line) => (
-          <li
-            key={line}
-            className="flex items-start gap-2.5 rounded-2xl border border-[#eef2ff] bg-white/70 px-4 py-3 text-[13px] font-medium text-[#1e1b4b]"
-          >
-            <span className="mt-0.5 inline-flex size-[18px] shrink-0 items-center justify-center rounded-full bg-[#673de6] text-white">
-              <Check className="size-2.5" strokeWidth={3.2} aria-hidden />
-            </span>
-            {line}
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }
 
-const trustPills = [
-  { icon: Shield, label: "30-day money-back" },
-  { icon: Headphones, label: "24/7 expert support" },
-  { icon: Lock, label: "Free SSL on hosting" },
-  { icon: Sparkles, label: "Beyond AI included" },
-];
-
 export function PricingPageView({
+  pricing,
   hostingPlans,
 }: {
+  pricing: CmsPricingPageContent;
   hostingPlans: CmsHostingPlansContent;
 }) {
   const reduceMotion = useReducedMotion();
   const [active, setActive] = useState<PricingCategoryId>("websites");
+  const [billing, setBilling] = useState<"annually" | "monthly">("annually");
+
+  const categories = useMemo(
+    () =>
+      [...pricing.categories]
+        .filter((c) => c.visible !== false)
+        .sort((a, b) => a.order - b.order),
+    [pricing.categories],
+  );
 
   const syncFromHash = useCallback(() => {
     setActive(parseCategoryFromHash());
@@ -218,6 +207,8 @@ export function PricingPageView({
     });
   };
 
+  const activeMeta = getCategoryById(pricing, active);
+
   const websitePlans = useMemo(
     () =>
       [...(hostingPlans.plans ?? [])]
@@ -226,81 +217,158 @@ export function PricingPageView({
     [hostingPlans.plans],
   );
 
-  const ecommercePlans = useMemo(
-    () => buildEcommercePlans(websitePlans),
-    [websitePlans],
-  );
+  const planPanelForCategory = (): {
+    plans?: CmsHostingPlan[];
+    hostingContent?: CmsHostingPlansContent;
+    columns: 3 | 4;
+    showBilling: boolean;
+    saveBadge?: string;
+    ecommerce?: boolean;
+  } => {
+    switch (active) {
+      case "websites":
+        return {
+          hostingContent: hostingPlans,
+          plans: websitePlans,
+          columns: 4,
+          showBilling: true,
+          saveBadge: hostingPlans.saveBadge,
+        };
+      case "ecommerce":
+        return {
+          plans: pricing.ecommercePlans,
+          columns: 4,
+          showBilling: false,
+          saveBadge: activeMeta.saveBadge,
+          ecommerce: true,
+        };
+      case "vps":
+        return {
+          plans: pricing.vpsPlans,
+          columns: 4,
+          showBilling: true,
+          saveBadge: activeMeta.saveBadge,
+        };
+      case "ai-builder":
+        return {
+          plans: pricing.aiBuilderPlans,
+          columns: 4,
+          showBilling: true,
+          saveBadge: activeMeta.saveBadge,
+        };
+      case "ai-agents":
+        return {
+          plans: pricing.aiAgentPlans,
+          columns: 3,
+          showBilling: true,
+          saveBadge: activeMeta.saveBadge,
+        };
+      case "business-email":
+        return {
+          plans: pricing.businessEmailPlans,
+          columns: 3,
+          showBilling: false,
+        };
+      default:
+        return { columns: 4, showBilling: true };
+    }
+  };
 
-  const activeMeta = pricingCategories.find((c) => c.id === active)!;
+  const panel = planPanelForCategory();
 
   return (
     <>
-      <section className="hb-band-purple relative overflow-hidden pt-4 pb-6 sm:pb-8">
+      <section className="hb-band-purple relative overflow-hidden pt-2 pb-4 sm:pb-6">
         <div
           aria-hidden
-          className="pointer-events-none absolute -top-20 left-1/4 h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.18),transparent_65%)] blur-2xl"
+          className="pointer-events-none absolute -top-24 left-1/3 h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.2),transparent_65%)] blur-2xl"
         />
         <div className="hb-shell relative z-10">
-          <motion.div
-            initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45 }}
-            className="mx-auto max-w-3xl text-center"
-          >
-            <p className="inline-flex items-center gap-2 rounded-full border border-white/35 bg-white/12 px-3.5 py-1 text-[11px] font-bold tracking-[0.18em] text-white uppercase">
-              Plans & pricing
-            </p>
-            <h1 className="font-heading mt-4 text-[clamp(2rem,4.5vw,3.4rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-white">
-              Everything you need to{" "}
-              <span className="text-[#c7d7ff]">grow online</span>
-            </h1>
-            <p className="mx-auto mt-3 max-w-2xl text-[15px] leading-relaxed text-white/90 sm:text-[16px]">
-              Transparent pricing across websites, stores, domains, AI, VPS, and
-              business email — one premium platform, no surprise upsells.
-            </p>
-          </motion.div>
+          <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-10">
+            <motion.div
+              initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="text-center lg:text-left"
+            >
+              <p className="inline-flex items-center gap-2 rounded-full border border-white/35 bg-white/12 px-3.5 py-1 text-[11px] font-bold tracking-[0.18em] text-white uppercase">
+                {pricing.heroEyebrow}
+              </p>
+              <h1 className="font-heading mt-4 text-[clamp(2rem,4.5vw,3.35rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-white">
+                {pricing.heroTitle}{" "}
+                <span className="text-[#c7d7ff]">
+                  {pricing.heroTitleAccent}
+                </span>
+              </h1>
+              <p className="mx-auto mt-3 max-w-xl text-[15px] leading-relaxed text-white/90 sm:text-[16px] lg:mx-0">
+                {pricing.heroDescription}
+              </p>
+              <ul className="mt-6 flex flex-wrap justify-center gap-2 lg:justify-start">
+                {pricing.trustPills
+                  .filter((p) => p.visible)
+                  .map((pill) => {
+                    const Icon =
+                      trustIcon[pill.id as keyof typeof trustIcon] ?? Shield;
+                    return (
+                      <li
+                        key={pill.id}
+                        className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-[12px] font-semibold text-white backdrop-blur-md"
+                      >
+                        <Icon className="size-3.5" aria-hidden />
+                        {pill.label}
+                      </li>
+                    );
+                  })}
+              </ul>
+            </motion.div>
+            <motion.div
+              initial={reduceMotion ? false : { opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.55, delay: 0.08 }}
+              className="relative mx-auto w-full max-w-xl lg:max-w-none"
+            >
+              <GlassVideoFrame
+                src={pricing.heroMediaSrc}
+                alt={pricing.heroMediaAlt}
+                playing={!reduceMotion}
+                loop
+                className="min-h-[260px] sm:min-h-[300px]"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
+            </motion.div>
+          </div>
 
-          <ul className="mt-6 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-            {trustPills.map(({ icon: Icon, label }) => (
-              <li
-                key={label}
-                className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-[12px] font-semibold text-white backdrop-blur-md"
-              >
-                <Icon className="size-3.5" aria-hidden />
-                {label}
-              </li>
-            ))}
-          </ul>
-
-          <div className="mt-8 -mb-2">
+          <div className="mt-10 flex justify-center pb-2">
             <div
-              className="flex [scrollbar-width:none] gap-2 overflow-x-auto pb-2 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+              className="sticky top-[4.5rem] z-30 w-full max-w-5xl rounded-[24px] border border-white/30 bg-white/10 p-2 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.45)] backdrop-blur-xl sm:p-2.5"
               role="tablist"
               aria-label="Pricing categories"
             >
-              {pricingCategories.map((cat) => {
-                const Icon = categoryIcons[cat.id];
-                const selected = active === cat.id;
-                return (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={selected}
-                    onClick={() => selectCategory(cat.id)}
-                    className={cn(
-                      "inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-[13px] font-bold transition",
-                      selected
-                        ? "bg-white text-[#2f1c6a] shadow-[0_12px_28px_-8px_rgba(0,0,0,0.35)]"
-                        : "border border-white/30 bg-white/10 text-white hover:bg-white/20",
-                    )}
-                  >
-                    <Icon className="size-4" aria-hidden />
-                    <span className="hidden sm:inline">{cat.label}</span>
-                    <span className="sm:hidden">{cat.shortLabel}</span>
-                  </button>
-                );
-              })}
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                {categories.map((cat) => {
+                  const Icon = categoryIcons[cat.id];
+                  const selected = active === cat.id;
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={selected}
+                      onClick={() => selectCategory(cat.id)}
+                      className={cn(
+                        "inline-flex items-center justify-center gap-2 rounded-full px-3.5 py-2.5 text-[12px] font-bold transition sm:px-4 sm:text-[13px]",
+                        selected
+                          ? "bg-white text-[#2f1c6a] shadow-[0_10px_24px_-8px_rgba(0,0,0,0.35)]"
+                          : "text-white/95 hover:bg-white/15",
+                      )}
+                    >
+                      <Icon className="size-4 shrink-0" aria-hidden />
+                      <span className="hidden md:inline">{cat.label}</span>
+                      <span className="md:hidden">{cat.shortLabel}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
@@ -308,11 +376,11 @@ export function PricingPageView({
 
       <section
         id="pricing-offers"
-        className="hb-band-cream relative scroll-mt-24 pt-10 pb-16 sm:pt-12 sm:pb-20"
+        className="hb-band-cream relative scroll-mt-32 pt-10 pb-8 sm:pt-12"
       >
         <div className="hb-shell">
           <div className="mx-auto max-w-3xl text-center">
-            <h2 className="font-heading text-[clamp(1.65rem,3.2vw,2.35rem)] font-extrabold tracking-[-0.04em] text-[#2f1c6a]">
+            <h2 className="font-heading text-[clamp(1.75rem,3.4vw,2.5rem)] font-extrabold tracking-[-0.04em] text-[#2f1c6a]">
               {activeMeta.headline}
             </h2>
             <p className="mt-3 text-[15px] leading-relaxed text-slate-600">
@@ -320,79 +388,106 @@ export function PricingPageView({
             </p>
           </div>
 
-          <div className="mt-10" role="tabpanel">
-            {active === "websites" ? (
-              <PricingPlanPanel
-                hostingContent={hostingPlans}
-                plans={websitePlans}
-              />
-            ) : null}
-            {active === "ecommerce" ? (
-              <PricingPlanPanel
-                hostingContent={hostingPlans}
-                plans={ecommercePlans}
-                saveBadge="Store-ready hosting"
-              />
-            ) : null}
-            {active === "domains" ? <DomainsPricingBlock /> : null}
-            {active === "ai-builder" ? (
-              <PricingPlanPanel
-                plans={aiBuilderPlans}
-                columns={4}
-                defaultBilling="annually"
-                saveBadge="50% off annual"
-              />
-            ) : null}
-            {active === "vps" ? (
-              <PricingPlanPanel
-                plans={vpsPlans}
-                columns={4}
-                saveBadge="Launch pricing"
-              />
-            ) : null}
-            {active === "ai-agents" ? (
-              <PricingPlanPanel
-                plans={aiAgentPlans}
-                columns={3}
-                saveBadge="Intro pricing"
-              />
-            ) : null}
-            {active === "business-email" ? (
-              <PricingPlanPanel
-                plans={businessEmailCatalogPlans}
-                columns={3}
-                showBillingToggle={false}
-              />
-            ) : null}
+          <div className="mt-10 grid items-center gap-8 lg:grid-cols-2">
+            <GlassVideoFrame
+              src={activeMeta.mediaSrc}
+              alt={activeMeta.mediaAlt}
+              playing={!reduceMotion}
+              loop
+              className="min-h-[240px] lg:min-h-[280px]"
+              sizes="(max-width: 1024px) 100vw, 45vw"
+            />
+            <div className="text-center lg:text-left">
+              <h3 className="font-heading text-[1.5rem] font-extrabold text-[#2f1c6a] sm:text-[1.75rem]">
+                {activeMeta.showcaseTitle}
+              </h3>
+              <p className="mt-3 text-[15px] leading-relaxed text-[#64748b]">
+                {activeMeta.showcaseBody}
+              </p>
+              <Link
+                href={routes.getStarted}
+                className="mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-6 text-[14px] font-bold text-white shadow-lg"
+              >
+                Get started
+                <ArrowRight className="size-4" aria-hidden />
+              </Link>
+            </div>
           </div>
 
-          <div className="mt-12 rounded-[28px] border border-[#e9e4ff] bg-[linear-gradient(180deg,#ffffff_0%,#f8f5ff_100%)] p-6 sm:p-8">
+          <PricingHighlights highlights={activeMeta.highlights} />
+
+          <div className="mt-12" role="tabpanel">
+            {active === "domains" ? (
+              <DomainsPricingBlock />
+            ) : panel.ecommerce ? (
+              <PricingEcommercePanel
+                plans={panel.plans ?? []}
+                billing={billing}
+                onBillingChange={setBilling}
+              />
+            ) : (
+              <PricingPlanPanel
+                hostingContent={panel.hostingContent}
+                plans={panel.plans}
+                columns={panel.columns}
+                showBillingToggle={panel.showBilling}
+                saveBadge={panel.saveBadge}
+              />
+            )}
+          </div>
+
+          <ul className="mt-12 grid gap-3 sm:grid-cols-3">
+            {[
+              "30-day money-back on eligible plans",
+              "No hidden setup fees",
+              "Upgrade anytime from your panel",
+            ].map((line) => (
+              <li
+                key={line}
+                className="flex items-center justify-center gap-2 rounded-2xl border border-[#e9e4ff] bg-white/80 px-4 py-3 text-[13px] font-semibold text-[#2f1c6a]"
+              >
+                <Check className="size-4 text-emerald-600" aria-hidden />
+                {line}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <PricingFaqsSection
+        content={pricing}
+        activeCategoryId={active}
+        categories={categories}
+      />
+
+      <section className="hb-band-purple relative overflow-hidden py-14 sm:py-16">
+        <div className="hb-shell relative z-10">
+          <div className="rounded-[28px] border border-white/25 bg-white/10 p-6 backdrop-blur-md sm:p-8">
             <div className="flex flex-col items-start justify-between gap-6 lg:flex-row lg:items-center">
-              <div>
-                <p className="text-[13px] font-bold tracking-wide text-[#673de6] uppercase">
-                  Not sure yet?
+              <div className="max-w-xl">
+                <p className="text-[13px] font-bold tracking-wide text-[#c7d7ff] uppercase">
+                  {pricing.bottomEyebrow}
                 </p>
-                <h3 className="font-heading mt-2 text-[1.5rem] font-extrabold text-[#2f1c6a]">
-                  We will help you pick the right stack
+                <h3 className="font-heading mt-2 text-[1.65rem] font-extrabold text-white sm:text-[1.85rem]">
+                  {pricing.bottomTitle}
                 </h3>
-                <p className="mt-2 max-w-xl text-[14px] leading-relaxed text-[#64748b]">
-                  Tell us about your project — migration, domains, WooCommerce,
-                  or AI — and our team will recommend a plan in minutes.
+                <p className="mt-2 text-[14px] leading-relaxed text-white/85">
+                  {pricing.bottomBody}
                 </p>
               </div>
               <div className="flex flex-wrap gap-3">
                 <Link
-                  href={routes.getStarted}
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-6 text-[14px] font-bold text-white shadow-[0_12px_24px_rgba(103,61,230,0.35)]"
+                  href={pricing.bottomPrimaryHref}
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-white px-6 text-[14px] font-bold text-[#2f1c6a] shadow-lg"
                 >
-                  Get started
+                  {pricing.bottomPrimaryLabel}
                   <ArrowRight className="size-4" aria-hidden />
                 </Link>
                 <Link
-                  href={routes.contact}
-                  className="inline-flex h-12 items-center justify-center rounded-full border border-[#e9e4ff] bg-white px-6 text-[14px] font-bold text-[#2f1c6a] hover:border-[#c4b5fd]"
+                  href={pricing.bottomSecondaryHref}
+                  className="inline-flex h-12 items-center justify-center rounded-full border border-white/40 px-6 text-[14px] font-bold text-white hover:bg-white/10"
                 >
-                  Contact sales
+                  {pricing.bottomSecondaryLabel}
                 </Link>
               </div>
             </div>

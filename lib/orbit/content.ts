@@ -22,6 +22,11 @@ import {
   type CmsLoginPage,
   type CmsSiteSettings,
 } from "@/lib/orbit/defaults";
+import {
+  defaultPricingPageContent,
+  mergePricingPageContent,
+  type CmsPricingPageContent,
+} from "@/lib/orbit/pricing-content";
 
 /**
  * Published content is read on every page, so it is cached until an Orbit save
@@ -29,6 +34,7 @@ import {
  */
 const CMS_TAG = "orbit-content";
 const DOMAIN_SLUG = "domain-search";
+const PRICING_SLUG = "pricing";
 /** Safety net so a bad cache entry can never outlive a few minutes. */
 const CMS_REVALIDATE = 300;
 
@@ -183,6 +189,54 @@ export const getDomainContent = cache(async (): Promise<DomainContent> => {
   }
 });
 
+const readPricingContent = nextCache(
+  async (): Promise<CmsPricingPageContent> => {
+    const page = await prisma.pageContent.findUnique({
+      where: { slug: PRICING_SLUG },
+    });
+    if (!page) return defaultPricingPageContent();
+    return mergePricingPageContent(
+      page.sections as Partial<CmsPricingPageContent>,
+    );
+  },
+  ["orbit-pricing-content"],
+  { tags: [CMS_TAG], revalidate: CMS_REVALIDATE },
+);
+
+export const getPricingPageContent = cache(
+  async (): Promise<CmsPricingPageContent> => {
+    try {
+      return await readPricingContent();
+    } catch {
+      return defaultPricingPageContent();
+    }
+  },
+);
+
+export async function savePricingPageContent(content: CmsPricingPageContent) {
+  const normalized = mergePricingPageContent(content);
+  const row = await prisma.pageContent.upsert({
+    where: { slug: PRICING_SLUG },
+    create: {
+      slug: PRICING_SLUG,
+      title: "Pricing",
+      isPublished: true,
+      isVisible: true,
+      sections: normalized,
+      seo: {
+        title: "Pricing — HostingBeyond",
+        description:
+          "Compare HostingBeyond pricing for websites, ecommerce, domains, AI, VPS, and business email.",
+      },
+    },
+    update: { sections: normalized },
+  });
+  revalidateContent();
+  revalidatePath(routes.pricing);
+  revalidatePath("/orbit/pricing");
+  return row;
+}
+
 export async function saveDomainContent(content: DomainContent) {
   const normalized = mergeDomainContent(content);
   const row = await prisma.pageContent.upsert({
@@ -252,6 +306,12 @@ export async function ensureHomeSeeded() {
     });
     if (!settings) {
       await saveSiteSettings(defaultSiteSettings());
+    }
+    const pricing = await prisma.pageContent.findUnique({
+      where: { slug: PRICING_SLUG },
+    });
+    if (!pricing) {
+      await savePricingPageContent(defaultPricingPageContent());
     }
   } catch {
     /* DB may be unavailable during local UI work */
