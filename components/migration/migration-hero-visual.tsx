@@ -40,18 +40,17 @@ export function MigrationHeroVisual({
     const src = artwork || DEFAULT_COMPOSITE;
 
     return (
-      <div className="relative mx-auto w-full max-w-[620px]">
-        <div className="relative aspect-[1280/720] w-full">
-          <Image
-            src={src}
-            alt=""
-            fill
-            priority
-            className="object-contain object-center"
-            sizes="(max-width: 1024px) 92vw, 620px"
-            unoptimized={isRuntimeMediaSrc(src)}
-          />
-        </div>
+      <div className="relative mx-auto w-full max-w-[640px] lg:w-[min(100%,620px)] lg:max-w-none">
+        <Image
+          src={src}
+          alt=""
+          width={1280}
+          height={720}
+          priority
+          className="h-auto w-full"
+          sizes="(max-width: 1024px) 100vw, 620px"
+          unoptimized={isRuntimeMediaSrc(src) || src.includes("hero-composite")}
+        />
       </div>
     );
   }
