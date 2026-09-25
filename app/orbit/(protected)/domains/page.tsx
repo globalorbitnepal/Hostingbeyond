@@ -17,7 +17,10 @@ import {
   type DomainContent,
   type DomainIconCard,
   type DomainPageCopy,
+  type DomainGuidePillar,
+  type DomainPopularPick,
   type DomainSceneItem,
+  type DomainShowcaseCard,
   type DomainSharedContent,
   type DomainTldRow,
 } from "@/lib/domains/content";
@@ -268,6 +271,36 @@ export default function OrbitDomainsPage() {
                 onBlur={() => void save()}
               />
             </div>
+            <div className="mt-4 grid gap-3 border-t border-slate-100 pt-4">
+              <p className="text-xs font-bold text-slate-500 uppercase">
+                FAQ accordion (below guide pillars)
+              </p>
+              <TextField
+                label="Eyebrow"
+                value={page.faqAccordionEyebrow}
+                onChange={(faqAccordionEyebrow) =>
+                  patchPage(pageKey, { faqAccordionEyebrow })
+                }
+                onBlur={() => void save()}
+              />
+              <TextField
+                label="Heading"
+                value={page.faqAccordionHeading}
+                onChange={(faqAccordionHeading) =>
+                  patchPage(pageKey, { faqAccordionHeading })
+                }
+                onBlur={() => void save()}
+              />
+              <AreaField
+                label="Intro"
+                value={page.faqAccordionDescription}
+                rows={2}
+                onChange={(faqAccordionDescription) =>
+                  patchPage(pageKey, { faqAccordionDescription })
+                }
+                onBlur={() => void save()}
+              />
+            </div>
           </OrbitCard>
 
           <OrbitCard title="Hero" hint="Badge, headline and intro copy.">
@@ -442,7 +475,7 @@ export default function OrbitDomainsPage() {
                 onBlur={() => void save()}
               />
               <TextField
-                label="Heading"
+                label="Guide pillars heading"
                 value={page.faqHeading}
                 onChange={(faqHeading) => patchPage(pageKey, { faqHeading })}
                 onBlur={() => void save()}
@@ -778,7 +811,7 @@ export default function OrbitDomainsPage() {
 
           <OrbitCard
             title="Why buy domains"
-            hint="Headline for the Hostinger-style benefits grid (uses trust strip items)."
+            hint="Section headline above the bento showcase cards."
           >
             <div className="grid gap-3 sm:grid-cols-3">
               <TextField
@@ -805,8 +838,392 @@ export default function OrbitDomainsPage() {
           </OrbitCard>
 
           <OrbitCard
-            title="Trust strip"
-            hint="Four items shown in the Why buy grid."
+            title="Showcase bento cards"
+            hint="Four Hostinger-style cards. Upload a photo or MP4 per card, or leave image empty for the built-in illustration."
+            action={
+              <AddButton
+                label="Add card"
+                onClick={() =>
+                  patchShared({
+                    showcaseCards: reorder([
+                      ...shared.showcaseCards,
+                      {
+                        id: `showcase-${Date.now()}`,
+                        visible: true,
+                        order: shared.showcaseCards.length,
+                        layout: "registrar",
+                        title: "New card",
+                        description: "Short paragraph.",
+                        linkLabel: "Learn more",
+                        linkHref: "/domain-name-search",
+                        image: "",
+                      } satisfies DomainShowcaseCard,
+                    ]),
+                  })
+                }
+              />
+            }
+          >
+            <div className="space-y-4">
+              {shared.showcaseCards.map((card, index) => (
+                <div
+                  key={card.id}
+                  className="grid gap-3 rounded-xl border border-slate-200 p-3 md:grid-cols-2"
+                >
+                  <RowTools
+                    title={`Card ${index + 1} (${card.layout})`}
+                    visible={card.visible}
+                    onVisible={(visible) => {
+                      const showcaseCards = [...shared.showcaseCards];
+                      showcaseCards[index] = { ...card, visible };
+                      patchShared({ showcaseCards }, true);
+                    }}
+                    onUp={() =>
+                      patchShared(
+                        {
+                          showcaseCards: reorder(
+                            move(shared.showcaseCards, index, -1),
+                          ),
+                        },
+                        true,
+                      )
+                    }
+                    onDown={() =>
+                      patchShared(
+                        {
+                          showcaseCards: reorder(
+                            move(shared.showcaseCards, index, 1),
+                          ),
+                        },
+                        true,
+                      )
+                    }
+                    onRemove={() =>
+                      patchShared(
+                        {
+                          showcaseCards: reorder(
+                            shared.showcaseCards.filter((_, i) => i !== index),
+                          ),
+                        },
+                        true,
+                      )
+                    }
+                  />
+                  <TextField
+                    label="Title"
+                    value={card.title}
+                    onChange={(title) => {
+                      const showcaseCards = [...shared.showcaseCards];
+                      showcaseCards[index] = { ...card, title };
+                      patchShared({ showcaseCards });
+                    }}
+                    onBlur={() => void save()}
+                  />
+                  <TextField
+                    label="Layout (registrar|privacy|support|setup)"
+                    value={card.layout}
+                    onChange={(layout) => {
+                      const showcaseCards = [...shared.showcaseCards];
+                      showcaseCards[index] = {
+                        ...card,
+                        layout: layout as DomainShowcaseCard["layout"],
+                      };
+                      patchShared({ showcaseCards });
+                    }}
+                    onBlur={() => void save()}
+                  />
+                  <div className="md:col-span-2">
+                    <AreaField
+                      label="Description"
+                      value={card.description}
+                      rows={2}
+                      onChange={(description) => {
+                        const showcaseCards = [...shared.showcaseCards];
+                        showcaseCards[index] = { ...card, description };
+                        patchShared({ showcaseCards });
+                      }}
+                      onBlur={() => void save()}
+                    />
+                  </div>
+                  <TextField
+                    label="Link label"
+                    value={card.linkLabel}
+                    onChange={(linkLabel) => {
+                      const showcaseCards = [...shared.showcaseCards];
+                      showcaseCards[index] = { ...card, linkLabel };
+                      patchShared({ showcaseCards });
+                    }}
+                    onBlur={() => void save()}
+                  />
+                  <TextField
+                    label="Link URL"
+                    value={card.linkHref}
+                    onChange={(linkHref) => {
+                      const showcaseCards = [...shared.showcaseCards];
+                      showcaseCards[index] = { ...card, linkHref };
+                      patchShared({ showcaseCards });
+                    }}
+                    onBlur={() => void save()}
+                  />
+                  <div className="md:col-span-2">
+                    <OrbitImageField
+                      label="Image (optional)"
+                      value={card.image}
+                      onChange={(image) => {
+                        const showcaseCards = [...shared.showcaseCards];
+                        showcaseCards[index] = { ...card, image };
+                        patchShared({ showcaseCards });
+                      }}
+                      onCommit={(image) => {
+                        const showcaseCards = [...shared.showcaseCards];
+                        showcaseCards[index] = { ...card, image };
+                        patchShared({ showcaseCards }, true);
+                      }}
+                    />
+                  </div>
+                  <TextField
+                    label="Video URL (MP4/WebM, optional)"
+                    value={card.video ?? ""}
+                    onChange={(video) => {
+                      const showcaseCards = [...shared.showcaseCards];
+                      showcaseCards[index] = { ...card, video };
+                      patchShared({ showcaseCards });
+                    }}
+                    onBlur={() => void save()}
+                  />
+                  {card.layout === "support" ? (
+                    <div className="md:col-span-2">
+                      <AreaField
+                        label="Support chat bubble text"
+                        value={card.badge ?? ""}
+                        rows={2}
+                        onChange={(badge) => {
+                          const showcaseCards = [...shared.showcaseCards];
+                          showcaseCards[index] = { ...card, badge };
+                          patchShared({ showcaseCards });
+                        }}
+                        onBlur={() => void save()}
+                      />
+                    </div>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          </OrbitCard>
+
+          <OrbitCard
+            title="Popular domains carousel"
+            hint="Dark band with TLD cards."
+          >
+            <div className="grid gap-3 sm:grid-cols-2">
+              <TextField
+                label="Heading"
+                value={shared.popularHeading}
+                onChange={(popularHeading) => patchShared({ popularHeading })}
+                onBlur={() => void save()}
+              />
+              <TextField
+                label="Link label"
+                value={shared.popularLinkLabel}
+                onChange={(popularLinkLabel) =>
+                  patchShared({ popularLinkLabel })
+                }
+                onBlur={() => void save()}
+              />
+              <TextField
+                label="Link URL"
+                value={shared.popularLinkHref}
+                onChange={(popularLinkHref) => patchShared({ popularLinkHref })}
+                onBlur={() => void save()}
+              />
+            </div>
+            <div className="mt-4 space-y-3">
+              {shared.popularPicks.map((pick, index) => (
+                <div
+                  key={pick.id}
+                  className="grid gap-2 rounded-xl border border-slate-200 p-3 sm:grid-cols-2"
+                >
+                  <RowTools
+                    title={`TLD ${index + 1}`}
+                    visible={pick.visible}
+                    onVisible={(visible) => {
+                      const popularPicks = [...shared.popularPicks];
+                      popularPicks[index] = { ...pick, visible };
+                      patchShared({ popularPicks }, true);
+                    }}
+                    onUp={() =>
+                      patchShared(
+                        {
+                          popularPicks: reorder(
+                            move(shared.popularPicks, index, -1),
+                          ),
+                        },
+                        true,
+                      )
+                    }
+                    onDown={() =>
+                      patchShared(
+                        {
+                          popularPicks: reorder(
+                            move(shared.popularPicks, index, 1),
+                          ),
+                        },
+                        true,
+                      )
+                    }
+                    onRemove={() =>
+                      patchShared(
+                        {
+                          popularPicks: reorder(
+                            shared.popularPicks.filter((_, i) => i !== index),
+                          ),
+                        },
+                        true,
+                      )
+                    }
+                  />
+                  <TextField
+                    label="TLD"
+                    value={pick.tld}
+                    onChange={(tld) => {
+                      const popularPicks = [...shared.popularPicks];
+                      popularPicks[index] = { ...pick, tld };
+                      patchShared({ popularPicks });
+                    }}
+                    onBlur={() => void save()}
+                  />
+                  <TextField
+                    label="Tagline"
+                    value={pick.tagline}
+                    onChange={(tagline) => {
+                      const popularPicks = [...shared.popularPicks];
+                      popularPicks[index] = { ...pick, tagline };
+                      patchShared({ popularPicks });
+                    }}
+                    onBlur={() => void save()}
+                  />
+                </div>
+              ))}
+            </div>
+          </OrbitCard>
+
+          <OrbitCard
+            title="Guide pillars"
+            hint="Dark three-column “Lost?” section. Edit heading on each page tab under FAQs."
+          >
+            <div className="space-y-3">
+              {shared.guidePillars.map((pillar, index) => (
+                <div
+                  key={pillar.id}
+                  className="grid gap-2 rounded-xl border border-slate-200 p-3 md:grid-cols-2"
+                >
+                  <RowTools
+                    title={`Pillar ${index + 1}`}
+                    visible={pillar.visible}
+                    onVisible={(visible) => {
+                      const guidePillars = [...shared.guidePillars];
+                      guidePillars[index] = { ...pillar, visible };
+                      patchShared({ guidePillars }, true);
+                    }}
+                    onUp={() =>
+                      patchShared(
+                        {
+                          guidePillars: reorder(
+                            move(shared.guidePillars, index, -1),
+                          ),
+                        },
+                        true,
+                      )
+                    }
+                    onDown={() =>
+                      patchShared(
+                        {
+                          guidePillars: reorder(
+                            move(shared.guidePillars, index, 1),
+                          ),
+                        },
+                        true,
+                      )
+                    }
+                    onRemove={() =>
+                      patchShared(
+                        {
+                          guidePillars: reorder(
+                            shared.guidePillars.filter((_, i) => i !== index),
+                          ),
+                        },
+                        true,
+                      )
+                    }
+                  />
+                  <TextField
+                    label="Type (what|transfer|hosting)"
+                    value={pillar.pillar}
+                    onChange={(value) => {
+                      const guidePillars = [...shared.guidePillars];
+                      guidePillars[index] = {
+                        ...pillar,
+                        pillar: value as DomainGuidePillar["pillar"],
+                      };
+                      patchShared({ guidePillars });
+                    }}
+                    onBlur={() => void save()}
+                  />
+                  <TextField
+                    label="Title"
+                    value={pillar.title}
+                    onChange={(title) => {
+                      const guidePillars = [...shared.guidePillars];
+                      guidePillars[index] = { ...pillar, title };
+                      patchShared({ guidePillars });
+                    }}
+                    onBlur={() => void save()}
+                  />
+                  <div className="md:col-span-2">
+                    <AreaField
+                      label="Description"
+                      value={pillar.description}
+                      rows={2}
+                      onChange={(description) => {
+                        const guidePillars = [...shared.guidePillars];
+                        guidePillars[index] = { ...pillar, description };
+                        patchShared({ guidePillars });
+                      }}
+                      onBlur={() => void save()}
+                    />
+                  </div>
+                  <OrbitImageField
+                    label="Image (optional)"
+                    value={pillar.image}
+                    onChange={(image) => {
+                      const guidePillars = [...shared.guidePillars];
+                      guidePillars[index] = { ...pillar, image };
+                      patchShared({ guidePillars });
+                    }}
+                    onCommit={(image) => {
+                      const guidePillars = [...shared.guidePillars];
+                      guidePillars[index] = { ...pillar, image };
+                      patchShared({ guidePillars }, true);
+                    }}
+                  />
+                  <TextField
+                    label="Video URL (optional)"
+                    value={pillar.video ?? ""}
+                    onChange={(video) => {
+                      const guidePillars = [...shared.guidePillars];
+                      guidePillars[index] = { ...pillar, video };
+                      patchShared({ guidePillars });
+                    }}
+                    onBlur={() => void save()}
+                  />
+                </div>
+              ))}
+            </div>
+          </OrbitCard>
+
+          <OrbitCard
+            title="Trust strip (legacy)"
+            hint="No longer shown on the public page — use Showcase cards instead."
             action={
               <AddButton
                 label="Add item"

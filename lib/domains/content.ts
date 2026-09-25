@@ -39,6 +39,9 @@ export type DomainPageCopy = {
   faqEyebrow: string;
   faqHeading: string;
   faqDescription: string;
+  faqAccordionEyebrow: string;
+  faqAccordionHeading: string;
+  faqAccordionDescription: string;
   faqs: DomainFaqItem[];
   crossLinkLabel: string;
   crossLinkHelper: string;
@@ -63,6 +66,41 @@ export type DomainIconCard = {
   title: string;
   description: string;
   icon: string;
+};
+
+export type DomainShowcaseCard = {
+  id: string;
+  visible: boolean;
+  order: number;
+  layout: "registrar" | "privacy" | "support" | "setup";
+  title: string;
+  description: string;
+  linkLabel: string;
+  linkHref: string;
+  image: string;
+  video?: string;
+  badge?: string;
+};
+
+export type DomainGuidePillar = {
+  id: string;
+  visible: boolean;
+  order: number;
+  pillar: "what" | "transfer" | "hosting";
+  title: string;
+  description: string;
+  linkLabel: string;
+  linkHref: string;
+  image: string;
+  video?: string;
+};
+
+export type DomainPopularPick = {
+  id: string;
+  visible: boolean;
+  order: number;
+  tld: string;
+  tagline: string;
 };
 
 export type DomainSceneItem = {
@@ -99,6 +137,12 @@ export type DomainSharedContent = {
   whyBuyEyebrow: string;
   whyBuyHeading: string;
   whyBuyDescription: string;
+  showcaseCards: DomainShowcaseCard[];
+  popularHeading: string;
+  popularLinkLabel: string;
+  popularLinkHref: string;
+  popularPicks: DomainPopularPick[];
+  guidePillars: DomainGuidePillar[];
   includedEyebrow: string;
   includedHeading: string;
   includedDescription: string;
@@ -185,6 +229,136 @@ export function defaultDomainContent(): DomainContent {
       whyBuyHeading: "Why buy domain names at HostingBeyond?",
       whyBuyDescription:
         "Transparent pricing, free privacy and DNS, and one dashboard to point your name at a site, mailboxes and AI pages — without juggling registrars.",
+      showcaseCards: [
+        {
+          id: "registrar",
+          visible: true,
+          order: 0,
+          layout: "registrar",
+          title: "Trusted domain registrar",
+          description:
+            "ICANN-accredited registration with 300+ extensions, renewal rates published before checkout, and free WHOIS privacy on eligible names.",
+          linkLabel: "Compare TLD prices",
+          linkHref: "#pricing",
+          image: "",
+        },
+        {
+          id: "privacy",
+          visible: true,
+          order: 1,
+          layout: "privacy",
+          title: "Privacy & security included",
+          description:
+            "WHOIS privacy keeps your contact details out of public records. Point the name at HostingBeyond and SSL is issued and renewed for you.",
+          linkLabel: "Learn about privacy",
+          linkHref: "#domain-guide",
+          image: "",
+        },
+        {
+          id: "support",
+          visible: true,
+          order: 2,
+          layout: "support",
+          title: "24/7 human support",
+          description:
+            "Real agents on live chat and email — whether you are buying your first .com or moving a portfolio over.",
+          linkLabel: "Talk to support",
+          linkHref: "/contact",
+          image: "",
+          badge:
+            "Hello — I would like help connecting my domain to HostingBeyond hosting.",
+        },
+        {
+          id: "setup",
+          visible: true,
+          order: 3,
+          layout: "setup",
+          title: "Quick setup, easy management",
+          description:
+            "Register in minutes, manage DNS in one panel, and add hosting or mailboxes without copying records by hand.",
+          linkLabel: "Open domain search",
+          linkHref: "/domain-name-search",
+          image: "",
+        },
+      ],
+      popularHeading: "Choose from the most popular domains",
+      popularLinkLabel: "Compare all TLD prices",
+      popularLinkHref: "#pricing",
+      popularPicks: [
+        {
+          id: "com",
+          visible: true,
+          order: 0,
+          tld: ".com",
+          tagline: "Build trust with the best-known extension",
+        },
+        {
+          id: "io",
+          visible: true,
+          order: 1,
+          tld: ".io",
+          tagline: "A favourite for startups and SaaS brands",
+        },
+        {
+          id: "shop",
+          visible: true,
+          order: 2,
+          tld: ".shop",
+          tagline: "Purpose-built for online stores",
+        },
+        {
+          id: "ai",
+          visible: true,
+          order: 3,
+          tld: ".ai",
+          tagline: "Signal an AI-native product from day one",
+        },
+        {
+          id: "online",
+          visible: true,
+          order: 4,
+          tld: ".online",
+          tagline: "Affordable and memorable for new projects",
+        },
+      ],
+      guidePillars: [
+        {
+          id: "what",
+          visible: true,
+          order: 0,
+          pillar: "what",
+          title: "What is a domain?",
+          description:
+            "A domain is the memorable address people type to reach your site — easier to share than a numeric server IP.",
+          linkLabel: "",
+          linkHref: "",
+          image: "",
+        },
+        {
+          id: "transfer",
+          visible: true,
+          order: 1,
+          pillar: "transfer",
+          title: "How do I transfer my domain?",
+          description:
+            "Unlock the name at your current registrar, paste the auth code here, and we copy DNS so email and traffic stay online.",
+          linkLabel: "Domain transfer",
+          linkHref: "#transfer",
+          image: "",
+        },
+        {
+          id: "hosting",
+          visible: true,
+          order: 2,
+          pillar: "hosting",
+          title: "Hosting + domain",
+          description:
+            "A domain is the address; hosting keeps the site online. Bundle both in one HostingBeyond account when you are ready to launch.",
+          linkLabel: "View hosting plans",
+          linkHref: "/hosting",
+          image: "",
+        },
+      ],
       scenes: [
         {
           id: "search",
@@ -304,11 +478,11 @@ export function defaultDomainContent(): DomainContent {
       ogDescription:
         "Search and register your domain in seconds. See renewal pricing upfront, free privacy and DNS on every name.",
       ogImage: "/images/domains/hero.jpg",
-      eyebrow: "Domain registration",
-      title: "Find and register",
-      titleAccent: "your perfect domain name",
+      eyebrow: "Registration & lookup",
+      title: "Domain name search",
+      titleAccent: "that finds the perfect name",
       description:
-        "Instant domain lookup across 300+ extensions. Compare promo and renewal rates side by side, then add hosting or email on the same account.",
+        "Check availability across 300+ extensions in one search. Free WHOIS privacy, free DNS and renewal pricing published before you buy.",
       stats: [
         {
           id: "managed",
@@ -338,7 +512,11 @@ export function defaultDomainContent(): DomainContent {
       faqEyebrow: "Domain basics",
       faqHeading: "Lost? Here's what you need to know about domains",
       faqDescription:
-        "Clear answers on buying, renewing, transferring and protecting your domain — before you check out.",
+        "Three concepts every founder should understand before registering a name.",
+      faqAccordionEyebrow: "Domain search FAQs",
+      faqAccordionHeading: "Everything people ask before buying",
+      faqAccordionDescription:
+        "Straight answers on pricing, privacy, transfers and renewals.",
       faqs: [
         {
           id: "how",
@@ -454,6 +632,10 @@ export function defaultDomainContent(): DomainContent {
       faqHeading: "Questions teams ask about bulk checks",
       faqDescription:
         "Straight answers on limits, mixed extensions and multi-domain orders.",
+      faqAccordionEyebrow: "Bulk search FAQs",
+      faqAccordionHeading: "Common questions",
+      faqAccordionDescription:
+        "Limits, mixed extensions and registering multiple names in one order.",
       faqs: [
         {
           id: "limit",
@@ -579,6 +761,18 @@ function mergePageCopy(
     faqEyebrow: text(stored.faqEyebrow, defaults.faqEyebrow),
     faqHeading: text(stored.faqHeading, defaults.faqHeading),
     faqDescription: text(stored.faqDescription, defaults.faqDescription),
+    faqAccordionEyebrow: text(
+      stored.faqAccordionEyebrow,
+      defaults.faqAccordionEyebrow,
+    ),
+    faqAccordionHeading: text(
+      stored.faqAccordionHeading,
+      defaults.faqAccordionHeading,
+    ),
+    faqAccordionDescription: text(
+      stored.faqAccordionDescription,
+      defaults.faqAccordionDescription,
+    ),
     crossLinkLabel: text(stored.crossLinkLabel, defaults.crossLinkLabel),
     crossLinkHelper: text(stored.crossLinkHelper, defaults.crossLinkHelper),
     stats: mergeList(stored.stats, defaults.stats, (item, fallback) => ({
@@ -631,6 +825,55 @@ export function mergeDomainContent(
       whyBuyDescription: text(
         shared.whyBuyDescription,
         fallback.whyBuyDescription,
+      ),
+      popularHeading: text(shared.popularHeading, fallback.popularHeading),
+      popularLinkLabel: text(
+        shared.popularLinkLabel,
+        fallback.popularLinkLabel,
+      ),
+      popularLinkHref: text(shared.popularLinkHref, fallback.popularLinkHref),
+      showcaseCards: mergeList(
+        shared.showcaseCards,
+        fallback.showcaseCards,
+        (item, base) => ({
+          ...base,
+          layout: text(
+            item.layout,
+            base.layout,
+          ) as DomainShowcaseCard["layout"],
+          title: text(item.title, base.title),
+          description: text(item.description, base.description),
+          linkLabel: text(item.linkLabel, base.linkLabel),
+          linkHref: text(item.linkHref, base.linkHref),
+          image: text(item.image, base.image),
+          video: text(item.video, base.video ?? ""),
+          badge: text(item.badge, base.badge ?? ""),
+        }),
+      ),
+      popularPicks: mergeList(
+        shared.popularPicks,
+        fallback.popularPicks,
+        (item, base) => ({
+          ...base,
+          tld: text(item.tld, base.tld).startsWith(".")
+            ? text(item.tld, base.tld)
+            : `.${text(item.tld, base.tld)}`,
+          tagline: text(item.tagline, base.tagline),
+        }),
+      ),
+      guidePillars: mergeList(
+        shared.guidePillars,
+        fallback.guidePillars,
+        (item, base) => ({
+          ...base,
+          pillar: text(item.pillar, base.pillar) as DomainGuidePillar["pillar"],
+          title: text(item.title, base.title),
+          description: text(item.description, base.description),
+          linkLabel: text(item.linkLabel, base.linkLabel),
+          linkHref: text(item.linkHref, base.linkHref),
+          image: text(item.image, base.image),
+          video: text(item.video, base.video ?? ""),
+        }),
       ),
       includedEyebrow: text(shared.includedEyebrow, fallback.includedEyebrow),
       includedHeading: text(shared.includedHeading, fallback.includedHeading),

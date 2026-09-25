@@ -15,24 +15,23 @@ import {
   Wallet,
 } from "lucide-react";
 
-import { DomainLearnSection } from "@/components/domains/domain-learn-section";
+import { DomainBentoShowcaseSection } from "@/components/domains/domain-bento-showcase-section";
+import { DomainFaqSection } from "@/components/domains/domain-faq-section";
+import { DomainGuidePillarsSection } from "@/components/domains/domain-guide-pillars-section";
+import { DomainPopularTldsSection } from "@/components/domains/domain-popular-tlds-section";
 import { DomainPriceTable } from "@/components/domains/domain-price-table";
 import {
   DomainSearchPanel,
   type SearchMode,
 } from "@/components/domains/domain-search-panel";
-import { DomainVideoSection } from "@/components/domains/domain-video-section";
-import { DomainWhyBuySection } from "@/components/domains/domain-why-buy-section";
 import { routes } from "@/config/routes";
 import {
-  parseChips,
   parseLines,
   priceByTld,
   visiblePricing,
   type DomainContent,
   type DomainPageCopy,
 } from "@/lib/domains/content";
-import { isVideoMediaSrc } from "@/lib/domains/media";
 import { formatPrice } from "@/lib/domains/tlds";
 
 const ICONS: Record<string, typeof ShieldCheck> = {
@@ -69,18 +68,12 @@ export function DomainSearchView({
     .filter(Boolean);
   const stats = page.stats.filter((item) => item.visible !== false);
   const faqs = page.faqs.filter((item) => item.visible !== false);
-  const trust = shared.trust.filter((item) => item.visible !== false);
   const included = shared.included.filter((item) => item.visible !== false);
-  const scenes = shared.scenes
-    .filter((item) => item.visible !== false)
-    .map((item) => ({
-      id: item.id,
-      video: item.video || (isVideoMediaSrc(item.image) ? item.image : ""),
-      label: item.label,
-      caption: item.caption,
-      prompt: item.prompt,
-      chips: parseChips(item.chips),
-    }));
+  const showcase = shared.showcaseCards.filter(
+    (item) => item.visible !== false,
+  );
+  const pillars = shared.guidePillars.filter((item) => item.visible !== false);
+  const popular = shared.popularPicks.filter((item) => item.visible !== false);
   const comTransfer = priceByTld(content, ".com")?.transfer;
 
   return (
@@ -181,22 +174,24 @@ export function DomainSearchView({
         </div>
       </section>
 
-      <DomainWhyBuySection
+      <DomainBentoShowcaseSection
         eyebrow={shared.whyBuyEyebrow}
         heading={shared.whyBuyHeading}
         description={shared.whyBuyDescription}
-        items={trust}
+        cards={showcase}
       />
 
-      {scenes.length > 0 ? (
-        <DomainVideoSection
-          eyebrow={shared.videoEyebrow}
-          heading={shared.videoHeading}
-          description={shared.videoDescription}
-          ctaLabel={shared.videoCtaLabel}
-          scenes={scenes}
-        />
-      ) : null}
+      <DomainPopularTldsSection
+        heading={shared.popularHeading}
+        linkLabel={shared.popularLinkLabel}
+        linkHref={shared.popularLinkHref}
+        picks={popular}
+        prices={prices.map((row) => ({
+          tld: row.tld,
+          register: row.register,
+          renew: row.renew,
+        }))}
+      />
 
       <section className="hb-home-section hb-band-cream">
         <div className="hb-shell relative z-10">
@@ -259,11 +254,13 @@ export function DomainSearchView({
         </div>
       </section>
 
+      <DomainGuidePillarsSection heading={page.faqHeading} pillars={pillars} />
+
       {faqs.length > 0 ? (
-        <DomainLearnSection
-          eyebrow={page.faqEyebrow}
-          heading={page.faqHeading}
-          description={page.faqDescription}
+        <DomainFaqSection
+          eyebrow={page.faqAccordionEyebrow}
+          heading={page.faqAccordionHeading}
+          description={page.faqAccordionDescription}
           items={faqs.map((item) => ({
             question: item.question,
             answer: item.answer,
