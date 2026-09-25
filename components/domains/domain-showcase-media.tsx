@@ -66,6 +66,10 @@ export function DomainShowcaseMedia({
           unoptimized={isRuntimeMediaSrc(imageSrc)}
           className="object-cover"
         />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"
+        />
       </div>
     );
   }

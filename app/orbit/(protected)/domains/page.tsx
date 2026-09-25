@@ -24,6 +24,10 @@ import {
   type DomainSharedContent,
   type DomainTldRow,
 } from "@/lib/domains/content";
+import {
+  DOMAIN_FRAME_SPECS,
+  showcaseImageSpecLabel,
+} from "@/lib/domains/frame-specs";
 import type { TldCategory } from "@/lib/domains/tlds";
 
 type PageKey = "single" | "bulk";
@@ -967,7 +971,7 @@ export default function OrbitDomainsPage() {
                   />
                   <div className="md:col-span-2">
                     <OrbitImageField
-                      label="Image (optional)"
+                      label={`Card background — ${showcaseImageSpecLabel(card.layout)}`}
                       value={card.image}
                       onChange={(image) => {
                         const showcaseCards = [...shared.showcaseCards];
@@ -1013,7 +1017,7 @@ export default function OrbitDomainsPage() {
 
           <OrbitCard
             title="Popular domains carousel"
-            hint="Dark band with TLD cards."
+            hint={`Dark band with centered TLD cards. Banner: ${DOMAIN_FRAME_SPECS.popularTldCard}.`}
           >
             <div className="grid gap-3 sm:grid-cols-2">
               <TextField
@@ -1102,6 +1106,22 @@ export default function OrbitDomainsPage() {
                     }}
                     onBlur={() => void save()}
                   />
+                  <div className="sm:col-span-2">
+                    <OrbitImageField
+                      label={`Card top banner — ${DOMAIN_FRAME_SPECS.popularTldCard}`}
+                      value={pick.image ?? ""}
+                      onChange={(image) => {
+                        const popularPicks = [...shared.popularPicks];
+                        popularPicks[index] = { ...pick, image };
+                        patchShared({ popularPicks });
+                      }}
+                      onCommit={(image) => {
+                        const popularPicks = [...shared.popularPicks];
+                        popularPicks[index] = { ...pick, image };
+                        patchShared({ popularPicks }, true);
+                      }}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
@@ -1109,7 +1129,7 @@ export default function OrbitDomainsPage() {
 
           <OrbitCard
             title="Guide pillars"
-            hint="Dark three-column “Lost?” section. Edit heading on each page tab under FAQs."
+            hint={`Three-column guide cards. Full-card background: ${DOMAIN_FRAME_SPECS.guidePillar}. Heading is edited on each page tab.`}
           >
             <div className="space-y-3">
               {shared.guidePillars.map((pillar, index) => (
@@ -1193,7 +1213,7 @@ export default function OrbitDomainsPage() {
                     />
                   </div>
                   <OrbitImageField
-                    label="Image (optional)"
+                    label={`Card background — ${DOMAIN_FRAME_SPECS.guidePillar}`}
                     value={pillar.image}
                     onChange={(image) => {
                       const guidePillars = [...shared.guidePillars];

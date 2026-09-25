@@ -31,9 +31,9 @@ export function DomainBentoShowcaseSection({
   const setup = byLayout("setup");
 
   return (
-    <section className="bg-[#faf9ff] py-14 sm:py-16">
-      <div className="hb-shell">
-        <div className="mx-auto max-w-3xl text-center">
+    <section className="bg-[#faf9ff] py-16 sm:py-20">
+      <div className="hb-shell max-w-[1280px]">
+        <div className="mx-auto max-w-3xl px-2 text-center sm:px-0">
           <p className="text-[11px] font-bold tracking-[0.28em] text-slate-500 uppercase">
             {eyebrow}
           </p>
@@ -45,20 +45,20 @@ export function DomainBentoShowcaseSection({
           </p>
         </div>
 
-        <div className="mt-10 grid gap-4 lg:grid-cols-12 lg:gap-5">
+        <div className="mt-12 grid gap-5 lg:grid-cols-12 lg:gap-6">
           {registrar ? (
             <BentoCard
               card={registrar}
               className="lg:col-span-5 lg:row-span-2"
-              visualClassName="min-h-[220px] sm:min-h-[280px]"
+              visualClassName="min-h-[280px] sm:min-h-[360px] lg:min-h-[420px]"
             />
           ) : null}
-          <div className="grid gap-4 lg:col-span-7 lg:grid-cols-7">
+          <div className="grid gap-5 lg:col-span-7 lg:grid-cols-7 lg:gap-6">
             {privacy ? (
               <BentoCard
                 card={privacy}
                 className="lg:col-span-7"
-                visualClassName="min-h-[200px] sm:min-h-[240px]"
+                visualClassName="min-h-[220px] sm:min-h-[260px]"
                 imageHeavy
               />
             ) : null}
@@ -66,14 +66,14 @@ export function DomainBentoShowcaseSection({
               <BentoCard
                 card={support}
                 className="lg:col-span-4"
-                visualClassName="min-h-[200px]"
+                visualClassName="min-h-[220px] sm:min-h-[260px]"
               />
             ) : null}
             {setup ? (
               <BentoCard
                 card={setup}
                 className="lg:col-span-3"
-                visualClassName="min-h-[200px]"
+                visualClassName="min-h-[220px] sm:min-h-[260px]"
               />
             ) : null}
           </div>
@@ -97,7 +97,7 @@ function BentoCard({
   return (
     <article
       className={cn(
-        "flex flex-col overflow-hidden rounded-[24px] border border-slate-200/90 bg-white shadow-[0_20px_50px_-40px_rgba(47,28,106,0.35)]",
+        "flex flex-col overflow-hidden rounded-[26px] border border-slate-200/80 bg-white shadow-[0_28px_70px_-36px_rgba(47,28,106,0.4)]",
         className,
       )}
     >

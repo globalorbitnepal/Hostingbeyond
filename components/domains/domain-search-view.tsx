@@ -195,7 +195,7 @@ export function DomainSearchView({
 
       <section className="hb-home-section hb-band-cream">
         <div className="hb-shell relative z-10">
-          <div className="max-w-3xl">
+          <div className="mx-auto max-w-3xl text-center">
             <p className="text-[11px] font-bold tracking-[0.28em] text-slate-500 uppercase">
               {shared.includedEyebrow}
             </p>
@@ -231,9 +231,9 @@ export function DomainSearchView({
         </div>
       </section>
 
-      <section id="pricing" className="hb-home-section bg-white py-12 sm:py-14">
+      <section id="pricing" className="hb-home-section bg-white py-16 sm:py-20">
         <div className="hb-shell relative z-10">
-          <div className="max-w-3xl">
+          <div className="mx-auto max-w-3xl text-center">
             <p className="text-[11px] font-bold tracking-[0.28em] text-slate-500 uppercase">
               Transparent pricing
             </p>

@@ -101,6 +101,8 @@ export type DomainPopularPick = {
   order: number;
   tld: string;
   tagline: string;
+  /** Top banner / background inside the TLD card (see DOMAIN_FRAME_SPECS.popularTldCard). */
+  image: string;
 };
 
 export type DomainSceneItem = {
@@ -240,7 +242,7 @@ export function defaultDomainContent(): DomainContent {
             "ICANN-accredited registration with 300+ extensions, renewal rates published before checkout, and free WHOIS privacy on eligible names.",
           linkLabel: "Compare TLD prices",
           linkHref: "#pricing",
-          image: "",
+          image: "/images/domains/frames/bento-registrar.svg",
         },
         {
           id: "privacy",
@@ -252,7 +254,7 @@ export function defaultDomainContent(): DomainContent {
             "WHOIS privacy keeps your contact details out of public records. Point the name at HostingBeyond and SSL is issued and renewed for you.",
           linkLabel: "Learn about privacy",
           linkHref: "#domain-guide",
-          image: "",
+          image: "/images/domains/frames/bento-privacy.svg",
         },
         {
           id: "support",
@@ -264,7 +266,7 @@ export function defaultDomainContent(): DomainContent {
             "Real agents on live chat and email — whether you are buying your first .com or moving a portfolio over.",
           linkLabel: "Talk to support",
           linkHref: "/contact",
-          image: "",
+          image: "/images/domains/frames/bento-support.svg",
           badge:
             "Hello — I would like help connecting my domain to HostingBeyond hosting.",
         },
@@ -278,7 +280,7 @@ export function defaultDomainContent(): DomainContent {
             "Register in minutes, manage DNS in one panel, and add hosting or mailboxes without copying records by hand.",
           linkLabel: "Open domain search",
           linkHref: "/domain-name-search",
-          image: "",
+          image: "/images/domains/frames/bento-setup.svg",
         },
       ],
       popularHeading: "Choose from the most popular domains",
@@ -291,6 +293,7 @@ export function defaultDomainContent(): DomainContent {
           order: 0,
           tld: ".com",
           tagline: "Build trust with the best-known extension",
+          image: "/images/domains/frames/popular-tld.svg",
         },
         {
           id: "io",
@@ -298,6 +301,7 @@ export function defaultDomainContent(): DomainContent {
           order: 1,
           tld: ".io",
           tagline: "A favourite for startups and SaaS brands",
+          image: "/images/domains/frames/popular-tld.svg",
         },
         {
           id: "shop",
@@ -305,6 +309,7 @@ export function defaultDomainContent(): DomainContent {
           order: 2,
           tld: ".shop",
           tagline: "Purpose-built for online stores",
+          image: "/images/domains/frames/popular-tld.svg",
         },
         {
           id: "ai",
@@ -312,6 +317,7 @@ export function defaultDomainContent(): DomainContent {
           order: 3,
           tld: ".ai",
           tagline: "Signal an AI-native product from day one",
+          image: "/images/domains/frames/popular-tld.svg",
         },
         {
           id: "online",
@@ -319,6 +325,7 @@ export function defaultDomainContent(): DomainContent {
           order: 4,
           tld: ".online",
           tagline: "Affordable and memorable for new projects",
+          image: "/images/domains/frames/popular-tld.svg",
         },
       ],
       guidePillars: [
@@ -332,7 +339,7 @@ export function defaultDomainContent(): DomainContent {
             "A domain is the memorable address people type to reach your site — easier to share than a numeric server IP.",
           linkLabel: "",
           linkHref: "",
-          image: "",
+          image: "/images/domains/frames/pillar-what.svg",
         },
         {
           id: "transfer",
@@ -344,7 +351,7 @@ export function defaultDomainContent(): DomainContent {
             "Unlock the name at your current registrar, paste the auth code here, and we copy DNS so email and traffic stay online.",
           linkLabel: "Domain transfer",
           linkHref: "#transfer",
-          image: "",
+          image: "/images/domains/frames/pillar-transfer.svg",
         },
         {
           id: "hosting",
@@ -356,7 +363,7 @@ export function defaultDomainContent(): DomainContent {
             "A domain is the address; hosting keeps the site online. Bundle both in one HostingBeyond account when you are ready to launch.",
           linkLabel: "View hosting plans",
           linkHref: "/hosting",
-          image: "",
+          image: "/images/domains/frames/pillar-hosting.svg",
         },
       ],
       scenes: [
@@ -859,6 +866,7 @@ export function mergeDomainContent(
             ? text(item.tld, base.tld)
             : `.${text(item.tld, base.tld)}`,
           tagline: text(item.tagline, base.tagline),
+          image: text(item.image, base.image),
         }),
       ),
       guidePillars: mergeList(
