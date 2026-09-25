@@ -42,7 +42,7 @@ export function BusinessEmailHeroVisual({
             width={1024}
             height={576}
             priority={/hero-custom/i.test(artwork)}
-            className="relative -ml-[2%] h-auto w-[104%] max-w-none border-0 bg-transparent object-contain shadow-none"
+            className="relative -ml-[2%] block h-auto w-[106%] max-w-none border-0 bg-transparent object-contain shadow-none ring-0 outline-none"
             sizes={`(max-width: 1024px) 100vw, ${maxWidth}px`}
             unoptimized={
               isRuntimeMediaSrc(artwork) ||
