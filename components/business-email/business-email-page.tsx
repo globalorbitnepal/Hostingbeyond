@@ -111,7 +111,7 @@ export function BusinessEmailPageView({
       {active && impressionTabs.length > 0 ? (
         <section
           id="impression"
-          className="relative overflow-x-clip overflow-y-visible bg-white py-16 sm:py-20"
+          className="hb-band-cream relative overflow-x-clip overflow-y-visible py-16 sm:py-20"
         >
           <div className="hb-shell">
             <h2 className="font-heading text-center text-[clamp(2rem,4.5vw,3.4rem)] font-extrabold tracking-[-0.045em] text-[#1a1a1a]">
@@ -133,7 +133,7 @@ export function BusinessEmailPageView({
                         "rounded-full px-4 py-2 text-[13px] font-bold transition-colors",
                         tab === item.id
                           ? "bg-[#673de6] text-white shadow-sm"
-                          : "bg-slate-100 text-slate-600 hover:bg-slate-200",
+                          : "border border-white/90 bg-white/95 text-slate-600 shadow-sm hover:bg-white",
                       )}
                     >
                       {item.label}
