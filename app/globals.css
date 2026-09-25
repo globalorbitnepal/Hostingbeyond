@@ -270,6 +270,30 @@
       linear-gradient(180deg, #cfe3fb 0%, #e8eeff 48%, #f4f7ff 100%);
   }
 
+  /* Business email impression: white center for artwork blend; cream-blue at top/bottom only */
+  .hb-band-impression {
+    background:
+      radial-gradient(
+        ellipse at 50% -20%,
+        rgba(147, 197, 253, 0.42),
+        transparent 52%
+      ),
+      radial-gradient(
+        ellipse at 50% 120%,
+        rgba(167, 139, 250, 0.18),
+        transparent 52%
+      ),
+      linear-gradient(
+        180deg,
+        #e8eeff 0%,
+        #f8faff 6%,
+        #ffffff 14%,
+        #ffffff 86%,
+        #f8faff 94%,
+        #e8eeff 100%
+      );
+  }
+
   .hb-caret {
     animation: hb-caret 0.9s step-end infinite;
   }

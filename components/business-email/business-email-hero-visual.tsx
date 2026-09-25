@@ -20,7 +20,7 @@ type Props = {
   scalePercent?: number;
 };
 
-/** Soft white bleed around artwork — no visible card frame (border/shadow). */
+/** Flat on white section — no card frame; parent section supplies white center. */
 export function BusinessEmailHeroVisual({
   src,
   alt = "",
@@ -33,40 +33,16 @@ export function BusinessEmailHeroVisual({
   if (!isPortraitOnly(artwork)) {
     return (
       <div
-        className="relative mx-auto w-full overflow-visible"
+        className="relative mx-auto w-full overflow-visible bg-white"
         style={{ maxWidth: `${maxWidth}px` }}
       >
-        <div className="overflow-hidden rounded-[26px] bg-white px-2.5 py-2 sm:px-3 sm:py-2.5">
-          <Image
-            src={artwork}
-            alt={alt}
-            width={1024}
-            height={576}
-            priority={/hero-custom/i.test(artwork)}
-            className="h-auto w-full border-0 bg-white object-contain shadow-none"
-            sizes={`(max-width: 1024px) 100vw, ${maxWidth}px`}
-            unoptimized={
-              isRuntimeMediaSrc(artwork) ||
-              artwork.includes("/business-email/") ||
-              artwork.endsWith(".webp")
-            }
-          />
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className="relative mx-auto w-full overflow-hidden rounded-[26px] bg-white p-2"
-      style={{ maxWidth: `${maxWidth}px` }}
-    >
-      <div className="relative aspect-[4/3] min-h-[300px] w-full overflow-hidden rounded-[20px]">
         <Image
           src={artwork}
           alt={alt}
-          fill
-          className="object-cover object-center"
+          width={1024}
+          height={576}
+          priority={/hero-custom/i.test(artwork)}
+          className="h-auto w-full border-0 bg-white object-contain shadow-none"
           sizes={`(max-width: 1024px) 100vw, ${maxWidth}px`}
           unoptimized={
             isRuntimeMediaSrc(artwork) ||
@@ -75,6 +51,26 @@ export function BusinessEmailHeroVisual({
           }
         />
       </div>
+    );
+  }
+
+  return (
+    <div
+      className="relative mx-auto aspect-[4/3] min-h-[300px] w-full overflow-hidden rounded-[24px] bg-white shadow-[0_20px_50px_-36px_rgba(47,28,106,0.25)]"
+      style={{ maxWidth: `${maxWidth}px` }}
+    >
+      <Image
+        src={artwork}
+        alt={alt}
+        fill
+        className="object-cover object-center"
+        sizes={`(max-width: 1024px) 100vw, ${maxWidth}px`}
+        unoptimized={
+          isRuntimeMediaSrc(artwork) ||
+          artwork.includes("/business-email/") ||
+          artwork.endsWith(".webp")
+        }
+      />
     </div>
   );
 }
