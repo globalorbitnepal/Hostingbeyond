@@ -22,6 +22,7 @@ import type {
   CmsMigrationFeature,
   CmsWebsiteMigrationPageContent,
 } from "@/lib/orbit/website-migration-page-content";
+import { MigrationHeroVisual } from "@/components/migration/migration-hero-visual";
 import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
 import { cn } from "@/lib/utils";
 
@@ -60,64 +61,79 @@ export function WebsiteMigrationPageView({
 
   return (
     <>
-      <section className="hb-band-cream relative overflow-hidden">
-        <div className="hb-shell grid gap-12 py-14 lg:grid-cols-2 lg:items-center lg:py-20">
+      <section className="relative overflow-hidden bg-white">
+        <div className="hb-shell grid gap-10 py-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)] lg:items-center lg:gap-6 lg:py-16 xl:py-20">
           <motion.div
             initial={reduce ? false : { opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
+            className="max-w-xl lg:pr-4"
           >
-            <p className="text-[12px] font-bold tracking-[0.22em] text-[#673de6] uppercase">
-              {page.heroEyebrow}
-            </p>
-            <h1 className="font-heading mt-4 text-[clamp(2rem,4.5vw,3.4rem)] leading-[1.08] font-extrabold tracking-[-0.04em] text-[#1e1b4b]">
-              {page.heroTitle}{" "}
-              <span className="text-[#673de6]">{page.heroTitleAccent}</span>
+            {page.heroEyebrow ? (
+              <p className="text-[12px] font-bold tracking-[0.22em] text-[#673de6] uppercase">
+                {page.heroEyebrow}
+              </p>
+            ) : null}
+            <h1
+              className={cn(
+                "font-heading text-[clamp(2.15rem,4.8vw,3.35rem)] leading-[1.12] font-extrabold tracking-[-0.035em] text-[#0f172a]",
+                page.heroEyebrow ? "mt-4" : "mt-0",
+              )}
+            >
+              {page.heroTitle}
+              {page.heroTitleAccent ? (
+                <>
+                  {" "}
+                  <span className="text-[#673de6]">{page.heroTitleAccent}</span>
+                </>
+              ) : null}
             </h1>
-            <ul className="mt-6 space-y-3">
+            <ul className="mt-8 space-y-4">
               {page.heroBullets.map((line) => (
                 <li
                   key={line}
-                  className="flex gap-3 text-[15px] leading-relaxed text-[#334155]"
+                  className="flex gap-3 text-[16px] leading-snug text-[#334155]"
                 >
-                  <span
-                    className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600"
+                  <Check
+                    className="mt-0.5 size-5 shrink-0 text-emerald-500"
+                    strokeWidth={2.5}
                     aria-hidden
-                  >
-                    <Check className="size-3.5 stroke-[3]" />
-                  </span>
+                  />
                   {line}
                 </li>
               ))}
             </ul>
-            <div className="mt-8 flex flex-wrap items-center gap-4">
+            <div className="mt-9">
               <Link
                 href={page.heroPrimaryHref}
-                className="inline-flex h-12 items-center rounded-xl bg-[#673de6] px-7 text-[15px] font-extrabold text-white shadow-lg shadow-violet-500/25 hover:bg-[#5b2fd6]"
+                className="inline-flex h-[52px] min-w-[200px] items-center justify-center rounded-xl bg-[#673de6] px-8 text-[16px] font-bold text-white shadow-md hover:bg-[#5b2fd6]"
               >
                 {page.heroPrimaryLabel}
               </Link>
               {page.heroGuarantee ? (
-                <p className="flex items-center gap-2 text-[13px] font-semibold text-[#64748b]">
-                  <Shield className="size-4 text-[#673de6]" />
+                <p className="mt-5 flex items-center gap-2 text-[14px] font-medium text-[#64748b]">
+                  <Shield
+                    className="size-[18px] text-[#94a3b8]"
+                    strokeWidth={2}
+                    aria-hidden
+                  />
                   {page.heroGuarantee}
                 </p>
               ) : null}
             </div>
           </motion.div>
           <motion.div
-            initial={reduce ? false : { opacity: 0, x: 16 }}
+            initial={reduce ? false : { opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="relative min-h-[280px] overflow-hidden rounded-[28px] border border-violet-200/80 bg-[#f5f3ff] shadow-xl shadow-violet-200/40"
+            className="relative w-full lg:justify-self-end"
           >
-            <Image
-              src={
-                page.heroImage || "/images/migration/frames/hero-migration.svg"
-              }
-              alt=""
-              fill
-              priority
-              className="object-cover object-center"
-              unoptimized={isRuntimeMediaSrc(page.heroImage)}
+            <MigrationHeroVisual
+              portraitSrc={page.heroImage}
+              overlayLine1={page.heroOverlayLine1}
+              overlayLine2={page.heroOverlayLine2}
+              chipWebsite={page.heroChipWebsite}
+              chipForm={page.heroChipForm}
+              progressTitle={page.heroProgressTitle}
+              progressValue={page.heroProgressValue}
             />
           </motion.div>
         </div>

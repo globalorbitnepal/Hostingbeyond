@@ -30,7 +30,14 @@ export type CmsWebsiteMigrationPageContent = {
   heroPrimaryLabel: string;
   heroPrimaryHref: string;
   heroGuarantee: string;
+  /** Center portrait in the hero collage (right column). */
   heroImage: string;
+  heroOverlayLine1: string;
+  heroOverlayLine2: string;
+  heroChipWebsite: string;
+  heroChipForm: string;
+  heroProgressTitle: string;
+  heroProgressValue: string;
 
   pricingEyebrow: string;
   pricingTitle: string;
@@ -99,18 +106,24 @@ function mergeStoredList<T extends { id: string; visible?: boolean }>(
 
 export function defaultWebsiteMigrationPageContent(): CmsWebsiteMigrationPageContent {
   return {
-    heroEyebrow: "Free website migration",
-    heroTitle: "The last website migration",
-    heroTitleAccent: "you'll ever need.",
+    heroEyebrow: "",
+    heroTitle: "The last website migration you'll ever need",
+    heroTitleAccent: "",
     heroBullets: [
-      "Migrate an unlimited number of websites for free on eligible plans",
-      "Beyond AI and our team automate the heavy lifting — minimal downtime",
-      "24/7 expert support before, during, and after the move",
+      "Migrate an unlimited number of websites for free",
+      "AI automates your site migration without hassle or downtime",
+      "24/7 customer support",
     ],
     heroPrimaryLabel: "Migrate for free",
     heroPrimaryHref: "#plans",
-    heroGuarantee: "30-day money-back guarantee on hosting",
-    heroImage: "/images/migration/frames/hero-migration.svg",
+    heroGuarantee: "30-day money-back guarantee",
+    heroImage: "/images/business-email/people/p-woman.jpg",
+    heroOverlayLine1: "MOVE",
+    heroOverlayLine2: "FORWARD",
+    heroChipWebsite: "Website link",
+    heroChipForm: "Migration form",
+    heroProgressTitle: "Migration in progress",
+    heroProgressValue: "2.3GB out of 3GB",
 
     pricingEyebrow: "Hosting plans",
     pricingTitle: "Pick a plan with",
@@ -289,6 +302,18 @@ export function mergeWebsiteMigrationPageContent(
     heroPrimaryHref: text(stored.heroPrimaryHref, defaults.heroPrimaryHref),
     heroGuarantee: text(stored.heroGuarantee, defaults.heroGuarantee),
     heroImage: text(stored.heroImage, defaults.heroImage),
+    heroOverlayLine1: text(stored.heroOverlayLine1, defaults.heroOverlayLine1),
+    heroOverlayLine2: text(stored.heroOverlayLine2, defaults.heroOverlayLine2),
+    heroChipWebsite: text(stored.heroChipWebsite, defaults.heroChipWebsite),
+    heroChipForm: text(stored.heroChipForm, defaults.heroChipForm),
+    heroProgressTitle: text(
+      stored.heroProgressTitle,
+      defaults.heroProgressTitle,
+    ),
+    heroProgressValue: text(
+      stored.heroProgressValue,
+      defaults.heroProgressValue,
+    ),
     pricingEyebrow: text(stored.pricingEyebrow, defaults.pricingEyebrow),
     pricingTitle: text(stored.pricingTitle, defaults.pricingTitle),
     pricingTitleAccent: text(
