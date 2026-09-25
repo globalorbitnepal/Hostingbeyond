@@ -5,12 +5,13 @@ import Image from "next/image";
 import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
 
 const DEFAULT_ART = "/images/business-email/hero-custom.webp";
-const BASE_MAX_PX = 580;
+const BASE_MAX_PX = 620;
 
-/** Full marketing composite (built-in UI); skip floating chips on the page. */
-export function isCompositeImpressionArt(src: string) {
-  const s = src?.trim() || DEFAULT_ART;
-  return /hero-custom\.webp/i.test(s);
+function isPortraitOnly(src: string) {
+  const s = src.trim();
+  return (
+    s.endsWith(".svg") || (s.includes("/people/") && !s.includes("hero-custom"))
+  );
 }
 
 type Props = {
@@ -19,33 +20,29 @@ type Props = {
   scalePercent?: number;
 };
 
+/** Right-column artwork — same treatment as website migration hero (no white card frame). */
 export function BusinessEmailHeroVisual({
   src,
   alt = "",
-  scalePercent = 118,
+  scalePercent = 130,
 }: Props) {
   const artwork = src?.trim() || DEFAULT_ART;
-  const composite = isCompositeImpressionArt(artwork);
-  const scale = Math.min(150, Math.max(90, scalePercent)) / 100;
+  const scale = Math.min(160, Math.max(80, scalePercent)) / 100;
   const maxWidth = Math.round(BASE_MAX_PX * scale);
 
-  return (
-    <div
-      className="relative mx-auto w-full"
-      style={{ maxWidth: `${maxWidth}px` }}
-    >
-      <div className="overflow-hidden rounded-[28px] border border-white/90 bg-white p-2 shadow-[0_28px_72px_-34px_rgba(8,6,28,0.55)] ring-1 ring-white/70 sm:p-3">
+  if (!isPortraitOnly(artwork)) {
+    return (
+      <div
+        className="relative mx-auto w-full overflow-visible"
+        style={{ maxWidth: `${maxWidth}px` }}
+      >
         <Image
           src={artwork}
           alt={alt}
-          width={1400}
-          height={composite ? 788 : 933}
-          priority={composite}
-          className={
-            composite
-              ? "h-auto w-full rounded-[22px] object-contain"
-              : "h-[min(420px,52vh)] w-full rounded-[22px] object-cover object-center"
-          }
+          width={1024}
+          height={576}
+          priority={/hero-custom/i.test(artwork)}
+          className="h-auto w-full border-0 bg-transparent shadow-none"
           sizes={`(max-width: 1024px) 100vw, ${maxWidth}px`}
           unoptimized={
             isRuntimeMediaSrc(artwork) ||
@@ -54,6 +51,26 @@ export function BusinessEmailHeroVisual({
           }
         />
       </div>
+    );
+  }
+
+  return (
+    <div
+      className="relative mx-auto aspect-[4/3] min-h-[300px] w-full overflow-hidden rounded-[24px] shadow-[0_28px_70px_-40px_rgba(47,28,106,0.35)]"
+      style={{ maxWidth: `${maxWidth}px` }}
+    >
+      <Image
+        src={artwork}
+        alt={alt}
+        fill
+        className="object-cover object-center"
+        sizes={`(max-width: 1024px) 100vw, ${maxWidth}px`}
+        unoptimized={
+          isRuntimeMediaSrc(artwork) ||
+          artwork.includes("/business-email/") ||
+          artwork.endsWith(".webp")
+        }
+      />
     </div>
   );
 }

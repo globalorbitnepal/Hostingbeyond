@@ -18,10 +18,7 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
-import {
-  BusinessEmailHeroVisual,
-  isCompositeImpressionArt,
-} from "@/components/business-email/business-email-hero-visual";
+import { BusinessEmailHeroVisual } from "@/components/business-email/business-email-hero-visual";
 import { MailWorkspace } from "@/components/business-email/mail-workspace";
 import { routes } from "@/config/routes";
 import type {
@@ -114,18 +111,18 @@ export function BusinessEmailPageView({
       {active && impressionTabs.length > 0 ? (
         <section
           id="impression"
-          className="hb-band-purple relative overflow-hidden py-16 text-white sm:py-20"
+          className="relative overflow-x-clip overflow-y-visible bg-white py-16 sm:py-20"
         >
           <div className="hb-shell">
-            <h2 className="font-heading text-center text-[clamp(2rem,4.5vw,3.4rem)] font-extrabold tracking-[-0.045em]">
+            <h2 className="font-heading text-center text-[clamp(2rem,4.5vw,3.4rem)] font-extrabold tracking-[-0.045em] text-[#1a1a1a]">
               {content.impressionHeading}
             </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-center text-[16px] leading-relaxed text-white/70">
+            <p className="mx-auto mt-4 max-w-2xl text-center text-[16px] leading-relaxed text-[#5c5c5c]">
               {content.impressionDescription}
             </p>
 
-            <div className="mt-10 grid items-center gap-10 lg:grid-cols-[0.95fr_1.05fr]">
-              <div>
+            <div className="mt-10 grid items-center gap-8 lg:grid-cols-[minmax(0,480px)_1fr] lg:gap-6 xl:gap-10">
+              <div className="max-w-[520px] lg:pr-2">
                 <div className="flex flex-wrap gap-2">
                   {impressionTabs.map((item) => (
                     <button
@@ -133,10 +130,10 @@ export function BusinessEmailPageView({
                       type="button"
                       onClick={() => setTab(item.id)}
                       className={cn(
-                        "rounded-full px-4 py-2 text-[13px] font-bold",
+                        "rounded-full px-4 py-2 text-[13px] font-bold transition-colors",
                         tab === item.id
-                          ? "bg-white text-slate-950"
-                          : "bg-white/10 text-white/80",
+                          ? "bg-[#673de6] text-white shadow-sm"
+                          : "bg-slate-100 text-slate-600 hover:bg-slate-200",
                       )}
                     >
                       {item.label}
@@ -150,23 +147,26 @@ export function BusinessEmailPageView({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
                   >
-                    <h3 className="mt-7 text-[clamp(1.5rem,3vw,2.15rem)] font-extrabold">
+                    <h3 className="mt-7 text-[clamp(1.5rem,3vw,2.15rem)] font-extrabold text-[#1a1a1a]">
                       {active.title}
                     </h3>
                     <ul className="mt-5 space-y-3">
                       {active.points.map((line) => (
                         <li
                           key={line}
-                          className="flex items-start gap-2 text-[15px] text-white/80"
+                          className="flex items-start gap-2 text-[15px] leading-relaxed text-[#2f2f2f]"
                         >
-                          <Check className="mt-0.5 size-4 shrink-0 text-emerald-400" />
+                          <Check
+                            className="mt-0.5 size-4 shrink-0 text-[#00b090]"
+                            strokeWidth={3}
+                          />
                           {line}
                         </li>
                       ))}
                     </ul>
                     <Link
                       href={content.impressionCtaHref}
-                      className="mt-7 inline-flex h-11 items-center rounded-md bg-white px-5 text-[14px] font-bold text-[#2f1c6a] shadow-lg hover:bg-[#f8f7ff]"
+                      className="mt-7 inline-flex h-11 items-center rounded-[10px] bg-[#673de6] px-6 text-[14px] font-bold text-white hover:bg-[#5c35d4]"
                     >
                       {content.impressionCtaLabel}
                     </Link>
@@ -174,13 +174,13 @@ export function BusinessEmailPageView({
                 </AnimatePresence>
               </div>
 
-              <div className="relative min-h-[380px] lg:justify-self-end">
+              <div className="relative w-full overflow-visible lg:justify-self-end lg:pl-2">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={active.image}
-                    initial={{ opacity: 0, x: 30 }}
+                    initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
+                    exit={{ opacity: 0, x: -16 }}
                     transition={{ duration: 0.45 }}
                     className="relative"
                   >
@@ -191,86 +191,38 @@ export function BusinessEmailPageView({
                     />
                   </motion.div>
                 </AnimatePresence>
-                {!isCompositeImpressionArt(active.image) ? (
-                  <>
-                    <motion.div
-                      className="pointer-events-none absolute top-6 -left-2 z-10 max-w-[230px] rounded-2xl border border-white/15 bg-[#2a2150]/95 p-3 shadow-2xl backdrop-blur sm:-left-4"
-                      animate={reduce ? undefined : { y: [0, -10, 0] }}
-                      transition={{ duration: 5, repeat: Infinity }}
-                    >
-                      <p className="text-[10px] font-bold tracking-wide text-white/50 uppercase">
-                        New message
-                      </p>
-                      <p className="mt-1 text-[12px] font-semibold">
-                        To: jessica@portal.co
-                      </p>
-                      <p className="text-[12px] text-white/70">
-                        Following up on our proposal
-                      </p>
-                      <span className="mt-2 inline-flex rounded-full bg-[#673de6] px-2 py-0.5 text-[10px] font-bold">
-                        Sending
-                      </span>
-                    </motion.div>
-                    <motion.div
-                      className="pointer-events-none absolute right-0 bottom-8 z-10 max-w-[210px] rounded-2xl border border-slate-200/80 bg-white p-3 text-slate-900 shadow-2xl sm:right-2"
-                      animate={reduce ? undefined : { y: [0, 12, 0] }}
-                      transition={{ duration: 6, repeat: Infinity }}
-                    >
-                      <p className="text-[11px] font-extrabold">
-                        Manage your writing style
-                      </p>
-                      <div className="mt-2 flex flex-wrap gap-1">
-                        {["Casual", "Professional", "Friendly", "Concise"].map(
-                          (tone) => (
-                            <span
-                              key={tone}
-                              className={cn(
-                                "rounded-full px-2 py-0.5 text-[10px] font-bold",
-                                tone === "Professional"
-                                  ? "bg-[#673de6] text-white"
-                                  : "bg-slate-100 text-slate-600",
-                              )}
-                            >
-                              {tone}
-                            </span>
-                          ),
-                        )}
-                      </div>
-                    </motion.div>
-                  </>
-                ) : null}
               </div>
             </div>
           </div>
         </section>
       ) : null}
 
-      <section id="pricing" className="hb-band-cream py-16 sm:py-20">
+      <section id="pricing" className="hb-band-purple py-16 sm:py-20">
         <div className="hb-shell">
-          <h2 className="font-heading text-center text-[clamp(1.85rem,3.6vw,2.9rem)] font-extrabold tracking-[-0.04em] text-slate-950">
+          <h2 className="font-heading text-center text-[clamp(1.85rem,3.6vw,2.9rem)] font-extrabold tracking-[-0.04em] text-white">
             {content.pricingHeading}
           </h2>
-          <div className="mt-5 flex flex-wrap justify-center gap-x-6 gap-y-2 text-[13px] font-semibold text-slate-600">
+          <div className="mt-5 flex flex-wrap justify-center gap-x-6 gap-y-2 text-[13px] font-semibold text-white/80">
             <span className="inline-flex items-center gap-1.5">
-              <Check className="size-4 text-emerald-600" />
+              <Check className="size-4 text-emerald-400" />
               {content.pricingTrust1}
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <Check className="size-4 text-emerald-600" />
+              <Check className="size-4 text-emerald-400" />
               {content.pricingTrust2}
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <Check className="size-4 text-emerald-600" />
+              <Check className="size-4 text-emerald-400" />
               {content.pricingTrust3}
             </span>
           </div>
           <div className="mt-6 flex justify-center">
-            <label className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[13px] font-semibold text-slate-700">
+            <label className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-[13px] font-semibold text-white backdrop-blur-sm">
               Period
               <select
                 value={term}
                 onChange={(event) => setTerm(event.target.value)}
-                className="bg-transparent font-bold text-slate-950 outline-none"
+                className="bg-transparent font-bold text-white outline-none [&_option]:text-slate-900"
               >
                 <option value="48">48 months</option>
                 <option value="24">24 months</option>
@@ -364,7 +316,7 @@ export function BusinessEmailPageView({
             ))}
           </div>
 
-          <h3 className="font-heading mt-14 text-center text-[1.45rem] font-extrabold text-slate-950">
+          <h3 className="font-heading mt-14 text-center text-[1.45rem] font-extrabold text-white">
             {content.includedHeading}
           </h3>
           <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -378,7 +330,7 @@ export function BusinessEmailPageView({
               </p>
             ))}
           </div>
-          <p className="mt-6 text-center text-[12.5px] text-slate-500">
+          <p className="mt-6 text-center text-[12.5px] text-white/65">
             {content.includedFootnote}
           </p>
         </div>

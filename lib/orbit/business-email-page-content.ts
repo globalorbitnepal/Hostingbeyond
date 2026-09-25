@@ -80,7 +80,7 @@ export type CmsBusinessEmailPageContent = {
   heroGuarantee: string;
 
   impressionHeading: string;
-  /** Right-panel white card scale in “Make the right impression” (100 = base). */
+  /** Right-panel artwork scale in “Make the right impression” (130 = migration-style default). */
   impressionVisualScalePercent: number;
   impressionDescription: string;
   impressionCtaLabel: string;
@@ -186,7 +186,7 @@ export function defaultBusinessEmailPageContent(): CmsBusinessEmailPageContent {
     heroGuarantee: "30-day money-back guarantee",
 
     impressionHeading: "Make the right impression",
-    impressionVisualScalePercent: 118,
+    impressionVisualScalePercent: 130,
     impressionDescription:
       "Every email you send says something about your business. Stand out with your own domain and a signature that reflects your brand.",
     impressionCtaLabel: "Choose plan",
