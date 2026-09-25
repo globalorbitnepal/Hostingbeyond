@@ -18,8 +18,8 @@ import { useTyped } from "@/hooks/use-typed";
 import {
   DomainPremiumVideoLayer,
   DomainSceneMotion,
-  isVideoMediaSrc,
 } from "@/components/domains/domain-premium-media";
+import { isVideoMediaSrc } from "@/lib/domains/media";
 import { cn } from "@/lib/utils";
 
 export type VideoScene = {

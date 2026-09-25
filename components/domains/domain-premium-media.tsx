@@ -13,11 +13,6 @@ import {
 
 import { cn } from "@/lib/utils";
 
-export function isVideoMediaSrc(src: string | null | undefined) {
-  if (!src?.trim()) return false;
-  return /\.(mp4|webm)(\?|#|$)/i.test(src.trim());
-}
-
 function PremiumBackdrop({ playing }: { playing: boolean }) {
   const reduce = useReducedMotion();
   const on = playing && !reduce;

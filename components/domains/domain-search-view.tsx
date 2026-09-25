@@ -21,10 +21,8 @@ import {
   DomainSearchPanel,
   type SearchMode,
 } from "@/components/domains/domain-search-panel";
-import {
-  DomainIncludedPremiumStage,
-  isVideoMediaSrc,
-} from "@/components/domains/domain-premium-media";
+import { DomainIncludedPremiumStage } from "@/components/domains/domain-premium-media";
+import { isVideoMediaSrc } from "@/lib/domains/media";
 import { DomainVideoSection } from "@/components/domains/domain-video-section";
 import { routes } from "@/config/routes";
 import {
