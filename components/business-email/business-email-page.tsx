@@ -171,7 +171,7 @@ export function BusinessEmailPageView({
                 </AnimatePresence>
               </div>
 
-              <div className="relative min-h-[320px] overflow-visible lg:justify-self-end">
+              <div className="relative min-h-[320px] overflow-visible bg-transparent lg:justify-self-end">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={active.image}
@@ -179,7 +179,7 @@ export function BusinessEmailPageView({
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -12 }}
                     transition={{ duration: 0.4 }}
-                    className="relative w-full overflow-visible"
+                    className="relative w-full overflow-visible bg-transparent"
                   >
                     <BusinessEmailHeroVisual
                       src={active.image}

@@ -186,7 +186,7 @@ export function defaultBusinessEmailPageContent(): CmsBusinessEmailPageContent {
     heroGuarantee: "30-day money-back guarantee",
 
     impressionHeading: "Make the right impression",
-    impressionVisualScalePercent: 120,
+    impressionVisualScalePercent: 135,
     impressionDescription:
       "Every email you send says something about your business. Stand out with your own domain and a signature that reflects your brand.",
     impressionCtaLabel: "Choose plan",
@@ -566,12 +566,19 @@ export function mergeBusinessEmailPageContent(
     heroCtaLabel: text(stored.heroCtaLabel, defaults.heroCtaLabel),
     heroCtaHref: text(stored.heroCtaHref, defaults.heroCtaHref),
     heroGuarantee: text(stored.heroGuarantee, defaults.heroGuarantee),
-    impressionVisualScalePercent:
-      typeof stored.impressionVisualScalePercent === "number" &&
-      stored.impressionVisualScalePercent >= 80 &&
-      stored.impressionVisualScalePercent <= 160
-        ? Math.round(stored.impressionVisualScalePercent)
-        : defaults.impressionVisualScalePercent,
+    impressionVisualScalePercent: (() => {
+      const n =
+        typeof stored.impressionVisualScalePercent === "number"
+          ? Math.round(stored.impressionVisualScalePercent)
+          : defaults.impressionVisualScalePercent;
+      const scaled =
+        n === 120
+          ? 135
+          : n >= 80 && n <= 160
+            ? n
+            : defaults.impressionVisualScalePercent;
+      return scaled;
+    })(),
     impressionHeading: text(
       stored.impressionHeading,
       defaults.impressionHeading,
