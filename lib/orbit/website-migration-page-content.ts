@@ -63,6 +63,8 @@ export type CmsWebsiteMigrationPageContent = {
   aiDescription: string;
   aiBullets: string[];
   aiImage: string;
+  /** Right-column AI band artwork width scale (120 = +20% vs 600px base). */
+  aiVisualScalePercent: number;
 
   supportHeading: string;
   supportDescription: string;
@@ -230,6 +232,7 @@ export function defaultWebsiteMigrationPageContent(): CmsWebsiteMigrationPageCon
       "Optional staging URL to preview before going live",
     ],
     aiImage: "/images/migration/hero-custom.webp",
+    aiVisualScalePercent: 120,
 
     supportHeading: "Talk to migration support",
     supportDescription:
@@ -374,6 +377,12 @@ export function mergeWebsiteMigrationPageContent(
         ? defaults.aiImage
         : raw;
     })(),
+    aiVisualScalePercent:
+      typeof stored.aiVisualScalePercent === "number" &&
+      stored.aiVisualScalePercent >= 80 &&
+      stored.aiVisualScalePercent <= 160
+        ? Math.round(stored.aiVisualScalePercent)
+        : defaults.aiVisualScalePercent,
     supportHeading: text(stored.supportHeading, defaults.supportHeading),
     supportDescription: text(
       stored.supportDescription,

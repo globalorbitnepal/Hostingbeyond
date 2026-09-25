@@ -397,6 +397,22 @@ export function WebsiteMigrationPageEditor({
               onChange={(aiImage) => patch({ aiImage })}
               onCommit={(aiImage) => patch({ aiImage }, true)}
             />
+            <Field
+              label="AI image size (% — 120 = 20% larger)"
+              value={String(value.aiVisualScalePercent)}
+              onChange={(raw) => {
+                const n = Number.parseInt(raw, 10);
+                if (!Number.isNaN(n)) {
+                  patch({
+                    aiVisualScalePercent: Math.min(160, Math.max(80, n)),
+                  });
+                }
+              }}
+            />
+            <p className="text-[11px] text-slate-500">
+              White matte on JPEG exports is blended into the gradient
+              automatically. Prefer PNG with transparency for a perfect edge.
+            </p>
           </div>
         </div>
       ) : null}

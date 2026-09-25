@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import {
   Bot,
@@ -22,8 +21,8 @@ import type {
   CmsMigrationFeature,
   CmsWebsiteMigrationPageContent,
 } from "@/lib/orbit/website-migration-page-content";
+import { MigrationBandImage } from "@/components/migration/migration-band-image";
 import { MigrationHeroVisual } from "@/components/migration/migration-hero-visual";
-import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
 import { cn } from "@/lib/utils";
 
 const FEATURE_ICONS: Record<CmsMigrationFeature["icon"], typeof Zap> = {
@@ -247,19 +246,10 @@ export function WebsiteMigrationPageView({
               ))}
             </ul>
           </div>
-          <div className="relative w-full overflow-visible lg:justify-self-end">
-            <Image
-              src={page.aiImage || "/images/migration/hero-custom.webp"}
-              alt=""
-              width={1024}
-              height={576}
-              className="h-auto w-full max-w-[560px] border-0 bg-transparent shadow-none lg:max-w-[600px] lg:translate-x-2"
-              sizes="(max-width: 1024px) 100vw, 600px"
-              unoptimized={
-                isRuntimeMediaSrc(page.aiImage) ||
-                page.aiImage?.includes("/migration/") ||
-                page.aiImage?.endsWith(".webp")
-              }
+          <div className="relative w-full overflow-visible bg-transparent lg:justify-self-end lg:pl-2">
+            <MigrationBandImage
+              src={page.aiImage}
+              scalePercent={page.aiVisualScalePercent}
             />
           </div>
         </div>
