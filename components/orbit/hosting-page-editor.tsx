@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { OrbitImageField } from "@/components/orbit/image-field";
+import { routes } from "@/config/routes";
 import { HOSTING_FRAME_SPECS } from "@/lib/hosting/frame-specs";
 import type { CmsHostingPageContent } from "@/lib/orbit/hosting-page-content";
 
@@ -79,6 +80,10 @@ export function HostingPageEditor({
         <span className="font-bold">Plan prices & features:</span> edit under{" "}
         <a href="/orbit/content" className="underline">
           Website Content → Web Hosting Plans
+        </a>
+        . Public URL:{" "}
+        <a href={routes.hosting} className="underline">
+          {routes.hosting}
         </a>
         . Image sizes: {HOSTING_FRAME_SPECS.wordpressBand}
       </p>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import { routes } from "@/config/routes";
 import { CloudHostingPageEditor } from "@/components/orbit/cloud-hosting-page-editor";
 import {
   defaultCloudHostingPageContent,
@@ -41,7 +42,7 @@ export default function OrbitCloudPage() {
         content?: CmsCloudHostingPageContent;
       };
       if (json.content) setContent(json.content);
-      setStatus("Saved — live on /cloud");
+      setStatus(`Saved — live on ${routes.cloud}`);
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Save failed");
     } finally {
@@ -54,8 +55,8 @@ export default function OrbitCloudPage() {
       <div>
         <h1 className="text-xl font-bold text-slate-900">Cloud hosting page</h1>
         <p className="mt-1 text-sm text-slate-600">
-          <a href="/cloud" className="text-violet-600 underline">
-            /cloud
+          <a href={routes.cloud} className="text-violet-600 underline">
+            {routes.cloud}
           </a>
         </p>
         {status ? (

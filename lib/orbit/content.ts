@@ -363,6 +363,7 @@ export async function saveCloudHostingPageContent(
   });
   revalidateContent();
   revalidatePath(routes.cloud);
+  revalidatePath("/cloud");
   revalidatePath("/orbit/cloud");
   return row;
 }
@@ -389,6 +390,7 @@ export async function saveHostingPageContent(content: CmsHostingPageContent) {
   });
   revalidateContent();
   revalidatePath(routes.hosting);
+  revalidatePath("/hosting");
   revalidatePath("/orbit/hosting");
   return row;
 }

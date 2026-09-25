@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { WebHostingPageView } from "@/components/hosting/web-hosting-page";
 import { SiteFooter, SiteHeader } from "@/components/layout";
+import { routes } from "@/config/routes";
 import { defaultHostingPlansSection } from "@/lib/orbit/defaults";
 import {
   buildPublicPageMetadata,
@@ -13,7 +14,7 @@ import {
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return buildPublicPageMetadata("hosting", "/hosting", {
+  return buildPublicPageMetadata("hosting", routes.hosting, {
     title: "Web Hosting — Fast NVMe WordPress Hosting",
     description:
       "Compare HostingBeyond web hosting plans with free SSL, NVMe storage, managed WordPress, free domain options, and 24/7 support. Save up to 70% on annual billing.",
@@ -21,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-export default async function HostingPage() {
+export default async function WebHostingPage() {
   const [sections, settings, page] = await Promise.all([
     getHomeSections(),
     getSiteSettings(),

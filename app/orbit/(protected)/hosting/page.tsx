@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import { routes } from "@/config/routes";
 import { HostingPageEditor } from "@/components/orbit/hosting-page-editor";
 import {
   defaultHostingPageContent,
@@ -39,7 +40,7 @@ export default function OrbitHostingPage() {
       }
       const json = (await res.json()) as { content?: CmsHostingPageContent };
       if (json.content) setContent(json.content);
-      setStatus("Saved — live on /hosting");
+      setStatus(`Saved — live on ${routes.hosting}`);
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Save failed");
     } finally {
@@ -52,8 +53,8 @@ export default function OrbitHostingPage() {
       <div>
         <h1 className="text-xl font-bold text-slate-900">Web Hosting page</h1>
         <p className="mt-1 text-sm text-slate-600">
-          <a href="/hosting" className="text-violet-600 underline">
-            /hosting
+          <a href={routes.hosting} className="text-violet-600 underline">
+            {routes.hosting}
           </a>{" "}
           · SEO in{" "}
           <a href="/orbit/seo" className="underline">

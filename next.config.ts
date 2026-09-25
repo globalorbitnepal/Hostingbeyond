@@ -41,6 +41,21 @@ const nextConfig: NextConfig = {
         destination: "/domain-name-search",
         permanent: false,
       },
+      {
+        source: "/hosting",
+        destination: "/web-hosting",
+        permanent: true,
+      },
+      {
+        source: "/hosting/:path*",
+        destination: "/web-hosting/:path*",
+        permanent: true,
+      },
+      {
+        source: "/cloud",
+        destination: "/cloud-hosting",
+        permanent: true,
+      },
     ];
   },
   experimental: {

@@ -135,10 +135,10 @@ export function CloudHostingPageView({
             />
             <div className="absolute right-6 bottom-6 left-6 rounded-2xl border border-white/20 bg-black/30 p-4 backdrop-blur-md">
               <p className="text-[12px] font-bold text-white/70 uppercase">
-                Isolated resources
+                {page.heroCardEyebrow}
               </p>
               <p className="mt-1 text-[14px] font-semibold text-white">
-                Up to 8 GB RAM · 4 vCPU on Cloud Pro
+                {page.heroCardLine}
               </p>
             </div>
           </motion.div>

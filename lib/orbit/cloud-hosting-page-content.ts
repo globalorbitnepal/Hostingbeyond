@@ -26,7 +26,10 @@ export type CmsCloudHostingPageContent = {
   heroSecondaryLabel: string;
   heroSecondaryHref: string;
   heroPromo: string;
+  /** Background image for the hero panel card (right side on desktop). */
   heroImage: string;
+  heroCardEyebrow: string;
+  heroCardLine: string;
 
   pricingEyebrow: string;
   pricingTitle: string;
@@ -207,6 +210,8 @@ export function defaultCloudHostingPageContent(): CmsCloudHostingPageContent {
     heroSecondaryHref: routes.hosting,
     heroPromo: "Save up to 60% on your first term",
     heroImage: "/images/cloud/frames/hero-cloud.svg",
+    heroCardEyebrow: "Isolated resources",
+    heroCardLine: "Up to 8 GB RAM · 4 vCPU on Cloud Pro",
 
     pricingEyebrow: "Cloud plans",
     pricingTitle: "Pick your",
@@ -369,6 +374,8 @@ export function mergeCloudHostingPageContent(
     ),
     heroPromo: text(stored.heroPromo, defaults.heroPromo),
     heroImage: text(stored.heroImage, defaults.heroImage),
+    heroCardEyebrow: text(stored.heroCardEyebrow, defaults.heroCardEyebrow),
+    heroCardLine: text(stored.heroCardLine, defaults.heroCardLine),
     pricingEyebrow: text(stored.pricingEyebrow, defaults.pricingEyebrow),
     pricingTitle: text(stored.pricingTitle, defaults.pricingTitle),
     pricingTitleAccent: text(

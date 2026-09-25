@@ -47,13 +47,13 @@ export const PUBLIC_PAGE_SEO_REGISTRY: PublicPageSeoEntry[] = [
   {
     slug: "hosting",
     label: "Web hosting",
-    path: "/hosting",
+    path: "/web-hosting",
     editorHref: "/orbit/hosting",
   },
   {
     slug: "cloud",
     label: "Cloud hosting",
-    path: "/cloud",
+    path: "/cloud-hosting",
     editorHref: "/orbit/cloud",
   },
   {

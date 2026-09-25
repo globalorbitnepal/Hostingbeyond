@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { CloudHostingPageView } from "@/components/cloud/cloud-hosting-page";
 import { SiteFooter, SiteHeader } from "@/components/layout";
+import { routes } from "@/config/routes";
 import {
   buildPublicPageMetadata,
   getCloudHostingPageContent,
@@ -12,7 +13,7 @@ import {
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return buildPublicPageMetadata("cloud", "/cloud", {
+  return buildPublicPageMetadata("cloud", routes.cloud, {
     title: "Cloud Hosting — Dedicated CPU & NVMe",
     description:
       "Managed cloud hosting with dedicated RAM, vCPU, and NVMe storage. Compare Cloud Starter, Business, and Pro plans with free SSL and 24/7 support on HostingBeyond.",

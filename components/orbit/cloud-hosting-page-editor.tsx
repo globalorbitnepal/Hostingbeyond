@@ -3,8 +3,12 @@
 import { useState } from "react";
 
 import { OrbitImageField } from "@/components/orbit/image-field";
+import { routes } from "@/config/routes";
 import { CLOUD_FRAME_SPECS } from "@/lib/cloud/frame-specs";
-import type { CmsCloudHostingPageContent } from "@/lib/orbit/cloud-hosting-page-content";
+import type {
+  CmsCloudHostingPageContent,
+  CmsCloudPageFeature,
+} from "@/lib/orbit/cloud-hosting-page-content";
 import type { CmsHostingPlan } from "@/lib/orbit/defaults";
 
 function Field({
@@ -78,12 +82,17 @@ export function CloudHostingPageEditor({
 
   return (
     <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5">
-      <p className="rounded-lg bg-violet-50 px-3 py-2 text-[11px] text-violet-900">
-        Hero image: {CLOUD_FRAME_SPECS.heroVisual}. SEO:{" "}
+      <p className="rounded-lg bg-violet-50 px-3 py-2 text-[11px] leading-relaxed text-violet-900">
+        <span className="font-bold">Hero panel (image box):</span> upload{" "}
+        {CLOUD_FRAME_SPECS.heroPanelImage}. Public URL:{" "}
+        <a href={routes.cloud} className="underline">
+          {routes.cloud}
+        </a>
+        . SEO:{" "}
         <a href="/orbit/seo" className="underline">
           Orbit → SEO
         </a>{" "}
-        slug <code className="rounded bg-white px-1">cloud</code>
+        slug <code className="rounded bg-white px-1">cloud</code>.
       </p>
       <div className="flex flex-wrap gap-2">
         {tabs.map(([id, label]) => (
@@ -132,12 +141,53 @@ export function CloudHostingPageEditor({
               multiline
             />
           </div>
-          <OrbitImageField
-            label={`Hero visual — ${CLOUD_FRAME_SPECS.heroVisual}`}
-            value={value.heroImage}
-            onChange={(heroImage) => patch({ heroImage })}
-            onCommit={(heroImage) => patch({ heroImage }, true)}
+          <Field
+            label="Primary CTA label"
+            value={value.heroPrimaryLabel}
+            onChange={(v) => patch({ heroPrimaryLabel: v })}
           />
+          <Field
+            label="Primary CTA URL"
+            value={value.heroPrimaryHref}
+            onChange={(v) => patch({ heroPrimaryHref: v })}
+          />
+          <Field
+            label="Secondary CTA label"
+            value={value.heroSecondaryLabel}
+            onChange={(v) => patch({ heroSecondaryLabel: v })}
+          />
+          <Field
+            label="Secondary CTA URL"
+            value={value.heroSecondaryHref}
+            onChange={(v) => patch({ heroSecondaryHref: v })}
+          />
+          <div className="rounded-xl border border-violet-200 bg-violet-50/50 p-4 sm:col-span-2">
+            <p className="text-[11px] font-bold text-violet-900 uppercase">
+              Hero panel — background image
+            </p>
+            <p className="mt-1 text-[11px] text-violet-800">
+              Recommended: {CLOUD_FRAME_SPECS.heroPanelImage}. Image sits behind
+              the glass caption bar at the bottom of the panel.
+            </p>
+            <div className="mt-3">
+              <OrbitImageField
+                label="Panel background"
+                value={value.heroImage}
+                onChange={(heroImage) => patch({ heroImage })}
+                onCommit={(heroImage) => patch({ heroImage }, true)}
+              />
+            </div>
+            <Field
+              label="Panel caption (small)"
+              value={value.heroCardEyebrow}
+              onChange={(v) => patch({ heroCardEyebrow: v })}
+            />
+            <Field
+              label="Panel caption (main line)"
+              value={value.heroCardLine}
+              onChange={(v) => patch({ heroCardLine: v })}
+            />
+          </div>
         </div>
       ) : null}
 
@@ -177,6 +227,32 @@ export function CloudHostingPageEditor({
             onChange={(v) => patch({ pricingNote: v })}
             multiline
           />
+          <Field
+            label="Annual toggle label"
+            value={value.annualToggleLabel}
+            onChange={(v) => patch({ annualToggleLabel: v })}
+          />
+          <Field
+            label="Monthly toggle label"
+            value={value.monthlyToggleLabel}
+            onChange={(v) => patch({ monthlyToggleLabel: v })}
+          />
+          <label className="block text-xs font-semibold tracking-wide text-slate-500 uppercase">
+            Default billing
+            <select
+              value={value.defaultBilling}
+              onChange={(e) =>
+                patch({
+                  defaultBilling:
+                    e.target.value === "monthly" ? "monthly" : "annually",
+                })
+              }
+              className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-normal text-slate-900 outline-none"
+            >
+              <option value="annually">Annually</option>
+              <option value="monthly">Monthly</option>
+            </select>
+          </label>
         </div>
       ) : null}
 
@@ -238,6 +314,30 @@ export function CloudHostingPageEditor({
                 }}
                 multiline
               />
+              <Field
+                label="Icon (cpu|shield|zap|scale|globe|database)"
+                value={feat.icon}
+                onChange={(icon) => {
+                  const features = [...value.features];
+                  features[index] = {
+                    ...feat,
+                    icon: icon as CmsCloudPageFeature["icon"],
+                  };
+                  patch({ features });
+                }}
+              />
+              <label className="mt-2 flex items-center gap-2 text-xs text-slate-600">
+                <input
+                  type="checkbox"
+                  checked={feat.visible !== false}
+                  onChange={(e) => {
+                    const features = [...value.features];
+                    features[index] = { ...feat, visible: e.target.checked };
+                    patch({ features });
+                  }}
+                />
+                Visible on page
+              </label>
             </div>
           ))}
         </div>
@@ -298,6 +398,12 @@ export function CloudHostingPageEditor({
             value={value.faqHeading}
             onChange={(v) => patch({ faqHeading: v })}
           />
+          <Field
+            label="Description"
+            value={value.faqDescription}
+            onChange={(v) => patch({ faqDescription: v })}
+            multiline
+          />
           {value.faqs.map((faq, index) => (
             <div
               key={faq.id}
@@ -322,6 +428,18 @@ export function CloudHostingPageEditor({
                 }}
                 multiline
               />
+              <label className="mt-2 flex items-center gap-2 text-xs text-slate-600">
+                <input
+                  type="checkbox"
+                  checked={faq.visible !== false}
+                  onChange={(e) => {
+                    const faqs = [...value.faqs];
+                    faqs[index] = { ...faq, visible: e.target.checked };
+                    patch({ faqs });
+                  }}
+                />
+                Visible on page
+              </label>
             </div>
           ))}
         </div>
@@ -401,6 +519,16 @@ function PlanFields({
           value={plan.discountBadge}
           onChange={(discountBadge) => onChange({ ...plan, discountBadge })}
         />
+        <Field
+          label="CTA label"
+          value={plan.ctaLabel}
+          onChange={(ctaLabel) => onChange({ ...plan, ctaLabel })}
+        />
+        <Field
+          label="CTA URL"
+          value={plan.ctaHref}
+          onChange={(ctaHref) => onChange({ ...plan, ctaHref })}
+        />
       </div>
       <Field
         label="Features (one per line)"
@@ -417,6 +545,14 @@ function PlanFields({
           onChange={(e) => onChange({ ...plan, popular: e.target.checked })}
         />
         Most popular
+      </label>
+      <label className="mt-2 flex items-center gap-2 text-xs text-slate-600">
+        <input
+          type="checkbox"
+          checked={plan.visible !== false}
+          onChange={(e) => onChange({ ...plan, visible: e.target.checked })}
+        />
+        Visible on page
       </label>
     </div>
   );
