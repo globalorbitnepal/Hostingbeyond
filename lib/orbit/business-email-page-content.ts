@@ -78,6 +78,10 @@ export type CmsBusinessEmailPageContent = {
   heroCtaLabel: string;
   heroCtaHref: string;
   heroGuarantee: string;
+  /** Full-width hero artwork (right column), edge-to-edge — no frame. */
+  heroImage: string;
+  /** Display width scale (100 = base, 130 = +30%). */
+  heroVisualScalePercent: number;
 
   impressionHeading: string;
   impressionDescription: string;
@@ -182,6 +186,8 @@ export function defaultBusinessEmailPageContent(): CmsBusinessEmailPageContent {
     heroCtaLabel: "Choose plan",
     heroCtaHref: "#pricing",
     heroGuarantee: "30-day money-back guarantee",
+    heroImage: "/images/business-email/hero-custom.webp",
+    heroVisualScalePercent: 130,
 
     impressionHeading: "Make the right impression",
     impressionDescription:
@@ -563,6 +569,19 @@ export function mergeBusinessEmailPageContent(
     heroCtaLabel: text(stored.heroCtaLabel, defaults.heroCtaLabel),
     heroCtaHref: text(stored.heroCtaHref, defaults.heroCtaHref),
     heroGuarantee: text(stored.heroGuarantee, defaults.heroGuarantee),
+    heroImage: (() => {
+      const raw = text(stored.heroImage, defaults.heroImage);
+      if (!raw || raw.includes("mail-workspace") || raw.endsWith(".svg")) {
+        return defaults.heroImage;
+      }
+      return raw;
+    })(),
+    heroVisualScalePercent:
+      typeof stored.heroVisualScalePercent === "number" &&
+      stored.heroVisualScalePercent >= 80 &&
+      stored.heroVisualScalePercent <= 160
+        ? Math.round(stored.heroVisualScalePercent)
+        : defaults.heroVisualScalePercent,
     impressionHeading: text(
       stored.impressionHeading,
       defaults.impressionHeading,

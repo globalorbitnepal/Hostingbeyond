@@ -1,4 +1,6 @@
 export const BUSINESS_EMAIL_FRAME_SPECS = {
+  heroArtwork:
+    "1200 × 675 px (16:9) — full hero composite, transparent or soft edges",
   aiFeatureCard:
     "800 × 500 px (16:10) — full card background (Work smarter with AI)",
   impressionPhoto: "1400 × 933 px (3:2) — impression tab photo (right panel)",

@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
-import { MailWorkspace } from "@/components/business-email/mail-workspace";
+import { BusinessEmailHeroVisual } from "@/components/business-email/business-email-hero-visual";
 import { routes } from "@/config/routes";
 import type {
   CmsBusinessEmailPageContent,
@@ -59,50 +59,66 @@ export function BusinessEmailPageView({
 
   return (
     <>
-      <section className="hb-band-purple relative overflow-hidden text-white">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_20%_0%,rgba(103,61,230,0.28),transparent_42%),radial-gradient(ellipse_at_90%_40%,rgba(37,99,235,0.18),transparent_40%)]"
-        />
-        <div className="hb-shell relative grid items-center gap-10 py-12 lg:grid-cols-[0.92fr_1.08fr] lg:gap-8 lg:py-16">
+      <section className="relative overflow-x-clip overflow-y-visible bg-white">
+        <div className="hb-shell grid gap-8 py-10 lg:grid-cols-[minmax(0,480px)_1fr] lg:items-center lg:gap-2 lg:py-14 xl:gap-6 xl:py-16">
           <motion.div
-            initial={reduce ? false : { opacity: 0, y: 16 }}
+            initial={reduce ? false : { opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
+            className="max-w-[520px] lg:pr-2 xl:pr-6"
           >
-            <p className="text-[13px] font-bold tracking-wide text-[#c4b5fd]">
+            <p className="text-[12px] font-bold tracking-[0.22em] text-[#673de6] uppercase">
               {content.heroEyebrow}
             </p>
-            <h1 className="font-heading mt-3 text-[clamp(2.4rem,5.4vw,4.4rem)] leading-[1.02] font-extrabold tracking-[-0.05em]">
+            <h1 className="font-heading mt-4 text-[clamp(2.25rem,4.2vw,3.25rem)] leading-[1.14] font-bold tracking-[-0.02em] text-[#1a1a1a]">
               {content.heroTitle}
             </h1>
-            <ul className="mt-6 space-y-2 text-[15px] text-white/80">
-              <li className="flex items-center gap-2">
-                <Check className="size-4 text-emerald-400" />
+            <ul className="mt-7 space-y-[18px]">
+              <li className="flex gap-3 text-[17px] leading-[1.45] text-[#2f2f2f]">
+                <Check
+                  className="mt-1 size-[18px] shrink-0 text-[#00b090]"
+                  strokeWidth={3}
+                  aria-hidden
+                />
                 {content.heroBullet1}
               </li>
-              <li className="flex items-center gap-2">
-                <Check className="size-4 text-emerald-400" />
+              <li className="flex gap-3 text-[17px] leading-[1.45] text-[#2f2f2f]">
+                <Check
+                  className="mt-1 size-[18px] shrink-0 text-[#00b090]"
+                  strokeWidth={3}
+                  aria-hidden
+                />
                 {content.heroBullet2}
               </li>
             </ul>
-            <Link
-              href={content.heroCtaHref}
-              className="mt-7 inline-flex h-12 items-center rounded-md bg-[#673de6] px-6 text-[15px] font-bold text-white shadow-[0_12px_30px_rgba(103,61,230,0.45)]"
-            >
-              {content.heroCtaLabel}
-            </Link>
-            <p className="mt-4 flex items-center gap-2 text-[13px] text-white/55">
-              <Shield className="size-4" />
-              {content.heroGuarantee}
-            </p>
+            <div className="mt-10">
+              <Link
+                href={content.heroCtaHref}
+                className="inline-flex h-[54px] min-w-[220px] items-center justify-center rounded-[10px] bg-[#673de6] px-10 text-[17px] font-bold text-white hover:bg-[#5c35d4]"
+              >
+                {content.heroCtaLabel}
+              </Link>
+              {content.heroGuarantee ? (
+                <p className="mt-5 flex items-center gap-2.5 text-[15px] font-normal text-[#6b6b6b]">
+                  <Shield
+                    className="size-5 text-[#9ca3af]"
+                    strokeWidth={1.75}
+                    aria-hidden
+                  />
+                  {content.heroGuarantee}
+                </p>
+              ) : null}
+            </div>
           </motion.div>
           <motion.div
-            initial={reduce ? false : { opacity: 0, x: 24 }}
+            initial={reduce ? false : { opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.55 }}
-            className="relative"
+            className="relative w-full overflow-visible lg:justify-self-end lg:pl-2"
           >
-            <MailWorkspace />
+            <BusinessEmailHeroVisual
+              src={content.heroImage}
+              scalePercent={content.heroVisualScalePercent}
+              onDarkBackground={false}
+            />
           </motion.div>
         </div>
       </section>

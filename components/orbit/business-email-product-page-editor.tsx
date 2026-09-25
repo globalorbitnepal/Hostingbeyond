@@ -147,6 +147,31 @@ export function BusinessEmailProductPageEditor({
             value={value.heroGuarantee}
             onChange={(heroGuarantee) => patch({ heroGuarantee })}
           />
+          <div className="rounded-xl border border-violet-200 bg-violet-50/50 p-4 sm:col-span-2">
+            <p className="text-[11px] leading-relaxed text-violet-900">
+              Right column: upload full artwork (
+              {BUSINESS_EMAIL_FRAME_SPECS.heroArtwork}). Shown edge-to-edge — no
+              frame border.
+            </p>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <OrbitImageField
+                label="Hero artwork"
+                value={value.heroImage}
+                onChange={(heroImage) => patch({ heroImage })}
+                onCommit={(heroImage) => patch({ heroImage }, true)}
+              />
+              <Field
+                label="Hero image size % (80–160)"
+                value={String(value.heroVisualScalePercent)}
+                onChange={(raw) => {
+                  const n = Number.parseInt(raw, 10);
+                  if (Number.isFinite(n)) {
+                    patch({ heroVisualScalePercent: n });
+                  }
+                }}
+              />
+            </div>
+          </div>
         </div>
       ) : null}
 
