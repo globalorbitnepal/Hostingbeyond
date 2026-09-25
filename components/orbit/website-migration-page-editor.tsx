@@ -387,8 +387,12 @@ export function WebsiteMigrationPageEditor({
             />
           </div>
           <div className="sm:col-span-2">
+            <p className="text-[11px] text-slate-600">
+              Right illustration: {MIGRATION_FRAME_SPECS.aiBandImage}. Shown
+              without border/frame on a blue–lavender gradient band.
+            </p>
             <OrbitImageField
-              label={`AI band image — ${MIGRATION_FRAME_SPECS.stepsImage}`}
+              label="Beyond AI band artwork"
               value={value.aiImage}
               onChange={(aiImage) => patch({ aiImage })}
               onCommit={(aiImage) => patch({ aiImage }, true)}

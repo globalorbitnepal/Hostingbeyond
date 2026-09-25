@@ -218,36 +218,48 @@ export function WebsiteMigrationPageView({
         footnote={page.pricingNote}
       />
 
-      <section className="hb-band-cream border-t border-violet-100 py-16 sm:py-20">
-        <div className="hb-shell grid gap-10 lg:grid-cols-2 lg:items-center">
-          <div>
-            <h2 className="font-heading text-[clamp(1.75rem,3vw,2.4rem)] font-extrabold text-[#1e1b4b]">
+      <section className="relative overflow-hidden py-16 sm:py-20 lg:py-24">
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-gradient-to-r from-[#d9ebff] via-[#e8eeff] to-[#f6f3ff]"
+        />
+        <div className="hb-shell relative grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-center lg:gap-12">
+          <div className="max-w-xl">
+            <h2 className="font-heading text-[clamp(1.85rem,3.2vw,2.65rem)] leading-tight font-bold tracking-[-0.02em] text-[#1a1f3c]">
               {page.aiHeading}
             </h2>
-            <p className="mt-3 text-[15px] leading-relaxed text-[#475569]">
+            <p className="mt-4 text-[16px] leading-relaxed text-[#4a5568]">
               {page.aiDescription}
             </p>
-            <ul className="mt-6 space-y-3">
+            <ul className="mt-8 space-y-4">
               {page.aiBullets.map((line) => (
                 <li
                   key={line}
-                  className="flex gap-2 text-[14px] text-[#334155]"
+                  className="flex gap-3 text-[16px] leading-snug text-[#374151]"
                 >
-                  <Check className="mt-0.5 size-4 shrink-0 text-[#673de6]" />
+                  <Check
+                    className="mt-0.5 size-5 shrink-0 text-[#2563eb]"
+                    strokeWidth={2.5}
+                    aria-hidden
+                  />
                   {line}
                 </li>
               ))}
             </ul>
           </div>
-          <div className="relative min-h-[260px] overflow-hidden rounded-[24px] border border-violet-100 bg-[#f5f3ff]">
+          <div className="relative w-full overflow-visible lg:justify-self-end">
             <Image
-              src={
-                page.aiImage || "/images/migration/frames/hero-migration.svg"
-              }
+              src={page.aiImage || "/images/migration/hero-custom.webp"}
               alt=""
-              fill
-              className="object-cover"
-              unoptimized={isRuntimeMediaSrc(page.aiImage)}
+              width={1024}
+              height={576}
+              className="h-auto w-full max-w-[560px] border-0 bg-transparent shadow-none lg:max-w-[600px] lg:translate-x-2"
+              sizes="(max-width: 1024px) 100vw, 600px"
+              unoptimized={
+                isRuntimeMediaSrc(page.aiImage) ||
+                page.aiImage?.includes("/migration/") ||
+                page.aiImage?.endsWith(".webp")
+              }
             />
           </div>
         </div>

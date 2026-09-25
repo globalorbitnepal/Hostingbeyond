@@ -229,7 +229,7 @@ export function defaultWebsiteMigrationPageContent(): CmsWebsiteMigrationPageCon
       "Post-migration health check for SSL and core pages",
       "Optional staging URL to preview before going live",
     ],
-    aiImage: "/images/migration/frames/hero-migration.svg",
+    aiImage: "/images/migration/hero-custom.webp",
 
     supportHeading: "Talk to migration support",
     supportDescription:
@@ -363,7 +363,17 @@ export function mergeWebsiteMigrationPageContent(
       stored.aiBullets?.length && stored.aiBullets.some((b) => b.trim())
         ? stored.aiBullets
         : defaults.aiBullets,
-    aiImage: text(stored.aiImage, defaults.aiImage),
+    aiImage: (() => {
+      const raw = text(stored.aiImage, defaults.aiImage);
+      const legacy = [
+        "/images/migration/frames/hero-migration.svg",
+        "/images/migration/hero-composite.png",
+        "/images/migration/ai-band.webp",
+      ];
+      return legacy.includes(raw) || raw.endsWith("hero-migration.svg")
+        ? defaults.aiImage
+        : raw;
+    })(),
     supportHeading: text(stored.supportHeading, defaults.supportHeading),
     supportDescription: text(
       stored.supportDescription,
