@@ -270,28 +270,47 @@
       linear-gradient(180deg, #cfe3fb 0%, #e8eeff 48%, #f4f7ff 100%);
   }
 
-  /* Business email impression: white center for artwork blend; cream-blue at top/bottom only */
+  /* Business email impression: flat white center; cream-blue only at top/bottom edges */
   .hb-band-impression {
-    background:
-      radial-gradient(
-        ellipse at 50% -20%,
-        rgba(147, 197, 253, 0.42),
-        transparent 52%
-      ),
-      radial-gradient(
-        ellipse at 50% 120%,
-        rgba(167, 139, 250, 0.18),
-        transparent 52%
-      ),
-      linear-gradient(
-        180deg,
-        #e8eeff 0%,
-        #f8faff 6%,
-        #ffffff 14%,
-        #ffffff 86%,
-        #f8faff 94%,
-        #e8eeff 100%
-      );
+    position: relative;
+    isolation: isolate;
+    background: #ffffff;
+  }
+
+  .hb-band-impression::before,
+  .hb-band-impression::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 0;
+    height: min(9rem, 22vh);
+    pointer-events: none;
+  }
+
+  .hb-band-impression::before {
+    top: 0;
+    background: linear-gradient(
+      180deg,
+      #e8eeff 0%,
+      rgba(232, 238, 255, 0.55) 45%,
+      transparent 100%
+    );
+  }
+
+  .hb-band-impression::after {
+    bottom: 0;
+    background: linear-gradient(
+      0deg,
+      #e8eeff 0%,
+      rgba(232, 238, 255, 0.55) 45%,
+      transparent 100%
+    );
+  }
+
+  .hb-band-impression > .hb-shell {
+    position: relative;
+    z-index: 1;
   }
 
   .hb-caret {

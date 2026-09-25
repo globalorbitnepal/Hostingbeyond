@@ -174,7 +174,7 @@ export function BusinessEmailPageView({
                 </AnimatePresence>
               </div>
 
-              <div className="relative w-full overflow-visible bg-white lg:justify-self-end lg:pl-2">
+              <div className="relative w-full overflow-visible lg:justify-self-end lg:pl-2">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={active.image}

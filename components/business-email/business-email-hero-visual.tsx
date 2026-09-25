@@ -20,43 +20,44 @@ type Props = {
   scalePercent?: number;
 };
 
-/** Flat on white section — no card frame; parent section supplies white center. */
 export function BusinessEmailHeroVisual({
   src,
   alt = "",
-  scalePercent = 150,
+  scalePercent = 180,
 }: Props) {
   const artwork = src?.trim() || DEFAULT_ART;
-  const scale = Math.min(175, Math.max(80, scalePercent)) / 100;
+  const scale = Math.min(200, Math.max(80, scalePercent)) / 100;
   const maxWidth = Math.round(BASE_MAX_PX * scale);
 
   if (!isPortraitOnly(artwork)) {
     return (
       <div
-        className="relative mx-auto w-full overflow-visible bg-white"
+        className="relative mx-auto w-full bg-transparent"
         style={{ maxWidth: `${maxWidth}px` }}
       >
-        <Image
-          src={artwork}
-          alt={alt}
-          width={1024}
-          height={576}
-          priority={/hero-custom/i.test(artwork)}
-          className="h-auto w-full border-0 bg-white object-contain shadow-none"
-          sizes={`(max-width: 1024px) 100vw, ${maxWidth}px`}
-          unoptimized={
-            isRuntimeMediaSrc(artwork) ||
-            artwork.includes("/business-email/") ||
-            artwork.endsWith(".webp")
-          }
-        />
+        <div className="relative overflow-hidden bg-transparent">
+          <Image
+            src={artwork}
+            alt={alt}
+            width={1024}
+            height={576}
+            priority={/hero-custom/i.test(artwork)}
+            className="relative -ml-[2%] h-auto w-[104%] max-w-none border-0 bg-transparent object-contain shadow-none"
+            sizes={`(max-width: 1024px) 100vw, ${maxWidth}px`}
+            unoptimized={
+              isRuntimeMediaSrc(artwork) ||
+              artwork.includes("/business-email/") ||
+              artwork.endsWith(".webp")
+            }
+          />
+        </div>
       </div>
     );
   }
 
   return (
     <div
-      className="relative mx-auto aspect-[4/3] min-h-[300px] w-full overflow-hidden rounded-[24px] bg-white shadow-[0_20px_50px_-36px_rgba(47,28,106,0.25)]"
+      className="relative mx-auto aspect-[4/3] min-h-[300px] w-full overflow-hidden rounded-[24px] shadow-[0_20px_50px_-36px_rgba(47,28,106,0.25)]"
       style={{ maxWidth: `${maxWidth}px` }}
     >
       <Image
