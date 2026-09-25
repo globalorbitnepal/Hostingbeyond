@@ -5,9 +5,9 @@ import Image from "next/image";
 import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
 
 export type MigrationHeroVisualProps = {
-  /** Full hero artwork (Hostinger-style collage) — preferred. */
   compositeSrc: string;
   portraitSrc: string;
+  scalePercent?: number;
   overlayLine1: string;
   overlayLine2: string;
   chipWebsite: string;
@@ -17,39 +17,46 @@ export type MigrationHeroVisualProps = {
   progressRatio?: number;
 };
 
-const DEFAULT_COMPOSITE = "/images/migration/hero-composite.png";
+const DEFAULT_ART = "/images/migration/hero-custom.webp";
+const BASE_MAX_PX = 620;
 
-function usesGeneratedComposite(src: string) {
+function isPortraitOnly(src: string) {
   const s = src.trim();
-  if (!s) return true;
-  if (s.includes("hero-composite")) return true;
-  if (s.endsWith(".svg")) return false;
-  if (s.includes("/people/") || s.includes("p-woman")) return false;
-  return true;
+  return (
+    s.endsWith(".svg") || (s.includes("/people/") && !s.includes("/migration/"))
+  );
 }
 
 export function MigrationHeroVisual({
   compositeSrc,
   portraitSrc,
+  scalePercent = 130,
 }: MigrationHeroVisualProps) {
-  const artwork =
-    compositeSrc?.trim() || portraitSrc?.trim() || DEFAULT_COMPOSITE;
-  const compositeMode = usesGeneratedComposite(artwork);
+  const artwork = compositeSrc?.trim() || portraitSrc?.trim() || DEFAULT_ART;
+  const scale = Math.min(160, Math.max(80, scalePercent)) / 100;
+  const maxWidth = Math.round(BASE_MAX_PX * scale);
 
-  if (compositeMode) {
-    const src = artwork || DEFAULT_COMPOSITE;
+  if (!isPortraitOnly(artwork)) {
+    const src = artwork || DEFAULT_ART;
 
     return (
-      <div className="relative mx-auto w-full max-w-[640px] lg:w-[min(100%,620px)] lg:max-w-none">
+      <div
+        className="relative mx-auto w-full overflow-visible"
+        style={{ maxWidth: `${maxWidth}px` }}
+      >
         <Image
           src={src}
           alt=""
-          width={1280}
-          height={720}
+          width={1024}
+          height={576}
           priority
-          className="h-auto w-full"
-          sizes="(max-width: 1024px) 100vw, 620px"
-          unoptimized={isRuntimeMediaSrc(src) || src.includes("hero-composite")}
+          className="h-auto w-full border-0 bg-transparent shadow-none"
+          sizes={`(max-width: 1024px) 100vw, ${maxWidth}px`}
+          unoptimized={
+            isRuntimeMediaSrc(src) ||
+            src.includes("/migration/") ||
+            src.endsWith(".webp")
+          }
         />
       </div>
     );
@@ -59,12 +66,15 @@ export function MigrationHeroVisual({
     portraitSrc?.trim() || "/images/business-email/people/p-woman.jpg";
 
   return (
-    <div className="relative mx-auto aspect-[1.05/1] min-h-[320px] w-full max-w-[620px]">
+    <div
+      className="relative mx-auto aspect-[1.05/1] min-h-[320px] w-full overflow-visible"
+      style={{ maxWidth: `${maxWidth}px` }}
+    >
       <Image
         src={portrait}
         alt=""
         fill
-        className="rounded-[24px] object-cover"
+        className="object-cover"
         unoptimized={isRuntimeMediaSrc(portrait)}
       />
     </div>

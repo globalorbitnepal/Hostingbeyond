@@ -150,16 +150,27 @@ export function WebsiteMigrationPageEditor({
           </div>
           <div className="rounded-xl border border-violet-200 bg-violet-50/50 p-4 sm:col-span-2">
             <p className="text-[11px] leading-relaxed text-violet-900">
-              Upload a single right-column artwork (
-              {MIGRATION_FRAME_SPECS.heroComposite}) to match the Hostinger
-              migration hero. Default is pre-generated collage with model, MOVE
-              FORWARD, chips, and progress card.
+              Right column: upload full artwork (
+              {MIGRATION_FRAME_SPECS.heroComposite}). Shown edge-to-edge — no
+              frame/border on the live page.
             </p>
             <OrbitImageField
               label="Hero artwork (full right column)"
               value={value.heroImage}
               onChange={(heroImage) => patch({ heroImage })}
               onCommit={(heroImage) => patch({ heroImage }, true)}
+            />
+            <Field
+              label="Hero size (% — 130 = 30% larger than base)"
+              value={String(value.heroVisualScalePercent)}
+              onChange={(raw) => {
+                const n = Number.parseInt(raw, 10);
+                if (!Number.isNaN(n)) {
+                  patch({
+                    heroVisualScalePercent: Math.min(160, Math.max(80, n)),
+                  });
+                }
+              }}
             />
           </div>
         </div>
@@ -211,6 +222,22 @@ export function WebsiteMigrationPageEditor({
             value={value.monthlyToggleLabel}
             onChange={(v) => patch({ monthlyToggleLabel: v })}
           />
+          <label className="block text-xs font-semibold tracking-wide text-slate-500 uppercase">
+            Default billing
+            <select
+              value={value.defaultBilling}
+              onChange={(e) =>
+                patch({
+                  defaultBilling:
+                    e.target.value === "monthly" ? "monthly" : "annually",
+                })
+              }
+              className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-normal text-slate-900 outline-none"
+            >
+              <option value="annually">Annually</option>
+              <option value="monthly">Monthly</option>
+            </select>
+          </label>
         </div>
       ) : null}
 
@@ -251,6 +278,18 @@ export function WebsiteMigrationPageEditor({
                 }}
                 multiline
               />
+              <label className="mt-2 flex items-center gap-2 text-xs text-slate-600">
+                <input
+                  type="checkbox"
+                  checked={step.visible !== false}
+                  onChange={(e) => {
+                    const steps = [...value.steps];
+                    steps[index] = { ...step, visible: e.target.checked };
+                    patch({ steps });
+                  }}
+                />
+                Visible on page
+              </label>
             </div>
           ))}
         </div>
@@ -305,6 +344,18 @@ export function WebsiteMigrationPageEditor({
                   patch({ features });
                 }}
               />
+              <label className="mt-2 flex items-center gap-2 text-xs text-slate-600">
+                <input
+                  type="checkbox"
+                  checked={feat.visible !== false}
+                  onChange={(e) => {
+                    const features = [...value.features];
+                    features[index] = { ...feat, visible: e.target.checked };
+                    patch({ features });
+                  }}
+                />
+                Visible on page
+              </label>
             </div>
           ))}
         </div>
@@ -411,6 +462,18 @@ export function WebsiteMigrationPageEditor({
                 }}
                 multiline
               />
+              <label className="mt-2 flex items-center gap-2 text-xs text-slate-600">
+                <input
+                  type="checkbox"
+                  checked={faq.visible !== false}
+                  onChange={(e) => {
+                    const faqs = [...value.faqs];
+                    faqs[index] = { ...faq, visible: e.target.checked };
+                    patch({ faqs });
+                  }}
+                />
+                Visible on page
+              </label>
             </div>
           ))}
         </div>

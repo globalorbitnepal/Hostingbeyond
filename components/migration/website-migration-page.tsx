@@ -61,8 +61,8 @@ export function WebsiteMigrationPageView({
 
   return (
     <>
-      <section className="relative overflow-hidden bg-white">
-        <div className="hb-shell grid gap-8 py-10 lg:grid-cols-[minmax(0,520px)_1fr] lg:items-center lg:gap-4 lg:py-14 xl:gap-8 xl:py-16">
+      <section className="relative overflow-x-clip overflow-y-visible bg-white">
+        <div className="hb-shell grid gap-8 py-10 lg:grid-cols-[minmax(0,480px)_1fr] lg:items-center lg:gap-2 lg:py-14 xl:gap-6 xl:py-16">
           <motion.div
             initial={reduce ? false : { opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
@@ -124,11 +124,12 @@ export function WebsiteMigrationPageView({
           <motion.div
             initial={reduce ? false : { opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="relative w-full lg:justify-self-end"
+            className="relative w-full overflow-visible lg:justify-self-end lg:pl-2"
           >
             <MigrationHeroVisual
               compositeSrc={page.heroImage}
               portraitSrc={page.heroImage}
+              scalePercent={page.heroVisualScalePercent}
               overlayLine1={page.heroOverlayLine1}
               overlayLine2={page.heroOverlayLine2}
               chipWebsite={page.heroChipWebsite}

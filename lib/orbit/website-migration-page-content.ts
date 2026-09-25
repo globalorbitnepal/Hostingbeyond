@@ -38,6 +38,8 @@ export type CmsWebsiteMigrationPageContent = {
   heroChipForm: string;
   heroProgressTitle: string;
   heroProgressValue: string;
+  /** Display width scale for right-column hero art (100 = base, 130 = +30%). */
+  heroVisualScalePercent: number;
 
   pricingEyebrow: string;
   pricingTitle: string;
@@ -117,7 +119,8 @@ export function defaultWebsiteMigrationPageContent(): CmsWebsiteMigrationPageCon
     heroPrimaryLabel: "Migrate for free",
     heroPrimaryHref: "#plans",
     heroGuarantee: "30-day money-back guarantee",
-    heroImage: "/images/migration/hero-composite.png",
+    heroImage: "/images/migration/hero-custom.webp",
+    heroVisualScalePercent: 130,
     heroOverlayLine1: "MOVE",
     heroOverlayLine2: "FORWARD",
     heroChipWebsite: "Website link",
@@ -306,9 +309,16 @@ export function mergeWebsiteMigrationPageContent(
       const legacy = [
         "/images/business-email/people/p-woman.jpg",
         "/images/migration/frames/hero-migration.svg",
+        "/images/migration/hero-composite.png",
       ];
       return legacy.includes(raw) ? defaults.heroImage : raw;
     })(),
+    heroVisualScalePercent:
+      typeof stored.heroVisualScalePercent === "number" &&
+      stored.heroVisualScalePercent >= 80 &&
+      stored.heroVisualScalePercent <= 160
+        ? Math.round(stored.heroVisualScalePercent)
+        : defaults.heroVisualScalePercent,
     heroOverlayLine1: text(stored.heroOverlayLine1, defaults.heroOverlayLine1),
     heroOverlayLine2: text(stored.heroOverlayLine2, defaults.heroOverlayLine2),
     heroChipWebsite: text(stored.heroChipWebsite, defaults.heroChipWebsite),
