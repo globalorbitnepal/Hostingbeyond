@@ -635,6 +635,7 @@ export async function saveDomainContent(content: DomainContent) {
   revalidateContent();
   revalidatePath(routes.domainSearch);
   revalidatePath(routes.bulkDomainSearch);
+  revalidatePath(routes.domainTransfer);
   revalidatePath("/orbit/domains");
   return row;
 }

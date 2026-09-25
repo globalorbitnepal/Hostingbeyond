@@ -1,7 +1,7 @@
 import { TLD_PRICES, type TldCategory } from "@/lib/domains/tlds";
 
 /**
- * Editable content for /domain-name-search and /bulk-domain-search.
+ * Editable content for /domain-name-search, /bulk-domain-search, and /domain-transfer.
  * Everything the visitor reads — copy, prices, images, FAQs — lives here so
  * Orbit can edit it without a deploy.
  */
@@ -162,6 +162,7 @@ export type DomainContent = {
   shared: DomainSharedContent;
   single: DomainPageCopy;
   bulk: DomainPageCopy;
+  transfer: DomainPageCopy;
 };
 
 export function defaultDomainContent(): DomainContent {
@@ -705,6 +706,108 @@ export function defaultDomainContent(): DomainContent {
       crossLinkHelper:
         "Clear the whole shortlist now, then register the winners in one order. Checking just one idea? Use the single domain search.",
     },
+    transfer: {
+      seoTitle: "Transfer Your Domain — Move to HostingBeyond",
+      seoDescription:
+        "Transfer your domain to HostingBeyond with transparent pricing, free DNS, WHOIS privacy on eligible TLDs, and 24/7 support. Check transfer eligibility and start your move in minutes.",
+      seoKeywords:
+        "domain transfer, transfer domain, EPP code, auth code, move domain registrar, transfer .com domain",
+      ogTitle: "Transfer Your Domain to HostingBeyond",
+      ogDescription:
+        "Unlock, paste your auth code, and move your domain — pricing and renewals shown upfront.",
+      ogImage: "/images/domains/transfer.jpg",
+      eyebrow: "Transfer & migration",
+      title: "Transfer your domain",
+      titleAccent: "to HostingBeyond",
+      description:
+        "Move a name you already own — extend registration on most TLDs, manage DNS and hosting in one panel, and get help with auth codes 24/7.",
+      stats: [
+        {
+          id: "time",
+          visible: true,
+          order: 0,
+          value: "5–7 days",
+          label: "Typical transfer",
+        },
+        {
+          id: "extensions",
+          visible: true,
+          order: 1,
+          value: "300+",
+          label: "Extensions",
+        },
+        {
+          id: "support",
+          visible: true,
+          order: 2,
+          value: "24/7",
+          label: "Transfer help",
+        },
+      ],
+      pricingHeading: "Transfer-in pricing with renewals published",
+      pricingCopy:
+        "Every row shows the transfer fee (usually includes one extra year) and the standard renewal so you know the real cost of owning the name here.",
+      faqEyebrow: "Transfer basics",
+      faqHeading: "What to know before you transfer a domain",
+      faqDescription: "Auth codes, downtime, and how hosting and email fit in.",
+      faqAccordionEyebrow: "Domain transfer FAQs",
+      faqAccordionHeading: "Common transfer questions",
+      faqAccordionDescription:
+        "Timing, EPP codes, email, and what happens if a transfer fails.",
+      faqs: [
+        {
+          id: "time",
+          visible: true,
+          order: 0,
+          question: "How long does a domain transfer take?",
+          answer:
+            "Most gTLD transfers finish within 5–7 days after you approve the transfer email from the registry. Some country-code extensions take longer.",
+        },
+        {
+          id: "downtime",
+          visible: true,
+          order: 1,
+          question: "Will my website go offline?",
+          answer:
+            "Transferring the domain does not change DNS by itself. Your site and mail keep working until you point nameservers or records to HostingBeyond.",
+        },
+        {
+          id: "auth",
+          visible: true,
+          order: 2,
+          question: "What is an authorization (EPP) code?",
+          answer:
+            "It is a password from your current registrar proving you own the domain. Unlock the name there, copy the code, and paste it at checkout.",
+        },
+        {
+          id: "year",
+          visible: true,
+          order: 3,
+          question: "Do I get an extra year of registration?",
+          answer:
+            "On most extensions, the transfer fee adds one year to your expiry date. Your cart shows the new expiry before you pay.",
+        },
+        {
+          id: "email",
+          visible: true,
+          order: 4,
+          question: "What happens to email on my domain?",
+          answer:
+            "MX records stay wherever they point today until you change DNS. Plan MX updates if you move to HostingBeyond business email.",
+        },
+        {
+          id: "fail",
+          visible: true,
+          order: 5,
+          question: "Why would a transfer fail?",
+          answer:
+            "Wrong auth code, registrar lock, or a domain inside the 60-day ICANN transfer window are the usual causes. Support can read the registry message and tell you the fix.",
+        },
+      ],
+      crossLinkLabel: "Search a new domain",
+      crossLinkHelper:
+        "Transferring an existing name? Finish checkout after the check above. Need a fresh registration instead? Search availability in one click.",
+    },
   };
 }
 
@@ -941,6 +1044,7 @@ export function mergeDomainContent(
     },
     single: mergePageCopy(stored.single, defaults.single),
     bulk: mergePageCopy(stored.bulk, defaults.bulk),
+    transfer: mergePageCopy(stored.transfer, defaults.transfer),
   };
 }
 

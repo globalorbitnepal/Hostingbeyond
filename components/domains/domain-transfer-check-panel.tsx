@@ -13,10 +13,10 @@ import {
 
 import { routes } from "@/config/routes";
 import type { TransferCheckResult } from "@/lib/domains/transfer";
-import { formatPrice } from "@/lib/domains/tlds";
+import { SUGGESTED_TLDS, formatPrice } from "@/lib/domains/tlds";
 import { cn } from "@/lib/utils";
 
-const MODE_LINKS = [
+const MODE_TABS = [
   {
     id: "search",
     label: "Search a domain",
@@ -38,17 +38,22 @@ const MODE_LINKS = [
   },
 ] as const;
 
+const QUICK_TLDS = SUGGESTED_TLDS.slice(0, 6);
+
 type Props = {
-  searchPlaceholder: string;
-  authPlaceholder: string;
+  layout?: "hero" | "default";
   initialDomain?: string;
+  searchPlaceholder?: string;
+  authPlaceholder?: string;
 };
 
 export function DomainTransferCheckPanel({
-  searchPlaceholder,
-  authPlaceholder,
+  layout = "hero",
   initialDomain = "",
+  searchPlaceholder = "Enter domain to transfer — yourbrand.com",
+  authPlaceholder = "Auth / EPP code (optional)",
 }: Props) {
+  const hero = layout === "hero";
   const [domain, setDomain] = useState(initialDomain);
   const [authCode, setAuthCode] = useState("");
   const [loading, setLoading] = useState(false);
@@ -83,6 +88,7 @@ export function DomainTransferCheckPanel({
   }, []);
 
   useEffect(() => {
+    setDomain(initialDomain);
     if (initialDomain.trim()) void run(initialDomain.trim(), "");
   }, [initialDomain, run]);
 
@@ -98,13 +104,16 @@ export function DomainTransferCheckPanel({
   return (
     <div
       id="transfer-check"
-      className="rounded-[28px] border border-white/70 bg-white p-5 shadow-[0_34px_80px_-34px_rgba(15,10,40,0.55)] ring-1 ring-black/[0.03] sm:rounded-[32px] sm:p-7"
+      className={cn(
+        "rounded-[28px] border border-white/70 bg-white shadow-[0_34px_80px_-34px_rgba(15,10,40,0.6)] ring-1 ring-black/[0.03]",
+        hero ? "p-5 sm:rounded-[32px] sm:p-7" : "p-4 sm:rounded-[32px] sm:p-6",
+      )}
     >
       <nav
         aria-label="Domain tools"
-        className="flex w-full gap-1 overflow-x-auto rounded-full bg-[#f3f1ff] p-1"
+        className="flex w-full gap-1 rounded-full bg-[#f3f1ff] p-1"
       >
-        {MODE_LINKS.map((tab) => {
+        {MODE_TABS.map((tab) => {
           const Icon = tab.icon;
           const active = "current" in tab && tab.current;
           return (
@@ -113,69 +122,117 @@ export function DomainTransferCheckPanel({
               href={tab.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "inline-flex h-11 min-w-[120px] flex-1 items-center justify-center gap-2 rounded-full px-3 text-[12.5px] font-bold whitespace-nowrap transition sm:text-[13px]",
+                "inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full text-[13px] font-bold transition sm:text-[14px]",
                 active
                   ? "bg-white text-[#2f1c6a] shadow-[0_6px_16px_-8px_rgba(47,28,106,0.5)]"
                   : "text-slate-500 hover:text-[#2f1c6a]",
               )}
             >
-              <Icon className="size-4 shrink-0" />
+              <Icon className="size-4" />
               {tab.label}
             </Link>
           );
         })}
       </nav>
 
-      <form onSubmit={onSubmit} className="mt-5 space-y-3">
-        <label className="block">
-          <span className="sr-only">Domain to transfer</span>
-          <div className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-2.5 focus-within:border-[#673de6] focus-within:ring-4 focus-within:ring-[#673de6]/10 sm:flex-row sm:items-center">
-            <div className="flex min-w-0 flex-1 items-center gap-2 px-2">
-              <ArrowLeftRight className="size-5 shrink-0 text-[#673de6]" />
-              <input
-                type="text"
-                inputMode="url"
-                autoComplete="off"
-                value={domain}
-                onChange={(e) => setDomain(e.target.value)}
-                placeholder={searchPlaceholder}
-                className="min-w-0 flex-1 bg-transparent text-[16px] font-medium text-[#1a1035] outline-none placeholder:text-slate-400"
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-[#673de6] px-6 text-[15px] font-bold text-white hover:bg-[#5c35d4] disabled:opacity-70"
-            >
-              {loading ? (
-                <Loader2 className="size-5 animate-spin" aria-hidden />
-              ) : (
-                <>
-                  Check transfer
-                  <ArrowRight className="size-4" aria-hidden />
-                </>
-              )}
-            </button>
-          </div>
+      <form onSubmit={onSubmit} className="mt-4 space-y-3">
+        <label htmlFor="domain-transfer-name" className="sr-only">
+          Domain to transfer
         </label>
+        <div
+          className={cn(
+            "flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-2 transition focus-within:border-[#673de6] focus-within:ring-4 focus-within:ring-[#673de6]/10 sm:flex-row sm:items-center",
+            hero && "rounded-[18px] p-2.5 sm:p-3",
+          )}
+        >
+          <div className="flex min-w-0 flex-1 items-center gap-2 px-2">
+            <ArrowLeftRight
+              className={cn(
+                "shrink-0 text-[#673de6]",
+                hero ? "size-5 sm:size-6" : "size-5",
+              )}
+            />
+            <input
+              id="domain-transfer-name"
+              type="text"
+              inputMode="url"
+              autoComplete="off"
+              value={domain}
+              onChange={(e) => setDomain(e.target.value)}
+              placeholder={searchPlaceholder}
+              className={cn(
+                "min-w-0 flex-1 bg-transparent font-medium text-[#1a1035] outline-none placeholder:text-slate-400",
+                hero
+                  ? "py-3.5 text-[16px] sm:py-4 sm:text-[18px]"
+                  : "py-3 text-[15px] sm:text-[16px]",
+              )}
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className={cn(
+              "inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#2563eb] to-[#673de6] font-bold text-white shadow-[0_12px_26px_-14px_rgba(37,99,235,0.9)] transition hover:brightness-110 disabled:opacity-70",
+              hero
+                ? "h-12 px-7 text-[14px] sm:h-14 sm:px-8 sm:text-[15px]"
+                : "h-12 px-6 text-[14px]",
+            )}
+          >
+            {loading ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <>
+                <ArrowLeftRight className="size-4" />
+                Check transfer
+              </>
+            )}
+          </button>
+        </div>
 
-        <label className="block">
-          <span className="mb-1.5 block text-[11px] font-bold tracking-wide text-slate-500 uppercase">
+        <div>
+          <label
+            htmlFor="domain-transfer-auth"
+            className="text-[12px] font-bold tracking-wide text-slate-500 uppercase"
+          >
             Authorization code
-          </span>
+          </label>
           <input
+            id="domain-transfer-auth"
             type="text"
             autoComplete="off"
             value={authCode}
             onChange={(e) => setAuthCode(e.target.value)}
             placeholder={authPlaceholder}
-            className="w-full rounded-xl border border-slate-200 px-4 py-3 text-[14px] font-medium text-[#1a1035] outline-none focus:border-[#673de6] focus:ring-4 focus:ring-[#673de6]/10"
+            className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-[14px] font-medium text-[#1a1035] outline-none focus:border-[#673de6] focus:ring-4 focus:ring-[#673de6]/10"
           />
-        </label>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-[12px] font-bold text-slate-500">Try:</span>
+          {QUICK_TLDS.map((tld) => (
+            <button
+              key={tld}
+              type="button"
+              onClick={() => {
+                const base = domain.split(".")[0]?.trim();
+                if (!base) {
+                  setError("Type a name first, then pick an extension.");
+                  return;
+                }
+                const next = `${base}${tld}`;
+                setDomain(next);
+                void run(next, authCode);
+              }}
+              className="rounded-full border border-slate-200 px-2.5 py-1 text-[12px] font-bold text-[#4c1d95] transition hover:border-[#c7b8ff] hover:bg-[#f7f4ff]"
+            >
+              {tld}
+            </button>
+          ))}
+        </div>
       </form>
 
       {error ? (
-        <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-[13px] font-medium text-red-800">
+        <p className="mt-3 rounded-xl bg-red-50 px-4 py-3 text-[13px] font-medium text-red-800">
           {error}
         </p>
       ) : null}
@@ -185,14 +242,14 @@ export function DomainTransferCheckPanel({
           className={cn(
             "mt-4 rounded-2xl border p-4 sm:p-5",
             result.eligible
-              ? "border-emerald-200 bg-emerald-50/80"
+              ? "border-emerald-200 bg-emerald-50/90"
               : result.status === "available"
-                ? "border-amber-200 bg-amber-50/80"
+                ? "border-amber-200 bg-amber-50/90"
                 : "border-slate-200 bg-slate-50",
           )}
         >
           <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
+            <div className="text-left">
               <p className="text-[11px] font-extrabold tracking-wide text-slate-500 uppercase">
                 {result.domain}
               </p>
@@ -219,9 +276,10 @@ export function DomainTransferCheckPanel({
             {result.eligible ? (
               <Link
                 href={result.checkoutHref}
-                className="inline-flex h-11 items-center rounded-xl bg-[#673de6] px-5 text-[14px] font-bold text-white hover:bg-[#5c35d4]"
+                className="inline-flex h-11 items-center gap-2 rounded-xl bg-[#673de6] px-5 text-[14px] font-bold text-white hover:bg-[#5c35d4]"
               >
                 Continue to checkout
+                <ArrowRight className="size-4" />
               </Link>
             ) : result.status === "available" ? (
               <Link
@@ -238,12 +296,6 @@ export function DomainTransferCheckPanel({
                 Contact support
               </Link>
             )}
-            <Link
-              href={routes.domainSearch}
-              className="inline-flex h-11 items-center rounded-xl px-4 text-[14px] font-bold text-[#673de6] hover:underline"
-            >
-              Search another name
-            </Link>
           </div>
         </div>
       ) : null}

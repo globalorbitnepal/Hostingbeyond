@@ -3,6 +3,7 @@
 import { type FormEvent, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
+  ArrowLeftRight,
   ArrowRight,
   BadgeCheck,
   Check,
@@ -25,7 +26,7 @@ const QUICK_TLDS = SUGGESTED_TLDS.slice(0, 6);
 const BULK_LIMIT = 50;
 
 const MODE_TABS: Array<{
-  id: SearchMode;
+  id: SearchMode | "transfer";
   label: string;
   href: string;
   icon: typeof Search;
@@ -41,6 +42,12 @@ const MODE_TABS: Array<{
     label: "Bulk search",
     href: routes.bulkDomainSearch,
     icon: Layers,
+  },
+  {
+    id: "transfer",
+    label: "Transfer in",
+    href: routes.domainTransfer,
+    icon: ArrowLeftRight,
   },
 ];
 
@@ -272,7 +279,7 @@ export function DomainSearchPanel({
       >
         {MODE_TABS.map((tab) => {
           const Icon = tab.icon;
-          const active = mode === tab.id;
+          const active = tab.id === "transfer" ? false : mode === tab.id;
           return (
             <Link
               key={tab.id}

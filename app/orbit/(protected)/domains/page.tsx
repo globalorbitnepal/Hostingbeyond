@@ -30,7 +30,7 @@ import {
 } from "@/lib/domains/frame-specs";
 import type { TldCategory } from "@/lib/domains/tlds";
 
-type PageKey = "single" | "bulk";
+type PageKey = "single" | "bulk" | "transfer";
 type Tab = PageKey | "shared";
 
 const TABS: Array<{ id: Tab; label: string; hint: string }> = [
@@ -44,7 +44,12 @@ const TABS: Array<{ id: Tab; label: string; hint: string }> = [
     label: "Bulk domain search",
     hint: routes.bulkDomainSearch,
   },
-  { id: "shared", label: "Shared blocks", hint: "Used by both pages" },
+  {
+    id: "transfer",
+    label: "Domain transfer",
+    hint: routes.domainTransfer,
+  },
+  { id: "shared", label: "Shared blocks", hint: "All three domain pages" },
 ];
 
 const CATEGORIES: TldCategory[] = [
@@ -171,7 +176,8 @@ export default function OrbitDomainsPage() {
     if (persist) void save(merged);
   }
 
-  const pageKey: PageKey = tab === "bulk" ? "bulk" : "single";
+  const pageKey: PageKey =
+    tab === "bulk" ? "bulk" : tab === "transfer" ? "transfer" : "single";
   const page = content[pageKey];
   const shared = content.shared;
 
@@ -183,8 +189,9 @@ export default function OrbitDomainsPage() {
             Domain search pages
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Every text, price and image on the two domain pages. Image uploads
-            save instantly; text saves when you leave a field or press Save.
+            Every text, price and image on the domain search, bulk, and transfer
+            pages. Image uploads save instantly; text saves when you leave a
+            field or press Save.
           </p>
         </div>
         <div className="flex items-center gap-3">

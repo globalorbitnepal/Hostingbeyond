@@ -1,56 +1,49 @@
 import type { Metadata } from "next";
 
-import { DomainTransferPageView } from "@/components/domains/domain-transfer-page";
+import { DomainTransferView } from "@/components/domains/domain-transfer-view";
 import { SiteFooter, SiteHeader } from "@/components/layout";
 import { routes } from "@/config/routes";
-import { visiblePricing } from "@/lib/domains/content";
-import { buildDomainSchema } from "@/lib/domains/seo";
 import {
-  buildPublicPageMetadata,
   getDomainContent,
-  getDomainTransferPageContent,
   getHomeSections,
   getSiteSettings,
 } from "@/lib/orbit/content";
+import { buildDomainPageMetadata } from "@/lib/domains/page-metadata";
+import { buildDomainSchema } from "@/lib/domains/seo";
 
-export const dynamic = "force-dynamic";
-
-type PageProps = {
-  searchParams: Promise<{ domain?: string }>;
-};
+const PATH = routes.domainTransfer;
 
 export async function generateMetadata(): Promise<Metadata> {
-  return buildPublicPageMetadata("domain-transfer", routes.domainTransfer, {
-    title: "Transfer Your Domain — Move to HostingBeyond",
-    description:
-      "Transfer your domain to HostingBeyond with clear pricing, DNS management, WHOIS privacy on eligible TLDs, and 24/7 support. Check eligibility and start your move in minutes.",
-    image: "/images/domains/transfer.jpg",
-  });
+  const { transfer } = await getDomainContent();
+  return buildDomainPageMetadata(transfer, PATH);
 }
+
+type PageProps = {
+  searchParams: Promise<{ domain?: string | string[] }>;
+};
 
 export default async function DomainTransferPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const initialDomain = params.domain?.trim() ?? "";
+  const raw = Array.isArray(params.domain) ? params.domain[0] : params.domain;
+  const initialDomain = (raw ?? "").slice(0, 80);
 
-  const [sections, settings, page, domainContent] = await Promise.all([
+  const [sections, settings, content] = await Promise.all([
     getHomeSections(),
     getSiteSettings(),
-    getDomainTransferPageContent(),
     getDomainContent(),
   ]);
 
-  const prices = visiblePricing(domainContent);
-  const faqs = page.faqs
-    .filter((f) => f.visible !== false)
-    .map((f) => ({ question: f.question, answer: f.answer }));
+  const page = content.transfer;
 
   const schema = buildDomainSchema({
-    name: "Transfer your domain to HostingBeyond",
-    description: page.heroDescription,
-    path: routes.domainTransfer,
-    breadcrumb: "Domain transfer",
-    faqs,
-    prices,
+    name: page.title,
+    description: page.seoDescription,
+    path: PATH,
+    breadcrumb: page.title,
+    faqs: page.faqs
+      .filter((item) => item.visible !== false)
+      .map((item) => ({ question: item.question, answer: item.answer })),
+    prices: content.shared.pricing,
   });
 
   return (
@@ -59,7 +52,8 @@ export default async function DomainTransferPage({ searchParams }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
-      <div className="hb-band-purple">
+
+      <div className="hb-band-purple relative">
         <SiteHeader
           navigation={sections.navigation}
           loginLabel={settings.loginLabel}
@@ -68,12 +62,15 @@ export default async function DomainTransferPage({ searchParams }: PageProps) {
           getStartedHref={settings.getStartedHref}
           logoPath={settings.logoPath}
         />
+
+        <DomainTransferView
+          initialDomain={initialDomain}
+          content={content}
+          page={page}
+          crossLinkHref={routes.domainSearch}
+        />
       </div>
-      <DomainTransferPageView
-        page={page}
-        prices={prices}
-        initialDomain={initialDomain}
-      />
+
       {sections.footer?.visible !== false ? (
         <SiteFooter content={sections.footer} logoPath={settings.logoPath} />
       ) : null}
