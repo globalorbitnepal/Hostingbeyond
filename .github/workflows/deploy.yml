@@ -202,8 +202,21 @@ jobs:
           echo "==> Typecheck"
           npm run typecheck </dev/null
 
-          echo "==> Building production bundle"
-          npm run build </dev/null
+          echo "==> Building production bundle (retry on Google font fetch flakes)"
+          BUILD_OK=0
+          for attempt in 1 2 3 4 5; do
+            echo "Build attempt ${attempt}/5"
+            if npm run build </dev/null; then
+              BUILD_OK=1
+              break
+            fi
+            echo "Build failed; waiting 20s before retry..."
+            sleep 20
+          done
+          if [ "$BUILD_OK" != "1" ]; then
+            echo "BUILD_FAIL: npm run build failed after 5 attempts"
+            exit 1
+          fi
 
           echo "==> Allowing the runtime user to write the Next cache"
           mkdir -p .next/cache/images .next/cache/fetch-cache
@@ -215,8 +228,16 @@ jobs:
           /usr/local/sbin/hostingbeyond-ctl status
 
           echo "==> Verifying process owner hostingbeyond"
-          if ! pgrep -u hostingbeyond -a node >/dev/null 2>&1; then
-            echo "PROCESS_USER_FAIL: no node process owned by hostingbeyond"
+          PROCESS_OK=0
+          for _i in $(seq 1 45); do
+            if pgrep -u hostingbeyond -a node >/dev/null 2>&1; then
+              PROCESS_OK=1
+              break
+            fi
+            sleep 1
+          done
+          if [ "$PROCESS_OK" != "1" ]; then
+            echo "PROCESS_USER_FAIL: no node process owned by hostingbeyond after wait"
             exit 1
           fi
 
