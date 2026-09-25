@@ -28,6 +28,11 @@ import {
   type CmsBeyondAiPageContent,
 } from "@/lib/orbit/beyond-ai-page-content";
 import {
+  defaultBusinessEmailPageContent,
+  mergeBusinessEmailPageContent,
+  type CmsBusinessEmailPageContent,
+} from "@/lib/orbit/business-email-page-content";
+import {
   defaultPricingPageContent,
   mergePricingPageContent,
   type CmsPricingPageContent,
@@ -47,6 +52,7 @@ const CMS_TAG = "orbit-content";
 const DOMAIN_SLUG = "domain-search";
 const PRICING_SLUG = "pricing";
 const BEYOND_AI_PAGE_SLUG = "beyond-ai-product";
+const BUSINESS_EMAIL_PAGE_SLUG = "business-email-product";
 /** Safety net so a bad cache entry can never outlive a few minutes. */
 const CMS_REVALIDATE = 300;
 
@@ -249,6 +255,56 @@ export const getBeyondAiPageContent = cache(
   },
 );
 
+const readBusinessEmailPageContent = nextCache(
+  async (): Promise<CmsBusinessEmailPageContent> => {
+    const page = await prisma.pageContent.findUnique({
+      where: { slug: BUSINESS_EMAIL_PAGE_SLUG },
+    });
+    if (!page) return defaultBusinessEmailPageContent();
+    return mergeBusinessEmailPageContent(
+      page.sections as Partial<CmsBusinessEmailPageContent>,
+    );
+  },
+  ["orbit-business-email-page-content"],
+  { tags: [CMS_TAG], revalidate: CMS_REVALIDATE },
+);
+
+export const getBusinessEmailPageContent = cache(
+  async (): Promise<CmsBusinessEmailPageContent> => {
+    try {
+      return await readBusinessEmailPageContent();
+    } catch {
+      return defaultBusinessEmailPageContent();
+    }
+  },
+);
+
+export async function saveBusinessEmailPageContent(
+  content: CmsBusinessEmailPageContent,
+) {
+  const normalized = mergeBusinessEmailPageContent(content);
+  const row = await prisma.pageContent.upsert({
+    where: { slug: BUSINESS_EMAIL_PAGE_SLUG },
+    create: {
+      slug: BUSINESS_EMAIL_PAGE_SLUG,
+      title: "Business Email product",
+      isPublished: true,
+      isVisible: true,
+      sections: normalized,
+      seo: {
+        title: "Business Email — HostingBeyond",
+        description:
+          "Professional business email on your domain with AI, migration, and 24/7 support.",
+      },
+    },
+    update: { sections: normalized },
+  });
+  revalidateContent();
+  revalidatePath(routes.businessEmail);
+  revalidatePath("/orbit/business-email");
+  return row;
+}
+
 export async function saveBeyondAiPageContent(content: CmsBeyondAiPageContent) {
   const normalized = mergeBeyondAiPageContent(content);
   const row = await prisma.pageContent.upsert({
@@ -408,6 +464,12 @@ export async function ensureHomeSeeded() {
     });
     if (!beyondAiPage) {
       await saveBeyondAiPageContent(defaultBeyondAiPageContent());
+    }
+    const businessEmailPage = await prisma.pageContent.findUnique({
+      where: { slug: BUSINESS_EMAIL_PAGE_SLUG },
+    });
+    if (!businessEmailPage) {
+      await saveBusinessEmailPageContent(defaultBusinessEmailPageContent());
     }
   } catch {
     /* DB may be unavailable during local UI work */

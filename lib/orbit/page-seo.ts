@@ -54,7 +54,7 @@ export const PUBLIC_PAGE_SEO_REGISTRY: PublicPageSeoEntry[] = [
     slug: "business-email",
     label: "Business email",
     path: "/business-email",
-    editorHref: "/orbit/content",
+    editorHref: "/orbit/business-email",
   },
   {
     slug: "get-started",

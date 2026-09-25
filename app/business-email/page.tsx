@@ -4,6 +4,7 @@ import { BusinessEmailPageView } from "@/components/business-email/business-emai
 import { SiteFooter, SiteHeader } from "@/components/layout";
 import {
   buildPublicPageMetadata,
+  getBusinessEmailPageContent,
   getHomeSections,
   getSiteSettings,
 } from "@/lib/orbit/content";
@@ -18,9 +19,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function BusinessEmailPage() {
-  const [sections, settings] = await Promise.all([
+  const [sections, settings, pageContent] = await Promise.all([
     getHomeSections(),
     getSiteSettings(),
+    getBusinessEmailPageContent(),
   ]);
 
   return (
@@ -35,7 +37,7 @@ export default async function BusinessEmailPage() {
           logoPath={settings.logoPath}
         />
       </div>
-      <BusinessEmailPageView />
+      <BusinessEmailPageView content={pageContent} />
       {sections.footer?.visible !== false ? (
         <SiteFooter content={sections.footer} logoPath={settings.logoPath} />
       ) : null}
