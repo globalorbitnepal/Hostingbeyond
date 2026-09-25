@@ -45,6 +45,12 @@ export const PUBLIC_PAGE_SEO_REGISTRY: PublicPageSeoEntry[] = [
     editorHref: "/orbit/pricing",
   },
   {
+    slug: "hosting",
+    label: "Web hosting",
+    path: "/hosting",
+    editorHref: "/orbit/hosting",
+  },
+  {
     slug: "beyond-ai",
     label: "Beyond AI",
     path: "/beyond-ai",

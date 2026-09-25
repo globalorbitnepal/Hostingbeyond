@@ -1030,7 +1030,7 @@ function defaultHostingPlans(): CmsHostingPlan[] {
   ];
 }
 
-function defaultHostingPlansSection(): CmsHostingPlansContent {
+export function defaultHostingPlansSection(): CmsHostingPlansContent {
   return {
     visible: true,
     eyebrow: "Web Hosting Plans",
