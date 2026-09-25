@@ -19,6 +19,7 @@ import {
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 import { BusinessEmailHeroVisual } from "@/components/business-email/business-email-hero-visual";
+import { MailWorkspace } from "@/components/business-email/mail-workspace";
 import { routes } from "@/config/routes";
 import type {
   CmsBusinessEmailPageContent,
@@ -59,66 +60,50 @@ export function BusinessEmailPageView({
 
   return (
     <>
-      <section className="relative overflow-x-clip overflow-y-visible bg-white">
-        <div className="hb-shell grid gap-8 py-10 lg:grid-cols-[minmax(0,480px)_1fr] lg:items-center lg:gap-2 lg:py-14 xl:gap-6 xl:py-16">
+      <section className="hb-band-purple relative overflow-hidden text-white">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_20%_0%,rgba(103,61,230,0.28),transparent_42%),radial-gradient(ellipse_at_90%_40%,rgba(37,99,235,0.18),transparent_40%)]"
+        />
+        <div className="hb-shell relative grid items-center gap-10 py-12 lg:grid-cols-[0.92fr_1.08fr] lg:gap-8 lg:py-16">
           <motion.div
-            initial={reduce ? false : { opacity: 0, y: 14 }}
+            initial={reduce ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            className="max-w-[520px] lg:pr-2 xl:pr-6"
           >
-            <p className="text-[12px] font-bold tracking-[0.22em] text-[#673de6] uppercase">
+            <p className="text-[13px] font-bold tracking-wide text-[#c4b5fd]">
               {content.heroEyebrow}
             </p>
-            <h1 className="font-heading mt-4 text-[clamp(2.25rem,4.2vw,3.25rem)] leading-[1.14] font-bold tracking-[-0.02em] text-[#1a1a1a]">
+            <h1 className="font-heading mt-3 text-[clamp(2.4rem,5.4vw,4.4rem)] leading-[1.02] font-extrabold tracking-[-0.05em]">
               {content.heroTitle}
             </h1>
-            <ul className="mt-7 space-y-[18px]">
-              <li className="flex gap-3 text-[17px] leading-[1.45] text-[#2f2f2f]">
-                <Check
-                  className="mt-1 size-[18px] shrink-0 text-[#00b090]"
-                  strokeWidth={3}
-                  aria-hidden
-                />
+            <ul className="mt-6 space-y-2 text-[15px] text-white/80">
+              <li className="flex items-center gap-2">
+                <Check className="size-4 text-emerald-400" />
                 {content.heroBullet1}
               </li>
-              <li className="flex gap-3 text-[17px] leading-[1.45] text-[#2f2f2f]">
-                <Check
-                  className="mt-1 size-[18px] shrink-0 text-[#00b090]"
-                  strokeWidth={3}
-                  aria-hidden
-                />
+              <li className="flex items-center gap-2">
+                <Check className="size-4 text-emerald-400" />
                 {content.heroBullet2}
               </li>
             </ul>
-            <div className="mt-10">
-              <Link
-                href={content.heroCtaHref}
-                className="inline-flex h-[54px] min-w-[220px] items-center justify-center rounded-[10px] bg-[#673de6] px-10 text-[17px] font-bold text-white hover:bg-[#5c35d4]"
-              >
-                {content.heroCtaLabel}
-              </Link>
-              {content.heroGuarantee ? (
-                <p className="mt-5 flex items-center gap-2.5 text-[15px] font-normal text-[#6b6b6b]">
-                  <Shield
-                    className="size-5 text-[#9ca3af]"
-                    strokeWidth={1.75}
-                    aria-hidden
-                  />
-                  {content.heroGuarantee}
-                </p>
-              ) : null}
-            </div>
+            <Link
+              href={content.heroCtaHref}
+              className="mt-7 inline-flex h-12 items-center rounded-md bg-[#673de6] px-6 text-[15px] font-bold text-white shadow-[0_12px_30px_rgba(103,61,230,0.45)]"
+            >
+              {content.heroCtaLabel}
+            </Link>
+            <p className="mt-4 flex items-center gap-2 text-[13px] text-white/55">
+              <Shield className="size-4" />
+              {content.heroGuarantee}
+            </p>
           </motion.div>
           <motion.div
-            initial={reduce ? false : { opacity: 0, x: 20 }}
+            initial={reduce ? false : { opacity: 0, x: 24 }}
             animate={{ opacity: 1, x: 0 }}
-            className="relative w-full overflow-visible lg:justify-self-end lg:pl-2"
+            transition={{ duration: 0.55 }}
+            className="relative"
           >
-            <BusinessEmailHeroVisual
-              src={content.heroImage}
-              scalePercent={content.heroVisualScalePercent}
-              onDarkBackground={false}
-            />
+            <MailWorkspace />
           </motion.div>
         </div>
       </section>
@@ -186,69 +171,23 @@ export function BusinessEmailPageView({
                 </AnimatePresence>
               </div>
 
-              <div className="relative min-h-[380px]">
+              <div className="relative min-h-[320px] overflow-visible lg:justify-self-end">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={active.image}
-                    initial={{ opacity: 0, x: 30 }}
+                    initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.45 }}
-                    className="overflow-hidden rounded-[28px]"
+                    exit={{ opacity: 0, x: -12 }}
+                    transition={{ duration: 0.4 }}
+                    className="relative w-full overflow-visible"
                   >
-                    <Image
+                    <BusinessEmailHeroVisual
                       src={active.image}
-                      alt={active.imageAlt}
-                      width={1400}
-                      height={933}
-                      className="h-[420px] w-full object-cover"
+                      scalePercent={content.impressionVisualScalePercent}
+                      onDarkBackground
                     />
                   </motion.div>
                 </AnimatePresence>
-                <motion.div
-                  className="absolute top-6 -left-4 max-w-[230px] rounded-2xl border border-white/15 bg-[#2a2150]/95 p-3 shadow-2xl backdrop-blur"
-                  animate={reduce ? undefined : { y: [0, -10, 0] }}
-                  transition={{ duration: 5, repeat: Infinity }}
-                >
-                  <p className="text-[10px] font-bold tracking-wide text-white/50 uppercase">
-                    New message
-                  </p>
-                  <p className="mt-1 text-[12px] font-semibold">
-                    To: jessica@portal.co
-                  </p>
-                  <p className="text-[12px] text-white/70">
-                    Following up on our proposal
-                  </p>
-                  <span className="mt-2 inline-flex rounded-full bg-[#673de6] px-2 py-0.5 text-[10px] font-bold">
-                    Sending
-                  </span>
-                </motion.div>
-                <motion.div
-                  className="absolute right-2 bottom-8 max-w-[210px] rounded-2xl border border-white/15 bg-white p-3 text-slate-900 shadow-2xl"
-                  animate={reduce ? undefined : { y: [0, 12, 0] }}
-                  transition={{ duration: 6, repeat: Infinity }}
-                >
-                  <p className="text-[11px] font-extrabold">
-                    Manage your writing style
-                  </p>
-                  <div className="mt-2 flex flex-wrap gap-1">
-                    {["Casual", "Professional", "Friendly", "Concise"].map(
-                      (tone) => (
-                        <span
-                          key={tone}
-                          className={cn(
-                            "rounded-full px-2 py-0.5 text-[10px] font-bold",
-                            tone === "Professional"
-                              ? "bg-[#673de6] text-white"
-                              : "bg-slate-100 text-slate-600",
-                          )}
-                        >
-                          {tone}
-                        </span>
-                      ),
-                    )}
-                  </div>
-                </motion.div>
               </div>
             </div>
           </div>

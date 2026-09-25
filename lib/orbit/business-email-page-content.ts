@@ -78,12 +78,10 @@ export type CmsBusinessEmailPageContent = {
   heroCtaLabel: string;
   heroCtaHref: string;
   heroGuarantee: string;
-  /** Full-width hero artwork (right column), edge-to-edge — no frame. */
-  heroImage: string;
-  /** Display width scale (100 = base, 130 = +30%). */
-  heroVisualScalePercent: number;
 
   impressionHeading: string;
+  /** Right-panel artwork scale in “Make the right impression” (120 = +20%). */
+  impressionVisualScalePercent: number;
   impressionDescription: string;
   impressionCtaLabel: string;
   impressionCtaHref: string;
@@ -186,10 +184,9 @@ export function defaultBusinessEmailPageContent(): CmsBusinessEmailPageContent {
     heroCtaLabel: "Choose plan",
     heroCtaHref: "#pricing",
     heroGuarantee: "30-day money-back guarantee",
-    heroImage: "/images/business-email/hero-custom.webp",
-    heroVisualScalePercent: 130,
 
     impressionHeading: "Make the right impression",
+    impressionVisualScalePercent: 120,
     impressionDescription:
       "Every email you send says something about your business. Stand out with your own domain and a signature that reflects your brand.",
     impressionCtaLabel: "Choose plan",
@@ -205,8 +202,8 @@ export function defaultBusinessEmailPageContent(): CmsBusinessEmailPageContent {
           "Bring your old and current emails with you",
           "Ready in minutes — no specialist required",
         ],
-        image: "/images/business-email/people/be-team.webp",
-        imageAlt: "Team setting up business email on their laptops",
+        image: "/images/business-email/hero-custom.webp",
+        imageAlt: "Business email setup with HostingBeyond",
       },
       {
         id: "time",
@@ -569,19 +566,12 @@ export function mergeBusinessEmailPageContent(
     heroCtaLabel: text(stored.heroCtaLabel, defaults.heroCtaLabel),
     heroCtaHref: text(stored.heroCtaHref, defaults.heroCtaHref),
     heroGuarantee: text(stored.heroGuarantee, defaults.heroGuarantee),
-    heroImage: (() => {
-      const raw = text(stored.heroImage, defaults.heroImage);
-      if (!raw || raw.includes("mail-workspace") || raw.endsWith(".svg")) {
-        return defaults.heroImage;
-      }
-      return raw;
-    })(),
-    heroVisualScalePercent:
-      typeof stored.heroVisualScalePercent === "number" &&
-      stored.heroVisualScalePercent >= 80 &&
-      stored.heroVisualScalePercent <= 160
-        ? Math.round(stored.heroVisualScalePercent)
-        : defaults.heroVisualScalePercent,
+    impressionVisualScalePercent:
+      typeof stored.impressionVisualScalePercent === "number" &&
+      stored.impressionVisualScalePercent >= 80 &&
+      stored.impressionVisualScalePercent <= 160
+        ? Math.round(stored.impressionVisualScalePercent)
+        : defaults.impressionVisualScalePercent,
     impressionHeading: text(
       stored.impressionHeading,
       defaults.impressionHeading,
@@ -661,7 +651,16 @@ export function mergeBusinessEmailPageContent(
           item.points?.length && item.points.some((p) => p.trim())
             ? item.points
             : base.points,
-        image: text(item.image, base.image),
+        image: (() => {
+          const raw = text(item.image, base.image);
+          if (
+            base.id === "setup" &&
+            (raw.includes("be-team") || raw.includes("/people/be-team"))
+          ) {
+            return "/images/business-email/hero-custom.webp";
+          }
+          return raw;
+        })(),
         imageAlt: text(item.imageAlt, base.imageAlt),
       }),
     ),
