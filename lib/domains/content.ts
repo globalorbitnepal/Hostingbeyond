@@ -350,7 +350,7 @@ export function defaultDomainContent(): DomainContent {
           description:
             "Unlock the name at your current registrar, paste the auth code here, and we copy DNS so email and traffic stay online.",
           linkLabel: "Domain transfer",
-          linkHref: "#transfer",
+          linkHref: "/domain-transfer",
           image: "/images/domains/frames/pillar-transfer.svg",
         },
         {
