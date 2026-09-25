@@ -48,6 +48,11 @@ import {
   type CmsWebsiteMigrationPageContent,
 } from "@/lib/orbit/website-migration-page-content";
 import {
+  defaultDomainTransferPageContent,
+  mergeDomainTransferPageContent,
+  type CmsDomainTransferPageContent,
+} from "@/lib/orbit/domain-transfer-page-content";
+import {
   defaultPricingPageContent,
   mergePricingPageContent,
   type CmsPricingPageContent,
@@ -71,6 +76,7 @@ const BUSINESS_EMAIL_PAGE_SLUG = "business-email-product";
 const HOSTING_PAGE_SLUG = "hosting-product";
 const CLOUD_PAGE_SLUG = "cloud-hosting-product";
 const WEBSITE_MIGRATION_PAGE_SLUG = "website-migration-product";
+const DOMAIN_TRANSFER_PAGE_SLUG = "domain-transfer-product";
 /** Safety net so a bad cache entry can never outlive a few minutes. */
 const CMS_REVALIDATE = 300;
 
@@ -368,6 +374,58 @@ export const getWebsiteMigrationPageContent = cache(
     }
   },
 );
+
+const readDomainTransferPageContent = nextCache(
+  async (): Promise<CmsDomainTransferPageContent> => {
+    const page = await prisma.pageContent.findUnique({
+      where: { slug: DOMAIN_TRANSFER_PAGE_SLUG },
+    });
+    if (!page) return defaultDomainTransferPageContent();
+    return mergeDomainTransferPageContent(
+      page.sections as Partial<CmsDomainTransferPageContent>,
+    );
+  },
+  ["orbit-domain-transfer-page-content"],
+  { tags: [CMS_TAG], revalidate: CMS_REVALIDATE },
+);
+
+export const getDomainTransferPageContent = cache(
+  async (): Promise<CmsDomainTransferPageContent> => {
+    try {
+      return await readDomainTransferPageContent();
+    } catch {
+      return defaultDomainTransferPageContent();
+    }
+  },
+);
+
+export async function saveDomainTransferPageContent(
+  content: CmsDomainTransferPageContent,
+) {
+  const normalized = mergeDomainTransferPageContent(content);
+  const row = await prisma.pageContent.upsert({
+    where: { slug: DOMAIN_TRANSFER_PAGE_SLUG },
+    create: {
+      slug: DOMAIN_TRANSFER_PAGE_SLUG,
+      title: "Domain transfer",
+      isPublished: true,
+      isVisible: true,
+      sections: normalized,
+      seo: {
+        title: "Transfer Your Domain | HostingBeyond",
+        description:
+          "Transfer your domain to HostingBeyond with transparent pricing, DNS tools, and 24/7 support.",
+        keywords:
+          "domain transfer, transfer domain, EPP code, move domain registrar",
+      },
+    },
+    update: { sections: normalized },
+  });
+  revalidateContent();
+  revalidatePath(routes.domainTransfer);
+  revalidatePath("/orbit/domain-transfer");
+  return row;
+}
 
 export async function saveWebsiteMigrationPageContent(
   content: CmsWebsiteMigrationPageContent,

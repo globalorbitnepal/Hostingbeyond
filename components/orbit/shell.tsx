@@ -40,6 +40,11 @@ const nav = [
     label: "Website Migration",
     icon: ArrowLeftRight,
   },
+  {
+    href: "/orbit/domain-transfer",
+    label: "Domain Transfer",
+    icon: ArrowLeftRight,
+  },
   { href: "/orbit/navigation", label: "Navigation", icon: Navigation },
   { href: "/orbit/media", label: "Media Library", icon: ImageIcon },
   { href: "/orbit/seo", label: "SEO", icon: Search },

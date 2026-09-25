@@ -63,6 +63,12 @@ export const PUBLIC_PAGE_SEO_REGISTRY: PublicPageSeoEntry[] = [
     editorHref: "/orbit/website-migration",
   },
   {
+    slug: "domain-transfer",
+    label: "Domain transfer",
+    path: "/domain-transfer",
+    editorHref: "/orbit/domain-transfer",
+  },
+  {
     slug: "beyond-ai",
     label: "Beyond AI",
     path: "/beyond-ai",

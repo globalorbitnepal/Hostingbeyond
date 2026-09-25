@@ -49,7 +49,7 @@ function cartHref(domain: string) {
 }
 
 function transferHref(domain: string) {
-  return `${routes.getStarted}?transfer=${encodeURIComponent(domain)}`;
+  return `${routes.domainTransfer}?domain=${encodeURIComponent(domain)}#transfer-check`;
 }
 
 function countBulkLines(value: string) {

@@ -298,7 +298,7 @@ export function DomainSearchView({
             </ol>
 
             <Link
-              href={`${routes.getStarted}?transfer=1`}
+              href={routes.domainTransfer}
               className="mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-white px-5 text-[13px] font-bold text-[#2f1c6a] shadow-lg"
             >
               {shared.transferCtaLabel}

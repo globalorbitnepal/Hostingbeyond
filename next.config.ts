@@ -56,6 +56,16 @@ const nextConfig: NextConfig = {
         destination: "/cloud-hosting",
         permanent: true,
       },
+      {
+        source: "/domains/transfer",
+        destination: "/domain-transfer",
+        permanent: true,
+      },
+      {
+        source: "/transfer-domain",
+        destination: "/domain-transfer",
+        permanent: true,
+      },
     ];
   },
   experimental: {

@@ -46,7 +46,7 @@ const GROUPS = [
         tone: "cyan",
       },
       {
-        href: routes.domainSearch,
+        href: routes.domainTransfer,
         title: "Transfer Your Domain",
         description:
           "Bring your domain here and manage hosting, mail, and DNS together.",
@@ -152,7 +152,7 @@ export function DomainsMegaMenu({
               {group.items.map((item) => {
                 const Icon = item.icon;
                 return (
-                  <li key={item.href}>
+                  <li key={item.title}>
                     <Link
                       href={item.href}
                       onClick={onNavigate}
