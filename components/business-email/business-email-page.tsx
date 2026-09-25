@@ -18,7 +18,10 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
-import { BusinessEmailHeroVisual } from "@/components/business-email/business-email-hero-visual";
+import {
+  BusinessEmailHeroVisual,
+  isCompositeImpressionArt,
+} from "@/components/business-email/business-email-hero-visual";
 import { MailWorkspace } from "@/components/business-email/mail-workspace";
 import { routes } from "@/config/routes";
 import type {
@@ -171,23 +174,71 @@ export function BusinessEmailPageView({
                 </AnimatePresence>
               </div>
 
-              <div className="relative min-h-[320px] overflow-visible bg-transparent lg:justify-self-end">
+              <div className="relative min-h-[380px] lg:justify-self-end">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={active.image}
-                    initial={{ opacity: 0, x: 20 }}
+                    initial={{ opacity: 0, x: 30 }}
                     animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -12 }}
-                    transition={{ duration: 0.4 }}
-                    className="relative w-full overflow-visible bg-transparent"
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.45 }}
+                    className="relative"
                   >
                     <BusinessEmailHeroVisual
                       src={active.image}
+                      alt={active.imageAlt}
                       scalePercent={content.impressionVisualScalePercent}
-                      onDarkBackground
                     />
                   </motion.div>
                 </AnimatePresence>
+                {!isCompositeImpressionArt(active.image) ? (
+                  <>
+                    <motion.div
+                      className="pointer-events-none absolute top-6 -left-2 z-10 max-w-[230px] rounded-2xl border border-white/15 bg-[#2a2150]/95 p-3 shadow-2xl backdrop-blur sm:-left-4"
+                      animate={reduce ? undefined : { y: [0, -10, 0] }}
+                      transition={{ duration: 5, repeat: Infinity }}
+                    >
+                      <p className="text-[10px] font-bold tracking-wide text-white/50 uppercase">
+                        New message
+                      </p>
+                      <p className="mt-1 text-[12px] font-semibold">
+                        To: jessica@portal.co
+                      </p>
+                      <p className="text-[12px] text-white/70">
+                        Following up on our proposal
+                      </p>
+                      <span className="mt-2 inline-flex rounded-full bg-[#673de6] px-2 py-0.5 text-[10px] font-bold">
+                        Sending
+                      </span>
+                    </motion.div>
+                    <motion.div
+                      className="pointer-events-none absolute right-0 bottom-8 z-10 max-w-[210px] rounded-2xl border border-slate-200/80 bg-white p-3 text-slate-900 shadow-2xl sm:right-2"
+                      animate={reduce ? undefined : { y: [0, 12, 0] }}
+                      transition={{ duration: 6, repeat: Infinity }}
+                    >
+                      <p className="text-[11px] font-extrabold">
+                        Manage your writing style
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {["Casual", "Professional", "Friendly", "Concise"].map(
+                          (tone) => (
+                            <span
+                              key={tone}
+                              className={cn(
+                                "rounded-full px-2 py-0.5 text-[10px] font-bold",
+                                tone === "Professional"
+                                  ? "bg-[#673de6] text-white"
+                                  : "bg-slate-100 text-slate-600",
+                              )}
+                            >
+                              {tone}
+                            </span>
+                          ),
+                        )}
+                      </div>
+                    </motion.div>
+                  </>
+                ) : null}
               </div>
             </div>
           </div>

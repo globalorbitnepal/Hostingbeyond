@@ -80,7 +80,7 @@ export type CmsBusinessEmailPageContent = {
   heroGuarantee: string;
 
   impressionHeading: string;
-  /** Right-panel artwork scale in “Make the right impression” (120 = +20%). */
+  /** Right-panel white card scale in “Make the right impression” (100 = base). */
   impressionVisualScalePercent: number;
   impressionDescription: string;
   impressionCtaLabel: string;
@@ -186,7 +186,7 @@ export function defaultBusinessEmailPageContent(): CmsBusinessEmailPageContent {
     heroGuarantee: "30-day money-back guarantee",
 
     impressionHeading: "Make the right impression",
-    impressionVisualScalePercent: 135,
+    impressionVisualScalePercent: 118,
     impressionDescription:
       "Every email you send says something about your business. Stand out with your own domain and a signature that reflects your brand.",
     impressionCtaLabel: "Choose plan",
@@ -571,13 +571,8 @@ export function mergeBusinessEmailPageContent(
         typeof stored.impressionVisualScalePercent === "number"
           ? Math.round(stored.impressionVisualScalePercent)
           : defaults.impressionVisualScalePercent;
-      const scaled =
-        n === 120
-          ? 135
-          : n >= 80 && n <= 160
-            ? n
-            : defaults.impressionVisualScalePercent;
-      return scaled;
+      if (n >= 90 && n <= 150) return n;
+      return defaults.impressionVisualScalePercent;
     })(),
     impressionHeading: text(
       stored.impressionHeading,

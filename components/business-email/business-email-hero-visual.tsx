@@ -5,46 +5,46 @@ import Image from "next/image";
 import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
 
 const DEFAULT_ART = "/images/business-email/hero-custom.webp";
-const BASE_MAX_PX = 620;
+const BASE_MAX_PX = 580;
+
+/** Full marketing composite (built-in UI); skip floating chips on the page. */
+export function isCompositeImpressionArt(src: string) {
+  const s = src?.trim() || DEFAULT_ART;
+  return /hero-custom\.webp/i.test(s);
+}
 
 type Props = {
   src: string;
+  alt?: string;
   scalePercent?: number;
-  /** When true, softens white matte on dark purple hero backgrounds. */
-  onDarkBackground?: boolean;
 };
 
 export function BusinessEmailHeroVisual({
   src,
-  scalePercent = 130,
-  onDarkBackground = true,
+  alt = "",
+  scalePercent = 118,
 }: Props) {
   const artwork = src?.trim() || DEFAULT_ART;
-  const scale = Math.min(160, Math.max(80, scalePercent)) / 100;
+  const composite = isCompositeImpressionArt(artwork);
+  const scale = Math.min(150, Math.max(90, scalePercent)) / 100;
   const maxWidth = Math.round(BASE_MAX_PX * scale);
 
   return (
     <div
-      className="relative mx-auto w-full bg-transparent"
+      className="relative mx-auto w-full"
       style={{ maxWidth: `${maxWidth}px` }}
     >
-      <div
-        className={
-          onDarkBackground
-            ? "relative overflow-hidden bg-transparent"
-            : "relative bg-transparent"
-        }
-      >
+      <div className="overflow-hidden rounded-[28px] border border-white/90 bg-white p-2 shadow-[0_28px_72px_-34px_rgba(8,6,28,0.55)] ring-1 ring-white/70 sm:p-3">
         <Image
           src={artwork}
-          alt=""
-          width={1024}
-          height={576}
-          priority
+          alt={alt}
+          width={1400}
+          height={composite ? 788 : 933}
+          priority={composite}
           className={
-            onDarkBackground
-              ? "relative -ml-[5%] h-auto w-[118%] max-w-none border-0 bg-transparent mix-blend-multiply shadow-none contrast-[1.04] saturate-[1.06]"
-              : "h-auto w-full border-0 bg-transparent shadow-none"
+            composite
+              ? "h-auto w-full rounded-[22px] object-contain"
+              : "h-[min(420px,52vh)] w-full rounded-[22px] object-cover object-center"
           }
           sizes={`(max-width: 1024px) 100vw, ${maxWidth}px`}
           unoptimized={
