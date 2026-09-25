@@ -62,11 +62,11 @@ export function WebsiteMigrationPageView({
   return (
     <>
       <section className="relative overflow-hidden bg-white">
-        <div className="hb-shell grid gap-10 py-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)] lg:items-center lg:gap-6 lg:py-16 xl:py-20">
+        <div className="hb-shell grid gap-8 py-10 lg:grid-cols-[minmax(0,520px)_1fr] lg:items-center lg:gap-4 lg:py-14 xl:gap-8 xl:py-16">
           <motion.div
             initial={reduce ? false : { opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            className="max-w-xl lg:pr-4"
+            className="max-w-[520px] lg:pr-2 xl:pr-6"
           >
             {page.heroEyebrow ? (
               <p className="text-[12px] font-bold tracking-[0.22em] text-[#673de6] uppercase">
@@ -75,7 +75,7 @@ export function WebsiteMigrationPageView({
             ) : null}
             <h1
               className={cn(
-                "font-heading text-[clamp(2.15rem,4.8vw,3.35rem)] leading-[1.12] font-extrabold tracking-[-0.035em] text-[#0f172a]",
+                "font-heading text-[clamp(2.25rem,4.2vw,3rem)] leading-[1.14] font-bold tracking-[-0.02em] text-[#1a1a1a]",
                 page.heroEyebrow ? "mt-4" : "mt-0",
               )}
             >
@@ -87,33 +87,33 @@ export function WebsiteMigrationPageView({
                 </>
               ) : null}
             </h1>
-            <ul className="mt-8 space-y-4">
+            <ul className="mt-7 space-y-[18px]">
               {page.heroBullets.map((line) => (
                 <li
                   key={line}
-                  className="flex gap-3 text-[16px] leading-snug text-[#334155]"
+                  className="flex gap-3 text-[17px] leading-[1.45] text-[#2f2f2f]"
                 >
                   <Check
-                    className="mt-0.5 size-5 shrink-0 text-emerald-500"
-                    strokeWidth={2.5}
+                    className="mt-1 size-[18px] shrink-0 text-[#00b090]"
+                    strokeWidth={3}
                     aria-hidden
                   />
                   {line}
                 </li>
               ))}
             </ul>
-            <div className="mt-9">
+            <div className="mt-10">
               <Link
                 href={page.heroPrimaryHref}
-                className="inline-flex h-[52px] min-w-[200px] items-center justify-center rounded-xl bg-[#673de6] px-8 text-[16px] font-bold text-white shadow-md hover:bg-[#5b2fd6]"
+                className="inline-flex h-[54px] min-w-[220px] items-center justify-center rounded-[10px] bg-[#673de6] px-10 text-[17px] font-bold text-white hover:bg-[#5c35d4]"
               >
                 {page.heroPrimaryLabel}
               </Link>
               {page.heroGuarantee ? (
-                <p className="mt-5 flex items-center gap-2 text-[14px] font-medium text-[#64748b]">
+                <p className="mt-5 flex items-center gap-2.5 text-[15px] font-normal text-[#6b6b6b]">
                   <Shield
-                    className="size-[18px] text-[#94a3b8]"
-                    strokeWidth={2}
+                    className="size-5 text-[#9ca3af]"
+                    strokeWidth={1.75}
                     aria-hidden
                   />
                   {page.heroGuarantee}
@@ -127,6 +127,7 @@ export function WebsiteMigrationPageView({
             className="relative w-full lg:justify-self-end"
           >
             <MigrationHeroVisual
+              compositeSrc={page.heroImage}
               portraitSrc={page.heroImage}
               overlayLine1={page.heroOverlayLine1}
               overlayLine2={page.heroOverlayLine2}

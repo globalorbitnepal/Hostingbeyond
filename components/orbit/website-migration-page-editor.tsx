@@ -82,7 +82,7 @@ export function WebsiteMigrationPageEditor({
         <a href="/orbit/content" className="underline">
           Website Content → Web Hosting Plans
         </a>
-        . Hero portrait: {MIGRATION_FRAME_SPECS.heroPortrait}. Public:{" "}
+        . Hero artwork: {MIGRATION_FRAME_SPECS.heroComposite}. Public:{" "}
         <a href={routes.websiteMigration} className="underline">
           {routes.websiteMigration}
         </a>
@@ -149,45 +149,17 @@ export function WebsiteMigrationPageEditor({
             />
           </div>
           <div className="rounded-xl border border-violet-200 bg-violet-50/50 p-4 sm:col-span-2">
-            <p className="text-[11px] font-bold text-violet-900">
-              Hostinger-style hero collage — portrait{" "}
-              {MIGRATION_FRAME_SPECS.heroPortrait}
+            <p className="text-[11px] leading-relaxed text-violet-900">
+              Upload a single right-column artwork (
+              {MIGRATION_FRAME_SPECS.heroComposite}) to match the Hostinger
+              migration hero. Default is pre-generated collage with model, MOVE
+              FORWARD, chips, and progress card.
             </p>
             <OrbitImageField
-              label="Center portrait"
+              label="Hero artwork (full right column)"
               value={value.heroImage}
               onChange={(heroImage) => patch({ heroImage })}
               onCommit={(heroImage) => patch({ heroImage }, true)}
-            />
-            <Field
-              label="Overlay line 1"
-              value={value.heroOverlayLine1}
-              onChange={(v) => patch({ heroOverlayLine1: v })}
-            />
-            <Field
-              label="Overlay line 2"
-              value={value.heroOverlayLine2}
-              onChange={(v) => patch({ heroOverlayLine2: v })}
-            />
-            <Field
-              label="Chip: Website link"
-              value={value.heroChipWebsite}
-              onChange={(v) => patch({ heroChipWebsite: v })}
-            />
-            <Field
-              label="Chip: Migration form"
-              value={value.heroChipForm}
-              onChange={(v) => patch({ heroChipForm: v })}
-            />
-            <Field
-              label="Progress card title"
-              value={value.heroProgressTitle}
-              onChange={(v) => patch({ heroProgressTitle: v })}
-            />
-            <Field
-              label="Progress card value"
-              value={value.heroProgressValue}
-              onChange={(v) => patch({ heroProgressValue: v })}
             />
           </div>
         </div>

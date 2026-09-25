@@ -117,7 +117,7 @@ export function defaultWebsiteMigrationPageContent(): CmsWebsiteMigrationPageCon
     heroPrimaryLabel: "Migrate for free",
     heroPrimaryHref: "#plans",
     heroGuarantee: "30-day money-back guarantee",
-    heroImage: "/images/business-email/people/p-woman.jpg",
+    heroImage: "/images/migration/hero-composite.png",
     heroOverlayLine1: "MOVE",
     heroOverlayLine2: "FORWARD",
     heroChipWebsite: "Website link",
@@ -301,7 +301,14 @@ export function mergeWebsiteMigrationPageContent(
     heroPrimaryLabel: text(stored.heroPrimaryLabel, defaults.heroPrimaryLabel),
     heroPrimaryHref: text(stored.heroPrimaryHref, defaults.heroPrimaryHref),
     heroGuarantee: text(stored.heroGuarantee, defaults.heroGuarantee),
-    heroImage: text(stored.heroImage, defaults.heroImage),
+    heroImage: (() => {
+      const raw = text(stored.heroImage, defaults.heroImage);
+      const legacy = [
+        "/images/business-email/people/p-woman.jpg",
+        "/images/migration/frames/hero-migration.svg",
+      ];
+      return legacy.includes(raw) ? defaults.heroImage : raw;
+    })(),
     heroOverlayLine1: text(stored.heroOverlayLine1, defaults.heroOverlayLine1),
     heroOverlayLine2: text(stored.heroOverlayLine2, defaults.heroOverlayLine2),
     heroChipWebsite: text(stored.heroChipWebsite, defaults.heroChipWebsite),
