@@ -110,7 +110,7 @@ export function BusinessEmailPageView({
       {active && impressionTabs.length > 0 ? (
         <section
           id="impression"
-          className="relative overflow-hidden bg-[#1b1233] py-16 text-white sm:py-20"
+          className="hb-band-purple relative overflow-hidden py-16 text-white sm:py-20"
         >
           <div className="hb-shell">
             <h2 className="font-heading text-center text-[clamp(2rem,4.5vw,3.4rem)] font-extrabold tracking-[-0.045em]">
@@ -161,10 +161,10 @@ export function BusinessEmailPageView({
                       ))}
                     </ul>
                     <Link
-                      href="#pricing"
-                      className="mt-7 inline-flex h-11 items-center rounded-md bg-[#673de6] px-5 text-[14px] font-bold"
+                      href={content.impressionCtaHref}
+                      className="mt-7 inline-flex h-11 items-center rounded-md bg-white px-5 text-[14px] font-bold text-[#2f1c6a] shadow-lg hover:bg-[#f8f7ff]"
                     >
-                      Choose plan
+                      {content.impressionCtaLabel}
                     </Link>
                   </motion.div>
                 </AnimatePresence>
@@ -239,7 +239,7 @@ export function BusinessEmailPageView({
         </section>
       ) : null}
 
-      <section id="pricing" className="bg-[#f4f8fd] py-16 sm:py-20">
+      <section id="pricing" className="hb-band-cream py-16 sm:py-20">
         <div className="hb-shell">
           <h2 className="font-heading text-center text-[clamp(1.85rem,3.6vw,2.9rem)] font-extrabold tracking-[-0.04em] text-slate-950">
             {content.pricingHeading}
@@ -388,68 +388,12 @@ export function BusinessEmailPageView({
           </h2>
           <div className="mt-10 grid gap-5 lg:grid-cols-3">
             {aiFeatures.map((feat, index) => (
-              <article
+              <AiFeatureCard
                 key={feat.id}
-                className="rounded-[28px] bg-gradient-to-br from-[#2f1c6a] via-[#3d22a8] to-[#1e1b4b] p-6 text-white shadow-[0_24px_60px_-32px_rgba(47,28,106,0.55)]"
-              >
-                {index === 0 ? (
-                  <div className="flex min-h-[160px] flex-wrap content-center gap-2">
-                    {["Friendly", "Professional", "Concise"].map((tone, i) => (
-                      <motion.span
-                        key={tone}
-                        animate={
-                          reduce ? undefined : { y: [0, i === 1 ? -8 : 6, 0] }
-                        }
-                        transition={{ duration: 3 + i, repeat: Infinity }}
-                        className={cn(
-                          "rounded-full px-4 py-2 text-[14px] font-bold",
-                          tone === "Professional"
-                            ? "bg-white text-[#673de6]"
-                            : "bg-white/15 text-white",
-                        )}
-                      >
-                        {tone === "Professional" ? `✓ ${tone}` : tone}
-                      </motion.span>
-                    ))}
-                  </div>
-                ) : null}
-                {index === 1 ? (
-                  <div className="relative min-h-[160px]">
-                    <div className="space-y-2 opacity-40">
-                      <p className="h-8 rounded-full bg-white/10" />
-                      <p className="h-8 rounded-full bg-white/10" />
-                      <p className="h-8 rounded-full bg-white/10" />
-                    </div>
-                    <motion.p
-                      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white px-4 py-2 text-[14px] font-bold text-slate-900"
-                      animate={reduce ? undefined : { scale: [1, 1.04, 1] }}
-                      transition={{ duration: 2.2, repeat: Infinity }}
-                    >
-                      ✦ Accept Thursday
-                    </motion.p>
-                  </div>
-                ) : null}
-                {index === 2 ? (
-                  <div className="flex min-h-[160px] items-center justify-center">
-                    <motion.div
-                      className="flex w-full items-center gap-2 rounded-full bg-white/15 px-4 py-3"
-                      animate={reduce ? undefined : { x: [0, 8, 0] }}
-                      transition={{ duration: 3.5, repeat: Infinity }}
-                    >
-                      <Search className="size-4 text-white" />
-                      <span className="text-[13px] text-white/85">
-                        invoice from last week
-                      </span>
-                    </motion.div>
-                  </div>
-                ) : null}
-                <h3 className="mt-4 text-[1.2rem] font-extrabold text-white">
-                  {feat.title}
-                </h3>
-                <p className="mt-2 text-[14px] leading-relaxed text-white/85">
-                  {feat.description}
-                </p>
-              </article>
+                feat={feat}
+                index={index}
+                reduce={reduce}
+              />
             ))}
           </div>
           <div className="mt-8 text-center">
@@ -553,8 +497,12 @@ export function BusinessEmailPageView({
         </div>
       </section>
 
-      <section className="hb-band-cream py-16 sm:py-20">
-        <div className="hb-shell">
+      <section className="hb-band-cream relative overflow-hidden py-16 sm:py-20">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(103,61,230,0.08),transparent_55%)]"
+        />
+        <div className="hb-shell relative">
           <h2 className="font-heading text-center text-[clamp(1.8rem,3.4vw,2.8rem)] font-extrabold text-[#2f1c6a]">
             {content.reviewsHeading}
           </h2>
@@ -706,6 +654,94 @@ export function BusinessEmailPageView({
         </div>
       </section>
     </>
+  );
+}
+
+function AiFeatureCard({
+  feat,
+  index,
+  reduce,
+}: {
+  feat: CmsBusinessEmailPageContent["aiFeatures"][number];
+  index: number;
+  reduce: boolean | null;
+}) {
+  const src =
+    feat.image?.trim() ||
+    `/images/business-email/frames/ai-card-${index === 0 ? "tone" : index === 1 ? "reply" : "search"}.svg`;
+
+  return (
+    <article className="relative min-h-[340px] overflow-hidden rounded-[28px] p-6 text-white shadow-[0_28px_70px_-36px_rgba(47,28,106,0.55)]">
+      <Image
+        src={src}
+        alt=""
+        fill
+        sizes="(max-width: 1024px) 100vw, 33vw"
+        unoptimized={isRuntimeMediaSrc(src)}
+        className="object-cover"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0a0f1f]/95 via-[#2f1c6a]/78 to-[#673de6]/35"
+      />
+      <div className="relative z-10 flex h-full flex-col">
+        {index === 0 ? (
+          <div className="flex min-h-[160px] flex-wrap content-center gap-2">
+            {["Friendly", "Professional", "Concise"].map((tone, i) => (
+              <motion.span
+                key={tone}
+                animate={reduce ? undefined : { y: [0, i === 1 ? -8 : 6, 0] }}
+                transition={{ duration: 3 + i, repeat: Infinity }}
+                className={cn(
+                  "rounded-full px-4 py-2 text-[14px] font-bold",
+                  tone === "Professional"
+                    ? "bg-white text-[#673de6]"
+                    : "bg-black/25 text-white backdrop-blur-sm",
+                )}
+              >
+                {tone === "Professional" ? `✓ ${tone}` : tone}
+              </motion.span>
+            ))}
+          </div>
+        ) : null}
+        {index === 1 ? (
+          <div className="relative min-h-[160px]">
+            <div className="space-y-2 opacity-50">
+              <p className="h-8 rounded-full bg-white/20" />
+              <p className="h-8 rounded-full bg-white/20" />
+              <p className="h-8 rounded-full bg-white/20" />
+            </div>
+            <motion.p
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white px-4 py-2 text-[14px] font-bold text-slate-900"
+              animate={reduce ? undefined : { scale: [1, 1.04, 1] }}
+              transition={{ duration: 2.2, repeat: Infinity }}
+            >
+              ✦ Accept Thursday
+            </motion.p>
+          </div>
+        ) : null}
+        {index === 2 ? (
+          <div className="flex min-h-[160px] items-center justify-center">
+            <motion.div
+              className="flex w-full items-center gap-2 rounded-full bg-black/30 px-4 py-3 backdrop-blur-sm"
+              animate={reduce ? undefined : { x: [0, 8, 0] }}
+              transition={{ duration: 3.5, repeat: Infinity }}
+            >
+              <Search className="size-4 text-white" />
+              <span className="text-[13px] text-white/90">
+                invoice from last week
+              </span>
+            </motion.div>
+          </div>
+        ) : null}
+        <h3 className="mt-4 text-[1.2rem] font-extrabold text-white">
+          {feat.title}
+        </h3>
+        <p className="mt-2 text-[14px] leading-relaxed text-white/90">
+          {feat.description}
+        </p>
+      </div>
+    </article>
   );
 }
 

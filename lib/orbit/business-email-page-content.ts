@@ -57,6 +57,8 @@ export type CmsBusinessEmailAiFeature = {
   visible: boolean;
   title: string;
   description: string;
+  /** Full-card background (see BUSINESS_EMAIL_FRAME_SPECS.aiFeatureCard). */
+  image: string;
 };
 
 export type CmsBusinessEmailSupportTile = {
@@ -79,6 +81,8 @@ export type CmsBusinessEmailPageContent = {
 
   impressionHeading: string;
   impressionDescription: string;
+  impressionCtaLabel: string;
+  impressionCtaHref: string;
   impressionTabs: CmsBusinessEmailImpressionTab[];
 
   pricingHeading: string;
@@ -145,6 +149,30 @@ function mergeById<T extends { id: string }>(
   });
 }
 
+/** Orbit-saved list order (supports add/remove rows). */
+function mergeStoredList<T extends { id: string; visible?: boolean }>(
+  defaults: T[],
+  stored: T[] | undefined | null,
+  merge: (item: Partial<T>, base: T) => T,
+): T[] {
+  if (!Array.isArray(stored) || stored.length === 0) return defaults;
+  const defaultById = new Map(defaults.map((row) => [row.id, row]));
+  return stored.map((row, index) => {
+    const partial = (row ?? {}) as Partial<T>;
+    const fallback =
+      (partial.id ? defaultById.get(partial.id) : undefined) ??
+      defaults[index % defaults.length];
+    return {
+      ...merge(partial, fallback),
+      id:
+        typeof partial.id === "string" && partial.id.trim()
+          ? partial.id
+          : fallback.id,
+      visible: partial.visible !== false,
+    };
+  });
+}
+
 export function defaultBusinessEmailPageContent(): CmsBusinessEmailPageContent {
   return {
     heroEyebrow: "HostingBeyond Mail",
@@ -158,6 +186,8 @@ export function defaultBusinessEmailPageContent(): CmsBusinessEmailPageContent {
     impressionHeading: "Make the right impression",
     impressionDescription:
       "Every email you send says something about your business. Stand out with your own domain and a signature that reflects your brand.",
+    impressionCtaLabel: "Choose plan",
+    impressionCtaHref: "#pricing",
     impressionTabs: [
       {
         id: "setup",
@@ -300,6 +330,7 @@ export function defaultBusinessEmailPageContent(): CmsBusinessEmailPageContent {
         title: "Personalized AI",
         description:
           "Describe your tone and style — just once. It remembers and writes like you every time.",
+        image: "/images/business-email/frames/ai-card-tone.svg",
       },
       {
         id: "reply",
@@ -307,12 +338,14 @@ export function defaultBusinessEmailPageContent(): CmsBusinessEmailPageContent {
         title: "Write & reply in seconds",
         description:
           "AI writes, replies, and summarizes so you spend less time in the inbox.",
+        image: "/images/business-email/frames/ai-card-reply.svg",
       },
       {
         id: "search",
         visible: true,
         title: "Search like you speak",
         description: "Find any email instantly. No scrolling, no getting lost.",
+        image: "/images/business-email/frames/ai-card-search.svg",
       },
     ],
     aiBandCtaLabel: "Choose plan",
@@ -538,6 +571,14 @@ export function mergeBusinessEmailPageContent(
       stored.impressionDescription,
       defaults.impressionDescription,
     ),
+    impressionCtaLabel: text(
+      stored.impressionCtaLabel,
+      defaults.impressionCtaLabel,
+    ),
+    impressionCtaHref: text(
+      stored.impressionCtaHref,
+      defaults.impressionCtaHref,
+    ),
     pricingHeading: text(stored.pricingHeading, defaults.pricingHeading),
     pricingTrust1: text(stored.pricingTrust1, defaults.pricingTrust1),
     pricingTrust2: text(stored.pricingTrust2, defaults.pricingTrust2),
@@ -590,12 +631,11 @@ export function mergeBusinessEmailPageContent(
     ),
     closingCtaLabel: text(stored.closingCtaLabel, defaults.closingCtaLabel),
     closingCtaHref: text(stored.closingCtaHref, defaults.closingCtaHref),
-    impressionTabs: mergeById(
+    impressionTabs: mergeStoredList(
       defaults.impressionTabs,
       stored.impressionTabs,
       (item, base) => ({
         ...base,
-        ...item,
         label: text(item.label, base.label),
         title: text(item.title, base.title),
         points:
@@ -604,7 +644,6 @@ export function mergeBusinessEmailPageContent(
             : base.points,
         image: text(item.image, base.image),
         imageAlt: text(item.imageAlt, base.imageAlt),
-        visible: item.visible !== false,
       }),
     ),
     plans: mergeById(defaults.plans, stored.plans, (item, base) => ({
@@ -634,6 +673,7 @@ export function mergeBusinessEmailPageContent(
         ...base,
         title: text(item.title, base.title),
         description: text(item.description, base.description),
+        image: text(item.image, base.image),
         visible: item.visible !== false,
       }),
     ),
@@ -650,13 +690,16 @@ export function mergeBusinessEmailPageContent(
         visible: item.visible !== false,
       }),
     ),
-    reviews: mergeById(defaults.reviews, stored.reviews, (item, base) => ({
-      ...base,
-      quote: text(item.quote, base.quote),
-      name: text(item.name, base.name),
-      photo: text(item.photo, base.photo),
-      visible: item.visible !== false,
-    })),
+    reviews: mergeStoredList(
+      defaults.reviews,
+      stored.reviews,
+      (item, base) => ({
+        ...base,
+        quote: text(item.quote, base.quote),
+        name: text(item.name, base.name),
+        photo: text(item.photo, base.photo),
+      }),
+    ),
     supportTiles: mergeById(
       defaults.supportTiles,
       stored.supportTiles,

@@ -3,7 +3,10 @@
 import { useState } from "react";
 
 import { OrbitImageField } from "@/components/orbit/image-field";
-import { BUSINESS_EMAIL_FRAME_SPECS } from "@/lib/business-email/frame-specs";
+import {
+  BUSINESS_EMAIL_FRAME_SPECS,
+  BUSINESS_EMAIL_IMAGE_GUIDE,
+} from "@/lib/business-email/frame-specs";
 import type {
   CmsBusinessEmailPageContent,
   CmsBusinessEmailPlan,
@@ -102,6 +105,11 @@ export function BusinessEmailProductPageEditor({
         ))}
       </div>
 
+      <p className="rounded-lg bg-violet-50 px-3 py-2 text-[11px] leading-relaxed text-violet-900">
+        <span className="font-bold">Image sizes on this page:</span>{" "}
+        {BUSINESS_EMAIL_IMAGE_GUIDE}
+      </p>
+
       {tab === "hero" ? (
         <div className="grid gap-3 sm:grid-cols-2">
           <Field
@@ -157,14 +165,81 @@ export function BusinessEmailProductPageEditor({
             }
             multiline
           />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field
+              label="Tab panel CTA label"
+              value={value.impressionCtaLabel}
+              onChange={(impressionCtaLabel) => patch({ impressionCtaLabel })}
+            />
+            <Field
+              label="Tab panel CTA URL"
+              value={value.impressionCtaHref}
+              onChange={(impressionCtaHref) => patch({ impressionCtaHref })}
+            />
+          </div>
+          <button
+            type="button"
+            className="rounded-lg border border-violet-200 bg-violet-50 px-3 py-1.5 text-xs font-semibold text-violet-800"
+            onClick={() =>
+              patch({
+                impressionTabs: [
+                  ...value.impressionTabs,
+                  {
+                    id: `tab-${Date.now()}`,
+                    visible: true,
+                    label: "New tab",
+                    title: "Section title",
+                    points: ["First benefit"],
+                    image: "",
+                    imageAlt: "",
+                  },
+                ],
+              })
+            }
+          >
+            + Add category tab
+          </button>
           {value.impressionTabs.map((tabItem, index) => (
             <div
               key={tabItem.id}
               className="space-y-2 rounded-xl border border-slate-200 p-3"
             >
-              <p className="text-sm font-semibold text-slate-800">
-                Tab: {tabItem.label}
-              </p>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm font-semibold text-slate-800">
+                  Category: {tabItem.label}
+                </p>
+                <label className="flex items-center gap-2 text-xs text-slate-600">
+                  <input
+                    type="checkbox"
+                    checked={tabItem.visible !== false}
+                    onChange={(e) => {
+                      const impressionTabs = [...value.impressionTabs];
+                      impressionTabs[index] = {
+                        ...tabItem,
+                        visible: e.target.checked,
+                      };
+                      patch({ impressionTabs }, true);
+                    }}
+                  />
+                  Visible
+                </label>
+                <button
+                  type="button"
+                  className="text-xs font-semibold text-red-600"
+                  onClick={() =>
+                    patch(
+                      {
+                        impressionTabs: value.impressionTabs.filter(
+                          (_, i) => i !== index,
+                        ),
+                      },
+                      true,
+                    )
+                  }
+                >
+                  Remove tab
+                </button>
+              </div>
               <Field
                 label="Tab label"
                 value={tabItem.label}
@@ -317,6 +392,20 @@ export function BusinessEmailProductPageEditor({
                 }}
                 multiline
               />
+              <OrbitImageField
+                label={`Card background — ${BUSINESS_EMAIL_FRAME_SPECS.aiFeatureCard}`}
+                value={feat.image ?? ""}
+                onChange={(image) => {
+                  const aiFeatures = [...value.aiFeatures];
+                  aiFeatures[index] = { ...feat, image };
+                  patch({ aiFeatures });
+                }}
+                onCommit={(image) => {
+                  const aiFeatures = [...value.aiFeatures];
+                  aiFeatures[index] = { ...feat, image };
+                  patch({ aiFeatures }, true);
+                }}
+              />
             </div>
           ))}
           <Field
@@ -454,11 +543,65 @@ export function BusinessEmailProductPageEditor({
             value={value.reviewsHeading}
             onChange={(reviewsHeading) => patch({ reviewsHeading })}
           />
+          <button
+            type="button"
+            className="rounded-lg border border-violet-200 bg-violet-50 px-3 py-1.5 text-xs font-semibold text-violet-800"
+            onClick={() =>
+              patch({
+                reviews: [
+                  ...value.reviews,
+                  {
+                    id: `review-${Date.now()}`,
+                    visible: true,
+                    quote: "Your customer quote here.",
+                    name: "Customer name",
+                    photo: "",
+                  },
+                ],
+              })
+            }
+          >
+            + Add review
+          </button>
           {value.reviews.map((review, index) => (
             <div
               key={review.id}
               className="space-y-2 rounded-xl border border-slate-200 p-3"
             >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm font-semibold text-slate-800">
+                  Review {index + 1}
+                </p>
+                <label className="flex items-center gap-2 text-xs text-slate-600">
+                  <input
+                    type="checkbox"
+                    checked={review.visible !== false}
+                    onChange={(e) => {
+                      const reviews = [...value.reviews];
+                      reviews[index] = {
+                        ...review,
+                        visible: e.target.checked,
+                      };
+                      patch({ reviews }, true);
+                    }}
+                  />
+                  Visible
+                </label>
+                <button
+                  type="button"
+                  className="text-xs font-semibold text-red-600"
+                  onClick={() =>
+                    patch(
+                      {
+                        reviews: value.reviews.filter((_, i) => i !== index),
+                      },
+                      true,
+                    )
+                  }
+                >
+                  Remove
+                </button>
+              </div>
               <Field
                 label="Quote"
                 value={review.quote}
