@@ -43,6 +43,11 @@ import {
   type CmsCloudHostingPageContent,
 } from "@/lib/orbit/cloud-hosting-page-content";
 import {
+  defaultWebsiteMigrationPageContent,
+  mergeWebsiteMigrationPageContent,
+  type CmsWebsiteMigrationPageContent,
+} from "@/lib/orbit/website-migration-page-content";
+import {
   defaultPricingPageContent,
   mergePricingPageContent,
   type CmsPricingPageContent,
@@ -65,6 +70,7 @@ const BEYOND_AI_PAGE_SLUG = "beyond-ai-product";
 const BUSINESS_EMAIL_PAGE_SLUG = "business-email-product";
 const HOSTING_PAGE_SLUG = "hosting-product";
 const CLOUD_PAGE_SLUG = "cloud-hosting-product";
+const WEBSITE_MIGRATION_PAGE_SLUG = "website-migration-product";
 /** Safety net so a bad cache entry can never outlive a few minutes. */
 const CMS_REVALIDATE = 300;
 
@@ -339,6 +345,58 @@ export const getCloudHostingPageContent = cache(
   },
 );
 
+const readWebsiteMigrationPageContent = nextCache(
+  async (): Promise<CmsWebsiteMigrationPageContent> => {
+    const page = await prisma.pageContent.findUnique({
+      where: { slug: WEBSITE_MIGRATION_PAGE_SLUG },
+    });
+    if (!page) return defaultWebsiteMigrationPageContent();
+    return mergeWebsiteMigrationPageContent(
+      page.sections as Partial<CmsWebsiteMigrationPageContent>,
+    );
+  },
+  ["orbit-website-migration-page-content"],
+  { tags: [CMS_TAG], revalidate: CMS_REVALIDATE },
+);
+
+export const getWebsiteMigrationPageContent = cache(
+  async (): Promise<CmsWebsiteMigrationPageContent> => {
+    try {
+      return await readWebsiteMigrationPageContent();
+    } catch {
+      return defaultWebsiteMigrationPageContent();
+    }
+  },
+);
+
+export async function saveWebsiteMigrationPageContent(
+  content: CmsWebsiteMigrationPageContent,
+) {
+  const normalized = mergeWebsiteMigrationPageContent(content);
+  const row = await prisma.pageContent.upsert({
+    where: { slug: WEBSITE_MIGRATION_PAGE_SLUG },
+    create: {
+      slug: WEBSITE_MIGRATION_PAGE_SLUG,
+      title: "Website migration",
+      isPublished: true,
+      isVisible: true,
+      sections: normalized,
+      seo: {
+        title: "Free Website Migration | HostingBeyond",
+        description:
+          "Move your website to HostingBeyond with free migration on eligible plans, expert support, and Beyond AI checks.",
+        keywords:
+          "website migration, free site migration, WordPress migration, move hosting",
+      },
+    },
+    update: { sections: normalized },
+  });
+  revalidateContent();
+  revalidatePath(routes.websiteMigration);
+  revalidatePath("/orbit/website-migration");
+  return row;
+}
+
 export async function saveCloudHostingPageContent(
   content: CmsCloudHostingPageContent,
 ) {
@@ -598,6 +656,14 @@ export async function ensureHomeSeeded() {
     });
     if (!cloudPage) {
       await saveCloudHostingPageContent(defaultCloudHostingPageContent());
+    }
+    const migrationPage = await prisma.pageContent.findUnique({
+      where: { slug: WEBSITE_MIGRATION_PAGE_SLUG },
+    });
+    if (!migrationPage) {
+      await saveWebsiteMigrationPageContent(
+        defaultWebsiteMigrationPageContent(),
+      );
     }
   } catch {
     /* DB may be unavailable during local UI work */

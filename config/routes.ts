@@ -8,6 +8,7 @@ export const routes = {
   domainSearch: "/domain-name-search",
   bulkDomainSearch: "/bulk-domain-search",
   businessEmail: "/business-email",
+  websiteMigration: "/website-migration",
   hosting: "/web-hosting",
   vps: "/vps",
   cloud: "/cloud-hosting",
