@@ -108,7 +108,12 @@ export function HostingPlansCream({
           ) : null}
         </div>
 
-        <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div
+          className={cn(
+            "mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2",
+            plans.length <= 3 ? "xl:grid-cols-3" : "xl:grid-cols-4",
+          )}
+        >
           {plans.map((plan, index) => (
             <PlanCard
               key={plan.id}

@@ -38,6 +38,11 @@ import {
   type CmsHostingPageContent,
 } from "@/lib/orbit/hosting-page-content";
 import {
+  defaultCloudHostingPageContent,
+  mergeCloudHostingPageContent,
+  type CmsCloudHostingPageContent,
+} from "@/lib/orbit/cloud-hosting-page-content";
+import {
   defaultPricingPageContent,
   mergePricingPageContent,
   type CmsPricingPageContent,
@@ -59,6 +64,7 @@ const PRICING_SLUG = "pricing";
 const BEYOND_AI_PAGE_SLUG = "beyond-ai-product";
 const BUSINESS_EMAIL_PAGE_SLUG = "business-email-product";
 const HOSTING_PAGE_SLUG = "hosting-product";
+const CLOUD_PAGE_SLUG = "cloud-hosting-product";
 /** Safety net so a bad cache entry can never outlive a few minutes. */
 const CMS_REVALIDATE = 300;
 
@@ -309,6 +315,58 @@ export const getHostingPageContent = cache(
   },
 );
 
+const readCloudHostingPageContent = nextCache(
+  async (): Promise<CmsCloudHostingPageContent> => {
+    const page = await prisma.pageContent.findUnique({
+      where: { slug: CLOUD_PAGE_SLUG },
+    });
+    if (!page) return defaultCloudHostingPageContent();
+    return mergeCloudHostingPageContent(
+      page.sections as Partial<CmsCloudHostingPageContent>,
+    );
+  },
+  ["orbit-cloud-hosting-page-content"],
+  { tags: [CMS_TAG], revalidate: CMS_REVALIDATE },
+);
+
+export const getCloudHostingPageContent = cache(
+  async (): Promise<CmsCloudHostingPageContent> => {
+    try {
+      return await readCloudHostingPageContent();
+    } catch {
+      return defaultCloudHostingPageContent();
+    }
+  },
+);
+
+export async function saveCloudHostingPageContent(
+  content: CmsCloudHostingPageContent,
+) {
+  const normalized = mergeCloudHostingPageContent(content);
+  const row = await prisma.pageContent.upsert({
+    where: { slug: CLOUD_PAGE_SLUG },
+    create: {
+      slug: CLOUD_PAGE_SLUG,
+      title: "Cloud Hosting product",
+      isPublished: true,
+      isVisible: true,
+      sections: normalized,
+      seo: {
+        title: "Cloud Hosting — Dedicated Resources | HostingBeyond",
+        description:
+          "Cloud hosting with dedicated CPU, RAM, and NVMe storage. Compare Cloud Starter, Business, and Pro plans with free SSL and 24/7 support.",
+        keywords:
+          "cloud hosting, managed cloud hosting, scalable web hosting, WooCommerce cloud",
+      },
+    },
+    update: { sections: normalized },
+  });
+  revalidateContent();
+  revalidatePath(routes.cloud);
+  revalidatePath("/orbit/cloud");
+  return row;
+}
+
 export async function saveHostingPageContent(content: CmsHostingPageContent) {
   const normalized = mergeHostingPageContent(content);
   const row = await prisma.pageContent.upsert({
@@ -532,6 +590,12 @@ export async function ensureHomeSeeded() {
     });
     if (!hostingPage) {
       await saveHostingPageContent(defaultHostingPageContent());
+    }
+    const cloudPage = await prisma.pageContent.findUnique({
+      where: { slug: CLOUD_PAGE_SLUG },
+    });
+    if (!cloudPage) {
+      await saveCloudHostingPageContent(defaultCloudHostingPageContent());
     }
   } catch {
     /* DB may be unavailable during local UI work */

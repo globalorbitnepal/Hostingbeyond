@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   Activity,
   FileText,
+  Cloud,
   Globe,
   ImageIcon,
   LayoutDashboard,
@@ -32,6 +33,7 @@ const nav = [
   { href: "/orbit/beyond-ai", label: "Beyond AI Product", icon: Sparkles },
   { href: "/orbit/business-email", label: "Business Email", icon: Mail },
   { href: "/orbit/hosting", label: "Web Hosting", icon: Globe },
+  { href: "/orbit/cloud", label: "Cloud Hosting", icon: Cloud },
   { href: "/orbit/navigation", label: "Navigation", icon: Navigation },
   { href: "/orbit/media", label: "Media Library", icon: ImageIcon },
   { href: "/orbit/seo", label: "SEO", icon: Search },
