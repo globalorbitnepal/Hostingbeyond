@@ -196,6 +196,9 @@ jobs:
             npm install </dev/null
           fi
 
+          echo "==> Clearing stale Next.js generated types"
+          rm -rf .next
+
           echo "==> Typecheck"
           npm run typecheck </dev/null
 
