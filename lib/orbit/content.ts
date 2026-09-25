@@ -32,6 +32,12 @@ import {
   mergePricingPageContent,
   type CmsPricingPageContent,
 } from "@/lib/orbit/pricing-content";
+import {
+  mergeStoredPageSeo,
+  metadataFromStoredSeo,
+  type StoredPageSeo,
+} from "@/lib/orbit/page-seo";
+import type { Metadata } from "next";
 
 /**
  * Published content is read on every page, so it is cached until an Orbit save
@@ -291,8 +297,41 @@ export async function savePricingPageContent(content: CmsPricingPageContent) {
   return row;
 }
 
+function domainRowSeo(single: DomainContent["single"]): StoredPageSeo {
+  return {
+    metaTitle: single.seoTitle,
+    metaDescription: single.seoDescription,
+    keywords: single.seoKeywords,
+    ogTitle: single.ogTitle,
+    ogDescription: single.ogDescription,
+    ogImage: single.ogImage,
+  };
+}
+
+export async function getStoredPageSeo(slug: string): Promise<StoredPageSeo> {
+  try {
+    const row = await prisma.pageContent.findUnique({
+      where: { slug },
+      select: { seo: true },
+    });
+    return mergeStoredPageSeo(row?.seo);
+  } catch {
+    return mergeStoredPageSeo(null);
+  }
+}
+
+export async function buildPublicPageMetadata(
+  slug: string,
+  path: string,
+  defaults: { title?: string; description?: string; image?: string },
+): Promise<Metadata> {
+  const seo = await getStoredPageSeo(slug);
+  return metadataFromStoredSeo(path, seo, defaults);
+}
+
 export async function saveDomainContent(content: DomainContent) {
   const normalized = mergeDomainContent(content);
+  const seo = domainRowSeo(normalized.single);
   const row = await prisma.pageContent.upsert({
     where: { slug: DOMAIN_SLUG },
     create: {
@@ -301,12 +340,9 @@ export async function saveDomainContent(content: DomainContent) {
       isPublished: true,
       isVisible: true,
       sections: normalized,
-      seo: {
-        title: normalized.single.seoTitle,
-        description: normalized.single.seoDescription,
-      },
+      seo,
     },
-    update: { sections: normalized },
+    update: { sections: normalized, seo },
   });
   revalidateContent();
   revalidatePath(routes.domainSearch);

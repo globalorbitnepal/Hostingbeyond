@@ -8,19 +8,14 @@ import {
   getHomeSections,
   getSiteSettings,
 } from "@/lib/orbit/content";
-import { buildMetadata } from "@/lib/metadata";
+import { buildDomainPageMetadata } from "@/lib/domains/page-metadata";
 import { buildDomainSchema } from "@/lib/domains/seo";
 
 const PATH = routes.bulkDomainSearch;
 
 export async function generateMetadata(): Promise<Metadata> {
   const { bulk } = await getDomainContent();
-  return buildMetadata({
-    title: bulk.seoTitle,
-    description: bulk.seoDescription,
-    path: PATH,
-    image: "/images/domains/hero.jpg",
-  });
+  return buildDomainPageMetadata(bulk, PATH);
 }
 
 export default async function BulkDomainSearchPage() {

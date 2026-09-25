@@ -2,19 +2,21 @@ import type { Metadata } from "next";
 
 import { BeyondAiProductPage } from "@/components/beyond-ai/beyond-ai-product-page";
 import { SiteFooter, SiteHeader } from "@/components/layout";
-import { buildMetadata } from "@/lib/metadata";
 import {
+  buildPublicPageMetadata,
   getBeyondAiPageContent,
   getHomeSections,
   getSiteSettings,
 } from "@/lib/orbit/content";
 
-export const metadata: Metadata = buildMetadata({
-  title: "Beyond AI — AI Website Builder & Hosting",
-  description:
-    "Build websites, create content, optimize SEO and launch with powerful AI models — all in one workspace with Hosting Beyond.",
-  path: "/beyond-ai",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPublicPageMetadata("beyond-ai", "/beyond-ai", {
+    title: "Beyond AI — AI Website Builder & Hosting",
+    description:
+      "Build websites, create content, optimize SEO and launch with powerful AI models — all in one workspace with HostingBeyond.",
+    image: "/images/home/domains.webp",
+  });
+}
 
 export default async function BeyondAiPage() {
   const [sections, settings, pageContent] = await Promise.all([

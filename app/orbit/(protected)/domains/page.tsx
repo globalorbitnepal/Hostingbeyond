@@ -239,6 +239,34 @@ export default function OrbitDomainsPage() {
                 }
                 onBlur={() => void save()}
               />
+              <AreaField
+                label="SEO keywords"
+                value={page.seoKeywords}
+                rows={2}
+                onChange={(seoKeywords) => patchPage(pageKey, { seoKeywords })}
+                onBlur={() => void save()}
+              />
+              <TextField
+                label="Open Graph title"
+                value={page.ogTitle}
+                onChange={(ogTitle) => patchPage(pageKey, { ogTitle })}
+                onBlur={() => void save()}
+              />
+              <AreaField
+                label="Open Graph description"
+                value={page.ogDescription}
+                rows={2}
+                onChange={(ogDescription) =>
+                  patchPage(pageKey, { ogDescription })
+                }
+                onBlur={() => void save()}
+              />
+              <TextField
+                label="Open Graph image path"
+                value={page.ogImage}
+                onChange={(ogImage) => patchPage(pageKey, { ogImage })}
+                onBlur={() => void save()}
+              />
             </div>
           </OrbitCard>
 
@@ -749,8 +777,36 @@ export default function OrbitDomainsPage() {
           </OrbitCard>
 
           <OrbitCard
+            title="Why buy domains"
+            hint="Headline for the Hostinger-style benefits grid (uses trust strip items)."
+          >
+            <div className="grid gap-3 sm:grid-cols-3">
+              <TextField
+                label="Eyebrow"
+                value={shared.whyBuyEyebrow}
+                onChange={(whyBuyEyebrow) => patchShared({ whyBuyEyebrow })}
+                onBlur={() => void save()}
+              />
+              <TextField
+                label="Heading"
+                value={shared.whyBuyHeading}
+                onChange={(whyBuyHeading) => patchShared({ whyBuyHeading })}
+                onBlur={() => void save()}
+              />
+              <TextField
+                label="Description"
+                value={shared.whyBuyDescription}
+                onChange={(whyBuyDescription) =>
+                  patchShared({ whyBuyDescription })
+                }
+                onBlur={() => void save()}
+              />
+            </div>
+          </OrbitCard>
+
+          <OrbitCard
             title="Trust strip"
-            hint="Four items under the hero."
+            hint="Four items shown in the Why buy grid."
             action={
               <AddButton
                 label="Add item"

@@ -8,19 +8,14 @@ import {
   getHomeSections,
   getSiteSettings,
 } from "@/lib/orbit/content";
-import { buildMetadata } from "@/lib/metadata";
+import { buildDomainPageMetadata } from "@/lib/domains/page-metadata";
 import { buildDomainSchema } from "@/lib/domains/seo";
 
 const PATH = routes.domainSearch;
 
 export async function generateMetadata(): Promise<Metadata> {
   const { single } = await getDomainContent();
-  return buildMetadata({
-    title: single.seoTitle,
-    description: single.seoDescription,
-    path: PATH,
-    image: "/images/domains/hero.jpg",
-  });
+  return buildDomainPageMetadata(single, PATH);
 }
 
 export default async function DomainNameSearchPage({

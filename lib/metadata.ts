@@ -7,6 +7,12 @@ type BuildMetadataInput = {
   description?: string;
   path?: string;
   image?: string;
+  keywords?: string[];
+  /** Full Open Graph title (defaults to browser title). */
+  ogTitle?: string;
+  ogDescription?: string;
+  twitterTitle?: string;
+  twitterDescription?: string;
   noIndex?: boolean;
 };
 
@@ -19,16 +25,26 @@ export function buildMetadata({
   description = siteConfig.description,
   path = "/",
   image,
+  keywords = [],
+  ogTitle,
+  ogDescription,
+  twitterTitle,
+  twitterDescription,
   noIndex = false,
 }: BuildMetadataInput = {}): Metadata {
   const url = new URL(path, siteConfig.url).toString();
   const fullTitle = title
     ? `${title} | ${siteConfig.name}`
     : `${siteConfig.name} — ${siteConfig.tagline}`;
+  const socialTitle = ogTitle || fullTitle;
+  const socialDescription = ogDescription || description;
+  const xTitle = twitterTitle || socialTitle;
+  const xDescription = twitterDescription || socialDescription;
 
   const metadata: Metadata = {
     title: fullTitle,
     description,
+    ...(keywords.length > 0 ? { keywords } : {}),
     metadataBase: new URL(siteConfig.url),
     alternates: {
       canonical: url,
@@ -37,8 +53,8 @@ export function buildMetadata({
       type: "website",
       locale: siteConfig.locale,
       url,
-      title: fullTitle,
-      description,
+      title: socialTitle,
+      description: socialDescription,
       siteName: siteConfig.name,
       ...(image
         ? {
@@ -55,8 +71,8 @@ export function buildMetadata({
     },
     twitter: {
       card: image ? "summary_large_image" : "summary",
-      title: fullTitle,
-      description,
+      title: xTitle,
+      description: xDescription,
       creator: siteConfig.twitterHandle,
       ...(image ? { images: [image] } : {}),
     },

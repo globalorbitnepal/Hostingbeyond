@@ -184,10 +184,13 @@ function SkeletonRow() {
 export function DomainSearchPanel({
   mode,
   initialQuery = "",
+  layout = "default",
 }: {
   mode: SearchMode;
   initialQuery?: string;
+  layout?: "default" | "hero";
 }) {
+  const hero = layout === "hero";
   const [query, setQuery] = useState(initialQuery);
   const [bulk, setBulk] = useState("");
   const [loading, setLoading] = useState(false);
@@ -257,7 +260,12 @@ export function DomainSearchPanel({
   ).length;
 
   return (
-    <div className="rounded-[28px] border border-white/70 bg-white p-4 shadow-[0_34px_80px_-34px_rgba(15,10,40,0.6)] ring-1 ring-black/[0.03] sm:rounded-[32px] sm:p-6">
+    <div
+      className={cn(
+        "rounded-[28px] border border-white/70 bg-white shadow-[0_34px_80px_-34px_rgba(15,10,40,0.6)] ring-1 ring-black/[0.03]",
+        hero ? "p-5 sm:rounded-[32px] sm:p-7" : "p-4 sm:rounded-[32px] sm:p-6",
+      )}
+    >
       <nav
         aria-label="Search mode"
         className="flex w-full gap-1 rounded-full bg-[#f3f1ff] p-1"
@@ -289,9 +297,19 @@ export function DomainSearchPanel({
           <label htmlFor="domain-name-search" className="sr-only">
             Search for a domain name
           </label>
-          <div className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-2 transition focus-within:border-[#673de6] focus-within:ring-4 focus-within:ring-[#673de6]/10 sm:flex-row sm:items-center">
+          <div
+            className={cn(
+              "flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-2 transition focus-within:border-[#673de6] focus-within:ring-4 focus-within:ring-[#673de6]/10 sm:flex-row sm:items-center",
+              hero && "rounded-[18px] p-2.5 sm:p-3",
+            )}
+          >
             <div className="flex min-w-0 flex-1 items-center gap-2 px-2">
-              <Search className="size-5 shrink-0 text-[#673de6]" />
+              <Search
+                className={cn(
+                  "shrink-0 text-[#673de6]",
+                  hero ? "size-5 sm:size-6" : "size-5",
+                )}
+              />
               <input
                 id="domain-name-search"
                 type="text"
@@ -299,14 +317,24 @@ export function DomainSearchPanel({
                 autoComplete="off"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Find your perfect domain name…"
-                className="min-w-0 flex-1 bg-transparent py-3 text-[15px] font-medium text-[#1a1035] outline-none placeholder:text-slate-400 sm:text-[16px]"
+                placeholder="Type a domain — e.g. yourbrand.com"
+                className={cn(
+                  "min-w-0 flex-1 bg-transparent font-medium text-[#1a1035] outline-none placeholder:text-slate-400",
+                  hero
+                    ? "py-3.5 text-[16px] sm:py-4 sm:text-[18px]"
+                    : "py-3 text-[15px] sm:text-[16px]",
+                )}
               />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#2563eb] to-[#673de6] px-6 text-[14px] font-bold text-white shadow-[0_12px_26px_-14px_rgba(37,99,235,0.9)] transition hover:brightness-110 disabled:opacity-70"
+              className={cn(
+                "inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#2563eb] to-[#673de6] font-bold text-white shadow-[0_12px_26px_-14px_rgba(37,99,235,0.9)] transition hover:brightness-110 disabled:opacity-70",
+                hero
+                  ? "h-12 px-7 text-[14px] sm:h-14 sm:px-8 sm:text-[15px]"
+                  : "h-12 px-6 text-[14px]",
+              )}
             >
               {loading ? (
                 <Loader2 className="size-4 animate-spin" />

@@ -25,6 +25,10 @@ export type DomainFaqItem = {
 export type DomainPageCopy = {
   seoTitle: string;
   seoDescription: string;
+  seoKeywords: string;
+  ogTitle: string;
+  ogDescription: string;
+  ogImage: string;
   eyebrow: string;
   title: string;
   titleAccent: string;
@@ -92,6 +96,9 @@ export type DomainSharedContent = {
   videoDescription: string;
   videoCtaLabel: string;
   scenes: DomainSceneItem[];
+  whyBuyEyebrow: string;
+  whyBuyHeading: string;
+  whyBuyDescription: string;
   includedEyebrow: string;
   includedHeading: string;
   includedDescription: string;
@@ -174,6 +181,10 @@ export function defaultDomainContent(): DomainContent {
       videoDescription:
         "Search, compare and launch in one place. No vendor hopping, no DNS guesswork — every step below happens inside your HostingBeyond panel.",
       videoCtaLabel: "Start with your domain",
+      whyBuyEyebrow: "Why HostingBeyond",
+      whyBuyHeading: "Why buy domain names at HostingBeyond?",
+      whyBuyDescription:
+        "Transparent pricing, free privacy and DNS, and one dashboard to point your name at a site, mailboxes and AI pages — without juggling registrars.",
       scenes: [
         {
           id: "search",
@@ -283,14 +294,21 @@ export function defaultDomainContent(): DomainContent {
       ctaEmailLabel: "Add business email",
     },
     single: {
-      seoTitle: "Domain Name Search — Check Availability & Register from $0.01",
+      seoTitle:
+        "Domain Name Search — Check Availability, Buy & Register Domains",
       seoDescription:
-        "Search any domain name and check availability instantly across .com, .io, .ai, .store and 300+ extensions. First-year and renewal prices shown side by side, free WHOIS privacy and free DNS on every domain.",
-      eyebrow: "Registration & lookup",
-      title: "Domain name search",
-      titleAccent: "that finds the perfect name",
+        "Free domain name search with instant availability across .com, .net, .io, .ai and 300+ extensions. Compare first-year and renewal prices, register a domain from $0.01, free WHOIS privacy and DNS included.",
+      seoKeywords:
+        "domain name search, check domain availability, buy domain name, register domain, domain lookup, cheap domain registration, .com domain, bulk domain search, domain transfer, WHOIS privacy",
+      ogTitle: "Domain Name Search — Check Availability & Register from $0.01",
+      ogDescription:
+        "Search and register your domain in seconds. See renewal pricing upfront, free privacy and DNS on every name.",
+      ogImage: "/images/domains/hero.jpg",
+      eyebrow: "Domain registration",
+      title: "Find and register",
+      titleAccent: "your perfect domain name",
       description:
-        "Check availability across 300+ extensions in one search. Free WHOIS privacy, free DNS and renewal pricing published before you buy.",
+        "Instant domain lookup across 300+ extensions. Compare promo and renewal rates side by side, then add hosting or email on the same account.",
       stats: [
         {
           id: "managed",
@@ -317,10 +335,10 @@ export function defaultDomainContent(): DomainContent {
       pricingHeading: "Domain prices with the renewal in plain sight",
       pricingCopy:
         "Filter by what you are building. Every row shows the first-year promo, the standard renewal and the transfer-in price, so you can plan the real cost of your brand.",
-      faqEyebrow: "Domain search FAQs",
-      faqHeading: "Everything people ask before buying",
+      faqEyebrow: "Domain basics",
+      faqHeading: "Lost? Here's what you need to know about domains",
       faqDescription:
-        "Straight answers on pricing, privacy, transfers and renewals.",
+        "Clear answers on buying, renewing, transferring and protecting your domain — before you check out.",
       faqs: [
         {
           id: "how",
@@ -395,6 +413,12 @@ export function defaultDomainContent(): DomainContent {
       seoTitle: "Bulk Domain Search — Check 50 Domain Names at Once",
       seoDescription:
         "Check up to 50 domain names at once with our bulk domain search. Paste your shortlist and see availability, first-year pricing and renewal rates for every name in one table.",
+      seoKeywords:
+        "bulk domain search, check multiple domains, domain availability list, agency domain search, domain shortlist",
+      ogTitle: "Bulk Domain Search — 50 Names in One Table",
+      ogDescription:
+        "Paste up to fifty domains and get availability, promo pricing and renewals in a shareable table.",
+      ogImage: "/images/domains/hero.jpg",
       eyebrow: "Bulk lookup for teams",
       title: "Bulk domain search",
       titleAccent: "for 50 names at a time",
@@ -542,6 +566,10 @@ function mergePageCopy(
     ...stored,
     seoTitle: text(stored.seoTitle, defaults.seoTitle),
     seoDescription: text(stored.seoDescription, defaults.seoDescription),
+    seoKeywords: text(stored.seoKeywords, defaults.seoKeywords),
+    ogTitle: text(stored.ogTitle, defaults.ogTitle),
+    ogDescription: text(stored.ogDescription, defaults.ogDescription),
+    ogImage: text(stored.ogImage, defaults.ogImage),
     eyebrow: text(stored.eyebrow, defaults.eyebrow),
     title: text(stored.title, defaults.title),
     titleAccent: text(stored.titleAccent, defaults.titleAccent),
@@ -598,6 +626,12 @@ export function mergeDomainContent(
         fallback.videoDescription,
       ),
       videoCtaLabel: text(shared.videoCtaLabel, fallback.videoCtaLabel),
+      whyBuyEyebrow: text(shared.whyBuyEyebrow, fallback.whyBuyEyebrow),
+      whyBuyHeading: text(shared.whyBuyHeading, fallback.whyBuyHeading),
+      whyBuyDescription: text(
+        shared.whyBuyDescription,
+        fallback.whyBuyDescription,
+      ),
       includedEyebrow: text(shared.includedEyebrow, fallback.includedEyebrow),
       includedHeading: text(shared.includedHeading, fallback.includedHeading),
       includedDescription: text(

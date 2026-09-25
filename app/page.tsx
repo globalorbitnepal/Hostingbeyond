@@ -14,10 +14,25 @@ import {
   ProofSliderSection,
   CloseCtaSection,
 } from "@/components/home";
+import type { Metadata } from "next";
+
 import { HeroJourneySlider } from "@/components/home/hero-journey-slider";
-import { getHomeSections, getSiteSettings } from "@/lib/orbit/content";
+import {
+  buildPublicPageMetadata,
+  getHomeSections,
+  getSiteSettings,
+} from "@/lib/orbit/content";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPublicPageMetadata("home", "/", {
+    title: "Web Hosting, Domains, Email & AI Sites",
+    description:
+      "Premium hosting, domain registration, business email and Beyond AI websites — one panel, transparent pricing, 24/7 support.",
+    image: "/images/home/domains.webp",
+  });
+}
 
 export default async function HomePage() {
   const [sections, settings] = await Promise.all([
