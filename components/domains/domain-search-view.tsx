@@ -21,6 +21,10 @@ import {
   DomainSearchPanel,
   type SearchMode,
 } from "@/components/domains/domain-search-panel";
+import {
+  DomainIncludedPremiumStage,
+  isVideoMediaSrc,
+} from "@/components/domains/domain-premium-media";
 import { DomainVideoSection } from "@/components/domains/domain-video-section";
 import { routes } from "@/config/routes";
 import {
@@ -73,12 +77,17 @@ export function DomainSearchView({
     .filter((item) => item.visible !== false)
     .map((item) => ({
       id: item.id,
-      image: item.image,
+      video: item.video || (isVideoMediaSrc(item.image) ? item.image : ""),
       label: item.label,
       caption: item.caption,
       prompt: item.prompt,
       chips: parseChips(item.chips),
     }));
+  const brandVideo = isVideoMediaSrc(shared.brandVideo)
+    ? shared.brandVideo!.trim()
+    : isVideoMediaSrc(shared.brandImage)
+      ? shared.brandImage.trim()
+      : "";
   const comTransfer = priceByTld(content, ".com")?.transfer;
 
   return (
@@ -276,16 +285,26 @@ export function DomainSearchView({
               </div>
             </div>
 
-            <div className="relative aspect-[4/3] overflow-hidden rounded-[28px] border border-white/70 shadow-[0_28px_70px_-34px_rgba(47,28,106,0.5)] lg:aspect-[3/4]">
-              <Image
-                src={shared.brandImage}
-                alt={shared.brandImageAlt}
-                fill
-                sizes="(max-width: 1024px) 100vw, 38vw"
-                loading="lazy"
-                className="object-cover"
-              />
-            </div>
+            {brandVideo ? (
+              <div className="relative aspect-[4/3] overflow-hidden rounded-[28px] border border-white/70 bg-[#0f0a24] shadow-[0_28px_70px_-34px_rgba(47,28,106,0.5)] lg:aspect-[3/4]">
+                <video
+                  className="absolute inset-0 h-full w-full object-cover"
+                  src={brandVideo}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  aria-label={shared.brandImageAlt}
+                />
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0f0a24]/50 via-transparent to-transparent"
+                />
+              </div>
+            ) : (
+              <DomainIncludedPremiumStage />
+            )}
           </div>
         </div>
       </section>

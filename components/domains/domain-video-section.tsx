@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -16,11 +15,16 @@ import {
 import { routes } from "@/config/routes";
 import { useInView } from "@/hooks/use-in-view";
 import { useTyped } from "@/hooks/use-typed";
+import {
+  DomainPremiumVideoLayer,
+  DomainSceneMotion,
+  isVideoMediaSrc,
+} from "@/components/domains/domain-premium-media";
 import { cn } from "@/lib/utils";
 
 export type VideoScene = {
   id: string;
-  image: string;
+  video?: string;
   label: string;
   caption: string;
   prompt: string;
@@ -157,21 +161,48 @@ export function DomainVideoSection({
 
           <figure className="relative m-0">
             <div className="relative aspect-[16/10] overflow-hidden rounded-[28px] border border-white/45 bg-[#12082a] shadow-[0_38px_90px_-38px_rgba(15,10,40,0.9)] sm:rounded-[32px]">
-              {scenes.map((item, itemIndex) => (
-                <Image
-                  key={item.id}
-                  src={item.image}
-                  alt={`${item.label} step of the HostingBeyond domain flow`}
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 55vw"
-                  loading={itemIndex === 0 ? "eager" : "lazy"}
-                  className={cn(
-                    "object-cover transition-opacity duration-[900ms] ease-in-out",
-                    itemIndex === index ? "opacity-100" : "opacity-0",
-                    animating ? "hb-video" : "scale-[1.03]",
-                  )}
-                />
-              ))}
+              {scenes.map((item, itemIndex) => {
+                const show = itemIndex === index;
+                const videoSrc = isVideoMediaSrc(item.video)
+                  ? item.video!.trim()
+                  : "";
+                const scenePlaying = show && !paused && !reduceMotion;
+                return (
+                  <div
+                    key={item.id}
+                    className={cn(
+                      "absolute inset-0 transition-opacity duration-[900ms] ease-in-out",
+                      show ? "opacity-100" : "opacity-0",
+                    )}
+                    aria-hidden={!show}
+                  >
+                    {videoSrc ? (
+                      <DomainPremiumVideoLayer
+                        src={videoSrc}
+                        playing={scenePlaying}
+                      />
+                    ) : (
+                      <>
+                        <div
+                          className={cn(
+                            "absolute inset-0 opacity-95",
+                            animating && show && "hb-pricing-motion-bg",
+                          )}
+                          aria-hidden
+                        />
+                        <div
+                          aria-hidden
+                          className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_25%,rgba(147,197,253,0.35),transparent_55%),radial-gradient(ellipse_at_75%_70%,rgba(167,139,250,0.38),transparent_50%)]"
+                        />
+                        <DomainSceneMotion
+                          sceneId={item.id}
+                          playing={scenePlaying}
+                        />
+                      </>
+                    )}
+                  </div>
+                );
+              })}
 
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#12082a]/80 via-transparent to-transparent" />
 

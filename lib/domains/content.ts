@@ -70,6 +70,8 @@ export type DomainSceneItem = {
   prompt: string;
   chips: string;
   image: string;
+  /** Optional MP4/WebM loop for the preview player (replaces static scene art). */
+  video?: string;
 };
 
 export type DomainSharedContent = {
@@ -77,6 +79,8 @@ export type DomainSharedContent = {
   heroImageAlt: string;
   brandImage: string;
   brandImageAlt: string;
+  /** Optional MP4/WebM for the included-features preview (replaces brand image). */
+  brandVideo?: string;
   transferImage: string;
   transferImageAlt: string;
   heroChips: string;
@@ -579,6 +583,7 @@ export function mergeDomainContent(
       heroImageAlt: text(shared.heroImageAlt, fallback.heroImageAlt),
       brandImage: text(shared.brandImage, fallback.brandImage),
       brandImageAlt: text(shared.brandImageAlt, fallback.brandImageAlt),
+      brandVideo: text(shared.brandVideo, fallback.brandVideo ?? ""),
       transferImage: text(shared.transferImage, fallback.transferImage),
       transferImageAlt: text(
         shared.transferImageAlt,
@@ -631,6 +636,7 @@ export function mergeDomainContent(
         prompt: text(item.prompt, base.prompt),
         chips: text(item.chips, base.chips),
         image: text(item.image, base.image),
+        video: text(item.video, base.video ?? ""),
       })),
       pricing: mergeList(shared.pricing, fallback.pricing, (item, base) => ({
         ...base,
