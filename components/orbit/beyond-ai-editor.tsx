@@ -91,9 +91,9 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
         <div>
           <h2 className="font-semibold">Beyond AI section</h2>
           <p className="mt-0.5 text-xs text-slate-500">
-            Homepage Beyond AI is a coded purple section with live heading,
-            steps, and Get Started (opens /beyond-ai). Replace the right-side
-            workspace photo here if needed.
+            Homepage Beyond AI is a full-bleed purple scene. Live heading,
+            steps, chips, and Get Started stay coded. Photo is person/desk only
+            — no baked letters.
           </p>
         </div>
         <label className="flex items-center gap-2 text-xs text-slate-500">
@@ -107,7 +107,7 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
       </div>
 
       <OrbitImageField
-        label="Person photo only (no baked text)"
+        label="Full-bleed person/desk photo (no baked text)"
         value={value.workspaceImageUrl ?? ""}
         onChange={(workspaceImageUrl) => patch({ workspaceImageUrl })}
         onCommit={(workspaceImageUrl) => patch({ workspaceImageUrl }, true)}

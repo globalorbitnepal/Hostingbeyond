@@ -42,14 +42,55 @@ function FloatChip({
   return (
     <motion.span
       className={cn(
-        "absolute z-20 grid size-12 place-items-center rounded-[16px] bg-[#8b5cf6] text-white shadow-[0_14px_30px_rgba(47,28,106,0.35)] ring-1 ring-white/25",
+        "absolute z-20 grid size-[52px] place-items-center rounded-[18px] bg-[#7c3aed] text-white shadow-[0_16px_32px_rgba(47,28,106,0.32)] ring-1 ring-white/20",
         className,
       )}
-      animate={{ y: [0, -8, 0] }}
-      transition={{ duration: 3.4, delay, repeat: Infinity, ease: "easeInOut" }}
+      animate={{ y: [0, -10, 0] }}
+      transition={{ duration: 3.6, delay, repeat: Infinity, ease: "easeInOut" }}
     >
       {children}
     </motion.span>
+  );
+}
+
+function PreviewCard({ href }: { href: string }) {
+  return (
+    <div className="rounded-[26px] bg-white p-5 shadow-[0_28px_70px_-24px_rgba(15,10,40,0.5)] sm:p-6">
+      <div className="flex items-center justify-between gap-3 text-[10px] font-semibold text-slate-400">
+        <span className="inline-flex items-center gap-1.5 text-[12px] font-extrabold text-[#4c1d95]">
+          <Sparkles className="size-3.5" aria-hidden />
+          Beyond AI
+        </span>
+        <span className="hidden items-center gap-3 xl:flex">
+          Home
+          <span>Templates</span>
+          <span>Features</span>
+          <span>Pricing</span>
+          <span>Sign In</span>
+        </span>
+        <Menu className="size-4 text-slate-400" aria-hidden />
+      </div>
+      <p className="font-heading mt-6 text-[1.7rem] leading-[1.08] font-extrabold tracking-[-0.045em] text-slate-950 sm:text-[1.85rem]">
+        Turn Your Ideas
+        <br />
+        Into Real Websites
+      </p>
+      <p className="mt-2 max-w-[16rem] text-[12.5px] leading-relaxed text-slate-500">
+        Drag, drop and make it live in minutes with AI.
+      </p>
+      <Link
+        href={href}
+        className="mt-5 inline-flex h-10 items-center rounded-full bg-[#7c3aed] px-5 text-[13px] font-bold text-white"
+      >
+        Start Building
+      </Link>
+      <p className="mt-5 inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1.5 text-[11px] font-semibold text-slate-600 ring-1 ring-slate-200">
+        <Globe className="size-3.5 text-[#7c3aed]" aria-hidden />
+        Live Website
+        <span className="font-medium text-slate-400">Ready in minutes</span>
+        <Check className="size-3.5 text-emerald-500" aria-hidden />
+      </p>
+    </div>
   );
 }
 
@@ -58,35 +99,40 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
   const reduce = useReducedMotion();
   const steps = data.highlights.slice(0, 3);
   const titleLines = data.title.split("\n").filter(Boolean);
-  const photo =
-    data.workspaceImageUrl?.trim() || "/images/home/beyond-ai/person-desk.png";
+  const scene =
+    data.workspaceImageUrl?.trim() || "/images/home/beyond-ai/scene-full.png";
+  const ctaHref = data.primaryCtaHref || routes.beyondAi;
 
   return (
-    <section className="hb-home-section relative overflow-hidden bg-[#4c1d95]">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_18%_12%,rgba(255,255,255,0.14),transparent_34%),linear-gradient(115deg,#5b21b6_0%,#4c1d95_48%,#3b0f8a_100%)]"
+    <section className="relative overflow-hidden bg-[#6d28d9] !py-0">
+      <Image
+        src={scene}
+        alt=""
+        fill
+        priority
+        className="hidden object-cover object-[center_center] lg:block"
+        sizes="100vw"
       />
 
-      <div className="hb-shell relative z-10 grid items-center gap-8 py-14 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-4 lg:py-16 xl:gap-8">
+      <div className="hb-shell relative z-10 grid items-center py-16 sm:py-20 lg:min-h-[44rem] lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:py-0 xl:min-h-[48rem]">
         <motion.div
           initial={reduce ? false : { opacity: 0, y: 18 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.35 }}
           transition={{ duration: 0.5 }}
-          className="max-w-[36rem]"
+          className="max-w-[34rem]"
         >
           <motion.p
             initial={reduce ? false : { opacity: 0, y: 8 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="inline-flex items-center gap-2 text-[1.4rem] font-extrabold tracking-tight text-white"
+            className="inline-flex items-center gap-2 text-[1.35rem] font-extrabold tracking-tight text-white"
           >
             <Sparkles className="size-5 text-[#ddd6fe]" aria-hidden />
             {data.badge}
           </motion.p>
 
-          <h2 className="font-heading mt-5 text-[clamp(2.55rem,5.2vw,4.35rem)] leading-[0.96] font-extrabold tracking-[-0.05em] text-white">
+          <h2 className="font-heading mt-5 text-[clamp(2.6rem,5.4vw,4.45rem)] leading-[0.95] font-extrabold tracking-[-0.05em] text-white">
             {titleLines.map((line, index) => (
               <motion.span
                 key={line}
@@ -100,7 +146,7 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
               </motion.span>
             ))}
             <motion.span
-              className="block bg-gradient-to-r from-white via-[#ddd6fe] to-[#c4b5fd] bg-clip-text text-transparent"
+              className="block"
               initial={reduce ? false : { opacity: 0, y: 14 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -111,7 +157,7 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
           </h2>
 
           <motion.p
-            className="mt-5 max-w-[28rem] text-[16px] leading-relaxed text-white/88 sm:text-[17px]"
+            className="mt-5 max-w-[27rem] text-[16px] leading-relaxed text-white/88 sm:text-[17px]"
             initial={reduce ? false : { opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
@@ -155,11 +201,11 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
             transition={{ delay: 0.58 }}
           >
             <Link
-              href={data.primaryCtaHref || routes.beyondAi}
+              href={ctaHref}
               className={cn(
-                "group relative mt-9 inline-flex h-12 items-center gap-2 overflow-hidden rounded-full bg-white px-7 text-[15px] font-bold text-[#4c1d95]",
-                "shadow-[0_16px_40px_rgba(15,10,40,0.32)] transition duration-300",
-                "hover:-translate-y-0.5 hover:shadow-[0_20px_46px_rgba(15,10,40,0.4)]",
+                "group relative mt-9 inline-flex h-12 items-center gap-2 overflow-hidden rounded-full bg-white px-7 text-[15px] font-bold text-[#5b21b6]",
+                "shadow-[0_16px_40px_rgba(15,10,40,0.28)] transition duration-300",
+                "hover:-translate-y-0.5 hover:shadow-[0_20px_46px_rgba(15,10,40,0.38)]",
               )}
             >
               <span
@@ -172,66 +218,42 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
           </motion.div>
         </motion.div>
 
-        <div className="relative min-h-[320px] lg:min-h-[520px]">
-          <Image
-            src={photo}
-            alt=""
-            fill
-            priority
-            className="object-contain object-bottom lg:object-right-bottom"
-            sizes="(max-width: 1024px) 100vw, 58vw"
-          />
-
-          <FloatChip className="top-[8%] right-[18%] hidden lg:grid" delay={0}>
+        <div className="relative hidden h-full min-h-[36rem] lg:block">
+          <FloatChip className="top-[11%] right-[36%]" delay={0}>
             <Sparkles className="size-5" />
           </FloatChip>
-          <FloatChip className="top-[4%] right-[6%] hidden lg:grid" delay={0.6}>
+          <FloatChip className="top-[8%] right-[8%]" delay={0.55}>
             <AppWindow className="size-5" />
           </FloatChip>
 
           <motion.div
-            className="absolute top-[10%] right-0 hidden w-[min(100%,360px)] rounded-[22px] bg-white p-5 shadow-[0_28px_60px_-28px_rgba(15,10,40,0.45)] lg:block"
-            initial={reduce ? false : { opacity: 0, y: 16 }}
+            className="absolute top-[16%] right-0 w-[min(100%,380px)]"
+            initial={reduce ? false : { opacity: 0, y: 18 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
+            transition={{ delay: 0.18, duration: 0.5 }}
           >
-            <div className="flex items-center justify-between gap-2 text-[10px] font-semibold text-slate-500">
-              <span className="inline-flex items-center gap-1.5 font-extrabold text-[#4c1d95]">
-                <Sparkles className="size-3.5" />
-                Beyond AI
-              </span>
-              <span className="hidden items-center gap-3 xl:flex">
-                Home
-                <span>Templates</span>
-                <span>Features</span>
-                <span>Pricing</span>
-                <span>Sign In</span>
-              </span>
-              <Menu className="size-4 text-slate-400" />
-            </div>
-            <p className="font-heading mt-5 text-[1.55rem] leading-[1.1] font-extrabold tracking-[-0.04em] text-slate-950">
-              Turn Your Ideas
-              <br />
-              Into Real Websites
-            </p>
-            <p className="mt-2 text-[12px] leading-relaxed text-slate-500">
-              Drag, drop and make it live in minutes with AI.
-            </p>
-            <Link
-              href={data.primaryCtaHref || routes.beyondAi}
-              className="mt-4 inline-flex h-9 items-center rounded-full bg-[#673de6] px-4 text-[12px] font-bold text-white"
-            >
-              Start Building
-            </Link>
-            <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1.5 text-[11px] font-semibold text-slate-600 ring-1 ring-slate-200">
-              <Globe className="size-3.5 text-[#673de6]" />
-              Live Website
-              <span className="text-slate-400">Ready in minutes</span>
-              <Check className="size-3.5 text-emerald-500" />
-            </p>
+            <PreviewCard href={ctaHref} />
           </motion.div>
         </div>
+      </div>
+
+      <div className="relative h-[20rem] overflow-hidden sm:h-[24rem] lg:hidden">
+        <Image
+          src={scene}
+          alt=""
+          fill
+          className="object-cover object-[78%_center]"
+          sizes="100vw"
+        />
+        <motion.div
+          className="absolute right-4 bottom-5 w-[min(100%-2rem,280px)]"
+          initial={reduce ? false : { opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          <PreviewCard href={ctaHref} />
+        </motion.div>
       </div>
     </section>
   );
