@@ -1107,7 +1107,7 @@ export function defaultBeyondAiSection(): CmsBeyondAiContent {
     statsValue: "12",
     statsHint: "+4 this month",
     saasTitle: "Powered by SaaS",
-    workspaceImageUrl: "/images/home/beyond-ai/fullbleed-scene.png",
+    workspaceImageUrl: "/images/home/beyond-ai/person-desk.png",
     workspaceImageAlt:
       "Smiling designer building a Beyond AI website beside a floating live preview",
     saasItems: [
@@ -2931,7 +2931,7 @@ function mergeBeyondAiSection(
     /create stunning/i.test(stored.title ?? "") ||
     /start building with beyond ai/i.test(stored.primaryCtaLabel ?? "") ||
     /built for everyone/i.test(stored.badgeSecondary ?? "") ||
-    /dream-hero\.png|dream-section\.png|workspace-visual\.png/i.test(
+    /dream-hero\.png|dream-section\.png|workspace-visual\.png|fullbleed-scene\.png/i.test(
       stored.workspaceImageUrl ?? "",
     );
 

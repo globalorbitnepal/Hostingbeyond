@@ -107,7 +107,7 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
       </div>
 
       <OrbitImageField
-        label="Full-section scene (no frame — purple + person)"
+        label="Person photo only (no baked text)"
         value={value.workspaceImageUrl ?? ""}
         onChange={(workspaceImageUrl) => patch({ workspaceImageUrl })}
         onCommit={(workspaceImageUrl) => patch({ workspaceImageUrl }, true)}
