@@ -1089,8 +1089,8 @@ export function defaultBeyondAiSection(): CmsBeyondAiContent {
     visual: "workspace",
     badge: "Beyond AI",
     badgeSecondary: "",
-    title: "Build Your\nDream",
-    titleAccent: "Website",
+    title: "Build Your",
+    titleAccent: "Dream Website",
     description:
       "Create stunning websites in minutes with AI. No coding. Just your ideas.",
     primaryCtaLabel: "Get Started",
@@ -2927,7 +2927,10 @@ function mergeBeyondAiSection(
     ? stored.saasItems.map((item) => item.trim()).filter(Boolean)
     : defaults.saasItems;
 
+  const staleTwoLineTitle = stored.title === "Build Your\nDream";
+
   const legacyHero =
+    staleTwoLineTitle ||
     /create stunning/i.test(stored.title ?? "") ||
     /start building with beyond ai/i.test(stored.primaryCtaLabel ?? "") ||
     /built for everyone/i.test(stored.badgeSecondary ?? "") ||
