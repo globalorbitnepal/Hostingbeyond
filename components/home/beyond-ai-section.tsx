@@ -151,13 +151,13 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
   const ctaHref = data.primaryCtaHref || routes.beyondAi;
 
   return (
-    <section className="relative overflow-hidden bg-[#4c1d95] !py-0">
+    <section className="relative overflow-hidden bg-[#4c1d95] !py-0 lg:aspect-[16/9] lg:max-h-[56rem]">
       <Image
         src={scene}
         alt=""
         fill
         priority
-        className="hidden object-cover object-[center_center] lg:block"
+        className="hidden object-cover object-[center_62%] lg:block"
         sizes="100vw"
       />
       <div
@@ -165,7 +165,7 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
         className="pointer-events-none absolute inset-0 hidden bg-[radial-gradient(ellipse_at_62%_42%,rgba(167,139,250,0.22),transparent_42%)] lg:block"
       />
 
-      <div className="hb-shell relative z-10 grid items-center py-14 sm:py-16 lg:min-h-[40rem] lg:grid-cols-[minmax(0,0.86fr)_minmax(0,1.14fr)] lg:py-0 xl:min-h-[44rem]">
+      <div className="hb-shell relative z-10 grid items-center py-14 sm:py-16 lg:h-full lg:min-h-0 lg:grid-cols-[minmax(0,0.86fr)_minmax(0,1.14fr)] lg:py-0">
         <motion.div
           initial={reduce ? false : { opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -269,7 +269,7 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
           </motion.div>
         </motion.div>
 
-        <div className="relative hidden h-full min-h-[34rem] lg:block">
+        <div className="relative hidden h-full min-h-[28rem] lg:block">
           <FloatChip className="top-[22%] right-[54%]" delay={0}>
             <Sparkles className="size-[18px]" />
           </FloatChip>
