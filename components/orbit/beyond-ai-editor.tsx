@@ -91,9 +91,9 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
         <div>
           <h2 className="font-semibold">Beyond AI section</h2>
           <p className="mt-0.5 text-xs text-slate-500">
-            Homepage Beyond AI block is one full-width artwork (purple scene,
-            copy, and person together). Get Started on the art opens the Beyond
-            AI page. Upload a replacement here; it saves immediately.
+            Homepage Beyond AI is a coded purple section with live heading,
+            steps, and Get Started (opens /beyond-ai). Replace the right-side
+            workspace photo here if needed.
           </p>
         </div>
         <label className="flex items-center gap-2 text-xs text-slate-500">
@@ -107,7 +107,7 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
       </div>
 
       <OrbitImageField
-        label="Full section artwork"
+        label="Right-side workspace photo"
         value={value.workspaceImageUrl ?? ""}
         onChange={(workspaceImageUrl) => patch({ workspaceImageUrl })}
         onCommit={(workspaceImageUrl) => patch({ workspaceImageUrl }, true)}
