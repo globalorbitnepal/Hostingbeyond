@@ -39,6 +39,27 @@ const previewThumbs = [
   { src: "/images/home/beyond-ai/desert-dunes.jpg", label: "City" },
 ];
 
+function BeyondAiBadge({ href }: { href: string }) {
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "hb-ai-nav inline-flex items-center justify-center gap-1.5 rounded-full border border-violet-200/80 bg-white font-bold tracking-[-0.02em] text-slate-950",
+        "h-10 px-4 text-[15px] shadow-[0_8px_22px_rgba(79,70,229,0.16),inset_0_1px_0_rgba(255,255,255,1)]",
+      )}
+    >
+      <span className="hb-ai-nav__shine" aria-hidden />
+      <Sparkles
+        className="hb-ai-nav__spark size-4 shrink-0 text-[#7c3aed]"
+        aria-hidden
+      />
+      <span>
+        Beyond <span className="hb-ai-nav__word">AI</span>
+      </span>
+    </Link>
+  );
+}
+
 function FloatChip({
   className,
   delay,
@@ -65,7 +86,7 @@ function FloatChip({
 function PreviewCard({ href }: { href: string }) {
   return (
     <div className="relative">
-      <div className="overflow-hidden rounded-[22px] bg-white/95 p-4 shadow-[0_28px_70px_-20px_rgba(20,8,60,0.45)] ring-1 ring-white/70 backdrop-blur-md sm:p-5">
+      <div className="overflow-hidden rounded-[22px] bg-white/96 p-4 shadow-[0_28px_70px_-20px_rgba(20,8,60,0.45)] ring-1 ring-white/80 backdrop-blur-md sm:p-5">
         <div className="flex items-center justify-between gap-2 text-[10px] font-semibold text-slate-400">
           <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold text-[#4c1d95]">
             <Sparkles className="size-3.5" aria-hidden />
@@ -108,7 +129,7 @@ function PreviewCard({ href }: { href: string }) {
                 sizes="220px"
               />
               <span className="absolute bottom-1.5 left-2 text-[10px] font-bold text-white drop-shadow">
-                Adventure Awaits
+                {previewThumbs[0].label}
               </span>
             </div>
             <div className="grid grid-cols-3 gap-2">
@@ -151,39 +172,35 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
   const ctaHref = data.primaryCtaHref || routes.beyondAi;
 
   return (
-    <section className="relative overflow-hidden bg-[#4c1d95] !py-0 lg:aspect-[16/9] lg:max-h-[56rem]">
-      <Image
-        src={scene}
-        alt=""
-        fill
-        priority
-        className="hidden object-cover object-[center_62%] lg:block"
-        sizes="100vw"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 hidden bg-[radial-gradient(ellipse_at_62%_42%,rgba(167,139,250,0.22),transparent_42%)] lg:block"
-      />
+    <section className="relative w-full overflow-hidden bg-[#6d28d9]">
+      <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[58%] lg:block xl:w-[56%]">
+        <Image
+          src={scene}
+          alt=""
+          fill
+          priority
+          className="object-contain object-right-bottom"
+          sizes="58vw"
+        />
+      </div>
 
-      <div className="hb-shell relative z-10 grid items-center py-14 sm:py-16 lg:h-full lg:min-h-0 lg:grid-cols-[minmax(0,0.86fr)_minmax(0,1.14fr)] lg:py-0">
+      <div className="hb-shell relative z-10 grid items-center py-16 sm:py-20 lg:min-h-[40rem] lg:grid-cols-[minmax(0,1.05fr)_minmax(22rem,34rem)] lg:py-16 xl:min-h-[44rem]">
         <motion.div
           initial={reduce ? false : { opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.35 }}
           transition={{ duration: 0.48 }}
-          className="max-w-[30rem]"
+          className="max-w-[38rem]"
         >
-          <motion.p
+          <motion.div
             initial={reduce ? false : { opacity: 0, y: 8 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="inline-flex items-center gap-1.5 text-[17px] font-extrabold tracking-tight text-white"
           >
-            <Sparkles className="size-4 text-[#ddd6fe]" aria-hidden />
-            {data.badge}
-          </motion.p>
+            <BeyondAiBadge href={ctaHref} />
+          </motion.div>
 
-          <h2 className="font-heading mt-3 text-[clamp(2.45rem,4.8vw,4rem)] leading-[0.98] font-extrabold tracking-[-0.045em] text-white">
+          <h2 className="font-heading mt-5 text-[clamp(2.82rem,5.5vw,4.6rem)] leading-[0.96] font-extrabold tracking-[-0.05em] text-white">
             {titleLines.map((line, index) => (
               <motion.span
                 key={line}
@@ -208,7 +225,7 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
           </h2>
 
           <motion.p
-            className="mt-4 max-w-[22.5rem] text-[15px] leading-snug text-white/80"
+            className="mt-5 max-w-[26rem] text-[17.5px] leading-snug text-white/84"
             initial={reduce ? false : { opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
@@ -217,26 +234,26 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
             {data.description}
           </motion.p>
 
-          <ul className="mt-6 space-y-3.5">
+          <ul className="mt-7 space-y-4">
             {steps.map((item, index) => {
               const Icon = stepIcons[item.icon] ?? Zap;
               return (
                 <motion.li
                   key={item.id}
-                  className="flex items-start gap-3"
+                  className="flex items-start gap-3.5"
                   initial={reduce ? false : { opacity: 0, x: -10 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.26 + index * 0.07 }}
                 >
-                  <span className="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-white">
-                    <Icon className="size-3.5" aria-hidden />
+                  <span className="mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-white/12 text-white">
+                    <Icon className="size-4" aria-hidden />
                   </span>
                   <span>
-                    <span className="block text-[14px] font-extrabold text-white">
+                    <span className="block text-[16px] font-extrabold text-white">
                       {item.title}
                     </span>
-                    <span className="mt-0.5 block text-[12px] text-white/68">
+                    <span className="mt-0.5 block text-[13.5px] text-white/70">
                       {item.subtitle}
                     </span>
                   </span>
@@ -254,7 +271,7 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
             <Link
               href={ctaHref}
               className={cn(
-                "group relative mt-7 inline-flex h-11 items-center gap-2 overflow-hidden rounded-full bg-white px-6 text-[14px] font-bold text-[#5b21b6]",
+                "group relative mt-8 inline-flex h-12 items-center gap-2 overflow-hidden rounded-full bg-white px-7 text-[16px] font-bold text-[#5b21b6]",
                 "shadow-[0_14px_32px_rgba(15,10,40,0.24)] transition duration-300",
                 "hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(15,10,40,0.32)]",
               )}
@@ -270,15 +287,15 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
         </motion.div>
 
         <div className="relative hidden h-full min-h-[28rem] lg:block">
-          <FloatChip className="top-[22%] right-[54%]" delay={0}>
+          <FloatChip className="top-[8%] right-[78%]" delay={0}>
             <Sparkles className="size-[18px]" />
           </FloatChip>
-          <FloatChip className="top-[6%] right-[14%]" delay={0.5}>
+          <FloatChip className="top-[2%] right-[6%]" delay={0.5}>
             <AppWindow className="size-[18px]" />
           </FloatChip>
 
           <motion.div
-            className="absolute top-[12%] right-0 w-[min(100%,520px)]"
+            className="absolute top-[6%] right-0 w-full max-w-[32rem]"
             initial={reduce ? false : { opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -289,16 +306,18 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
         </div>
       </div>
 
-      <div className="relative h-[19rem] overflow-hidden sm:h-[22rem] lg:hidden">
-        <Image
-          src={scene}
-          alt=""
-          fill
-          className="object-cover object-[62%_center]"
-          sizes="100vw"
-        />
+      <div className="relative overflow-hidden lg:hidden">
+        <div className="relative mx-auto h-[22rem] w-full max-w-[40rem] sm:h-[26rem]">
+          <Image
+            src={scene}
+            alt=""
+            fill
+            className="object-contain object-bottom"
+            sizes="100vw"
+          />
+        </div>
         <motion.div
-          className="absolute inset-x-4 bottom-6"
+          className="relative z-10 mx-4 -mt-8 mb-8"
           initial={reduce ? false : { opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
