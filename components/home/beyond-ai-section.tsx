@@ -63,22 +63,49 @@ function BeyondAiBadge({ href }: { href: string }) {
 function FloatChip({
   className,
   delay,
+  nearFace,
   children,
 }: {
   className?: string;
   delay: number;
+  nearFace?: boolean;
   children: ReactNode;
 }) {
   return (
     <motion.span
       className={cn(
-        "absolute z-30 grid size-11 place-items-center rounded-[14px] bg-[#7c3aed] text-white shadow-[0_12px_28px_rgba(47,28,106,0.34)] ring-1 ring-white/25",
+        "absolute z-30 grid place-items-center rounded-[16px] bg-[#7c3aed] text-white ring-1 ring-white/35",
+        nearFace
+          ? "size-[54px] shadow-[0_0_0_10px_rgba(167,139,250,0.22),0_16px_36px_rgba(47,28,106,0.4)]"
+          : "size-12 shadow-[0_14px_32px_rgba(47,28,106,0.36)]",
         className,
       )}
-      animate={{ y: [0, -9, 0] }}
-      transition={{ duration: 3.5, delay, repeat: Infinity, ease: "easeInOut" }}
+      animate={
+        nearFace
+          ? { y: [0, -14, 0], scale: [1, 1.08, 1], rotate: [0, -6, 0, 6, 0] }
+          : { y: [0, -10, 0], scale: [1, 1.04, 1] }
+      }
+      transition={{
+        duration: nearFace ? 3.2 : 3.8,
+        delay,
+        repeat: Infinity,
+        ease: "easeInOut",
+      }}
     >
-      {children}
+      {nearFace ? (
+        <motion.span
+          aria-hidden
+          className="absolute inset-[-10px] rounded-[22px] bg-[#a78bfa]/25"
+          animate={{ opacity: [0.2, 0.55, 0.2], scale: [0.92, 1.12, 0.92] }}
+          transition={{
+            duration: 2.4,
+            delay,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+      ) : null}
+      <span className="relative z-10">{children}</span>
     </motion.span>
   );
 }
@@ -183,6 +210,7 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
         alt=""
         fill
         priority
+        quality={95}
         className="hidden object-cover object-[54%_42%] lg:block"
         sizes="100vw"
       />
@@ -295,10 +323,10 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
       </div>
 
       <div className="pointer-events-none absolute inset-0 z-20 hidden lg:block">
-        <FloatChip className="top-[18%] right-[40%]" delay={0}>
-          <Sparkles className="size-[18px]" />
+        <FloatChip className="top-[26%] right-[41%]" delay={0} nearFace>
+          <Sparkles className="size-5" />
         </FloatChip>
-        <FloatChip className="top-[7%] right-[8%]" delay={0.5}>
+        <FloatChip className="top-[6%] right-[8%]" delay={0.55}>
           <AppWindow className="size-[18px]" />
         </FloatChip>
         <motion.div
@@ -318,6 +346,7 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
             src={scene}
             alt=""
             fill
+            quality={95}
             className="object-cover object-[70%_center]"
             sizes="100vw"
           />
