@@ -1088,18 +1088,18 @@ export function defaultBeyondAiSection(): CmsBeyondAiContent {
     visible: true,
     visual: "workspace",
     badge: "Beyond AI",
-    badgeSecondary: "Built for Everyone",
-    title: "Create Stunning\nWebsites with",
-    titleAccent: "Beyond AI",
+    badgeSecondary: "",
+    title: "Build Your\nDream",
+    titleAccent: "Website",
     description:
-      "All your sites, one place. Create, design and publish professional websites in minutes with AI — no extra hosting, no complex setup. Powered by our high-speed servers and modern SaaS platform.",
-    primaryCtaLabel: "Start Building with Beyond AI",
+      "Create stunning websites in minutes with AI. No coding. Just your ideas.",
+    primaryCtaLabel: "Get Started",
     primaryCtaHref: routes.beyondAi,
-    secondaryCtaLabel: "View Templates",
+    secondaryCtaLabel: "",
     secondaryCtaHref: routes.beyondAi,
-    trust1: "No credit card required",
-    trust2: "Free to try",
-    trust3: "Launch in minutes",
+    trust1: "",
+    trust2: "",
+    trust3: "",
     dashboardTitle: "My Websites",
     toastTitle: "Website Published!",
     toastSubtitle: "yourbrand.com is now live",
@@ -1107,9 +1107,9 @@ export function defaultBeyondAiSection(): CmsBeyondAiContent {
     statsValue: "12",
     statsHint: "+4 this month",
     saasTitle: "Powered by SaaS",
-    workspaceImageUrl: "/images/home/beyond-ai/workspace.jpg",
+    workspaceImageUrl: "/images/home/beyond-ai/dream-hero.png",
     workspaceImageAlt:
-      "Building a Beyond AI website on a laptop at a home desk",
+      "Smiling designer building a Beyond AI website beside a floating live preview",
     saasItems: [
       "Your sites, forever",
       "Built-in hosting & domain",
@@ -1119,28 +1119,22 @@ export function defaultBeyondAiSection(): CmsBeyondAiContent {
     ],
     highlights: [
       {
-        id: "publish",
-        title: "One Click Publish",
-        subtitle: "Go live instantly",
+        id: "template",
+        title: "Choose Template",
+        subtitle: "Beautiful, ready-to-use designs",
         icon: "zap",
       },
       {
-        id: "hosting",
-        title: "No Extra Hosting",
-        subtitle: "Everything included",
+        id: "customize",
+        title: "Customize Design",
+        subtitle: "Drag, drop and make it yours",
         icon: "cloud",
       },
       {
-        id: "sites",
-        title: "All Sites One Place",
-        subtitle: "Manage with ease",
+        id: "publish",
+        title: "Publish Website",
+        subtitle: "Go live in minutes",
         icon: "globe",
-      },
-      {
-        id: "speed",
-        title: "High Speed Servers",
-        subtitle: "Built for performance",
-        icon: "rocket",
       },
     ],
     sites: [
@@ -2933,20 +2927,42 @@ function mergeBeyondAiSection(
     ? stored.saasItems.map((item) => item.trim()).filter(Boolean)
     : defaults.saasItems;
 
+  const legacyHero =
+    /create stunning/i.test(stored.title ?? "") ||
+    /start building with beyond ai/i.test(stored.primaryCtaLabel ?? "") ||
+    /built for everyone/i.test(stored.badgeSecondary ?? "");
+
   return {
     ...defaults,
     ...stored,
+    ...(legacyHero
+      ? {
+          badge: defaults.badge,
+          badgeSecondary: defaults.badgeSecondary,
+          title: defaults.title,
+          titleAccent: defaults.titleAccent,
+          description: defaults.description,
+          primaryCtaLabel: defaults.primaryCtaLabel,
+          primaryCtaHref: defaults.primaryCtaHref,
+          secondaryCtaLabel: defaults.secondaryCtaLabel,
+          highlights: defaults.highlights,
+          workspaceImageUrl: defaults.workspaceImageUrl,
+          workspaceImageAlt: defaults.workspaceImageAlt,
+        }
+      : {}),
     visible: stored.visible !== false,
     visual: "workspace",
-    workspaceImageUrl:
-      typeof stored.workspaceImageUrl === "string" &&
-      stored.workspaceImageUrl.trim()
+    workspaceImageUrl: legacyHero
+      ? defaults.workspaceImageUrl
+      : typeof stored.workspaceImageUrl === "string" &&
+          stored.workspaceImageUrl.trim()
         ? stored.workspaceImageUrl.trim()
         : defaults.workspaceImageUrl,
-    workspaceImageAlt:
-      stored.workspaceImageAlt?.trim() || defaults.workspaceImageAlt,
+    workspaceImageAlt: legacyHero
+      ? defaults.workspaceImageAlt
+      : stored.workspaceImageAlt?.trim() || defaults.workspaceImageAlt,
     saasItems: saasItems.length ? saasItems : defaults.saasItems,
-    highlights,
+    highlights: legacyHero ? defaults.highlights : highlights,
     sites,
     features,
   };

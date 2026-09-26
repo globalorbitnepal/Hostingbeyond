@@ -91,10 +91,9 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
         <div>
           <h2 className="font-semibold">Beyond AI section</h2>
           <p className="mt-0.5 text-xs text-slate-500">
-            Live homepage uses the desk-and-laptop workspace photo — not the old
-            2×2 site grid. Edit the photo, copy, highlight tiles, and bottom
-            features here. Photo uploads save immediately; save Home after text
-            edits.
+            Homepage hero matches the Dream Website layout: left copy, three
+            steps, Get Started, and the right-side photo. Photo uploads save
+            immediately; save Home after text edits.
           </p>
         </div>
         <label className="flex items-center gap-2 text-xs text-slate-500">
@@ -108,7 +107,7 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
       </div>
 
       <OrbitImageField
-        label="Live homepage photo (desk + laptop)"
+        label="Hero photo (person + live preview)"
         value={value.workspaceImageUrl ?? ""}
         onChange={(workspaceImageUrl) => patch({ workspaceImageUrl })}
         onCommit={(workspaceImageUrl) => patch({ workspaceImageUrl }, true)}

@@ -1,191 +1,121 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import {
-  ArrowRight,
-  Check,
-  Cloud,
-  Gauge,
-  Globe,
-  Layers,
-  Play,
-  Rocket,
-  Sparkles,
-  Users,
-  Wand2,
-  Zap,
-} from "lucide-react";
+import { ArrowRight, Globe, Sparkles, Wand2, Zap } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 
+import { routes } from "@/config/routes";
 import {
   defaultBeyondAiSection,
   type CmsBeyondAiContent,
-  type CmsBeyondAiFeature,
   type CmsBeyondAiHighlight,
 } from "@/lib/orbit/defaults";
-import { BeyondAiSiteStack } from "./beyond-ai-site-stack";
+import { cn } from "@/lib/utils";
 
-const highlightIcons: Record<CmsBeyondAiHighlight["icon"], typeof Zap> = {
+const stepIcons: Record<CmsBeyondAiHighlight["icon"], typeof Zap> = {
   zap: Zap,
-  cloud: Cloud,
+  cloud: Wand2,
   globe: Globe,
-  rocket: Rocket,
+  rocket: Globe,
 };
-
-const featureIcons: Record<CmsBeyondAiFeature["icon"], typeof Wand2> = {
-  wand: Wand2,
-  layers: Layers,
-  users: Users,
-  gauge: Gauge,
-};
-
-function BeyondAiBadge({ text }: { text: string }) {
-  const parts = text.trim().split(/\s+/).filter(Boolean);
-  const last = parts.pop() ?? "AI";
-  const lead = parts.join(" ");
-
-  return (
-    <span className="hb-ai-nav hb-ai-nav--section inline-flex items-center justify-center gap-2 rounded-full border border-white/80 bg-white/80 text-slate-950 backdrop-blur-xl">
-      <span className="hb-ai-nav__shine" aria-hidden />
-      <Sparkles
-        className="hb-ai-nav__spark size-4 shrink-0 text-[#7c3aed]"
-        aria-hidden
-      />
-      <span>
-        {lead ? `${lead} ` : null}
-        <span className="hb-ai-nav__word">{last}</span>
-      </span>
-    </span>
-  );
-}
 
 export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
   const data = content ?? defaultBeyondAiSection();
-  const titleLines = data.title.split("\n").filter(Boolean);
   const reduceMotion = useReducedMotion();
+  const steps = data.highlights.slice(0, 3);
+  const titleLines = data.title.split("\n").filter(Boolean);
+  const image =
+    data.workspaceImageUrl?.trim() || "/images/home/beyond-ai/dream-hero.png";
 
   return (
-    <section className="hb-home-section hb-band-purple overflow-hidden">
-      <div className="hb-shell relative z-10">
-        <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-6 xl:gap-8">
+    <section className="hb-home-section relative overflow-hidden bg-[linear-gradient(115deg,#4c1d95_0%,#5b21b6_28%,#6d28d9_55%,#312e81_100%)]">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_18%_20%,rgba(255,255,255,0.16),transparent_36%),radial-gradient(ellipse_at_80%_70%,rgba(56,189,248,0.16),transparent_42%)]"
+      />
+      <div className="hb-shell relative z-10 py-12 sm:py-16 lg:py-20">
+        <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,0.86fr)_minmax(0,1.14fr)] lg:gap-8">
           <motion.div
-            className="relative z-10 max-w-xl"
-            initial={reduceMotion ? false : { opacity: 0, x: -28 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+            initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.35 }}
+            transition={{ duration: 0.55 }}
           >
-            <div className="flex flex-wrap items-center gap-2.5">
-              <BeyondAiBadge text={data.badge} />
-              {data.badgeSecondary ? (
-                <span className="rounded-full border border-white/55 bg-white/15 px-3.5 py-1.5 text-[12px] font-bold text-white backdrop-blur-xl">
-                  {data.badgeSecondary}
-                </span>
-              ) : null}
-            </div>
+            <p className="inline-flex items-center gap-2 text-[1.35rem] font-extrabold tracking-tight text-white sm:text-[1.55rem]">
+              <Sparkles className="size-5 text-[#c4b5fd]" aria-hidden />
+              {data.badge}
+            </p>
 
-            <h2 className="font-heading mt-4 text-[clamp(2rem,4.2vw,3.55rem)] leading-[1.05] font-extrabold tracking-[-0.045em] text-white">
-              {(titleLines.length ? titleLines : [data.title]).map((line) => (
+            <h2 className="font-heading mt-5 text-[clamp(2.4rem,5vw,4.15rem)] leading-[0.98] font-extrabold tracking-[-0.045em] text-white">
+              {titleLines.map((line) => (
                 <span key={line} className="block">
                   {line}
                 </span>
               ))}
-              <span className="block text-[#9ad4ff]">{data.titleAccent}</span>
+              <span className="block bg-gradient-to-r from-[#e9d5ff] via-[#c4b5fd] to-[#a5b4fc] bg-clip-text text-transparent">
+                {data.titleAccent}
+              </span>
             </h2>
 
-            <p className="mt-4 max-w-md text-[15px] leading-relaxed font-medium text-white/90 sm:text-[16px]">
+            <p className="mt-5 max-w-md text-[16px] leading-relaxed text-white/88 sm:text-[17px]">
               {data.description}
             </p>
 
-            <div className="mt-6 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-              {data.highlights.map((item) => {
-                const Icon = highlightIcons[item.icon] ?? Zap;
+            <ul className="mt-7 space-y-4">
+              {steps.map((item) => {
+                const Icon = stepIcons[item.icon] ?? Zap;
                 return (
-                  <div
-                    key={item.id}
-                    className="flex items-start gap-2 rounded-[22px] border border-white/55 bg-white/20 px-2.5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-xl sm:flex-col sm:items-center sm:px-2 sm:py-3.5 sm:text-center"
-                  >
-                    <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-white/70 bg-white/30 text-white">
-                      <Icon className="size-[16px]" />
+                  <li key={item.id} className="flex items-start gap-3">
+                    <span className="mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-white/12 text-white ring-1 ring-white/25">
+                      <Icon className="size-4" aria-hidden />
                     </span>
                     <span>
-                      <span className="block text-[11.5px] leading-tight font-extrabold text-white">
+                      <span className="block text-[15px] font-extrabold text-white">
                         {item.title}
                       </span>
-                      <span className="mt-0.5 block text-[10.5px] leading-snug text-white/80">
+                      <span className="mt-0.5 block text-[13px] text-white/75">
                         {item.subtitle}
                       </span>
                     </span>
-                  </div>
+                  </li>
                 );
               })}
-            </div>
+            </ul>
 
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Link
-                href={data.primaryCtaHref}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#2a1570] px-6 text-[14px] font-bold text-white shadow-[0_12px_28px_rgba(15,10,40,0.28)]"
-              >
-                <Sparkles className="size-4" />
-                {data.primaryCtaLabel}
-                <ArrowRight className="size-4" />
-              </Link>
-              <Link
-                href={data.secondaryCtaHref}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-white/45 bg-white/10 px-5 text-[14px] font-bold text-white backdrop-blur-md"
-              >
-                <Play className="size-4 fill-current" />
-                {data.secondaryCtaLabel}
-              </Link>
-            </div>
-
-            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] font-semibold text-white">
-              {[data.trust1, data.trust2, data.trust3]
-                .filter(Boolean)
-                .map((item) => (
-                  <span key={item} className="inline-flex items-center gap-1.5">
-                    <Check className="size-3.5" />
-                    {item}
-                  </span>
-                ))}
-            </div>
+            <Link
+              href={data.primaryCtaHref || routes.beyondAi}
+              className={cn(
+                "group relative mt-8 inline-flex h-12 items-center gap-2 overflow-hidden rounded-full bg-white px-6 text-[15px] font-bold text-[#4c1d95] shadow-[0_14px_36px_rgba(15,10,40,0.28)]",
+                "transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(15,10,40,0.38)]",
+              )}
+            >
+              <span
+                aria-hidden
+                className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/70 to-transparent transition duration-700 group-hover:translate-x-full"
+              />
+              <span className="relative">{data.primaryCtaLabel}</span>
+              <ArrowRight className="relative size-4 transition duration-300 group-hover:translate-x-1" />
+            </Link>
           </motion.div>
 
           <motion.div
-            className="relative lg:-mr-4 xl:-mr-8"
-            initial={reduceMotion ? false : { opacity: 0, x: 36 }}
+            initial={reduceMotion ? false : { opacity: 0, x: 24 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.25 }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.6 }}
+            className="relative"
           >
-            <BeyondAiSiteStack
-              imageUrl={data.workspaceImageUrl}
-              imageAlt={data.workspaceImageAlt}
+            <Image
+              src={image}
+              alt={data.workspaceImageAlt}
+              width={1280}
+              height={720}
+              priority
+              className="h-auto w-full rounded-[28px] object-cover shadow-[0_30px_80px_-30px_rgba(15,10,40,0.55)]"
+              sizes="(max-width: 1024px) 100vw, 720px"
             />
           </motion.div>
-        </div>
-
-        <div className="mt-8 grid gap-6 border-t border-[#c4b5fd]/40 pt-7 sm:grid-cols-2 lg:grid-cols-4">
-          {data.features.map((item) => {
-            const Icon = featureIcons[item.icon] ?? Wand2;
-            return (
-              <article key={item.id} className="flex gap-3">
-                <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-white/80 text-[#673de6]">
-                  <Icon className="size-5" />
-                </span>
-                <div>
-                  <h3 className="text-[14px] font-extrabold tracking-tight text-white">
-                    {item.title}
-                  </h3>
-                  {item.description ? (
-                    <p className="mt-1 text-[12px] leading-relaxed text-white/70">
-                      {item.description}
-                    </p>
-                  ) : null}
-                </div>
-              </article>
-            );
-          })}
         </div>
       </div>
     </section>
