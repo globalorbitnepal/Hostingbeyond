@@ -72,7 +72,7 @@ function FloatChip({
   return (
     <motion.span
       className={cn(
-        "absolute z-20 grid size-11 place-items-center rounded-[14px] bg-[#7c3aed] text-white shadow-[0_12px_28px_rgba(47,28,106,0.34)] ring-1 ring-white/25",
+        "absolute z-30 grid size-11 place-items-center rounded-[14px] bg-[#7c3aed] text-white shadow-[0_12px_28px_rgba(47,28,106,0.34)] ring-1 ring-white/25",
         className,
       )}
       animate={{ y: [0, -9, 0] }}
@@ -86,7 +86,12 @@ function FloatChip({
 function PreviewCard({ href }: { href: string }) {
   return (
     <div className="relative">
-      <div className="overflow-hidden rounded-[22px] bg-white/96 p-4 shadow-[0_28px_70px_-20px_rgba(20,8,60,0.45)] ring-1 ring-white/80 backdrop-blur-md sm:p-5">
+      <div className="overflow-hidden rounded-[22px] bg-white/82 p-4 shadow-[0_30px_80px_-18px_rgba(30,10,80,0.5)] ring-1 ring-white/70 backdrop-blur-2xl sm:p-5">
+        <div className="mb-3 flex items-center gap-1.5">
+          <span className="size-1.5 rounded-full bg-[#f87171]" />
+          <span className="size-1.5 rounded-full bg-[#fbbf24]" />
+          <span className="size-1.5 rounded-full bg-[#34d399]" />
+        </div>
         <div className="flex items-center justify-between gap-2 text-[10px] font-semibold text-slate-400">
           <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold text-[#4c1d95]">
             <Sparkles className="size-3.5" aria-hidden />
@@ -152,7 +157,7 @@ function PreviewCard({ href }: { href: string }) {
         </div>
       </div>
 
-      <p className="absolute right-3 -bottom-4 inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-600 shadow-[0_10px_24px_rgba(20,8,60,0.16)] ring-1 ring-slate-100">
+      <p className="absolute right-2 -bottom-5 inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-600 shadow-[0_10px_24px_rgba(20,8,60,0.16)] ring-1 ring-slate-100">
         <Globe className="size-3.5 text-[#7c3aed]" aria-hidden />
         Live Website
         <span className="font-medium text-slate-400">Ready in minutes</span>
@@ -172,19 +177,21 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
   const ctaHref = data.primaryCtaHref || routes.beyondAi;
 
   return (
-    <section className="relative w-full overflow-hidden bg-[#6d28d9]">
-      <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[58%] lg:block xl:w-[56%]">
-        <Image
-          src={scene}
-          alt=""
-          fill
-          priority
-          className="object-contain object-right-bottom"
-          sizes="58vw"
-        />
-      </div>
+    <section className="relative w-full overflow-hidden bg-[#3b1a8a]">
+      <Image
+        src={scene}
+        alt=""
+        fill
+        priority
+        className="hidden object-cover object-[54%_42%] lg:block"
+        sizes="100vw"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(105deg,#2e1068_0%,#4c1d95cc_28%,transparent_54%),radial-gradient(ellipse_at_66%_36%,rgba(129,140,248,0.32),transparent_48%)]"
+      />
 
-      <div className="hb-shell relative z-10 grid items-center py-16 sm:py-20 lg:min-h-[40rem] lg:grid-cols-[minmax(0,1.05fr)_minmax(22rem,34rem)] lg:py-16 xl:min-h-[44rem]">
+      <div className="hb-shell relative z-10 flex items-center py-16 sm:py-20 lg:min-h-[42rem] lg:py-16 xl:min-h-[46rem]">
         <motion.div
           initial={reduce ? false : { opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -285,39 +292,38 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
             </Link>
           </motion.div>
         </motion.div>
-
-        <div className="relative hidden h-full min-h-[28rem] lg:block">
-          <FloatChip className="top-[8%] right-[78%]" delay={0}>
-            <Sparkles className="size-[18px]" />
-          </FloatChip>
-          <FloatChip className="top-[2%] right-[6%]" delay={0.5}>
-            <AppWindow className="size-[18px]" />
-          </FloatChip>
-
-          <motion.div
-            className="absolute top-[6%] right-0 w-full max-w-[32rem]"
-            initial={reduce ? false : { opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.16, duration: 0.48 }}
-          >
-            <PreviewCard href={ctaHref} />
-          </motion.div>
-        </div>
       </div>
 
-      <div className="relative overflow-hidden lg:hidden">
-        <div className="relative mx-auto h-[22rem] w-full max-w-[40rem] sm:h-[26rem]">
+      <div className="pointer-events-none absolute inset-0 z-20 hidden lg:block">
+        <FloatChip className="top-[18%] right-[40%]" delay={0}>
+          <Sparkles className="size-[18px]" />
+        </FloatChip>
+        <FloatChip className="top-[7%] right-[8%]" delay={0.5}>
+          <AppWindow className="size-[18px]" />
+        </FloatChip>
+        <motion.div
+          className="pointer-events-auto absolute top-[12%] right-[3%] w-[min(42vw,540px)]"
+          initial={reduce ? false : { opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.16, duration: 0.48 }}
+        >
+          <PreviewCard href={ctaHref} />
+        </motion.div>
+      </div>
+
+      <div className="relative lg:hidden">
+        <div className="relative h-[22rem] w-full sm:h-[26rem]">
           <Image
             src={scene}
             alt=""
             fill
-            className="object-contain object-bottom"
+            className="object-cover object-[70%_center]"
             sizes="100vw"
           />
         </div>
         <motion.div
-          className="relative z-10 mx-4 -mt-8 mb-8"
+          className="relative z-10 mx-4 -mt-10 mb-8"
           initial={reduce ? false : { opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
