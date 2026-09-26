@@ -19,6 +19,11 @@ import {
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 
+import {
+  AnnualPlanPerks,
+  filterPlanFeatures,
+  getAnnualPerkLines,
+} from "@/components/hosting/annual-plan-perks";
 import { cn } from "@/lib/utils";
 import type {
   CmsHostingGuarantee,
@@ -76,25 +81,8 @@ export function PlanCard({
   const original = isAnnual ? plan.originalAnnually : plan.originalMonthly;
   const billed = isAnnual ? plan.billedAnnually : plan.billedMonthly;
   const save = isAnnual ? plan.saveAnnually : plan.saveMonthly;
-  const domainLine = plan.domainPerk?.trim() || "";
-  const creditRaw = isAnnual ? plan.annualCredit?.trim() : "";
-  const creditLine = creditRaw
-    ? creditRaw.toLowerCase().includes("free")
-      ? creditRaw
-      : `Free ${creditRaw}`
-    : "";
-  const extras = [domainLine, creditLine].filter(Boolean);
-  const features = plan.features.filter((feature) => {
-    const value = feature.toLowerCase();
-    return !extras.some(
-      (extra) =>
-        value === extra.toLowerCase() ||
-        value.includes("beyond ai credit") ||
-        value.includes("domain — free") ||
-        value.includes("domain - free"),
-    );
-  });
-  const list = [...extras, ...features];
+  const annualPerks = getAnnualPerkLines(plan, isAnnual);
+  const features = filterPlanFeatures(plan.features, annualPerks);
 
   return (
     <motion.article
@@ -185,14 +173,13 @@ export function PlanCard({
         <ArrowRight className="size-4" aria-hidden />
       </Link>
 
+      <AnnualPlanPerks lines={annualPerks} />
+
       <ul className="mt-5 flex flex-1 flex-col gap-2.5">
-        {list.map((feature, index) => (
+        {features.map((feature) => (
           <li
             key={feature}
-            className={cn(
-              "flex items-start gap-2.5 text-[13px] leading-snug text-[#1e1b4b]",
-              index < extras.length ? "font-semibold" : "font-medium",
-            )}
+            className="flex items-start gap-2.5 text-[13px] leading-snug font-medium text-[#1e1b4b]"
           >
             <span className="mt-0.5 inline-flex size-[18px] shrink-0 items-center justify-center rounded-full bg-[#673de6] text-white">
               <Check className="size-2.5" strokeWidth={3.2} aria-hidden />

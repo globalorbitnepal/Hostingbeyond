@@ -4,6 +4,11 @@ import Link from "next/link";
 import { ArrowRight, Check, Star } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 
+import {
+  AnnualPlanPerks,
+  filterPlanFeatures,
+  getAnnualPerkLines,
+} from "@/components/hosting/annual-plan-perks";
 import type { CmsHostingPlan } from "@/lib/orbit/defaults";
 import { cn } from "@/lib/utils";
 
@@ -69,6 +74,8 @@ export function PricingEcommercePanel({
             : plan.originalMonthly;
           const billed = isAnnual ? plan.billedAnnually : plan.billedMonthly;
           const save = isAnnual ? plan.saveAnnually : plan.saveMonthly;
+          const annualPerks = getAnnualPerkLines(plan, isAnnual);
+          const features = filterPlanFeatures(plan.features, annualPerks);
 
           return (
             <motion.article
@@ -140,14 +147,10 @@ export function PricingEcommercePanel({
                 <ArrowRight className="size-4" aria-hidden />
               </Link>
 
+              <AnnualPlanPerks lines={annualPerks} />
+
               <ul className="mt-5 flex flex-1 flex-col gap-2 border-t border-[#eef2ff] pt-4">
-                {plan.domainPerk ? (
-                  <li className="flex gap-2 text-[13px] font-semibold text-[#1e1b4b]">
-                    <Check className="mt-0.5 size-4 shrink-0 text-[#673de6]" />
-                    {plan.domainPerk}
-                  </li>
-                ) : null}
-                {plan.features.map((feature) => (
+                {features.map((feature) => (
                   <li
                     key={feature}
                     className="flex gap-2 text-[13px] text-[#334155]"

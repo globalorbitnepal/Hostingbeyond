@@ -1209,6 +1209,12 @@ export default function OrbitContentPage() {
           />
         </div>
 
+        <p className="rounded-lg bg-violet-50 px-3 py-2 text-[11px] leading-relaxed text-violet-900">
+          Free domain and Beyond AI credit lines appear on the live site only
+          when visitors choose <strong>Annually</strong> — in a bonus box under
+          the plan CTA, not on Monthly.
+        </p>
+
         {(sections.hostingPlans?.plans ?? []).map((plan, index) => (
           <HostingPlanEditor
             key={plan.id}
@@ -2170,13 +2176,13 @@ function HostingPlanEditor({
           onCommit={() => onPersist?.()}
         />
         <Field
-          label="Perk line (all billing, e.g. Domain — free for 1 year)"
+          label="Annual-only: free domain line (e.g. Domain — free for 1 year)"
           value={plan.domainPerk ?? ""}
           onChange={(value) => onChange({ domainPerk: value })}
           onCommit={() => onPersist?.()}
         />
         <Field
-          label="Annual-only bonus (e.g. $2 Beyond AI Credit)"
+          label="Annual-only: Beyond AI credit (e.g. $2 Beyond AI Credit — “Free” added on site)"
           value={plan.annualCredit ?? ""}
           onChange={(value) => onChange({ annualCredit: value })}
           onCommit={() => onPersist?.()}

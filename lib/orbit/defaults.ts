@@ -138,9 +138,9 @@ export type CmsHostingPlan = {
   originalMonthly: string;
   billedMonthly: string;
   saveMonthly: string;
-  /** Shown on every plan card, usually under billed/save. */
+  /** Shown only when Annually is selected (e.g. free domain year one). */
   domainPerk: string;
-  /** Shown only when Annually is selected. */
+  /** Shown only when Annually is selected (e.g. Beyond AI credit). */
   annualCredit: string;
   features: string[];
   ctaLabel: string;
