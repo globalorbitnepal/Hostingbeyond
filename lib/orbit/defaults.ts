@@ -1109,7 +1109,7 @@ export function defaultBeyondAiSection(): CmsBeyondAiContent {
     saasTitle: "Powered by SaaS",
     workspaceImageUrl: "/images/home/beyond-ai/scene-full.png",
     workspaceImageAlt:
-      "Smiling designer building a Beyond AI website beside a floating live preview",
+      "Designer at a desk with a closed laptop, looking at a Beyond AI site preview",
     saasItems: [
       "Your sites, forever",
       "Built-in hosting & domain",

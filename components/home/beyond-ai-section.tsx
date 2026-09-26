@@ -1,17 +1,8 @@
 "use client";
 
-import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  AppWindow,
-  ArrowRight,
-  Check,
-  Globe,
-  PenLine,
-  Sparkles,
-  Zap,
-} from "lucide-react";
+import { ArrowRight, Check, Globe, PenLine, Sparkles, Zap } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 
 import { routes } from "@/config/routes";
@@ -57,29 +48,6 @@ function BeyondAiBadge({ href }: { href: string }) {
         Beyond <span className="hb-ai-nav__word">AI</span>
       </span>
     </Link>
-  );
-}
-
-function FloatChip({
-  className,
-  delay,
-  children,
-}: {
-  className?: string;
-  delay: number;
-  children: ReactNode;
-}) {
-  return (
-    <motion.span
-      className={cn(
-        "absolute z-30 grid size-12 place-items-center rounded-[16px] bg-[#7c3aed] text-white shadow-[0_14px_32px_rgba(47,28,106,0.36)] ring-1 ring-white/30",
-        className,
-      )}
-      animate={{ y: [0, -10, 0] }}
-      transition={{ duration: 3.4, delay, repeat: Infinity, ease: "easeInOut" }}
-    >
-      {children}
-    </motion.span>
   );
 }
 
@@ -298,12 +266,6 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
           viewport={{ once: true }}
           transition={{ delay: 0.16, duration: 0.48 }}
         >
-          <FloatChip className="-top-1 -left-16" delay={0}>
-            <Sparkles className="size-[18px]" />
-          </FloatChip>
-          <FloatChip className="-top-8 right-16" delay={0.55}>
-            <AppWindow className="size-[18px]" />
-          </FloatChip>
           <PreviewCard href={ctaHref} />
         </motion.div>
       </div>

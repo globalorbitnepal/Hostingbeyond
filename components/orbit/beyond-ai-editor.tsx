@@ -89,11 +89,11 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
     <section className="space-y-5 rounded-2xl border border-slate-200 bg-white p-5">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="font-semibold">Beyond AI section</h2>
+          <h2 className="font-semibold">Beyond AI homepage banner</h2>
           <p className="mt-0.5 text-xs text-slate-500">
-            Homepage Beyond AI is a full-bleed purple scene. Live heading,
-            steps, chips, and Get Started stay coded. Photo is person/desk only
-            — no baked letters.
+            Live section: purple-blue full-bleed scene, coded left copy, glass
+            “Turn Your Ideas” preview, Get Started → /beyond-ai. Photo is person
+            + closed-laptop backside only — no letters on the image.
           </p>
         </div>
         <label className="flex items-center gap-2 text-xs text-slate-500">
@@ -107,7 +107,7 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
       </div>
 
       <OrbitImageField
-        label="Full-bleed person/desk photo (no baked text)"
+        label="Scene photo (person + closed laptop backside, no text)"
         value={value.workspaceImageUrl ?? ""}
         onChange={(workspaceImageUrl) => patch({ workspaceImageUrl })}
         onCommit={(workspaceImageUrl) => patch({ workspaceImageUrl }, true)}
@@ -121,72 +121,80 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
 
       <div className="grid gap-3 sm:grid-cols-2">
         <Field
-          label="Badge"
+          label="Badge (Beyond AI)"
           value={value.badge}
           onChange={(badge) => patch({ badge })}
           onBlur={persist}
         />
         <Field
-          label="Secondary badge"
-          value={value.badgeSecondary}
-          onChange={(badgeSecondary) => patch({ badgeSecondary })}
-          onBlur={persist}
-        />
-        <Field
-          label="Title (use a new line before “with”)"
+          label="Title (e.g. Build Your)"
           value={value.title}
           onChange={(title) => patch({ title })}
           onBlur={persist}
         />
         <Field
-          label="Title accent"
+          label="Title second line (e.g. Dream Website)"
           value={value.titleAccent}
           onChange={(titleAccent) => patch({ titleAccent })}
           onBlur={persist}
         />
         <Field
-          label="Primary CTA label"
+          label="Get Started label"
           value={value.primaryCtaLabel}
           onChange={(primaryCtaLabel) => patch({ primaryCtaLabel })}
           onBlur={persist}
         />
         <Field
-          label="Primary CTA URL"
+          label="Get Started URL"
           value={value.primaryCtaHref}
           onChange={(primaryCtaHref) => patch({ primaryCtaHref })}
           onBlur={persist}
         />
-        <Field
-          label="Secondary CTA label"
-          value={value.secondaryCtaLabel}
-          onChange={(secondaryCtaLabel) => patch({ secondaryCtaLabel })}
-          onBlur={persist}
-        />
-        <Field
-          label="Secondary CTA URL"
-          value={value.secondaryCtaHref}
-          onChange={(secondaryCtaHref) => patch({ secondaryCtaHref })}
-          onBlur={persist}
-        />
-        <Field
-          label="Trust line 1"
-          value={value.trust1}
-          onChange={(trust1) => patch({ trust1 })}
-          onBlur={persist}
-        />
-        <Field
-          label="Trust line 2"
-          value={value.trust2}
-          onChange={(trust2) => patch({ trust2 })}
-          onBlur={persist}
-        />
-        <Field
-          label="Trust line 3"
-          value={value.trust3}
-          onChange={(trust3) => patch({ trust3 })}
-          onBlur={persist}
-        />
       </div>
+
+      <details className="rounded-xl border border-slate-200 p-3">
+        <summary className="cursor-pointer text-sm font-semibold text-slate-800">
+          Unused leftover fields (not on the live banner)
+        </summary>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <Field
+            label="Secondary badge"
+            value={value.badgeSecondary}
+            onChange={(badgeSecondary) => patch({ badgeSecondary })}
+            onBlur={persist}
+          />
+          <Field
+            label="Secondary CTA label"
+            value={value.secondaryCtaLabel}
+            onChange={(secondaryCtaLabel) => patch({ secondaryCtaLabel })}
+            onBlur={persist}
+          />
+          <Field
+            label="Secondary CTA URL"
+            value={value.secondaryCtaHref}
+            onChange={(secondaryCtaHref) => patch({ secondaryCtaHref })}
+            onBlur={persist}
+          />
+          <Field
+            label="Trust line 1"
+            value={value.trust1}
+            onChange={(trust1) => patch({ trust1 })}
+            onBlur={persist}
+          />
+          <Field
+            label="Trust line 2"
+            value={value.trust2}
+            onChange={(trust2) => patch({ trust2 })}
+            onBlur={persist}
+          />
+          <Field
+            label="Trust line 3"
+            value={value.trust3}
+            onChange={(trust3) => patch({ trust3 })}
+            onBlur={persist}
+          />
+        </div>
+      </details>
 
       <label className="block text-xs font-semibold tracking-wide text-slate-500 uppercase">
         Description
@@ -202,7 +210,7 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
       <div>
         <div className="flex items-center justify-between gap-3">
           <h3 className="text-sm font-semibold text-slate-800">
-            Highlight tiles
+            Steps (Choose Template / Customize / Publish)
           </h3>
           <button
             type="button"
