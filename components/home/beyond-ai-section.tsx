@@ -63,49 +63,22 @@ function BeyondAiBadge({ href }: { href: string }) {
 function FloatChip({
   className,
   delay,
-  nearFace,
   children,
 }: {
   className?: string;
   delay: number;
-  nearFace?: boolean;
   children: ReactNode;
 }) {
   return (
     <motion.span
       className={cn(
-        "absolute z-30 grid place-items-center rounded-[16px] bg-[#7c3aed] text-white ring-1 ring-white/35",
-        nearFace
-          ? "size-[54px] shadow-[0_0_0_10px_rgba(167,139,250,0.22),0_16px_36px_rgba(47,28,106,0.4)]"
-          : "size-12 shadow-[0_14px_32px_rgba(47,28,106,0.36)]",
+        "absolute z-30 grid size-12 place-items-center rounded-[16px] bg-[#7c3aed] text-white shadow-[0_14px_32px_rgba(47,28,106,0.36)] ring-1 ring-white/30",
         className,
       )}
-      animate={
-        nearFace
-          ? { y: [0, -14, 0], scale: [1, 1.08, 1], rotate: [0, -6, 0, 6, 0] }
-          : { y: [0, -10, 0], scale: [1, 1.04, 1] }
-      }
-      transition={{
-        duration: nearFace ? 3.2 : 3.8,
-        delay,
-        repeat: Infinity,
-        ease: "easeInOut",
-      }}
+      animate={{ y: [0, -10, 0] }}
+      transition={{ duration: 3.4, delay, repeat: Infinity, ease: "easeInOut" }}
     >
-      {nearFace ? (
-        <motion.span
-          aria-hidden
-          className="absolute inset-[-10px] rounded-[22px] bg-[#a78bfa]/25"
-          animate={{ opacity: [0.2, 0.55, 0.2], scale: [0.92, 1.12, 0.92] }}
-          transition={{
-            duration: 2.4,
-            delay,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-      ) : null}
-      <span className="relative z-10">{children}</span>
+      {children}
     </motion.span>
   );
 }
@@ -113,18 +86,13 @@ function FloatChip({
 function PreviewCard({ href }: { href: string }) {
   return (
     <div className="relative">
-      <div className="overflow-hidden rounded-[22px] bg-white/82 p-4 shadow-[0_30px_80px_-18px_rgba(30,10,80,0.5)] ring-1 ring-white/70 backdrop-blur-2xl sm:p-5">
-        <div className="mb-3 flex items-center gap-1.5">
-          <span className="size-1.5 rounded-full bg-[#f87171]" />
-          <span className="size-1.5 rounded-full bg-[#fbbf24]" />
-          <span className="size-1.5 rounded-full bg-[#34d399]" />
-        </div>
-        <div className="flex items-center justify-between gap-2 text-[10px] font-semibold text-slate-400">
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold text-[#4c1d95]">
+      <div className="overflow-hidden rounded-[26px] bg-white/88 p-5 shadow-[0_32px_90px_-16px_rgba(30,10,80,0.48)] ring-1 ring-white/75 backdrop-blur-2xl sm:p-6">
+        <div className="flex items-center justify-between gap-3 text-[11px] font-semibold text-slate-400">
+          <span className="inline-flex items-center gap-1.5 text-[12px] font-extrabold text-[#4c1d95]">
             <Sparkles className="size-3.5" aria-hidden />
             Beyond AI
           </span>
-          <span className="hidden items-center gap-2.5 xl:flex">
+          <span className="hidden items-center gap-3 xl:flex">
             Home
             <span>Templates</span>
             <span>Features</span>
@@ -133,49 +101,49 @@ function PreviewCard({ href }: { href: string }) {
           </span>
         </div>
 
-        <div className="mt-4 grid gap-4 sm:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] sm:items-start">
+        <div className="mt-5 grid gap-5 sm:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] sm:items-start">
           <div>
-            <p className="font-heading text-[1.35rem] leading-[1.08] font-extrabold tracking-[-0.04em] text-slate-950 sm:text-[1.5rem]">
+            <p className="font-heading text-[1.55rem] leading-[1.06] font-extrabold tracking-[-0.045em] text-slate-950 sm:text-[1.7rem]">
               Turn Your Ideas
               <br />
               Into Real Websites
             </p>
-            <p className="mt-2 max-w-[15rem] text-[11.5px] leading-relaxed text-slate-500">
+            <p className="mt-2.5 max-w-[16rem] text-[12.5px] leading-relaxed text-slate-500">
               Drag, drop and make it live in minutes with AI.
             </p>
             <Link
               href={href}
-              className="mt-4 inline-flex h-9 items-center rounded-full bg-[#7c3aed] px-4 text-[12px] font-bold text-white"
+              className="mt-5 inline-flex h-10 items-center rounded-full bg-[#7c3aed] px-5 text-[13px] font-bold text-white"
             >
               Start Building
             </Link>
           </div>
 
-          <div className="grid gap-2">
-            <div className="relative h-[88px] overflow-hidden rounded-xl sm:h-[96px]">
+          <div className="grid gap-2.5">
+            <div className="relative h-[108px] overflow-hidden rounded-2xl sm:h-[118px]">
               <Image
                 src={previewThumbs[0].src}
                 alt=""
                 fill
                 className="object-cover"
-                sizes="220px"
+                sizes="280px"
               />
-              <span className="absolute bottom-1.5 left-2 text-[10px] font-bold text-white drop-shadow">
+              <span className="absolute bottom-2 left-2.5 text-[11px] font-bold text-white drop-shadow">
                 {previewThumbs[0].label}
               </span>
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-2.5">
               {previewThumbs.slice(1).map((thumb) => (
                 <div
                   key={thumb.src}
-                  className="relative h-12 overflow-hidden rounded-lg"
+                  className="relative h-14 overflow-hidden rounded-xl"
                 >
                   <Image
                     src={thumb.src}
                     alt=""
                     fill
                     className="object-cover"
-                    sizes="80px"
+                    sizes="90px"
                   />
                 </div>
               ))}
@@ -184,7 +152,7 @@ function PreviewCard({ href }: { href: string }) {
         </div>
       </div>
 
-      <p className="absolute right-2 -bottom-5 inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-600 shadow-[0_10px_24px_rgba(20,8,60,0.16)] ring-1 ring-slate-100">
+      <p className="absolute right-1 -bottom-5 inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-[11px] font-semibold text-slate-600 shadow-[0_10px_24px_rgba(20,8,60,0.16)] ring-1 ring-slate-100">
         <Globe className="size-3.5 text-[#7c3aed]" aria-hidden />
         Live Website
         <span className="font-medium text-slate-400">Ready in minutes</span>
@@ -211,7 +179,7 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
         fill
         priority
         quality={95}
-        className="hidden object-cover object-[54%_42%] lg:block"
+        className="hidden object-cover object-[52%_40%] lg:block"
         sizes="100vw"
       />
       <div
@@ -323,19 +291,19 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
       </div>
 
       <div className="pointer-events-none absolute inset-0 z-20 hidden lg:block">
-        <FloatChip className="top-[26%] right-[41%]" delay={0} nearFace>
-          <Sparkles className="size-5" />
-        </FloatChip>
-        <FloatChip className="top-[6%] right-[8%]" delay={0.55}>
-          <AppWindow className="size-[18px]" />
-        </FloatChip>
         <motion.div
-          className="pointer-events-auto absolute top-[12%] right-[3%] w-[min(42vw,540px)]"
+          className="pointer-events-auto absolute top-[11%] right-[3.5%] w-[min(46vw,600px)]"
           initial={reduce ? false : { opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.16, duration: 0.48 }}
         >
+          <FloatChip className="-top-1 -left-16" delay={0}>
+            <Sparkles className="size-[18px]" />
+          </FloatChip>
+          <FloatChip className="-top-8 right-16" delay={0.55}>
+            <AppWindow className="size-[18px]" />
+          </FloatChip>
           <PreviewCard href={ctaHref} />
         </motion.div>
       </div>
