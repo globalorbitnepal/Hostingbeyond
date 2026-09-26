@@ -17,11 +17,13 @@ import {
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 
+import { AiModelBrandIcon } from "@/components/beyond-ai/ai-model-brand-icons";
 import { routes } from "@/config/routes";
 import {
   defaultBeyondAiSection,
   type CmsBeyondAiContent,
   type CmsBeyondAiHighlight,
+  type CmsBeyondAiSite,
 } from "@/lib/orbit/defaults";
 import { cn } from "@/lib/utils";
 
@@ -33,44 +35,171 @@ const stepIcons: Record<CmsBeyondAiHighlight["icon"], typeof Zap> = {
 };
 
 const models = [
-  { name: "OpenAI", note: "Best for complete websites" },
-  { name: "Claude", note: "Beautiful UI copy" },
-  { name: "Gemini", note: "Fast and creative" },
-  { name: "Grok", note: "Quick edits" },
-];
+  { id: "openai", name: "OpenAI", note: "Best for complete websites" },
+  { id: "claude", name: "Claude", note: "Beautiful UI copy" },
+  { id: "gemini", name: "Gemini", note: "Fast and creative" },
+  { id: "grok", name: "Grok", note: "Quick edits" },
+] as const;
 
-const templates = [
-  { src: "/images/home/beyond-ai/luxe-stay.jpg", label: "Hotel & Resort" },
+const fallbackThumbs = [
+  {
+    src: "/images/home/beyond-ai/luxe-stay.jpg",
+    name: "LUXE STAY",
+    domain: "luxestay.com",
+    cta: "Book",
+  },
   {
     src: "/images/home/beyond-ai/alpine-trails.jpg",
-    label: "Travel & Trekking",
+    name: "Alpine Trails",
+    domain: "alpinetrails.com",
+    cta: "Explore",
   },
-  { src: "/images/home/beyond-ai/ocean-escapes.jpg", label: "Restaurant" },
-  { src: "/images/home/beyond-ai/desert-dunes.jpg", label: "Business" },
-  { src: "/images/home/beyond-ai/hotel.png", label: "Portfolio" },
+  {
+    src: "/images/home/beyond-ai/ocean-escapes.jpg",
+    name: "Ocean Escapes",
+    domain: "oceanescapes.com",
+    cta: "View",
+  },
+  {
+    src: "/images/home/beyond-ai/desert-dunes.jpg",
+    name: "Desert Dunes",
+    domain: "desertdunes.com",
+    cta: "Discover",
+  },
+  {
+    src: "/images/home/beyond-ai/hotel.png",
+    name: "Portfolio",
+    domain: "studio.site",
+    cta: "See work",
+  },
 ];
 
-function WorkspaceScreen({ href }: { href: string }) {
+function BeyondAiMark({ compact = false }: { compact?: boolean }) {
+  return (
+    <span
+      className={cn(
+        "hb-ai-nav inline-flex items-center justify-center gap-1.5 rounded-full border border-violet-200/80 bg-white font-bold tracking-[-0.02em] text-slate-950 shadow-[0_8px_22px_rgba(79,70,229,0.12),inset_0_1px_0_rgba(255,255,255,1)]",
+        compact
+          ? "h-7 px-2.5 text-[10px]"
+          : "hb-ai-nav--section h-10 px-4 text-[15px]",
+      )}
+    >
+      <span className="hb-ai-nav__shine" aria-hidden />
+      <Sparkles
+        className={cn(
+          "hb-ai-nav__spark shrink-0 text-[#7c3aed]",
+          compact ? "size-3" : "size-4",
+        )}
+        aria-hidden
+      />
+      <span>
+        Beyond <span className="hb-ai-nav__word">AI</span>
+      </span>
+    </span>
+  );
+}
+
+function MiniWebsite({
+  src,
+  name,
+  domain,
+  cta,
+  nav,
+  tall,
+}: {
+  src: string;
+  name: string;
+  domain: string;
+  cta: string;
+  nav?: string;
+  tall?: boolean;
+}) {
+  const links = (nav || "Home About Contact")
+    .split(/\s{2,}|\s/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .slice(0, 4);
+
+  return (
+    <div className="overflow-hidden rounded-lg bg-white shadow-[0_8px_18px_-12px_rgba(0,0,0,0.45)]">
+      <div className="flex items-center gap-1 bg-[#eef2f7] px-1.5 py-0.5">
+        <span className="size-1 rounded-full bg-[#f87171]" />
+        <span className="size-1 rounded-full bg-[#fbbf24]" />
+        <span className="size-1 rounded-full bg-[#34d399]" />
+        <span className="ml-0.5 min-w-0 truncate text-[6px] font-semibold text-slate-500">
+          {domain}
+        </span>
+      </div>
+      <div className="flex items-center justify-between gap-1 px-1.5 py-0.5">
+        <span className="truncate text-[6px] font-extrabold text-slate-800">
+          {name}
+        </span>
+        <div className="hidden min-w-0 flex-1 items-center justify-end gap-1 truncate xl:flex">
+          {links.slice(1, 4).map((item) => (
+            <span
+              key={item}
+              className="text-[5px] font-semibold text-slate-400"
+            >
+              {item}
+            </span>
+          ))}
+        </div>
+        <span className="shrink-0 rounded-full bg-[#7c3aed] px-1 py-px text-[5px] font-bold text-white">
+          {cta.split(" ")[0]}
+        </span>
+      </div>
+      <div className={cn("relative", tall ? "h-[78px]" : "h-10")}>
+        <Image src={src} alt="" fill className="object-cover" sizes="160px" />
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/70 to-transparent px-1.5 pt-4 pb-1">
+          <p className="truncate text-[6px] font-extrabold text-white">
+            {name}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function siteCard(site: CmsBeyondAiSite | undefined, index: number) {
+  const fallback = fallbackThumbs[index % fallbackThumbs.length];
+  return {
+    src: site?.imageUrl?.trim() || fallback.src,
+    name: site?.name?.trim() || fallback.name,
+    domain: site?.domain?.trim() || fallback.domain,
+    cta: site?.cta?.trim() || fallback.cta,
+    nav: site?.nav?.trim() || "Home About Contact",
+  };
+}
+
+function WorkspaceScreen({
+  href,
+  data,
+  cards,
+}: {
+  href: string;
+  data: CmsBeyondAiContent;
+  cards: ReturnType<typeof siteCard>[];
+}) {
+  const preview = cards[0];
+  const previewThumbs = cards.slice(0, 4);
+
   return (
     <div className="overflow-hidden rounded-[18px] bg-[#0b1020] text-white shadow-[0_40px_120px_-24px_rgba(37,99,235,0.55)] ring-1 ring-white/10">
-      <div className="flex items-center justify-between gap-3 border-b border-white/8 px-4 py-2.5">
+      <div className="flex items-center justify-between gap-3 border-b border-white/8 px-3 py-2">
         <div className="flex items-center gap-2">
           <span className="flex gap-1">
             <span className="size-1.5 rounded-full bg-[#f87171]" />
             <span className="size-1.5 rounded-full bg-[#fbbf24]" />
             <span className="size-1.5 rounded-full bg-[#34d399]" />
           </span>
-          <span className="inline-flex items-center gap-1 text-[12px] font-extrabold">
-            <Sparkles className="size-3 text-[#818cf8]" />
-            Beyond AI
-          </span>
+          <BeyondAiMark compact />
         </div>
         <div className="hidden items-center gap-3 text-[10px] font-semibold text-white/55 xl:flex">
           Build
           <span>Templates</span>
           <span>AI Models</span>
           <span>My Projects</span>
-          <span>Pricing</span>
+          <span>Billing</span>
         </div>
         <div className="flex items-center gap-2">
           <Bell className="size-3.5 text-white/40" />
@@ -80,7 +209,7 @@ function WorkspaceScreen({ href }: { href: string }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-[4.4rem_minmax(0,1fr)_11.5rem] xl:grid-cols-[5.2rem_minmax(0,1fr)_13rem]">
+      <div className="grid grid-cols-[4.4rem_minmax(0,1fr)_12.2rem] xl:grid-cols-[5.2rem_minmax(0,1fr)_13.6rem]">
         <aside className="space-y-3 border-r border-white/8 px-2 py-4 text-center text-[8px] font-semibold text-white/45 xl:text-[9px]">
           {(
             [
@@ -111,23 +240,21 @@ function WorkspaceScreen({ href }: { href: string }) {
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-[15px] font-extrabold tracking-tight xl:text-[17px]">
-                Create Your Website with AI
+                {data.dashboardTitle}
               </p>
               <p className="mt-1 text-[10px] text-white/50">
-                Describe your idea, choose a model, and generate a complete
-                website.
+                {data.toastTitle}
               </p>
             </div>
             <span className="shrink-0 text-[10px] font-semibold text-[#a5b4fc]">
-              How it works?
+              {data.statsLabel}
             </span>
           </div>
 
           <div className="mt-3 flex items-center gap-2 rounded-full bg-white/6 px-3 py-2 ring-1 ring-white/10">
             <Sparkles className="size-3.5 text-[#818cf8]" />
             <span className="min-w-0 flex-1 truncate text-[10px] text-white/45">
-              A luxury hotel website with booking system, modern design, soft
-              colors...
+              {data.toastSubtitle}
             </span>
             <Link
               href={href}
@@ -145,16 +272,25 @@ function WorkspaceScreen({ href }: { href: string }) {
           <div className="mt-2 grid grid-cols-2 gap-2 xl:grid-cols-4">
             {models.map((model, index) => (
               <div
-                key={model.name}
+                key={model.id}
                 className={cn(
-                  "rounded-xl px-2.5 py-2 ring-1",
+                  "rounded-xl px-2 py-2 ring-1",
                   index === 0
                     ? "bg-[#7c3aed]/20 ring-[#7c3aed]/40"
                     : "bg-white/4 ring-white/8",
                 )}
               >
-                <p className="text-[10px] font-extrabold">{model.name}</p>
-                <p className="mt-0.5 text-[8px] leading-tight text-white/45">
+                <div className="flex items-center gap-1.5">
+                  <span className="grid size-5 shrink-0 place-items-center overflow-hidden rounded-full bg-white">
+                    <AiModelBrandIcon
+                      id={model.id}
+                      variant="inline"
+                      size={14}
+                    />
+                  </span>
+                  <p className="text-[10px] font-extrabold">{model.name}</p>
+                </div>
+                <p className="mt-1 text-[8px] leading-tight text-white/45">
                   {model.note}
                 </p>
               </div>
@@ -162,27 +298,21 @@ function WorkspaceScreen({ href }: { href: string }) {
           </div>
 
           <div className="mt-4 flex items-center justify-between">
-            <p className="text-[11px] font-extrabold">Popular Templates</p>
+            <p className="text-[11px] font-extrabold">{data.saasTitle}</p>
             <span className="text-[10px] text-white/40">
               Browse AI templates
             </span>
           </div>
-          <div className="mt-2 grid grid-cols-5 gap-2">
-            {templates.map((item) => (
-              <div key={item.label} className="min-w-0">
-                <div className="relative h-12 overflow-hidden rounded-lg xl:h-14">
-                  <Image
-                    src={item.src}
-                    alt=""
-                    fill
-                    className="object-cover"
-                    sizes="80px"
-                  />
-                </div>
-                <p className="mt-1 truncate text-[8px] font-semibold text-white/55">
-                  {item.label}
-                </p>
-              </div>
+          <div className="mt-2 grid grid-cols-5 gap-1.5">
+            {cards.slice(0, 5).map((item, index) => (
+              <MiniWebsite
+                key={`${item.domain}-${index}`}
+                src={item.src}
+                name={item.name}
+                domain={item.domain}
+                cta={item.cta}
+                nav={item.nav}
+              />
             ))}
           </div>
         </div>
@@ -191,32 +321,26 @@ function WorkspaceScreen({ href }: { href: string }) {
           <p className="text-[10px] font-extrabold text-white/70">
             Live Preview
           </p>
-          <div className="relative mt-2 h-[88px] overflow-hidden rounded-xl xl:h-[104px]">
-            <Image
-              src="/images/home/beyond-ai/alpine-trails.jpg"
-              alt=""
-              fill
-              className="object-cover"
-              sizes="180px"
+          <div className="mt-2">
+            <MiniWebsite
+              src={preview.src}
+              name={preview.name}
+              domain={preview.domain}
+              cta={preview.cta}
+              nav={preview.nav}
+              tall
             />
-            <span className="absolute inset-x-0 bottom-0 bg-black/45 px-2 py-1 text-[9px] font-bold">
-              Explore The World
-            </span>
           </div>
-          <div className="mt-2 grid grid-cols-3 gap-1.5">
-            {templates.slice(0, 3).map((item) => (
-              <div
-                key={item.src}
-                className="relative h-8 overflow-hidden rounded-md"
-              >
-                <Image
-                  src={item.src}
-                  alt=""
-                  fill
-                  className="object-cover"
-                  sizes="50px"
-                />
-              </div>
+          <div className="mt-2 grid grid-cols-2 gap-1.5">
+            {previewThumbs.slice(1, 4).map((item, index) => (
+              <MiniWebsite
+                key={`${item.domain}-p-${index}`}
+                src={item.src}
+                name={item.name}
+                domain={item.domain}
+                cta={item.cta}
+                nav={item.nav}
+              />
             ))}
           </div>
           <Link
@@ -251,6 +375,9 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
     data.workspaceImageUrl?.trim() || "/images/home/beyond-ai/dark-glow.png";
   const ctaHref = data.primaryCtaHref || routes.beyondAi;
   const stats = [data.trust1, data.trust2, data.trust3].filter(Boolean);
+  const cards = Array.from({ length: 5 }, (_, index) =>
+    siteCard(data.sites[index], index),
+  );
 
   return (
     <section className="relative w-full overflow-hidden bg-[#050816]">
@@ -276,10 +403,9 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
           transition={{ duration: 0.48 }}
           className="max-w-[34rem]"
         >
-          <p className="inline-flex items-center gap-1.5 text-[1.05rem] font-extrabold text-white">
-            <Sparkles className="size-4 text-[#c4b5fd]" />
-            {data.badge}
-          </p>
+          <Link href={ctaHref} className="inline-flex">
+            <BeyondAiMark />
+          </Link>
           {data.badgeSecondary ? (
             <p className="mt-3 inline-flex rounded-full bg-white/8 px-3 py-1 text-[12px] font-semibold text-white/80 ring-1 ring-white/12">
               {data.badgeSecondary}
@@ -357,7 +483,7 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
             className="pointer-events-none absolute -inset-8 rounded-[36px] bg-[radial-gradient(circle,rgba(99,102,241,0.28),transparent_62%)] blur-2xl"
           />
           <div className="relative">
-            <WorkspaceScreen href={ctaHref} />
+            <WorkspaceScreen href={ctaHref} data={data} cards={cards} />
             <div className="mx-auto mt-2 h-2 w-[64%] rounded-b-[18px] bg-[#1e293b]" />
             <div className="mx-auto h-1.5 w-[38%] rounded-b-full bg-[#334155]" />
           </div>

@@ -1100,13 +1100,15 @@ export function defaultBeyondAiSection(): CmsBeyondAiContent {
     trust1: "50+ Templates",
     trust2: "20+ AI Models",
     trust3: "1-Click Publish",
-    dashboardTitle: "My Websites",
-    toastTitle: "Website Published!",
-    toastSubtitle: "yourbrand.com is now live",
-    statsLabel: "Total Websites",
+    dashboardTitle: "Create Your Website with AI",
+    toastTitle:
+      "Describe your idea, choose a model, and generate a complete website.",
+    toastSubtitle:
+      "A luxury hotel website with booking system, modern design, soft colors...",
+    statsLabel: "How it works?",
     statsValue: "12",
-    statsHint: "+4 this month",
-    saasTitle: "Powered by SaaS",
+    statsHint: "Billing",
+    saasTitle: "Popular Templates",
     workspaceImageUrl: "/images/home/beyond-ai/dark-glow.png",
     workspaceImageAlt:
       "Beyond AI workspace on a glowing laptop in a dark studio",
@@ -1205,6 +1207,23 @@ export function defaultBeyondAiSection(): CmsBeyondAiContent {
         city: "Sydney",
         flag: "🇦🇺",
         nav: "Home  Destinations  Cruises  Offers  Contact",
+      },
+      {
+        id: "studio",
+        visible: true,
+        order: 4,
+        name: "Studio",
+        domain: "studio.site",
+        imageUrl: "/images/home/beyond-ai/hotel.png",
+        imageAlt: "Portfolio studio website preview",
+        status: "Live",
+        headline: "Work\nThat Speaks",
+        subhead: "A clean portfolio for creative teams",
+        cta: "See work",
+        country: "United States",
+        city: "Los Angeles",
+        flag: "🇺🇸",
+        nav: "Home  Work  Studio  Contact",
       },
     ],
     features: [
@@ -2940,6 +2959,12 @@ function mergeBeyondAiSection(
       stored.workspaceImageUrl ?? "",
     );
 
+  const staleWorkspaceCopy =
+    legacyHero ||
+    /My Websites/i.test(stored.dashboardTitle ?? "") ||
+    /Website Published!/i.test(stored.toastTitle ?? "") ||
+    /Powered by SaaS/i.test(stored.saasTitle ?? "");
+
   return {
     ...defaults,
     ...stored,
@@ -2973,6 +2998,16 @@ function mergeBeyondAiSection(
     highlights: legacyHero ? defaults.highlights : highlights,
     sites,
     features,
+    ...(staleWorkspaceCopy
+      ? {
+          dashboardTitle: defaults.dashboardTitle,
+          toastTitle: defaults.toastTitle,
+          toastSubtitle: defaults.toastSubtitle,
+          statsLabel: defaults.statsLabel,
+          statsHint: defaults.statsHint,
+          saasTitle: defaults.saasTitle,
+        }
+      : {}),
   };
 }
 

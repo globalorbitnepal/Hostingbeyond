@@ -91,8 +91,8 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
         <div>
           <h2 className="font-semibold">Beyond AI homepage banner</h2>
           <p className="mt-0.5 text-xs text-slate-500">
-            Live dark dashboard hero: left copy is coded, right laptop workspace
-            is coded. Glow background only — no letters on the art.
+            Full homepage Beyond AI section: left copy, right workspace text,
+            Popular Templates, and Live Preview site cards.
           </p>
         </div>
         <label className="flex items-center gap-2 text-xs text-slate-500">
@@ -119,6 +119,36 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
       />
 
       <div className="grid gap-3 sm:grid-cols-2">
+        <Field
+          label="Workspace title"
+          value={value.dashboardTitle}
+          onChange={(dashboardTitle) => patch({ dashboardTitle })}
+          onBlur={persist}
+        />
+        <Field
+          label="Workspace subtitle"
+          value={value.toastTitle}
+          onChange={(toastTitle) => patch({ toastTitle })}
+          onBlur={persist}
+        />
+        <Field
+          label="Prompt placeholder"
+          value={value.toastSubtitle}
+          onChange={(toastSubtitle) => patch({ toastSubtitle })}
+          onBlur={persist}
+        />
+        <Field
+          label="How it works label"
+          value={value.statsLabel}
+          onChange={(statsLabel) => patch({ statsLabel })}
+          onBlur={persist}
+        />
+        <Field
+          label="Templates heading"
+          value={value.saasTitle}
+          onChange={(saasTitle) => patch({ saasTitle })}
+          onBlur={persist}
+        />
         <Field
           label="Brand (Beyond AI)"
           value={value.badge}
@@ -177,7 +207,7 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
 
       <details className="rounded-xl border border-slate-200 p-3">
         <summary className="cursor-pointer text-sm font-semibold text-slate-800">
-          Unused leftover fields (not on the live banner)
+          Extra leftover fields
         </summary>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <Field
@@ -288,10 +318,13 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
         </div>
       </div>
 
-      <div>
-        <div className="flex items-center justify-between gap-3">
+      <details className="rounded-xl border border-slate-200 p-3">
+        <summary className="cursor-pointer text-sm font-semibold text-slate-800">
+          Extra leftover feature cards (not on the live banner)
+        </summary>
+        <div className="mt-3 flex items-center justify-between gap-3">
           <h3 className="text-sm font-semibold text-slate-800">
-            Bottom features (no glass — same as Business Email)
+            Extra feature cards
           </h3>
           <button
             type="button"
@@ -374,19 +407,16 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
             </div>
           ))}
         </div>
-      </div>
+      </details>
 
-      <details className="space-y-3 rounded-xl border border-slate-200 p-3">
-        <summary className="cursor-pointer text-sm font-semibold text-slate-800">
-          Archived 2×2 site cards — not shown on the homepage
-        </summary>
+      <div className="space-y-3 rounded-xl border border-slate-200 p-3">
         <p className="text-xs text-slate-500">
-          Kept so older uploads are not lost. The live Beyond AI section only
-          uses the workspace photo above.
+          First 5 cards are Popular Templates. First 4 cards are Live Preview.
+          Each card renders as a mini website, not a raw photo.
         </p>
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-slate-800">
-            Extra site images
+            Popular Templates + Live Preview
           </h3>
           <button
             type="button"
@@ -539,7 +569,7 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
             </div>
           </div>
         ))}
-      </details>
+      </div>
     </section>
   );
 }
