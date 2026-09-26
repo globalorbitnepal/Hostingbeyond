@@ -1088,18 +1088,18 @@ export function defaultBeyondAiSection(): CmsBeyondAiContent {
     visible: true,
     visual: "workspace",
     badge: "Beyond AI",
-    badgeSecondary: "",
-    title: "Build Your",
-    titleAccent: "Dream Website",
+    badgeSecondary: "AI Website Builder",
+    title: "Turn Your Ideas",
+    titleAccent: "Real Websites",
     description:
-      "Create stunning websites in minutes with AI. No coding. Just your ideas.",
-    primaryCtaLabel: "Get Started",
+      "Describe what you want, choose an AI model, customize and publish — all in minutes.",
+    primaryCtaLabel: "Start Building Now",
     primaryCtaHref: routes.beyondAi,
     secondaryCtaLabel: "",
     secondaryCtaHref: routes.beyondAi,
-    trust1: "",
-    trust2: "",
-    trust3: "",
+    trust1: "50+ Templates",
+    trust2: "20+ AI Models",
+    trust3: "1-Click Publish",
     dashboardTitle: "My Websites",
     toastTitle: "Website Published!",
     toastSubtitle: "yourbrand.com is now live",
@@ -1107,9 +1107,9 @@ export function defaultBeyondAiSection(): CmsBeyondAiContent {
     statsValue: "12",
     statsHint: "+4 this month",
     saasTitle: "Powered by SaaS",
-    workspaceImageUrl: "/images/home/beyond-ai/scene-full.png",
+    workspaceImageUrl: "/images/home/beyond-ai/dark-glow.png",
     workspaceImageAlt:
-      "Designer at a desk with a closed laptop, looking at a Beyond AI site preview",
+      "Beyond AI workspace on a glowing laptop in a dark studio",
     saasItems: [
       "Your sites, forever",
       "Built-in hosting & domain",
@@ -1120,19 +1120,19 @@ export function defaultBeyondAiSection(): CmsBeyondAiContent {
     highlights: [
       {
         id: "template",
-        title: "Choose Template",
-        subtitle: "Beautiful, ready-to-use designs",
+        title: "Ready-to-use Templates",
+        subtitle: "Modern and professional designs",
         icon: "zap",
       },
       {
         id: "customize",
-        title: "Customize Design",
+        title: "Customize Easily",
         subtitle: "Drag, drop and make it yours",
         icon: "cloud",
       },
       {
         id: "publish",
-        title: "Publish Website",
+        title: "Publish Your Website",
         subtitle: "Go live in minutes",
         icon: "globe",
       },
@@ -2927,14 +2927,16 @@ function mergeBeyondAiSection(
     ? stored.saasItems.map((item) => item.trim()).filter(Boolean)
     : defaults.saasItems;
 
-  const staleTwoLineTitle = stored.title === "Build Your\nDream";
+  const staleTwoLineTitle =
+    stored.title === "Build Your\nDream" || stored.title === "Build Your";
 
   const legacyHero =
     staleTwoLineTitle ||
     /create stunning/i.test(stored.title ?? "") ||
+    /get started/i.test(stored.primaryCtaLabel ?? "") ||
     /start building with beyond ai/i.test(stored.primaryCtaLabel ?? "") ||
     /built for everyone/i.test(stored.badgeSecondary ?? "") ||
-    /dream-hero\.png|dream-section\.png|workspace-visual\.png|fullbleed-scene\.png|person-desk\.png/i.test(
+    /dream-hero\.png|dream-section\.png|workspace-visual\.png|fullbleed-scene\.png|person-desk\.png|scene-full\.png/i.test(
       stored.workspaceImageUrl ?? "",
     );
 

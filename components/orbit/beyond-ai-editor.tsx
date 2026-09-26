@@ -91,9 +91,8 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
         <div>
           <h2 className="font-semibold">Beyond AI homepage banner</h2>
           <p className="mt-0.5 text-xs text-slate-500">
-            Live section: purple-blue full-bleed scene, coded left copy, glass
-            “Turn Your Ideas” preview, Get Started → /beyond-ai. Photo is person
-            + closed-laptop backside only — no letters on the image.
+            Live dark dashboard hero: left copy is coded, right laptop workspace
+            is coded. Glow background only — no letters on the art.
           </p>
         </div>
         <label className="flex items-center gap-2 text-xs text-slate-500">
@@ -107,7 +106,7 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
       </div>
 
       <OrbitImageField
-        label="Scene photo (person + closed laptop backside, no text)"
+        label="Dark studio glow background (no text, no UI)"
         value={value.workspaceImageUrl ?? ""}
         onChange={(workspaceImageUrl) => patch({ workspaceImageUrl })}
         onCommit={(workspaceImageUrl) => patch({ workspaceImageUrl }, true)}
@@ -121,33 +120,57 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
 
       <div className="grid gap-3 sm:grid-cols-2">
         <Field
-          label="Badge (Beyond AI)"
+          label="Brand (Beyond AI)"
           value={value.badge}
           onChange={(badge) => patch({ badge })}
           onBlur={persist}
         />
         <Field
-          label="Title (e.g. Build Your)"
+          label="Pill (AI Website Builder)"
+          value={value.badgeSecondary}
+          onChange={(badgeSecondary) => patch({ badgeSecondary })}
+          onBlur={persist}
+        />
+        <Field
+          label="Title (e.g. Turn Your Ideas)"
           value={value.title}
           onChange={(title) => patch({ title })}
           onBlur={persist}
         />
         <Field
-          label="Title second line (e.g. Dream Website)"
+          label="Accent (e.g. Real Websites)"
           value={value.titleAccent}
           onChange={(titleAccent) => patch({ titleAccent })}
           onBlur={persist}
         />
         <Field
-          label="Get Started label"
+          label="Start Building Now label"
           value={value.primaryCtaLabel}
           onChange={(primaryCtaLabel) => patch({ primaryCtaLabel })}
           onBlur={persist}
         />
         <Field
-          label="Get Started URL"
+          label="Start Building URL"
           value={value.primaryCtaHref}
           onChange={(primaryCtaHref) => patch({ primaryCtaHref })}
+          onBlur={persist}
+        />
+        <Field
+          label="Stat 1"
+          value={value.trust1}
+          onChange={(trust1) => patch({ trust1 })}
+          onBlur={persist}
+        />
+        <Field
+          label="Stat 2"
+          value={value.trust2}
+          onChange={(trust2) => patch({ trust2 })}
+          onBlur={persist}
+        />
+        <Field
+          label="Stat 3"
+          value={value.trust3}
+          onChange={(trust3) => patch({ trust3 })}
           onBlur={persist}
         />
       </div>
@@ -158,12 +181,6 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
         </summary>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <Field
-            label="Secondary badge"
-            value={value.badgeSecondary}
-            onChange={(badgeSecondary) => patch({ badgeSecondary })}
-            onBlur={persist}
-          />
-          <Field
             label="Secondary CTA label"
             value={value.secondaryCtaLabel}
             onChange={(secondaryCtaLabel) => patch({ secondaryCtaLabel })}
@@ -173,24 +190,6 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
             label="Secondary CTA URL"
             value={value.secondaryCtaHref}
             onChange={(secondaryCtaHref) => patch({ secondaryCtaHref })}
-            onBlur={persist}
-          />
-          <Field
-            label="Trust line 1"
-            value={value.trust1}
-            onChange={(trust1) => patch({ trust1 })}
-            onBlur={persist}
-          />
-          <Field
-            label="Trust line 2"
-            value={value.trust2}
-            onChange={(trust2) => patch({ trust2 })}
-            onBlur={persist}
-          />
-          <Field
-            label="Trust line 3"
-            value={value.trust3}
-            onChange={(trust3) => patch({ trust3 })}
             onBlur={persist}
           />
         </div>
