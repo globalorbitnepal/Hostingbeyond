@@ -91,9 +91,9 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
         <div>
           <h2 className="font-semibold">Beyond AI section</h2>
           <p className="mt-0.5 text-xs text-slate-500">
-            Homepage hero matches the Dream Website layout: left copy, three
-            steps, Get Started, and the right-side photo. Photo uploads save
-            immediately; save Home after text edits.
+            Homepage Beyond AI block is one full-width artwork (purple scene,
+            copy, and person together). Get Started on the art opens the Beyond
+            AI page. Upload a replacement here; it saves immediately.
           </p>
         </div>
         <label className="flex items-center gap-2 text-xs text-slate-500">
@@ -107,7 +107,7 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
       </div>
 
       <OrbitImageField
-        label="Hero photo (person + live preview)"
+        label="Full section artwork"
         value={value.workspaceImageUrl ?? ""}
         onChange={(workspaceImageUrl) => patch({ workspaceImageUrl })}
         onCommit={(workspaceImageUrl) => patch({ workspaceImageUrl }, true)}
