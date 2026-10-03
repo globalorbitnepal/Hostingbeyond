@@ -11,6 +11,7 @@ import {
   TextField,
 } from "@/components/orbit/domain-editor-fields";
 import { OrbitImageField } from "@/components/orbit/image-field";
+import { OrbitVideoField } from "@/components/orbit/video-field";
 import { routes } from "@/config/routes";
 import {
   defaultDomainContent,
@@ -850,7 +851,7 @@ export default function OrbitDomainsPage() {
 
           <OrbitCard
             title="Showcase bento cards"
-            hint="Four Hostinger-style cards. Upload a photo or MP4 per card, or leave image empty for the built-in illustration."
+            hint="Four bento cards on domain search. Each card supports a looping MP4/WebM (plays over the image) plus title, copy, and links. Registrar, support, and setup cards ship with default videos."
             action={
               <AddButton
                 label="Add card"
@@ -977,8 +978,24 @@ export default function OrbitDomainsPage() {
                     onBlur={() => void save()}
                   />
                   <div className="md:col-span-2">
+                    <OrbitVideoField
+                      label={`Looping video — ${card.title}`}
+                      value={card.video ?? ""}
+                      onChange={(video) => {
+                        const showcaseCards = [...shared.showcaseCards];
+                        showcaseCards[index] = { ...card, video };
+                        patchShared({ showcaseCards });
+                      }}
+                      onCommit={(video) => {
+                        const showcaseCards = [...shared.showcaseCards];
+                        showcaseCards[index] = { ...card, video };
+                        patchShared({ showcaseCards }, true);
+                      }}
+                    />
+                  </div>
+                  <div className="md:col-span-2">
                     <OrbitImageField
-                      label={`Card background — ${showcaseImageSpecLabel(card.layout)}`}
+                      label={`Fallback image (when no video) — ${showcaseImageSpecLabel(card.layout)}`}
                       value={card.image}
                       onChange={(image) => {
                         const showcaseCards = [...shared.showcaseCards];
@@ -992,16 +1009,6 @@ export default function OrbitDomainsPage() {
                       }}
                     />
                   </div>
-                  <TextField
-                    label="Video URL (MP4/WebM, optional)"
-                    value={card.video ?? ""}
-                    onChange={(video) => {
-                      const showcaseCards = [...shared.showcaseCards];
-                      showcaseCards[index] = { ...card, video };
-                      patchShared({ showcaseCards });
-                    }}
-                    onBlur={() => void save()}
-                  />
                   {card.layout === "support" ? (
                     <div className="md:col-span-2">
                       <AreaField

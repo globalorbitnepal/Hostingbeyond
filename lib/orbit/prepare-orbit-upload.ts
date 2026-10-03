@@ -2,6 +2,7 @@
 
 const MAX_EDGE = 1600;
 const TARGET_BYTES = 650_000;
+const MAX_VIDEO_BYTES = 12_000_000;
 
 function loadImage(file: File) {
   return new Promise<HTMLImageElement>((resolve, reject) => {
@@ -63,6 +64,17 @@ export async function prepareOrbitUpload(file: File) {
       "HEIC/HEIF photos are not supported. Convert to JPG or PNG and try again.",
     );
   }
+  const looksVideo =
+    file.type.startsWith("video/") || /\.(mp4|webm)$/i.test(file.name);
+  if (looksVideo) {
+    if (file.size > MAX_VIDEO_BYTES) {
+      throw new Error(
+        "This video is too large. Use an MP4 or WebM under 12 MB.",
+      );
+    }
+    return file;
+  }
+
   const looksImage =
     file.type.startsWith("image/") ||
     /\.(jpe?g|png|webp|gif|bmp|avif)$/i.test(file.name);

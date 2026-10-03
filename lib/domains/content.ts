@@ -244,6 +244,7 @@ export function defaultDomainContent(): DomainContent {
           linkLabel: "Compare TLD prices",
           linkHref: "#pricing",
           image: "/images/domains/frames/bento-registrar.svg",
+          video: "/images/domains/videos/bento-registrar.mp4",
         },
         {
           id: "privacy",
@@ -268,6 +269,7 @@ export function defaultDomainContent(): DomainContent {
           linkLabel: "Talk to support",
           linkHref: "/contact",
           image: "/images/domains/frames/bento-support.svg",
+          video: "/images/domains/videos/bento-support.mp4",
           badge:
             "Hello — I would like help connecting my domain to HostingBeyond hosting.",
         },
@@ -282,6 +284,7 @@ export function defaultDomainContent(): DomainContent {
           linkLabel: "Open domain search",
           linkHref: "/domain-name-search",
           image: "/images/domains/frames/bento-setup.svg",
+          video: "/images/domains/videos/bento-setup.mp4",
         },
       ],
       popularHeading: "Choose from the most popular domains",
