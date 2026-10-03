@@ -23,6 +23,7 @@ export function DomainBentoShowcaseMotion({
     <div
       className={cn(
         "relative h-full min-h-[200px] w-full overflow-hidden",
+        layout === "registrar" && "min-h-[260px]",
         className,
       )}
     >
@@ -91,7 +92,7 @@ function MotionBackdrop({
 }
 
 function RegistrarMotion({ playing }: { playing: boolean }) {
-  const exts = [".com", ".io", ".shop", ".ai"];
+  const extensions = [".com", ".io", ".shop", ".ai"];
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
@@ -100,72 +101,86 @@ function RegistrarMotion({ playing }: { playing: boolean }) {
     return () => window.clearInterval(t);
   }, [playing]);
 
-  const ext = exts[tick % exts.length];
+  const activeExt = extensions[tick % extensions.length];
 
   return (
     <div className="absolute inset-0">
       <MotionBackdrop playing={playing} />
-      <div className="relative z-10 flex h-full flex-col justify-center p-5 sm:p-6">
-        <motion.div
-          className="w-full rounded-2xl border border-white/80 bg-white/95 p-4 shadow-[0_24px_60px_-28px_rgba(103,61,230,0.45)] backdrop-blur-sm sm:p-5"
-          animate={playing ? { y: [0, -4, 0] } : undefined}
-          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+      <div className="relative z-10 flex h-full min-h-[260px] flex-col p-4 sm:p-5">
+        <div
+          className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-white/70 bg-white/95 shadow-[0_24px_60px_-28px_rgba(103,61,230,0.45)] backdrop-blur-sm"
+          aria-hidden
         >
-          <div className="flex items-center gap-2 rounded-xl bg-[#f4f5ff] px-3 py-3 ring-1 ring-[#e0e7ff] sm:py-3.5">
-            <span className="relative flex size-2.5">
-              <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#673de6]/40" />
-              <span className="relative inline-flex size-2.5 rounded-full bg-[#673de6]" />
-            </span>
-            <Globe2 className="size-5 shrink-0 text-[#673de6]" />
-            <span className="min-w-0 flex-1 truncate text-[15px] font-extrabold text-[#2f1c6a] sm:text-[17px]">
-              yourbrand{ext}
-              <span className="hb-caret ml-0.5 inline-block h-[1em] w-[2px] bg-[#673de6] align-[-2px]" />
-            </span>
-            <span className="shrink-0 rounded-lg bg-[#673de6] px-3 py-1.5 text-[11px] font-extrabold text-white shadow-[0_0_24px_rgba(103,61,230,0.45)]">
-              Search
+          <div className="flex items-center gap-2 border-b border-[#e0e7ff] bg-[#f8f7ff] px-3 py-2">
+            <span className="size-2.5 rounded-full bg-red-400/90" />
+            <span className="size-2.5 rounded-full bg-amber-400/90" />
+            <span className="size-2.5 rounded-full bg-emerald-400/90" />
+            <span className="ml-1 truncate text-[10px] font-bold text-[#64748b] sm:text-[11px]">
+              domains.hostingbeyond.com
             </span>
           </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {["ICANN-accredited", "300+ extensions", "Renewal upfront"].map(
-              (label, i) => (
+          <div className="flex min-h-0 flex-1 flex-col p-3 sm:p-4">
+            <div className="flex items-center gap-2 rounded-xl bg-[#f4f5ff] px-3 py-2.5 ring-1 ring-[#e0e7ff] sm:py-3">
+              <span className="relative flex size-2.5 shrink-0">
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#673de6]/40" />
+                <span className="relative inline-flex size-2.5 rounded-full bg-[#673de6]" />
+              </span>
+              <Globe2 className="size-5 shrink-0 text-[#673de6]" />
+              <span className="min-w-0 flex-1 truncate text-[14px] font-extrabold text-[#2f1c6a] sm:text-[16px]">
+                yourbrand{activeExt}
+                <span className="hb-caret ml-0.5 inline-block h-[1em] w-[2px] bg-[#673de6] align-[-2px]" />
+              </span>
+              <span className="shrink-0 rounded-lg bg-[#673de6] px-2.5 py-1 text-[10px] font-extrabold text-white sm:px-3 sm:py-1.5 sm:text-[11px]">
+                Search
+              </span>
+            </div>
+            <div className="mt-3 grid min-h-0 flex-1 grid-cols-2 gap-2">
+              {extensions.map((ext, index) => {
+                const done = playing ? tick > index : true;
+                const highlight = ext === activeExt;
+                return (
+                  <motion.div
+                    key={ext}
+                    className={cn(
+                      "rounded-xl border px-2.5 py-2 sm:px-3 sm:py-2.5",
+                      highlight
+                        ? "border-[#673de6]/50 bg-[#eef2ff] shadow-[0_0_20px_rgba(103,61,230,0.2)]"
+                        : "border-[#e0e7ff] bg-white",
+                    )}
+                    animate={
+                      playing && highlight ? { scale: [1, 1.02, 1] } : undefined
+                    }
+                    transition={{ duration: 1.2, repeat: Infinity }}
+                  >
+                    <p className="truncate text-[11px] font-extrabold text-[#2f1c6a] sm:text-[12px]">
+                      yourbrand{ext}
+                    </p>
+                    <p
+                      className={cn(
+                        "mt-1 text-[10px] font-bold sm:text-[11px]",
+                        done ? "text-emerald-600" : "text-[#94a3b8]",
+                      )}
+                    >
+                      {done ? "Available" : "Checking…"}
+                    </p>
+                  </motion.div>
+                );
+              })}
+            </div>
+            <div className="mt-3 flex items-center justify-between gap-2 border-t border-[#e0e7ff] pt-3">
+              <span className="text-[11px] font-bold text-[#2f1c6a] sm:text-[12px]">
+                Free WHOIS privacy
+              </span>
+              <span className="relative h-6 w-11 shrink-0 rounded-full bg-[#673de6] sm:h-7 sm:w-12">
                 <motion.span
-                  key={label}
-                  className="rounded-full bg-[#eef2ff] px-2.5 py-1 text-[10px] font-bold text-[#4338ca] sm:text-[11px]"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.12, duration: 0.35 }}
-                >
-                  {label}
-                </motion.span>
-              ),
-            )}
+                  className="absolute top-0.5 right-0.5 size-5 rounded-full bg-white shadow"
+                  animate={playing ? { x: [0, -4, 0] } : undefined}
+                  transition={{ duration: 2.5, repeat: Infinity }}
+                />
+              </span>
+            </div>
           </div>
-          <div className="mt-4 flex items-center justify-between gap-3">
-            <span className="text-[12px] font-bold text-[#2f1c6a] sm:text-[13px]">
-              Free WHOIS privacy
-            </span>
-            <span className="relative h-7 w-12 rounded-full bg-[#673de6]">
-              <motion.span
-                className="absolute top-1 right-1 size-5 rounded-full bg-white shadow"
-                animate={playing ? { x: [0, -4, 0] } : undefined}
-                transition={{ duration: 2.5, repeat: Infinity }}
-              />
-            </span>
-          </div>
-          <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#e0e7ff]">
-            <motion.span
-              className="block h-full rounded-full bg-gradient-to-r from-[#673de6] to-[#2563eb]"
-              animate={
-                playing ? { width: ["35%", "95%", "35%"] } : { width: "70%" }
-              }
-              transition={{
-                duration: 3.2,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            />
-          </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

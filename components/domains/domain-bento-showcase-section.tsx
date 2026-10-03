@@ -51,6 +51,7 @@ export function DomainBentoShowcaseSection({
               card={registrar}
               className="lg:col-span-5 lg:row-span-2"
               visualClassName="min-h-[280px] sm:min-h-[360px] lg:min-h-[420px]"
+              imageHeavy
             />
           ) : null}
           <div className="grid gap-5 lg:col-span-7 lg:grid-cols-7 lg:gap-6">
@@ -119,7 +120,7 @@ function BentoCard({
         <h3 className="text-[17px] font-extrabold tracking-tight text-[#0f172a] sm:text-[18px]">
           {card.title}
         </h3>
-        <p className="mt-2 flex-1 text-[14px] leading-relaxed text-slate-600">
+        <p className="mt-2 text-[14px] leading-relaxed text-slate-600">
           {card.description}
         </p>
         {card.linkLabel ? (

@@ -852,7 +852,10 @@ function mergeShowcaseCards(
       item?.layout,
       base.layout,
     ) as DomainShowcaseCard["layout"];
-    const video = text(item?.video, base.video ?? "");
+    const videoRaw = text(item?.video, base.video ?? "");
+    const video = videoRaw.includes("/images/domains/videos/bento-")
+      ? ""
+      : videoRaw;
     const videoOnly =
       Boolean(video) && /\.(mp4|webm)(\?|#|$)/i.test(video.trim());
     const storedImage =
@@ -879,7 +882,10 @@ function mergeShowcaseCards(
 
   const extras = [...remaining.values()].map((item, extraIndex) => {
     const base = defaults[extraIndex % defaults.length];
-    const video = text(item.video, base.video ?? "");
+    const videoRaw = text(item.video, base.video ?? "");
+    const video = videoRaw.includes("/images/domains/videos/bento-")
+      ? ""
+      : videoRaw;
     const videoOnly =
       Boolean(video) && /\.(mp4|webm)(\?|#|$)/i.test(video.trim());
     const storedImage = typeof item.image === "string" ? item.image.trim() : "";

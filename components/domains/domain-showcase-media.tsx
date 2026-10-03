@@ -41,7 +41,8 @@ export function DomainShowcaseMedia({
 }) {
   const videoCandidate = video?.trim() ?? "";
   const useBentoMotion =
-    BENTO_LAYOUTS.has(layout) && isBuiltInBentoVideo(videoCandidate);
+    BENTO_LAYOUTS.has(layout) &&
+    (layout === "registrar" || isBuiltInBentoVideo(videoCandidate));
   const videoSrc =
     !useBentoMotion && isVideoMediaSrc(videoCandidate) ? videoCandidate : "";
   const imageSrc = useBentoMotion || videoSrc ? "" : (image?.trim() ?? "");
