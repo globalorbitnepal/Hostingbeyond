@@ -41,6 +41,26 @@ function loopT(frame) {
   return (frame / FRAMES) % 1;
 }
 
+/** Per-card zoom so UI fills the bento frame under object-cover (not tiny centered). */
+const SCENE_VIEW = {
+  registrar: { scale: 1.12, fx: 0.5, fy: 0.5 },
+  privacy: { scale: 1.38, fx: 0.5, fy: 0.5 },
+  support: { scale: 1.1, fx: 0.5, fy: 0.5 },
+  setup: { scale: 1.12, fx: 0.5, fy: 0.5 },
+};
+
+function beginZoom(ctx, w, h, view) {
+  const { scale, fx = 0.5, fy = 0.5 } = view;
+  ctx.save();
+  ctx.translate(w * fx, h * fy);
+  ctx.scale(scale, scale);
+  ctx.translate(-w * fx, -h * fy);
+}
+
+function endZoom(ctx) {
+  ctx.restore();
+}
+
 function roundRect(ctx, x, y, w, h, r) {
   const rr = Math.min(r, w / 2, h / 2);
   ctx.beginPath();
@@ -97,19 +117,20 @@ function drawRegistrar(frame) {
   const ctx = canvas.getContext("2d");
   const t = loopT(frame);
   bgPurpleBlue(ctx, w, h, frame, false);
+  beginZoom(ctx, w, h, SCENE_VIEW.registrar);
 
-  const cardX = 48;
-  const cardY = 340;
-  const cardW = w - 96;
-  const cardH = 520;
+  const cardX = 20;
+  const cardW = w - 40;
+  const cardH = h - 40;
+  const cardY = 20;
   shadow(ctx);
   roundRect(ctx, cardX, cardY, cardW, cardH, 28);
   ctx.fillStyle = "rgba(255,255,255,0.96)";
   ctx.fill();
   clearShadow(ctx);
 
-  const searchY = cardY + 40;
-  roundRect(ctx, cardX + 24, searchY, cardW - 48, 72, 16);
+  const searchY = cardY + 48;
+  roundRect(ctx, cardX + 28, searchY, cardW - 56, 88, 18);
   ctx.fillStyle = C.bgLight;
   ctx.fill();
   ctx.strokeStyle = "#e0e7ff";
@@ -119,31 +140,31 @@ function drawRegistrar(frame) {
   const pulse = 1 + 0.35 * Math.sin((frame / FPS) * Math.PI * 2 / 1.2);
   ctx.fillStyle = C.purple;
   ctx.beginPath();
-  ctx.arc(cardX + 48, searchY + 36, 5 * pulse, 0, Math.PI * 2);
+  ctx.arc(cardX + 52, searchY + 44, 6 * pulse, 0, Math.PI * 2);
   ctx.fill();
 
   const exts = [".com", ".io", ".shop", ".ai"];
   const extIdx = Math.floor((frame / (FPS * 0.9)) % exts.length);
   const domain = `yourbrand${exts[extIdx]}`;
-  ctx.font = "28px Bold";
+  ctx.font = "34px Bold";
   ctx.fillStyle = C.purpleDark;
-  ctx.fillText(domain, cardX + 68, searchY + 46);
+  ctx.fillText(domain, cardX + 72, searchY + 56);
   if (Math.floor(frame / 15) % 2 === 0) {
     const tw = ctx.measureText(domain).width;
     ctx.fillRect(cardX + 68 + tw + 4, searchY + 24, 2, 28);
   }
 
-  roundRect(ctx, cardX + cardW - 24 - 150, searchY + 12, 150, 48, 12);
+  roundRect(ctx, cardX + cardW - 28 - 176, searchY + 14, 176, 60, 14);
   ctx.fillStyle = C.purple;
   ctx.fill();
-  ctx.font = "20px Bold";
+  ctx.font = "22px Bold";
   ctx.fillStyle = C.white;
-  ctx.fillText("Search", cardX + cardW - 24 - 118, searchY + 44);
+  ctx.fillText("Search", cardX + cardW - 28 - 128, searchY + 52);
 
   const pills = ["ICANN-accredited", "300+ extensions", "Renewal shown upfront"];
-  ctx.font = "15px Bold";
+  ctx.font = "17px Bold";
   let pillX = cardX + 24;
-  let pillY = cardY + 130;
+  let pillY = cardY + 168;
   pills.forEach((label, i) => {
     const appear = ease(Math.min(1, Math.max(0, (frame - i * 10) / 18)));
     const pw = ctx.measureText(label).width + 36;
@@ -165,27 +186,30 @@ function drawRegistrar(frame) {
 
   ctx.font = "18px Bold";
   ctx.fillStyle = C.purpleDark;
-  ctx.fillText("Free WHOIS privacy", cardX + 24, cardY + 280);
-  roundRect(ctx, cardX + cardW - 76, cardY + 262, 52, 28, 14);
+  ctx.fillText("Free WHOIS privacy", cardX + 28, cardY + h - cardY - 120);
+  roundRect(ctx, cardX + cardW - 88, cardY + h - cardY - 138, 56, 32, 16);
   ctx.fillStyle = C.purple;
   ctx.fill();
-  const knobX = cardX + cardW - 44 + Math.sin(t * Math.PI * 2) * 4;
+  const knobY = cardY + h - cardY - 122;
+  const knobX = cardX + cardW - 48 + Math.sin(t * Math.PI * 2) * 4;
   ctx.fillStyle = C.white;
   ctx.beginPath();
-  ctx.arc(knobX, cardY + 276, 10, 0, Math.PI * 2);
+  ctx.arc(knobX, knobY, 11, 0, Math.PI * 2);
   ctx.fill();
 
-  roundRect(ctx, cardX + 24, cardY + 320, cardW - 48, 10, 5);
+  const barY = cardY + h - cardY - 72;
+  roundRect(ctx, cardX + 28, barY, cardW - 56, 12, 6);
   ctx.fillStyle = "#e0e7ff";
   ctx.fill();
   const prog = 0.35 + 0.57 * (0.5 + 0.5 * Math.sin(t * Math.PI * 2));
   const grad = ctx.createLinearGradient(cardX + 24, 0, cardX + 24 + (cardW - 48) * prog, 0);
   grad.addColorStop(0, C.purple);
   grad.addColorStop(1, C.blue);
-  roundRect(ctx, cardX + 24, cardY + 320, (cardW - 48) * prog, 10, 5);
+  roundRect(ctx, cardX + 28, barY, (cardW - 56) * prog, 12, 6);
   ctx.fillStyle = grad;
   ctx.fill();
 
+  endZoom(ctx);
   return canvas;
 }
 
@@ -230,6 +254,7 @@ function drawPrivacy(frame) {
   const ctx = canvas.getContext("2d");
   const t = loopT(frame);
   bgPurpleBlue(ctx, w, h, frame, true);
+  beginZoom(ctx, w, h, SCENE_VIEW.privacy);
 
   ctx.strokeStyle = "rgba(255,255,255,0.06)";
   ctx.lineWidth = 1;
@@ -254,12 +279,12 @@ function drawPrivacy(frame) {
     ctx.strokeStyle = `rgba(96,165,250,${alpha})`;
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(320, h / 2, radius, 0, Math.PI * 2);
+    ctx.arc(400, h / 2, radius, 0, Math.PI * 2);
     ctx.stroke();
   }
 
   const float = Math.sin(t * Math.PI * 2) * 12;
-  drawShield(ctx, 320, h / 2, 1.15, float);
+  drawShield(ctx, 400, h / 2, 1.35, float);
 
   const rows = [
     ["WHOIS privacy", "ON"],
@@ -270,22 +295,23 @@ function drawPrivacy(frame) {
   rows.forEach(([label, val], i) => {
     const delay = 0.2 + i * 0.35;
     const slide = ease(Math.min(1, Math.max(0, (tSec - delay) * 2.2)));
-    const rx = 720 + (1 - slide) * 60;
-    const ry = 220 + i * 100;
+    const rx = 780 + (1 - slide) * 60;
+    const ry = 200 + i * 108;
     ctx.globalAlpha = slide;
-    roundRect(ctx, rx, ry, 420, 72, 16);
+    roundRect(ctx, rx, ry, 460, 80, 16);
     ctx.fillStyle = "rgba(255,255,255,0.12)";
     ctx.fill();
     ctx.strokeStyle = "rgba(255,255,255,0.18)";
     ctx.stroke();
-    ctx.font = "22px Bold";
+    ctx.font = "24px Bold";
     ctx.fillStyle = C.white;
-    ctx.fillText(label, rx + 20, ry + 44);
+    ctx.fillText(label, rx + 22, ry + 48);
     ctx.fillStyle = val === "Hidden" ? "rgba(255,255,255,0.75)" : C.green;
-    ctx.fillText(val, rx + 320, ry + 44);
+    ctx.fillText(val, rx + 350, ry + 48);
     ctx.globalAlpha = 1;
   });
 
+  endZoom(ctx);
   return canvas;
 }
 
@@ -295,24 +321,25 @@ function drawSupport(frame) {
   const canvas = createCanvas(w, h);
   const ctx = canvas.getContext("2d");
   bgPurpleBlue(ctx, w, h, frame, false);
+  beginZoom(ctx, w, h, SCENE_VIEW.support);
 
-  const mx = 72;
-  const my = 56;
-  const mw = w - 144;
-  const mh = h - 112;
+  const mx = 16;
+  const my = 16;
+  const mw = w - 32;
+  const mh = h - 32;
   shadow(ctx, 36);
   roundRect(ctx, mx, my, mw, mh, 24);
   ctx.fillStyle = C.white;
   ctx.fill();
   clearShadow(ctx);
 
-  roundRect(ctx, mx, my, mw, 64, 24);
+  roundRect(ctx, mx, my, mw, 72, 24);
   ctx.fillStyle = C.purple;
   ctx.fill();
-  ctx.fillRect(mx, my + 40, mw, 24);
-  ctx.font = "24px Bold";
+  ctx.fillRect(mx, my + 48, mw, 24);
+  ctx.font = "28px Bold";
   ctx.fillStyle = C.white;
-  ctx.fillText("HostingBeyond Support", mx + 20, my + 42);
+  ctx.fillText("HostingBeyond Support", mx + 22, my + 48);
   const livePulse = 0.85 + 0.15 * Math.sin((frame / FPS) * Math.PI * 2);
   roundRect(ctx, mx + mw - 130, my + 18, 110, 32, 16);
   ctx.fillStyle = `rgba(34,197,94,${livePulse})`;
@@ -328,26 +355,26 @@ function drawSupport(frame) {
     { text: "Domain pointed — SSL is on.", agent: true, at: 3.2 },
   ];
   const tSec = (frame / FPS) % DURATION;
-  let y = my + 90;
+  let y = my + 96;
   msgs.forEach((m) => {
     const show = ease(Math.min(1, Math.max(0, (tSec - m.at) * 2)));
     if (show <= 0) return;
-    ctx.font = "17px Regular";
-    const tw = Math.min(480, ctx.measureText(m.text).width + 32);
+    ctx.font = "20px Regular";
+    const tw = Math.min(560, ctx.measureText(m.text).width + 36);
     const bx = m.agent ? mx + mw - tw - 24 : mx + 24;
     ctx.globalAlpha = show;
     ctx.translate(0, (1 - show) * 14);
-    roundRect(ctx, bx, y, tw, 56, 14);
+    roundRect(ctx, bx, y, tw, 64, 14);
     ctx.fillStyle = m.agent ? C.purple : "#f1f5f9";
     ctx.fill();
     ctx.fillStyle = m.agent ? C.white : C.purpleDark;
     ctx.fillText(m.text, bx + 16, y + 36);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.globalAlpha = 1;
-    y += 72;
+    y += 78;
   });
 
-  const ty = my + mh - 80;
+  const ty = my + mh - 88;
   roundRect(ctx, mx + mw - 100, ty, 76, 40, 14);
   ctx.fillStyle = C.bgSoft;
   ctx.fill();
@@ -359,6 +386,7 @@ function drawSupport(frame) {
     ctx.fill();
   }
 
+  endZoom(ctx);
   return canvas;
 }
 
@@ -368,35 +396,36 @@ function drawSetup(frame) {
   const canvas = createCanvas(w, h);
   const ctx = canvas.getContext("2d");
   bgPurpleBlue(ctx, w, h, frame, false);
+  beginZoom(ctx, w, h, SCENE_VIEW.setup);
 
-  const px = 80;
-  const py = 140;
-  const pw = w - 160;
-  const ph = h - 280;
+  const px = 20;
+  const py = 20;
+  const pw = w - 40;
+  const ph = h - 40;
   shadow(ctx);
   roundRect(ctx, px, py, pw, ph, 24);
   ctx.fillStyle = C.white;
   ctx.fill();
   clearShadow(ctx);
 
-  ctx.font = "30px Bold";
+  ctx.font = "34px Bold";
   ctx.fillStyle = C.purpleDark;
-  ctx.fillText("Quick domain setup", px + 32, py + 52);
+  ctx.fillText("Quick domain setup", px + 32, py + 56);
 
   const steps = ["Register domain", "Manage DNS", "Add hosting & mail"];
   const t = loopT(frame);
   steps.forEach((label, i) => {
-    const sy = py + 100 + i * 110;
+    const sy = py + 108 + i * 118;
     const phase = (t * DURATION - i * 0.35 + DURATION) % DURATION;
     const prog = ease(Math.min(1, Math.max(0, Math.sin((phase / DURATION) * Math.PI) * 1.2)));
     ctx.fillStyle = C.purple;
     ctx.beginPath();
-    ctx.arc(px + 52, sy + 22, 22, 0, Math.PI * 2);
+    ctx.arc(px + 52, sy + 24, 24, 0, Math.PI * 2);
     ctx.fill();
     ctx.font = "20px Bold";
     ctx.fillStyle = C.white;
     ctx.fillText("✓", px + 44, sy + 30);
-    ctx.font = "21px Bold";
+    ctx.font = "24px Bold";
     ctx.fillStyle = C.purpleDark;
     ctx.fillText(label, px + 92, sy + 30);
     roundRect(ctx, px + 92, sy + 44, pw - 124, 10, 5);
@@ -420,7 +449,21 @@ function drawSetup(frame) {
   ctx.fillStyle = C.white;
   ctx.fillText("Go live", px + pw / 2 - 42, py + ph - 40);
 
+  endZoom(ctx);
   return canvas;
+}
+
+async function exportPreviewFrames(scenes) {
+  const dir = path.join(root, ".tmp/bento-previews");
+  fs.mkdirSync(dir, { recursive: true });
+  for (const { id, draw } of scenes) {
+    for (const f of [0, Math.floor(FRAMES / 2), FRAMES - 1]) {
+      const canvas = draw(f);
+      const png = await canvas.encode("png");
+      fs.writeFileSync(path.join(dir, `${id}-f${f}.png`), png);
+    }
+  }
+  console.log(`Previews: ${dir}`);
 }
 
 const SCENES = [
@@ -495,10 +538,12 @@ function encodeScene(ffmpeg, id, draw) {
 
 async function main() {
   fs.mkdirSync(outDir, { recursive: true });
+  await exportPreviewFrames(SCENES);
   const ffmpeg = await ffmpegBin();
   for (const scene of SCENES) {
     await encodeScene(ffmpeg, scene.id, scene.draw);
   }
+  await exportPreviewFrames(SCENES);
 }
 
 main().catch((e) => {

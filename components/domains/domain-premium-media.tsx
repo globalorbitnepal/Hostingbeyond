@@ -62,7 +62,7 @@ export function DomainPremiumVideoLayer({
   return (
     <video
       className={cn(
-        "absolute inset-0 h-full w-full object-cover",
+        "absolute inset-0 h-full w-full scale-[1.08] object-cover object-center",
         playing ? "opacity-100" : "opacity-90",
         className,
       )}
