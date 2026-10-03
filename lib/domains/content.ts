@@ -831,6 +831,66 @@ function num(value: unknown, fallback: number) {
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
 }
 
+function mergeShowcaseCards(
+  stored: unknown,
+  defaults: DomainShowcaseCard[],
+): DomainShowcaseCard[] {
+  if (!Array.isArray(stored) || stored.length === 0) return defaults;
+
+  const remaining = new Map(
+    stored.map((item) => [
+      typeof item?.id === "string" ? item.id : "",
+      item as Partial<DomainShowcaseCard>,
+    ]),
+  );
+
+  const merged = defaults.map((base, index) => {
+    const item = remaining.get(base.id);
+    remaining.delete(base.id);
+    const layout = text(
+      item?.layout,
+      base.layout,
+    ) as DomainShowcaseCard["layout"];
+    return {
+      ...base,
+      layout,
+      title: text(item?.title, base.title),
+      description: text(item?.description, base.description),
+      linkLabel: text(item?.linkLabel, base.linkLabel),
+      linkHref: text(item?.linkHref, base.linkHref),
+      image: text(item?.image, base.image),
+      video: text(item?.video, base.video ?? ""),
+      badge: text(item?.badge, base.badge ?? ""),
+      visible: item?.visible !== false,
+      order: typeof item?.order === "number" ? item.order : index,
+    };
+  });
+
+  const extras = [...remaining.values()].map((item, extraIndex) => {
+    const base = defaults[extraIndex % defaults.length];
+    return {
+      ...base,
+      ...item,
+      id: text(item.id, `showcase-extra-${extraIndex}`),
+      layout: text(item.layout, base.layout) as DomainShowcaseCard["layout"],
+      title: text(item.title, base.title),
+      description: text(item.description, base.description),
+      linkLabel: text(item.linkLabel, base.linkLabel),
+      linkHref: text(item.linkHref, base.linkHref),
+      image: text(item.image, base.image),
+      video: text(item.video, base.video ?? ""),
+      badge: text(item.badge, base.badge ?? ""),
+      visible: item.visible !== false,
+      order:
+        typeof item.order === "number"
+          ? item.order
+          : defaults.length + extraIndex,
+    } satisfies DomainShowcaseCard;
+  });
+
+  return [...merged, ...extras].sort((a, b) => a.order - b.order);
+}
+
 function mergeList<T extends { id: string; visible: boolean; order: number }>(
   stored: unknown,
   defaults: T[],
@@ -945,23 +1005,9 @@ export function mergeDomainContent(
         fallback.popularLinkLabel,
       ),
       popularLinkHref: text(shared.popularLinkHref, fallback.popularLinkHref),
-      showcaseCards: mergeList(
+      showcaseCards: mergeShowcaseCards(
         shared.showcaseCards,
         fallback.showcaseCards,
-        (item, base) => ({
-          ...base,
-          layout: text(
-            item.layout,
-            base.layout,
-          ) as DomainShowcaseCard["layout"],
-          title: text(item.title, base.title),
-          description: text(item.description, base.description),
-          linkLabel: text(item.linkLabel, base.linkLabel),
-          linkHref: text(item.linkHref, base.linkHref),
-          image: text(item.image, base.image),
-          video: text(item.video, base.video ?? ""),
-          badge: text(item.badge, base.badge ?? ""),
-        }),
       ),
       popularPicks: mergeList(
         shared.popularPicks,
