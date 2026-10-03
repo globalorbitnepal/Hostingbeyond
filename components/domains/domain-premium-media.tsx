@@ -63,7 +63,7 @@ export function DomainPremiumVideoLayer({
     <video
       className={cn(
         "absolute inset-0 h-full w-full object-cover",
-        playing ? "opacity-95" : "opacity-80",
+        playing ? "opacity-100" : "opacity-90",
         className,
       )}
       src={src}

@@ -257,6 +257,7 @@ export function defaultDomainContent(): DomainContent {
           linkLabel: "Learn about privacy",
           linkHref: "#domain-guide",
           image: "/images/domains/frames/bento-privacy.svg",
+          video: "/images/domains/videos/bento-privacy.mp4",
         },
         {
           id: "support",
@@ -851,6 +852,16 @@ function mergeShowcaseCards(
       item?.layout,
       base.layout,
     ) as DomainShowcaseCard["layout"];
+    const video = text(item?.video, base.video ?? "");
+    const videoOnly =
+      Boolean(video) && /\.(mp4|webm)(\?|#|$)/i.test(video.trim());
+    const storedImage =
+      typeof item?.image === "string" ? item.image.trim() : "";
+    const image = videoOnly
+      ? ""
+      : storedImage.startsWith("/uploads/") && base.video
+        ? ""
+        : text(item?.image, base.image);
     return {
       ...base,
       layout,
@@ -858,8 +869,8 @@ function mergeShowcaseCards(
       description: text(item?.description, base.description),
       linkLabel: text(item?.linkLabel, base.linkLabel),
       linkHref: text(item?.linkHref, base.linkHref),
-      image: text(item?.image, base.image),
-      video: text(item?.video, base.video ?? ""),
+      image,
+      video,
       badge: text(item?.badge, base.badge ?? ""),
       visible: item?.visible !== false,
       order: typeof item?.order === "number" ? item.order : index,
@@ -868,6 +879,15 @@ function mergeShowcaseCards(
 
   const extras = [...remaining.values()].map((item, extraIndex) => {
     const base = defaults[extraIndex % defaults.length];
+    const video = text(item.video, base.video ?? "");
+    const videoOnly =
+      Boolean(video) && /\.(mp4|webm)(\?|#|$)/i.test(video.trim());
+    const storedImage = typeof item.image === "string" ? item.image.trim() : "";
+    const image = videoOnly
+      ? ""
+      : storedImage.startsWith("/uploads/") && base.video
+        ? ""
+        : text(item.image, base.image);
     return {
       ...base,
       ...item,
@@ -877,8 +897,8 @@ function mergeShowcaseCards(
       description: text(item.description, base.description),
       linkLabel: text(item.linkLabel, base.linkLabel),
       linkHref: text(item.linkHref, base.linkHref),
-      image: text(item.image, base.image),
-      video: text(item.video, base.video ?? ""),
+      image,
+      video,
       badge: text(item.badge, base.badge ?? ""),
       visible: item.visible !== false,
       order:

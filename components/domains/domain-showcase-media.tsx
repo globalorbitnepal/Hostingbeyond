@@ -41,10 +41,14 @@ export function DomainShowcaseMedia({
           className,
         )}
       >
-        <DomainPremiumVideoLayer src={videoSrc} playing />
+        <DomainPremiumVideoLayer
+          src={videoSrc}
+          playing
+          className="opacity-100"
+        />
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent"
         />
       </div>
     );
