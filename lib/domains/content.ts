@@ -243,7 +243,7 @@ export function defaultDomainContent(): DomainContent {
             "ICANN-accredited registration with 300+ extensions, renewal rates published before checkout, and free WHOIS privacy on eligible names.",
           linkLabel: "Compare TLD prices",
           linkHref: "#pricing",
-          image: "/images/domains/frames/bento-registrar.svg",
+          image: "",
           video: "/images/domains/videos/bento-registrar.mp4",
         },
         {
@@ -256,7 +256,7 @@ export function defaultDomainContent(): DomainContent {
             "WHOIS privacy keeps your contact details out of public records. Point the name at HostingBeyond and SSL is issued and renewed for you.",
           linkLabel: "Learn about privacy",
           linkHref: "#domain-guide",
-          image: "/images/domains/frames/bento-privacy.svg",
+          image: "",
           video: "/images/domains/videos/bento-privacy.mp4",
         },
         {
@@ -269,7 +269,7 @@ export function defaultDomainContent(): DomainContent {
             "Real agents on live chat and email — whether you are buying your first .com or moving a portfolio over.",
           linkLabel: "Talk to support",
           linkHref: "/contact",
-          image: "/images/domains/frames/bento-support.svg",
+          image: "",
           video: "/images/domains/videos/bento-support.mp4",
           badge:
             "Hello — I would like help connecting my domain to HostingBeyond hosting.",
@@ -284,7 +284,7 @@ export function defaultDomainContent(): DomainContent {
             "Register in minutes, manage DNS in one panel, and add hosting or mailboxes without copying records by hand.",
           linkLabel: "Open domain search",
           linkHref: "/domain-name-search",
-          image: "/images/domains/frames/bento-setup.svg",
+          image: "",
           video: "/images/domains/videos/bento-setup.mp4",
         },
       ],

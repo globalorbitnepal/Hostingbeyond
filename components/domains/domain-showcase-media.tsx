@@ -17,6 +17,13 @@ export type ShowcaseLayout =
   | "transfer"
   | "hosting";
 
+const BENTO_VIDEO: Partial<Record<ShowcaseLayout, string>> = {
+  registrar: "/images/domains/videos/bento-registrar.mp4",
+  privacy: "/images/domains/videos/bento-privacy.mp4",
+  support: "/images/domains/videos/bento-support.mp4",
+  setup: "/images/domains/videos/bento-setup.mp4",
+};
+
 export function DomainShowcaseMedia({
   layout,
   image,
@@ -30,14 +37,16 @@ export function DomainShowcaseMedia({
   badge?: string;
   className?: string;
 }) {
-  const videoSrc = isVideoMediaSrc(video) ? video!.trim() : "";
-  const imageSrc = image?.trim() ?? "";
+  const bentoVideo = BENTO_VIDEO[layout];
+  const videoCandidate = video?.trim() || bentoVideo || "";
+  const videoSrc = isVideoMediaSrc(videoCandidate) ? videoCandidate : "";
+  const imageSrc = bentoVideo || videoSrc ? "" : (image?.trim() ?? "");
 
   if (videoSrc) {
     return (
       <div
         className={cn(
-          "relative h-full min-h-[200px] w-full overflow-hidden",
+          "relative h-full min-h-[200px] w-full overflow-hidden bg-[#0f172a]",
           className,
         )}
       >
@@ -45,10 +54,6 @@ export function DomainShowcaseMedia({
           src={videoSrc}
           playing
           className="opacity-100"
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent"
         />
       </div>
     );

@@ -109,7 +109,7 @@ function BentoCard({
       >
         <DomainShowcaseMedia
           layout={card.layout}
-          image={card.image}
+          image=""
           video={card.video}
           badge={card.badge}
           className={cn("min-h-[180px]", visualClassName)}
