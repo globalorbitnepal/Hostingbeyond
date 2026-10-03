@@ -851,7 +851,7 @@ export default function OrbitDomainsPage() {
 
           <OrbitCard
             title="Showcase bento cards"
-            hint="Four bento cards on domain search. Each card supports a looping MP4/WebM (plays over the image) plus title, copy, and links. Registrar, support, and setup cards ship with default videos."
+            hint="Four bento cards on domain search. Each card uses built-in purple/blue motion by default; upload a custom MP4/WebM in Orbit to override. Edit title, copy, and links per card."
             action={
               <AddButton
                 label="Add card"

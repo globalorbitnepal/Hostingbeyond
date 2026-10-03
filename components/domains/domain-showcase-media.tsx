@@ -3,7 +3,9 @@
 import Image from "next/image";
 import { Globe2, MessageCircle, ShieldCheck } from "lucide-react";
 
+import { DomainBentoShowcaseMotion } from "@/components/domains/domain-bento-showcase-motion";
 import { DomainPremiumVideoLayer } from "@/components/domains/domain-premium-media";
+import { isBuiltInBentoVideo } from "@/lib/domains/bento-media";
 import { isVideoMediaSrc } from "@/lib/domains/media";
 import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
 import { cn } from "@/lib/utils";
@@ -17,12 +19,12 @@ export type ShowcaseLayout =
   | "transfer"
   | "hosting";
 
-const BENTO_VIDEO: Partial<Record<ShowcaseLayout, string>> = {
-  registrar: "/images/domains/videos/bento-registrar.mp4",
-  privacy: "/images/domains/videos/bento-privacy.mp4",
-  support: "/images/domains/videos/bento-support.mp4",
-  setup: "/images/domains/videos/bento-setup.mp4",
-};
+const BENTO_LAYOUTS = new Set<ShowcaseLayout>([
+  "registrar",
+  "privacy",
+  "support",
+  "setup",
+]);
 
 export function DomainShowcaseMedia({
   layout,
@@ -37,10 +39,22 @@ export function DomainShowcaseMedia({
   badge?: string;
   className?: string;
 }) {
-  const bentoVideo = BENTO_VIDEO[layout];
-  const videoCandidate = video?.trim() || bentoVideo || "";
-  const videoSrc = isVideoMediaSrc(videoCandidate) ? videoCandidate : "";
-  const imageSrc = bentoVideo || videoSrc ? "" : (image?.trim() ?? "");
+  const videoCandidate = video?.trim() ?? "";
+  const useBentoMotion =
+    BENTO_LAYOUTS.has(layout) && isBuiltInBentoVideo(videoCandidate);
+  const videoSrc =
+    !useBentoMotion && isVideoMediaSrc(videoCandidate) ? videoCandidate : "";
+  const imageSrc = useBentoMotion || videoSrc ? "" : (image?.trim() ?? "");
+
+  if (useBentoMotion) {
+    return (
+      <DomainBentoShowcaseMotion
+        layout={layout}
+        badge={badge}
+        className={className}
+      />
+    );
+  }
 
   if (videoSrc) {
     return (
