@@ -27,12 +27,21 @@ export function WebHostingPremiumHero() {
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_18%_0%,rgba(255,255,255,0.12),transparent_55%),radial-gradient(ellipse_70%_50%_at_92%_18%,rgba(59,130,246,0.2),transparent_50%)]"
       />
 
+      <WebHostingHeroVisual />
+
+      {/* Full-width fade: photo dissolves into purple — no vertical seam */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-[58%] bg-gradient-to-b from-[#2f1c6a] from-0% via-[#2f1c6a]/95 via-70% to-transparent lg:hidden"
+        className="pointer-events-none absolute inset-0 z-[1]"
+        style={{
+          background:
+            "linear-gradient(90deg, #2f1c6a 0%, #2f1c6a 26%, rgba(47,28,106,0.94) 38%, rgba(47,28,106,0.72) 48%, rgba(47,28,106,0.38) 58%, rgba(47,28,106,0.12) 68%, transparent 78%)",
+        }}
       />
-
-      <WebHostingHeroVisual className="pointer-events-none absolute inset-x-0 top-[34%] bottom-0 z-0 min-h-[340px] sm:min-h-[380px] lg:inset-y-0 lg:top-0 lg:right-0 lg:left-[44%] lg:min-h-0" />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-[#2f1c6a]/40 via-transparent to-[#35206f]/30 lg:from-transparent"
+      />
 
       <div className="hb-shell relative z-[2]">
         <nav
@@ -62,7 +71,7 @@ export function WebHostingPremiumHero() {
 
         <div
           className={cn(
-            "relative grid gap-8 pt-4 pb-12 lg:grid-cols-[minmax(0,0.88fr)_1fr] lg:items-center lg:gap-6 lg:pt-1 lg:pb-14",
+            "relative grid gap-8 pt-4 pb-12 lg:grid-cols-[minmax(0,0.9fr)_1fr] lg:items-center lg:gap-4 lg:pt-1 lg:pb-14",
             "min-h-[560px] lg:min-h-[580px]",
           )}
         >
