@@ -108,31 +108,45 @@ function NavDropdown({
   }
 
   if (megaKind && onMegaOpen) {
+    const hostingActive = megaOpen && megaKind === "hosting";
     return (
-      <button
-        type="button"
-        className={cn(
-          "inline-flex items-center gap-1 text-[15px] font-bold tracking-[-0.015em] whitespace-nowrap transition-colors duration-150 xl:text-[16px]",
-          megaOpen ? "text-slate-950" : "text-slate-900 hover:text-slate-950",
-        )}
-        aria-expanded={Boolean(megaOpen)}
-        aria-controls={
-          megaKind === "domains" ? "hb-domains-mega" : "hb-hosting-mega"
-        }
-        onMouseEnter={onMegaOpen}
-        onFocus={onMegaOpen}
-        onMouseLeave={onMegaLeave}
-        onClick={onMegaOpen}
-      >
-        {label}
-        <ChevronDown
+      <span className="relative inline-flex">
+        <button
+          type="button"
           className={cn(
-            "mt-px size-[14px] shrink-0 text-slate-500 transition-transform duration-200",
-            megaOpen && "rotate-180",
+            "inline-flex items-center gap-1 text-[15px] font-bold tracking-[-0.015em] whitespace-nowrap transition-all duration-200 xl:text-[16px]",
+            hostingActive
+              ? "rounded-full bg-gradient-to-r from-[#7c3aed] to-[#4f46e5] px-3.5 py-1.5 text-white shadow-[0_8px_22px_rgba(124,58,237,0.32)]"
+              : megaOpen
+                ? "text-slate-950"
+                : "text-slate-900 hover:text-slate-950",
           )}
-          aria-hidden
-        />
-      </button>
+          aria-expanded={Boolean(megaOpen)}
+          aria-controls={
+            megaKind === "domains" ? "hb-domains-mega" : "hb-hosting-mega"
+          }
+          onMouseEnter={onMegaOpen}
+          onFocus={onMegaOpen}
+          onMouseLeave={onMegaLeave}
+          onClick={onMegaOpen}
+        >
+          {label}
+          <ChevronDown
+            className={cn(
+              "mt-px size-[14px] shrink-0 transition-transform duration-200",
+              hostingActive ? "text-white/90" : "text-slate-500",
+              megaOpen && "rotate-180",
+            )}
+            aria-hidden
+          />
+        </button>
+        {hostingActive ? (
+          <span
+            aria-hidden
+            className="pointer-events-none absolute -bottom-2 left-1/2 z-50 size-2.5 -translate-x-1/2 rotate-45 rounded-[2px] bg-[#6d28d9] shadow-[0_0_0_1px_rgba(255,255,255,0.35)]"
+          />
+        ) : null}
+      </span>
     );
   }
 
@@ -422,8 +436,8 @@ export function SiteHeader({
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 6 }}
-                transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute top-[calc(100%-2px)] right-0 left-0 z-40 hidden pt-3 lg:block"
+                transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute top-[calc(100%+2px)] right-0 left-0 z-40 hidden lg:block"
                 onMouseEnter={() => openMega("hosting")}
                 onMouseLeave={scheduleMegaClose}
               >

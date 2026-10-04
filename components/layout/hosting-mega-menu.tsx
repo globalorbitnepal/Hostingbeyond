@@ -5,14 +5,17 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
-  BarChart3,
-  Briefcase,
   Check,
   ChevronDown,
   ChevronRight,
   FileText,
+  Briefcase,
+  Code2,
+  Globe,
   HelpCircle,
-  Server,
+  Settings,
+  Users,
+  type LucideIcon,
 } from "lucide-react";
 
 import { routes } from "@/config/routes";
@@ -26,7 +29,8 @@ type HostingItem = {
   logoAlt?: string;
   tile: string;
   fit?: "cover" | "wide";
-  lucide?: typeof Server;
+  lucide?: LucideIcon;
+  lucideClass?: string;
 };
 
 const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
@@ -38,8 +42,7 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         href: routes.hosting,
         title: "Web Hosting",
         description: "Simple and reliable hosting for websites.",
-        logo: "/images/nav-brands/nginx.svg",
-        logoAlt: "NGINX",
+        lucide: Globe,
         tile: "bg-[#ecfdf3]",
       },
       {
@@ -92,8 +95,9 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         href: `${routes.hosting}?stack=laravel`,
         title: "Laravel Hosting",
         description: "Optimized hosting for Laravel projects.",
-        lucide: Server,
-        tile: "bg-[#fff7ed]",
+        tile: "bg-[#fff1f2]",
+        lucide: Code2,
+        lucideClass: "text-[#FF2D20]",
       },
       {
         href: `${routes.hosting}?stack=django`,
@@ -145,7 +149,7 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         href: `${routes.vps}?managed=1`,
         title: "Managed VPS",
         description: "Managed updates, security and technical support.",
-        lucide: Server,
+        lucide: Settings,
         tile: "bg-[#e0e7ff]",
       },
     ],
@@ -167,7 +171,7 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         href: routes.hosting,
         title: "Agency Hosting",
         description: "Manage hosting for multiple clients.",
-        lucide: BarChart3,
+        lucide: Users,
         tile: "bg-[#f3e8ff]",
       },
     ],
@@ -181,31 +185,36 @@ const PROMO_BENEFITS = [
   "24/7 Support",
 ] as const;
 
+const ICON_BOX =
+  "inline-flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full shadow-[0_6px_14px_-8px_rgba(15,23,42,0.45)] ring-1 ring-slate-200/70";
+
 function ItemIcon({ item }: { item: HostingItem }) {
   if (item.logo) {
     return (
       <Image
         src={`${item.logo}?v=logo2`}
         alt={item.logoAlt ?? ""}
-        width={40}
-        height={40}
+        width={28}
+        height={28}
         unoptimized
         className={cn(
           "object-contain",
-          item.fit === "cover"
-            ? "h-full w-full object-cover"
-            : item.fit === "wide"
-              ? "h-[18px] w-[30px]"
-              : item.tile.includes("#0")
-                ? "h-[22px] w-[22px] brightness-0 invert"
-                : "h-[28px] w-[28px]",
+          item.fit === "wide"
+            ? "h-[18px] w-[30px]"
+            : item.tile.includes("#0")
+              ? "h-[22px] w-[22px] brightness-0 invert"
+              : "h-[26px] w-[26px]",
         )}
       />
     );
   }
-  const Icon = item.lucide ?? Server;
+  const Icon = item.lucide ?? Globe;
   return (
-    <Icon className="size-[20px] text-[#4f46e5]" strokeWidth={2} aria-hidden />
+    <Icon
+      className={cn("size-[20px]", item.lucideClass ?? "text-[#4f46e5]")}
+      strokeWidth={2}
+      aria-hidden
+    />
   );
 }
 
@@ -220,29 +229,53 @@ function HostingNavLink({
     <Link
       href={item.href}
       onClick={onNavigate}
-      className="group flex items-center gap-3 rounded-2xl px-2 py-2.5 transition duration-150 hover:bg-slate-50/90"
+      className="group flex items-center gap-2.5 rounded-xl px-1.5 py-1.5 transition-[background,transform] duration-150 hover:bg-slate-50/95"
     >
       <span
         className={cn(
-          "inline-flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full shadow-[0_8px_16px_-10px_rgba(15,23,42,0.35)] ring-1 ring-slate-200/80",
+          ICON_BOX,
           item.tile,
+          "transition-transform duration-150 group-hover:scale-[1.03]",
         )}
       >
         <ItemIcon item={item} />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-[14px] font-bold tracking-[-0.02em] text-slate-950 transition group-hover:text-[#1d4ed8]">
+        <span className="block text-[14px] leading-tight font-bold tracking-[-0.02em] text-slate-950 group-hover:text-[#1d4ed8]">
           {item.title}
         </span>
-        <span className="mt-0.5 block text-[12px] leading-snug text-slate-500">
+        <span className="mt-0.5 line-clamp-2 text-[12px] leading-snug text-slate-500">
           {item.description}
         </span>
       </span>
       <ChevronRight
-        className="size-4 shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-[#6366f1]"
+        className="size-3.5 shrink-0 text-slate-300 transition duration-150 group-hover:translate-x-0.5 group-hover:text-[#6366f1]"
         aria-hidden
       />
     </Link>
+  );
+}
+
+function CategoryColumn({
+  group,
+  onNavigate,
+}: {
+  group: (typeof GROUPS)[number];
+  onNavigate?: () => void;
+}) {
+  return (
+    <div className="min-w-0">
+      <p className="mb-2 inline-flex rounded-full border border-indigo-100 bg-indigo-50/90 px-2 py-0.5 text-[9px] font-extrabold tracking-[0.14em] text-[#4f46e5] uppercase">
+        {group.label}
+      </p>
+      <ul className="space-y-0">
+        {group.items.map((item) => (
+          <li key={`${group.id}-${item.title}`}>
+            <HostingNavLink item={item} onNavigate={onNavigate} />
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
@@ -256,71 +289,53 @@ function PromoPanel({
   return (
     <div
       className={cn(
-        "relative flex flex-col justify-between overflow-hidden bg-[linear-gradient(155deg,#2563eb_0%,#4f46e5_48%,#7c3aed_100%)] text-white",
-        compact ? "rounded-[20px] p-5" : "h-full min-h-[280px] p-6 sm:p-7",
+        "relative flex h-full flex-col overflow-hidden bg-[linear-gradient(155deg,#2563eb_0%,#4f46e5_50%,#7c3aed_100%)] text-white",
+        compact
+          ? "rounded-[18px] p-4"
+          : "rounded-[20px] p-4 lg:rounded-none lg:rounded-r-[24px] lg:p-4",
       )}
     >
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-12 -right-8 size-40 rounded-full bg-white/15 blur-2xl"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -bottom-16 left-[-15%] size-48 rounded-full bg-[#93c5fd]/20 blur-3xl"
+        className="pointer-events-none absolute -top-10 -right-6 size-32 rounded-full bg-white/12 blur-2xl"
       />
 
-      <div className="relative">
-        <p className="text-[10px] font-extrabold tracking-[0.16em] text-white/75 uppercase">
+      <div className="relative z-[1] flex min-h-0 flex-1 flex-col">
+        <p className="text-[9px] font-extrabold tracking-[0.16em] text-white/75 uppercase">
           Reliable & scalable
         </p>
-        <p className="font-heading mt-2 text-[1.35rem] leading-[1.12] font-extrabold tracking-[-0.04em] sm:text-[1.5rem]">
+        <p className="font-heading mt-1.5 text-[1.05rem] leading-[1.15] font-extrabold tracking-[-0.03em] lg:text-[1.12rem]">
           Premium Hosting for Every Need
         </p>
-        <p className="mt-2 max-w-[32ch] text-[12.5px] leading-relaxed text-white/88">
+        <p className="mt-1.5 text-[11.5px] leading-snug text-white/88">
           Fast, secure and scalable hosting for websites, applications and
           businesses.
         </p>
-        <ul className="mt-4 space-y-2">
+        <ul className="mt-2.5 space-y-1.5">
           {PROMO_BENEFITS.map((benefit) => (
             <li
               key={benefit}
-              className="flex items-center gap-2 text-[12.5px] font-medium text-white/95"
+              className="flex items-center gap-2 text-[11.5px] font-medium text-white/95"
             >
               <span
-                className="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-400/90 text-white shadow-sm"
+                className="inline-flex size-[18px] shrink-0 items-center justify-center rounded-full bg-emerald-400/95 text-white"
                 aria-hidden
               >
-                <Check className="size-3" strokeWidth={3} />
+                <Check className="size-2.5" strokeWidth={3} />
               </span>
               {benefit}
             </li>
           ))}
         </ul>
-      </div>
-
-      <Link
-        href={routes.pricing}
-        onClick={onNavigate}
-        className="relative mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-white text-[13px] font-bold text-[#3730a3] shadow-[0_12px_28px_rgba(15,23,42,0.2)] transition hover:bg-indigo-50"
-      >
-        View All Hosting Plans
-        <ArrowRight className="size-4" aria-hidden />
-      </Link>
-
-      {!compact ? (
-        <div
-          aria-hidden
-          className="pointer-events-none absolute right-2 bottom-2 hidden w-[42%] max-w-[160px] opacity-90 sm:block"
+        <Link
+          href={routes.pricing}
+          onClick={onNavigate}
+          className="relative z-[2] mt-3 inline-flex min-h-[40px] w-full shrink-0 items-center justify-center gap-1.5 rounded-full bg-white px-4 text-[12px] font-bold tracking-[-0.01em] text-[#3730a3] shadow-[0_10px_22px_rgba(15,23,42,0.18)] transition hover:bg-indigo-50"
         >
-          <Image
-            src="/images/home/solutions/vps-screen.png"
-            alt=""
-            width={320}
-            height={240}
-            className="h-auto w-full object-contain drop-shadow-[0_20px_40px_rgba(15,23,42,0.35)]"
-          />
-        </div>
-      ) : null}
+          <span className="truncate">View All Hosting Plans</span>
+          <ArrowRight className="size-3.5 shrink-0" aria-hidden />
+        </Link>
+      </div>
     </div>
   );
 }
@@ -354,8 +369,8 @@ function BottomActions({
   return (
     <div
       className={cn(
-        "grid gap-3 border-t border-slate-100/90 bg-slate-50/40",
-        compact ? "grid-cols-1 p-4" : "grid-cols-1 p-4 sm:grid-cols-2 sm:p-5",
+        "grid gap-2 border-t border-slate-100/90 bg-slate-50/50",
+        compact ? "grid-cols-1 p-3" : "grid-cols-1 p-3 sm:grid-cols-2",
       )}
     >
       {cards.map((card) => {
@@ -366,28 +381,28 @@ function BottomActions({
             href={card.href}
             onClick={onNavigate}
             className={cn(
-              "group flex items-center gap-3 rounded-2xl border border-white/80 bg-gradient-to-br p-4 shadow-[0_8px_24px_-12px_rgba(15,23,42,0.12)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_32px_-14px_rgba(79,70,229,0.2)]",
+              "group flex items-center gap-2.5 rounded-xl border border-white/80 bg-gradient-to-br p-3 shadow-[0_6px_18px_-10px_rgba(15,23,42,0.12)] transition duration-150 hover:-translate-y-px hover:shadow-[0_12px_28px_-12px_rgba(79,70,229,0.18)]",
               card.tone,
             )}
           >
             <span
               className={cn(
-                "inline-flex size-11 shrink-0 items-center justify-center rounded-xl",
+                "inline-flex size-9 shrink-0 items-center justify-center rounded-lg",
                 card.iconTone,
               )}
             >
-              <Icon className="size-5" strokeWidth={2} aria-hidden />
+              <Icon className="size-[18px]" strokeWidth={2} aria-hidden />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-[14px] font-bold text-slate-950">
+              <span className="block text-[13px] font-bold text-slate-950">
                 {card.title}
               </span>
-              <span className="mt-0.5 block text-[12px] text-slate-600">
+              <span className="mt-0.5 block text-[11.5px] text-slate-600">
                 {card.description}
               </span>
             </span>
             <ArrowRight
-              className="size-4 shrink-0 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-[#4f46e5]"
+              className="size-3.5 shrink-0 text-slate-400 transition duration-150 group-hover:translate-x-0.5 group-hover:text-[#4f46e5]"
               aria-hidden
             />
           </Link>
@@ -411,11 +426,11 @@ function MobileCategoryAccordion({ onNavigate }: { onNavigate?: () => void }) {
           >
             <button
               type="button"
-              className="flex w-full items-center justify-between px-3 py-3 text-left"
+              className="flex w-full items-center justify-between px-3 py-2.5 text-left"
               aria-expanded={expanded}
               onClick={() => setOpenId(expanded ? null : group.id)}
             >
-              <span className="text-[13px] font-extrabold tracking-[0.06em] text-[#4f46e5] uppercase">
+              <span className="text-[12px] font-extrabold tracking-[0.06em] text-[#4f46e5] uppercase">
                 {group.label}
               </span>
               <ChevronDown
@@ -427,7 +442,7 @@ function MobileCategoryAccordion({ onNavigate }: { onNavigate?: () => void }) {
               />
             </button>
             {expanded ? (
-              <ul className="border-t border-slate-100 px-1 pb-2">
+              <ul className="border-t border-slate-100 px-0.5 pb-1.5">
                 {group.items.map((item) => (
                   <li key={item.title}>
                     <HostingNavLink item={item} onNavigate={onNavigate} />
@@ -451,7 +466,7 @@ export function HostingMegaMenu({
 }) {
   if (compact) {
     return (
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         <MobileCategoryAccordion onNavigate={onNavigate} />
         <PromoPanel compact onNavigate={onNavigate} />
         <BottomActions compact onNavigate={onNavigate} />
@@ -460,26 +475,18 @@ export function HostingMegaMenu({
   }
 
   return (
-    <div className="relative overflow-hidden rounded-[28px] border border-white/80 bg-white shadow-[0_28px_70px_-28px_rgba(37,80,130,0.45),0_12px_32px_-18px_rgba(15,23,42,0.12)]">
-      <div className="grid gap-5 p-5 sm:p-6 lg:grid-cols-4 lg:gap-4 xl:pr-[min(34%,360px)]">
+    <div className="max-w-full overflow-hidden rounded-[24px] border border-white/80 bg-white shadow-[0_22px_56px_-24px_rgba(37,80,130,0.42),0_10px_28px_-14px_rgba(15,23,42,0.1)]">
+      <div className="grid grid-cols-1 gap-3 p-3 sm:grid-cols-2 sm:p-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1.05fr)_minmax(0,1fr)_minmax(0,0.72fr)_minmax(200px,240px)] lg:items-start lg:gap-x-2 lg:gap-y-0 lg:pb-3">
         {GROUPS.map((group) => (
-          <div key={group.id} className="min-w-0">
-            <p className="mb-2.5 inline-flex rounded-full border border-indigo-100 bg-indigo-50/90 px-2.5 py-1 text-[10px] font-extrabold tracking-[0.14em] text-[#4f46e5] uppercase">
-              {group.label}
-            </p>
-            <ul className="space-y-0.5">
-              {group.items.map((item) => (
-                <li key={`${group.id}-${item.title}`}>
-                  <HostingNavLink item={item} onNavigate={onNavigate} />
-                </li>
-              ))}
-            </ul>
-          </div>
+          <CategoryColumn
+            key={group.id}
+            group={group}
+            onNavigate={onNavigate}
+          />
         ))}
-      </div>
-
-      <div className="lg:absolute lg:inset-y-0 lg:right-0 lg:w-[min(34%,360px)] lg:border-l lg:border-slate-100/80">
-        <PromoPanel compact={false} onNavigate={onNavigate} />
+        <div className="min-h-0 sm:col-span-2 lg:col-span-1 lg:col-start-5 lg:row-start-1 lg:self-stretch">
+          <PromoPanel compact={false} onNavigate={onNavigate} />
+        </div>
       </div>
 
       <BottomActions onNavigate={onNavigate} />
