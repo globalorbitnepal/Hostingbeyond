@@ -9,73 +9,63 @@ const FEATURE_PILLS = [
   { icon: Server, label: "Free Website Migration" },
 ] as const;
 
-export function WebHostingHeroVisual() {
+const SCENE = "/images/hosting/web-hosting-hero-scene-v2.jpg";
+
+/**
+ * Full-bleed hero art layer — no card frame. Parent must be `position: relative` + overflow hidden.
+ */
+export function WebHostingHeroVisual({ className }: { className?: string }) {
   return (
-    <div
-      className="relative h-[min(52vw,380px)] w-full sm:h-[min(48vw,400px)] lg:absolute lg:inset-y-0 lg:right-0 lg:left-[-8%] lg:h-auto lg:min-h-[420px]"
-      aria-hidden
-    >
-      <div className="absolute inset-0 overflow-hidden">
+    <div className={className} aria-hidden>
+      <div className="absolute inset-0">
         <Image
-          src="/images/hosting/web-hosting-hero-scene.jpg"
+          src={SCENE}
           alt=""
           fill
-          className="scale-[1.12] object-cover object-[55%_28%]"
-          sizes="(max-width: 1024px) 100vw, 58vw"
           priority
+          sizes="(max-width: 1023px) 100vw, 60vw"
+          className="object-cover object-[72%_center] lg:object-[68%_42%]"
         />
 
-        {/* Feather into hero — no mask, no card edge */}
+        {/* Seamless merge with section purple — wide soft feather */}
         <div
-          className="pointer-events-none absolute inset-0"
+          className="absolute inset-0"
           style={{
             background: [
-              "linear-gradient(100deg, #2f1c6a 0%, #2f1c6a 10%, rgba(47,28,106,0.92) 20%, rgba(47,28,106,0.55) 36%, rgba(47,28,106,0.15) 50%, transparent 62%)",
-              "linear-gradient(0deg, rgba(53,32,111,0.55) 0%, transparent 22%, transparent 78%, rgba(47,28,106,0.35) 100%)",
-              "linear-gradient(270deg, transparent 0%, rgba(30,58,138,0.12) 100%)",
+              "linear-gradient(95deg, #2f1c6a 0%, #2f1c6a 6%, rgba(47,28,106,0.97) 14%, rgba(47,28,106,0.75) 28%, rgba(47,28,106,0.35) 42%, rgba(47,28,106,0.08) 52%, transparent 58%)",
+              "linear-gradient(180deg, rgba(47,28,106,0.65) 0%, transparent 16%, transparent 84%, rgba(53,32,111,0.5) 100%)",
             ].join(", "),
           }}
         />
+        <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-[#1e3a8a]/25" />
 
         <div
-          className="pointer-events-none absolute top-0 right-0 h-[46%] w-[44%] bg-gradient-to-bl from-[#673de6]/85 via-[#5b32d6]/70 to-transparent"
-          style={{ clipPath: "polygon(100% 0, 35% 0, 100% 75%)" }}
+          className="absolute top-0 right-0 h-[50%] w-[48%] bg-gradient-to-bl from-[#673de6] via-[#5b32d6]/80 to-transparent opacity-90"
+          style={{ clipPath: "polygon(100% 0, 28% 0, 100% 72%)" }}
         />
         <div
-          className="pointer-events-none absolute bottom-0 left-[8%] h-[40%] w-[38%] bg-gradient-to-tr from-[#4c1d95]/80 via-[#673de6]/50 to-transparent"
-          style={{ clipPath: "polygon(0 100%, 0 25%, 85% 100%)" }}
+          className="absolute bottom-0 left-[5%] h-[44%] w-[42%] bg-gradient-to-tr from-[#4c1d95] via-[#673de6]/65 to-transparent"
+          style={{ clipPath: "polygon(0 100%, 0 20%, 90% 100%)" }}
         />
       </div>
 
-      <div className="pointer-events-none absolute inset-0 z-[1]">
-        <div className="absolute top-[10%] right-[8%] sm:top-[8%] sm:right-[10%]">
-          <div className="relative">
-            <div
-              className="absolute -inset-2 rounded-2xl bg-[#673de6]/40 blur-lg"
-              aria-hidden
-            />
-            <div className="relative flex size-10 items-center justify-center rounded-xl bg-[#673de6] shadow-[0_10px_28px_-8px_rgba(103,61,230,0.75)] sm:size-11">
-              <Cloud className="size-5 text-white" strokeWidth={2} />
-            </div>
-          </div>
-        </div>
-
-        <div className="absolute top-[14%] left-[14%] flex flex-col gap-2 sm:left-[18%] sm:gap-2.5">
+      <div className="absolute inset-0 z-[1]">
+        <div className="absolute top-[11%] left-[10%] flex flex-col gap-2.5 sm:left-[12%] lg:left-[14%]">
           {FEATURE_PILLS.map((item) => {
             const Icon = item.icon;
             return (
               <div
                 key={item.label}
-                className="flex w-[max(168px,46vw)] max-w-[220px] items-center gap-2 rounded-full bg-white px-2.5 py-1.5 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.35)] sm:w-auto sm:px-3 sm:py-2"
+                className="flex w-[210px] max-w-[calc(100vw-3rem)] items-center gap-2.5 rounded-full bg-white py-2 pr-3 pl-2 shadow-[0_10px_30px_-14px_rgba(0,0,0,0.4)] sm:w-[230px]"
               >
-                <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-[#f3eeff] text-[#673de6]">
-                  <Icon className="size-3.5" strokeWidth={2.25} />
+                <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-[#f3eeff] text-[#673de6]">
+                  <Icon className="size-4" strokeWidth={2.2} />
                 </span>
-                <span className="text-[10px] font-bold text-[#2f1c6a] sm:text-[11px]">
+                <span className="text-[11px] font-bold text-[#2f1c6a]">
                   {item.label}
                 </span>
                 <Check
-                  className="ml-auto size-3.5 shrink-0 text-emerald-500"
+                  className="ml-auto size-4 shrink-0 text-emerald-500"
                   strokeWidth={3}
                 />
               </div>
@@ -84,9 +74,9 @@ export function WebHostingHeroVisual() {
         </div>
 
         <p
-          className="font-heading absolute top-[42%] left-[20%] text-[clamp(1.65rem,4.5vw,2.85rem)] leading-[0.92] font-extrabold tracking-[-0.03em] text-transparent uppercase sm:left-[24%]"
+          className="font-heading absolute top-[44%] left-[18%] text-[clamp(2rem,5.5vw,3.25rem)] leading-[0.9] font-extrabold tracking-[-0.03em] text-transparent uppercase lg:left-[22%]"
           style={{
-            WebkitTextStroke: "2px rgba(255,255,255,0.88)",
+            WebkitTextStroke: "2.25px rgba(255,255,255,0.9)",
             paintOrder: "stroke fill",
           }}
         >
@@ -95,21 +85,31 @@ export function WebHostingHeroVisual() {
           Hosting
         </p>
 
-        <div className="absolute right-[10%] bottom-[12%] w-[min(92%,210px)] rounded-2xl bg-white p-3 shadow-[0_16px_40px_-20px_rgba(0,0,0,0.45)] sm:right-[12%] sm:bottom-[14%]">
+        <div className="absolute top-[9%] right-[10%] lg:right-[12%]">
+          <div className="relative flex size-11 items-center justify-center rounded-xl bg-[#673de6] shadow-[0_12px_32px_-10px_rgba(103,61,230,0.85)]">
+            <div
+              className="absolute -inset-3 rounded-2xl bg-[#673de6]/35 blur-xl"
+              aria-hidden
+            />
+            <Cloud className="relative size-5 text-white" strokeWidth={2} />
+          </div>
+        </div>
+
+        <div className="absolute right-[8%] bottom-[14%] w-[220px] max-w-[calc(100%-2rem)] rounded-2xl bg-white p-3.5 shadow-[0_18px_44px_-22px_rgba(0,0,0,0.5)] lg:right-[10%]">
           <div className="flex items-center gap-3">
             <div
-              className="relative size-11 shrink-0 rounded-full"
+              className="relative size-12 shrink-0 rounded-full"
               style={{
                 background:
-                  "conic-gradient(#673de6 0deg 86deg, #ebe6f7 86deg 360deg)",
+                  "conic-gradient(#673de6 0deg 86deg, #e8e4f4 86deg 360deg)",
               }}
             >
-              <div className="absolute inset-[3px] flex items-center justify-center rounded-full bg-white">
+              <div className="absolute inset-[4px] flex items-center justify-center rounded-full bg-white">
                 <Server className="size-4 text-[#673de6]" />
               </div>
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] leading-tight font-extrabold text-[#2f1c6a]">
+              <p className="text-[12px] leading-tight font-extrabold text-[#2f1c6a]">
                 Hosting Setup in Progress
               </p>
               <p className="text-[10px] font-medium text-slate-500">
@@ -117,11 +117,11 @@ export function WebHostingHeroVisual() {
               </p>
             </div>
           </div>
-          <div className="mt-2.5">
-            <div className="h-1.5 overflow-hidden rounded-full bg-slate-200/90">
+          <div className="mt-3">
+            <div className="h-2 overflow-hidden rounded-full bg-slate-200">
               <div className="h-full w-[24%] rounded-full bg-gradient-to-r from-[#673de6] to-[#2563eb]" />
             </div>
-            <p className="mt-1 text-right text-[9px] font-bold text-[#673de6]">
+            <p className="mt-1 text-right text-[10px] font-bold text-[#673de6]">
               24%
             </p>
           </div>

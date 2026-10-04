@@ -26,15 +26,19 @@ export function WebHostingPremiumHero() {
         aria-hidden
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_20%_0%,rgba(255,255,255,0.14),transparent_55%),radial-gradient(ellipse_70%_50%_at_90%_20%,rgba(59,130,246,0.22),transparent_50%)]"
       />
+
       <div
         aria-hidden
-        className="pointer-events-none absolute top-1/4 -right-24 h-64 w-64 rounded-full bg-[#673de6]/20 blur-3xl"
+        className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-[55%] bg-gradient-to-b from-[#2f1c6a] via-[#2f1c6a]/92 to-transparent lg:hidden"
       />
 
-      <div className="hb-shell relative z-[1]">
+      {/* Photo + overlays — bleeds to edge, no card frame */}
+      <WebHostingHeroVisual className="pointer-events-none absolute inset-x-0 top-[38%] bottom-0 z-0 min-h-[300px] lg:inset-y-0 lg:top-0 lg:right-0 lg:left-[36%] lg:min-h-0" />
+
+      <div className="hb-shell relative z-[2]">
         <nav
           aria-label="Breadcrumb"
-          className="pt-3 pb-0.5 text-[12px] font-medium text-white/75 sm:pt-3.5"
+          className="pt-3 pb-0.5 text-[12px] font-medium text-white/80 sm:pt-3.5"
         >
           <ol className="flex flex-wrap items-center gap-1">
             <li>
@@ -59,32 +63,32 @@ export function WebHostingPremiumHero() {
 
         <div
           className={cn(
-            "relative grid items-center gap-8 pt-4 pb-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-6 lg:pt-2 lg:pb-12",
-            "min-h-0 lg:min-h-[500px]",
+            "relative grid gap-10 pt-4 pb-12 lg:grid-cols-[minmax(0,0.92fr)_1fr] lg:items-center lg:gap-8 lg:pt-2 lg:pb-14",
+            "min-h-[520px] lg:min-h-[540px]",
           )}
         >
           <motion.div
             initial={reduce ? false : { opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45 }}
-            className="max-w-xl lg:max-w-none"
+            className="relative max-w-[540px]"
           >
             <p className="text-[11px] font-bold tracking-[0.28em] text-white/90 uppercase">
               Web hosting
             </p>
             <h1
               id="web-hosting-hero-title"
-              className="font-heading mt-3 text-[clamp(1.9rem,4.4vw,3.25rem)] leading-[1.06] font-extrabold tracking-[-0.04em] text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.25)]"
+              className="font-heading mt-3 text-[clamp(1.95rem,4.5vw,3.35rem)] leading-[1.05] font-extrabold tracking-[-0.04em] text-white"
             >
-              Fast NVMe <span className="text-white">Web Hosting</span>
-              <br className="hidden sm:block" />
-              <span className="text-white"> for </span>
+              Fast NVMe{" "}
+              <span className="bg-gradient-to-r from-[#93c5fd] to-[#c4b5fd] bg-clip-text text-transparent">
+                Web Hosting
+              </span>
+              <br />
+              <span className="text-white">for </span>
               <span className="text-[#5eead4]">Modern Websites</span>
             </h1>
-            <p
-              className="mt-5 max-w-lg text-[15px] leading-relaxed font-medium text-white/95 sm:text-[16px] sm:leading-relaxed"
-              style={{ textShadow: "0 1px 12px rgba(0,0,0,0.35)" }}
-            >
+            <p className="mt-5 max-w-lg text-[15px] leading-relaxed font-medium text-white/95 sm:text-[16px]">
               Launch WordPress, WooCommerce, business websites and modern web
               projects on fast NVMe-powered hosting with SSL, backups and expert
               support included.
@@ -105,14 +109,14 @@ export function WebHostingPremiumHero() {
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link
                 href="#plans"
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-white px-7 text-[15px] font-extrabold text-[#2f1c6a] shadow-[0_12px_32px_-12px_rgba(0,0,0,0.45)] transition hover:brightness-[1.02]"
+                className="pointer-events-auto inline-flex h-12 items-center justify-center gap-2 rounded-full bg-white px-7 text-[15px] font-extrabold text-[#2f1c6a] shadow-[0_12px_32px_-12px_rgba(0,0,0,0.45)] transition hover:brightness-[1.02]"
               >
                 View Hosting Plans
                 <ArrowRight className="size-4" />
               </Link>
               <Link
                 href={routes.getStarted}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-full border-2 border-white/55 bg-white/10 px-7 text-[15px] font-bold text-white backdrop-blur-sm transition hover:bg-white/15"
+                className="pointer-events-auto inline-flex h-12 items-center justify-center gap-2 rounded-full border-2 border-white/55 bg-white/10 px-7 text-[15px] font-bold text-white backdrop-blur-sm transition hover:bg-white/15"
               >
                 Get Started
                 <ArrowRight className="size-4" />
@@ -123,20 +127,14 @@ export function WebHostingPremiumHero() {
             </p>
           </motion.div>
 
-          <motion.div
-            initial={reduce ? false : { opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.06 }}
-            className="relative min-h-[300px] w-full lg:min-h-[420px] lg:overflow-visible"
-          >
-            <WebHostingHeroVisual />
-          </motion.div>
+          {/* Spacer reserves layout width on desktop; art is absolute */}
+          <div className="hidden min-h-[1px] lg:block" aria-hidden />
         </div>
       </div>
 
       <div
         aria-hidden
-        className="pointer-events-none relative z-[1] h-8 bg-gradient-to-b from-transparent to-[#e8eeff] sm:h-10"
+        className="pointer-events-none relative z-[2] h-8 bg-gradient-to-b from-transparent to-[#e8eeff] sm:h-10"
       />
     </section>
   );
