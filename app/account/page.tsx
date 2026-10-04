@@ -8,13 +8,45 @@ import {
   CUSTOMER_SESSION_COOKIE,
   getCustomerFromToken,
 } from "@/lib/customer/session";
+import type { HostingOrderSnapshot } from "@/lib/hosting/cart/snapshot";
+import { listHostingOrdersForUser } from "@/lib/hosting/hosting-orders";
 
-export default async function AccountPage() {
+function statusLabel(status: string) {
+  switch (status) {
+    case "PENDING_PAYMENT":
+      return "Pending payment";
+    case "DRAFT":
+      return "Draft";
+    case "PAID":
+      return "Paid";
+    case "PROVISIONING":
+      return "Pending activation";
+    case "ACTIVE":
+      return "Active";
+    case "CANCELLED":
+      return "Cancelled";
+    case "FAILED":
+      return "Failed";
+    case "EXPIRED":
+      return "Expired";
+    default:
+      return status;
+  }
+}
+
+export default async function AccountPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ order?: string }>;
+}) {
   const jar = await cookies();
   const user = await getCustomerFromToken(
     jar.get(CUSTOMER_SESSION_COOKIE)?.value,
   );
   if (!user) redirect("/login");
+
+  const params = await searchParams;
+  const orders = await listHostingOrdersForUser(user.id);
 
   return (
     <div className="hb-band-cream min-h-dvh px-5 py-8 sm:px-8">
@@ -33,22 +65,67 @@ export default async function AccountPage() {
             Welcome{user.name ? `, ${user.name}` : ""}
           </h1>
           <p className="mt-2 text-sm text-slate-500">{user.email}</p>
-          <p className="mt-6 text-sm leading-6 text-slate-600">
-            You are signed in. Your hosting services, domains, invoices, and
-            support tickets will appear here as they are linked to this account.
-          </p>
+
+          {params.order ? (
+            <p className="mt-4 rounded-xl bg-violet-50 px-4 py-3 text-sm text-violet-900">
+              Order saved ({params.order}). Complete payment when billing is
+              enabled — no charge has been made yet.
+            </p>
+          ) : null}
+
+          <section className="mt-8">
+            <h2 className="text-sm font-bold text-slate-900">Orders</h2>
+            {orders.length === 0 ? (
+              <p className="mt-2 text-sm text-slate-500">No orders yet.</p>
+            ) : (
+              <ul className="mt-3 space-y-3">
+                {orders.map((order) => {
+                  const snap =
+                    order.lineItemsSnapshot as HostingOrderSnapshot | null;
+                  const title =
+                    snap?.planName ?? `${order.productSlug} / ${order.planKey}`;
+                  return (
+                    <li
+                      key={order.id}
+                      className="rounded-2xl border border-slate-100 bg-slate-50/80 px-4 py-3"
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-900">
+                            {title}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            {statusLabel(order.status)} · {order.billingCycle}
+                          </p>
+                        </div>
+                        <p className="text-sm font-bold text-[#673de6]">
+                          {order.currency} {Number(order.total).toFixed(2)}
+                        </p>
+                      </div>
+                      {snap ? (
+                        <p className="mt-2 text-xs text-slate-500">
+                          Snapshot total locked at checkout configuration.
+                        </p>
+                      ) : null}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </section>
+
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
             {[
               {
                 title: "My Services",
-                hint: "Plans, renewal dates, manage & upgrade",
+                hint: "Hosting & VPS — manage, upgrade, renew",
               },
               { title: "My Domains", hint: "Registration, DNS, transfers" },
               {
                 title: "Invoices & Payments",
-                hint: "Billing history and receipts",
+                hint: "Billing history (Stripe phase)",
               },
-              { title: "Support", hint: "Open tickets and get help" },
+              { title: "Support", hint: "Tickets and help" },
             ].map((card) => (
               <div
                 key={card.title}
@@ -59,7 +136,7 @@ export default async function AccountPage() {
                 </p>
                 <p className="mt-1 text-xs text-slate-500">{card.hint}</p>
                 <p className="mt-2 text-xs font-medium text-slate-400">
-                  No items yet
+                  Coming in provisioning phase
                 </p>
               </div>
             ))}

@@ -19,6 +19,7 @@ type Product = {
   secondaryCtaHref: string | null;
   billingMonthlyEnabled: boolean;
   billingYearlyEnabled: boolean;
+  freeDomainAnnualEnabled: boolean;
   seo: Record<string, string> | null;
   plans: Array<{
     id: string;
@@ -81,6 +82,8 @@ export function HostingProductEditor({ initial }: { initial: Product }) {
               patch.billingMonthlyEnabled ?? product.billingMonthlyEnabled,
             billingYearlyEnabled:
               patch.billingYearlyEnabled ?? product.billingYearlyEnabled,
+            freeDomainAnnualEnabled:
+              patch.freeDomainAnnualEnabled ?? product.freeDomainAnnualEnabled,
             seo: patch.seo ?? product.seo,
           },
         }),
@@ -402,6 +405,19 @@ export function HostingProductEditor({ initial }: { initial: Product }) {
               }
             />
             Yearly billing enabled
+          </label>
+          <label className="mt-2 flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={product.freeDomainAnnualEnabled}
+              onChange={(e) =>
+                setProduct({
+                  ...product,
+                  freeDomainAnnualEnabled: e.target.checked,
+                })
+              }
+            />
+            Free domain (1st year) on eligible annual checkout
           </label>
           <div className="mt-4 flex flex-wrap gap-2">
             <button

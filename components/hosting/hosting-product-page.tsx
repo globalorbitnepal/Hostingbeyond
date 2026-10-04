@@ -31,7 +31,10 @@ export function HostingProductPage(props: HostingProductPageProps) {
         {flags.trustBadges ? (
           <HostingTrustBadges benefits={props.benefits} />
         ) : null}
-        <CloudHostingPageView page={props.cloudPage} />
+        <CloudHostingPageView
+          page={props.cloudPage}
+          productCheckoutSlug={props.slug}
+        />
         {flags.specs ? (
           <HostingSpecs specifications={props.specifications} />
         ) : null}
@@ -59,6 +62,7 @@ export function HostingProductPage(props: HostingProductPageProps) {
         page={props.page}
         hostingPlans={props.hostingPlans}
         productName={props.name}
+        productCheckoutSlug={props.slug}
         sectionFlags={flags}
         specifications={props.specifications}
         hideHero={isWebHostingMain}

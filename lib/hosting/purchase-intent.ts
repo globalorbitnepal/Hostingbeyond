@@ -48,7 +48,7 @@ export function parseHostingPurchaseIntent(
   const plan = params.get("plan")?.trim();
   const billing = parseHostingBilling(params.get("billing"));
   if (!product || !plan || !billing) return null;
-  return validateHostingPurchaseIntent({ product, plan, billing });
+  return { product, plan, billing };
 }
 
 export function parseHostingPurchaseIntentFromRecord(
@@ -64,20 +64,20 @@ export function parseHostingPurchaseIntentFromRecord(
   return parseHostingPurchaseIntent(params);
 }
 
-/** Returns null when product/plan/billing combination is not allowed. */
-export function validateHostingPurchaseIntent(
+/**
+ * Client-safe structural validation (registry + billing).
+ * Server routes must call `validateHostingPurchaseIntent` from
+ * `@/lib/hosting/validate-purchase-intent` for DB plan checks.
+ */
+export function validateHostingPurchaseIntentSync(
   intent: HostingPurchaseIntent,
 ): HostingPurchaseIntent | null {
   const registry = getRegistryEntryBySlug(intent.product);
   if (!registry) return null;
-
-  if (intent.product === "web-hosting" && !isWebHostingPlanKey(intent.plan)) {
-    return null;
-  }
-
   if (!BILLING_VALUES.has(intent.billing)) return null;
-
-  return intent;
+  const plan = intent.plan?.trim();
+  if (!plan) return null;
+  return { product: intent.product, plan, billing: intent.billing };
 }
 
 export function serializeHostingPurchaseIntent(
@@ -118,7 +118,9 @@ export function preserveAuthSearchParams(
 
 export function resolvePostAuthRedirect(searchParams: URLSearchParams): string {
   const intent = parseHostingPurchaseIntent(searchParams);
-  if (intent) return hostingCheckoutPath(intent);
+  if (intent && validateHostingPurchaseIntentSync(intent)) {
+    return hostingCheckoutPath(intent);
+  }
   const next = searchParams.get("next");
   if (next && next.startsWith("/") && !next.startsWith("//")) {
     return next;

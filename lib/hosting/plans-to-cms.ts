@@ -80,7 +80,7 @@ export function dbPlansToCmsHostingPlans(
       annualCredit: "",
       features: featureLines,
       ctaLabel: "Buy now",
-      ctaHref: hostingCheckoutHref(productSlug, plan.planKey),
+      ctaHref: hostingCheckoutHref(productSlug, plan.planKey, "annually"),
     };
   });
 

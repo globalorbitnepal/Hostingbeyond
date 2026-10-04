@@ -53,12 +53,21 @@ export function polishWebHostingPageContent(
         : f,
     ),
     faqs: page.faqs.map((faq) => {
-      if (faq.id !== "refund") return faq;
-      return {
-        ...faq,
-        answer:
-          "Refunds are handled according to the applicable HostingBeyond refund terms. Please review our Refund Policy for the current terms before you complete your order.",
-      };
+      if (faq.id === "refund") {
+        return {
+          ...faq,
+          answer:
+            "Refunds are handled according to the applicable HostingBeyond refund terms. Please review our Refund Policy for the current terms before you complete your order.",
+        };
+      }
+      if (faq.id === "domain" || /domain included/i.test(faq.question)) {
+        return {
+          ...faq,
+          answer:
+            "A free domain for the first year is available only on eligible annual web hosting plans when you register a new domain with HostingBeyond. Monthly plans do not include the free-domain benefit. Renewal pricing for domains follows standard rates shown during domain search or checkout.",
+        };
+      }
+      return faq;
     }),
   };
 }

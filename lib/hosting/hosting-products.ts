@@ -29,6 +29,7 @@ export type HostingProductUpdateInput = {
   seo?: unknown;
   billingMonthlyEnabled?: boolean;
   billingYearlyEnabled?: boolean;
+  freeDomainAnnualEnabled?: boolean;
 };
 
 export type HostingPlanUpdateInput = {

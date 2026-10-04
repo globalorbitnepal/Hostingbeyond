@@ -1,6 +1,6 @@
 import { getHostingProductBySlug } from "./hosting-products";
 import type { HostingPurchaseIntent } from "./purchase-intent";
-import { validateHostingPurchaseIntent } from "./purchase-intent";
+import { validateHostingPurchaseIntent } from "./validate-purchase-intent";
 
 export type ResolvedHostingPurchaseContext = {
   intent: HostingPurchaseIntent;
@@ -23,7 +23,7 @@ function money(value: number, currency = "USD") {
 export async function resolveHostingPurchaseContext(
   raw: HostingPurchaseIntent,
 ): Promise<ResolvedHostingPurchaseContext | null> {
-  const intent = validateHostingPurchaseIntent(raw);
+  const intent = await validateHostingPurchaseIntent(raw);
   if (!intent) return null;
 
   const product = await getHostingProductBySlug(intent.product);

@@ -114,7 +114,15 @@ export async function ensureHostingProductsSeeded() {
       where: { slug: entry.slug },
       include: { plans: true },
     });
-    if (existing) continue;
+    if (existing) {
+      if (entry.slug === "web-hosting" && !existing.freeDomainAnnualEnabled) {
+        await prisma.hostingProduct.update({
+          where: { id: existing.id },
+          data: { freeDomainAnnualEnabled: true },
+        });
+      }
+      continue;
+    }
 
     const hero = heroFromLegacy(entry.slug);
     const isVps = entry.category === "vps";
@@ -137,6 +145,7 @@ export async function ensureHostingProductsSeeded() {
         heroCtaHref: "#plans",
         secondaryCtaLabel: "Talk to sales",
         secondaryCtaHref: "/contact",
+        freeDomainAnnualEnabled: entry.slug === "web-hosting",
         sectionFlags: entry.sectionFlags,
         specifications: isVps
           ? (defaultVpsSpecs(entry.slug) as Prisma.InputJsonValue)

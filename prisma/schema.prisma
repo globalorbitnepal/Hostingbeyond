@@ -134,6 +134,86 @@ model CustomerUser {
   accounts     CustomerOAuthAccount[]
   beyondAi     BeyondAiSubscription?
   beyondAiProjects BeyondAiProject[]
+  hostingOrders HostingOrder[]
+}
+
+enum HostingOrderStatus {
+  DRAFT
+  PENDING_PAYMENT
+  PAID
+  PROVISIONING
+  ACTIVE
+  CANCELLED
+  FAILED
+  EXPIRED
+}
+
+model HostingOrder {
+  id            String             @id @default(cuid())
+  userId        String?
+  user          CustomerUser?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  status        HostingOrderStatus @default(DRAFT)
+  productSlug   String
+  planKey       String
+  billingCycle  String
+  configuration Json               @default("{}")
+  /// Immutable quote at order creation — do not recompute from live catalog for invoices.
+  lineItemsSnapshot Json?
+  currency      String             @default("USD")
+  subtotal      Decimal            @db.Decimal(10, 2)
+  discount      Decimal            @default(0) @db.Decimal(10, 2)
+  tax           Decimal?           @db.Decimal(10, 2)
+  total         Decimal            @db.Decimal(10, 2)
+  paymentProvider   String?
+  paymentReference  String?
+  paymentStatus     String?
+  paidAt            DateTime?
+  expiresAt     DateTime?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([productSlug, planKey])
+}
+
+enum HostingAddonBillingMode {
+  MATCH_HOSTING
+  MONTHLY
+  ANNUAL
+  ONE_TIME
+}
+
+enum HostingAddonType {
+  BUSINESS_EMAIL
+  DOMAIN_PRIVACY
+  BACKUP
+  SUPPORT
+  MIGRATION
+  STORAGE
+  IP
+  SSL
+  SECURITY
+  OTHER
+}
+
+model HostingAddon {
+  id               String                  @id @default(cuid())
+  slug             String                  @unique
+  name             String
+  description      String                  @default("")
+  type             HostingAddonType        @default(OTHER)
+  active           Boolean                 @default(true)
+  displayOrder     Int                     @default(0)
+  billingMode      HostingAddonBillingMode @default(MATCH_HOSTING)
+  eligibility      Json                    @default("{}")
+  /// e.g. cms:business-email — resolved server-side; never trusted from browser.
+  pricingReference String
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+
+  @@index([active])
+  @@index([displayOrder])
 }
 
 model BeyondAiSubscription {
@@ -238,6 +318,8 @@ model HostingProduct {
   seo                   Json?
   billingMonthlyEnabled Boolean                @default(true)
   billingYearlyEnabled  Boolean                @default(true)
+  /// When true, eligible annual checkout may include a free domain for the first year.
+  freeDomainAnnualEnabled Boolean              @default(false)
   /// Maps to legacy `PageContent.slug` for hero copy until fully migrated in admin.
   legacyCmsSlug         String?
   pageTemplate          String                 @default("standard")

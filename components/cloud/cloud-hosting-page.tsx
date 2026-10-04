@@ -36,8 +36,10 @@ const FEATURE_ICONS: Record<CmsCloudPageFeature["icon"], typeof Cpu> = {
 
 export function CloudHostingPageView({
   page,
+  productCheckoutSlug,
 }: {
   page: CmsCloudHostingPageContent;
+  productCheckoutSlug?: string;
 }) {
   const reduce = useReducedMotion();
   const features = page.features.filter((f) => f.visible !== false);
@@ -148,6 +150,7 @@ export function CloudHostingPageView({
         titleAccent={page.pricingTitleAccent}
         description={page.pricingDescription}
         footnote={page.pricingNote}
+        productCheckoutSlug={productCheckoutSlug}
       />
 
       <section className="hb-band-purple py-16 sm:py-20">

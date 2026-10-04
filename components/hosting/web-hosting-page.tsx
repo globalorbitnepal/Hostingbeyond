@@ -47,6 +47,7 @@ export function WebHostingPageView({
   page,
   hostingPlans,
   productName = "Web Hosting",
+  productCheckoutSlug,
   sectionFlags,
   specifications = {},
   hideHero = false,
@@ -54,6 +55,8 @@ export function WebHostingPageView({
   page: CmsHostingPageContent;
   hostingPlans: CmsHostingPlansContent;
   productName?: string;
+  /** DB product slug for unified /checkout/hosting Buy now links. */
+  productCheckoutSlug?: string;
   sectionFlags?: HostingProductSectionFlags;
   specifications?: HostingWebSpecifications | HostingVpsSpecifications;
   /** When true, hero is rendered externally (e.g. Web Hosting premium hero). */
@@ -145,7 +148,7 @@ export function WebHostingPageView({
           description={page.pricingDescription}
           footnote={page.pricingNote}
           className={hideHero ? "!pt-6 sm:!pt-8" : undefined}
-          productCheckoutSlug={hideHero ? "web-hosting" : undefined}
+          productCheckoutSlug={productCheckoutSlug}
         />
       ) : null}
 
@@ -280,31 +283,15 @@ export function WebHostingPageView({
               dangerouslySetInnerHTML={{
                 __html: JSON.stringify({
                   "@context": "https://schema.org",
-                  "@graph": [
-                    {
-                      "@type": "FAQPage",
-                      mainEntity: faqs.map((item) => ({
-                        "@type": "Question",
-                        name: item.question,
-                        acceptedAnswer: {
-                          "@type": "Answer",
-                          text: item.answer,
-                        },
-                      })),
+                  "@type": "FAQPage",
+                  mainEntity: faqs.map((item) => ({
+                    "@type": "Question",
+                    name: item.question,
+                    acceptedAnswer: {
+                      "@type": "Answer",
+                      text: item.answer,
                     },
-                    {
-                      "@type": "Product",
-                      name: `HostingBeyond ${productName}`,
-                      description: page.heroDescription,
-                      offers: plans.map((plan) => ({
-                        "@type": "Offer",
-                        name: plan.name,
-                        price:
-                          plan.priceAnnually.replace(/[^0-9.]/g, "") || "2.40",
-                        priceCurrency: "USD",
-                      })),
-                    },
-                  ],
+                  })),
                 }),
               }}
             />

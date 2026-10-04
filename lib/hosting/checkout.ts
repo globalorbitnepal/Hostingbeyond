@@ -1,15 +1,22 @@
-import { routes } from "@/config/routes";
+import {
+  hostingCheckoutPath,
+  type HostingBillingCycle,
+  type HostingPurchaseIntent,
+} from "@/lib/hosting/purchase-intent";
 
-/** Unified hosting checkout entry — signup flow reads product + plan. */
+/** Shared Buy now → cart URL for every hosting product. */
 export function hostingCheckoutHref(
   productSlug: string,
   planKey: string,
-  billing?: "monthly" | "annually",
-) {
-  const params = new URLSearchParams({
+  billing: HostingBillingCycle = "annually",
+): string {
+  return hostingCheckoutPath({
     product: productSlug,
     plan: planKey,
+    billing,
   });
-  if (billing) params.set("billing", billing);
-  return `${routes.getStarted}?${params.toString()}`;
+}
+
+export function hostingCheckoutHrefFromIntent(intent: HostingPurchaseIntent) {
+  return hostingCheckoutPath(intent);
 }

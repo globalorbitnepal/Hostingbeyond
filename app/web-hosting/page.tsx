@@ -6,12 +6,19 @@ import { hostingProductMetadata } from "@/lib/hosting/hosting-product-metadata";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return hostingProductMetadata("web-hosting", {
-    title: "Web Hosting — Fast NVMe WordPress Hosting",
+  const base = await hostingProductMetadata("web-hosting", {
+    title: "Web Hosting with NVMe SSD & Free SSL | HostingBeyond",
     description:
-      "Compare HostingBeyond web hosting plans with free SSL, NVMe storage, managed WordPress, free domain options, and 24/7 support. Save up to 70% on annual billing.",
+      "Fast and reliable web hosting with NVMe SSD storage, free SSL, backups and 24/7 support. Compare HostingBeyond web hosting plans and choose monthly or annual billing.",
     image: "/images/hosting/cloud.jpg",
   });
+  return {
+    ...base,
+    alternates: {
+      ...base.alternates,
+      canonical: "https://hosting.theglobalorbit.com/web-hosting",
+    },
+  };
 }
 
 const STACK_REDIRECTS: Record<string, string> = {
