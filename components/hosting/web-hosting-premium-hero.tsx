@@ -5,6 +5,7 @@ import {
   Activity,
   ArrowRight,
   Check,
+  Database,
   HardDrive,
   Server,
   Shield,
@@ -17,10 +18,16 @@ import { cn } from "@/lib/utils";
 const TRUST = ["Free SSL", "NVMe Storage", "24/7 Expert Support"] as const;
 
 const CARD_METRICS = [
-  { icon: HardDrive, label: "NVMe Performance", value: "Ultra-fast I/O" },
-  { icon: Activity, label: "99.9% Uptime", value: "Monitored stack" },
-  { icon: Shield, label: "Free SSL", value: "Auto-renewed" },
-  { icon: Server, label: "Daily Backups", value: "Restore ready" },
+  { icon: HardDrive, label: "NVMe Performance", value: "Low-latency SSD tier" },
+  { icon: Activity, label: "99.9% Uptime", value: "Monitored platform" },
+  { icon: Shield, label: "Free SSL", value: "Auto-renewed certs" },
+  { icon: Database, label: "Daily Backups", value: "Point-in-time restore" },
+] as const;
+
+const INFRA_STEPS = [
+  { label: "NVMe SSD", sub: "Storage layer" },
+  { label: "Web server", sub: "HTTP / PHP stack" },
+  { label: "Backup", sub: "Scheduled snapshots" },
 ] as const;
 
 export function WebHostingPremiumHero() {
@@ -47,32 +54,32 @@ export function WebHostingPremiumHero() {
       <div className="hb-shell relative z-[1]">
         <nav
           aria-label="Breadcrumb"
-          className="pt-3 pb-1 text-[12px] font-medium text-white/55 sm:pt-4"
+          className="pt-3 pb-0.5 text-[11px] font-medium text-white/50 sm:pt-3.5"
         >
-          <ol className="flex flex-wrap items-center gap-1.5">
+          <ol className="flex flex-wrap items-center gap-1">
             <li>
-              <Link href={routes.home} className="hover:text-white/90">
+              <Link href={routes.home} className="hover:text-white/85">
                 Home
               </Link>
             </li>
-            <li className="text-white/35" aria-hidden>
+            <li className="text-white/30" aria-hidden>
               /
             </li>
             <li>
-              <Link href={routes.hosting} className="hover:text-white/90">
+              <Link href={routes.hosting} className="hover:text-white/85">
                 Hosting
               </Link>
             </li>
-            <li className="text-white/35" aria-hidden>
+            <li className="text-white/30" aria-hidden>
               /
             </li>
-            <li className="text-white/90">Web Hosting</li>
+            <li className="text-white/85">Web Hosting</li>
           </ol>
         </nav>
 
         <div
           className={cn(
-            "grid items-center gap-8 pt-4 pb-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-10 lg:pt-2 lg:pb-12",
+            "grid items-center gap-7 pt-3 pb-9 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-9 lg:pt-1 lg:pb-10",
             "min-h-0 lg:min-h-[480px]",
           )}
         >
@@ -141,43 +148,46 @@ export function WebHostingPremiumHero() {
             initial={reduce ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.06 }}
-            className="relative mx-auto w-full max-w-md lg:max-w-none lg:justify-self-end"
+            className="relative mx-auto w-full max-w-[420px] lg:max-w-none lg:justify-self-end"
           >
-            <div className="relative overflow-hidden rounded-[22px] border border-white/20 bg-white/[0.08] p-5 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.55)] backdrop-blur-xl sm:p-6">
+            <div className="relative overflow-hidden rounded-[20px] border border-white/[0.18] bg-white/[0.07] p-4 shadow-[0_20px_50px_-22px_rgba(0,0,0,0.55)] backdrop-blur-xl sm:p-5">
               <div
                 aria-hidden
-                className="pointer-events-none absolute -top-8 -right-8 h-32 w-32 rounded-full bg-[#673de6]/25 blur-2xl"
+                className="pointer-events-none absolute -top-10 -right-10 h-28 w-28 rounded-full bg-[#673de6]/20 blur-2xl"
               />
-              <div className="relative flex items-start justify-between gap-3">
+              <div className="relative flex items-start justify-between gap-3 border-b border-white/10 pb-3.5">
                 <div>
-                  <p className="text-[10px] font-bold tracking-[0.2em] text-white/50 uppercase">
+                  <p className="text-[9px] font-bold tracking-[0.22em] text-white/45 uppercase">
                     HostingBeyond
                   </p>
-                  <p className="mt-1 text-lg font-extrabold tracking-tight">
+                  <p className="mt-0.5 text-[17px] leading-tight font-extrabold tracking-tight">
                     Web Hosting
                   </p>
                 </div>
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/35 bg-emerald-400/10 px-2.5 py-1 text-[11px] font-bold text-emerald-200">
+                <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2 py-0.5 text-[10px] font-bold text-emerald-100">
                   <span className="size-1.5 rounded-full bg-emerald-400" />
                   Live
                 </span>
               </div>
 
-              <div className="relative mt-5 grid grid-cols-2 gap-2.5">
+              <div className="relative mt-3.5 grid grid-cols-2 gap-2">
                 {CARD_METRICS.map((row) => {
                   const Icon = row.icon;
                   return (
                     <div
                       key={row.label}
-                      className="rounded-xl border border-white/12 bg-black/15 px-3 py-2.5"
+                      className="rounded-lg border border-white/10 bg-black/20 px-2.5 py-2"
                     >
-                      <div className="flex items-center gap-2">
-                        <Icon className="size-4 text-[#c4b5fd]" />
-                        <span className="text-[11px] font-bold text-white/90">
+                      <div className="flex items-center gap-1.5">
+                        <Icon
+                          className="size-3.5 shrink-0 text-[#c4b5fd]"
+                          strokeWidth={2}
+                        />
+                        <span className="text-[10px] leading-tight font-bold text-white/92">
                           {row.label}
                         </span>
                       </div>
-                      <p className="mt-1 text-[10px] text-white/55">
+                      <p className="mt-0.5 text-[9px] leading-snug text-white/50">
                         {row.value}
                       </p>
                     </div>
@@ -185,19 +195,42 @@ export function WebHostingPremiumHero() {
                 })}
               </div>
 
-              <div className="relative mt-4 rounded-xl border border-white/10 bg-gradient-to-r from-white/5 to-white/[0.02] px-3 py-3">
-                <div className="flex items-center justify-between text-[10px] font-semibold tracking-wide text-white/50 uppercase">
-                  <span>Node cluster</span>
-                  <span>NVMe tier</span>
-                </div>
-                <div className="mt-2 flex items-end justify-between gap-2">
-                  {[42, 68, 55, 82, 61, 74].map((h, i) => (
+              <div className="relative mt-3 rounded-lg border border-white/10 bg-black/15 px-3 py-2.5">
+                <p className="text-[9px] font-bold tracking-[0.16em] text-white/45 uppercase">
+                  Infrastructure
+                </p>
+                <div className="mt-2 flex items-stretch gap-1">
+                  {INFRA_STEPS.map((step, index) => (
                     <div
-                      key={i}
-                      className="flex-1 rounded-sm bg-gradient-to-t from-[#673de6] to-[#60a5fa]"
-                      style={{ height: `${h * 0.45}px` }}
-                    />
+                      key={step.label}
+                      className="flex min-w-0 flex-1 items-center"
+                    >
+                      <div className="min-w-0 flex-1 rounded-md border border-white/10 bg-white/[0.06] px-2 py-1.5">
+                        <p className="truncate text-[10px] font-bold text-white/90">
+                          {step.label}
+                        </p>
+                        <p className="truncate text-[8px] text-white/45">
+                          {step.sub}
+                        </p>
+                      </div>
+                      {index < INFRA_STEPS.length - 1 ? (
+                        <ArrowRight
+                          className="mx-0.5 size-3 shrink-0 text-white/35"
+                          aria-hidden
+                        />
+                      ) : null}
+                    </div>
                   ))}
+                </div>
+                <div
+                  aria-hidden
+                  className="mt-2 flex items-center gap-1 opacity-70"
+                >
+                  <Server className="size-3 text-white/40" />
+                  <span className="h-px flex-1 bg-gradient-to-r from-white/25 via-white/10 to-transparent" />
+                  <span className="text-[8px] font-medium text-white/40">
+                    Shared hosting stack
+                  </span>
                 </div>
               </div>
             </div>
@@ -207,7 +240,7 @@ export function WebHostingPremiumHero() {
 
       <div
         aria-hidden
-        className="pointer-events-none relative z-[1] h-10 bg-gradient-to-b from-transparent to-[#f6f3ff] sm:h-12"
+        className="pointer-events-none relative z-[1] h-8 bg-gradient-to-b from-transparent to-[#e8eeff] sm:h-10"
       />
     </section>
   );

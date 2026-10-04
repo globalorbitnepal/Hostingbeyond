@@ -21,6 +21,10 @@ import {
   type HostingWebSpecifications,
 } from "./product-types";
 import { getRegistryEntryBySlug } from "./products-registry";
+import {
+  polishWebHostingPageContent,
+  polishWebHostingPlans,
+} from "./web-hosting-page-polish";
 
 export type ResolvedHostingProductPage = {
   slug: string;
@@ -96,39 +100,48 @@ export async function loadHostingProductPage(
     ...((product?.sectionFlags as HostingProductSectionFlags | null) ?? {}),
   };
 
-  const sections = await getHomeSections();
-  const fallbackPlans = sections.hostingPlans ?? defaultHostingPlansSection();
-
-  const hostingPlans = product?.plans?.length
+  /** Pricing: HostingProductPlan rows when the product exists; home CMS only if DB product is unavailable. */
+  const hostingPlans = product
     ? dbPlansToCmsHostingPlans(resolvedSlug, product.plans)
-    : fallbackPlans;
+    : ((await getHomeSections()).hostingPlans ?? defaultHostingPlansSection());
 
   if (!product) {
     const page = legacy.standard ?? (await getHostingPageContent());
-    return {
+    const base = {
       slug: resolvedSlug,
       name: registry!.name,
       canonicalPath: registry!.canonicalPath,
       pageTemplate: registry!.pageTemplate,
       sectionFlags,
-      benefits: [],
-      specifications: {},
+      benefits: [] as HostingProductBenefit[],
+      specifications: {} as HostingWebSpecifications,
       page,
       cloudPage: legacy.cloud,
       hostingPlans,
       inactive: false,
     };
+    if (resolvedSlug === "web-hosting") {
+      return {
+        ...base,
+        page: polishWebHostingPageContent(base.page),
+        hostingPlans: polishWebHostingPlans(base.hostingPlans),
+      };
+    }
+    return base;
   }
 
   const page = legacy.standard
     ? overlayHeroOnPage(legacy.standard, product)
     : overlayHeroOnPage(await getHostingPageContent(), product);
 
-  return {
+  const pageTemplate: ResolvedHostingProductPage["pageTemplate"] =
+    product.pageTemplate === "cloud" ? "cloud" : "standard";
+
+  const resolved = {
     slug: product.slug,
     name: product.name,
     canonicalPath: product.canonicalPath,
-    pageTemplate: product.pageTemplate === "cloud" ? "cloud" : "standard",
+    pageTemplate,
     sectionFlags,
     benefits: (product.benefits as HostingProductBenefit[]) ?? [],
     specifications: (product.specifications as HostingWebSpecifications) ?? {},
@@ -137,4 +150,14 @@ export async function loadHostingProductPage(
     hostingPlans,
     inactive: product.status !== "ACTIVE",
   };
+
+  if (resolved.slug === "web-hosting") {
+    return {
+      ...resolved,
+      page: polishWebHostingPageContent(resolved.page),
+      hostingPlans: polishWebHostingPlans(resolved.hostingPlans),
+    };
+  }
+
+  return resolved;
 }

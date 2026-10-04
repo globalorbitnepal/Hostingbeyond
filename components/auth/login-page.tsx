@@ -22,6 +22,11 @@ import { BrandMark } from "@/components/auth/brand-mark";
 import { SocialAuthButtons } from "@/components/auth/social-auth-buttons";
 import { CountryLanguageSelector } from "@/components/locale/country-language-selector";
 import { cn } from "@/lib/utils";
+import type { ResolvedHostingPurchaseContext } from "@/lib/hosting/resolve-purchase-context";
+import {
+  preserveAuthSearchParams,
+  resolvePostAuthRedirect,
+} from "@/lib/hosting/purchase-intent";
 import type { CmsLoginFeature, CmsLoginPage } from "@/lib/orbit/defaults";
 
 const FEATURE_ICONS: Record<CmsLoginFeature["icon"], typeof Shield> = {
@@ -47,9 +52,13 @@ const ERROR_COPY: Record<string, string> = {
 export function AuthPageView({
   content,
   mode,
+  purchaseContext,
+  purchaseSelectionInvalid,
 }: {
   content: CmsLoginPage;
   mode: "login" | "signup";
+  purchaseContext?: ResolvedHostingPurchaseContext | null;
+  purchaseSelectionInvalid?: boolean;
 }) {
   const reduceMotion = useReducedMotion();
   const messageId = useId();
@@ -88,6 +97,19 @@ export function AuthPageView({
     return ERROR_COPY[oauthError] || ERROR_COPY.oauth;
   }, [oauthError]);
 
+  const authQuery = useMemo(
+    () => preserveAuthSearchParams(searchParams),
+    [searchParams],
+  );
+  const postAuthPath = useMemo(
+    () => resolvePostAuthRedirect(searchParams),
+    [searchParams],
+  );
+  const alternateAuthHref = useMemo(() => {
+    const base = isSignup ? "/login" : "/signup";
+    return authQuery ? `${base}?${authQuery}` : base;
+  }, [authQuery, isSignup]);
+
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (submitting) return;
@@ -120,7 +142,7 @@ export function AuthPageView({
         setStatus("idle");
         return;
       }
-      window.location.assign("/account");
+      window.location.assign(postAuthPath);
     } catch {
       setMessageTone("error");
       setMessage("Network error. Please try again.");
@@ -226,6 +248,33 @@ export function AuthPageView({
             className="order-1 w-full lg:order-2 lg:justify-self-end"
           >
             <div className="w-full rounded-[28px] border border-white/90 bg-white p-6 shadow-[0_30px_80px_-28px_rgba(15,23,42,0.35),0_12px_32px_-18px_rgba(47,107,255,0.18)] sm:p-8">
+              {purchaseContext ? (
+                <div className="mb-6 rounded-2xl border border-[#e9e0ff] bg-[#f8f5ff] px-4 py-3 text-left text-[13px] text-slate-700">
+                  <p className="font-bold text-[#2f1c6a]">
+                    Selected: {purchaseContext.planName}
+                  </p>
+                  <p className="mt-1">
+                    {purchaseContext.productName} ·{" "}
+                    {purchaseContext.billingLabel} ·{" "}
+                    {purchaseContext.priceLabel}
+                  </p>
+                </div>
+              ) : null}
+              {purchaseSelectionInvalid ? (
+                <div
+                  className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-left text-[13px] text-amber-900"
+                  role="alert"
+                >
+                  The plan link is incomplete or invalid. Choose a plan from{" "}
+                  <Link
+                    href="/web-hosting#plans"
+                    className="font-semibold underline"
+                  >
+                    web hosting
+                  </Link>{" "}
+                  and try again.
+                </div>
+              ) : null}
               <div className="mb-7 text-center">
                 <div className="mb-5 flex justify-center">
                   <BrandMark src={logoSrc} className="h-9 sm:h-10" />
@@ -406,12 +455,15 @@ export function AuthPageView({
                 </button>
               </form>
 
-              <SocialAuthButtons dividerLabel={content.dividerLabel} />
+              <SocialAuthButtons
+                dividerLabel={content.dividerLabel}
+                oauthNext={postAuthPath}
+              />
 
               <p className="mt-6 text-center text-sm text-slate-500">
                 {isSignup ? "Already have an account?" : content.signupPrompt}{" "}
                 <Link
-                  href={isSignup ? "/login" : "/signup"}
+                  href={alternateAuthHref}
                   className="font-semibold text-[var(--hb-blue)] hover:text-[#1D4ED8]"
                 >
                   {isSignup ? "Log in" : content.signupLabel}

@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 
+import { hostingCheckoutHref } from "@/lib/hosting/checkout";
 import {
   AnnualPlanPerks,
   filterPlanFeatures,
@@ -69,10 +70,12 @@ export function PlanCard({
   plan,
   billing,
   delay,
+  productCheckoutSlug,
 }: {
   plan: CmsHostingPlan;
   billing: Billing;
   delay: number;
+  productCheckoutSlug?: string;
 }) {
   const reduceMotion = useReducedMotion();
   const popular = Boolean(plan.popular);
@@ -83,6 +86,9 @@ export function PlanCard({
   const save = isAnnual ? plan.saveAnnually : plan.saveMonthly;
   const annualPerks = getAnnualPerkLines(plan, isAnnual);
   const features = filterPlanFeatures(plan.features, annualPerks);
+  const checkoutHref = productCheckoutSlug
+    ? hostingCheckoutHref(productCheckoutSlug, plan.id, billing)
+    : plan.ctaHref || "/get-started";
 
   return (
     <motion.article
@@ -107,7 +113,7 @@ export function PlanCard({
       />
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-wrap items-center gap-1.5">
-          {plan.discountBadge ? (
+          {plan.discountBadge && isAnnual ? (
             <span className="rounded-full bg-[#673de6] px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-white uppercase">
               {plan.discountBadge}
             </span>
@@ -161,7 +167,7 @@ export function PlanCard({
       </div>
 
       <Link
-        href={plan.ctaHref || "/get-started"}
+        href={checkoutHref}
         className={cn(
           "mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full text-[14px] font-bold transition",
           popular

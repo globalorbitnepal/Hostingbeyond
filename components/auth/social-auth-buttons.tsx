@@ -66,7 +66,17 @@ const PROVIDERS = [
   },
 ] as const;
 
-export function SocialAuthButtons({ dividerLabel }: { dividerLabel?: string }) {
+export function SocialAuthButtons({
+  dividerLabel,
+  oauthNext = "/account",
+}: {
+  dividerLabel?: string;
+  oauthNext?: string;
+}) {
+  const safeNext =
+    oauthNext.startsWith("/") && !oauthNext.startsWith("//")
+      ? oauthNext
+      : "/account";
   return (
     <>
       <div className="my-6 flex items-center gap-3 text-[11px] font-semibold tracking-[0.18em] text-slate-400 uppercase">
@@ -80,7 +90,7 @@ export function SocialAuthButtons({ dividerLabel }: { dividerLabel?: string }) {
           return (
             <a
               key={item.id}
-              href={item.href}
+              href={`${item.href}?next=${encodeURIComponent(safeNext)}`}
               className={cn(
                 "inline-flex h-12 items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800",
                 "transition hover:border-slate-300 hover:bg-slate-50",

@@ -48,13 +48,18 @@ export function dbPlansToCmsHostingPlans(
           plan.ssl ? plan.ssl : "Free SSL",
         ].filter(Boolean);
 
+    const annualMonthlyEquiv = yearly / 12;
+    const discountPct =
+      monthly > 0 ? Math.round((1 - annualMonthlyEquiv / monthly) * 100) : 0;
+    const annualSavingsUsd = monthly * 12 - yearly;
+
     return {
       id: plan.planKey,
       visible: true,
       order: plan.sortOrder,
       name: plan.planName,
       tagline: plan.tagline ?? "",
-      discountBadge: "",
+      discountBadge: discountPct >= 1 ? `${discountPct}% OFF` : "",
       popular: plan.popular,
       popularLabel: plan.popular ? "Most popular" : "",
       accent: accentForIndex(index),
@@ -62,13 +67,15 @@ export function dbPlansToCmsHostingPlans(
       originalMonthly: "",
       billedMonthly: `Billed ${money(monthly, plan.currency)}/mo`,
       saveMonthly: "",
-      priceAnnually: money(yearly / 12, plan.currency),
+      priceAnnually: money(annualMonthlyEquiv, plan.currency),
       originalAnnually: money(monthly, plan.currency),
       billedAnnually: `Billed ${money(yearly, plan.currency)}/yr`,
       saveAnnually:
-        monthly > 0
-          ? `Save ${Math.round((1 - yearly / 12 / monthly) * 100)}%`
-          : "",
+        annualSavingsUsd > 0
+          ? `Save ${money(annualSavingsUsd, plan.currency)}`
+          : discountPct > 0
+            ? `Save ${discountPct}%`
+            : "",
       domainPerk: "",
       annualCredit: "",
       features: featureLines,
@@ -79,7 +86,7 @@ export function dbPlansToCmsHostingPlans(
 
   return {
     ...shell,
-    plans: cmsPlans.length ? cmsPlans : shell.plans,
+    plans: cmsPlans,
   };
 }
 

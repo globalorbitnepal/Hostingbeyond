@@ -171,7 +171,7 @@ export function defaultHostingPageContent(): CmsHostingPageContent {
       "WooCommerce-ready PHP & MariaDB",
     ],
     wordpressCtaLabel: "Start with WordPress hosting",
-    wordpressCtaHref: routes.getStarted,
+    wordpressCtaHref: `${routes.hosting}/wordpress`,
     wordpressImage: "",
 
     compareHeading: "Compare with typical shared hosting",

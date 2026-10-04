@@ -33,7 +33,8 @@ export function filterPlanFeatures(
     return !(
       value.includes("beyond ai credit") ||
       value.includes("domain — free") ||
-      value.includes("domain - free")
+      value.includes("domain - free") ||
+      value.includes("free domain for 1st year")
     );
   });
 }

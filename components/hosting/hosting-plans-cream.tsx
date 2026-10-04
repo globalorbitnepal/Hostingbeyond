@@ -17,6 +17,7 @@ export function HostingPlansCream({
   description,
   footnote,
   className,
+  productCheckoutSlug,
 }: {
   plansContent: CmsHostingPlansContent;
   eyebrow: string;
@@ -25,6 +26,8 @@ export function HostingPlansCream({
   description: string;
   footnote: string;
   className?: string;
+  /** When set, plan CTAs include product + billing query params. */
+  productCheckoutSlug?: string;
 }) {
   const data = plansContent;
   const [billing, setBilling] = useState<Billing>(
@@ -106,7 +109,7 @@ export function HostingPlansCream({
               {data.annualToggleLabel || "Annually"}
             </button>
           </div>
-          {data.saveBadge ? (
+          {data.saveBadge && billing === "annually" ? (
             <span className="rounded-full bg-emerald-100 px-3 py-1.5 text-[12px] font-extrabold text-emerald-800">
               {data.saveBadge}
             </span>
@@ -115,8 +118,7 @@ export function HostingPlansCream({
 
         <div
           className={cn(
-            "mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2",
-            plans.length <= 3 ? "xl:grid-cols-3" : "xl:grid-cols-4",
+            "mt-10 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4",
           )}
         >
           {plans.map((plan, index) => (
@@ -125,6 +127,7 @@ export function HostingPlansCream({
               plan={plan}
               billing={billing}
               delay={0.04 * index}
+              productCheckoutSlug={productCheckoutSlug}
             />
           ))}
         </div>

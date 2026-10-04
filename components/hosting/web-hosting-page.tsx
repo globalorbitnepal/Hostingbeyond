@@ -144,7 +144,8 @@ export function WebHostingPageView({
           titleAccent={page.pricingTitleAccent}
           description={page.pricingDescription}
           footnote={page.pricingNote}
-          className={hideHero ? "!pt-8 sm:!pt-10" : undefined}
+          className={hideHero ? "!pt-6 sm:!pt-8" : undefined}
+          productCheckoutSlug={hideHero ? "web-hosting" : undefined}
         />
       ) : null}
 
