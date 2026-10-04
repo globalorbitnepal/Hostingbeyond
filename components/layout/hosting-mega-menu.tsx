@@ -13,6 +13,7 @@ import {
   Globe,
   HelpCircle,
   Settings,
+  ShoppingCart,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -43,7 +44,8 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         title: "Web Hosting",
         description: "Simple and reliable hosting for websites.",
         lucide: Globe,
-        tile: "bg-[#ecfdf3]",
+        lucideClass: "text-[#2563eb]",
+        tile: "bg-[#e8f1ff]",
       },
       {
         href: `${routes.hosting}/wordpress`,
@@ -57,16 +59,17 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         href: `${routes.hosting}/ecommerce`,
         title: "eCommerce Hosting",
         description: "Powerful hosting for online stores.",
-        logo: "/images/nav-brands/woocommerce.svg",
-        logoAlt: "WooCommerce",
-        tile: "bg-[#f3e8ff]",
+        lucide: ShoppingCart,
+        lucideClass: "text-[#db2777]",
+        tile: "bg-[#fce7f3]",
       },
       {
         href: routes.cloud,
         title: "Business Hosting",
         description: "More resources for growing businesses.",
         lucide: Briefcase,
-        tile: "bg-[#eff6ff]",
+        lucideClass: "text-[#2563eb]",
+        tile: "bg-[#e8f1ff]",
       },
     ],
   },
@@ -150,7 +153,8 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         title: "Managed VPS",
         description: "Managed updates, security and technical support.",
         lucide: Settings,
-        tile: "bg-[#e0e7ff]",
+        lucideClass: "text-[#6366f1]",
+        tile: "bg-[#ede9fe]",
       },
     ],
   },
@@ -172,6 +176,7 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         title: "Agency Hosting",
         description: "Manage hosting for multiple clients.",
         lucide: Users,
+        lucideClass: "text-[#7c3aed]",
         tile: "bg-[#f3e8ff]",
       },
     ],
@@ -186,16 +191,16 @@ const PROMO_BENEFITS = [
 ] as const;
 
 const ICON_BOX =
-  "inline-flex size-11 shrink-0 items-center justify-center rounded-full p-2 shadow-[0_6px_14px_-8px_rgba(15,23,42,0.4)] ring-1 ring-slate-200/75";
+  "inline-flex size-11 shrink-0 items-center justify-center rounded-full p-1.5 shadow-[0_6px_14px_-8px_rgba(15,23,42,0.4)] ring-1 ring-slate-200/75";
 
 const LOGO_IMG_CLASS: Record<
   NonNullable<HostingItem["logoVariant"]>,
   string
 > = {
-  default: "h-[24px] w-[24px] max-h-[24px] max-w-[24px] object-contain",
-  wide: "h-[26px] w-[40px] max-h-[26px] max-w-[40px] object-contain",
+  default: "h-[28px] w-[28px] max-h-[28px] max-w-[28px] object-contain",
+  wide: "h-[28px] w-[44px] max-h-[28px] max-w-[44px] object-contain",
   "on-dark":
-    "h-[24px] w-[24px] max-h-[24px] max-w-[24px] object-contain brightness-0 invert",
+    "h-[28px] w-[28px] max-h-[28px] max-w-[28px] object-contain brightness-0 invert",
 };
 
 function ItemIcon({ item }: { item: HostingItem }) {
@@ -203,10 +208,10 @@ function ItemIcon({ item }: { item: HostingItem }) {
     const variant = item.logoVariant ?? "default";
     return (
       <Image
-        src={`${item.logo}?v=logo3`}
+        src={`${item.logo}?v=logo4`}
         alt={item.logoAlt ?? ""}
-        width={variant === "wide" ? 40 : 24}
-        height={variant === "wide" ? 26 : 24}
+        width={variant === "wide" ? 44 : 28}
+        height={28}
         unoptimized
         className={LOGO_IMG_CLASS[variant]}
       />
@@ -215,7 +220,7 @@ function ItemIcon({ item }: { item: HostingItem }) {
   const Icon = item.lucide ?? Globe;
   return (
     <Icon
-      className={cn("size-[22px]", item.lucideClass ?? "text-[#4f46e5]")}
+      className={cn("size-[24px]", item.lucideClass ?? "text-[#4f46e5]")}
       strokeWidth={2}
       aria-hidden
     />
