@@ -23,8 +23,8 @@ function localizeNavLabel(
 ) {
   const map: Record<string, string> = {
     Domains: nav.domains,
-    Hosting: "Servers & Hosting",
-    "Web Hosting": "Servers & Hosting",
+    Hosting: nav.hosting ?? "Hosting",
+    "Web Hosting": nav.hosting ?? "Hosting",
     "Business Email": nav.businessEmail,
     Resources: "Solutions",
     Pricing: "Pricing",
