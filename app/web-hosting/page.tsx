@@ -1,21 +1,12 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { WebHostingPageView } from "@/components/hosting/web-hosting-page";
-import { SiteFooter, SiteHeader } from "@/components/layout";
-import { routes } from "@/config/routes";
-import { defaultHostingPlansSection } from "@/lib/orbit/defaults";
-import {
-  buildPublicPageMetadata,
-  getHomeSections,
-  getHostingPageContent,
-  getSiteSettings,
-} from "@/lib/orbit/content";
-
+import { HostingProductRoute } from "@/components/hosting/hosting-product-route";
+import { hostingProductMetadata } from "@/lib/hosting/hosting-product-metadata";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return buildPublicPageMetadata("hosting", routes.hosting, {
+  return hostingProductMetadata("web-hosting", {
     title: "Web Hosting — Fast NVMe WordPress Hosting",
     description:
       "Compare HostingBeyond web hosting plans with free SSL, NVMe storage, managed WordPress, free domain options, and 24/7 support. Save up to 70% on annual billing.",
@@ -25,6 +16,10 @@ export async function generateMetadata(): Promise<Metadata> {
 
 const STACK_REDIRECTS: Record<string, string> = {
   python: "/web-hosting/python",
+  nodejs: "/nodejs-hosting",
+  laravel: "/laravel-hosting",
+  django: "/django-hosting",
+  nestjs: "/nestjs-hosting",
 };
 
 type PageProps = {
@@ -39,30 +34,5 @@ export default async function WebHostingPage({ searchParams }: PageProps) {
     redirect(STACK_REDIRECTS[stack]);
   }
 
-  const [sections, settings, page] = await Promise.all([
-    getHomeSections(),
-    getSiteSettings(),
-    getHostingPageContent(),
-  ]);
-
-  const hostingPlans = sections.hostingPlans ?? defaultHostingPlansSection();
-
-  return (
-    <div className="hb-band-cream min-h-dvh overflow-x-hidden">
-      <div className="hb-band-purple">
-        <SiteHeader
-          navigation={sections.navigation}
-          loginLabel={settings.loginLabel}
-          loginHref={settings.loginHref}
-          getStartedLabel={settings.getStartedLabel}
-          getStartedHref={settings.getStartedHref}
-          logoPath={settings.logoPath}
-        />
-      </div>
-      <WebHostingPageView page={page} hostingPlans={hostingPlans} />
-      {sections.footer?.visible !== false ? (
-        <SiteFooter content={sections.footer} logoPath={settings.logoPath} />
-      ) : null}
-    </div>
-  );
+  return <HostingProductRoute slug="web-hosting" />;
 }

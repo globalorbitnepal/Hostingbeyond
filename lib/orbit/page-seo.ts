@@ -128,13 +128,133 @@ export const PUBLIC_PAGE_SEO_REGISTRY: PublicPageSeoEntry[] = [
     slug: "python-hosting",
     label: "Python hosting",
     path: "/web-hosting/python",
-    editorHref: "/orbit/hosting",
+    editorHref: "/orbit/hosting-products",
     defaultSeo: {
       keywords:
         "Python hosting, Django hosting, Flask hosting, FastAPI hosting, Python web app hosting, CPython Linux",
       ogTitle: "Python Hosting — Django, Flask & FastAPI on NVMe",
       ogDescription:
         "Managed Python hosting for Flask, Django, and FastAPI with free SSL and SSH on Pro+ plans.",
+    },
+  },
+  {
+    slug: "nodejs-hosting",
+    label: "Node.js hosting",
+    path: "/nodejs-hosting",
+    editorHref: "/orbit/hosting-products",
+    defaultSeo: {
+      keywords:
+        "Node.js hosting, npm hosting, deploy Node app, Express hosting, NVMe Node.js",
+      ogTitle: "Node.js Hosting — Deploy Apps on NVMe",
+      ogDescription:
+        "Node.js hosting with npm, SSL, and scalable plans for APIs and full-stack apps.",
+    },
+  },
+  {
+    slug: "laravel-hosting",
+    label: "Laravel hosting",
+    path: "/laravel-hosting",
+    editorHref: "/orbit/hosting-products",
+    defaultSeo: {
+      keywords:
+        "Laravel hosting, PHP hosting, Composer hosting, Laravel queues cron",
+      ogTitle: "Laravel Hosting — PHP, Composer & Queues",
+      ogDescription:
+        "Laravel-optimized hosting with Composer, cron, queues, and NVMe performance.",
+    },
+  },
+  {
+    slug: "django-hosting",
+    label: "Django hosting",
+    path: "/django-hosting",
+    editorHref: "/orbit/hosting-products",
+    defaultSeo: {
+      keywords: "Django hosting, Python Django, pip virtualenv hosting",
+      ogTitle: "Django Hosting — Python Web Apps on NVMe",
+      ogDescription:
+        "Managed Django hosting with pip, virtual environments, and free SSL.",
+    },
+  },
+  {
+    slug: "nestjs-hosting",
+    label: "NestJS hosting",
+    path: "/nestjs-hosting",
+    editorHref: "/orbit/hosting-products",
+    defaultSeo: {
+      keywords: "NestJS hosting, Node API hosting, TypeScript backend hosting",
+      ogTitle: "NestJS Hosting — Modern Node APIs",
+      ogDescription:
+        "Deploy NestJS with process management, npm, and scalable hosting.",
+    },
+  },
+  {
+    slug: "kvm-vps",
+    label: "KVM VPS",
+    path: "/kvm-vps",
+    editorHref: "/orbit/hosting-products",
+    defaultSeo: {
+      keywords: "KVM VPS, root access VPS, virtual private server",
+      ogTitle: "KVM VPS — Full Root Access",
+      ogDescription:
+        "KVM VPS with dedicated resources, IPv4/IPv6, and NVMe storage.",
+    },
+  },
+  {
+    slug: "nvme-vps",
+    label: "NVMe VPS",
+    path: "/nvme-vps",
+    editorHref: "/orbit/hosting-products",
+    defaultSeo: {
+      keywords: "NVMe VPS, fast VPS storage, high IOPS VPS",
+      ogTitle: "NVMe VPS — High-Speed Storage",
+      ogDescription: "NVMe VPS for demanding workloads with KVM isolation.",
+    },
+  },
+  {
+    slug: "linux-vps",
+    label: "Linux VPS",
+    path: "/linux-vps",
+    editorHref: "/orbit/hosting-products",
+    defaultSeo: {
+      keywords: "Linux VPS, Ubuntu VPS, Debian VPS",
+      ogTitle: "Linux VPS — Ubuntu, Debian & More",
+      ogDescription: "Linux VPS with root access and flexible distributions.",
+    },
+  },
+  {
+    slug: "managed-vps",
+    label: "Managed VPS",
+    path: "/managed-vps",
+    editorHref: "/orbit/hosting-products",
+    defaultSeo: {
+      keywords: "managed VPS, managed server hosting",
+      ogTitle: "Managed VPS — Updates & Monitoring",
+      ogDescription:
+        "Managed VPS with updates, monitoring, backups, and expert support.",
+    },
+  },
+  {
+    slug: "reseller-hosting",
+    label: "Reseller hosting",
+    path: "/web-hosting/reseller",
+    editorHref: "/orbit/hosting-products",
+    defaultSeo: {
+      keywords: "reseller hosting, WHM cPanel reseller, white label hosting",
+      ogTitle: "Reseller Hosting — Start Your Hosting Business",
+      ogDescription:
+        "Reseller hosting with cPanel/WHM to launch your hosting brand.",
+    },
+  },
+  {
+    slug: "agency-hosting",
+    label: "Agency hosting",
+    path: "/agency-hosting",
+    editorHref: "/orbit/hosting-products",
+    defaultSeo: {
+      keywords: "agency hosting, client website hosting, multi-site hosting",
+      ogTitle: "Agency Hosting — Manage Client Sites",
+      ogDescription:
+        "Hosting built for agencies managing multiple client websites.",
     },
   },
   {

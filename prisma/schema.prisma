@@ -194,3 +194,91 @@ model CustomerOAuthAccount {
   @@unique([provider, providerAccountId])
   @@index([userId])
 }
+
+enum HostingProductCategory {
+  WEBSITE
+  DEVELOPER
+  VPS
+  BUSINESS
+}
+
+enum HostingProductStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+/// Catalog hosting products (public pages + checkout references).
+model HostingProduct {
+  id                    String                 @id @default(cuid())
+  slug                  String                 @unique
+  name                  String
+  category              HostingProductCategory
+  status                HostingProductStatus   @default(ACTIVE)
+  icon                  String?
+  displayOrder          Int                    @default(0)
+  featured              Boolean                @default(false)
+  badge                 String?
+  canonicalPath         String
+  shortDescription      String                 @default("")
+  heroTitle             String                 @default("")
+  heroDescription       String                 @default("")
+  heroImage             String?
+  heroVideo             String?
+  heroCtaLabel          String?
+  heroCtaHref           String?
+  secondaryCtaLabel     String?
+  secondaryCtaHref      String?
+  benefits              Json                   @default("[]")
+  features              Json                   @default("[]")
+  includedFeatures      Json                   @default("[]")
+  specifications        Json                   @default("{}")
+  faqs                  Json                   @default("[]")
+  sectionFlags          Json                   @default("{}")
+  seo                   Json?
+  billingMonthlyEnabled Boolean                @default(true)
+  billingYearlyEnabled  Boolean                @default(true)
+  /// Maps to legacy `PageContent.slug` for hero copy until fully migrated in admin.
+  legacyCmsSlug         String?
+  pageTemplate          String                 @default("standard")
+  seoRegistrySlug       String?
+  plans                 HostingProductPlan[]
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+
+  @@index([category])
+  @@index([status])
+  @@index([displayOrder])
+}
+
+model HostingProductPlan {
+  id            String         @id @default(cuid())
+  productId     String
+  product       HostingProduct @relation(fields: [productId], references: [id], onDelete: Restrict)
+  planKey       String
+  planName      String
+  monthlyPrice  Decimal        @db.Decimal(10, 2)
+  yearlyPrice   Decimal        @db.Decimal(10, 2)
+  currency      String         @default("USD")
+  setupFee      Decimal        @default(0) @db.Decimal(10, 2)
+  tagline       String?
+  storage       String?
+  bandwidth     String?
+  websites      String?
+  domains       String?
+  emailAccounts String?
+  databases     String?
+  ssl           String?
+  backup        String?
+  support       String?
+  features      Json           @default("[]")
+  popular       Boolean        @default(false)
+  sortOrder     Int            @default(0)
+  active        Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@unique([productId, planKey])
+  @@index([productId])
+  @@index([active])
+}

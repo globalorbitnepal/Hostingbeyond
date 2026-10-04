@@ -77,6 +77,8 @@ import {
 } from "@/lib/orbit/page-seo";
 import type { Metadata } from "next";
 
+import { ensureHostingProductsSeeded } from "@/lib/hosting/seed-hosting-products";
+
 /**
  * Published content is read on every page, so it is cached until an Orbit save
  * calls revalidateTag. That keeps pages fast without delaying CMS edits.
@@ -824,6 +826,7 @@ export async function ensureHomeSeeded() {
         defaultWebsiteMigrationPageContent(),
       );
     }
+    await ensureHostingProductsSeeded();
   } catch {
     /* DB may be unavailable during local UI work */
   }
