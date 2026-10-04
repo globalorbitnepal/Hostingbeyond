@@ -1,15 +1,21 @@
 import Link from "next/link";
 import Image from "next/image";
 
-import { HostingBeyondLogo } from "@/components/shared/hostingbeyond-logo";
 import { cn } from "@/lib/utils";
+
+/** Single canonical header wordmark — never swap after hydration. */
+export const CANONICAL_HEADER_LOGO_SRC = "/logo/hostingbeyond-logo-v6.png";
+
+const LOGO_ASPECT = 981 / 182;
 
 type LogoProps = {
   className?: string;
   href?: string;
-  /** Kept for Orbit CMS API compatibility */
+  /** Ignored for public header stability; always uses canonical PNG unless explicitly overridden for Orbit. */
   src?: string;
   variant?: "image" | "mark";
+  /** When true, `src` is respected (Orbit preview, checkout). Default: canonical only. */
+  allowCustomSrc?: boolean;
 };
 
 /**
@@ -19,17 +25,17 @@ type LogoProps = {
 export function Logo({
   className,
   href = "/",
-  src = "/logo/hostingbeyond-logo-v6.png",
+  src,
   variant = "image",
+  allowCustomSrc = false,
 }: LogoProps) {
+  const resolvedSrc =
+    allowCustomSrc && src?.trim() ? src.trim() : CANONICAL_HEADER_LOGO_SRC;
+
   const content =
     variant === "mark" ? (
-      <HostingBeyondLogo
-        className={cn("h-[32px] w-auto sm:h-[36px] xl:h-[40px]", className)}
-      />
-    ) : (
       <Image
-        src={src}
+        src={CANONICAL_HEADER_LOGO_SRC}
         alt="HostingBeyond"
         width={981}
         height={182}
@@ -40,6 +46,28 @@ export function Logo({
           className,
         )}
       />
+    ) : (
+      <span
+        className={cn(
+          "relative inline-flex shrink-0 items-center justify-start leading-none",
+          className,
+        )}
+        style={{
+          aspectRatio: `${LOGO_ASPECT}`,
+          minHeight: "26px",
+        }}
+      >
+        <Image
+          src={resolvedSrc}
+          alt="HostingBeyond"
+          width={981}
+          height={182}
+          priority
+          fetchPriority="high"
+          unoptimized
+          className="m-0 block h-[26px] w-auto max-w-full bg-transparent object-contain object-left sm:h-[32px] lg:h-[34px] xl:h-[38px]"
+        />
+      </span>
     );
 
   if (!href) return content;

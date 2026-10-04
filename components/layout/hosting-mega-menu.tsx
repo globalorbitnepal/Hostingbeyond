@@ -146,9 +146,9 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         href: `${routes.vps}?os=linux`,
         title: "Linux VPS",
         description: "Ubuntu, Debian and other Linux distributions.",
-        logo: "/images/nav-brands/linux.svg",
+        logo: "/images/nav-brands/linux-mark.svg",
         logoAlt: "Linux",
-        tile: "bg-[#0f172a]",
+        tile: "bg-[#f1f5f9]",
         logoVariant: "linux",
       },
       {
@@ -204,8 +204,8 @@ const LOGO_IMG_CLASS: Record<
   cpanel:
     "h-[32px] w-[62px] max-h-[32px] max-w-[62px] object-contain object-center",
   linux:
-    "h-[30px] w-[26px] max-h-[30px] max-w-[26px] object-contain object-center",
-  nvme: "h-[30px] w-[30px] max-h-[30px] max-w-[30px] object-contain object-center",
+    "h-[30px] w-[28px] max-h-[30px] max-w-[28px] object-contain object-center",
+  nvme: "h-[32px] w-[32px] max-h-[32px] max-w-[32px] object-contain object-center",
 };
 
 function ItemIcon({ item }: { item: HostingItem }) {
@@ -215,13 +215,13 @@ function ItemIcon({ item }: { item: HostingItem }) {
       variant === "cpanel"
         ? { width: 62, height: 32 }
         : variant === "linux"
-          ? { width: 26, height: 30 }
+          ? { width: 28, height: 30 }
           : variant === "nvme"
-            ? { width: 30, height: 30 }
+            ? { width: 32, height: 32 }
             : { width: 28, height: 28 };
     return (
       <Image
-        src={`${item.logo}?v=logo6`}
+        src={`${item.logo}?v=logo7`}
         alt={item.logoAlt ?? ""}
         width={dimensions.width}
         height={dimensions.height}

@@ -9,7 +9,7 @@ import { mainNavigation, type NavItem } from "@/config/navigation";
 import { routes } from "@/config/routes";
 import { CountryLanguageSelector } from "@/components/locale/country-language-selector";
 import { useLocale } from "@/components/locale/locale-provider";
-import { Logo } from "@/components/shared/logo";
+import { CANONICAL_HEADER_LOGO_SRC, Logo } from "@/components/shared/logo";
 import { DomainsMegaMenu } from "@/components/layout/domains-mega-menu";
 import {
   HostingMegaMenu,
@@ -242,13 +242,13 @@ export function SiteHeader({
   loginHref = routes.login,
   getStartedLabel,
   getStartedHref = routes.getStarted,
-  logoPath: _logoPath,
 }: {
   navigation?: NavItem[];
   loginLabel?: string;
   loginHref?: string;
   getStartedLabel?: string;
   getStartedHref?: string;
+  /** @deprecated Header always uses canonical logo for stability */
   logoPath?: string;
 } = {}) {
   const { t, preferences } = useLocale();
@@ -338,9 +338,9 @@ export function SiteHeader({
           <div className="mx-auto flex h-[56px] w-full items-center gap-2 rounded-full border border-white/90 bg-white/[0.92] px-3 shadow-[0_12px_40px_rgba(15,23,42,0.14),inset_0_1px_0_rgba(255,255,255,1)] backdrop-blur-2xl backdrop-saturate-150 sm:h-[70px] sm:gap-3 sm:px-5 lg:px-6">
             <div className="min-w-0 flex-1 lg:min-w-[210px] lg:flex-none xl:min-w-[270px]">
               <Logo
-                src="/logo/hostingbeyond-logo-v6.png"
+                src={CANONICAL_HEADER_LOGO_SRC}
                 variant="image"
-                className="h-[26px] max-w-[min(100%,150px)] sm:h-[32px] sm:max-w-[240px] lg:h-[34px] lg:max-w-[260px] xl:h-[38px] xl:max-w-[300px]"
+                className="max-w-[min(100%,150px)] sm:max-w-[240px] lg:max-w-[260px] xl:max-w-[300px]"
               />
             </div>
 
