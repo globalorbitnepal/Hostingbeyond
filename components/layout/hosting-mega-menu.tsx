@@ -202,10 +202,10 @@ const LOGO_IMG_CLASS: Record<
 > = {
   default: "h-[28px] w-[28px] max-h-[28px] max-w-[28px] object-contain",
   cpanel:
-    "h-[32px] w-[62px] max-h-[32px] max-w-[62px] object-contain object-center",
+    "h-[38px] w-[74px] max-h-[38px] max-w-[74px] object-contain object-center",
   linux:
-    "h-[30px] w-[28px] max-h-[30px] max-w-[28px] object-contain object-center",
-  nvme: "h-[32px] w-[32px] max-h-[32px] max-w-[32px] object-contain object-center",
+    "h-[31px] w-[29px] max-h-[31px] max-w-[29px] object-contain object-center",
+  nvme: "h-[36px] w-[36px] max-h-[36px] max-w-[36px] object-contain object-center",
 };
 
 function ItemIcon({ item }: { item: HostingItem }) {
@@ -213,15 +213,15 @@ function ItemIcon({ item }: { item: HostingItem }) {
     const variant = item.logoVariant ?? "default";
     const dimensions =
       variant === "cpanel"
-        ? { width: 62, height: 32 }
+        ? { width: 74, height: 38 }
         : variant === "linux"
-          ? { width: 28, height: 30 }
+          ? { width: 29, height: 31 }
           : variant === "nvme"
-            ? { width: 32, height: 32 }
+            ? { width: 36, height: 36 }
             : { width: 28, height: 28 };
     return (
       <Image
-        src={`${item.logo}?v=logo7`}
+        src={`${item.logo}?v=logo8`}
         alt={item.logoAlt ?? ""}
         width={dimensions.width}
         height={dimensions.height}
