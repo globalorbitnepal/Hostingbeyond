@@ -193,7 +193,7 @@ const LOGO_IMG_CLASS: Record<
   string
 > = {
   default: "h-[24px] w-[24px] max-h-[24px] max-w-[24px] object-contain",
-  wide: "h-[22px] w-[36px] max-h-[22px] max-w-[36px] object-contain",
+  wide: "h-[26px] w-[40px] max-h-[26px] max-w-[40px] object-contain",
   "on-dark":
     "h-[24px] w-[24px] max-h-[24px] max-w-[24px] object-contain brightness-0 invert",
 };
@@ -205,8 +205,8 @@ function ItemIcon({ item }: { item: HostingItem }) {
       <Image
         src={`${item.logo}?v=logo3`}
         alt={item.logoAlt ?? ""}
-        width={36}
-        height={24}
+        width={variant === "wide" ? 40 : 24}
+        height={variant === "wide" ? 26 : 24}
         unoptimized
         className={LOGO_IMG_CLASS[variant]}
       />
@@ -258,7 +258,7 @@ function HostingNavLink({
         </span>
       </span>
       <ChevronRight
-        className="size-3.5 shrink-0 text-slate-300 transition duration-150 group-hover:translate-x-0.5 group-hover:text-[#6366f1]"
+        className="size-3.5 shrink-0 text-slate-400/90 transition duration-150 group-hover:translate-x-0.5 group-hover:text-[#6366f1]"
         aria-hidden
       />
     </Link>
@@ -275,10 +275,10 @@ function CategoryColumn({
   const compactItems = group.id === "developer";
   return (
     <div className="min-w-0">
-      <p className="mb-2 inline-flex rounded-full border border-indigo-100 bg-indigo-50/90 px-2 py-0.5 text-[9px] font-extrabold tracking-[0.14em] text-[#4f46e5] uppercase">
+      <p className="mb-2 inline-flex h-[22px] items-center rounded-full border border-indigo-100 bg-indigo-50/90 px-2.5 py-0 text-[9px] font-extrabold tracking-[0.14em] text-[#4f46e5] uppercase">
         {group.label}
       </p>
-      <ul className="space-y-0">
+      <ul className={cn("space-y-0", group.id === "business" && "space-y-1")}>
         {group.items.map((item) => (
           <li key={`${group.id}-${item.title}`}>
             <HostingNavLink
@@ -314,7 +314,7 @@ function PromoPanel({
         className="pointer-events-none absolute -top-10 -right-6 size-32 rounded-full bg-white/12 blur-2xl"
       />
 
-      <div className="relative z-[1] flex h-full min-h-0 flex-col justify-center gap-2 py-1">
+      <div className="relative z-[1] flex h-full min-h-0 flex-col justify-center gap-2.5 px-0.5 py-2">
         <p className="text-[9px] font-extrabold tracking-[0.16em] text-white/75 uppercase">
           Reliable & scalable
         </p>
