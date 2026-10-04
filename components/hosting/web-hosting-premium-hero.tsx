@@ -15,35 +15,27 @@ export function WebHostingPremiumHero() {
 
   return (
     <section
-      className="relative overflow-hidden text-white"
+      className="relative overflow-hidden text-white lg:min-h-[560px]"
       aria-labelledby="web-hosting-hero-title"
     >
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#2f1c6a] via-[#35206f] to-[#1e3a8a]"
+        className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-br from-[#2f1c6a] via-[#35206f] to-[#1e3a8a]"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_18%_0%,rgba(255,255,255,0.12),transparent_55%),radial-gradient(ellipse_70%_50%_at_92%_18%,rgba(59,130,246,0.2),transparent_50%)]"
+        className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(ellipse_80%_60%_at_18%_0%,rgba(255,255,255,0.12),transparent_55%),radial-gradient(ellipse_70%_50%_at_92%_18%,rgba(59,130,246,0.2),transparent_50%)]"
       />
 
-      <WebHostingHeroVisual />
-
-      {/* Full-width fade: photo dissolves into purple — no vertical seam */}
+      {/* Desktop: dedicated right visual panel — not under the copy column */}
       <div
+        className="pointer-events-none absolute inset-y-0 right-0 z-[1] hidden w-[57%] lg:block"
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-[1]"
-        style={{
-          background:
-            "linear-gradient(90deg, #2f1c6a 0%, #2f1c6a 26%, rgba(47,28,106,0.94) 38%, rgba(47,28,106,0.72) 48%, rgba(47,28,106,0.38) 58%, rgba(47,28,106,0.12) 68%, transparent 78%)",
-        }}
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-[#2f1c6a]/40 via-transparent to-[#35206f]/30 lg:from-transparent"
-      />
+      >
+        <WebHostingHeroVisual className="h-full min-h-0" />
+      </div>
 
-      <div className="hb-shell relative z-[2]">
+      <div className="hb-shell relative z-[4]">
         <nav
           aria-label="Breadcrumb"
           className="pt-3 pb-0.5 text-[12px] font-medium text-white/85 sm:pt-3.5"
@@ -71,15 +63,15 @@ export function WebHostingPremiumHero() {
 
         <div
           className={cn(
-            "relative grid gap-8 pt-4 pb-12 lg:grid-cols-[minmax(0,0.9fr)_1fr] lg:items-center lg:gap-4 lg:pt-1 lg:pb-14",
-            "min-h-[560px] lg:min-h-[580px]",
+            "grid grid-cols-1 gap-8 pt-4 pb-12",
+            "lg:grid-cols-[minmax(0,43fr)_minmax(0,57fr)] lg:items-center lg:gap-0 lg:pt-2 lg:pb-14",
           )}
         >
           <motion.div
             initial={reduce ? false : { opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45 }}
-            className="relative z-[3] max-w-[520px] lg:max-w-[540px]"
+            className="relative max-w-[540px] lg:max-w-none lg:pr-8"
           >
             <p className="text-[11px] font-bold tracking-[0.28em] text-white/90 uppercase">
               Web hosting
@@ -117,14 +109,14 @@ export function WebHostingPremiumHero() {
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link
                 href="#plans"
-                className="pointer-events-auto inline-flex h-12 items-center justify-center gap-2 rounded-full bg-white px-7 text-[15px] font-extrabold text-[#2f1c6a] shadow-[0_12px_32px_-12px_rgba(0,0,0,0.45)] transition hover:brightness-[1.02]"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-white px-7 text-[15px] font-extrabold text-[#2f1c6a] shadow-[0_12px_32px_-12px_rgba(0,0,0,0.45)] transition hover:brightness-[1.02]"
               >
                 View Hosting Plans
                 <ArrowRight className="size-4" />
               </Link>
               <Link
                 href={routes.getStarted}
-                className="pointer-events-auto inline-flex h-12 items-center justify-center gap-2 rounded-full border-2 border-white/55 bg-white/10 px-7 text-[15px] font-bold text-white backdrop-blur-sm transition hover:bg-white/15"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-full border-2 border-white/55 bg-white/10 px-7 text-[15px] font-bold text-white backdrop-blur-sm transition hover:bg-white/15"
               >
                 Get Started
                 <ArrowRight className="size-4" />
@@ -135,14 +127,14 @@ export function WebHostingPremiumHero() {
             </p>
           </motion.div>
 
+          {/* Spacer reserves ~57% so copy never sits over the photograph */}
           <div className="hidden min-h-[1px] lg:block" aria-hidden />
+
+          <div className="relative w-full min-w-0 lg:hidden">
+            <WebHostingHeroVisual />
+          </div>
         </div>
       </div>
-
-      <div
-        aria-hidden
-        className="pointer-events-none relative z-[2] h-8 bg-gradient-to-b from-transparent to-[#e8eeff] sm:h-10"
-      />
     </section>
   );
 }
