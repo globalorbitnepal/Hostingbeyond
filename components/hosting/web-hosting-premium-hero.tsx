@@ -127,7 +127,7 @@ export function WebHostingPremiumHero() {
             initial={reduce ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.06 }}
-            className="relative mx-auto w-full max-w-[540px] lg:max-w-none lg:justify-self-end"
+            className="relative w-full overflow-visible lg:justify-self-stretch"
           >
             <WebHostingHeroVisual />
           </motion.div>
