@@ -59,7 +59,7 @@ export function WebHostingPremiumHero() {
 
         <div
           className={cn(
-            "grid items-center gap-8 pt-4 pb-10 lg:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)] lg:gap-10 lg:pt-2 lg:pb-12",
+            "relative grid items-center gap-8 pt-4 pb-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-6 lg:pt-2 lg:pb-12",
             "min-h-0 lg:min-h-[500px]",
           )}
         >
@@ -127,7 +127,7 @@ export function WebHostingPremiumHero() {
             initial={reduce ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.06 }}
-            className="relative w-full overflow-visible lg:justify-self-stretch"
+            className="relative min-h-[300px] w-full lg:min-h-[420px] lg:overflow-visible"
           >
             <WebHostingHeroVisual />
           </motion.div>
