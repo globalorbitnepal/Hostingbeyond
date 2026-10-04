@@ -202,9 +202,9 @@ const LOGO_IMG_CLASS: Record<
 > = {
   default: "h-[28px] w-[28px] max-h-[28px] max-w-[28px] object-contain",
   cpanel:
-    "h-[38px] w-[74px] max-h-[38px] max-w-[74px] object-contain object-center",
+    "h-[42px] w-[83px] max-h-[42px] max-w-[83px] object-contain object-center",
   linux:
-    "h-[31px] w-[29px] max-h-[31px] max-w-[29px] object-contain object-center",
+    "h-[33px] w-[31px] max-h-[33px] max-w-[31px] object-contain object-center",
   nvme: "h-[36px] w-[36px] max-h-[36px] max-w-[36px] object-contain object-center",
 };
 
@@ -213,15 +213,15 @@ function ItemIcon({ item }: { item: HostingItem }) {
     const variant = item.logoVariant ?? "default";
     const dimensions =
       variant === "cpanel"
-        ? { width: 74, height: 38 }
+        ? { width: 83, height: 42 }
         : variant === "linux"
-          ? { width: 29, height: 31 }
+          ? { width: 31, height: 33 }
           : variant === "nvme"
             ? { width: 36, height: 36 }
             : { width: 28, height: 28 };
     return (
       <Image
-        src={`${item.logo}?v=logo8`}
+        src={`${item.logo}?v=logo9`}
         alt={item.logoAlt ?? ""}
         width={dimensions.width}
         height={dimensions.height}
@@ -262,7 +262,7 @@ function HostingNavLink({
         className={cn(
           ICON_BOX,
           item.tile,
-          item.logoVariant === "cpanel" && "px-0.5 py-1",
+          item.logoVariant === "cpanel" && "p-0.5",
           "transition-transform duration-150 group-hover:scale-[1.02]",
         )}
       >
