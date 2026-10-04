@@ -10,7 +10,6 @@ import {
   ChevronRight,
   FileText,
   Briefcase,
-  Code2,
   Globe,
   HelpCircle,
   Settings,
@@ -28,7 +27,8 @@ type HostingItem = {
   logo?: string;
   logoAlt?: string;
   tile: string;
-  fit?: "cover" | "wide";
+  /** Brand logo presentation inside the 44px circle */
+  logoVariant?: "default" | "wide" | "on-dark";
   lucide?: LucideIcon;
   lucideClass?: string;
 };
@@ -95,9 +95,9 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         href: `${routes.hosting}?stack=laravel`,
         title: "Laravel Hosting",
         description: "Optimized hosting for Laravel projects.",
+        logo: "/images/nav-brands/laravel.svg",
+        logoAlt: "Laravel",
         tile: "bg-[#fff1f2]",
-        lucide: Code2,
-        lucideClass: "text-[#FF2D20]",
       },
       {
         href: `${routes.hosting}?stack=django`,
@@ -165,7 +165,7 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         logo: "/images/nav-brands/cpanel.svg",
         logoAlt: "cPanel",
         tile: "bg-[#fff7ed]",
-        fit: "wide",
+        logoVariant: "wide",
       },
       {
         href: routes.hosting,
@@ -186,32 +186,36 @@ const PROMO_BENEFITS = [
 ] as const;
 
 const ICON_BOX =
-  "inline-flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full shadow-[0_6px_14px_-8px_rgba(15,23,42,0.45)] ring-1 ring-slate-200/70";
+  "inline-flex size-11 shrink-0 items-center justify-center rounded-full p-2 shadow-[0_6px_14px_-8px_rgba(15,23,42,0.4)] ring-1 ring-slate-200/75";
+
+const LOGO_IMG_CLASS: Record<
+  NonNullable<HostingItem["logoVariant"]>,
+  string
+> = {
+  default: "h-[24px] w-[24px] max-h-[24px] max-w-[24px] object-contain",
+  wide: "h-[22px] w-[36px] max-h-[22px] max-w-[36px] object-contain",
+  "on-dark":
+    "h-[24px] w-[24px] max-h-[24px] max-w-[24px] object-contain brightness-0 invert",
+};
 
 function ItemIcon({ item }: { item: HostingItem }) {
   if (item.logo) {
+    const variant = item.logoVariant ?? "default";
     return (
       <Image
-        src={`${item.logo}?v=logo2`}
+        src={`${item.logo}?v=logo3`}
         alt={item.logoAlt ?? ""}
-        width={28}
-        height={28}
+        width={36}
+        height={24}
         unoptimized
-        className={cn(
-          "object-contain",
-          item.fit === "wide"
-            ? "h-[18px] w-[30px]"
-            : item.tile.includes("#0")
-              ? "h-[22px] w-[22px] brightness-0 invert"
-              : "h-[26px] w-[26px]",
-        )}
+        className={LOGO_IMG_CLASS[variant]}
       />
     );
   }
   const Icon = item.lucide ?? Globe;
   return (
     <Icon
-      className={cn("size-[20px]", item.lucideClass ?? "text-[#4f46e5]")}
+      className={cn("size-[22px]", item.lucideClass ?? "text-[#4f46e5]")}
       strokeWidth={2}
       aria-hidden
     />
@@ -221,30 +225,35 @@ function ItemIcon({ item }: { item: HostingItem }) {
 function HostingNavLink({
   item,
   onNavigate,
+  compact,
 }: {
   item: HostingItem;
   onNavigate?: () => void;
+  compact?: boolean;
 }) {
   return (
     <Link
       href={item.href}
       onClick={onNavigate}
-      className="group flex items-center gap-2.5 rounded-xl px-1.5 py-1.5 transition-[background,transform] duration-150 hover:bg-slate-50/95"
+      className={cn(
+        "group flex min-h-[50px] items-center gap-2.5 rounded-xl px-1.5 transition-[background] duration-150 hover:bg-slate-50/95",
+        compact ? "py-1" : "py-1.5",
+      )}
     >
       <span
         className={cn(
           ICON_BOX,
           item.tile,
-          "transition-transform duration-150 group-hover:scale-[1.03]",
+          "transition-transform duration-150 group-hover:scale-[1.02]",
         )}
       >
         <ItemIcon item={item} />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-[14px] leading-tight font-bold tracking-[-0.02em] text-slate-950 group-hover:text-[#1d4ed8]">
+        <span className="block text-[14px] leading-[1.2] font-semibold tracking-[-0.02em] text-slate-950 group-hover:text-[#1d4ed8]">
           {item.title}
         </span>
-        <span className="mt-0.5 line-clamp-2 text-[12px] leading-snug text-slate-500">
+        <span className="mt-0.5 line-clamp-2 text-[12px] leading-[1.35] text-slate-500">
           {item.description}
         </span>
       </span>
@@ -263,6 +272,7 @@ function CategoryColumn({
   group: (typeof GROUPS)[number];
   onNavigate?: () => void;
 }) {
+  const compactItems = group.id === "developer";
   return (
     <div className="min-w-0">
       <p className="mb-2 inline-flex rounded-full border border-indigo-100 bg-indigo-50/90 px-2 py-0.5 text-[9px] font-extrabold tracking-[0.14em] text-[#4f46e5] uppercase">
@@ -271,7 +281,11 @@ function CategoryColumn({
       <ul className="space-y-0">
         {group.items.map((item) => (
           <li key={`${group.id}-${item.title}`}>
-            <HostingNavLink item={item} onNavigate={onNavigate} />
+            <HostingNavLink
+              item={item}
+              onNavigate={onNavigate}
+              compact={compactItems}
+            />
           </li>
         ))}
       </ul>
@@ -300,7 +314,7 @@ function PromoPanel({
         className="pointer-events-none absolute -top-10 -right-6 size-32 rounded-full bg-white/12 blur-2xl"
       />
 
-      <div className="relative z-[1] flex min-h-0 flex-1 flex-col">
+      <div className="relative z-[1] flex h-full min-h-0 flex-col justify-center gap-2 py-1">
         <p className="text-[9px] font-extrabold tracking-[0.16em] text-white/75 uppercase">
           Reliable & scalable
         </p>
@@ -311,7 +325,7 @@ function PromoPanel({
           Fast, secure and scalable hosting for websites, applications and
           businesses.
         </p>
-        <ul className="mt-2.5 space-y-1.5">
+        <ul className="space-y-1.5">
           {PROMO_BENEFITS.map((benefit) => (
             <li
               key={benefit}
@@ -330,7 +344,7 @@ function PromoPanel({
         <Link
           href={routes.pricing}
           onClick={onNavigate}
-          className="relative z-[2] mt-3 inline-flex min-h-[40px] w-full shrink-0 items-center justify-center gap-1.5 rounded-full bg-white px-4 text-[12px] font-bold tracking-[-0.01em] text-[#3730a3] shadow-[0_10px_22px_rgba(15,23,42,0.18)] transition hover:bg-indigo-50"
+          className="relative z-[2] mt-1 inline-flex min-h-[40px] w-full shrink-0 items-center justify-center gap-1.5 rounded-full bg-white px-4 text-[12px] font-bold tracking-[-0.01em] text-[#3730a3] shadow-[0_10px_22px_rgba(15,23,42,0.18)] transition hover:bg-indigo-50"
         >
           <span className="truncate">View All Hosting Plans</span>
           <ArrowRight className="size-3.5 shrink-0" aria-hidden />
@@ -381,7 +395,7 @@ function BottomActions({
             href={card.href}
             onClick={onNavigate}
             className={cn(
-              "group flex items-center gap-2.5 rounded-xl border border-white/80 bg-gradient-to-br p-3 shadow-[0_6px_18px_-10px_rgba(15,23,42,0.12)] transition duration-150 hover:-translate-y-px hover:shadow-[0_12px_28px_-12px_rgba(79,70,229,0.18)]",
+              "group flex min-h-[68px] items-center gap-2.5 rounded-xl border border-white/80 bg-gradient-to-br p-3 shadow-[0_6px_18px_-10px_rgba(15,23,42,0.12)] transition duration-150 hover:-translate-y-px hover:shadow-[0_12px_28px_-12px_rgba(79,70,229,0.18)]",
               card.tone,
             )}
           >
