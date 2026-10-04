@@ -20,7 +20,7 @@ export async function GET() {
 
   const pages = PUBLIC_PAGE_SEO_REGISTRY.map((entry) => ({
     ...entry,
-    seo: mergeStoredPageSeo(bySlug.get(entry.slug)),
+    seo: mergeStoredPageSeo(bySlug.get(entry.slug), entry.defaultSeo ?? {}),
   }));
 
   return NextResponse.json({ pages });

@@ -61,7 +61,7 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
     label: "Code Based",
     items: [
       {
-        href: `${routes.hosting}?stack=python`,
+        href: `${routes.hosting}/python`,
         title: "Python Hosting",
         description: "Run Python apps with the official CPython runtime.",
         logo: "/images/nav-brands/python.svg",

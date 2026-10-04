@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 
 import { WebHostingPageView } from "@/components/hosting/web-hosting-page";
 import { SiteFooter, SiteHeader } from "@/components/layout";
@@ -8,41 +7,28 @@ import { defaultHostingPlansSection } from "@/lib/orbit/defaults";
 import {
   buildPublicPageMetadata,
   getHomeSections,
-  getHostingPageContent,
+  getPythonHostingPageContent,
   getSiteSettings,
 } from "@/lib/orbit/content";
 
 export const dynamic = "force-dynamic";
 
+const PYTHON_PATH = `${routes.hosting}/python`;
+
 export async function generateMetadata(): Promise<Metadata> {
-  return buildPublicPageMetadata("hosting", routes.hosting, {
-    title: "Web Hosting — Fast NVMe WordPress Hosting",
+  return buildPublicPageMetadata("python-hosting", PYTHON_PATH, {
+    title: "Python Hosting — Django, Flask & FastAPI on NVMe",
     description:
-      "Compare HostingBeyond web hosting plans with free SSL, NVMe storage, managed WordPress, free domain options, and 24/7 support. Save up to 70% on annual billing.",
-    image: "/images/hosting/cloud.jpg",
+      "Managed Python hosting for Flask, Django, and FastAPI on Linux NVMe. Free SSL, SSH on Pro+ plans, PHP/Python/Node stack, and 24/7 developer support.",
+    image: "/images/home/solutions/wordpress-screen.png",
   });
 }
 
-const STACK_REDIRECTS: Record<string, string> = {
-  python: "/web-hosting/python",
-};
-
-type PageProps = {
-  searchParams: Promise<{ stack?: string | string[] }>;
-};
-
-export default async function WebHostingPage({ searchParams }: PageProps) {
-  const params = await searchParams;
-  const stackRaw = params.stack;
-  const stack = Array.isArray(stackRaw) ? stackRaw[0] : stackRaw;
-  if (stack && STACK_REDIRECTS[stack]) {
-    redirect(STACK_REDIRECTS[stack]);
-  }
-
+export default async function PythonHostingPage() {
   const [sections, settings, page] = await Promise.all([
     getHomeSections(),
     getSiteSettings(),
-    getHostingPageContent(),
+    getPythonHostingPageContent(),
   ]);
 
   const hostingPlans = sections.hostingPlans ?? defaultHostingPlansSection();

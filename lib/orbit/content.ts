@@ -38,6 +38,14 @@ import {
   type CmsHostingPageContent,
 } from "@/lib/orbit/hosting-page-content";
 import {
+  defaultEcommerceHostingPageContent,
+  mergeEcommerceHostingPageContent,
+} from "@/lib/orbit/ecommerce-hosting-page-content";
+import {
+  defaultPythonHostingPageContent,
+  mergePythonHostingPageContent,
+} from "@/lib/orbit/python-hosting-page-content";
+import {
   defaultWordPressHostingPageContent,
   mergeWordPressHostingPageContent,
 } from "@/lib/orbit/wordpress-hosting-page-content";
@@ -62,6 +70,7 @@ import {
   type CmsPricingPageContent,
 } from "@/lib/orbit/pricing-content";
 import {
+  getPublicPageSeoEntry,
   mergeStoredPageSeo,
   metadataFromStoredSeo,
   type StoredPageSeo,
@@ -80,6 +89,8 @@ const BUSINESS_EMAIL_PAGE_SLUG = "business-email-product";
 const HOSTING_PAGE_SLUG = "hosting-product";
 const CLOUD_PAGE_SLUG = "cloud-hosting-product";
 const WORDPRESS_HOSTING_PAGE_SLUG = "wordpress-hosting-product";
+const ECOMMERCE_HOSTING_PAGE_SLUG = "ecommerce-hosting-product";
+const PYTHON_HOSTING_PAGE_SLUG = "python-hosting-product";
 const WEBSITE_MIGRATION_PAGE_SLUG = "website-migration-product";
 const DOMAIN_TRANSFER_PAGE_SLUG = "domain-transfer-product";
 /** Safety net so a bad cache entry can never outlive a few minutes. */
@@ -380,6 +391,54 @@ export const getWordPressHostingPageContent = cache(
   },
 );
 
+const readEcommerceHostingPageContent = nextCache(
+  async (): Promise<CmsHostingPageContent> => {
+    const page = await prisma.pageContent.findUnique({
+      where: { slug: ECOMMERCE_HOSTING_PAGE_SLUG },
+    });
+    if (!page) return defaultEcommerceHostingPageContent();
+    return mergeEcommerceHostingPageContent(
+      page.sections as Partial<CmsHostingPageContent>,
+    );
+  },
+  ["orbit-ecommerce-hosting-page-content"],
+  { tags: [CMS_TAG], revalidate: CMS_REVALIDATE },
+);
+
+export const getEcommerceHostingPageContent = cache(
+  async (): Promise<CmsHostingPageContent> => {
+    try {
+      return await readEcommerceHostingPageContent();
+    } catch {
+      return defaultEcommerceHostingPageContent();
+    }
+  },
+);
+
+const readPythonHostingPageContent = nextCache(
+  async (): Promise<CmsHostingPageContent> => {
+    const page = await prisma.pageContent.findUnique({
+      where: { slug: PYTHON_HOSTING_PAGE_SLUG },
+    });
+    if (!page) return defaultPythonHostingPageContent();
+    return mergePythonHostingPageContent(
+      page.sections as Partial<CmsHostingPageContent>,
+    );
+  },
+  ["orbit-python-hosting-page-content"],
+  { tags: [CMS_TAG], revalidate: CMS_REVALIDATE },
+);
+
+export const getPythonHostingPageContent = cache(
+  async (): Promise<CmsHostingPageContent> => {
+    try {
+      return await readPythonHostingPageContent();
+    } catch {
+      return defaultPythonHostingPageContent();
+    }
+  },
+);
+
 const readWebsiteMigrationPageContent = nextCache(
   async (): Promise<CmsWebsiteMigrationPageContent> => {
     const page = await prisma.pageContent.findUnique({
@@ -642,7 +701,19 @@ export async function buildPublicPageMetadata(
   path: string,
   defaults: { title?: string; description?: string; image?: string },
 ): Promise<Metadata> {
-  const seo = await getStoredPageSeo(slug);
+  const entry = getPublicPageSeoEntry(slug);
+  const stored = await getStoredPageSeo(slug);
+  const seo = mergeStoredPageSeo(stored, {
+    ...entry?.defaultSeo,
+    metaTitle: defaults.title,
+    metaDescription: defaults.description,
+    ogImage: defaults.image ?? entry?.defaultSeo?.ogImage,
+    ogTitle: entry?.defaultSeo?.ogTitle ?? defaults.title,
+    ogDescription: entry?.defaultSeo?.ogDescription ?? defaults.description,
+    twitterTitle: entry?.defaultSeo?.twitterTitle ?? defaults.title,
+    twitterDescription:
+      entry?.defaultSeo?.twitterDescription ?? defaults.description,
+  });
   return metadataFromStoredSeo(path, seo, defaults);
 }
 
