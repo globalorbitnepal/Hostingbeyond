@@ -32,7 +32,7 @@ export function WebHostingPremiumHero() {
         className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-[58%] bg-gradient-to-b from-[#2f1c6a] from-0% via-[#2f1c6a]/95 via-70% to-transparent lg:hidden"
       />
 
-      <WebHostingHeroVisual className="pointer-events-none absolute inset-x-0 top-[36%] bottom-0 z-0 min-h-[320px] sm:min-h-[360px] lg:inset-y-0 lg:top-0 lg:right-0 lg:left-[32%] lg:min-h-0" />
+      <WebHostingHeroVisual className="pointer-events-none absolute inset-x-0 top-[34%] bottom-0 z-0 min-h-[340px] sm:min-h-[380px] lg:inset-y-0 lg:top-0 lg:right-0 lg:left-[44%] lg:min-h-0" />
 
       <div className="hb-shell relative z-[2]">
         <nav
@@ -63,7 +63,7 @@ export function WebHostingPremiumHero() {
         <div
           className={cn(
             "relative grid gap-8 pt-4 pb-12 lg:grid-cols-[minmax(0,0.88fr)_1fr] lg:items-center lg:gap-6 lg:pt-1 lg:pb-14",
-            "min-h-[540px] lg:min-h-[560px]",
+            "min-h-[560px] lg:min-h-[580px]",
           )}
         >
           <motion.div
