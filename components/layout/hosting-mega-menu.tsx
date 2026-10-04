@@ -8,9 +8,14 @@ import {
   Check,
   ChevronDown,
   ChevronRight,
+  Briefcase,
   FileText,
   Globe,
   HelpCircle,
+  Layers,
+  ServerCog,
+  ShoppingCart,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 
@@ -25,7 +30,7 @@ type HostingItem = {
   logoAlt?: string;
   tile: string;
   /** Brand logo presentation inside the 44px circle */
-  logoVariant?: "default" | "cpanel" | "woocommerce";
+  logoVariant?: "default" | "cpanel" | "linux" | "nvme";
   lucide?: LucideIcon;
   lucideClass?: string;
 };
@@ -39,9 +44,9 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         href: routes.hosting,
         title: "Web Hosting",
         description: "Simple and reliable hosting for websites.",
-        logo: "/images/nav-brands/nginx.svg",
-        logoAlt: "NGINX",
-        tile: "bg-[#ecfdf3]",
+        lucide: Globe,
+        lucideClass: "text-[#2563eb]",
+        tile: "bg-[#e8f1ff]",
       },
       {
         href: `${routes.hosting}/wordpress`,
@@ -55,17 +60,17 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         href: `${routes.hosting}/ecommerce`,
         title: "eCommerce Hosting",
         description: "Powerful hosting for online stores.",
-        logo: "/images/nav-brands/woocommerce.svg",
-        logoAlt: "WooCommerce",
-        tile: "bg-[#f3e8ff]",
+        lucide: ShoppingCart,
+        lucideClass: "text-[#db2777]",
+        tile: "bg-[#fce7f3]",
       },
       {
         href: routes.cloud,
         title: "Business Hosting",
         description: "More resources for growing businesses.",
-        logo: "/images/nav-brands/docker.svg",
-        logoAlt: "Docker",
-        tile: "bg-[#eff6ff]",
+        lucide: Briefcase,
+        lucideClass: "text-[#2563eb]",
+        tile: "bg-[#e8f1ff]",
       },
     ],
   },
@@ -124,8 +129,8 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         href: `${routes.vps}?hypervisor=kvm`,
         title: "KVM VPS",
         description: "Full root access with KVM virtualization.",
-        logo: "/images/nav-brands/proxmox.svg",
-        logoAlt: "KVM",
+        lucide: Layers,
+        lucideClass: "text-[#ea580c]",
         tile: "bg-[#fff7ed]",
       },
       {
@@ -135,6 +140,7 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         logo: "/images/nav-brands/nvme.svg",
         logoAlt: "NVMe Express",
         tile: "bg-[#0B1F33]",
+        logoVariant: "nvme",
       },
       {
         href: `${routes.vps}?os=linux`,
@@ -143,14 +149,15 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         logo: "/images/nav-brands/linux.svg",
         logoAlt: "Linux",
         tile: "bg-[#0f172a]",
+        logoVariant: "linux",
       },
       {
         href: `${routes.vps}?managed=1`,
         title: "Managed VPS",
         description: "Managed updates, security and technical support.",
-        logo: "/images/nav-brands/plesk.svg",
-        logoAlt: "Plesk",
-        tile: "bg-[#ecfeff]",
+        lucide: ServerCog,
+        lucideClass: "text-[#6366f1]",
+        tile: "bg-[#ede9fe]",
       },
     ],
   },
@@ -171,9 +178,9 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         href: routes.hosting,
         title: "Agency Hosting",
         description: "Manage hosting for multiple clients.",
-        logo: "/images/nav-brands/whm.svg",
-        logoAlt: "WHM",
-        tile: "bg-[#fff7ed]",
+        lucide: Users,
+        lucideClass: "text-[#7c3aed]",
+        tile: "bg-[#f3e8ff]",
       },
     ],
   },
@@ -195,9 +202,10 @@ const LOGO_IMG_CLASS: Record<
 > = {
   default: "h-[28px] w-[28px] max-h-[28px] max-w-[28px] object-contain",
   cpanel:
-    "h-[30px] w-[58px] max-h-[30px] max-w-[58px] object-contain object-center",
-  woocommerce:
-    "h-[24px] w-[38px] max-h-[24px] max-w-[38px] object-contain object-center",
+    "h-[32px] w-[62px] max-h-[32px] max-w-[62px] object-contain object-center",
+  linux:
+    "h-[30px] w-[26px] max-h-[30px] max-w-[26px] object-contain object-center",
+  nvme: "h-[30px] w-[30px] max-h-[30px] max-w-[30px] object-contain object-center",
 };
 
 function ItemIcon({ item }: { item: HostingItem }) {
@@ -205,13 +213,15 @@ function ItemIcon({ item }: { item: HostingItem }) {
     const variant = item.logoVariant ?? "default";
     const dimensions =
       variant === "cpanel"
-        ? { width: 58, height: 30 }
-        : variant === "woocommerce"
-          ? { width: 38, height: 24 }
-          : { width: 28, height: 28 };
+        ? { width: 62, height: 32 }
+        : variant === "linux"
+          ? { width: 26, height: 30 }
+          : variant === "nvme"
+            ? { width: 30, height: 30 }
+            : { width: 28, height: 28 };
     return (
       <Image
-        src={`${item.logo}?v=logo5`}
+        src={`${item.logo}?v=logo6`}
         alt={item.logoAlt ?? ""}
         width={dimensions.width}
         height={dimensions.height}
@@ -223,7 +233,7 @@ function ItemIcon({ item }: { item: HostingItem }) {
   const Icon = item.lucide ?? Globe;
   return (
     <Icon
-      className={cn("size-[24px]", item.lucideClass ?? "text-[#4f46e5]")}
+      className={cn("size-[25px]", item.lucideClass ?? "text-[#4f46e5]")}
       strokeWidth={2}
       aria-hidden
     />
