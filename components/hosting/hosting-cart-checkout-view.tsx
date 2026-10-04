@@ -3,7 +3,14 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Check, ChevronRight, Loader2, Lock, Search } from "lucide-react";
+import {
+  Check,
+  ChevronRight,
+  Globe2,
+  Loader2,
+  Lock,
+  Search,
+} from "lucide-react";
 
 import {
   formatAddonsReviewSummary,
@@ -36,6 +43,22 @@ function money(value: number, currency = "USD") {
     maximumFractionDigits: 2,
   }).format(value);
 }
+
+/** Visual-only checkout surface tokens (layout/logic unchanged). */
+const checkoutCard =
+  "relative overflow-hidden rounded-[20px] border border-violet-200/50 bg-white/95 p-6 shadow-[0_16px_44px_-28px_rgba(47,28,106,0.34)] backdrop-blur-[2px]";
+const checkoutCardAccent =
+  "pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-[#673de6]/45 to-[#2563eb]/40";
+const billingTileBase =
+  "relative rounded-[18px] border px-4 py-4 text-left transition duration-200";
+const billingTileIdle =
+  "border-slate-200/90 bg-white shadow-[0_8px_22px_-18px_rgba(15,23,42,0.18)] hover:border-violet-200/70 hover:shadow-[0_12px_28px_-20px_rgba(103,61,230,0.2)]";
+const billingTileActive =
+  "border-violet-300/60 bg-gradient-to-br from-[#f6f2ff] via-white to-[#eef5ff] shadow-[0_14px_32px_-20px_rgba(103,61,230,0.38)] ring-1 ring-inset ring-[#673de6]/20";
+const summaryCard =
+  "relative overflow-hidden rounded-[20px] border border-violet-200/55 bg-white/90 p-6 shadow-[0_22px_52px_-30px_rgba(47,28,106,0.42)] backdrop-blur-md ring-1 ring-violet-100/70";
+const ctaGradient =
+  "bg-gradient-to-r from-[#673de6] to-[#2563eb] transition hover:from-[#5b32d6] hover:to-[#1d4ed8]";
 
 export type HostingCartCheckoutProps = {
   intent: HostingPurchaseIntent;
@@ -261,7 +284,8 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
       <div className="mx-auto grid max-w-[1240px] gap-8 px-4 py-8 pb-28 sm:px-6 lg:grid-cols-[1fr_360px] lg:items-start lg:pb-12">
         <div className="space-y-6">
           {step === "review" ? (
-            <section className="rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm">
+            <section className={checkoutCard}>
+              <span className={checkoutCardAccent} aria-hidden />
               <h1 className="font-heading text-2xl font-extrabold text-[#2f1c6a]">
                 Order review
               </h1>
@@ -306,7 +330,8 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
             </section>
           ) : (
             <>
-              <section className="rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm">
+              <section className={checkoutCard}>
+                <span className={checkoutCardAccent} aria-hidden />
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <p className="text-[11px] font-bold tracking-[0.18em] text-slate-500 uppercase">
@@ -349,11 +374,11 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
                   </Link>
                 </div>
                 {quote.features.length > 0 ? (
-                  <ul className="mt-6 grid gap-2 sm:grid-cols-2">
+                  <ul className="mt-6 grid gap-2.5 sm:grid-cols-2">
                     {quote.features.slice(0, 6).map((f) => (
                       <li
                         key={f}
-                        className="flex items-start gap-2 text-[14px] text-slate-700"
+                        className="flex items-start gap-2 rounded-xl border border-slate-100/80 bg-slate-50/40 px-3 py-2 text-[14px] text-slate-700"
                       >
                         <Check
                           className="mt-0.5 size-4 shrink-0 text-emerald-600"
@@ -366,7 +391,8 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
                 ) : null}
               </section>
 
-              <section className="rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm">
+              <section className={checkoutCard}>
+                <span className={checkoutCardAccent} aria-hidden />
                 <h2 className="font-heading text-lg font-extrabold text-[#2f1c6a]">
                   Billing period
                 </h2>
@@ -375,12 +401,18 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
                     <button
                       type="button"
                       onClick={() => setBilling("monthly")}
-                      className={`rounded-2xl border px-4 py-4 text-left transition ${
-                        !isAnnual
-                          ? "border-[#673de6] bg-[#f3eeff] ring-1 ring-[#673de6]/30"
-                          : "border-slate-200 hover:border-slate-300"
+                      className={`${billingTileBase} ${
+                        !isAnnual ? billingTileActive : billingTileIdle
                       }`}
                     >
+                      {!isAnnual ? (
+                        <span
+                          className="absolute top-3 right-3 inline-flex size-5 items-center justify-center rounded-full bg-[#673de6]/10 text-[#673de6]"
+                          aria-hidden
+                        >
+                          <Check className="size-3" strokeWidth={3} />
+                        </span>
+                      ) : null}
                       <span className="text-[15px] font-bold text-[#2f1c6a]">
                         Monthly
                       </span>
@@ -393,12 +425,18 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
                     <button
                       type="button"
                       onClick={() => setBilling("annually")}
-                      className={`rounded-2xl border px-4 py-4 text-left transition ${
-                        isAnnual
-                          ? "border-[#673de6] bg-[#f3eeff] ring-1 ring-[#673de6]/30"
-                          : "border-slate-200 hover:border-slate-300"
+                      className={`${billingTileBase} ${
+                        isAnnual ? billingTileActive : billingTileIdle
                       }`}
                     >
+                      {isAnnual ? (
+                        <span
+                          className="absolute top-3 right-3 inline-flex size-5 items-center justify-center rounded-full bg-[#673de6]/10 text-[#673de6]"
+                          aria-hidden
+                        >
+                          <Check className="size-3" strokeWidth={3} />
+                        </span>
+                      ) : null}
                       <span className="text-[15px] font-bold text-[#2f1c6a]">
                         Annual
                       </span>
@@ -412,139 +450,156 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
                 </div>
               </section>
 
-              <section className="rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm">
-                <h2 className="font-heading text-lg font-extrabold text-[#2f1c6a]">
-                  Domain
-                </h2>
-                {isAnnual && quote.freeDomainEligible ? (
-                  <>
-                    <p className="mt-2 text-[14px] text-slate-600">
-                      Free domain for 1 year — eligible annual plans only
-                    </p>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {(
-                        [
-                          ["search", "Search new domain"],
-                          ["existing", "I already own a domain"],
-                          ["later", "Decide later"],
-                        ] as const
-                      ).map(([value, label]) => (
-                        <button
-                          key={value}
-                          type="button"
-                          onClick={() =>
-                            void refreshQuote({ domainChoice: value })
-                          }
-                          className={`rounded-full px-4 py-2 text-[13px] font-semibold ${
-                            domainChoice === value
-                              ? "bg-[#673de6] text-white"
-                              : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                          }`}
-                        >
-                          {label}
-                        </button>
-                      ))}
-                    </div>
-                    {domainChoice === "search" ? (
-                      <div className="mt-4">
-                        <label className="text-[13px] font-semibold text-slate-700">
-                          Search a domain name
-                        </label>
-                        <div className="mt-2 flex gap-2">
-                          <input
-                            type="text"
-                            value={domainQuery}
-                            onChange={(e) => setDomainQuery(e.target.value)}
-                            placeholder="yourbrand"
-                            className="h-11 flex-1 rounded-xl border border-slate-200 px-3 text-[15px]"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => void runDomainSearch()}
-                            disabled={domainSearching}
-                            className="inline-flex h-11 items-center gap-2 rounded-xl bg-[#2f1c6a] px-4 text-[14px] font-bold text-white disabled:opacity-60"
-                          >
-                            {domainSearching ? (
-                              <Loader2 className="size-4 animate-spin" />
-                            ) : (
-                              <Search className="size-4" />
-                            )}
-                            Search
-                          </button>
+              <section className={checkoutCard}>
+                <span className={checkoutCardAccent} aria-hidden />
+                <div className="flex items-start gap-3">
+                  <span
+                    className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#f3eeff] to-[#eef4ff] text-[#673de6] ring-1 ring-violet-200/60"
+                    aria-hidden
+                  >
+                    <Globe2 className="size-5" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <h2 className="font-heading text-lg font-extrabold text-[#2f1c6a]">
+                      Domain
+                    </h2>
+                    {isAnnual && quote.freeDomainEligible ? (
+                      <>
+                        <p className="mt-1 text-[14px] text-slate-600">
+                          Free domain for 1 year — eligible annual plans only
+                        </p>
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          {(
+                            [
+                              ["search", "Search new domain"],
+                              ["existing", "I already own a domain"],
+                              ["later", "Decide later"],
+                            ] as const
+                          ).map(([value, label]) => (
+                            <button
+                              key={value}
+                              type="button"
+                              onClick={() =>
+                                void refreshQuote({ domainChoice: value })
+                              }
+                              className={`rounded-full px-4 py-2 text-[13px] font-semibold ${
+                                domainChoice === value
+                                  ? "bg-[#673de6] text-white"
+                                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                              }`}
+                            >
+                              {label}
+                            </button>
+                          ))}
                         </div>
-                        {domainSource ? (
-                          <p className="mt-2 text-[12px] text-slate-500">
-                            Lookup via{" "}
-                            {domainSource === "registrar"
-                              ? "connected registrar API"
-                              : "HostingBeyond availability service"}
-                            {domainSource !== "registrar"
-                              ? " — set DOMAIN_LOOKUP_URL for live registrar checks"
-                              : ""}
-                          </p>
+                        {domainChoice === "search" ? (
+                          <div className="mt-4">
+                            <label className="text-[13px] font-semibold text-slate-700">
+                              Search a domain name
+                            </label>
+                            <div className="mt-2 flex gap-2">
+                              <input
+                                type="text"
+                                value={domainQuery}
+                                onChange={(e) => setDomainQuery(e.target.value)}
+                                placeholder="yourbrand"
+                                className="h-11 flex-1 rounded-xl border border-slate-200 px-3 text-[15px]"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => void runDomainSearch()}
+                                disabled={domainSearching}
+                                className="inline-flex h-11 items-center gap-2 rounded-xl bg-[#2f1c6a] px-4 text-[14px] font-bold text-white disabled:opacity-60"
+                              >
+                                {domainSearching ? (
+                                  <Loader2 className="size-4 animate-spin" />
+                                ) : (
+                                  <Search className="size-4" />
+                                )}
+                                Search
+                              </button>
+                            </div>
+                            {domainSource ? (
+                              <p className="mt-2 text-[12px] text-slate-500">
+                                Lookup via{" "}
+                                {domainSource === "registrar"
+                                  ? "connected registrar API"
+                                  : "HostingBeyond availability service"}
+                                {domainSource !== "registrar"
+                                  ? " — set DOMAIN_LOOKUP_URL for live registrar checks"
+                                  : ""}
+                              </p>
+                            ) : null}
+                            {domainSearchError ? (
+                              <p className="mt-2 text-[13px] text-red-600">
+                                {domainSearchError}
+                              </p>
+                            ) : null}
+                            {domainResults.length > 0 ? (
+                              <ul className="mt-3 max-h-48 space-y-2 overflow-y-auto">
+                                {domainResults.map((r) => (
+                                  <li key={r.domain}>
+                                    <button
+                                      type="button"
+                                      disabled={r.status !== "available"}
+                                      onClick={() =>
+                                        void refreshQuote({
+                                          domainName: r.domain,
+                                          domainChoice: "search",
+                                        })
+                                      }
+                                      className="flex w-full items-center justify-between rounded-xl border border-slate-200 px-3 py-2 text-left text-[14px] hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                      <span className="font-medium">
+                                        {r.domain}
+                                      </span>
+                                      <span className="text-slate-500 capitalize">
+                                        {r.status}
+                                      </span>
+                                    </button>
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : null}
+                          </div>
                         ) : null}
-                        {domainSearchError ? (
-                          <p className="mt-2 text-[13px] text-red-600">
-                            {domainSearchError}
-                          </p>
+                        {domainChoice === "existing" ? (
+                          <div className="mt-4">
+                            <label
+                              htmlFor="existing-domain"
+                              className="text-[13px] font-semibold text-slate-700"
+                            >
+                              Your domain name
+                            </label>
+                            <input
+                              id="existing-domain"
+                              type="text"
+                              className="mt-2 h-11 w-full rounded-xl border border-slate-200 px-3 text-[15px]"
+                              placeholder="example.com"
+                              onBlur={(e) =>
+                                void refreshQuote({
+                                  domainName: e.target.value,
+                                  domainChoice: "existing",
+                                })
+                              }
+                            />
+                          </div>
                         ) : null}
-                        {domainResults.length > 0 ? (
-                          <ul className="mt-3 max-h-48 space-y-2 overflow-y-auto">
-                            {domainResults.map((r) => (
-                              <li key={r.domain}>
-                                <button
-                                  type="button"
-                                  disabled={r.status !== "available"}
-                                  onClick={() =>
-                                    void refreshQuote({
-                                      domainName: r.domain,
-                                      domainChoice: "search",
-                                    })
-                                  }
-                                  className="flex w-full items-center justify-between rounded-xl border border-slate-200 px-3 py-2 text-left text-[14px] hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                  <span className="font-medium">
-                                    {r.domain}
-                                  </span>
-                                  <span className="text-slate-500 capitalize">
-                                    {r.status}
-                                  </span>
-                                </button>
-                              </li>
-                            ))}
-                          </ul>
-                        ) : null}
+                      </>
+                    ) : (
+                      <div className="mt-2 rounded-xl border border-slate-200/80 bg-slate-50/50 px-4 py-3">
+                        <p className="text-[14px] font-semibold text-[#2f1c6a]">
+                          Add a domain separately
+                        </p>
+                        <p className="mt-1 text-[13px] leading-relaxed text-slate-600">
+                          Free domain for the first year is available only on
+                          eligible annual plans — not included on monthly
+                          billing.
+                        </p>
                       </div>
-                    ) : null}
-                    {domainChoice === "existing" ? (
-                      <div className="mt-4">
-                        <label
-                          htmlFor="existing-domain"
-                          className="text-[13px] font-semibold text-slate-700"
-                        >
-                          Your domain name
-                        </label>
-                        <input
-                          id="existing-domain"
-                          type="text"
-                          className="mt-2 h-11 w-full rounded-xl border border-slate-200 px-3 text-[15px]"
-                          placeholder="example.com"
-                          onBlur={(e) =>
-                            void refreshQuote({
-                              domainName: e.target.value,
-                              domainChoice: "existing",
-                            })
-                          }
-                        />
-                      </div>
-                    ) : null}
-                  </>
-                ) : (
-                  <p className="mt-2 text-[14px] text-slate-600">
-                    Add a domain separately. Free domain for the first year is
-                    available only on eligible annual plans.
-                  </p>
-                )}
+                    )}
+                  </div>
+                </div>
               </section>
 
               <HostingCartAddonCards
@@ -575,7 +630,8 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
         </div>
 
         <aside className="lg:sticky lg:top-6 lg:max-h-[calc(100dvh-2rem)] lg:overflow-y-auto">
-          <div className="rounded-[20px] border border-slate-200 bg-white p-6 shadow-md">
+          <div className={summaryCard}>
+            <span className={checkoutCardAccent} aria-hidden />
             <h2 className="font-heading text-lg font-extrabold text-[#2f1c6a]">
               Order summary
             </h2>
@@ -616,11 +672,11 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
                 <span className="text-slate-500">Calculated later</span>
               </div>
             </div>
-            <div className="mt-4 flex justify-between border-t border-slate-200 pt-4">
+            <div className="mt-4 flex justify-between rounded-xl border border-violet-100/80 bg-gradient-to-r from-[#faf8ff] to-[#f0f6ff] px-3 py-3">
               <span className="text-[15px] font-bold text-[#2f1c6a]">
                 Total
               </span>
-              <span className="text-[1.25rem] font-extrabold text-[#673de6]">
+              <span className="bg-gradient-to-r from-[#673de6] to-[#2563eb] bg-clip-text text-[1.25rem] font-extrabold text-transparent">
                 {money(quote.total, quote.currency)}
               </span>
             </div>
@@ -628,7 +684,7 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
               type="button"
               disabled={loading || quote.errors.length > 0}
               onClick={() => void handleContinue()}
-              className="mt-6 flex h-12 w-full items-center justify-center rounded-xl bg-[#673de6] text-[15px] font-bold text-white transition hover:bg-[#5b32d6] disabled:opacity-60"
+              className={`mt-6 flex h-12 w-full items-center justify-center rounded-xl text-[15px] font-bold text-white shadow-[0_12px_28px_-14px_rgba(103,61,230,0.55)] disabled:opacity-60 ${ctaGradient}`}
             >
               {loading ? (
                 <Loader2 className="size-5 animate-spin" />
@@ -655,7 +711,7 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
           type="button"
           disabled={loading || quote.errors.length > 0}
           onClick={() => void handleContinue()}
-          className="flex h-12 w-full items-center justify-center rounded-xl bg-[#673de6] text-[15px] font-bold text-white disabled:opacity-60"
+          className={`flex h-12 w-full items-center justify-center rounded-xl text-[15px] font-bold text-white shadow-[0_10px_24px_-14px_rgba(103,61,230,0.5)] disabled:opacity-60 ${ctaGradient}`}
         >
           {step === "configure" ? "Continue" : "Next step"}
         </button>

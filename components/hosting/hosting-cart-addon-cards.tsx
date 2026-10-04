@@ -1,5 +1,7 @@
 "use client";
 
+import { Mail, Sparkles } from "lucide-react";
+
 import type { HostingCartConfiguration } from "@/lib/hosting/cart/types";
 import type { CartAddonUiModel } from "@/lib/hosting/addons/load-cart-ui";
 
@@ -55,21 +57,40 @@ export function HostingCartAddonCards({
         const qtyLabel =
           addon.slug === "business-email" ? "Mailboxes" : "Quantity";
 
+        const AddonIcon = addon.slug === "business-email" ? Mail : Sparkles;
+
         return (
           <section
             key={addon.slug}
-            className="rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm"
+            className="relative overflow-hidden rounded-[20px] border border-violet-200/50 bg-white/95 p-6 shadow-[0_16px_44px_-28px_rgba(47,28,106,0.34)] backdrop-blur-[2px]"
           >
-            <h2 className="font-heading text-lg font-extrabold text-[#2f1c6a]">
-              {addon.name}
-            </h2>
-            <p className="mt-2 text-[14px] text-slate-600">
-              {addon.description}
-            </p>
-            <label className="mt-4 flex cursor-pointer items-start gap-3">
+            <span
+              className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-[#673de6]/40 to-[#2563eb]/35"
+              aria-hidden
+            />
+            <div className="flex items-start gap-3">
+              <span
+                className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#f3eeff] to-[#eef4ff] text-[#673de6] ring-1 ring-violet-200/60"
+                aria-hidden
+              >
+                <AddonIcon className="size-5" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-bold tracking-[0.16em] text-[#673de6]/80 uppercase">
+                  Optional upgrade
+                </p>
+                <h2 className="font-heading text-lg font-extrabold text-[#2f1c6a]">
+                  {addon.name}
+                </h2>
+                <p className="mt-1 text-[14px] text-slate-600">
+                  {addon.description}
+                </p>
+              </div>
+            </div>
+            <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200/70 bg-slate-50/30 px-3 py-3 transition hover:border-violet-200/60 hover:bg-violet-50/20">
               <input
                 type="checkbox"
-                className="mt-1 size-4 rounded border-slate-300"
+                className="mt-1 size-4 rounded border-slate-300 accent-[#673de6]"
                 checked={sel.enabled}
                 onChange={(e) => {
                   const enabled = e.target.checked;
@@ -88,7 +109,7 @@ export function HostingCartAddonCards({
               </span>
             </label>
             {sel.enabled ? (
-              <div className="mt-4 space-y-4 border-t border-slate-100 pt-4">
+              <div className="mt-4 space-y-4 border-t border-violet-100/80 pt-4">
                 <div>
                   <label
                     htmlFor={`addon-plan-${addon.slug}`}
