@@ -9,12 +9,8 @@ import {
   ChevronDown,
   ChevronRight,
   FileText,
-  Briefcase,
   Globe,
   HelpCircle,
-  Settings,
-  ShoppingCart,
-  Users,
   type LucideIcon,
 } from "lucide-react";
 
@@ -29,7 +25,7 @@ type HostingItem = {
   logoAlt?: string;
   tile: string;
   /** Brand logo presentation inside the 44px circle */
-  logoVariant?: "default" | "wide" | "on-dark";
+  logoVariant?: "default" | "cpanel" | "woocommerce";
   lucide?: LucideIcon;
   lucideClass?: string;
 };
@@ -43,9 +39,9 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         href: routes.hosting,
         title: "Web Hosting",
         description: "Simple and reliable hosting for websites.",
-        lucide: Globe,
-        lucideClass: "text-[#2563eb]",
-        tile: "bg-[#e8f1ff]",
+        logo: "/images/nav-brands/nginx.svg",
+        logoAlt: "NGINX",
+        tile: "bg-[#ecfdf3]",
       },
       {
         href: `${routes.hosting}/wordpress`,
@@ -59,17 +55,17 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         href: `${routes.hosting}/ecommerce`,
         title: "eCommerce Hosting",
         description: "Powerful hosting for online stores.",
-        lucide: ShoppingCart,
-        lucideClass: "text-[#db2777]",
-        tile: "bg-[#fce7f3]",
+        logo: "/images/nav-brands/woocommerce.svg",
+        logoAlt: "WooCommerce",
+        tile: "bg-[#f3e8ff]",
       },
       {
         href: routes.cloud,
         title: "Business Hosting",
         description: "More resources for growing businesses.",
-        lucide: Briefcase,
-        lucideClass: "text-[#2563eb]",
-        tile: "bg-[#e8f1ff]",
+        logo: "/images/nav-brands/docker.svg",
+        logoAlt: "Docker",
+        tile: "bg-[#eff6ff]",
       },
     ],
   },
@@ -152,9 +148,9 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         href: `${routes.vps}?managed=1`,
         title: "Managed VPS",
         description: "Managed updates, security and technical support.",
-        lucide: Settings,
-        lucideClass: "text-[#6366f1]",
-        tile: "bg-[#ede9fe]",
+        logo: "/images/nav-brands/plesk.svg",
+        logoAlt: "Plesk",
+        tile: "bg-[#ecfeff]",
       },
     ],
   },
@@ -169,15 +165,15 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         logo: "/images/nav-brands/cpanel.svg",
         logoAlt: "cPanel",
         tile: "bg-[#fff7ed]",
-        logoVariant: "wide",
+        logoVariant: "cpanel",
       },
       {
         href: routes.hosting,
         title: "Agency Hosting",
         description: "Manage hosting for multiple clients.",
-        lucide: Users,
-        lucideClass: "text-[#7c3aed]",
-        tile: "bg-[#f3e8ff]",
+        logo: "/images/nav-brands/whm.svg",
+        logoAlt: "WHM",
+        tile: "bg-[#fff7ed]",
       },
     ],
   },
@@ -198,20 +194,27 @@ const LOGO_IMG_CLASS: Record<
   string
 > = {
   default: "h-[28px] w-[28px] max-h-[28px] max-w-[28px] object-contain",
-  wide: "h-[28px] w-[44px] max-h-[28px] max-w-[44px] object-contain",
-  "on-dark":
-    "h-[28px] w-[28px] max-h-[28px] max-w-[28px] object-contain brightness-0 invert",
+  cpanel:
+    "h-[30px] w-[58px] max-h-[30px] max-w-[58px] object-contain object-center",
+  woocommerce:
+    "h-[24px] w-[38px] max-h-[24px] max-w-[38px] object-contain object-center",
 };
 
 function ItemIcon({ item }: { item: HostingItem }) {
   if (item.logo) {
     const variant = item.logoVariant ?? "default";
+    const dimensions =
+      variant === "cpanel"
+        ? { width: 58, height: 30 }
+        : variant === "woocommerce"
+          ? { width: 38, height: 24 }
+          : { width: 28, height: 28 };
     return (
       <Image
-        src={`${item.logo}?v=logo4`}
+        src={`${item.logo}?v=logo5`}
         alt={item.logoAlt ?? ""}
-        width={variant === "wide" ? 44 : 28}
-        height={28}
+        width={dimensions.width}
+        height={dimensions.height}
         unoptimized
         className={LOGO_IMG_CLASS[variant]}
       />
@@ -249,6 +252,7 @@ function HostingNavLink({
         className={cn(
           ICON_BOX,
           item.tile,
+          item.logoVariant === "cpanel" && "px-0.5 py-1",
           "transition-transform duration-150 group-hover:scale-[1.02]",
         )}
       >
