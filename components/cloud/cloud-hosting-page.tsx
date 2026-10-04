@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -24,7 +23,6 @@ import type {
   CmsCloudHostingPageContent,
   CmsCloudPageFeature,
 } from "@/lib/orbit/cloud-hosting-page-content";
-import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
 import { cn } from "@/lib/utils";
 
 const FEATURE_ICONS: Record<CmsCloudPageFeature["icon"], typeof Cpu> = {
@@ -80,7 +78,7 @@ export function CloudHostingPageView({
           aria-hidden
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_10%_20%,rgba(147,197,253,0.2),transparent_50%),radial-gradient(ellipse_at_85%_0%,rgba(103,61,230,0.35),transparent_45%)]"
         />
-        <div className="hb-shell relative grid gap-10 py-14 lg:grid-cols-2 lg:items-center lg:py-20">
+        <div className="hb-shell relative grid gap-10 py-14 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:py-20">
           <motion.div
             initial={reduce ? false : { opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
@@ -117,29 +115,27 @@ export function CloudHostingPageView({
             </div>
           </motion.div>
           <motion.div
-            initial={reduce ? false : { opacity: 0, x: 16 }}
+            initial={reduce ? false : { opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="relative min-h-[280px] overflow-hidden rounded-[28px] border border-white/20 shadow-2xl"
+            className="rounded-[28px] border border-white/15 bg-white/10 p-6 backdrop-blur-md"
           >
-            <Image
-              src={page.heroImage || "/images/cloud/frames/hero-cloud.svg"}
-              alt=""
-              fill
-              priority
-              className="object-cover"
-              unoptimized={isRuntimeMediaSrc(page.heroImage)}
-            />
-            <div
-              aria-hidden
-              className="absolute inset-0 bg-gradient-to-t from-[#2f1c6a]/80 via-transparent to-transparent"
-            />
-            <div className="absolute right-6 bottom-6 left-6 rounded-2xl border border-white/20 bg-black/30 p-4 backdrop-blur-md">
-              <p className="text-[12px] font-bold text-white/70 uppercase">
-                {page.heroCardEyebrow}
-              </p>
-              <p className="mt-1 text-[14px] font-semibold text-white">
-                {page.heroCardLine}
-              </p>
+            <p className="text-[11px] font-bold tracking-wide text-white/60 uppercase">
+              {page.heroCardEyebrow}
+            </p>
+            <ul className="mt-4 space-y-3 text-[14px] text-white/90">
+              {page.heroHighlights.map((line) => (
+                <li key={line} className="flex items-center gap-2">
+                  <Check className="size-4 shrink-0 text-emerald-400" />
+                  {line}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-6 text-[13px] font-semibold text-white/90">
+              {page.heroCardLine}
+            </p>
+            <div className="mt-3 flex items-center gap-2 text-[13px] text-white/75">
+              <Cloud className="size-4 text-[#c4b5fd]" />
+              Isolated resources — no noisy neighbours
             </div>
           </motion.div>
         </div>

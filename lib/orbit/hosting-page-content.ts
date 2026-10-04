@@ -242,8 +242,9 @@ export function defaultHostingPageContent(): CmsHostingPageContent {
 
 export function mergeHostingPageContent(
   stored?: Partial<CmsHostingPageContent> | null,
+  defaultsFactory: () => CmsHostingPageContent = defaultHostingPageContent,
 ): CmsHostingPageContent {
-  const defaults = defaultHostingPageContent();
+  const defaults = defaultsFactory();
   if (!stored) return defaults;
 
   return {

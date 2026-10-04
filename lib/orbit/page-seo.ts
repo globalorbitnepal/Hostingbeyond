@@ -51,6 +51,13 @@ export const PUBLIC_PAGE_SEO_REGISTRY: PublicPageSeoEntry[] = [
     editorHref: "/orbit/hosting",
   },
   {
+    slug: "wordpress-hosting",
+    label: "WordPress hosting",
+    path: "/web-hosting/wordpress",
+    editorHref: "/orbit/hosting",
+    note: "Copy defaults from code until a dedicated Orbit editor is added.",
+  },
+  {
     slug: "cloud",
     label: "Cloud hosting",
     path: "/cloud-hosting",

@@ -38,6 +38,10 @@ import {
   type CmsHostingPageContent,
 } from "@/lib/orbit/hosting-page-content";
 import {
+  defaultWordPressHostingPageContent,
+  mergeWordPressHostingPageContent,
+} from "@/lib/orbit/wordpress-hosting-page-content";
+import {
   defaultCloudHostingPageContent,
   mergeCloudHostingPageContent,
   type CmsCloudHostingPageContent,
@@ -75,6 +79,7 @@ const BEYOND_AI_PAGE_SLUG = "beyond-ai-product";
 const BUSINESS_EMAIL_PAGE_SLUG = "business-email-product";
 const HOSTING_PAGE_SLUG = "hosting-product";
 const CLOUD_PAGE_SLUG = "cloud-hosting-product";
+const WORDPRESS_HOSTING_PAGE_SLUG = "wordpress-hosting-product";
 const WEBSITE_MIGRATION_PAGE_SLUG = "website-migration-product";
 const DOMAIN_TRANSFER_PAGE_SLUG = "domain-transfer-product";
 /** Safety net so a bad cache entry can never outlive a few minutes. */
@@ -347,6 +352,30 @@ export const getCloudHostingPageContent = cache(
       return await readCloudHostingPageContent();
     } catch {
       return defaultCloudHostingPageContent();
+    }
+  },
+);
+
+const readWordPressHostingPageContent = nextCache(
+  async (): Promise<CmsHostingPageContent> => {
+    const page = await prisma.pageContent.findUnique({
+      where: { slug: WORDPRESS_HOSTING_PAGE_SLUG },
+    });
+    if (!page) return defaultWordPressHostingPageContent();
+    return mergeWordPressHostingPageContent(
+      page.sections as Partial<CmsHostingPageContent>,
+    );
+  },
+  ["orbit-wordpress-hosting-page-content"],
+  { tags: [CMS_TAG], revalidate: CMS_REVALIDATE },
+);
+
+export const getWordPressHostingPageContent = cache(
+  async (): Promise<CmsHostingPageContent> => {
+    try {
+      return await readWordPressHostingPageContent();
+    } catch {
+      return defaultWordPressHostingPageContent();
     }
   },
 );

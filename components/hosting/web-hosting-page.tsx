@@ -49,6 +49,7 @@ export function WebHostingPageView({
   const [openFaq, setOpenFaq] = useState(0);
 
   const plans = hostingPlans.plans.filter((p) => p.visible !== false);
+  const heroHighlights = features.slice(0, 4).map((f) => f.title);
 
   return (
     <>
@@ -98,15 +99,10 @@ export function WebHostingPageView({
             className="rounded-[28px] border border-white/15 bg-white/10 p-6 backdrop-blur-md"
           >
             <p className="text-[11px] font-bold tracking-wide text-white/60 uppercase">
-              Included on every plan
+              {page.heroEyebrow}
             </p>
             <ul className="mt-4 space-y-3 text-[14px] text-white/90">
-              {[
-                "Free SSL certificate",
-                "NVMe SSD storage",
-                "Managed WordPress",
-                "24/7 expert support",
-              ].map((line) => (
+              {heroHighlights.map((line) => (
                 <li key={line} className="flex items-center gap-2">
                   <Check className="size-4 text-emerald-400" />
                   {line}

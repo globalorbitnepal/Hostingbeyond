@@ -30,6 +30,8 @@ export type CmsCloudHostingPageContent = {
   heroImage: string;
   heroCardEyebrow: string;
   heroCardLine: string;
+  /** Bullet list in the hero glass panel (right column). */
+  heroHighlights: string[];
 
   pricingEyebrow: string;
   pricingTitle: string;
@@ -209,9 +211,15 @@ export function defaultCloudHostingPageContent(): CmsCloudHostingPageContent {
     heroSecondaryLabel: "Compare with web hosting",
     heroSecondaryHref: routes.hosting,
     heroPromo: "Save up to 60% on your first term",
-    heroImage: "/images/cloud/frames/hero-cloud.svg",
-    heroCardEyebrow: "Isolated resources",
+    heroImage: "",
+    heroCardEyebrow: "Included on every cloud plan",
     heroCardLine: "Up to 8 GB RAM · 4 vCPU on Cloud Pro",
+    heroHighlights: [
+      "Dedicated RAM & vCPU per plan",
+      "NVMe SSD storage",
+      "Free SSL & daily backups",
+      "24/7 cloud specialist support",
+    ],
 
     pricingEyebrow: "Cloud plans",
     pricingTitle: "Pick your",
@@ -376,6 +384,11 @@ export function mergeCloudHostingPageContent(
     heroImage: text(stored.heroImage, defaults.heroImage),
     heroCardEyebrow: text(stored.heroCardEyebrow, defaults.heroCardEyebrow),
     heroCardLine: text(stored.heroCardLine, defaults.heroCardLine),
+    heroHighlights:
+      stored.heroHighlights?.length &&
+      stored.heroHighlights.some((line) => line.trim())
+        ? stored.heroHighlights
+        : defaults.heroHighlights,
     pricingEyebrow: text(stored.pricingEyebrow, defaults.pricingEyebrow),
     pricingTitle: text(stored.pricingTitle, defaults.pricingTitle),
     pricingTitleAccent: text(
