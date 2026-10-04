@@ -49,12 +49,15 @@ export function WebHostingPageView({
   productName = "Web Hosting",
   sectionFlags,
   specifications = {},
+  hideHero = false,
 }: {
   page: CmsHostingPageContent;
   hostingPlans: CmsHostingPlansContent;
   productName?: string;
   sectionFlags?: HostingProductSectionFlags;
   specifications?: HostingWebSpecifications | HostingVpsSpecifications;
+  /** When true, hero is rendered externally (e.g. Web Hosting premium hero). */
+  hideHero?: boolean;
 }) {
   const flags = { ...DEFAULT_HOSTING_SECTION_FLAGS, ...sectionFlags };
   const reduce = useReducedMotion();
@@ -67,69 +70,71 @@ export function WebHostingPageView({
 
   return (
     <>
-      <section className="hb-band-purple relative overflow-hidden text-white">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_15%_0%,rgba(255,255,255,0.14),transparent_45%),radial-gradient(ellipse_at_90%_80%,rgba(37,99,235,0.22),transparent_50%)]"
-        />
-        <div className="hb-shell relative grid gap-10 py-14 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:py-20">
-          <motion.div
-            initial={reduce ? false : { opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <p className="text-[12px] font-bold tracking-[0.22em] text-[#c4b5fd] uppercase">
-              {page.heroEyebrow}
-            </p>
-            <h1 className="font-heading mt-4 text-[clamp(2.2rem,5vw,3.75rem)] leading-[1.05] font-extrabold tracking-[-0.045em]">
-              {page.heroTitle}{" "}
-              <span className="text-[#c7d7ff]">{page.heroTitleAccent}</span>
-            </h1>
-            <p className="mt-5 max-w-xl text-[16px] leading-relaxed text-white/85">
-              {page.heroDescription}
-            </p>
-            {page.heroPromo ? (
-              <p className="mt-4 inline-flex rounded-full bg-emerald-400/15 px-3 py-1 text-[13px] font-bold text-emerald-200 ring-1 ring-emerald-400/30">
-                {page.heroPromo}
+      {!hideHero ? (
+        <section className="hb-band-purple relative overflow-hidden text-white">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_15%_0%,rgba(255,255,255,0.14),transparent_45%),radial-gradient(ellipse_at_90%_80%,rgba(37,99,235,0.22),transparent_50%)]"
+          />
+          <div className="hb-shell relative grid gap-10 py-14 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:py-20">
+            <motion.div
+              initial={reduce ? false : { opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <p className="text-[12px] font-bold tracking-[0.22em] text-[#c4b5fd] uppercase">
+                {page.heroEyebrow}
               </p>
-            ) : null}
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href={page.heroPrimaryHref}
-                className="inline-flex h-12 items-center rounded-xl bg-white px-6 text-[15px] font-extrabold text-[#2f1c6a] shadow-lg"
-              >
-                {page.heroPrimaryLabel}
-              </Link>
-              <Link
-                href={page.heroSecondaryHref}
-                className="inline-flex h-12 items-center rounded-xl border border-white/35 px-6 text-[15px] font-bold text-white hover:bg-white/10"
-              >
-                {page.heroSecondaryLabel}
-              </Link>
-            </div>
-          </motion.div>
-          <motion.div
-            initial={reduce ? false : { opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="rounded-[28px] border border-white/15 bg-white/10 p-6 backdrop-blur-md"
-          >
-            <p className="text-[11px] font-bold tracking-wide text-white/60 uppercase">
-              {page.heroEyebrow}
-            </p>
-            <ul className="mt-4 space-y-3 text-[14px] text-white/90">
-              {heroHighlights.map((line) => (
-                <li key={line} className="flex items-center gap-2">
-                  <Check className="size-4 text-emerald-400" />
-                  {line}
-                </li>
-              ))}
-            </ul>
-            <div className="mt-6 flex items-center gap-2 text-[13px] text-white/75">
-              <Bot className="size-4 text-[#c4b5fd]" />
-              Beyond AI credit on annual plans
-            </div>
-          </motion.div>
-        </div>
-      </section>
+              <h1 className="font-heading mt-4 text-[clamp(2.2rem,5vw,3.75rem)] leading-[1.05] font-extrabold tracking-[-0.045em]">
+                {page.heroTitle}{" "}
+                <span className="text-[#c7d7ff]">{page.heroTitleAccent}</span>
+              </h1>
+              <p className="mt-5 max-w-xl text-[16px] leading-relaxed text-white/85">
+                {page.heroDescription}
+              </p>
+              {page.heroPromo ? (
+                <p className="mt-4 inline-flex rounded-full bg-emerald-400/15 px-3 py-1 text-[13px] font-bold text-emerald-200 ring-1 ring-emerald-400/30">
+                  {page.heroPromo}
+                </p>
+              ) : null}
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link
+                  href={page.heroPrimaryHref}
+                  className="inline-flex h-12 items-center rounded-xl bg-white px-6 text-[15px] font-extrabold text-[#2f1c6a] shadow-lg"
+                >
+                  {page.heroPrimaryLabel}
+                </Link>
+                <Link
+                  href={page.heroSecondaryHref}
+                  className="inline-flex h-12 items-center rounded-xl border border-white/35 px-6 text-[15px] font-bold text-white hover:bg-white/10"
+                >
+                  {page.heroSecondaryLabel}
+                </Link>
+              </div>
+            </motion.div>
+            <motion.div
+              initial={reduce ? false : { opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="rounded-[28px] border border-white/15 bg-white/10 p-6 backdrop-blur-md"
+            >
+              <p className="text-[11px] font-bold tracking-wide text-white/60 uppercase">
+                {page.heroEyebrow}
+              </p>
+              <ul className="mt-4 space-y-3 text-[14px] text-white/90">
+                {heroHighlights.map((line) => (
+                  <li key={line} className="flex items-center gap-2">
+                    <Check className="size-4 text-emerald-400" />
+                    {line}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-6 flex items-center gap-2 text-[13px] text-white/75">
+                <Bot className="size-4 text-[#c4b5fd]" />
+                Beyond AI credit on annual plans
+              </div>
+            </motion.div>
+          </div>
+        </section>
+      ) : null}
 
       {flags.pricing ? (
         <HostingPlansCream
@@ -139,6 +144,7 @@ export function WebHostingPageView({
           titleAccent={page.pricingTitleAccent}
           description={page.pricingDescription}
           footnote={page.pricingNote}
+          className={hideHero ? "!pt-8 sm:!pt-10" : undefined}
         />
       ) : null}
 

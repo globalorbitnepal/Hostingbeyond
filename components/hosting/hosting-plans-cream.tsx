@@ -16,6 +16,7 @@ export function HostingPlansCream({
   titleAccent,
   description,
   footnote,
+  className,
 }: {
   plansContent: CmsHostingPlansContent;
   eyebrow: string;
@@ -23,6 +24,7 @@ export function HostingPlansCream({
   titleAccent: string;
   description: string;
   footnote: string;
+  className?: string;
 }) {
   const data = plansContent;
   const [billing, setBilling] = useState<Billing>(
@@ -41,7 +43,10 @@ export function HostingPlansCream({
   ].filter((c) => c.label);
 
   return (
-    <section id="plans" className="hb-band-cream scroll-mt-24 py-16 sm:py-20">
+    <section
+      id="plans"
+      className={cn("hb-band-cream scroll-mt-24 py-16 sm:py-20", className)}
+    >
       <div className="hb-shell">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-[11px] font-bold tracking-[0.28em] text-slate-500 uppercase">

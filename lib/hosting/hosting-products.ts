@@ -60,33 +60,45 @@ function revalidateHostingProducts() {
 }
 
 export async function listHostingProductsForAdmin() {
-  await ensureHostingProductsSeeded();
-  return prisma.hostingProduct.findMany({
-    include: {
-      plans: { orderBy: { sortOrder: "asc" } },
-    },
-    orderBy: [{ displayOrder: "asc" }, { name: "asc" }],
-  });
+  try {
+    await ensureHostingProductsSeeded();
+    return await prisma.hostingProduct.findMany({
+      include: {
+        plans: { orderBy: { sortOrder: "asc" } },
+      },
+      orderBy: [{ displayOrder: "asc" }, { name: "asc" }],
+    });
+  } catch {
+    return [];
+  }
 }
 
 export async function getHostingProductBySlug(slug: string) {
-  await ensureHostingProductsSeeded();
-  return prisma.hostingProduct.findUnique({
-    where: { slug },
-    include: {
-      plans: { where: { active: true }, orderBy: { sortOrder: "asc" } },
-    },
-  });
+  try {
+    await ensureHostingProductsSeeded();
+    return await prisma.hostingProduct.findUnique({
+      where: { slug },
+      include: {
+        plans: { where: { active: true }, orderBy: { sortOrder: "asc" } },
+      },
+    });
+  } catch {
+    return null;
+  }
 }
 
 export async function getHostingProductById(id: string) {
-  await ensureHostingProductsSeeded();
-  return prisma.hostingProduct.findUnique({
-    where: { id },
-    include: {
-      plans: { orderBy: { sortOrder: "asc" } },
-    },
-  });
+  try {
+    await ensureHostingProductsSeeded();
+    return await prisma.hostingProduct.findUnique({
+      where: { id },
+      include: {
+        plans: { orderBy: { sortOrder: "asc" } },
+      },
+    });
+  } catch {
+    return null;
+  }
 }
 
 export async function updateHostingProduct(
