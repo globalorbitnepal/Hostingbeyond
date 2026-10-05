@@ -494,23 +494,43 @@ function BusinessEmailBandImage({
     !artwork.includes("/people/") &&
     !artwork.trim().endsWith(".svg");
 
+  if (variant === "purple") {
+    return (
+      <div className="relative w-full bg-transparent lg:justify-self-start">
+        <div className="hb-be-marketing-art relative">
+          <Image
+            src={artwork}
+            alt={alt}
+            width={1600}
+            height={aspectHeight}
+            className="block h-auto max-h-[min(460px,58vh)] w-full max-w-full border-0 bg-transparent object-contain object-center shadow-none ring-0 outline-none lg:object-left"
+            sizes="(max-width: 1024px) 100vw, 560px"
+            unoptimized={
+              isRuntimeMediaSrc(artwork) ||
+              artwork.includes("/business-email/") ||
+              artwork.endsWith(".webp") ||
+              artwork.endsWith(".png") ||
+              artwork.endsWith(".jpg")
+            }
+          />
+        </div>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_90%_85%_at_35%_50%,transparent_42%,rgba(103,61,230,0.55)_78%,rgba(61,34,168,0.92)_100%)]"
+        />
+      </div>
+    );
+  }
+
   return (
-    <div
-      className={cn(
-        "relative w-full bg-transparent",
-        variant === "purple" ? "lg:justify-self-start" : "lg:justify-self-end",
-      )}
-    >
+    <div className="relative w-full bg-transparent lg:justify-self-end">
       <Image
         src={artwork}
         alt={alt}
         width={1600}
         height={aspectHeight}
         className={cn(
-          "block h-auto w-full max-w-full border-0 bg-transparent shadow-none ring-0 outline-none",
-          variant === "purple"
-            ? "max-h-[min(440px,56vh)] object-contain object-center lg:object-left"
-            : "object-contain object-center",
+          "block h-auto w-full max-w-full border-0 bg-transparent object-contain object-center shadow-none ring-0 outline-none",
           blendLight && "mix-blend-multiply",
         )}
         sizes="(max-width: 1024px) 100vw, 560px"

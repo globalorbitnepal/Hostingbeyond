@@ -218,6 +218,24 @@
       );
   }
 
+  /* Business email marketing art — soft edge fade into hb-band-purple */
+  .hb-be-marketing-art {
+    -webkit-mask-image: radial-gradient(
+      ellipse 108% 96% at 38% 50%,
+      #000 48%,
+      rgba(0, 0, 0, 0.92) 62%,
+      rgba(0, 0, 0, 0.35) 82%,
+      transparent 100%
+    );
+    mask-image: radial-gradient(
+      ellipse 108% 96% at 38% 50%,
+      #000 48%,
+      rgba(0, 0, 0, 0.92) 62%,
+      rgba(0, 0, 0, 0.35) 82%,
+      transparent 100%
+    );
+  }
+
   .hb-hero-continue,
   .hb-band-purple {
     background:
