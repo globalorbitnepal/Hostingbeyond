@@ -16,11 +16,7 @@ export async function HostingProductRoute({ slug }: { slug: string }) {
   ]);
 
   return (
-    <HostingProductSiteShell
-      sections={sections}
-      settings={settings}
-      overlayHero={slug === "web-hosting"}
-    >
+    <HostingProductSiteShell sections={sections} settings={settings}>
       {slug === "web-hosting" ? <WebHostingStructuredData /> : null}
       <HostingProductPage {...resolved} />
     </HostingProductSiteShell>
