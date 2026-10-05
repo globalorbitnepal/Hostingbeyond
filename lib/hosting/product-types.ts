@@ -18,8 +18,8 @@ export type HostingProductSectionFlags = {
 };
 
 export const DEFAULT_HOSTING_SECTION_FLAGS: HostingProductSectionFlags = {
-  breadcrumb: true,
-  trustBadges: true,
+  breadcrumb: false,
+  trustBadges: false,
   pricing: true,
   comparison: true,
   features: true,
