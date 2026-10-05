@@ -127,11 +127,13 @@ export function WebHostingPremiumHero() {
 
           <h1
             id="web-hosting-hero-title"
-            className="font-heading mt-5 text-[clamp(2.15rem,5.2vw,3.7rem)] leading-[1.08] font-extrabold tracking-[-0.045em]"
+            className="font-heading mt-5 text-[clamp(1.95rem,4.4vw,3.35rem)] leading-[1.08] font-extrabold tracking-[-0.045em]"
           >
-            <span className="text-white">Fast NVMe </span>
-            <span className="bg-gradient-to-r from-[#ddd6fe] to-[#c4b5fd] bg-clip-text text-transparent">
-              Web Hosting
+            <span className="lg:whitespace-nowrap">
+              <span className="text-white">Fast NVMe </span>
+              <span className="bg-gradient-to-r from-[#ddd6fe] to-[#c4b5fd] bg-clip-text text-transparent">
+                Web Hosting
+              </span>
             </span>
             <br />
             <span className="text-white">for </span>
