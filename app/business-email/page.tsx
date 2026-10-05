@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: "Business Email Hosting — Professional Email on Your Domain",
     description:
       "HostingBeyond Mail: AI-powered business email from $0.37/mo. Branded addresses on your domain, secure mail hosting, spam protection, and free migration help.",
-    image: "/images/business-email/marketing-reach-hero.webp",
+    image: "/images/business-email/marketing-reach-hero-v2.jpg",
   });
 }
 

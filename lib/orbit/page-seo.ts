@@ -315,7 +315,7 @@ export const PUBLIC_PAGE_SEO_REGISTRY: PublicPageSeoEntry[] = [
       ogTitle: "Business Email Hosting | HostingBeyond Mail",
       ogDescription:
         "Professional business email on your domain with AI writing, secure hosting, and plans from $0.37/mo.",
-      ogImage: "/images/business-email/marketing-reach-hero.webp",
+      ogImage: "/images/business-email/marketing-reach-hero-v2.jpg",
       twitterTitle: "Business Email Hosting | HostingBeyond",
       twitterDescription:
         "Branded business email with AI tools, secure mail hosting, and easy migration — from $0.37/mo.",

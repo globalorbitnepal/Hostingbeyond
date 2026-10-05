@@ -492,24 +492,24 @@ function BusinessEmailBandImage({
 
   if (variant === "purple") {
     return (
-      <div className="relative w-full overflow-hidden bg-transparent lg:justify-self-start">
-        <div className="hb-be-marketing-art relative origin-center scale-[1.08] lg:origin-left">
-          <Image
-            src={artwork}
-            alt={alt}
-            width={1600}
-            height={aspectHeight}
-            className="block h-auto max-h-[min(480px,60vh)] w-full max-w-full border-0 bg-transparent object-contain object-center shadow-none ring-0 outline-none lg:object-left"
-            sizes="(max-width: 1024px) 100vw, 560px"
-            unoptimized={
-              isRuntimeMediaSrc(artwork) ||
-              artwork.includes("/business-email/") ||
-              artwork.endsWith(".webp") ||
-              artwork.endsWith(".png") ||
-              artwork.endsWith(".jpg")
-            }
-          />
-        </div>
+      <div className="relative w-full bg-transparent lg:justify-self-start">
+        <Image
+          src={artwork}
+          alt={alt}
+          width={1920}
+          height={1080}
+          quality={92}
+          priority
+          className="block h-auto w-full max-w-full border-0 bg-transparent object-contain object-center shadow-none ring-0 outline-none lg:max-h-[min(520px,62vh)] lg:object-left"
+          sizes="(max-width: 1024px) 100vw, 640px"
+          unoptimized={
+            isRuntimeMediaSrc(artwork) ||
+            artwork.includes("/business-email/") ||
+            artwork.endsWith(".webp") ||
+            artwork.endsWith(".png") ||
+            artwork.endsWith(".jpg")
+          }
+        />
       </div>
     );
   }
