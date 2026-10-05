@@ -283,12 +283,17 @@ export function BusinessEmailPageView({
         </div>
       </section>
 
-      <section className="hb-band-purple py-16 text-white sm:py-20">
-        <div className="hb-shell grid items-center gap-10 lg:grid-cols-2">
+      <section className="hb-band-purple relative overflow-hidden py-16 text-white sm:py-20">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 left-0 w-[min(100%,58rem)] bg-[radial-gradient(ellipse_at_20%_50%,rgba(124,58,237,0.45),transparent_68%)]"
+        />
+        <div className="hb-shell relative grid items-center gap-8 lg:grid-cols-2 lg:gap-10">
           <BusinessEmailBandImage
             src={content.marketingImage}
             alt={content.marketingImageAlt}
-            aspectHeight={692}
+            aspectHeight={900}
+            variant="purple"
           />
           <div>
             <h2 className="font-heading text-[clamp(1.8rem,3.4vw,2.8rem)] font-extrabold tracking-[-0.04em] text-white">
@@ -473,27 +478,40 @@ function BusinessEmailBandImage({
   src,
   alt,
   aspectHeight = 900,
+  variant = "light",
 }: {
   src: string;
   alt: string;
   aspectHeight?: number;
+  /** Purple band: no multiply blend; artwork sits flush on gradient. */
+  variant?: "light" | "purple";
 }) {
   const artwork = src?.trim() || "";
   if (!artwork) return null;
 
-  const blend =
-    !artwork.includes("/people/") && !artwork.trim().endsWith(".svg");
+  const blendLight =
+    variant === "light" &&
+    !artwork.includes("/people/") &&
+    !artwork.trim().endsWith(".svg");
 
   return (
-    <div className="relative w-full bg-transparent lg:justify-self-end">
+    <div
+      className={cn(
+        "relative w-full bg-transparent",
+        variant === "purple" ? "lg:justify-self-start" : "lg:justify-self-end",
+      )}
+    >
       <Image
         src={artwork}
         alt={alt}
         width={1600}
         height={aspectHeight}
         className={cn(
-          "block h-auto w-full max-w-full border-0 bg-transparent object-contain object-center shadow-none ring-0 outline-none",
-          blend && "mix-blend-multiply",
+          "block h-auto w-full max-w-full border-0 bg-transparent shadow-none ring-0 outline-none",
+          variant === "purple"
+            ? "max-h-[min(440px,56vh)] object-contain object-center lg:object-left"
+            : "object-contain object-center",
+          blendLight && "mix-blend-multiply",
         )}
         sizes="(max-width: 1024px) 100vw, 560px"
         unoptimized={

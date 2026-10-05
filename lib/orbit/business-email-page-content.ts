@@ -402,8 +402,9 @@ export function defaultBusinessEmailPageContent(): CmsBusinessEmailPageContent {
       "Already have the inbox? Send campaigns, grow the list, and track performance with Beyond Reach — the marketing tool that sits next to HostingBeyond Mail.",
     marketingCtaLabel: "Explore Reach",
     marketingCtaHref: routes.beyondAi,
-    marketingImage: "/images/business-email/people/be-highfive.webp",
-    marketingImageAlt: "Marketers celebrating campaign results",
+    marketingImage: "/images/business-email/marketing-reach-hero.webp",
+    marketingImageAlt:
+      "Professional leaping through a purple email marketing workspace",
 
     reviewsHeading: "Join founders who switched their inbox",
     reviews: [
@@ -650,7 +651,17 @@ export function mergeBusinessEmailPageContent(
       defaults.marketingCtaLabel,
     ),
     marketingCtaHref: text(stored.marketingCtaHref, defaults.marketingCtaHref),
-    marketingImage: text(stored.marketingImage, defaults.marketingImage),
+    marketingImage: (() => {
+      const url = stored.marketingImage?.trim() || "";
+      if (
+        !url ||
+        url.includes("be-highfive") ||
+        url.includes("/people/be-highfive")
+      ) {
+        return defaults.marketingImage;
+      }
+      return text(url, defaults.marketingImage);
+    })(),
     marketingImageAlt: text(
       stored.marketingImageAlt,
       defaults.marketingImageAlt,
