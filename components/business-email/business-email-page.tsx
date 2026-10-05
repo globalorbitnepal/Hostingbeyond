@@ -276,29 +276,20 @@ export function BusinessEmailPageView({
               {content.migrateCtaLabel}
             </Link>
           </div>
-          <div className="overflow-hidden rounded-[28px] shadow-[0_28px_70px_-40px_rgba(47,28,106,0.35)]">
-            <Image
-              src={content.migrateImage}
-              alt={content.migrateImageAlt}
-              width={1600}
-              height={900}
-              className="h-[340px] w-full object-cover"
-            />
-          </div>
+          <BusinessEmailBandImage
+            src={content.migrateImage}
+            alt={content.migrateImageAlt}
+          />
         </div>
       </section>
 
       <section className="hb-band-purple py-16 text-white sm:py-20">
         <div className="hb-shell grid items-center gap-10 lg:grid-cols-2">
-          <div className="overflow-hidden rounded-[28px]">
-            <Image
-              src={content.marketingImage}
-              alt={content.marketingImageAlt}
-              width={1600}
-              height={692}
-              className="h-[340px] w-full object-cover"
-            />
-          </div>
+          <BusinessEmailBandImage
+            src={content.marketingImage}
+            alt={content.marketingImageAlt}
+            aspectHeight={692}
+          />
           <div>
             <h2 className="font-heading text-[clamp(1.8rem,3.4vw,2.8rem)] font-extrabold tracking-[-0.04em] text-white">
               {content.marketingHeading}
@@ -474,6 +465,40 @@ export function BusinessEmailPageView({
         </div>
       </section>
     </>
+  );
+}
+
+/** Full-bleed CMS artwork — no card frame, no crop (object-contain). */
+function BusinessEmailBandImage({
+  src,
+  alt,
+  aspectHeight = 900,
+}: {
+  src: string;
+  alt: string;
+  aspectHeight?: number;
+}) {
+  const artwork = src?.trim() || "";
+  if (!artwork) return null;
+
+  return (
+    <div className="relative w-full bg-transparent lg:justify-self-end">
+      <Image
+        src={artwork}
+        alt={alt}
+        width={1600}
+        height={aspectHeight}
+        className="block h-auto w-full max-w-full border-0 bg-transparent object-contain object-center shadow-none ring-0 outline-none"
+        sizes="(max-width: 1024px) 100vw, 560px"
+        unoptimized={
+          isRuntimeMediaSrc(artwork) ||
+          artwork.includes("/business-email/") ||
+          artwork.endsWith(".webp") ||
+          artwork.endsWith(".png") ||
+          artwork.endsWith(".jpg")
+        }
+      />
+    </div>
   );
 }
 
