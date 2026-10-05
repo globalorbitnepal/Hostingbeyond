@@ -19,6 +19,7 @@ import {
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 import { BusinessEmailHeroVisual } from "@/components/business-email/business-email-hero-visual";
+import { BusinessEmailPricingSection } from "@/components/business-email/business-email-pricing-section";
 import { MailWorkspace } from "@/components/business-email/mail-workspace";
 import { routes } from "@/config/routes";
 import type {
@@ -45,7 +46,6 @@ export function BusinessEmailPageView({
     (t) => t.visible !== false,
   );
   const plans = content.plans.filter((p) => p.visible !== false);
-  const included = content.included;
   const faqs = content.faqs.filter((f) => f.visible !== false);
   const reviews = content.reviews.filter((r) => r.visible !== false);
   const aiFeatures = content.aiFeatures.filter((f) => f.visible !== false);
@@ -54,7 +54,6 @@ export function BusinessEmailPageView({
 
   const [tab, setTab] = useState(impressionTabs[0]?.id ?? "setup");
   const [openFaq, setOpenFaq] = useState(0);
-  const [term, setTerm] = useState("48");
   const active =
     impressionTabs.find((item) => item.id === tab) ?? impressionTabs[0];
 
@@ -197,179 +196,7 @@ export function BusinessEmailPageView({
         </section>
       ) : null}
 
-      <section
-        id="pricing"
-        className="hb-band-purple relative overflow-hidden py-16 antialiased sm:py-20 lg:py-24"
-      >
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(255,255,255,0.14),transparent_52%),radial-gradient(ellipse_at_0%_100%,rgba(147,197,253,0.12),transparent_45%)]"
-        />
-        <div className="hb-shell relative">
-          <div className="mx-auto max-w-4xl text-center">
-            <h2 className="font-heading text-[clamp(2rem,4.2vw,3.15rem)] leading-[1.08] font-extrabold tracking-[-0.045em] text-white [text-shadow:0_2px_24px_rgba(15,8,40,0.35)]">
-              {content.pricingHeading}
-            </h2>
-            <ul className="mt-6 flex flex-wrap items-center justify-center gap-2.5 sm:gap-3">
-              {[
-                content.pricingTrust1,
-                content.pricingTrust2,
-                content.pricingTrust3,
-              ]
-                .filter(Boolean)
-                .map((line) => (
-                  <li
-                    key={line}
-                    className="inline-flex min-h-10 items-center gap-2 rounded-full border border-white/25 bg-white/12 px-4 py-2 text-[13px] font-bold text-white shadow-[0_8px_24px_-12px_rgba(0,0,0,0.35)] backdrop-blur-md sm:text-[14px]"
-                  >
-                    <Check
-                      className="size-4 shrink-0 text-emerald-300"
-                      strokeWidth={2.75}
-                    />
-                    {line}
-                  </li>
-                ))}
-            </ul>
-            <div className="mt-7 flex justify-center">
-              <label className="inline-flex min-h-11 items-center gap-2.5 rounded-full border border-white/30 bg-white px-4 py-2 text-[13px] font-bold text-[#2f1c6a] shadow-[0_12px_32px_-16px_rgba(0,0,0,0.4)] sm:text-[14px]">
-                <span className="text-[#5b21b6]/80">Period</span>
-                <select
-                  value={term}
-                  onChange={(event) => setTerm(event.target.value)}
-                  className="cursor-pointer bg-transparent font-extrabold text-[#2f1c6a] outline-none [&_option]:text-slate-900"
-                  aria-label="Billing period in months"
-                >
-                  <option value="48">48 months</option>
-                  <option value="24">24 months</option>
-                  <option value="12">12 months</option>
-                </select>
-              </label>
-            </div>
-          </div>
-
-          <div className="mt-12 grid gap-5 lg:mt-14 lg:grid-cols-3 lg:items-stretch lg:gap-6">
-            {plans.map((plan, index) => {
-              const displayPrice =
-                term === "12"
-                  ? plan.renew
-                  : term === "24"
-                    ? plan.price24
-                    : plan.price;
-              return (
-                <motion.article
-                  key={plan.id}
-                  initial={reduce ? false : { opacity: 0, y: 18 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.05 }}
-                  className={cn(
-                    "relative flex flex-col rounded-[26px] border bg-white p-6 shadow-[0_20px_50px_-24px_rgba(15,8,40,0.45)] sm:p-7",
-                    plan.popular
-                      ? "z-[1] border-[#c4b5fd] ring-2 ring-[#a78bfa]/50 lg:-mt-1 lg:mb-1 lg:scale-[1.02] lg:shadow-[0_28px_70px_-28px_rgba(103,61,230,0.55)]"
-                      : "border-slate-200/90",
-                  )}
-                >
-                  <span className="absolute top-5 right-5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-extrabold tracking-wide text-emerald-800 ring-1 ring-emerald-200/80">
-                    {plan.off}
-                  </span>
-                  {plan.popular ? (
-                    <p className="mb-3 inline-flex w-fit rounded-full bg-[#ede9fe] px-2.5 py-0.5 text-[11px] font-extrabold tracking-[0.12em] text-[#5b21b6] uppercase">
-                      Most popular
-                    </p>
-                  ) : (
-                    <p className="mb-3 h-[22px]" aria-hidden />
-                  )}
-                  <h3 className="font-heading text-[1.85rem] leading-tight font-extrabold tracking-[-0.03em] text-[#0f172a] sm:text-[2rem]">
-                    {plan.name}
-                  </h3>
-                  <p className="mt-1.5 text-[14px] leading-snug font-semibold text-slate-600">
-                    Best for {plan.bestFor}
-                  </p>
-                  <p className="mt-6 text-[15px] font-bold text-slate-400 line-through decoration-slate-300">
-                    {plan.original}
-                  </p>
-                  <p className="mt-1 flex items-end gap-1.5">
-                    <span className="text-[clamp(2.35rem,4.5vw,2.85rem)] leading-none font-extrabold tracking-[-0.04em] text-[#0f172a]">
-                      {displayPrice}
-                    </span>
-                    <span className="pb-1.5 text-[15px] font-extrabold text-slate-600">
-                      /mo
-                    </span>
-                  </p>
-                  <p className="mt-2.5 text-[13px] leading-relaxed font-medium text-slate-600">
-                    Price per mailbox · {term}-month term · Renews at{" "}
-                    <span className="font-bold text-slate-800">
-                      {plan.renew}
-                    </span>
-                    /mo
-                  </p>
-                  <div className="mt-5 space-y-1 border-t border-slate-100 pt-5">
-                    <p className="text-[14px] font-extrabold text-[#2f1c6a]">
-                      {plan.mailboxes}
-                    </p>
-                    <p className="text-[14px] font-semibold text-slate-700">
-                      {plan.storage}
-                    </p>
-                    <p className="text-[13px] font-medium text-slate-600">
-                      {plan.extras}
-                    </p>
-                  </div>
-                  <Link
-                    href={routes.signup}
-                    className={cn(
-                      "mt-6 inline-flex min-h-12 touch-manipulation items-center justify-center rounded-xl text-[15px] font-extrabold transition-all duration-200",
-                      plan.popular
-                        ? "bg-gradient-to-r from-[#673de6] to-[#7c3aed] text-white shadow-[0_10px_28px_-8px_rgba(103,61,230,0.65)] hover:brightness-105"
-                        : "border-2 border-slate-200 bg-white text-[#1e1b4b] hover:border-[#c4b5fd] hover:bg-[#faf5ff]",
-                    )}
-                  >
-                    Choose plan
-                  </Link>
-                  <p className="mt-6 text-[11px] font-extrabold tracking-[0.14em] text-slate-400 uppercase">
-                    Benefits
-                  </p>
-                  <ul className="mt-3 flex-1 space-y-2.5">
-                    {plan.features.map((item) => (
-                      <li
-                        key={item}
-                        className="flex gap-2.5 text-[14px] leading-snug font-semibold text-slate-700"
-                      >
-                        <span className="mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-[#ede9fe] text-[#673de6]">
-                          <Check className="size-3" strokeWidth={3} />
-                        </span>
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </motion.article>
-              );
-            })}
-          </div>
-
-          <div className="mt-16 lg:mt-20">
-            <h3 className="font-heading text-center text-[clamp(1.5rem,3vw,2rem)] font-extrabold tracking-[-0.03em] text-white [text-shadow:0_2px_20px_rgba(15,8,40,0.3)]">
-              {content.includedHeading}
-            </h3>
-            <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
-              {included.map((item) => (
-                <p
-                  key={item}
-                  className="flex min-h-[3.25rem] items-start gap-2.5 rounded-2xl border border-white/35 bg-white/95 px-4 py-3.5 text-[14px] leading-snug font-bold text-[#1e293b] shadow-[0_12px_32px_-20px_rgba(0,0,0,0.35)] backdrop-blur-sm sm:text-[15px]"
-                >
-                  <Check
-                    className="mt-0.5 size-4 shrink-0 text-emerald-600"
-                    strokeWidth={2.75}
-                  />
-                  {item}
-                </p>
-              ))}
-            </div>
-            <p className="mx-auto mt-8 max-w-3xl text-center text-[13px] leading-relaxed font-medium text-white/85 sm:text-[14px]">
-              {content.includedFootnote}
-            </p>
-          </div>
-        </div>
-      </section>
+      <BusinessEmailPricingSection content={content} plans={plans} />
 
       <section className="hb-band-cream py-16 sm:py-20">
         <div className="hb-shell">

@@ -88,6 +88,11 @@ export type CmsBusinessEmailPageContent = {
   impressionTabs: CmsBusinessEmailImpressionTab[];
 
   pricingHeading: string;
+  pricingBadge: string;
+  pricingTitle: string;
+  pricingTitleAccent: string;
+  pricingSubheading: string;
+  pricingSaveBadge: string;
   pricingTrust1: string;
   pricingTrust2: string;
   pricingTrust3: string;
@@ -247,19 +252,25 @@ export function defaultBusinessEmailPageContent(): CmsBusinessEmailPageContent {
     ],
 
     pricingHeading: "Purchase your AI-powered business email plan",
+    pricingBadge: "AI POWERED BUSINESS EMAIL",
+    pricingTitle: "Professional Email for",
+    pricingTitleAccent: "Your Business",
+    pricingSubheading:
+      "Secure, reliable and AI-powered email hosting with everything you need to stay productive.",
+    pricingSaveBadge: "Save up to 88%",
     pricingTrust1: "30-day money-back guarantee",
     pricingTrust2: "Cancel anytime",
-    pricingTrust3: "24/7 support",
+    pricingTrust3: "24/7 expert support",
     includedHeading: "Every plan has everything you need and more",
     included: [
-      "Spam, virus, phishing protection",
-      "Access email on any app or device",
+      "Spam, virus & phishing protection",
+      "Your data stays private",
+      "Web, mobile & desktop apps",
+      "Reliable & secure infrastructure",
+      "Move from any provider",
+      "We're always here for you",
       "Track mailbox activity with audit logs",
-      "Keep data safe with encryption in transit",
-      "Easily migrate your emails",
       "Set auto-replies when you are away",
-      "Forward emails to any other address",
-      "Catch emails sent to mistyped addresses",
       "Fast, clean, easy-to-use webmail",
     ],
     includedFootnote:
@@ -592,6 +603,17 @@ export function mergeBusinessEmailPageContent(
       defaults.impressionCtaHref,
     ),
     pricingHeading: text(stored.pricingHeading, defaults.pricingHeading),
+    pricingBadge: text(stored.pricingBadge, defaults.pricingBadge),
+    pricingTitle: text(stored.pricingTitle, defaults.pricingTitle),
+    pricingTitleAccent: text(
+      stored.pricingTitleAccent,
+      defaults.pricingTitleAccent,
+    ),
+    pricingSubheading: text(
+      stored.pricingSubheading,
+      defaults.pricingSubheading,
+    ),
+    pricingSaveBadge: text(stored.pricingSaveBadge, defaults.pricingSaveBadge),
     pricingTrust1: text(stored.pricingTrust1, defaults.pricingTrust1),
     pricingTrust2: text(stored.pricingTrust2, defaults.pricingTrust2),
     pricingTrust3: text(stored.pricingTrust3, defaults.pricingTrust3),
