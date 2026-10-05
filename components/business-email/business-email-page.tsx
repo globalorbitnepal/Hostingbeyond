@@ -284,10 +284,6 @@ export function BusinessEmailPageView({
       </section>
 
       <section className="hb-band-purple relative overflow-hidden py-16 text-white sm:py-20">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-y-0 left-0 w-[min(100%,58rem)] bg-[radial-gradient(ellipse_at_20%_50%,rgba(124,58,237,0.45),transparent_68%)]"
-        />
         <div className="hb-shell relative grid items-center gap-8 lg:grid-cols-2 lg:gap-10">
           <BusinessEmailBandImage
             src={content.marketingImage}
@@ -496,14 +492,14 @@ function BusinessEmailBandImage({
 
   if (variant === "purple") {
     return (
-      <div className="relative w-full bg-transparent lg:justify-self-start">
-        <div className="hb-be-marketing-art relative">
+      <div className="relative w-full overflow-hidden bg-transparent lg:justify-self-start">
+        <div className="hb-be-marketing-art relative origin-center scale-[1.08] lg:origin-left">
           <Image
             src={artwork}
             alt={alt}
             width={1600}
             height={aspectHeight}
-            className="block h-auto max-h-[min(460px,58vh)] w-full max-w-full border-0 bg-transparent object-contain object-center shadow-none ring-0 outline-none lg:object-left"
+            className="block h-auto max-h-[min(480px,60vh)] w-full max-w-full border-0 bg-transparent object-contain object-center shadow-none ring-0 outline-none lg:object-left"
             sizes="(max-width: 1024px) 100vw, 560px"
             unoptimized={
               isRuntimeMediaSrc(artwork) ||
@@ -514,10 +510,6 @@ function BusinessEmailBandImage({
             }
           />
         </div>
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_90%_85%_at_35%_50%,transparent_42%,rgba(103,61,230,0.55)_78%,rgba(61,34,168,0.92)_100%)]"
-        />
       </div>
     );
   }

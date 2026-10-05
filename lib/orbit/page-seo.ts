@@ -307,8 +307,18 @@ export const PUBLIC_PAGE_SEO_REGISTRY: PublicPageSeoEntry[] = [
     path: "/business-email",
     editorHref: "/orbit/business-email",
     defaultSeo: {
+      metaTitle: "Business Email Hosting — Professional Email on Your Domain",
+      metaDescription:
+        "HostingBeyond Mail: AI-powered business email from $0.37/mo. Branded addresses on your domain, secure mail hosting, spam protection, and free migration help.",
       keywords:
-        "business email hosting, professional email, branded email, SPF DKIM email, domain email",
+        "business email hosting, professional email, custom domain email, AI email, branded business email, email migration, SPF DKIM hosting, HostingBeyond Mail",
+      ogTitle: "Business Email Hosting | HostingBeyond Mail",
+      ogDescription:
+        "Professional business email on your domain with AI writing, secure hosting, and plans from $0.37/mo.",
+      ogImage: "/images/business-email/marketing-reach-hero.webp",
+      twitterTitle: "Business Email Hosting | HostingBeyond",
+      twitterDescription:
+        "Branded business email with AI tools, secure mail hosting, and easy migration — from $0.37/mo.",
     },
   },
   {
