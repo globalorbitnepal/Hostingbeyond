@@ -270,42 +270,22 @@
       linear-gradient(180deg, #cfe3fb 0%, #e8eeff 48%, #f4f7ff 100%);
   }
 
-  /* Business email impression: flat white center; cream-blue only at top/bottom edges */
+  /* Business email impression — same soft band as cream (no white “card” behind artwork) */
   .hb-band-impression {
     position: relative;
     isolation: isolate;
-    background: #ffffff;
-  }
-
-  .hb-band-impression::before,
-  .hb-band-impression::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    z-index: 0;
-    height: min(9rem, 22vh);
-    pointer-events: none;
-  }
-
-  .hb-band-impression::before {
-    top: 0;
-    background: linear-gradient(
-      180deg,
-      #e8eeff 0%,
-      rgba(232, 238, 255, 0.55) 45%,
-      transparent 100%
-    );
-  }
-
-  .hb-band-impression::after {
-    bottom: 0;
-    background: linear-gradient(
-      0deg,
-      #e8eeff 0%,
-      rgba(232, 238, 255, 0.55) 45%,
-      transparent 100%
-    );
+    background:
+      radial-gradient(
+        ellipse at 8% 0%,
+        rgba(147, 197, 253, 0.48),
+        transparent 48%
+      ),
+      radial-gradient(
+        ellipse at 94% 100%,
+        rgba(167, 139, 250, 0.22),
+        transparent 50%
+      ),
+      linear-gradient(180deg, #cfe3fb 0%, #e8eeff 48%, #f4f7ff 100%);
   }
 
   .hb-band-impression > .hb-shell {

@@ -173,7 +173,7 @@ export function BusinessEmailPageView({
                 </AnimatePresence>
               </div>
 
-              <div className="relative w-full overflow-visible lg:justify-self-end lg:pl-2">
+              <div className="relative w-full bg-transparent lg:justify-self-end lg:pl-2">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={active.image}
@@ -481,6 +481,9 @@ function BusinessEmailBandImage({
   const artwork = src?.trim() || "";
   if (!artwork) return null;
 
+  const blend =
+    !artwork.includes("/people/") && !artwork.trim().endsWith(".svg");
+
   return (
     <div className="relative w-full bg-transparent lg:justify-self-end">
       <Image
@@ -488,7 +491,10 @@ function BusinessEmailBandImage({
         alt={alt}
         width={1600}
         height={aspectHeight}
-        className="block h-auto w-full max-w-full border-0 bg-transparent object-contain object-center shadow-none ring-0 outline-none"
+        className={cn(
+          "block h-auto w-full max-w-full border-0 bg-transparent object-contain object-center shadow-none ring-0 outline-none",
+          blend && "mix-blend-multiply",
+        )}
         sizes="(max-width: 1024px) 100vw, 560px"
         unoptimized={
           isRuntimeMediaSrc(artwork) ||
