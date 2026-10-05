@@ -21,6 +21,7 @@ import {
   type HostingWebSpecifications,
 } from "./product-types";
 import { getRegistryEntryBySlug } from "./products-registry";
+import { applyProductPlansTrustChips } from "./product-plans-trust-chips";
 import {
   polishWebHostingPageContent,
   polishWebHostingPlans,
@@ -101,9 +102,16 @@ export async function loadHostingProductPage(
   };
 
   /** Pricing: HostingProductPlan rows when the product exists; home CMS only if DB product is unavailable. */
-  const hostingPlans = product
+  let hostingPlans = product
     ? dbPlansToCmsHostingPlans(resolvedSlug, product.plans)
     : ((await getHomeSections()).hostingPlans ?? defaultHostingPlansSection());
+
+  const productDisplayName = product?.name ?? registry!.name;
+  hostingPlans = applyProductPlansTrustChips(
+    resolvedSlug,
+    productDisplayName,
+    hostingPlans,
+  );
 
   if (!product) {
     const page = legacy.standard ?? (await getHostingPageContent());

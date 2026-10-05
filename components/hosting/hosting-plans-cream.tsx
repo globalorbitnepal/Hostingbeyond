@@ -2,49 +2,76 @@
 
 import { useState } from "react";
 import type { LucideIcon } from "lucide-react";
-import { Cloud, Headphones, Shield, Zap } from "lucide-react";
+import {
+  Cloud,
+  Code2,
+  Headphones,
+  Server,
+  Shield,
+  ShoppingBag,
+  TrendingUp,
+  Users,
+  Zap,
+} from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 
 import { PlanCard } from "@/components/home/hosting-plans-section";
+import type { CmsHostingPlansWithTrustIcons } from "@/lib/hosting/product-plans-trust-chips";
+import type {
+  PlansTrustChipIcon,
+  PlansTrustChipSlot,
+} from "@/lib/hosting/product-plans-trust-chips";
 import type { CmsHostingPlansContent } from "@/lib/orbit/defaults";
 import { cn } from "@/lib/utils";
 
 type Billing = "annually" | "monthly";
 
-const CHIP_STYLES: Record<
-  string,
-  { icon: LucideIcon; iconBg: string; iconColor: string }
-> = {
-  support: {
-    icon: Headphones,
-    iconBg: "bg-gradient-to-br from-[#7c3aed] to-[#673de6]",
-    iconColor: "text-white",
-  },
-  activation: {
-    icon: Zap,
-    iconBg: "bg-gradient-to-br from-[#2563eb] to-[#3b82f6]",
-    iconColor: "text-white",
-  },
-  uptime: {
-    icon: Shield,
-    iconBg: "bg-gradient-to-br from-[#059669] to-[#10b981]",
-    iconColor: "text-white",
-  },
-  scale: {
-    icon: Cloud,
-    iconBg: "bg-gradient-to-br from-[#0891b2] to-[#22d3ee]",
-    iconColor: "text-white",
-  },
+const ICON_MAP: Record<PlansTrustChipIcon, LucideIcon> = {
+  headphones: Headphones,
+  zap: Zap,
+  shield: Shield,
+  trending: TrendingUp,
+  cloud: Cloud,
+  server: Server,
+  code: Code2,
+  shopping: ShoppingBag,
+  users: Users,
 };
 
-function chipKey(label: string, index: number) {
-  const l = label.toLowerCase();
-  if (l.includes("support")) return "support";
-  if (l.includes("activ")) return "activation";
-  if (l.includes("uptime")) return "uptime";
-  if (l.includes("scal")) return "scale";
-  return ["support", "activation", "uptime", "scale"][index] ?? "scale";
-}
+const SLOT_ORDER: PlansTrustChipSlot[] = [
+  "support",
+  "activation",
+  "uptime",
+  "scale",
+];
+
+const SLOT_LABEL: Record<
+  PlansTrustChipSlot,
+  {
+    labelKey: keyof CmsHostingPlansContent;
+    hintKey: keyof CmsHostingPlansContent;
+  }
+> = {
+  support: { labelKey: "supportLabel", hintKey: "supportHint" },
+  activation: { labelKey: "activationLabel", hintKey: "activationHint" },
+  uptime: { labelKey: "uptimeLabel", hintKey: "uptimeHint" },
+  scale: { labelKey: "scaleLabel", hintKey: "scaleHint" },
+};
+
+const DEFAULT_SLOT_ICONS: Record<PlansTrustChipSlot, PlansTrustChipIcon> = {
+  support: "headphones",
+  activation: "zap",
+  uptime: "shield",
+  scale: "trending",
+};
+
+/** Purple family only — matches plan cards and site theme. */
+const SLOT_ICON_BG: Record<PlansTrustChipSlot, string> = {
+  support: "bg-gradient-to-br from-[#673de6] to-[#7c3aed]",
+  activation: "bg-gradient-to-br from-[#5b21b6] to-[#673de6]",
+  uptime: "bg-gradient-to-br from-[#7c3aed] to-[#9333ea]",
+  scale: "bg-gradient-to-br from-[#6d28d9] to-[#8b5cf6]",
+};
 
 export function HostingPlansCream({
   plansContent,
@@ -56,7 +83,7 @@ export function HostingPlansCream({
   className,
   productCheckoutSlug,
 }: {
-  plansContent: CmsHostingPlansContent;
+  plansContent: CmsHostingPlansContent | CmsHostingPlansWithTrustIcons;
   eyebrow: string;
   title: string;
   titleAccent: string;
@@ -65,7 +92,7 @@ export function HostingPlansCream({
   className?: string;
   productCheckoutSlug?: string;
 }) {
-  const data = plansContent;
+  const data = plansContent as CmsHostingPlansWithTrustIcons;
   const reduce = useReducedMotion();
   const [billing, setBilling] = useState<Billing>(
     data.defaultBilling === "monthly" ? "monthly" : "annually",
@@ -75,12 +102,21 @@ export function HostingPlansCream({
     .filter((p) => p.visible !== false)
     .sort((a, b) => a.order - b.order);
 
-  const chips = [
-    { label: data.supportLabel, hint: data.supportHint },
-    { label: data.activationLabel, hint: data.activationHint },
-    { label: data.uptimeLabel, hint: data.uptimeHint },
-    { label: data.scaleLabel, hint: data.scaleHint },
-  ].filter((c) => c.label);
+  const iconOverrides = data.trustChipIcons ?? {};
+
+  const chips = SLOT_ORDER.map((slot) => {
+    const { labelKey, hintKey } = SLOT_LABEL[slot];
+    const label = String(data[labelKey] ?? "").trim();
+    if (!label) return null;
+    const hint = String(data[hintKey] ?? "").trim();
+    const iconKey = iconOverrides[slot] ?? DEFAULT_SLOT_ICONS[slot];
+    return { slot, label, hint, iconKey };
+  }).filter(Boolean) as Array<{
+    slot: PlansTrustChipSlot;
+    label: string;
+    hint: string;
+    iconKey: PlansTrustChipIcon;
+  }>;
 
   const fade = (delay = 0) =>
     reduce
@@ -126,35 +162,33 @@ export function HostingPlansCream({
         </motion.div>
 
         {chips.length > 0 ? (
-          <ul className="mx-auto mt-10 grid max-w-5xl grid-cols-1 gap-3 min-[400px]:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+          <ul className="mx-auto mt-10 grid max-w-5xl grid-cols-1 gap-3 min-[420px]:grid-cols-2 sm:gap-4 lg:grid-cols-4">
             {chips.map((item, index) => {
-              const key = chipKey(item.label, index);
-              const style = CHIP_STYLES[key];
-              const Icon = style.icon;
+              const Icon = ICON_MAP[item.iconKey] ?? TrendingUp;
               return (
                 <motion.li
-                  key={item.label}
+                  key={item.slot}
                   {...fade(0.06 + index * 0.04)}
-                  className="flex min-h-[5.5rem] items-start gap-3 rounded-2xl border border-white/90 bg-white/75 p-4 shadow-[0_12px_32px_-18px_rgba(47,28,106,0.2)] backdrop-blur-sm sm:min-h-[6rem] sm:p-4"
+                  className="flex items-center gap-3 rounded-2xl border border-white/90 bg-white/80 p-3.5 shadow-[0_12px_32px_-18px_rgba(47,28,106,0.2)] backdrop-blur-sm sm:p-4"
                 >
                   <span
                     className={cn(
-                      "inline-flex size-11 shrink-0 items-center justify-center rounded-xl shadow-[0_8px_20px_-8px_rgba(47,28,106,0.45)]",
-                      style.iconBg,
+                      "inline-flex size-10 shrink-0 items-center justify-center rounded-xl shadow-[0_8px_20px_-8px_rgba(103,61,230,0.55)] sm:size-11",
+                      SLOT_ICON_BG[item.slot],
                     )}
                   >
                     <Icon
-                      className={cn("size-5", style.iconColor)}
+                      className="size-[1.15rem] text-white sm:size-5"
                       strokeWidth={2.25}
                       aria-hidden
                     />
                   </span>
-                  <span className="min-w-0 pt-0.5 text-left">
-                    <span className="block text-[13px] leading-snug font-extrabold text-[#2f1c6a] sm:text-[14px]">
+                  <span className="min-w-0 flex-1 text-left">
+                    <span className="block text-[13px] leading-snug font-extrabold break-words text-[#2f1c6a] sm:text-[14px]">
                       {item.label}
                     </span>
                     {item.hint ? (
-                      <span className="mt-1 block text-[12px] leading-snug font-medium text-slate-500 sm:text-[13px]">
+                      <span className="mt-0.5 block text-[12px] leading-snug font-medium break-words text-slate-500 sm:text-[13px]">
                         {item.hint}
                       </span>
                     ) : null}

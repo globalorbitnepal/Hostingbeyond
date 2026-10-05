@@ -43,6 +43,8 @@ export function HostingProductPage(props: HostingProductPageProps) {
         <CloudHostingPageView
           page={page}
           productCheckoutSlug={props.slug}
+          productSlug={props.slug}
+          productName={props.name}
           hideHero
         />
         {flags.specs ? (

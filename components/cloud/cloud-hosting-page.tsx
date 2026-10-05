@@ -18,6 +18,7 @@ import {
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 import { HostingPlansCream } from "@/components/hosting/hosting-plans-cream";
+import { applyProductPlansTrustChips } from "@/lib/hosting/product-plans-trust-chips";
 import type { CmsHostingPlansContent } from "@/lib/orbit/defaults";
 import type {
   CmsCloudHostingPageContent,
@@ -37,10 +38,14 @@ const FEATURE_ICONS: Record<CmsCloudPageFeature["icon"], typeof Cpu> = {
 export function CloudHostingPageView({
   page,
   productCheckoutSlug,
+  productSlug = "business-hosting",
+  productName = "Business Hosting",
   hideHero = false,
 }: {
   page: CmsCloudHostingPageContent;
   productCheckoutSlug?: string;
+  productSlug?: string;
+  productName?: string;
   hideHero?: boolean;
 }) {
   const reduce = useReducedMotion();
@@ -49,28 +54,29 @@ export function CloudHostingPageView({
   const [openFaq, setOpenFaq] = useState(0);
 
   const plansContent: CmsHostingPlansContent = useMemo(
-    () => ({
-      visible: true,
-      eyebrow: "",
-      title: "",
-      titleAccent: "",
-      description: "",
-      supportLabel: "24/7 Expert Support",
-      supportHint: "Cloud specialists on chat",
-      activationLabel: "Instant provisioning",
-      activationHint: "Live in minutes",
-      uptimeLabel: "99.9% uptime",
-      uptimeHint: "Monitored infrastructure",
-      scaleLabel: "One-click upgrades",
-      scaleHint: "Grow without downtime",
-      saveBadge: page.saveBadge,
-      annualToggleLabel: page.annualToggleLabel,
-      monthlyToggleLabel: page.monthlyToggleLabel,
-      defaultBilling: page.defaultBilling,
-      plans: page.plans,
-      guarantees: [],
-    }),
-    [page],
+    () =>
+      applyProductPlansTrustChips(productSlug, productName, {
+        visible: true,
+        eyebrow: "",
+        title: "",
+        titleAccent: "",
+        description: "",
+        supportLabel: "",
+        supportHint: "",
+        activationLabel: "",
+        activationHint: "",
+        uptimeLabel: "",
+        uptimeHint: "",
+        scaleLabel: "",
+        scaleHint: "",
+        saveBadge: page.saveBadge,
+        annualToggleLabel: page.annualToggleLabel,
+        monthlyToggleLabel: page.monthlyToggleLabel,
+        defaultBilling: page.defaultBilling,
+        plans: page.plans,
+        guarantees: [],
+      }),
+    [page, productSlug, productName],
   );
 
   const visiblePlans = page.plans.filter((p) => p.visible !== false);
