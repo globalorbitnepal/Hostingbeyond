@@ -3,21 +3,15 @@
 import Image from "next/image";
 
 import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
-import { cn } from "@/lib/utils";
 
 const DEFAULT_ART = "/images/business-email/hero-custom.webp";
 const BASE_MAX_PX = 620;
 
-function isPortraitPhoto(src: string) {
+function isPortraitOnly(src: string) {
   const s = src.trim();
-  return s.includes("/people/") && !s.includes("hero-custom");
-}
-
-/** Flat marketing art on light bands — white canvas in uploads blends into section bg. */
-function shouldBlendArtwork(src: string) {
-  const s = src.trim();
-  if (!s || s.endsWith(".svg") || isPortraitPhoto(s)) return false;
-  return true;
+  return (
+    s.endsWith(".svg") || (s.includes("/people/") && !s.includes("hero-custom"))
+  );
 }
 
 type Props = {
@@ -34,30 +28,48 @@ export function BusinessEmailHeroVisual({
   const artwork = src?.trim() || DEFAULT_ART;
   const scale = Math.min(200, Math.max(80, scalePercent)) / 100;
   const maxWidth = Math.round(BASE_MAX_PX * scale);
-  const blend = shouldBlendArtwork(artwork);
+
+  if (!isPortraitOnly(artwork)) {
+    return (
+      <div
+        className="relative mx-auto w-full bg-transparent"
+        style={{ maxWidth: `${maxWidth}px` }}
+      >
+        <div className="relative overflow-visible bg-transparent">
+          <Image
+            src={artwork}
+            alt={alt}
+            width={1024}
+            height={576}
+            priority={/hero-custom/i.test(artwork)}
+            className="relative -ml-[2%] block h-auto w-[106%] max-w-none border-0 bg-transparent object-contain shadow-none ring-0 outline-none"
+            sizes={`(max-width: 1024px) 100vw, ${maxWidth}px`}
+            unoptimized={
+              isRuntimeMediaSrc(artwork) ||
+              artwork.includes("/business-email/") ||
+              artwork.endsWith(".webp")
+            }
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
-      className="relative mx-auto w-full max-w-full bg-transparent"
+      className="relative mx-auto aspect-[4/3] min-h-[300px] w-full overflow-hidden rounded-[24px] shadow-[0_20px_50px_-36px_rgba(47,28,106,0.25)]"
       style={{ maxWidth: `${maxWidth}px` }}
     >
       <Image
         src={artwork}
         alt={alt}
-        width={1600}
-        height={900}
-        priority={/hero-custom/i.test(artwork)}
-        className={cn(
-          "block h-auto w-full max-w-full border-0 bg-transparent object-contain object-center shadow-none ring-0 outline-none",
-          blend && "mix-blend-multiply",
-        )}
+        fill
+        className="object-cover object-center"
         sizes={`(max-width: 1024px) 100vw, ${maxWidth}px`}
         unoptimized={
           isRuntimeMediaSrc(artwork) ||
           artwork.includes("/business-email/") ||
-          artwork.endsWith(".webp") ||
-          artwork.endsWith(".png") ||
-          artwork.endsWith(".jpg")
+          artwork.endsWith(".webp")
         }
       />
     </div>
