@@ -21,7 +21,10 @@ export const routes = {
   login: "/login",
   signup: "/signup",
   account: "/account",
+  accountWallet: "/account/wallet",
+  myDomains: "/account/my-domains",
   getStarted: "/signup",
+  domainCheckout: "/get-started",
 } as const;
 
 export type AppRoute = (typeof routes)[keyof typeof routes];

@@ -8,6 +8,7 @@ import { DomainPremiumVideoLayer } from "@/components/domains/domain-premium-med
 import { isBuiltInBentoVideo } from "@/lib/domains/bento-media";
 import { isVideoMediaSrc } from "@/lib/domains/media";
 import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
+import { SUPPORTED_TLD_COUNT } from "@/lib/domains/tlds";
 import { cn } from "@/lib/utils";
 
 export type ShowcaseLayout =
@@ -130,7 +131,7 @@ function RegistrarArt() {
           </span>
         </div>
         <p className="mt-3 text-[11px] font-semibold text-slate-500">
-          300+ extensions · renewal shown upfront
+          {SUPPORTED_TLD_COUNT} priced extensions · renewal shown upfront
         </p>
       </div>
     </div>

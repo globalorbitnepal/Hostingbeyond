@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
+import { MigrationRequestForm } from "@/components/migration/migration-request-form";
 import { HostingPlansCream } from "@/components/hosting/hosting-plans-cream";
 import type { CmsHostingPlansContent } from "@/lib/orbit/defaults";
 import type {
@@ -323,6 +324,8 @@ export function WebsiteMigrationPageView({
           </div>
         </div>
       </section>
+
+      <MigrationRequestForm />
 
       <section className="hb-band-purple py-16 sm:py-20">
         <div className="hb-shell mx-auto max-w-2xl text-center">

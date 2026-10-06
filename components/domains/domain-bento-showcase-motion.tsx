@@ -161,7 +161,7 @@ function RegistrarMotion({ playing }: { playing: boolean }) {
                         done ? "text-emerald-600" : "text-[#94a3b8]",
                       )}
                     >
-                      {done ? "Available" : "Checking…"}
+                      {done ? "Example" : "Preview…"}
                     </p>
                   </motion.div>
                 );
@@ -307,7 +307,7 @@ function SupportMotion({
               HostingBeyond Support
             </span>
             <span className="shrink-0 rounded-full bg-emerald-500 px-2.5 py-0.5 text-[10px] font-extrabold text-white">
-              24/7 Live
+              Live chat
             </span>
           </div>
           <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden p-3 sm:gap-2.5 sm:p-4">

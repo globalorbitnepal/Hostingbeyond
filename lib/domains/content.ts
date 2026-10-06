@@ -1,4 +1,9 @@
-import { TLD_PRICES, type TldCategory } from "@/lib/domains/tlds";
+import {
+  TLD_PRICES,
+  type TldCategory,
+  SUPPORTED_TLD_COUNT,
+  SUGGESTED_TLD_COUNT,
+} from "@/lib/domains/tlds";
 
 /**
  * Editable content for /domain-name-search, /bulk-domain-search, and /domain-transfer.
@@ -205,8 +210,8 @@ export function defaultDomainContent(): DomainContent {
           id: "support",
           visible: true,
           order: 3,
-          title: "24/7 human support",
-          description: "Real people, any time zone",
+          title: "Expert support",
+          description: "Live chat and email when you need help",
           icon: "headphones",
         },
       ],
@@ -240,7 +245,7 @@ export function defaultDomainContent(): DomainContent {
           layout: "registrar",
           title: "Trusted domain registrar",
           description:
-            "ICANN-accredited registration with 300+ extensions, renewal rates published before checkout, and free WHOIS privacy on eligible names.",
+            "Professional domain registration with published pricing across our supported extensions, renewal rates shown before checkout, and free WHOIS privacy on eligible names.",
           linkLabel: "Compare TLD prices",
           linkHref: "#pricing",
           image: "",
@@ -253,7 +258,7 @@ export function defaultDomainContent(): DomainContent {
           layout: "privacy",
           title: "Privacy & security included",
           description:
-            "WHOIS privacy keeps your contact details out of public records. Point the name at HostingBeyond and SSL is issued and renewed for you.",
+            "WHOIS privacy keeps your contact details out of public records. Add HostingBeyond hosting and free SSL is issued and renewed for your site.",
           linkLabel: "Learn about privacy",
           linkHref: "#domain-guide",
           image: "",
@@ -264,9 +269,9 @@ export function defaultDomainContent(): DomainContent {
           visible: true,
           order: 2,
           layout: "support",
-          title: "24/7 human support",
+          title: "Expert support",
           description:
-            "Real agents on live chat and email — whether you are buying your first .com or moving a portfolio over.",
+            "Agents on live chat and email — whether you are buying your first .com or moving a portfolio over.",
           linkLabel: "Talk to support",
           linkHref: "/contact",
           image: "",
@@ -460,9 +465,9 @@ export function defaultDomainContent(): DomainContent {
           id: "extensions",
           visible: true,
           order: 5,
-          title: "300+ extensions",
+          title: `${SUPPORTED_TLD_COUNT} priced extensions`,
           description:
-            "From classic .com to niche .studio, .agency and AI-ready .ai — all in one search.",
+            "From classic .com to .io, .ai and store-focused TLDs — search and compare in one place.",
           icon: "globe",
         },
       ],
@@ -480,10 +485,8 @@ export function defaultDomainContent(): DomainContent {
       ctaEmailLabel: "Add business email",
     },
     single: {
-      seoTitle:
-        "Domain Name Search — Check Availability, Buy & Register Domains",
-      seoDescription:
-        "Free domain name search with instant availability across .com, .net, .io, .ai and 300+ extensions. Compare first-year and renewal prices, register a domain from $0.01, free WHOIS privacy and DNS included.",
+      seoTitle: "Domain Name Search & Registration | Check Domain Availability",
+      seoDescription: `Search and register domain names across ${SUPPORTED_TLD_COUNT} priced extensions. Check .com, .net, .org, .ai and more with transparent first-year and renewal pricing, free WHOIS privacy and DNS management.`,
       seoKeywords:
         "domain name search, check domain availability, buy domain name, register domain, domain lookup, cheap domain registration, .com domain, bulk domain search, domain transfer, WHOIS privacy",
       ogTitle: "Domain Name Search — Check Availability & Register from $0.01",
@@ -491,24 +494,23 @@ export function defaultDomainContent(): DomainContent {
         "Search and register your domain in seconds. See renewal pricing upfront, free privacy and DNS on every name.",
       ogImage: "/images/domains/hero.jpg",
       eyebrow: "Registration & lookup",
-      title: "Domain name search",
-      titleAccent: "that finds the perfect name",
-      description:
-        "Check availability across 300+ extensions in one search. Free WHOIS privacy, free DNS and renewal pricing published before you buy.",
+      title: "Domain Name Search",
+      titleAccent: "Find & Register Your Perfect Domain",
+      description: `Check availability across ${SUGGESTED_TLD_COUNT} popular extensions in one search. Free WHOIS privacy, free DNS and renewal pricing published before you buy.`,
       stats: [
-        {
-          id: "managed",
-          visible: true,
-          order: 0,
-          value: "2.7M+",
-          label: "Domains managed",
-        },
         {
           id: "extensions",
           visible: true,
+          order: 0,
+          value: String(SUPPORTED_TLD_COUNT),
+          label: "Priced extensions",
+        },
+        {
+          id: "search",
+          visible: true,
           order: 1,
-          value: "300+",
-          label: "Extensions",
+          value: String(SUGGESTED_TLD_COUNT),
+          label: "Checked per search",
         },
         {
           id: "setup",
@@ -522,21 +524,19 @@ export function defaultDomainContent(): DomainContent {
       pricingCopy:
         "Filter by what you are building. Every row shows the first-year promo, the standard renewal and the transfer-in price, so you can plan the real cost of your brand.",
       faqEyebrow: "Domain basics",
-      faqHeading: "Lost? Here's what you need to know about domains",
+      faqHeading: "Three things to know before you register",
       faqDescription:
-        "Three concepts every founder should understand before registering a name.",
-      faqAccordionEyebrow: "Domain search FAQs",
-      faqAccordionHeading: "Everything people ask before buying",
-      faqAccordionDescription:
-        "Straight answers on pricing, privacy, transfers and renewals.",
+        "What a domain is, how transfers work, and when to add hosting.",
+      faqAccordionEyebrow: "FAQ",
+      faqAccordionHeading: "Frequently Asked Questions",
+      faqAccordionDescription: "Pricing, privacy, transfers, renewals and DNS.",
       faqs: [
         {
           id: "how",
           visible: true,
           order: 0,
-          question: "How does the domain name search work?",
-          answer:
-            "Type any idea — with or without an extension — and HostingBeyond checks availability across ten popular extensions at once. Each result shows the first-year price, the renewal price and whether the name is free, premium or already registered, so you can decide on one screen.",
+          question: "How does domain search work?",
+          answer: `Type any idea — with or without an extension — and HostingBeyond checks availability across ${SUGGESTED_TLD_COUNT} popular extensions at once. Each result shows the first-year price, the renewal price and whether the name is free, premium or already registered.`,
         },
         {
           id: "cost",
@@ -594,6 +594,22 @@ export function defaultDomainContent(): DomainContent {
           answer:
             "We email reminders before expiry and keep auto-renew available in the panel. After expiry there is a redemption window where the name can still be restored, but leaving auto-renew on is the safest way to keep your site and mailboxes online.",
         },
+        {
+          id: "transfer",
+          visible: true,
+          order: 8,
+          question: "Can I transfer my existing domain?",
+          answer:
+            "Yes. Unlock the name at your current registrar, request the auth (EPP) code, and start a transfer on our domain transfer page. We show transfer pricing upfront and copy DNS where possible so your site stays online.",
+        },
+        {
+          id: "dns",
+          visible: true,
+          order: 9,
+          question: "Can I manage DNS records?",
+          answer:
+            "Yes. Every domain includes free DNS management in your panel — add A, CNAME, MX and TXT records without extra fees.",
+        },
       ],
       crossLinkLabel: "Try bulk domain search",
       crossLinkHelper:
@@ -626,8 +642,8 @@ export function defaultDomainContent(): DomainContent {
           id: "extensions",
           visible: true,
           order: 1,
-          value: "300+",
-          label: "Extensions",
+          value: String(SUPPORTED_TLD_COUNT),
+          label: "Priced extensions",
         },
         {
           id: "table",
@@ -713,7 +729,7 @@ export function defaultDomainContent(): DomainContent {
     transfer: {
       seoTitle: "Transfer Your Domain — Move to HostingBeyond",
       seoDescription:
-        "Transfer your domain to HostingBeyond with transparent pricing, free DNS, WHOIS privacy on eligible TLDs, and 24/7 support. Check transfer eligibility and start your move in minutes.",
+        "Transfer your domain to HostingBeyond with transparent pricing, free DNS, WHOIS privacy on eligible TLDs, and expert support. Check transfer eligibility and start your move in minutes.",
       seoKeywords:
         "domain transfer, transfer domain, EPP code, auth code, move domain registrar, transfer .com domain",
       ogTitle: "Transfer Your Domain to HostingBeyond",
@@ -724,7 +740,7 @@ export function defaultDomainContent(): DomainContent {
       title: "Transfer your domain",
       titleAccent: "to HostingBeyond",
       description:
-        "Move a name you already own — extend registration on most TLDs, manage DNS and hosting in one panel, and get help with auth codes 24/7.",
+        "Move a name you already own — extend registration on most TLDs, manage DNS and hosting in one panel, and get help with auth codes from our support team.",
       stats: [
         {
           id: "time",
@@ -737,14 +753,14 @@ export function defaultDomainContent(): DomainContent {
           id: "extensions",
           visible: true,
           order: 1,
-          value: "300+",
-          label: "Extensions",
+          value: String(SUPPORTED_TLD_COUNT),
+          label: "Priced extensions",
         },
         {
           id: "support",
           visible: true,
           order: 2,
-          value: "24/7",
+          value: "Expert",
           label: "Transfer help",
         },
       ],

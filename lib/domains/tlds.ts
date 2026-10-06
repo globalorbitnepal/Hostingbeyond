@@ -29,9 +29,9 @@ export const TLD_CATEGORIES: Array<{ id: TldCategory | "all"; label: string }> =
 export const TLD_PRICES: TldPrice[] = [
   {
     tld: ".com",
-    register: 0.01,
-    renew: 19.99,
-    transfer: 9.99,
+    register: 9.99,
+    renew: 17.99,
+    transfer: 12.99,
     categories: ["popular", "business"],
     note: "The one everyone types first",
   },
@@ -190,6 +190,12 @@ export const SUGGESTED_TLDS = [
 ];
 
 export const PRICE_BY_TLD = new Map(TLD_PRICES.map((item) => [item.tld, item]));
+
+/** Extensions with published register/renew/transfer pricing in this app. */
+export const SUPPORTED_TLD_COUNT = TLD_PRICES.length;
+
+/** Extensions checked on each single-domain search (multi-TLD). */
+export const SUGGESTED_TLD_COUNT = SUGGESTED_TLDS.length;
 
 export const CHEAPEST_TLD = [...TLD_PRICES].sort(
   (a, b) => a.register - b.register,

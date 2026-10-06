@@ -8,7 +8,10 @@ import {
   CUSTOMER_SESSION_COOKIE,
   getCustomerFromToken,
 } from "@/lib/customer/session";
+import { DomainRenewButton } from "@/components/domains/domain-renew-button";
+import { listCustomerDomains } from "@/lib/domains/registration-service";
 import type { HostingOrderSnapshot } from "@/lib/hosting/cart/snapshot";
+import { routes } from "@/config/routes";
 import { listHostingOrdersForUser } from "@/lib/hosting/hosting-orders";
 
 function statusLabel(status: string) {
@@ -47,6 +50,29 @@ export default async function AccountPage({
 
   const params = await searchParams;
   const orders = await listHostingOrdersForUser(user.id);
+  let domains: Awaited<ReturnType<typeof listCustomerDomains>> = [];
+  try {
+    domains = await listCustomerDomains(user.id);
+  } catch {
+    domains = [];
+  }
+
+  function domainStatusLabel(status: string) {
+    switch (status) {
+      case "ACTIVE":
+        return "Active";
+      case "PENDING_REGISTRATION":
+        return "Pending";
+      case "EXPIRED":
+        return "Expired";
+      case "SUSPENDED":
+        return "Suspended";
+      case "FAILED":
+        return "Failed";
+      default:
+        return status;
+    }
+  }
 
   return (
     <div className="hb-band-cream min-h-dvh px-5 py-8 sm:px-8">
@@ -114,13 +140,79 @@ export default async function AccountPage({
             )}
           </section>
 
+          <section className="mt-8">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-sm font-bold text-slate-900">My domains</h2>
+              <Link
+                href={routes.myDomains}
+                className="text-xs font-bold text-[#673de6]"
+              >
+                Manage all
+              </Link>
+              <Link
+                href={routes.accountWallet}
+                className="text-xs font-bold text-[#673de6]"
+              >
+                Wallet
+              </Link>
+            </div>
+            {domains.length === 0 ? (
+              <p className="mt-2 text-sm text-slate-500">
+                No domains in your account yet.{" "}
+                <Link
+                  href="/domain-name-search"
+                  className="font-semibold text-[#673de6]"
+                >
+                  Search for a domain
+                </Link>
+              </p>
+            ) : (
+              <ul className="mt-3 space-y-3">
+                {domains.map((row) => (
+                  <li
+                    key={row.domain}
+                    className="rounded-2xl border border-slate-100 bg-slate-50/80 px-4 py-3"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900">
+                          {row.domain}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {domainStatusLabel(row.status)}
+                          {row.registeredAt
+                            ? ` · Registered ${row.registeredAt.toLocaleDateString()}`
+                            : ""}
+                          {row.expiresAt
+                            ? ` · Expires ${row.expiresAt.toLocaleDateString()}`
+                            : ""}
+                        </p>
+                        <p className="mt-1 text-xs text-slate-500">
+                          Auto-renew: {row.autoRenew ? "On" : "Off"}
+                        </p>
+                      </div>
+                      {row.renewalPrice != null ? (
+                        <p className="text-sm font-bold text-[#673de6]">
+                          Renew {row.currency}{" "}
+                          {Number(row.renewalPrice).toFixed(2)}/yr
+                        </p>
+                      ) : null}
+                    </div>
+                    {row.status === "ACTIVE" ? (
+                      <DomainRenewButton domain={row.domain} />
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
             {[
               {
                 title: "My Services",
                 hint: "Hosting & VPS — manage, upgrade, renew",
               },
-              { title: "My Domains", hint: "Registration, DNS, transfers" },
               {
                 title: "Invoices & Payments",
                 hint: "Billing history (Stripe phase)",

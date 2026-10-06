@@ -9,6 +9,10 @@ import {
   getCustomerFromToken,
 } from "@/lib/customer/session";
 import {
+  domainCheckoutPath,
+  parseDomainListFromSearchParams,
+} from "@/lib/domains/domain-purchase-intent";
+import {
   getAuthHostingPurchaseProps,
   redirectIfLoggedInWithIntent,
 } from "@/lib/hosting/auth-purchase-props";
@@ -35,6 +39,17 @@ export default async function LoginPage({
 
   const checkoutRedirect = redirectIfLoggedInWithIntent(Boolean(user), intent);
   if (checkoutRedirect) redirect(checkoutRedirect);
+  const domainList = parseDomainListFromSearchParams(params);
+  if (user && domainList.length) redirect(domainCheckoutPath(domainList));
+  const next = params.next;
+  if (
+    user &&
+    typeof next === "string" &&
+    next.startsWith("/") &&
+    !next.startsWith("//")
+  ) {
+    redirect(next);
+  }
   if (user) redirect("/account");
 
   const content = await getLoginPage();

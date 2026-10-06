@@ -1,6 +1,12 @@
 "use client";
 
-import { type FormEvent, useCallback, useEffect, useState } from "react";
+import {
+  type FormEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import Link from "next/link";
 import {
   ArrowLeftRight,
@@ -16,6 +22,7 @@ import {
   X,
 } from "lucide-react";
 import { routes } from "@/config/routes";
+import { loginPathForDomainCheckout } from "@/lib/domains/domain-purchase-intent";
 import type { DomainResult } from "@/lib/domains/availability";
 import { SUGGESTED_TLDS, formatPrice } from "@/lib/domains/tlds";
 import { cn } from "@/lib/utils";
@@ -51,8 +58,8 @@ const MODE_TABS: Array<{
   },
 ];
 
-function cartHref(domain: string) {
-  return `${routes.getStarted}?domain=${encodeURIComponent(domain)}`;
+function cartCheckoutHref() {
+  return routes.domainCheckout;
 }
 
 function transferHref(domain: string) {
@@ -99,9 +106,19 @@ function StatusPill({ status }: { status: DomainResult["status"] }) {
 function ResultRow({
   result,
   featured = false,
+  onRegister,
+  registering,
+  bulkSelectable = false,
+  bulkSelected = false,
+  onBulkToggle,
 }: {
   result: DomainResult;
   featured?: boolean;
+  onRegister: (domain: string) => void;
+  registering: string | null;
+  bulkSelectable?: boolean;
+  bulkSelected?: boolean;
+  onBulkToggle?: (domain: string) => void;
 }) {
   const buyable = result.status === "available" || result.status === "premium";
   const meta = result.message
@@ -127,6 +144,15 @@ function ResultRow({
       >
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+            {bulkSelectable ? (
+              <input
+                type="checkbox"
+                checked={bulkSelected}
+                onChange={() => onBulkToggle?.(result.domain)}
+                className="size-4 rounded border-slate-300 text-[#673de6]"
+                aria-label={`Select ${result.domain}`}
+              />
+            ) : null}
             <p
               className={cn(
                 "min-w-0 font-extrabold tracking-tight break-words text-[#1a1035]",
@@ -155,13 +181,21 @@ function ResultRow({
             <span aria-hidden />
           )}
           {buyable ? (
-            <Link
-              href={cartHref(result.domain)}
-              className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-[#673de6] px-5 text-[13.5px] font-bold whitespace-nowrap text-white shadow-[0_10px_22px_-10px_rgba(103,61,230,0.85)] transition hover:bg-[#5a31d4]"
+            <button
+              type="button"
+              disabled={registering !== null}
+              onClick={() => onRegister(result.domain)}
+              className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-[#673de6] px-5 text-[13.5px] font-bold whitespace-nowrap text-white shadow-[0_10px_22px_-10px_rgba(103,61,230,0.85)] transition hover:bg-[#5a31d4] disabled:opacity-70"
             >
-              Add to cart
-              <ArrowRight className="size-4" />
-            </Link>
+              {registering === result.domain ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <>
+                  Add to cart
+                  <ArrowRight className="size-4" />
+                </>
+              )}
+            </button>
           ) : result.status === "taken" ? (
             <Link
               href={transferHref(result.domain)}
@@ -204,9 +238,38 @@ export function DomainSearchPanel({
   const [error, setError] = useState("");
   const [results, setResults] = useState<DomainResult[]>([]);
   const [searched, setSearched] = useState("");
+  const [anchorDomain, setAnchorDomain] = useState("");
+  const [registering, setRegistering] = useState<string | null>(null);
+  const [bulkSelected, setBulkSelected] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const [bulkAdding, setBulkAdding] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
+  const searchInFlight = useRef(false);
+
+  const refreshCartCount = useCallback(async () => {
+    try {
+      const res = await fetch("/api/domains/cart");
+      if (res.status === 401) {
+        setCartCount(0);
+        return;
+      }
+      if (!res.ok) return;
+      const json = (await res.json()) as { count?: number };
+      if (typeof json.count === "number") setCartCount(json.count);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshCartCount();
+  }, [refreshCartCount]);
 
   const run = useCallback(
     async (payload: { query?: string; bulk?: string }) => {
+      if (searchInFlight.current) return;
+      searchInFlight.current = true;
       setLoading(true);
       setError("");
       try {
@@ -218,23 +281,139 @@ export function DomainSearchPanel({
         const json = (await response.json()) as {
           results?: DomainResult[];
           error?: string;
+          anchorDomain?: string;
         };
         if (!response.ok || !json.results) {
           setResults([]);
-          setError(json.error || "Search failed. Please try again.");
+          setAnchorDomain("");
+          setError(
+            json.error ||
+              "We couldn't check this domain right now. Please try again.",
+          );
           return;
         }
         setResults(json.results);
+        setAnchorDomain(json.anchorDomain ?? json.results[0]?.domain ?? "");
         setSearched(payload.query?.trim() || "bulk");
+        setBulkSelected(new Set());
       } catch {
         setResults([]);
-        setError("Network error — check your connection and try again.");
+        setAnchorDomain("");
+        setError("We couldn't check this domain right now. Please try again.");
       } finally {
         setLoading(false);
+        searchInFlight.current = false;
       }
     },
     [],
   );
+
+  const registerDomain = useCallback(
+    async (domain: string) => {
+      if (registering) return;
+      setRegistering(domain);
+      setError("");
+      try {
+        const response = await fetch("/api/domains/cart", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ domain }),
+        });
+        if (response.status === 401) {
+          window.location.assign(loginPathForDomainCheckout([domain]));
+          return;
+        }
+        const json = (await response.json()) as {
+          count?: number;
+          error?: string;
+        };
+        if (!response.ok) {
+          setError(
+            json.error ||
+              "We couldn't add this domain right now. Please try again.",
+          );
+          return;
+        }
+        if (typeof json.count === "number") setCartCount(json.count);
+        else await refreshCartCount();
+        window.location.assign(cartCheckoutHref());
+      } catch {
+        setError("We couldn't add this domain right now. Please try again.");
+      } finally {
+        setRegistering(null);
+      }
+    },
+    [registering, refreshCartCount],
+  );
+
+  const buyableResults = results.filter(
+    (item) => item.status === "available" || item.status === "premium",
+  );
+
+  const toggleBulkDomain = useCallback((domain: string) => {
+    setBulkSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(domain)) next.delete(domain);
+      else next.add(domain);
+      return next;
+    });
+  }, []);
+
+  const selectAllBuyable = useCallback(() => {
+    setBulkSelected(new Set(buyableResults.map((r) => r.domain)));
+  }, [buyableResults]);
+
+  const clearBulkSelection = useCallback(() => {
+    setBulkSelected(new Set());
+  }, []);
+
+  const addBulkToCart = useCallback(async () => {
+    if (bulkAdding || bulkSelected.size === 0) return;
+    setBulkAdding(true);
+    setError("");
+    try {
+      const domains = [...bulkSelected];
+      const response = await fetch("/api/domains/cart", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ domains }),
+      });
+      if (response.status === 401) {
+        window.location.assign(loginPathForDomainCheckout(domains));
+        return;
+      }
+      const json = (await response.json()) as {
+        cart?: { count?: number };
+        added?: string[];
+        rejected?: Array<{ domain: string; error: string }>;
+        error?: string;
+      };
+      const cartTotal = json.cart?.count ?? 0;
+      const addedCount = json.added?.length ?? 0;
+      if (!response.ok) {
+        setError(json.error || "We couldn't add these domains right now.");
+        return;
+      }
+      if (addedCount === 0 && cartTotal === 0) {
+        setError(
+          json.error ||
+            "No selected domains are available anymore. Search again.",
+        );
+        return;
+      }
+      setCartCount(cartTotal);
+      if (json.rejected?.length) {
+        setError(
+          `Some domains could not be added: ${json.rejected.map((r) => r.domain).join(", ")}`,
+        );
+      }
+      window.location.assign(cartCheckoutHref());
+    } catch {
+      setError("We couldn't add these domains right now. Please try again.");
+    } finally {
+      setBulkAdding(false);
+    }
+  }, [bulkAdding, bulkSelected]);
 
   useEffect(() => {
     if (mode === "single" && initialQuery.trim()) {
@@ -245,7 +424,7 @@ export function DomainSearchPanel({
   function onSingleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!query.trim()) {
-      setError("Type a name to check, for example yourbrand.com");
+      setError("Please enter a domain name.");
       return;
     }
     void run({ query });
@@ -260,7 +439,10 @@ export function DomainSearchPanel({
     void run({ bulk });
   }
 
-  const exact = results.find((item) => item.domain === searched) ?? results[0];
+  const exact =
+    results.find((item) => item.domain === anchorDomain) ??
+    results.find((item) => item.domain === searched) ??
+    results[0];
   const alternatives = results.filter((item) => item !== exact);
   const availableCount = results.filter(
     (item) => item.status === "available" || item.status === "premium",
@@ -298,6 +480,14 @@ export function DomainSearchPanel({
           );
         })}
       </nav>
+
+      {cartCount > 0 ? (
+        <p className="mt-3 text-right text-[12px] font-bold text-[#4c1d95]">
+          <Link href={routes.domainCheckout} className="hover:underline">
+            View cart ({cartCount})
+          </Link>
+        </p>
+      ) : null}
 
       {mode === "single" ? (
         <form onSubmit={onSingleSubmit} className="mt-4">
@@ -427,7 +617,7 @@ export function DomainSearchPanel({
         </p>
       ) : null}
 
-      <div aria-live="polite" className="mt-5">
+      <div aria-live="polite" aria-busy={loading} className="mt-5">
         {loading ? (
           <div className="space-y-2.5">
             <SkeletonRow />
@@ -438,12 +628,54 @@ export function DomainSearchPanel({
 
         {!loading && results.length > 0 ? (
           <div key={searched} className="hb-fade-up space-y-2.5">
+            {mode === "bulk" && buyableResults.length > 0 ? (
+              <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-[#e9e5ff] bg-[#f8f5ff] px-3 py-2">
+                <button
+                  type="button"
+                  onClick={selectAllBuyable}
+                  className="text-[12px] font-bold text-[#4c1d95] hover:underline"
+                >
+                  Select all available ({buyableResults.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={clearBulkSelection}
+                  className="text-[12px] font-bold text-slate-500 hover:underline"
+                >
+                  Clear
+                </button>
+                <button
+                  type="button"
+                  disabled={bulkSelected.size === 0 || bulkAdding}
+                  onClick={() => void addBulkToCart()}
+                  className="ml-auto inline-flex h-9 items-center gap-1.5 rounded-full bg-[#673de6] px-4 text-[12px] font-bold text-white disabled:opacity-60"
+                >
+                  {bulkAdding ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : null}
+                  Add {bulkSelected.size} to cart
+                </button>
+              </div>
+            ) : null}
             <div className="flex flex-wrap items-center gap-2 text-[12.5px] font-semibold text-slate-500">
               <BadgeCheck className="size-4 text-[#15803d]" />
               {availableCount} of {results.length} options are free to register
               right now.
             </div>
-            {exact ? <ResultRow result={exact} featured /> : null}
+            {exact ? (
+              <ResultRow
+                result={exact}
+                featured
+                onRegister={registerDomain}
+                registering={registering}
+                bulkSelectable={
+                  mode === "bulk" &&
+                  buyableResults.some((r) => r.domain === exact.domain)
+                }
+                bulkSelected={bulkSelected.has(exact.domain)}
+                onBulkToggle={toggleBulkDomain}
+              />
+            ) : null}
             {alternatives.length > 0 ? (
               <>
                 <p className="pt-2 text-[12px] font-bold tracking-wide text-slate-500 uppercase">
@@ -451,7 +683,19 @@ export function DomainSearchPanel({
                 </p>
                 <div className="grid gap-2.5 2xl:grid-cols-2">
                   {alternatives.map((item) => (
-                    <ResultRow key={item.domain} result={item} />
+                    <ResultRow
+                      key={item.domain}
+                      result={item}
+                      onRegister={registerDomain}
+                      registering={registering}
+                      bulkSelectable={
+                        mode === "bulk" &&
+                        (item.status === "available" ||
+                          item.status === "premium")
+                      }
+                      bulkSelected={bulkSelected.has(item.domain)}
+                      onBulkToggle={toggleBulkDomain}
+                    />
                   ))}
                 </div>
               </>

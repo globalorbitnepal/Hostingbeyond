@@ -23,8 +23,9 @@ function checkoutHref(domain: string, authCode?: string) {
 }
 
 /**
- * Transfer eligibility from the same catalogue as domain search.
- * Set DOMAIN_TRANSFER_LOOKUP_URL to POST { domain, authCode? } to a registrar.
+ * Synchronous transfer eligibility (hash/catalogue fallback only).
+ * Production checks use checkTransferEligibilityAsync() → real Domain Name API availability.
+ * Set DOMAIN_TRANSFER_LOOKUP_URL to POST { domain, authCode? } to an external registrar proxy.
  */
 export function checkTransferEligibility(
   input: string,
@@ -54,7 +55,7 @@ export function checkTransferEligibility(
       transferPrice: result.transfer,
       renewPrice: result.renew,
       message: `${domain} looks available to register — transfer is for domains you already own elsewhere.`,
-      checkoutHref: `${routes.getStarted}?domain=${encodeURIComponent(domain)}`,
+      checkoutHref: `${routes.domainCheckout}?domain=${encodeURIComponent(domain)}`,
     };
   }
 

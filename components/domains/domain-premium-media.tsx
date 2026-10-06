@@ -158,7 +158,7 @@ function SearchMotion({ playing }: { playing: boolean }) {
                   done ? "text-emerald-300" : "text-white/45",
                 )}
               >
-                {done ? "Available" : "Checking…"}
+                {done ? "Example" : "Preview…"}
               </p>
             </motion.div>
           );

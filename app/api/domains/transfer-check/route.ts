@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 
-import {
-  checkTransferEligibility,
-  type TransferCheckResult,
-} from "@/lib/domains/transfer";
+import { checkTransferEligibilityAsync } from "@/lib/domains/transfer-service";
+import { resolveDomainRegistrarProvider } from "@/lib/domains/providers/index";
+import type { TransferCheckResult } from "@/lib/domains/transfer";
 
 export const runtime = "nodejs";
 
@@ -59,7 +58,7 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({
-    result: checkTransferEligibility(domain, authCode),
-    source: "hostingbeyond",
+    result: await checkTransferEligibilityAsync(domain, authCode),
+    source: resolveDomainRegistrarProvider() ? "registrar" : "hostingbeyond",
   });
 }
