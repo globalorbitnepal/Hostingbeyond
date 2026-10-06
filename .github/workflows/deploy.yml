@@ -201,7 +201,7 @@ jobs:
           if [ -f "$AVAIL_SYNC" ]; then
             echo "==> Merging live domain availability credentials"
             node scripts/merge-domain-availability-env.mjs .env < "$AVAIL_SYNC"
-            rm -f "$AVAIL_SYNC"
+            rm -f "$AVAIL_SYNC" 2>/dev/null || true
           fi
           if ! grep -q '^DOMAIN_API_LIVE_KEY=.' .env 2>/dev/null; then
             echo "LIVE_AVAILABILITY_WARN: DOMAIN_API_LIVE_KEY missing — public search may return lookup_unconfigured"
