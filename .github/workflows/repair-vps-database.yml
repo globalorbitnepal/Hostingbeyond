@@ -94,7 +94,20 @@ jobs:
           npx prisma migrate status
           rm -rf .next
           npx prisma generate
-          npm run build
+          BUILD_OK=0
+          for attempt in 1 2 3 4 5; do
+            echo "Build attempt ${attempt}/5"
+            if npm run build; then
+              BUILD_OK=1
+              break
+            fi
+            echo "Build failed; waiting 20s before retry..."
+            sleep 20
+          done
+          if [ "$BUILD_OK" != "1" ]; then
+            echo "BUILD_FAIL: npm run build failed after 5 attempts"
+            exit 1
+          fi
           /usr/local/sbin/hostingbeyond-ctl restart || /usr/bin/pm2 restart hostingbeyond
           /usr/local/sbin/hostingbeyond-ctl status || /usr/bin/pm2 describe hostingbeyond
           REMOTE
