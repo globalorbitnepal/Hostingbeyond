@@ -122,23 +122,30 @@ export async function POST(request: Request) {
       const fast = await runFastCustomerSearch(queryRaw);
       const primary = fast.primary;
       const recommendations = fast.alternatives;
-      return NextResponse.json({
-        anchorDomain: fast.anchorDomain,
-        query: fast.query,
-        scope: "fast",
-        source: fast.source,
-        primary,
-        recommendations,
-        results: primary ? [primary, ...recommendations] : recommendations,
-        alternativesComplete: fast.alternativesComplete,
-        deepDiscoveryAvailable: fast.deepDiscoveryAvailable,
-        timings: fast.timings,
-        searchableTldCount: await countProviderSupportedTlds(),
-        resultsCustomer: (primary
-          ? [primary, ...recommendations]
-          : recommendations
-        ).map(toCustomerResult),
-      });
+      const headers = new Headers();
+      if (fast.timings.server_timing) {
+        headers.set("Server-Timing", fast.timings.server_timing);
+      }
+      return NextResponse.json(
+        {
+          anchorDomain: fast.anchorDomain,
+          query: fast.query,
+          scope: "fast",
+          source: fast.source,
+          primary,
+          recommendations,
+          results: primary ? [primary, ...recommendations] : recommendations,
+          alternativesComplete: fast.alternativesComplete,
+          deepDiscoveryAvailable: fast.deepDiscoveryAvailable,
+          timings: fast.timings,
+          searchableTldCount: await countProviderSupportedTlds(),
+          resultsCustomer: (primary
+            ? [primary, ...recommendations]
+            : recommendations
+          ).map(toCustomerResult),
+        },
+        { headers },
+      );
     }
 
     if (scope === "deep") {

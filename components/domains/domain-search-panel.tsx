@@ -25,7 +25,7 @@ import { routes } from "@/config/routes";
 import { loginPathForDomainCheckout } from "@/lib/domains/domain-purchase-intent";
 import type { DomainResult } from "@/lib/domains/availability";
 import { dispatchDomainCartUpdated } from "@/lib/domains/domain-cart-events";
-import { sortByRecommendationPriority } from "@/lib/domains/recommendation-tlds";
+import { sortByRecommendationPriority } from "@/lib/domains/recommendation-priority";
 import { SUGGESTED_TLDS, formatPrice } from "@/lib/domains/tlds";
 import { cn } from "@/lib/utils";
 

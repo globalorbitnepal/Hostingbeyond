@@ -64,8 +64,19 @@ export function recordDna429(): void {
   rateLimit429Count += 1;
 }
 
-export async function withDnaRateLimit<T>(run: () => Promise<T>): Promise<T> {
+export type DnaRateLimitMeta = {
+  domainCount: number;
+  onSlotAcquired?: (slotAt: number) => void;
+};
+
+export async function withDnaRateLimit<T>(
+  run: (slotAcquiredAt: number) => Promise<T>,
+  meta?: DnaRateLimitMeta,
+): Promise<T> {
   await acquireStartSlot();
+  const slotAt = Date.now();
   providerRequestCount += 1;
-  return run();
+  meta?.onSlotAcquired?.(slotAt);
+  void meta?.domainCount;
+  return run(slotAt);
 }

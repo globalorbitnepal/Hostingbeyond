@@ -25,6 +25,7 @@ import {
   parseProductTldListDto,
   type TldCatalogueFetchResult,
 } from "@/lib/domains/providers/tld-catalogue-fetch";
+import { dnaFetch } from "@/lib/domains/providers/dna-http";
 
 const REQUEST_TIMEOUT_MS = 15_000;
 /** OTE bulk-search can exceed 15s when checking many registered names. */
@@ -308,97 +309,110 @@ export function createDomainNameApiProvider(
       const { withDnaRateLimit } =
         await import("@/lib/domains/providers/dna-rate-limiter");
 
-      return withDnaRateLimit(async () => {
-        const body = fqdns.map((fqdn) => {
-          const { domain } = parseFqdn(fqdn);
-          return { domainName: domain };
-        });
+      const { beginDnaRequestTrace, endDnaRequestTrace } =
+        await import("@/lib/domains/providers/dna-request-trace");
+      const quietRowLogs = fqdns.length > 4;
 
-        const url = `${config.baseUrl.replace(/\/$/, "")}/domains/bulk-search`;
-        const controller = new AbortController();
-        const timer = setTimeout(
-          () => controller.abort(),
-          AVAILABILITY_TIMEOUT_MS,
-        );
-
-        try {
-          const response = await fetchImpl(url, {
-            method: "POST",
-            headers: {
-              "content-type": "application/json",
-              accept: "application/json",
-              "X-API-KEY": config.apiKey,
-              __reseller: config.resellerId,
-              "User-Agent": "HostingBeyond-DomainSearch/1.0",
-            },
-            body: JSON.stringify(body),
-            cache: "no-store",
-            signal: controller.signal,
+      return withDnaRateLimit(
+        async (slotAcquiredAt) => {
+          const trace = beginDnaRequestTrace(fqdns.length, slotAcquiredAt);
+          const body = fqdns.map((fqdn) => {
+            const { domain } = parseFqdn(fqdn);
+            return { domainName: domain };
           });
 
-          const json = (await response.json().catch(() => null)) as unknown;
+          const url = `${config.baseUrl.replace(/\/$/, "")}/domains/bulk-search`;
+          const controller = new AbortController();
+          const timer = setTimeout(
+            () => controller.abort(),
+            AVAILABILITY_TIMEOUT_MS,
+          );
 
-          if (!response.ok) {
-            logDomainProvider("dna_api_error", {
-              status: response.status,
+          try {
+            trace.httpStartAt = Date.now();
+            const response = await fetchImpl(url, {
+              method: "POST",
+              headers: {
+                "content-type": "application/json",
+                accept: "application/json",
+                "X-API-KEY": config.apiKey,
+                __reseller: config.resellerId,
+                "User-Agent": "HostingBeyond-DomainSearch/1.0",
+              },
+              body: JSON.stringify(body),
+              cache: "no-store",
+              signal: controller.signal,
+            });
+
+            const json = (await response.json().catch(() => null)) as unknown;
+
+            if (!response.ok) {
+              logDomainProvider("dna_api_error", {
+                status: response.status,
+                environment: config.environment,
+                domainCount: fqdns.length,
+              });
+              throw mapHttpError(response.status, json);
+            }
+
+            const items = normalizeBulkItems(json);
+            if (!items.length) {
+              throw new DomainProviderError("provider_failure");
+            }
+
+            const rows: ProviderAvailabilityRow[] = items.map((item) => {
+              const domainRaw = String(item.domainName ?? "").toLowerCase();
+              const parsed = parseFqdn(domainRaw || (fqdns[0] ?? ""));
+              const tldFromApi = item.tld
+                ? `.${String(item.tld).replace(/^\./, "")}`
+                : parsed.tld;
+              const isPremium = Boolean(item.isPremium);
+              const status = mapAvailabilityStatus(item.status, isPremium);
+              const supplier = toSupplier(item);
+
+              if (!quietRowLogs) {
+                logDomainProvider("dna_availability_row", {
+                  domain: parsed.domain || domainRaw,
+                  status,
+                  environment: config.environment,
+                  supplierRegister: supplier.register,
+                  currency: supplier.currency,
+                });
+              }
+
+              return {
+                domain: domainRaw || parsed.domain,
+                name: parsed.name,
+                tld: tldFromApi,
+                status,
+                supplier,
+                message:
+                  typeof item.reason === "string" && item.reason.trim()
+                    ? item.reason.trim()
+                    : undefined,
+              };
+            });
+
+            return rows;
+          } catch (error) {
+            if (error instanceof DomainProviderError) throw error;
+            if (error instanceof Error && error.name === "AbortError") {
+              throw new DomainProviderError("timeout");
+            }
+            logDomainProvider("dna_request_failed", {
               environment: config.environment,
               domainCount: fqdns.length,
+              error: error instanceof Error ? error.name : "unknown",
             });
-            throw mapHttpError(response.status, json);
-          }
-
-          const items = normalizeBulkItems(json);
-          if (!items.length) {
             throw new DomainProviderError("provider_failure");
+          } finally {
+            trace.httpEndAt = Date.now();
+            endDnaRequestTrace(trace);
+            clearTimeout(timer);
           }
-
-          const rows: ProviderAvailabilityRow[] = items.map((item) => {
-            const domainRaw = String(item.domainName ?? "").toLowerCase();
-            const parsed = parseFqdn(domainRaw || (fqdns[0] ?? ""));
-            const tldFromApi = item.tld
-              ? `.${String(item.tld).replace(/^\./, "")}`
-              : parsed.tld;
-            const isPremium = Boolean(item.isPremium);
-            const status = mapAvailabilityStatus(item.status, isPremium);
-            const supplier = toSupplier(item);
-
-            logDomainProvider("dna_availability_row", {
-              domain: parsed.domain || domainRaw,
-              status,
-              environment: config.environment,
-              supplierRegister: supplier.register,
-              currency: supplier.currency,
-            });
-
-            return {
-              domain: domainRaw || parsed.domain,
-              name: parsed.name,
-              tld: tldFromApi,
-              status,
-              supplier,
-              message:
-                typeof item.reason === "string" && item.reason.trim()
-                  ? item.reason.trim()
-                  : undefined,
-            };
-          });
-
-          return rows;
-        } catch (error) {
-          if (error instanceof DomainProviderError) throw error;
-          if (error instanceof Error && error.name === "AbortError") {
-            throw new DomainProviderError("timeout");
-          }
-          logDomainProvider("dna_request_failed", {
-            environment: config.environment,
-            domainCount: fqdns.length,
-            error: error instanceof Error ? error.name : "unknown",
-          });
-          throw new DomainProviderError("provider_failure");
-        } finally {
-          clearTimeout(timer);
-        }
-      });
+        },
+        { domainCount: fqdns.length },
+      );
     },
 
     async getPricing(tlds: string[]): Promise<ProviderTldPricing[]> {
@@ -693,7 +707,7 @@ export function getDomainNameApiAvailabilityProvider(
 ): DomainRegistrarProvider | null {
   const config = readDomainNameApiAvailabilityConfig();
   if (!config) return null;
-  return createDomainNameApiProvider(config, fetchImpl);
+  return createDomainNameApiProvider(config, fetchImpl ?? dnaFetch);
 }
 
 /** Lifecycle (OTE by default) — register, renew, transfer. */
