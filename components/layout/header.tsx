@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import { mainNavigation, type NavItem } from "@/config/navigation";
 import { routes } from "@/config/routes";
+import { DomainCartHeaderLink } from "@/components/layout/domain-cart-header-link";
 import { CountryLanguageSelector } from "@/components/locale/country-language-selector";
 import { useLocale } from "@/components/locale/locale-provider";
 import { CANONICAL_HEADER_LOGO_SRC, Logo } from "@/components/shared/logo";
@@ -382,6 +383,7 @@ export function SiteHeader({
             </nav>
 
             <div className="hidden shrink-0 items-center justify-end gap-2.5 lg:flex">
+              <DomainCartHeaderLink />
               <CountryLanguageSelector tone="light" />
               <span
                 aria-hidden
@@ -397,6 +399,7 @@ export function SiteHeader({
             </div>
 
             <div className="flex shrink-0 items-center gap-1.5 sm:gap-2 lg:hidden">
+              <DomainCartHeaderLink compact />
               <CountryLanguageSelector compact tone="light" />
               <button
                 type="button"
@@ -550,6 +553,13 @@ export function SiteHeader({
                   );
                 })}
                 <div className="mt-3 flex flex-col gap-2 border-t border-slate-100 pt-3">
+                  <Link
+                    href={routes.domainCheckout}
+                    className="flex items-center justify-center gap-2 rounded-full border border-slate-200 px-3 py-2.5 text-[14px] font-semibold text-slate-800"
+                    onClick={() => setOpen(false)}
+                  >
+                    Cart
+                  </Link>
                   <Link
                     href={loginHref}
                     className="flex items-center justify-center gap-2 rounded-full border border-slate-200 px-3 py-2.5 text-[14px] font-semibold text-slate-800"

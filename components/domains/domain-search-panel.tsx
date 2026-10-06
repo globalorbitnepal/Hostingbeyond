@@ -24,6 +24,7 @@ import {
 import { routes } from "@/config/routes";
 import { loginPathForDomainCheckout } from "@/lib/domains/domain-purchase-intent";
 import type { DomainResult } from "@/lib/domains/availability";
+import { dispatchDomainCartUpdated } from "@/lib/domains/domain-cart-events";
 import { SUGGESTED_TLDS, formatPrice } from "@/lib/domains/tlds";
 import { cn } from "@/lib/utils";
 
@@ -58,16 +59,32 @@ const MODE_TABS: Array<{
   },
 ];
 
-function cartCheckoutHref() {
-  return routes.domainCheckout;
-}
-
-function transferHref(domain: string) {
-  return `${routes.domainTransfer}?domain=${encodeURIComponent(domain)}#transfer-check`;
-}
-
 function countBulkLines(value: string) {
   return Math.min(BULK_LIMIT, value.split(/[\s,;]+/).filter(Boolean).length);
+}
+
+function sortBySuggestedTld(a: DomainResult, b: DomainResult) {
+  const ia = SUGGESTED_TLDS.indexOf(a.tld);
+  const ib = SUGGESTED_TLDS.indexOf(b.tld);
+  return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+}
+
+/** Provider-confirmed registerable options for recommendation cards. */
+function isRegisterableRecommendation(result: DomainResult) {
+  if (result.status === "available") return true;
+  if (result.status === "premium" && result.register != null) return true;
+  return false;
+}
+
+function mergeResults(
+  primary: DomainResult[],
+  more: DomainResult[],
+): DomainResult[] {
+  const map = new Map<string, DomainResult>();
+  for (const row of [...primary, ...more]) {
+    map.set(row.domain.toLowerCase(), row);
+  }
+  return [...map.values()];
 }
 
 function StatusPill({ status }: { status: DomainResult["status"] }) {
@@ -127,12 +144,15 @@ function ResultRow({
   bulkSelected?: boolean;
   onBulkToggle?: (domain: string) => void;
 }) {
-  const buyable = result.status === "available" || result.status === "premium";
-  const meta = result.message
-    ? result.message
-    : featured
-      ? `Renews at ${formatPrice(result.renew ?? 0)}/yr · free WHOIS privacy · free DNS`
-      : `Renews at ${formatPrice(result.renew ?? 0)}/yr`;
+  const buyable = isRegisterableRecommendation(result);
+  const meta =
+    featured && result.status === "taken"
+      ? "This domain is already registered."
+      : result.message
+        ? result.message
+        : buyable
+          ? `Renewal ${formatPrice(result.renew ?? 0)}/year after the first year.`
+          : undefined;
 
   return (
     <div
@@ -171,45 +191,44 @@ function ResultRow({
             </p>
             <StatusPill status={result.status} />
           </div>
-          <p className="mt-1 text-[12.5px] leading-snug text-slate-500">
-            {meta}
-          </p>
+          {meta ? (
+            <p className="mt-1 text-[12.5px] leading-snug text-slate-500">
+              {meta}
+            </p>
+          ) : null}
         </div>
 
-        <div className="flex shrink-0 items-center justify-between gap-3 sm:justify-end">
+        <div className="flex shrink-0 flex-col items-stretch gap-2 sm:items-end">
           {buyable ? (
-            <p className="text-[18px] font-extrabold tracking-tight whitespace-nowrap text-[#1a1035] sm:text-[20px]">
-              {formatPrice(result.register ?? 0)}
-              <span className="text-[12px] font-bold text-slate-500">
-                /1st yr
-              </span>
-            </p>
-          ) : (
-            <span aria-hidden />
-          )}
+            <div className="text-left sm:text-right">
+              <p className="text-[18px] font-extrabold tracking-tight whitespace-nowrap text-[#1a1035] sm:text-[20px]">
+                {formatPrice(result.register ?? 0)}
+                <span className="text-[12px] font-bold text-slate-500">
+                  {" "}
+                  / 1st year
+                </span>
+              </p>
+              <p className="text-[11.5px] font-semibold text-slate-500">
+                Renews {formatPrice(result.renew ?? 0)}/year
+              </p>
+            </div>
+          ) : null}
           {buyable ? (
             <button
               type="button"
               disabled={registering !== null}
               onClick={() => onRegister(result.domain)}
-              className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-[#673de6] px-5 text-[13.5px] font-bold whitespace-nowrap text-white shadow-[0_10px_22px_-10px_rgba(103,61,230,0.85)] transition hover:bg-[#5a31d4] disabled:opacity-70"
+              className="inline-flex h-11 w-full shrink-0 items-center justify-center gap-1.5 rounded-full bg-[#673de6] px-5 text-[13.5px] font-bold whitespace-nowrap text-white shadow-[0_10px_22px_-10px_rgba(103,61,230,0.85)] transition hover:bg-[#5a31d4] disabled:opacity-70 sm:w-auto"
             >
               {registering === result.domain ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : (
                 <>
                   Add to cart
-                  <ArrowRight className="size-4" />
+                  <ArrowRight className="size-4" aria-hidden />
                 </>
               )}
             </button>
-          ) : result.status === "taken" ? (
-            <Link
-              href={transferHref(result.domain)}
-              className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full border border-[#c7b8ff] bg-white px-5 text-[13.5px] font-bold whitespace-nowrap text-[#4c1d95] transition hover:bg-[#f7f4ff]"
-            >
-              Transfer it
-            </Link>
           ) : null}
         </div>
       </div>
@@ -241,8 +260,10 @@ export function DomainSearchPanel({
   const hero = layout === "hero";
   const [query, setQuery] = useState(initialQuery);
   const [bulk, setBulk] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loadingPrimary, setLoadingPrimary] = useState(false);
+  const [loadingAlternatives, setLoadingAlternatives] = useState(false);
   const [error, setError] = useState("");
+  const [cartSuccess, setCartSuccess] = useState("");
   const [results, setResults] = useState<DomainResult[]>([]);
   const [searched, setSearched] = useState("");
   const [anchorDomain, setAnchorDomain] = useState("");
@@ -252,7 +273,9 @@ export function DomainSearchPanel({
   );
   const [bulkAdding, setBulkAdding] = useState(false);
   const [cartCount, setCartCount] = useState(0);
-  const searchInFlight = useRef(false);
+  const searchGeneration = useRef(0);
+  const abortRef = useRef<AbortController | null>(null);
+  const loading = loadingPrimary || loadingAlternatives;
 
   const refreshCartCount = useCallback(async () => {
     try {
@@ -273,47 +296,126 @@ export function DomainSearchPanel({
     void refreshCartCount();
   }, [refreshCartCount]);
 
-  const run = useCallback(
-    async (payload: { query?: string; bulk?: string }) => {
-      if (searchInFlight.current) return;
-      searchInFlight.current = true;
-      setLoading(true);
-      setError("");
-      try {
-        const response = await fetch("/api/domains/search", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const json = (await response.json()) as {
-          results?: DomainResult[];
-          error?: string;
-          anchorDomain?: string;
-        };
-        if (!response.ok || !json.results) {
-          setResults([]);
-          setAnchorDomain("");
-          setError(
-            json.error ||
-              "We couldn't check this domain right now. Please try again.",
-          );
-          return;
-        }
-        setResults(json.results);
-        setAnchorDomain(json.anchorDomain ?? json.results[0]?.domain ?? "");
-        setSearched(payload.query?.trim() || "bulk");
-        setBulkSelected(new Set());
-      } catch {
+  const runBulk = useCallback(async (bulkPayload: string) => {
+    const gen = ++searchGeneration.current;
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    setLoadingPrimary(true);
+    setLoadingAlternatives(false);
+    setError("");
+    setCartSuccess("");
+    setResults([]);
+    try {
+      const response = await fetch("/api/domains/search", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ bulk: bulkPayload }),
+        signal: controller.signal,
+      });
+      const json = (await response.json()) as {
+        results?: DomainResult[];
+        error?: string;
+      };
+      if (gen !== searchGeneration.current) return;
+      if (!response.ok || !json.results) {
         setResults([]);
         setAnchorDomain("");
-        setError("We couldn't check this domain right now. Please try again.");
-      } finally {
-        setLoading(false);
-        searchInFlight.current = false;
+        setError(
+          json.error ||
+            "We couldn't check this domain right now. Please try again.",
+        );
+        return;
       }
-    },
-    [],
-  );
+      setResults(json.results);
+      setAnchorDomain(json.results[0]?.domain ?? "");
+      setSearched("bulk");
+      setBulkSelected(new Set());
+    } catch (err) {
+      if (gen !== searchGeneration.current) return;
+      if (err instanceof DOMException && err.name === "AbortError") return;
+      setResults([]);
+      setAnchorDomain("");
+      setError("We couldn't check this domain right now. Please try again.");
+    } finally {
+      if (gen === searchGeneration.current) setLoadingPrimary(false);
+    }
+  }, []);
+
+  const runSingle = useCallback(async (queryStr: string) => {
+    const trimmed = queryStr.trim();
+    if (!trimmed) return;
+
+    const gen = ++searchGeneration.current;
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    setLoadingPrimary(true);
+    setLoadingAlternatives(false);
+    setError("");
+    setCartSuccess("");
+    setResults([]);
+    setSearched(trimmed);
+
+    try {
+      const primaryRes = await fetch("/api/domains/search", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ query: trimmed, scope: "primary" }),
+        signal: controller.signal,
+      });
+      const primaryJson = (await primaryRes.json()) as {
+        results?: DomainResult[];
+        error?: string;
+        anchorDomain?: string;
+      };
+      if (gen !== searchGeneration.current) return;
+      if (!primaryRes.ok || !primaryJson.results?.length) {
+        setResults([]);
+        setAnchorDomain("");
+        setError(
+          primaryJson.error ||
+            "We couldn't check this domain right now. Please try again.",
+        );
+        return;
+      }
+      setResults(primaryJson.results);
+      setAnchorDomain(
+        primaryJson.anchorDomain ?? primaryJson.results[0]?.domain ?? "",
+      );
+      setBulkSelected(new Set());
+      setLoadingPrimary(false);
+      setLoadingAlternatives(true);
+
+      const altRes = await fetch("/api/domains/search", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ query: trimmed, scope: "alternatives" }),
+        signal: controller.signal,
+      });
+      const altJson = (await altRes.json()) as {
+        results?: DomainResult[];
+        error?: string;
+      };
+      if (gen !== searchGeneration.current) return;
+      if (altRes.ok && altJson.results) {
+        setResults((prev) => mergeResults(prev, altJson.results!));
+      }
+    } catch (err) {
+      if (gen !== searchGeneration.current) return;
+      if (err instanceof DOMException && err.name === "AbortError") return;
+      setResults([]);
+      setAnchorDomain("");
+      setError("We couldn't check this domain right now. Please try again.");
+    } finally {
+      if (gen === searchGeneration.current) {
+        setLoadingPrimary(false);
+        setLoadingAlternatives(false);
+      }
+    }
+  }, []);
 
   const registerDomain = useCallback(
     async (domain: string) => {
@@ -337,13 +439,18 @@ export function DomainSearchPanel({
         if (!response.ok) {
           setError(
             json.error ||
-              "We couldn't add this domain right now. Please try again.",
+              (response.status === 409
+                ? "This domain is no longer available. Please choose another domain."
+                : "We couldn't add this domain right now. Please try again."),
           );
           return;
         }
-        if (typeof json.count === "number") setCartCount(json.count);
-        else await refreshCartCount();
-        window.location.assign(cartCheckoutHref());
+        const nextCount =
+          typeof json.count === "number" ? json.count : cartCount + 1;
+        setCartCount(nextCount);
+        dispatchDomainCartUpdated(nextCount);
+        setCartSuccess(`${domain} was added to your cart.`);
+        void refreshCartCount();
       } catch {
         setError("We couldn't add this domain right now. Please try again.");
       } finally {
@@ -353,9 +460,7 @@ export function DomainSearchPanel({
     [registering, refreshCartCount],
   );
 
-  const buyableResults = results.filter(
-    (item) => item.status === "available" || item.status === "premium",
-  );
+  const buyableResults = results.filter(isRegisterableRecommendation);
 
   const toggleBulkDomain = useCallback((domain: string) => {
     setBulkSelected((prev) => {
@@ -409,12 +514,16 @@ export function DomainSearchPanel({
         return;
       }
       setCartCount(cartTotal);
+      dispatchDomainCartUpdated(cartTotal);
       if (json.rejected?.length) {
         setError(
           `Some domains could not be added: ${json.rejected.map((r) => r.domain).join(", ")}`,
         );
+      } else {
+        setCartSuccess(
+          `${addedCount} domain${addedCount === 1 ? "" : "s"} added to your cart.`,
+        );
       }
-      window.location.assign(cartCheckoutHref());
     } catch {
       setError("We couldn't add these domains right now. Please try again.");
     } finally {
@@ -424,9 +533,9 @@ export function DomainSearchPanel({
 
   useEffect(() => {
     if (mode === "single" && initialQuery.trim()) {
-      void run({ query: initialQuery });
+      void runSingle(initialQuery);
     }
-  }, [initialQuery, mode, run]);
+  }, [initialQuery, mode, runSingle]);
 
   function onSingleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -434,7 +543,7 @@ export function DomainSearchPanel({
       setError("Please enter a domain name.");
       return;
     }
-    void run({ query });
+    void runSingle(query);
   }
 
   function onBulkSubmit(event: FormEvent<HTMLFormElement>) {
@@ -443,17 +552,28 @@ export function DomainSearchPanel({
       setError(`Add one domain per line, up to ${BULK_LIMIT} at a time.`);
       return;
     }
-    void run({ bulk });
+    void runBulk(bulk);
   }
 
   const exact =
     results.find((item) => item.domain === anchorDomain) ??
     results.find((item) => item.domain === searched) ??
     results[0];
-  const alternatives = results.filter((item) => item !== exact);
+  const recommendationCandidates = results
+    .filter(
+      (item) =>
+        item.domain !== exact?.domain && isRegisterableRecommendation(item),
+    )
+    .sort(sortBySuggestedTld);
+  const checkedCount = results.length;
   const availableCount = results.filter(
-    (item) => item.status === "available" || item.status === "premium",
+    (item) => item.status === "available",
   ).length;
+  const showAvailabilitySummary =
+    mode === "single" &&
+    !loadingPrimary &&
+    !loadingAlternatives &&
+    checkedCount > 0;
 
   return (
     <div
@@ -488,10 +608,14 @@ export function DomainSearchPanel({
         })}
       </nav>
 
-      {cartCount > 0 ? (
-        <p className="mt-3 text-right text-[12px] font-bold text-[#4c1d95]">
-          <Link href={routes.domainCheckout} className="hover:underline">
-            View cart ({cartCount})
+      {cartSuccess ? (
+        <p
+          role="status"
+          className="mt-3 rounded-2xl border border-[#bbf7d0] bg-[#f0fdf4] px-4 py-2.5 text-[13px] font-semibold text-[#166534]"
+        >
+          {cartSuccess}{" "}
+          <Link href={routes.domainCheckout} className="font-bold underline">
+            View cart
           </Link>
         </p>
       ) : null}
@@ -565,7 +689,7 @@ export function DomainSearchPanel({
                   }
                   const next = `${base}${tld}`;
                   setQuery(next);
-                  void run({ query: next });
+                  void runSingle(next);
                 }}
                 className="rounded-full border border-slate-200 px-2.5 py-1 text-[12px] font-bold text-[#4c1d95] transition hover:border-[#c7b8ff] hover:bg-[#f7f4ff]"
               >
@@ -625,15 +749,13 @@ export function DomainSearchPanel({
       ) : null}
 
       <div aria-live="polite" aria-busy={loading} className="mt-5">
-        {loading ? (
+        {loadingPrimary && results.length === 0 ? (
           <div className="space-y-2.5">
-            <SkeletonRow />
-            <SkeletonRow />
             <SkeletonRow />
           </div>
         ) : null}
 
-        {!loading && results.length > 0 ? (
+        {results.length > 0 ? (
           <div key={searched} className="hb-fade-up space-y-2.5">
             {mode === "bulk" && buyableResults.length > 0 ? (
               <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-[#e9e5ff] bg-[#f8f5ff] px-3 py-2">
@@ -664,11 +786,14 @@ export function DomainSearchPanel({
                 </button>
               </div>
             ) : null}
-            <div className="flex flex-wrap items-center gap-2 text-[12.5px] font-semibold text-slate-500">
-              <BadgeCheck className="size-4 text-[#15803d]" />
-              {availableCount} of {results.length} options are free to register
-              right now.
-            </div>
+            {showAvailabilitySummary ? (
+              <div className="flex flex-wrap items-center gap-2 text-[12.5px] font-semibold text-slate-500">
+                <BadgeCheck className="size-4 text-[#15803d]" />
+                {availableCount > 0
+                  ? `${availableCount} of ${checkedCount} checked extensions are available to register.`
+                  : "No alternative extensions are available for this name right now."}
+              </div>
+            ) : null}
             {exact ? (
               <ResultRow
                 result={exact}
@@ -683,29 +808,64 @@ export function DomainSearchPanel({
                 onBulkToggle={toggleBulkDomain}
               />
             ) : null}
-            {alternatives.length > 0 ? (
+            {mode === "single" && loadingAlternatives ? (
+              <p className="flex items-center gap-2 pt-1 text-[12.5px] font-semibold text-slate-500">
+                <Loader2 className="size-4 animate-spin text-[#673de6]" />
+                Checking other extensions…
+              </p>
+            ) : null}
+            {mode === "single" && recommendationCandidates.length > 0 ? (
               <>
                 <p className="pt-2 text-[12px] font-bold tracking-wide text-slate-500 uppercase">
-                  {mode === "bulk" ? "Your list" : "Other great matches"}
+                  {exact?.status === "taken"
+                    ? "Available alternatives"
+                    : "Other available extensions"}
                 </p>
-                <div className="grid gap-2.5 2xl:grid-cols-2">
-                  {alternatives.map((item) => (
+                <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3">
+                  {recommendationCandidates.map((item) => (
                     <ResultRow
                       key={item.domain}
                       result={item}
                       onRegister={registerDomain}
                       registering={registering}
-                      bulkSelectable={
-                        mode === "bulk" &&
-                        (item.status === "available" ||
-                          item.status === "premium")
-                      }
-                      bulkSelected={bulkSelected.has(item.domain)}
-                      onBulkToggle={toggleBulkDomain}
                     />
                   ))}
                 </div>
               </>
+            ) : null}
+            {mode === "bulk" ? (
+              <>
+                <p className="pt-2 text-[12px] font-bold tracking-wide text-slate-500 uppercase">
+                  Your list
+                </p>
+                <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3">
+                  {results
+                    .filter((item) => item.domain !== exact?.domain)
+                    .map((item) => (
+                      <ResultRow
+                        key={item.domain}
+                        result={item}
+                        onRegister={registerDomain}
+                        registering={registering}
+                        bulkSelectable={
+                          item.status === "available" ||
+                          item.status === "premium"
+                        }
+                        bulkSelected={bulkSelected.has(item.domain)}
+                        onBulkToggle={toggleBulkDomain}
+                      />
+                    ))}
+                </div>
+              </>
+            ) : null}
+            {mode === "single" &&
+            exact?.status === "taken" &&
+            !loadingAlternatives &&
+            recommendationCandidates.length === 0 ? (
+              <p className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-[13px] font-medium text-slate-600">
+                We couldn&apos;t find any available extensions for this name.
+                Try a different spelling or search another brand.
+              </p>
             ) : null}
           </div>
         ) : null}

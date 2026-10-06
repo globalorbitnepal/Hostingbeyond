@@ -13,10 +13,14 @@ export const runtime = "nodejs";
 
 const MAX_BULK = 50;
 
+type SearchScope = "full" | "primary" | "alternatives";
+
 type SearchBody = {
   query?: string;
   tlds?: string[];
   bulk?: string;
+  /** `primary` = anchor only; `alternatives` = other extensions; default `full`. */
+  scope?: SearchScope;
 };
 
 export async function POST(request: Request) {
@@ -72,14 +76,41 @@ export async function POST(request: Request) {
       ? [tld, ...SUGGESTED_TLDS.filter((item) => item !== tld)]
       : [...new Set([...requested, ...SUGGESTED_TLDS])];
 
-    const names = extensions.map((item) => `${name}${item}`);
-    const anchorDomain = tld ? `${name}${tld}` : (names[0] ?? `${name}.com`);
+    const anchorDomain = tld
+      ? `${name}${tld}`
+      : `${name}${extensions[0] ?? ".com"}`;
+
+    const scope: SearchScope =
+      body?.scope === "primary" ||
+      body?.scope === "alternatives" ||
+      body?.scope === "full"
+        ? body.scope
+        : "full";
+
+    let names: string[];
+    if (scope === "primary") {
+      names = [anchorDomain];
+    } else if (scope === "alternatives") {
+      names = extensions
+        .map((item) => `${name}${item}`)
+        .filter((fqdn) => fqdn.toLowerCase() !== anchorDomain.toLowerCase());
+    } else {
+      names = extensions.map((item) => `${name}${item}`);
+    }
+
     const { results, source } = await lookupDomainNames(names, {
       query,
       tlds: extensions,
     });
 
-    return NextResponse.json({ results, source, anchorDomain, query });
+    return NextResponse.json({
+      results,
+      source,
+      anchorDomain,
+      query,
+      scope,
+      extensionsChecked: names.length,
+    });
   } catch (error) {
     const message =
       error instanceof Error && error.name === "AbortError"

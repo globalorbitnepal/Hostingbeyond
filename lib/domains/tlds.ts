@@ -176,13 +176,14 @@ export const TLD_PRICES: TldPrice[] = [
 ];
 
 /** Extensions checked automatically for every single-domain search. */
+/** Order used for multi-TLD search and recommendation cards. */
 export const SUGGESTED_TLDS = [
   ".com",
   ".net",
   ".org",
+  ".co",
   ".io",
   ".dev",
-  ".co",
   ".store",
   ".online",
   ".ai",

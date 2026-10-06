@@ -112,7 +112,7 @@ export function DomainSearchView({
             </ol>
           </nav>
 
-          <div className="mx-auto max-w-4xl text-center lg:max-w-[52rem]">
+          <div className="mx-auto w-full max-w-[min(100%,76rem)] text-center lg:text-left">
             <p className="inline-flex items-center gap-2 rounded-full border border-white/40 bg-white/12 px-3.5 py-1.5 text-[11px] font-bold tracking-[0.18em] text-white uppercase backdrop-blur-md">
               <Sparkles className="size-3.5" />
               {page.eyebrow}
