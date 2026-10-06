@@ -25,6 +25,7 @@ import { routes } from "@/config/routes";
 import { loginPathForDomainCheckout } from "@/lib/domains/domain-purchase-intent";
 import type { DomainResult } from "@/lib/domains/availability";
 import { dispatchDomainCartUpdated } from "@/lib/domains/domain-cart-events";
+import { sortByRecommendationPriority } from "@/lib/domains/recommendation-tlds";
 import { SUGGESTED_TLDS, formatPrice } from "@/lib/domains/tlds";
 import { cn } from "@/lib/utils";
 
@@ -63,10 +64,8 @@ function countBulkLines(value: string) {
   return Math.min(BULK_LIMIT, value.split(/[\s,;]+/).filter(Boolean).length);
 }
 
-function sortBySuggestedTld(a: DomainResult, b: DomainResult) {
-  const ia = SUGGESTED_TLDS.indexOf(a.tld);
-  const ib = SUGGESTED_TLDS.indexOf(b.tld);
-  return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+function sortRecommendations(a: DomainResult, b: DomainResult) {
+  return sortByRecommendationPriority(a.tld, b.tld);
 }
 
 /** Provider-confirmed registerable options for recommendation cards. */
@@ -262,6 +261,7 @@ export function DomainSearchPanel({
   const [bulk, setBulk] = useState("");
   const [loadingPrimary, setLoadingPrimary] = useState(false);
   const [loadingAlternatives, setLoadingAlternatives] = useState(false);
+  const [alternativesComplete, setAlternativesComplete] = useState(false);
   const [error, setError] = useState("");
   const [cartSuccess, setCartSuccess] = useState("");
   const [results, setResults] = useState<DomainResult[]>([]);
@@ -304,6 +304,7 @@ export function DomainSearchPanel({
 
     setLoadingPrimary(true);
     setLoadingAlternatives(false);
+    setAlternativesComplete(false);
     setError("");
     setCartSuccess("");
     setResults([]);
@@ -353,68 +354,80 @@ export function DomainSearchPanel({
     abortRef.current = controller;
 
     setLoadingPrimary(true);
-    setLoadingAlternatives(false);
+    setLoadingAlternatives(true);
+    setAlternativesComplete(false);
     setError("");
     setCartSuccess("");
     setResults([]);
     setSearched(trimmed);
 
-    try {
-      const primaryRes = await fetch("/api/domains/search", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ query: trimmed, scope: "primary" }),
-        signal: controller.signal,
-      });
-      const primaryJson = (await primaryRes.json()) as {
-        results?: DomainResult[];
-        error?: string;
-        anchorDomain?: string;
-      };
-      if (gen !== searchGeneration.current) return;
-      if (!primaryRes.ok || !primaryJson.results?.length) {
+    const primaryPromise = fetch("/api/domains/search", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ query: trimmed, scope: "primary" }),
+      signal: controller.signal,
+    });
+
+    const altPromise = fetch("/api/domains/search", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ query: trimmed, scope: "alternatives" }),
+      signal: controller.signal,
+    });
+
+    void primaryPromise
+      .then(async (primaryRes) => {
+        const primaryJson = (await primaryRes.json()) as {
+          results?: DomainResult[];
+          error?: string;
+          anchorDomain?: string;
+        };
+        if (gen !== searchGeneration.current) return;
+        if (!primaryRes.ok || !primaryJson.results?.length) {
+          setResults([]);
+          setAnchorDomain("");
+          setError(
+            primaryJson.error ||
+              "We couldn't check this domain right now. Please try again.",
+          );
+          return;
+        }
+        setResults((prev) => mergeResults(primaryJson.results!, prev));
+        setAnchorDomain(
+          primaryJson.anchorDomain ?? primaryJson.results[0]?.domain ?? "",
+        );
+        setBulkSelected(new Set());
+      })
+      .catch((err) => {
+        if (gen !== searchGeneration.current) return;
+        if (err instanceof DOMException && err.name === "AbortError") return;
         setResults([]);
         setAnchorDomain("");
-        setError(
-          primaryJson.error ||
-            "We couldn't check this domain right now. Please try again.",
-        );
-        return;
-      }
-      setResults(primaryJson.results);
-      setAnchorDomain(
-        primaryJson.anchorDomain ?? primaryJson.results[0]?.domain ?? "",
-      );
-      setBulkSelected(new Set());
-      setLoadingPrimary(false);
-      setLoadingAlternatives(true);
-
-      const altRes = await fetch("/api/domains/search", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ query: trimmed, scope: "alternatives" }),
-        signal: controller.signal,
+        setError("We couldn't check this domain right now. Please try again.");
+      })
+      .finally(() => {
+        if (gen === searchGeneration.current) setLoadingPrimary(false);
       });
-      const altJson = (await altRes.json()) as {
-        results?: DomainResult[];
-        error?: string;
-      };
-      if (gen !== searchGeneration.current) return;
-      if (altRes.ok && altJson.results) {
-        setResults((prev) => mergeResults(prev, altJson.results!));
-      }
-    } catch (err) {
-      if (gen !== searchGeneration.current) return;
-      if (err instanceof DOMException && err.name === "AbortError") return;
-      setResults([]);
-      setAnchorDomain("");
-      setError("We couldn't check this domain right now. Please try again.");
-    } finally {
-      if (gen === searchGeneration.current) {
-        setLoadingPrimary(false);
-        setLoadingAlternatives(false);
-      }
-    }
+
+    void altPromise
+      .then(async (altRes) => {
+        const altJson = (await altRes.json()) as {
+          results?: DomainResult[];
+        };
+        if (gen !== searchGeneration.current) return;
+        if (altRes.ok && altJson.results) {
+          setResults((prev) => mergeResults(prev, altJson.results!));
+        }
+      })
+      .catch((err) => {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+      })
+      .finally(() => {
+        if (gen === searchGeneration.current) {
+          setLoadingAlternatives(false);
+          setAlternativesComplete(true);
+        }
+      });
   }, []);
 
   const registerDomain = useCallback(
@@ -564,16 +577,14 @@ export function DomainSearchPanel({
       (item) =>
         item.domain !== exact?.domain && isRegisterableRecommendation(item),
     )
-    .sort(sortBySuggestedTld);
-  const checkedCount = results.length;
-  const availableCount = results.filter(
-    (item) => item.status === "available",
-  ).length;
+    .sort(sortRecommendations);
+  const recommendationAvailableCount = recommendationCandidates.length;
   const showAvailabilitySummary =
     mode === "single" &&
     !loadingPrimary &&
-    !loadingAlternatives &&
-    checkedCount > 0;
+    alternativesComplete &&
+    recommendationCandidates.length >= 0 &&
+    exact != null;
 
   return (
     <div
@@ -786,12 +797,11 @@ export function DomainSearchPanel({
                 </button>
               </div>
             ) : null}
-            {showAvailabilitySummary ? (
+            {showAvailabilitySummary && recommendationAvailableCount > 0 ? (
               <div className="flex flex-wrap items-center gap-2 text-[12.5px] font-semibold text-slate-500">
                 <BadgeCheck className="size-4 text-[#15803d]" />
-                {availableCount > 0
-                  ? `${availableCount} of ${checkedCount} checked extensions are available to register.`
-                  : "No alternative extensions are available for this name right now."}
+                {recommendationAvailableCount} available alternative
+                {recommendationAvailableCount === 1 ? "" : "s"} found.
               </div>
             ) : null}
             {exact ? (
@@ -811,7 +821,7 @@ export function DomainSearchPanel({
             {mode === "single" && loadingAlternatives ? (
               <p className="flex items-center gap-2 pt-1 text-[12.5px] font-semibold text-slate-500">
                 <Loader2 className="size-4 animate-spin text-[#673de6]" />
-                Checking other extensions…
+                Finding available alternatives…
               </p>
             ) : null}
             {mode === "single" && recommendationCandidates.length > 0 ? (
@@ -860,11 +870,12 @@ export function DomainSearchPanel({
             ) : null}
             {mode === "single" &&
             exact?.status === "taken" &&
+            alternativesComplete &&
             !loadingAlternatives &&
             recommendationCandidates.length === 0 ? (
               <p className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-[13px] font-medium text-slate-600">
-                We couldn&apos;t find any available extensions for this name.
-                Try a different spelling or search another brand.
+                No available alternatives were found for this name. Try a
+                different spelling or search another brand.
               </p>
             ) : null}
           </div>
@@ -875,7 +886,7 @@ export function DomainSearchPanel({
             <Sparkles className="mt-0.5 size-4 shrink-0 text-[#673de6]" />
             {mode === "bulk"
               ? `Paste your shortlist — we check every line and show first-year plus renewal pricing side by side.`
-              : `Type any idea — we check ${SUGGESTED_TLDS.length} extensions at once and show first-year plus renewal pricing before you buy.`}
+              : `Type any idea — we check popular extensions in parallel and show first-year plus renewal pricing before you buy.`}
           </p>
         ) : null}
       </div>

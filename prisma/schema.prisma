@@ -462,10 +462,13 @@ model DomainTldPrice {
   supplierRestore      Decimal?  @db.Decimal(10, 4)
   supplierCurrency     String    @default("USD")
   supplierSyncedAt     DateTime?
+  supplierMaxRegisterYears Int?
   retailRegister       Decimal   @db.Decimal(10, 2)
   retailRenew          Decimal   @db.Decimal(10, 2)
   retailTransfer       Decimal   @db.Decimal(10, 2)
   retailRestore        Decimal?  @db.Decimal(10, 2)
+  retailRegisterByYear Json?
+  retailRenewByYear    Json?
   retailCurrency       String    @default("USD")
   minMarginPercent     Decimal   @default(0) @db.Decimal(5, 2)
   premiumMarkupPercent Decimal?  @db.Decimal(5, 2)

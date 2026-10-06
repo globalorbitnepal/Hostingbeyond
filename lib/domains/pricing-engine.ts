@@ -5,20 +5,21 @@ function dec(n: number) {
   return n;
 }
 
-/** Seeds DomainTldPrice from static catalogue when table is empty. */
+/** Ensures catalogue TLDs exist in DomainTldPrice without overwriting retail. */
 export async function ensureDomainTldPricesSeeded() {
-  const count = await prisma.domainTldPrice.count();
-  if (count > 0) return;
-
-  await prisma.domainTldPrice.createMany({
-    data: TLD_PRICES.map((row) => ({
-      tld: row.tld,
-      retailRegister: dec(row.register),
-      retailRenew: dec(row.renew),
-      retailTransfer: dec(row.transfer),
-      enabled: true,
-    })),
-  });
+  for (const row of TLD_PRICES) {
+    await prisma.domainTldPrice.upsert({
+      where: { tld: row.tld },
+      create: {
+        tld: row.tld,
+        retailRegister: dec(row.register),
+        retailRenew: dec(row.renew),
+        retailTransfer: dec(row.transfer),
+        enabled: true,
+      },
+      update: {},
+    });
+  }
 }
 
 export type RetailQuote = {

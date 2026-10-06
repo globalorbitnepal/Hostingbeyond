@@ -173,6 +173,41 @@ export const TLD_PRICES: TldPrice[] = [
     categories: ["technology"],
     note: "Two-year minimum term",
   },
+  {
+    tld: ".app",
+    register: 14.99,
+    renew: 19.99,
+    transfer: 19.99,
+    categories: ["technology"],
+  },
+  {
+    tld: ".chat",
+    register: 5.99,
+    renew: 34.99,
+    transfer: 29.99,
+    categories: ["technology", "creative"],
+  },
+  {
+    tld: ".studio",
+    register: 9.99,
+    renew: 34.99,
+    transfer: 29.99,
+    categories: ["creative"],
+  },
+  {
+    tld: ".fun",
+    register: 2.99,
+    renew: 34.99,
+    transfer: 29.99,
+    categories: ["creative"],
+  },
+  {
+    tld: ".cc",
+    register: 9.99,
+    renew: 14.99,
+    transfer: 12.99,
+    categories: ["popular"],
+  },
 ];
 
 /** Extensions checked automatically for every single-domain search. */

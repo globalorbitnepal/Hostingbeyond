@@ -3,6 +3,8 @@ import type { SupplierPricing } from "@/lib/domains/providers/types";
 export type ProviderTldPricing = SupplierPricing & {
   tld: string;
   restore: number | null;
+  /** Provider-supported max registration term in years, when known. */
+  maxRegisterYears?: number | null;
 };
 
 export type ProviderDomainDetails = {
@@ -46,6 +48,9 @@ export interface DomainRegistrarProvider {
   ): Promise<import("@/lib/domains/providers/types").ProviderAvailabilityRow[]>;
 
   getPricing(tlds: string[]): Promise<ProviderTldPricing[]>;
+
+  /** Full registrar TLD catalogue (paginated upstream). */
+  listAllTldPricing?(): Promise<ProviderTldPricing[]>;
 
   registerDomain(input: ProviderRegisterInput): Promise<ProviderRegisterResult>;
 

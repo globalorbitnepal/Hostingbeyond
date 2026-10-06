@@ -160,6 +160,52 @@ function parsePrice(value: unknown): number | null {
   return null;
 }
 
+function maxYearsFromPriceBlock(block: unknown): number | null {
+  if (Array.isArray(block) && block.length > 0) {
+    return block.length;
+  }
+  return null;
+}
+
+function parseTldPricingRow(raw: unknown): ProviderTldPricing | null {
+  if (!raw || typeof raw !== "object") return null;
+  const item = raw as Record<string, unknown>;
+  const name = String(item.name ?? "")
+    .toLowerCase()
+    .replace(/^\./, "");
+  if (!name) return null;
+  const prices = (item.prices as unknown[])?.[0] as
+    Record<string, unknown> | undefined;
+  const pick = (key: string) => {
+    const block = prices?.[key];
+    if (block && typeof block === "object") {
+      const o = block as Record<string, unknown>;
+      if ("price" in o) return parsePrice(o.price);
+      const first = Array.isArray(block) ? block[0] : null;
+      if (first && typeof first === "object") {
+        return parsePrice((first as Record<string, unknown>).price);
+      }
+    }
+    return null;
+  };
+  const regBlock = prices?.registration ?? prices?.register;
+  const maxRegisterYears =
+    maxYearsFromPriceBlock(regBlock) ??
+    (typeof item.maxRegistrationPeriod === "number"
+      ? item.maxRegistrationPeriod
+      : null);
+
+  return {
+    tld: `.${name}`,
+    register: pick("registration") ?? pick("register"),
+    renew: pick("renew"),
+    transfer: pick("transfer"),
+    restore: pick("restore"),
+    currency: "USD",
+    maxRegisterYears,
+  };
+}
+
 function parseDomainInfoResponse(
   data: unknown,
   domain: string,
@@ -403,32 +449,39 @@ export function createDomainNameApiProvider(
       const out: ProviderTldPricing[] = [];
 
       for (const raw of items) {
-        if (!raw || typeof raw !== "object") continue;
-        const item = raw as Record<string, unknown>;
-        const name = String(item.name ?? "").toLowerCase();
-        if (!wanted.has(name)) continue;
-        const prices = (item.prices as unknown[])?.[0] as
-          Record<string, unknown> | undefined;
-        const pick = (key: string) => {
-          const block = prices?.[key];
-          if (block && typeof block === "object") {
-            const o = block as Record<string, unknown>;
-            if ("price" in o) return parsePrice(o.price);
-            const first = Array.isArray(block) ? block[0] : null;
-            if (first && typeof first === "object") {
-              return parsePrice((first as Record<string, unknown>).price);
-            }
-          }
-          return null;
-        };
-        out.push({
-          tld: `.${name}`,
-          register: pick("registration") ?? pick("register"),
-          renew: pick("renew"),
-          transfer: pick("transfer"),
-          restore: pick("restore"),
-          currency: "USD",
-        });
+        const row = parseTldPricingRow(raw);
+        if (!row) continue;
+        const bare = row.tld.replace(/^\./, "");
+        if (!wanted.has(bare)) continue;
+        out.push(row);
+      }
+      return out;
+    },
+
+    async listAllTldPricing(): Promise<ProviderTldPricing[]> {
+      const pageSize = 100;
+      let skip = 0;
+      const out: ProviderTldPricing[] = [];
+      for (;;) {
+        const json = (await apiRequestWithTimeout(
+          config,
+          fetchImpl,
+          "GET",
+          "products/tlds",
+          {
+            MaxResultCount: String(pageSize),
+            SkipCount: String(skip),
+          },
+          REQUEST_TIMEOUT_MS,
+        )) as { items?: unknown[] };
+        const items = Array.isArray(json.items) ? json.items : [];
+        if (!items.length) break;
+        for (const raw of items) {
+          const row = parseTldPricingRow(raw);
+          if (row) out.push(row);
+        }
+        skip += items.length;
+        if (items.length < pageSize) break;
       }
       return out;
     },

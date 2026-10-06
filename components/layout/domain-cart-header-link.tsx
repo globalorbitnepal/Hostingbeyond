@@ -48,26 +48,32 @@ export function DomainCartHeaderLink({
       window.removeEventListener(DOMAIN_CART_UPDATED_EVENT, onUpdate);
   }, [refresh]);
 
-  const label = count > 0 ? `Cart (${count})` : "Cart";
+  const ariaLabel = count > 0 ? `Cart, ${count} items` : "Cart";
 
   return (
     <Link
       href={routes.domainCheckout}
       className={cn(
-        "relative inline-flex items-center justify-center gap-1.5 rounded-full border border-slate-200/90 bg-white font-semibold text-slate-800 shadow-[0_4px_14px_rgba(15,23,42,0.06)] transition hover:border-slate-300 hover:bg-slate-50",
-        compact ? "size-9 shrink-0" : "h-[38px] px-3 text-[13px] max-xl:px-2.5",
+        "relative inline-flex items-center justify-center gap-2 rounded-full border border-slate-200/90 bg-white font-semibold text-slate-800 shadow-[0_4px_14px_rgba(15,23,42,0.06)] transition hover:border-slate-300 hover:bg-slate-50",
+        compact ? "size-9 shrink-0" : "h-[38px] px-3 text-[13px]",
       )}
-      aria-label={label}
+      aria-label={ariaLabel}
     >
-      <ShoppingCart className="size-4 text-slate-600" aria-hidden />
-      {!compact ? <span className="hidden xl:inline">{label}</span> : null}
+      <ShoppingCart
+        className="size-[18px] shrink-0 text-slate-700"
+        strokeWidth={2}
+        aria-hidden
+      />
+      {!compact ? (
+        <span className="hidden text-slate-800 lg:inline">Cart</span>
+      ) : null}
       {count > 0 ? (
         <span
           className={cn(
-            "absolute flex items-center justify-center rounded-full bg-[#673de6] font-bold text-white",
+            "flex items-center justify-center rounded-full bg-[#673de6] leading-none font-bold text-white",
             compact
-              ? "-top-1 -right-1 size-4 text-[9px]"
-              : "xl:static xl:ml-0.5 xl:inline-flex xl:size-auto xl:rounded-full xl:bg-[#ede9fe] xl:px-1.5 xl:py-0.5 xl:text-[11px] xl:text-[#4c1d95]",
+              ? "absolute -top-1 -right-1 h-4 min-w-4 px-1 text-[10px]"
+              : "lg:static lg:min-w-[1.25rem] lg:px-1.5 lg:py-0.5 lg:text-[11px]",
           )}
         >
           {count}

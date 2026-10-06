@@ -57,7 +57,7 @@ export const PUBLIC_PAGE_SEO_REGISTRY: PublicPageSeoEntry[] = [
         "domain name search, buy domain, register domain, cheap domains, WHOIS privacy, domain lookup, .com domain",
       ogTitle: "Domain Name Search — Check Availability & Register",
       ogDescription:
-        "Search 300+ extensions, compare renewal pricing upfront, and register with free WHOIS privacy on eligible TLDs.",
+        "Search popular extensions, compare renewal pricing upfront, and register with free WHOIS privacy on eligible TLDs.",
     },
   },
   {

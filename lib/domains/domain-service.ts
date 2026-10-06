@@ -86,9 +86,7 @@ export async function mapRowToCustomerResult(
       register: null,
       renew: retail.renew,
       transfer: retail.transfer,
-      message:
-        row.message ??
-        "Already registered — transfer it or try another extension.",
+      message: row.message ?? "This domain is already registered.",
     };
   }
 
@@ -167,6 +165,47 @@ export async function mapRowToCustomerResult(
   };
 }
 
+function availabilityBatchSize(): number {
+  const raw = Number(process.env.DOMAIN_AVAILABILITY_BATCH_SIZE ?? 25);
+  if (!Number.isFinite(raw) || raw < 5) return 25;
+  return Math.min(Math.max(raw, 5), 50);
+}
+
+function availabilityBatchConcurrency(): number {
+  const raw = Number(process.env.DOMAIN_AVAILABILITY_BATCH_CONCURRENCY ?? 2);
+  if (!Number.isFinite(raw) || raw < 1) return 2;
+  return Math.min(Math.max(raw, 1), 4);
+}
+
+async function checkAvailabilityInBatches(
+  provider: NonNullable<ReturnType<typeof resolveAvailabilityProvider>>,
+  fqdns: string[],
+): Promise<import("@/lib/domains/providers/types").ProviderAvailabilityRow[]> {
+  const size = availabilityBatchSize();
+  if (fqdns.length <= size) {
+    return provider.checkAvailability(fqdns);
+  }
+  const chunks: string[][] = [];
+  for (let i = 0; i < fqdns.length; i += size) {
+    chunks.push(fqdns.slice(i, i + size));
+  }
+  const limit = availabilityBatchConcurrency();
+  const results: import("@/lib/domains/providers/types").ProviderAvailabilityRow[] =
+    [];
+  let index = 0;
+  async function worker() {
+    while (index < chunks.length) {
+      const chunkIndex = index++;
+      const part = await provider.checkAvailability(chunks[chunkIndex]!);
+      results.push(...part);
+    }
+  }
+  await Promise.all(
+    Array.from({ length: Math.min(limit, chunks.length) }, () => worker()),
+  );
+  return results;
+}
+
 async function searchDomainsWithProviderUncached(
   fqdns: string[],
 ): Promise<{ results: DomainResult[]; source: "registrar" | "catalog" }> {
@@ -179,7 +218,7 @@ async function searchDomainsWithProviderUncached(
   const pricingStarted = Date.now();
   try {
     const providerStarted = Date.now();
-    const rows = await provider.checkAvailability(fqdns);
+    const rows = await checkAvailabilityInBatches(provider, fqdns);
     const providerRequestMs = Date.now() - providerStarted;
 
     const byDomain = new Map(rows.map((r) => [r.domain.toLowerCase(), r]));
@@ -258,38 +297,23 @@ export async function searchDomainsWithProvider(
   return withSearchDedup(key, () => searchDomainsWithProviderUncached(fqdns));
 }
 
-export async function refreshSupplierTldPricesFromProvider(): Promise<number> {
-  const provider = resolveAvailabilityProvider();
-  if (!provider?.getPricing) {
-    throw new Error("provider_unavailable");
-  }
-
+export async function refreshSupplierTldPricesFromProvider(
+  adminUserId?: string,
+) {
+  const { syncSupplierCatalogueFromProvider } =
+    await import("@/lib/domains/supplier-catalogue-sync");
   const started = Date.now();
-  const rows = await prisma.domainTldPrice.findMany({
-    where: { enabled: true },
-  });
-  const tlds = rows.map((r) => r.tld.replace(/^\./, ""));
-  const pricing = await provider.getPricing(tlds);
-
-  let updated = 0;
-  for (const item of pricing) {
-    const tld = item.tld.startsWith(".") ? item.tld : `.${item.tld}`;
-    await prisma.domainTldPrice.updateMany({
-      where: { tld },
-      data: {
-        supplierRegister: item.register,
-        supplierRenew: item.renew,
-        supplierTransfer: item.transfer,
-        supplierRestore: item.restore,
-        supplierCurrency: item.currency,
-        supplierSyncedAt: new Date(),
-      },
-    });
-    updated += 1;
-  }
-
-  await logProviderCall("getPricing", started, true, undefined, undefined, {
-    updated,
-  });
-  return updated;
+  const result = await syncSupplierCatalogueFromProvider(adminUserId);
+  await logProviderCall(
+    "listAllTldPricing",
+    started,
+    true,
+    undefined,
+    undefined,
+    {
+      ...result,
+      syncedAt: result.syncedAt.toISOString(),
+    },
+  );
+  return result;
 }

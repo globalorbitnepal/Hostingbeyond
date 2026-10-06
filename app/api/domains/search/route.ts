@@ -1,14 +1,19 @@
 import { NextResponse } from "next/server";
 
+import type { DomainResult } from "@/lib/domains/availability";
 import { parseBulkInput } from "@/lib/domains/availability";
 import { lookupDomainNames, lookupErrorMessage } from "@/lib/domains/lookup";
 import { normalizeDomainSearchInput } from "@/lib/domains/normalize";
 import {
+  buildRecommendationFqdns,
+  getRecommendationTldPool,
+  recommendationResultLimit,
+  sortByRecommendationPriority,
+} from "@/lib/domains/recommendation-tlds";
+import {
   clientKeyFromRequest,
   rateLimitDomainSearch,
 } from "@/lib/domains/rate-limit";
-import { SUGGESTED_TLDS } from "@/lib/domains/tlds";
-
 export const runtime = "nodejs";
 
 const MAX_BULK = 50;
@@ -22,6 +27,12 @@ type SearchBody = {
   /** `primary` = anchor only; `alternatives` = other extensions; default `full`. */
   scope?: SearchScope;
 };
+
+function isRegisterableRecommendation(result: DomainResult) {
+  if (result.status === "available") return true;
+  if (result.status === "premium" && result.register != null) return true;
+  return false;
+}
 
 export async function POST(request: Request) {
   const clientKey = clientKeyFromRequest(request);
@@ -69,12 +80,13 @@ export async function POST(request: Request) {
     }
 
     const { name, tld, query } = normalized;
+    const recommendationPool = await getRecommendationTldPool();
     const requested = (body?.tlds ?? []).filter((item) =>
-      SUGGESTED_TLDS.includes(item),
+      recommendationPool.includes(item.toLowerCase()),
     );
     const extensions = tld
-      ? [tld, ...SUGGESTED_TLDS.filter((item) => item !== tld)]
-      : [...new Set([...requested, ...SUGGESTED_TLDS])];
+      ? [tld, ...recommendationPool.filter((item) => item !== tld)]
+      : [...new Set([...requested, ...recommendationPool])];
 
     const anchorDomain = tld
       ? `${name}${tld}`
@@ -91,9 +103,7 @@ export async function POST(request: Request) {
     if (scope === "primary") {
       names = [anchorDomain];
     } else if (scope === "alternatives") {
-      names = extensions
-        .map((item) => `${name}${item}`)
-        .filter((fqdn) => fqdn.toLowerCase() !== anchorDomain.toLowerCase());
+      names = buildRecommendationFqdns(name, anchorDomain, recommendationPool);
     } else {
       names = extensions.map((item) => `${name}${item}`);
     }
@@ -103,13 +113,24 @@ export async function POST(request: Request) {
       tlds: extensions,
     });
 
+    let responseResults = results;
+    if (scope === "alternatives") {
+      const limit = recommendationResultLimit();
+      responseResults = results
+        .filter(isRegisterableRecommendation)
+        .sort((a, b) => sortByRecommendationPriority(a.tld, b.tld))
+        .slice(0, limit);
+    }
+
     return NextResponse.json({
-      results,
+      results: responseResults,
       source,
       anchorDomain,
       query,
       scope,
       extensionsChecked: names.length,
+      recommendationPoolSize: recommendationPool.length,
+      alternativesComplete: scope === "alternatives",
     });
   } catch (error) {
     const message =
