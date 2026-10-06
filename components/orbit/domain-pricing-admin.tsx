@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Pencil, X } from "lucide-react";
+import { Loader2, Pencil, Search, X } from "lucide-react";
 
 type TldRow = {
   id: string;
@@ -62,6 +62,10 @@ export function OrbitDomainPricingAdmin() {
   const [bulkSelected, setBulkSelected] = useState<Set<string>>(new Set());
   const [bulkRegister, setBulkRegister] = useState("");
   const [bulkRenew, setBulkRenew] = useState("");
+  const [tldQuery, setTldQuery] = useState("");
+  const [supplierFilter, setSupplierFilter] = useState<
+    "all" | "synced" | "never" | "noReg" | "noRenew" | "noTransfer"
+  >("all");
 
   async function load() {
     setLoading(true);
@@ -87,6 +91,28 @@ export function OrbitDomainPricingAdmin() {
     const max = Math.min(Math.max(maxYearsForEdit ?? 5, 1), 5);
     return Array.from({ length: max }, (_, i) => String(i + 1));
   }, [maxYearsForEdit]);
+
+  const filteredRows = useMemo(() => {
+    const q = tldQuery.trim().toLowerCase().replace(/^\./, "");
+    return rows.filter((row) => {
+      const bare = row.tld.toLowerCase().replace(/^\./, "");
+      if (q && !bare.includes(q) && !row.tld.toLowerCase().includes(q)) {
+        return false;
+      }
+      if (supplierFilter === "synced" && !row.supplierSyncedAt) return false;
+      if (supplierFilter === "never" && row.supplierSyncedAt) return false;
+      if (supplierFilter === "noReg" && row.supplierRegister != null) {
+        return false;
+      }
+      if (supplierFilter === "noRenew" && row.supplierRenew != null) {
+        return false;
+      }
+      if (supplierFilter === "noTransfer" && row.supplierTransfer != null) {
+        return false;
+      }
+      return true;
+    });
+  }, [rows, tldQuery, supplierFilter]);
 
   function openEdit(row: TldRow) {
     setEditing(row);
@@ -280,67 +306,120 @@ export function OrbitDomainPricingAdmin() {
       {loading ? (
         <p className="text-sm text-slate-500">Loading…</p>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
-          <table className="min-w-full text-left text-sm">
-            <thead className="border-b bg-slate-50 text-[11px] font-bold text-slate-500 uppercase">
-              <tr>
-                <th className="px-3 py-3">Sel.</th>
-                <th className="px-3 py-3">TLD</th>
-                <th className="px-3 py-3">Supplier reg.</th>
-                <th className="px-3 py-3">Supplier renew</th>
-                <th className="px-3 py-3">Supplier transfer</th>
-                <th className="px-3 py-3">Retail reg.</th>
-                <th className="px-3 py-3">Retail renew</th>
-                <th className="px-3 py-3">Retail transfer</th>
-                <th className="px-3 py-3">Max years</th>
-                <th className="px-3 py-3">Sync</th>
-                <th className="px-3 py-3" />
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.id} className="border-b last:border-0">
-                  <td className="px-3 py-2">
-                    <input
-                      type="checkbox"
-                      checked={bulkSelected.has(row.tld)}
-                      onChange={() => toggleBulk(row.tld)}
-                      aria-label={`Select ${row.tld}`}
-                    />
-                  </td>
-                  <td className="px-3 py-2 font-bold">{row.tld}</td>
-                  <td className="px-3 py-2 text-slate-600">
-                    {money(row.supplierRegister)}
-                  </td>
-                  <td className="px-3 py-2 text-slate-600">
-                    {money(row.supplierRenew)}
-                  </td>
-                  <td className="px-3 py-2 text-slate-600">
-                    {money(row.supplierTransfer)}
-                  </td>
-                  <td className="px-3 py-2">{money(row.retailRegister)}</td>
-                  <td className="px-3 py-2">{money(row.retailRenew)}</td>
-                  <td className="px-3 py-2">{money(row.retailTransfer)}</td>
-                  <td className="px-3 py-2 text-slate-600">
-                    {row.supplierMaxRegisterYears ?? "—"}
-                  </td>
-                  <td className="px-3 py-2 text-xs text-slate-500">
-                    {formatSyncTime(row.supplierSyncedAt)}
-                  </td>
-                  <td className="px-3 py-2">
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-xs font-semibold"
-                      onClick={() => openEdit(row)}
-                    >
-                      <Pencil className="size-3" />
-                      Edit
-                    </button>
-                  </td>
+        <div className="space-y-3">
+          <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:flex-row sm:flex-wrap sm:items-end">
+            <label className="min-w-[12rem] flex-1 text-sm">
+              <span className="font-semibold text-slate-600">Search TLD</span>
+              <div className="relative mt-1">
+                <Search
+                  className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-slate-400"
+                  aria-hidden
+                />
+                <input
+                  type="search"
+                  value={tldQuery}
+                  onChange={(e) => setTldQuery(e.target.value)}
+                  placeholder=".com, ai, in…"
+                  className="w-full rounded-lg border border-slate-200 py-2 pr-8 pl-9 text-sm"
+                  autoComplete="off"
+                />
+                {tldQuery ? (
+                  <button
+                    type="button"
+                    onClick={() => setTldQuery("")}
+                    className="absolute top-1/2 right-2 -translate-y-1/2 rounded p-0.5 text-slate-400 hover:text-slate-600"
+                    aria-label="Clear TLD search"
+                  >
+                    <X className="size-4" />
+                  </button>
+                ) : null}
+              </div>
+            </label>
+            <label className="text-sm">
+              <span className="font-semibold text-slate-600">
+                Supplier filter
+              </span>
+              <select
+                className="mt-1 block min-w-[11rem] rounded-lg border border-slate-200 px-2 py-2 text-sm"
+                value={supplierFilter}
+                onChange={(e) =>
+                  setSupplierFilter(e.target.value as typeof supplierFilter)
+                }
+              >
+                <option value="all">All TLDs</option>
+                <option value="synced">Synced</option>
+                <option value="never">Never synced</option>
+                <option value="noReg">Missing supplier reg.</option>
+                <option value="noRenew">Missing supplier renew</option>
+                <option value="noTransfer">Missing supplier transfer</option>
+              </select>
+            </label>
+            <p className="text-xs font-semibold text-slate-500 sm:ml-auto">
+              Showing {filteredRows.length} of {rows.length}
+            </p>
+          </div>
+          <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+            <table className="min-w-full text-left text-sm">
+              <thead className="border-b bg-slate-50 text-[11px] font-bold text-slate-500 uppercase">
+                <tr>
+                  <th className="px-3 py-3">Sel.</th>
+                  <th className="px-3 py-3">TLD</th>
+                  <th className="px-3 py-3">Supplier reg.</th>
+                  <th className="px-3 py-3">Supplier renew</th>
+                  <th className="px-3 py-3">Supplier transfer</th>
+                  <th className="px-3 py-3">Retail reg.</th>
+                  <th className="px-3 py-3">Retail renew</th>
+                  <th className="px-3 py-3">Retail transfer</th>
+                  <th className="px-3 py-3">Max years</th>
+                  <th className="px-3 py-3">Sync</th>
+                  <th className="px-3 py-3" />
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredRows.map((row) => (
+                  <tr key={row.id} className="border-b last:border-0">
+                    <td className="px-3 py-2">
+                      <input
+                        type="checkbox"
+                        checked={bulkSelected.has(row.tld)}
+                        onChange={() => toggleBulk(row.tld)}
+                        aria-label={`Select ${row.tld}`}
+                      />
+                    </td>
+                    <td className="px-3 py-2 font-bold">{row.tld}</td>
+                    <td className="px-3 py-2 text-slate-600">
+                      {money(row.supplierRegister)}
+                    </td>
+                    <td className="px-3 py-2 text-slate-600">
+                      {money(row.supplierRenew)}
+                    </td>
+                    <td className="px-3 py-2 text-slate-600">
+                      {money(row.supplierTransfer)}
+                    </td>
+                    <td className="px-3 py-2">{money(row.retailRegister)}</td>
+                    <td className="px-3 py-2">{money(row.retailRenew)}</td>
+                    <td className="px-3 py-2">{money(row.retailTransfer)}</td>
+                    <td className="px-3 py-2 text-slate-600">
+                      {row.supplierMaxRegisterYears ?? "—"}
+                    </td>
+                    <td className="px-3 py-2 text-xs text-slate-500">
+                      {formatSyncTime(row.supplierSyncedAt)}
+                    </td>
+                    <td className="px-3 py-2">
+                      <button
+                        type="button"
+                        className="inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-xs font-semibold"
+                        onClick={() => openEdit(row)}
+                      >
+                        <Pencil className="size-3" />
+                        Edit
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 

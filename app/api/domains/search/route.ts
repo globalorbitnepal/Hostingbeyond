@@ -16,6 +16,7 @@ import {
   clientKeyFromRequest,
   rateLimitDomainSearch,
 } from "@/lib/domains/rate-limit";
+import { runSingleFlowDomainSearch } from "@/lib/domains/single-flow-search";
 import {
   runPhasedDomainSearch,
   shouldFetchTier2,
@@ -26,7 +27,8 @@ export const runtime = "nodejs";
 
 const MAX_BULK = 50;
 
-type SearchScope = "full" | "primary" | "alternatives" | "phased";
+type SearchScope =
+  "full" | "primary" | "alternatives" | "phased" | "single-flow";
 
 type SearchBody = {
   query?: string;
@@ -98,9 +100,34 @@ export async function POST(request: Request) {
       body?.scope === "primary" ||
       body?.scope === "alternatives" ||
       body?.scope === "full" ||
-      body?.scope === "phased"
+      body?.scope === "phased" ||
+      body?.scope === "single-flow"
         ? body.scope
         : "phased";
+
+    if (scope === "single-flow") {
+      const flow = await runSingleFlowDomainSearch(queryRaw);
+      const primary = flow.primary;
+      const recommendations = flow.recommendations;
+      return NextResponse.json({
+        anchorDomain: flow.anchorDomain,
+        query: flow.query,
+        scope: "single-flow",
+        source: flow.source,
+        primary,
+        results: primary ? [primary, ...recommendations] : recommendations,
+        recommendations,
+        tier1PoolSize: flow.tier1PoolSize,
+        tier2PoolSize: flow.tier2PoolSize,
+        tier2Fetched: flow.tier2Fetched,
+        searchableTldCount: await countProviderSupportedTlds(),
+        alternativesComplete: flow.alternativesComplete,
+        resultsCustomer: (primary
+          ? [primary, ...recommendations]
+          : recommendations
+        ).map(toCustomerResult),
+      });
+    }
 
     if (scope === "phased") {
       const tier = body?.tier === 2 ? 2 : 1;

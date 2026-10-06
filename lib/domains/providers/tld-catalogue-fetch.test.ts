@@ -104,6 +104,24 @@ describe("tld-catalogue-fetch", () => {
     assert.equal(result.duplicateTlds, 1);
   });
 
+  it("falls back to lowest registration period when period 1 is absent", () => {
+    const row = parseProductTldListDto({
+      name: "example",
+      prices: [
+        {
+          register: [
+            { period: 3, price: 30 },
+            { period: 2, price: 20 },
+          ],
+          renew: [{ period: 2, price: 22 }],
+        },
+      ],
+    });
+    assert.ok(row);
+    assert.equal(row.register, 20);
+    assert.equal(row.renew, 22);
+  });
+
   it("detects .in and .pk in parsed catalogue", () => {
     const inRow = parseProductTldListDto({
       name: "in",

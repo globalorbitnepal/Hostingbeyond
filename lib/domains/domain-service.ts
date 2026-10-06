@@ -239,8 +239,8 @@ function availabilityBatchConcurrency(): number {
 }
 
 function batchPacingMs(): number {
-  const raw = Number(process.env.DOMAIN_AVAILABILITY_BATCH_PACING_MS ?? 220);
-  if (!Number.isFinite(raw) || raw < 0) return 220;
+  const raw = Number(process.env.DOMAIN_AVAILABILITY_BATCH_PACING_MS ?? 520);
+  if (!Number.isFinite(raw) || raw < 0) return 520;
   return Math.min(Math.max(raw, 0), 2000);
 }
 
