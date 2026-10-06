@@ -84,7 +84,7 @@ jobs:
               out.append(f'DATABASE_URL="{escaped}"')
           env_path.write_text("\n".join(out) + "\n")
           PY
-          rm -f "$SYNC"
+          rm -f "$SYNC" 2>/dev/null || true
           echo "DATABASE_URL updated (backup: .env.backup)"
           grep -E '^DOMAIN_API_ENV=' .env | sed 's/=.*/=***MASKED***/' || true
           export CI=true
