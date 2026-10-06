@@ -54,9 +54,32 @@ case "$cmd" in
     /usr/bin/pm2 restart hostingbeyond
     echo "deploy-continue: completed"
     ;;
+  repair-domain-api)
+    src="${2:-}"
+    if [ -z "$src" ] || [ ! -f "$src" ]; then
+      echo "usage: hostingbeyond-ctl repair-domain-api <sync-json-file>" >&2
+      exit 2
+    fi
+    cp "$APP_ROOT/.env" "$APP_ROOT/.env.backup-domain-api"
+    script="$APP_ROOT/scripts/update-env-domain-api.mjs"
+    if [ ! -f "$script" ]; then
+      echo "repair-domain-api: missing $script (deploy or copy script first)" >&2
+      exit 2
+    fi
+    node "$script" "$APP_ROOT/.env" <"$src"
+    echo "repair-domain-api: backup at $APP_ROOT/.env.backup-domain-api"
+    ;;
   env-check)
     # Masked environment checks only (no secrets).
     if [ -f "$APP_ROOT/.env" ]; then
+      for k in DOMAIN_API_RESELLER_ID DOMAIN_API_TEST_KEY DOMAIN_API_ENV; do
+        if grep -q "^${k}=" "$APP_ROOT/.env"; then
+          v=$(grep "^${k}=" "$APP_ROOT/.env" | head -1 | cut -d= -f2- | tr -d '"' | tr -d "'")
+          if [ -n "$v" ]; then echo "${k}=CONFIGURED"; else echo "${k}=EMPTY"; fi
+        else
+          echo "${k}=MISSING"
+        fi
+      done
       grep -E '^DOMAIN_API_ENV=' "$APP_ROOT/.env" | sed 's/=.*/=***MASKED***/' || true
       if grep -q '^DATABASE_URL=' "$APP_ROOT/.env"; then
         echo "DATABASE_URL=present"
@@ -66,7 +89,7 @@ case "$cmd" in
     fi
     ;;
   *)
-    echo "usage: hostingbeyond-ctl restart|status|list|logs|repair-database-url|deploy-continue|env-check" >&2
+    echo "usage: hostingbeyond-ctl restart|status|list|logs|repair-database-url|repair-domain-api|deploy-continue|env-check" >&2
     exit 2
     ;;
 esac

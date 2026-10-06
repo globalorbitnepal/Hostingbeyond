@@ -1,0 +1,137 @@
+name: Repair VPS Domain API OTE config
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: repair-hostingbeyond-domain-api
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  repair:
+    name: Repair DOMAIN_API OTE and restart
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Confirm SSH secrets exist
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "${VPS_HOST}"
+          test -n "${VPS_USER}"
+          test -n "${VPS_SSH_KEY}"
+
+      - name: Merge OTE env, restart PM2, smoke test
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          export KEY_FILE="${RUNNER_TEMP}/hostingbeyond_repair_ssh_key"
+          trap 'rm -f -- "$KEY_FILE"' EXIT INT TERM ERR
+          python3 - <<'PY'
+          import os, pathlib
+          key = os.environ["VPS_SSH_KEY"]
+          raw = key.replace("\r\n", "\n").replace("\r", "\n").strip()
+          if raw.count("\n") < 2 and "\\n" in raw:
+              raw = raw.replace("\\n", "\n")
+          if not raw.endswith("\n"):
+              raw += "\n"
+          path = pathlib.Path(os.environ["KEY_FILE"])
+          path.write_text(raw)
+          path.chmod(0o600)
+          PY
+          mkdir -p "${HOME}/.ssh"
+          chmod 700 "${HOME}/.ssh"
+          ssh-keyscan -4 -p "${VPS_PORT:-22}" -T 10 "${VPS_HOST}" >> "${HOME}/.ssh/known_hosts"
+          SSH=(ssh -4 -i "${KEY_FILE}" -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes -p "${VPS_PORT:-22}" "${VPS_USER}@${VPS_HOST}")
+
+          "${SSH[@]}" bash -s <<'REMOTE'
+          set -euo pipefail
+          test "$(id -un)" = "hostingbeyond"
+          SYNC=/tmp/hb-domain-api.sync
+          if [ ! -f "$SYNC" ]; then
+            echo "SYNC_MISSING: stage OTE sync at $SYNC on the VPS before running this workflow"
+            exit 1
+          fi
+          cd /srv/apps/hostingbeyond
+          cp .env .env.backup-domain-api
+          python3 - <<'PY'
+          import json, pathlib
+          sync = pathlib.Path("/tmp/hb-domain-api.sync")
+          data = json.loads(sync.read_text())
+          reseller = str(data.get("resellerId", "")).strip()
+          test_key = str(data.get("testKey", "")).strip()
+          env = str(data.get("env", "test")).strip().lower()
+          if not reseller or not test_key:
+              raise SystemExit("invalid sync: missing resellerId or testKey")
+          if env != "test":
+              raise SystemExit("only DOMAIN_API_ENV=test allowed")
+          def esc(v):
+              return v.replace("\\", "\\\\").replace('"', '\\"')
+          updates = {
+              "DOMAIN_API_RESELLER_ID": reseller,
+              "DOMAIN_API_TEST_KEY": test_key,
+              "DOMAIN_API_ENV": "test",
+          }
+          env_path = pathlib.Path("/srv/apps/hostingbeyond/.env")
+          lines = env_path.read_text().splitlines()
+          seen = set()
+          out = []
+          for line in lines:
+              replaced = False
+              for key, val in updates.items():
+                  if line.startswith(key + "="):
+                      out.append(f'{key}="{esc(val)}"')
+                      seen.add(key)
+                      replaced = True
+                      break
+              if not replaced:
+                  out.append(line)
+          for key, val in updates.items():
+              if key not in seen:
+                  out.append(f'{key}="{esc(val)}"')
+          env_path.write_text("\n".join(out) + "\n")
+          PY
+          rm -f "$SYNC" 2>/dev/null || true
+          echo "Masked env check:"
+          for k in DOMAIN_API_RESELLER_ID DOMAIN_API_TEST_KEY DOMAIN_API_ENV; do
+            if grep -q "^${k}=" .env; then
+              v=$(grep "^${k}=" .env | head -1 | cut -d= -f2- | tr -d '"' | tr -d "'")
+              if [ -n "$v" ]; then echo "${k}=CONFIGURED"; else echo "${k}=EMPTY"; fi
+            else
+              echo "${k}=MISSING"
+            fi
+          done
+          grep '^DOMAIN_API_ENV=' .env | sed 's/=.*/=test (masked)/' || true
+          /usr/bin/pm2 restart hostingbeyond
+          sleep 4
+          /usr/bin/pm2 describe hostingbeyond | head -20
+          CODE=$(curl -s -o /tmp/hb-search-smoke.json -w "%{http_code}" \
+            -X POST http://127.0.0.1:3030/api/domains/search \
+            -H 'content-type: application/json' \
+            -d '{"query":"google"}')
+          echo "local_search_http=${CODE}"
+          python3 - <<'PY'
+          import json, pathlib
+          p = pathlib.Path("/tmp/hb-search-smoke.json")
+          if p.exists():
+              try:
+                  j = json.loads(p.read_text())
+                  if "results" in j:
+                      taken = [r for r in j["results"] if r.get("domain") == "google.com" and r.get("status") == "taken"]
+                      print("google_com_taken=", bool(taken))
+                  elif "error" in j:
+                      print("search_error=", j["error"][:80])
+              except Exception as e:
+                  print("smoke_parse_failed")
+          PY
+          REMOTE
