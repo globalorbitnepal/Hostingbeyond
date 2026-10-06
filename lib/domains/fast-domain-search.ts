@@ -86,7 +86,10 @@ function tracesOverlap(traces: DnaRequestTiming[]): boolean {
   return a.httpStartAt < b.httpEndAt && b.httpStartAt < a.httpEndAt;
 }
 
-/** One LIVE-safe bulk: anchor + curated high-value TLDs (≤25 FQDNs). */
+/**
+ * Two overlapping LIVE bulks (empirically ~2× faster than one 15-FQDN bulk on DNA).
+ * Anchor travels with the first chunk only.
+ */
 export async function runFastCustomerSearch(
   queryRaw: string,
 ): Promise<FastCustomerSearchResult> {
@@ -115,28 +118,36 @@ export async function runFastCustomerSearch(
       const fastTlds = await getFastCustomerTldPool();
       catalogueMs = Date.now() - catStart;
 
-      const poolTlds = [...new Set([anchorTld, ...fastTlds])];
-      const fqdns = [
+      const splitAt = Math.max(1, Math.ceil(fastTlds.length / 2));
+      const tldsA = fastTlds.slice(0, splitAt);
+      const tldsB = fastTlds.slice(splitAt);
+      const poolA = [...new Set([anchorTld, ...tldsA])];
+      const fqdnsA = [
         ...new Set([
           anchorDomain,
-          ...buildRecommendationFqdns(name, anchorDomain, poolTlds),
+          ...buildRecommendationFqdns(name, anchorDomain, poolA),
         ]),
       ];
-      bulkFqdns = fqdns.length;
+      const fqdnsB = buildRecommendationFqdns(name, anchorDomain, tldsB);
+      bulkFqdns = fqdnsA.length + fqdnsB.length;
 
       clearDnaRequestTraces();
       const providerStart = Date.now();
-      const lookup = await lookupDomainNames(fqdns, { query, tlds: poolTlds });
+      const [lookupA, lookupB] = await Promise.all([
+        lookupDomainNames(fqdnsA, { query, tlds: poolA }),
+        fqdnsB.length
+          ? lookupDomainNames(fqdnsB, { query, tlds: tldsB })
+          : Promise.resolve({ results: [], source: "registrar" as const }),
+      ]);
       providerMs = Date.now() - providerStart;
       dnaTimings = mapDnaTraces(getDnaRequestTraces());
 
       const filterStart = Date.now();
+      const merged = [...lookupA.results, ...lookupB.results];
       const primary =
-        lookup.results.find((r) => r.domain === anchorDomain) ??
-        lookup.results[0] ??
-        null;
+        merged.find((r) => r.domain === anchorDomain) ?? merged[0] ?? null;
       const alternatives = topRegisterableRecommendations(
-        lookup.results.filter((r) => r.domain !== anchorDomain),
+        merged.filter((r) => r.domain !== anchorDomain),
       );
       filterMs = Date.now() - filterStart;
 
