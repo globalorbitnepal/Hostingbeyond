@@ -41,14 +41,31 @@ export async function validateDomainForRegistration(
     if (result.status === "taken") {
       return {
         ok: false,
-        error: "That domain is no longer available. Search again.",
+        error: "This domain is no longer available. Please search again.",
         status: 409,
+      };
+    }
+    if (result.status === "unknown") {
+      return {
+        ok: false,
+        error: lookupErrorMessage("provider_failure"),
+        status: 502,
       };
     }
     if (result.status === "invalid") {
       return {
         ok: false,
         error: result.message ?? "Please enter a valid domain name.",
+        status: 400,
+      };
+    }
+    if (
+      (result.status === "available" || result.status === "premium") &&
+      result.register == null
+    ) {
+      return {
+        ok: false,
+        error: "Pricing is unavailable for this domain. Please search again.",
         status: 400,
       };
     }

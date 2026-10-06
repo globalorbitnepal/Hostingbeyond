@@ -1,6 +1,8 @@
+import { isAvailabilityProviderConfigured } from "@/lib/domains/providers/index";
 import { PRICE_BY_TLD, splitDomain } from "@/lib/domains/tlds";
 
-export type DomainStatus = "available" | "taken" | "premium" | "invalid";
+export type DomainStatus =
+  "available" | "taken" | "premium" | "invalid" | "unknown";
 
 export type DomainResult = {
   domain: string;
@@ -12,29 +14,6 @@ export type DomainResult = {
   transfer: number | null;
   message?: string;
 };
-
-/** Names that are always shown as registered so results stay believable. */
-const RESERVED = new Set([
-  "google",
-  "facebook",
-  "amazon",
-  "apple",
-  "microsoft",
-  "hosting",
-  "domain",
-  "mail",
-  "shop",
-  "store",
-  "cloud",
-  "ai",
-  "app",
-  "web",
-  "site",
-  "blog",
-  "news",
-  "test",
-  "hostingbeyond",
-]);
 
 function hash(value: string) {
   let h = 2166136261;
@@ -51,6 +30,20 @@ function hash(value: string) {
  */
 export function checkDomain(input: string, fallbackTld = ".com"): DomainResult {
   const { name, tld: parsedTld } = splitDomain(input);
+  if (isAvailabilityProviderConfigured()) {
+    const tldEarly = parsedTld || fallbackTld;
+    return {
+      domain: `${name}${tldEarly}`,
+      name,
+      tld: tldEarly,
+      status: "unknown",
+      register: null,
+      renew: null,
+      transfer: null,
+      message:
+        "Availability is checked via the registrar API — use domain search.",
+    };
+  }
   const tld = parsedTld || fallbackTld;
   const domain = `${name}${tld}`;
   const price = PRICE_BY_TLD.get(tld);
@@ -82,7 +75,7 @@ export function checkDomain(input: string, fallbackTld = ".com"): DomainResult {
   }
 
   const seed = hash(domain);
-  const taken = RESERVED.has(name) || name.length <= 3 || seed % 100 < 34;
+  const taken = name.length <= 3 || seed % 100 < 34;
   const premium = !taken && seed % 100 >= 92;
 
   if (taken) {

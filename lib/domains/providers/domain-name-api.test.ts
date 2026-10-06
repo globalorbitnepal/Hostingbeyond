@@ -15,6 +15,7 @@ const testConfig: DomainNameApiConfig = {
   resellerId: "00000000-0000-0000-0000-000000000001",
   apiKey: "test-key-redacted",
   environment: "test",
+  role: "lifecycle",
 };
 
 describe("Domain Name API provider", () => {
@@ -67,6 +68,11 @@ describe("Domain Name API provider", () => {
 
   it("maps premium flag", () => {
     assert.equal(mapAvailabilityStatusForTests("available", true), "premium");
+  });
+
+  it("maps ambiguous provider status to unknown", () => {
+    assert.equal(mapAvailabilityStatusForTests("weird", false), "unknown");
+    assert.equal(mapAvailabilityStatusForTests("", false), "unknown");
   });
 
   it("maps provider timeout to error code", async () => {

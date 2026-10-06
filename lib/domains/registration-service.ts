@@ -10,7 +10,7 @@ import {
   notifyRegistrationSuccess,
 } from "@/lib/domains/notifications";
 import { getRetailQuoteForTld } from "@/lib/domains/pricing-engine";
-import { resolveDomainRegistrarProvider } from "@/lib/domains/providers/index";
+import { resolveLifecycleProvider } from "@/lib/domains/providers/index";
 import { DomainProviderError } from "@/lib/domains/providers/types";
 import { publicId } from "@/lib/domains/transfer-service";
 import {
@@ -60,7 +60,7 @@ export async function processDomainRegistrationCheckout(input: {
   domainInput: string;
   idempotencyKey: string;
 }) {
-  if (!resolveDomainRegistrarProvider()) {
+  if (!resolveLifecycleProvider()) {
     throw new Error("lookup_unconfigured");
   }
 
@@ -144,7 +144,7 @@ export async function processDomainRegistrationCheckout(input: {
       },
     });
 
-    const provider = resolveDomainRegistrarProvider()!;
+    const provider = resolveLifecycleProvider()!;
     const supplierRow = await provider.checkAvailability([quote.domain]);
     const supplierCost = supplierRow[0]?.supplier.register;
 

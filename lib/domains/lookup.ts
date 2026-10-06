@@ -3,7 +3,10 @@ import { searchDomainsWithProvider } from "@/lib/domains/domain-service";
 import { DomainProviderError } from "@/lib/domains/providers/types";
 import { splitDomain } from "@/lib/domains/tlds";
 import { PRICE_BY_TLD } from "@/lib/domains/tlds";
-import { resolveDomainRegistrarProvider } from "@/lib/domains/providers/index";
+import {
+  isAvailabilityProviderConfigured,
+  resolveAvailabilityProvider,
+} from "@/lib/domains/providers/index";
 
 const LOOKUP_TIMEOUT_MS = 15_000;
 
@@ -12,7 +15,7 @@ export function isRegistrarLookupConfigured(): boolean {
 }
 
 export function isDomainProviderConfigured(): boolean {
-  if (resolveDomainRegistrarProvider()) return true;
+  if (isAvailabilityProviderConfigured()) return true;
   return isRegistrarLookupConfigured();
 }
 
@@ -28,7 +31,8 @@ function normalizeUpstreamResult(raw: unknown): DomainResult | null {
     status !== "available" &&
     status !== "taken" &&
     status !== "premium" &&
-    status !== "invalid"
+    status !== "invalid" &&
+    status !== "unknown"
   ) {
     return null;
   }
@@ -121,7 +125,7 @@ export async function lookupDomainNames(
   names: string[],
   payload: { query?: string; bulk?: string; tlds?: string[] },
 ): Promise<{ results: DomainResult[]; source: LookupSource }> {
-  if (resolveDomainRegistrarProvider()) {
+  if (resolveAvailabilityProvider()) {
     const fqdns = names.map((input) => {
       const { name, tld } = splitDomain(input);
       return `${name}${tld || ".com"}`.toLowerCase();

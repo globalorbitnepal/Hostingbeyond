@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { normalizeDomainSearchInput } from "@/lib/domains/normalize";
 import { searchDomainsWithProvider } from "@/lib/domains/domain-service";
 import { getRetailQuoteForTld } from "@/lib/domains/pricing-engine";
-import { resolveDomainRegistrarProvider } from "@/lib/domains/providers/index";
+import { resolveAvailabilityProvider } from "@/lib/domains/providers/index";
 import { routes } from "@/config/routes";
 import { checkTransferEligibility as legacyCheck } from "@/lib/domains/transfer";
 import type { TransferCheckResult } from "@/lib/domains/transfer";
@@ -16,7 +16,7 @@ export async function checkTransferEligibilityAsync(
     return legacyCheck(input, authCode);
   }
 
-  const provider = resolveDomainRegistrarProvider();
+  const provider = resolveAvailabilityProvider();
   if (!provider) {
     if (process.env.NODE_ENV === "production") {
       return {
@@ -66,14 +66,16 @@ export async function checkTransferEligibilityAsync(
       };
     }
 
-    if (row.status === "invalid") {
+    if (row.status === "invalid" || row.status === "unknown") {
       return {
         domain: row.domain,
         status: "invalid",
         eligible: false,
         transferPrice: null,
         renewPrice: null,
-        message: row.message ?? "Enter a valid domain name to transfer.",
+        message:
+          row.message ??
+          "We couldn't verify transfer eligibility right now. Please try again.",
         checkoutHref: href,
       };
     }

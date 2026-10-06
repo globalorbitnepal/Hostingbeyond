@@ -65,6 +65,21 @@ export function mapRowToCustomerResult(
     };
   }
 
+  if (row.status === "unknown") {
+    return {
+      domain: row.domain,
+      name: row.name,
+      tld: row.tld,
+      status: "unknown",
+      register: null,
+      renew: null,
+      transfer: null,
+      message:
+        row.message ??
+        "We couldn't verify availability for this name right now. Please try again.",
+    };
+  }
+
   if (row.status === "taken") {
     return {
       domain: row.domain,

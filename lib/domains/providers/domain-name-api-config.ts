@@ -5,18 +5,49 @@ export type DomainNameApiConfig = {
   resellerId: string;
   apiKey: string;
   environment: "test" | "live";
+  role: "lifecycle" | "availability";
 };
 
-export function readDomainNameApiConfig(): DomainNameApiConfig | null {
+const LIVE_BASE = "https://api.domainresellerapi.com/api/v1";
+const OTE_BASE = "https://ote.domainresellerapi.com/api/v1";
+
+function parseEnvFlag(
+  raw: string | undefined,
+  fallback: "test" | "live",
+): boolean {
+  const v = (raw ?? fallback).trim().toLowerCase();
+  return v === "live" || v === "production";
+}
+
+function readResellerId(): string | null {
   const resellerId = process.env.DOMAIN_API_RESELLER_ID?.trim();
+  return resellerId || null;
+}
+
+function buildConfig(
+  role: DomainNameApiConfig["role"],
+  isLive: boolean,
+  apiKey: string,
+): DomainNameApiConfig {
+  const resellerId = readResellerId();
+  if (!resellerId || !apiKey) {
+    throw new DomainProviderError("unconfigured");
+  }
+  return {
+    baseUrl: isLive ? LIVE_BASE : OTE_BASE,
+    resellerId,
+    apiKey,
+    environment: isLive ? "live" : "test",
+    role,
+  };
+}
+
+/** Registration, renewal, transfer — defaults to OTE (`DOMAIN_API_ENV=test`). */
+export function readDomainNameApiLifecycleConfig(): DomainNameApiConfig | null {
+  const resellerId = readResellerId();
   if (!resellerId) return null;
 
-  const envRaw = (process.env.DOMAIN_API_ENV ?? "test").trim().toLowerCase();
-  const isLive = envRaw === "live" || envRaw === "production";
-
-  if (!isLive && process.env.NODE_ENV !== "production") {
-    // Development must stay on OTE / test credentials only.
-  }
+  const isLive = parseEnvFlag(process.env.DOMAIN_API_ENV, "test");
 
   if (process.env.NODE_ENV !== "production" && isLive) {
     throw new DomainProviderError("live_api_blocked_in_dev");
@@ -28,21 +59,49 @@ export function readDomainNameApiConfig(): DomainNameApiConfig | null {
 
   if (!apiKey) return null;
 
-  const baseUrl = isLive
-    ? "https://api.domainresellerapi.com/api/v1"
-    : "https://ote.domainresellerapi.com/api/v1";
-
-  return {
-    baseUrl,
-    resellerId,
-    apiKey,
-    environment: isLive ? "live" : "test",
-  };
+  try {
+    return buildConfig("lifecycle", isLive, apiKey);
+  } catch {
+    return null;
+  }
 }
 
-export function isDomainNameApiConfigured(): boolean {
+/**
+ * Customer-facing availability — defaults to LIVE in production
+ * (`DOMAIN_AVAILABILITY_ENV=live`). Never uses OTE unless explicitly set.
+ */
+export function readDomainNameApiAvailabilityConfig(): DomainNameApiConfig | null {
+  const resellerId = readResellerId();
+  if (!resellerId) return null;
+
+  const defaultAvailability =
+    process.env.NODE_ENV === "production" ? "live" : "test";
+  const isLive = parseEnvFlag(
+    process.env.DOMAIN_AVAILABILITY_ENV,
+    defaultAvailability,
+  );
+
+  const apiKey = isLive
+    ? process.env.DOMAIN_API_LIVE_KEY?.trim()
+    : process.env.DOMAIN_API_TEST_KEY?.trim();
+
+  if (!apiKey) return null;
+
   try {
-    return readDomainNameApiConfig() !== null;
+    return buildConfig("availability", isLive, apiKey);
+  } catch {
+    return null;
+  }
+}
+
+/** @deprecated use readDomainNameApiLifecycleConfig */
+export function readDomainNameApiConfig(): DomainNameApiConfig | null {
+  return readDomainNameApiLifecycleConfig();
+}
+
+export function isDomainNameApiLifecycleConfigured(): boolean {
+  try {
+    return readDomainNameApiLifecycleConfig() !== null;
   } catch (error) {
     if (
       error instanceof DomainProviderError &&
@@ -52,4 +111,19 @@ export function isDomainNameApiConfigured(): boolean {
     }
     return false;
   }
+}
+
+export function isDomainNameApiAvailabilityConfigured(): boolean {
+  try {
+    return readDomainNameApiAvailabilityConfig() !== null;
+  } catch {
+    return false;
+  }
+}
+
+export function isDomainNameApiConfigured(): boolean {
+  return (
+    isDomainNameApiLifecycleConfigured() ||
+    isDomainNameApiAvailabilityConfigured()
+  );
 }

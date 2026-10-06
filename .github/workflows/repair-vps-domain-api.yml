@@ -58,6 +58,7 @@ jobs:
           set -euo pipefail
           test "$(id -un)" = "hostingbeyond"
           SYNC=/tmp/hb-domain-api.sync
+          AVAIL_SYNC=/tmp/hb-domain-availability.sync
           if [ ! -f "$SYNC" ]; then
             echo "SYNC_MISSING: stage OTE sync at $SYNC on the VPS before running this workflow"
             exit 1
@@ -101,9 +102,50 @@ jobs:
                   out.append(f'{key}="{esc(val)}"')
           env_path.write_text("\n".join(out) + "\n")
           PY
+          if [ -f "$AVAIL_SYNC" ]; then
+            python3 - <<'PY'
+          import json, pathlib
+          sync = pathlib.Path("/tmp/hb-domain-availability.sync")
+          data = json.loads(sync.read_text())
+          live_key = str(data.get("liveKey", "")).strip()
+          reseller = str(data.get("resellerId", "")).strip()
+          availability_env = str(data.get("availabilityEnv", "live")).strip().lower()
+          if not live_key or not reseller:
+              raise SystemExit("invalid availability sync: missing liveKey or resellerId")
+          if availability_env != "live":
+              raise SystemExit("only DOMAIN_AVAILABILITY_ENV=live allowed for availability sync")
+          def esc(v):
+              return v.replace("\\", "\\\\").replace('"', '\\"')
+          updates = {
+              "DOMAIN_API_LIVE_KEY": live_key,
+              "DOMAIN_AVAILABILITY_ENV": "live",
+          }
+          env_path = pathlib.Path("/srv/apps/hostingbeyond/.env")
+          lines = env_path.read_text().splitlines()
+          seen = set()
+          out = []
+          for line in lines:
+              replaced = False
+              for key, val in updates.items():
+                  if line.startswith(key + "="):
+                      out.append(f'{key}="{esc(val)}"')
+                      seen.add(key)
+                      replaced = True
+                      break
+              if not replaced:
+                  out.append(line)
+          for key, val in updates.items():
+              if key not in seen:
+                  out.append(f'{key}="{esc(val)}"')
+          env_path.write_text("\n".join(out) + "\n")
+          PY
+            rm -f "$AVAIL_SYNC" 2>/dev/null || true
+          else
+            echo "AVAIL_SYNC_MISSING: live search will stay unconfigured until $AVAIL_SYNC is staged"
+          fi
           rm -f "$SYNC" 2>/dev/null || true
           echo "Masked env check:"
-          for k in DOMAIN_API_RESELLER_ID DOMAIN_API_TEST_KEY DOMAIN_API_ENV; do
+          for k in DOMAIN_API_RESELLER_ID DOMAIN_API_TEST_KEY DOMAIN_API_ENV DOMAIN_API_LIVE_KEY DOMAIN_AVAILABILITY_ENV; do
             if grep -q "^${k}=" .env; then
               v=$(grep "^${k}=" .env | head -1 | cut -d= -f2- | tr -d '"' | tr -d "'")
               if [ -n "$v" ]; then echo "${k}=CONFIGURED"; else echo "${k}=EMPTY"; fi
@@ -112,6 +154,7 @@ jobs:
             fi
           done
           grep '^DOMAIN_API_ENV=' .env | sed 's/=.*/=test (masked)/' || true
+          grep '^DOMAIN_AVAILABILITY_ENV=' .env | sed 's/=.*/=live (masked)/' || true
           /usr/bin/pm2 restart hostingbeyond
           sleep 4
           /usr/bin/pm2 describe hostingbeyond | head -20

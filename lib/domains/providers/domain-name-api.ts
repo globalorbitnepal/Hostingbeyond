@@ -1,7 +1,8 @@
 import { splitDomain } from "@/lib/domains/tlds";
 import { logDomainProvider } from "@/lib/domains/domain-provider-log";
 import {
-  readDomainNameApiConfig,
+  readDomainNameApiAvailabilityConfig,
+  readDomainNameApiLifecycleConfig,
   type DomainNameApiConfig,
 } from "@/lib/domains/providers/domain-name-api-config";
 import {
@@ -109,12 +110,22 @@ function mapAvailabilityStatus(
     status === "notavailable" ||
     status === "unavailable" ||
     status === "registered" ||
+    status === "not available" ||
+    status === "taken" ||
     status === "0" ||
     status === "false"
   ) {
     return "taken";
   }
-  return "invalid";
+  if (
+    status === "unknown" ||
+    status === "error" ||
+    status === "pending" ||
+    status === ""
+  ) {
+    return "unknown";
+  }
+  return "unknown";
 }
 
 function toSupplier(item: BulkSearchItem): SupplierPricing {
@@ -643,12 +654,27 @@ export function createDomainNameApiProvider(
   };
 }
 
+export function getDomainNameApiLifecycleProvider(
+  fetchImpl?: FetchLike,
+): DomainRegistrarProvider | null {
+  const config = readDomainNameApiLifecycleConfig();
+  if (!config) return null;
+  return createDomainNameApiProvider(config, fetchImpl);
+}
+
+export function getDomainNameApiAvailabilityProvider(
+  fetchImpl?: FetchLike,
+): DomainRegistrarProvider | null {
+  const config = readDomainNameApiAvailabilityConfig();
+  if (!config) return null;
+  return createDomainNameApiProvider(config, fetchImpl);
+}
+
+/** Lifecycle (OTE by default) — register, renew, transfer. */
 export function getDomainNameApiProvider(
   fetchImpl?: FetchLike,
 ): DomainRegistrarProvider | null {
-  const config = readDomainNameApiConfig();
-  if (!config) return null;
-  return createDomainNameApiProvider(config, fetchImpl);
+  return getDomainNameApiLifecycleProvider(fetchImpl);
 }
 
 /** @internal */
