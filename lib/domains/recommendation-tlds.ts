@@ -151,8 +151,8 @@ export const FAST_CUSTOMER_TLD_ORDER: string[] = [
 ];
 
 export function fastPoolMaxTlds(): number {
-  const raw = Number(process.env.DOMAIN_FAST_POOL_TLDS ?? 18);
-  if (!Number.isFinite(raw) || raw < 5) return 18;
+  const raw = Number(process.env.DOMAIN_FAST_POOL_TLDS ?? 14);
+  if (!Number.isFinite(raw) || raw < 5) return 14;
   return Math.min(Math.max(raw, 5), 24);
 }
 
