@@ -1,0 +1,115 @@
+name: Repair VPS database URL and continue deploy
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: repair-hostingbeyond-database
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  repair:
+    name: Repair DATABASE_URL and deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Confirm SSH secrets exist
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "${VPS_HOST}"
+          test -n "${VPS_USER}"
+          test -n "${VPS_SSH_KEY}"
+
+      - name: Repair .env, migrate, build, restart
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          export KEY_FILE="${RUNNER_TEMP}/hostingbeyond_repair_ssh_key"
+          trap 'rm -f -- "$KEY_FILE"' EXIT INT TERM ERR
+          python3 - <<'PY'
+          import os, pathlib, re
+          key = os.environ["VPS_SSH_KEY"]
+          raw = key.replace("\r\n", "\n").replace("\r", "\n").strip()
+          if raw.count("\n") < 2 and "\\n" in raw:
+              raw = raw.replace("\\n", "\n")
+          if not raw.endswith("\n"):
+              raw += "\n"
+          path = pathlib.Path(os.environ["KEY_FILE"])
+          path.write_text(raw)
+          path.chmod(0o600)
+          PY
+          mkdir -p "${HOME}/.ssh"
+          chmod 700 "${HOME}/.ssh"
+          ssh-keyscan -4 -p "${VPS_PORT:-22}" -T 10 "${VPS_HOST}" >> "${HOME}/.ssh/known_hosts"
+          SSH=(ssh -4 -i "${KEY_FILE}" -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes -p "${VPS_PORT:-22}" "${VPS_USER}@${VPS_HOST}")
+
+          "${SSH[@]}" bash -s <<'REMOTE'
+          set -euo pipefail
+          test "$(id -un)" = "hostingbeyond"
+          SYNC=/tmp/hb-pg-url.sync
+          if [ ! -f "$SYNC" ]; then
+            echo "SYNC_MISSING: sysadmin must stage corrected postgresql URL at $SYNC on the VPS before running this workflow"
+            exit 1
+          fi
+          cd /srv/apps/hostingbeyond
+          cp .env .env.backup
+          python3 - <<'PY'
+          import pathlib
+          url = pathlib.Path("/tmp/hb-pg-url.sync").read_text().strip()
+          if not url.startswith("postgresql://"):
+              raise SystemExit("invalid sync URL format")
+          env_path = pathlib.Path("/srv/apps/hostingbeyond/.env")
+          lines = env_path.read_text().splitlines()
+          out = []
+          found = False
+          escaped = url.replace("\\", "\\\\").replace('"', '\\"')
+          for line in lines:
+              if line.startswith("DATABASE_URL="):
+                  out.append(f'DATABASE_URL="{escaped}"')
+                  found = True
+              else:
+                  out.append(line)
+          if not found:
+              out.append(f'DATABASE_URL="{escaped}"')
+          env_path.write_text("\n".join(out) + "\n")
+          PY
+          rm -f "$SYNC"
+          echo "DATABASE_URL updated (backup: .env.backup)"
+          grep -E '^DOMAIN_API_ENV=' .env | sed 's/=.*/=***MASKED***/' || true
+          export CI=true
+          export NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=4096}"
+          npx prisma migrate status || true
+          npx prisma migrate deploy
+          npx prisma migrate status
+          npx prisma generate
+          npm run build
+          /usr/local/sbin/hostingbeyond-ctl restart || /usr/bin/pm2 restart hostingbeyond
+          /usr/local/sbin/hostingbeyond-ctl status || /usr/bin/pm2 describe hostingbeyond
+          REMOTE
+
+      - name: Verify public cart route
+        run: |
+          set -euo pipefail
+          sleep 8
+          CODE="$(curl -s -o /dev/null -w "%{http_code}" https://hosting.theglobalorbit.com/api/domains/cart)"
+          echo "GET /api/domains/cart HTTP ${CODE}"
+          if [ "$CODE" = "404" ]; then
+            echo "Phase 2 cart route still missing (404)"
+            exit 1
+          fi
+          if [ "$CODE" != "401" ] && [ "$CODE" != "200" ]; then
+            echo "Unexpected status (expected 401 or 200 for cart GET)"
+            exit 1
+          fi
+          echo "Cart route is live (not 404)"

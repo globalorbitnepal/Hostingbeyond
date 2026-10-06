@@ -12,7 +12,8 @@ fi
 
 export HOME=/home/hostingbeyond
 export PM2_HOME=/home/hostingbeyond/.pm2
-export PATH=/usr/bin:/bin
+export PATH=/usr/local/bin:/usr/bin:/bin
+APP_ROOT=/srv/apps/hostingbeyond
 
 cmd="${1:-}"
 case "$cmd" in
@@ -28,8 +29,44 @@ case "$cmd" in
   logs)
     exec /usr/bin/pm2 logs hostingbeyond --lines 80 --nostream
     ;;
+  repair-database-url)
+    # Reads postgresql URL from stdin (no logging). Backs up .env first.
+    src="${2:-}"
+    if [ -z "$src" ] || [ ! -f "$src" ]; then
+      echo "usage: hostingbeyond-ctl repair-database-url <sync-file>" >&2
+      exit 2
+    fi
+    cp "$APP_ROOT/.env" "$APP_ROOT/.env.backup"
+    script="$APP_ROOT/scripts/update-env-database-url.mjs"
+    if [ ! -f "$script" ]; then
+      script="/tmp/update-env-database-url.mjs"
+    fi
+    node "$script" "$APP_ROOT/.env" <"$src"
+    echo "repair-database-url: backup at $APP_ROOT/.env.backup"
+    ;;
+  deploy-continue)
+    cd "$APP_ROOT"
+    export CI=true
+    export NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=4096}"
+    npx prisma migrate deploy
+    npx prisma generate
+    npm run build
+    /usr/bin/pm2 restart hostingbeyond
+    echo "deploy-continue: completed"
+    ;;
+  env-check)
+    # Masked environment checks only (no secrets).
+    if [ -f "$APP_ROOT/.env" ]; then
+      grep -E '^DOMAIN_API_ENV=' "$APP_ROOT/.env" | sed 's/=.*/=***MASKED***/' || true
+      if grep -q '^DATABASE_URL=' "$APP_ROOT/.env"; then
+        echo "DATABASE_URL=present"
+      else
+        echo "DATABASE_URL=missing"
+      fi
+    fi
+    ;;
   *)
-    echo "usage: hostingbeyond-ctl restart|status|list|logs" >&2
+    echo "usage: hostingbeyond-ctl restart|status|list|logs|repair-database-url|deploy-continue|env-check" >&2
     exit 2
     ;;
 esac

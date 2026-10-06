@@ -8,3 +8,6 @@ sysadmin ALL=(hostingbeyond) NOPASSWD: /usr/local/sbin/hostingbeyond-ctl restart
 sysadmin ALL=(hostingbeyond) NOPASSWD: /usr/local/sbin/hostingbeyond-ctl status
 sysadmin ALL=(hostingbeyond) NOPASSWD: /usr/local/sbin/hostingbeyond-ctl list
 sysadmin ALL=(hostingbeyond) NOPASSWD: /usr/local/sbin/hostingbeyond-ctl logs
+sysadmin ALL=(hostingbeyond) NOPASSWD: /usr/local/sbin/hostingbeyond-ctl repair-database-url *
+sysadmin ALL=(hostingbeyond) NOPASSWD: /usr/local/sbin/hostingbeyond-ctl deploy-continue
+sysadmin ALL=(hostingbeyond) NOPASSWD: /usr/local/sbin/hostingbeyond-ctl env-check
