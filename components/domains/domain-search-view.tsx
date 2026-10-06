@@ -78,7 +78,7 @@ export function DomainSearchView({
 
   return (
     <>
-      <section className="relative overflow-hidden pt-8 pb-12 sm:pt-10 sm:pb-14">
+      <section className="relative overflow-hidden pt-6 pb-10 sm:pt-10 sm:pb-14 lg:pb-16">
         <Image
           src={shared.heroImage}
           alt=""
@@ -86,16 +86,16 @@ export function DomainSearchView({
           priority
           sizes="100vw"
           aria-hidden
-          className="pointer-events-none object-cover object-[62%_center] opacity-70 mix-blend-screen"
+          className="pointer-events-none object-cover object-[50%_20%] opacity-70 mix-blend-screen sm:object-[62%_center]"
         />
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(35,18,84,0.92)_0%,rgba(58,29,150,0.78)_42%,rgba(37,99,235,0.35)_100%)]"
         />
 
-        <div className="hb-shell relative z-10">
-          <nav aria-label="Breadcrumb" className="mb-6">
-            <ol className="flex flex-wrap items-center justify-center gap-2 text-[12px] font-semibold text-white/75">
+        <div className="hb-shell relative z-10 mx-auto w-full max-w-[100rem]">
+          <nav aria-label="Breadcrumb" className="mb-4 sm:mb-6">
+            <ol className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[11px] font-semibold text-white/75 sm:text-[12px]">
               <li>
                 <Link href={routes.home} className="hover:text-white">
                   Home
@@ -112,7 +112,7 @@ export function DomainSearchView({
             </ol>
           </nav>
 
-          <div className="mx-auto w-full max-w-[min(100%,76rem)] text-center">
+          <div className="mx-auto w-full max-w-[min(100%,52rem)] text-center sm:max-w-3xl lg:max-w-4xl 2xl:max-w-5xl">
             <p className="inline-flex items-center justify-center gap-2 rounded-full border border-white/40 bg-white/12 px-3.5 py-1.5 text-[11px] font-bold tracking-[0.18em] text-white uppercase backdrop-blur-md">
               <Sparkles className="size-3.5" />
               {page.eyebrow}
@@ -129,7 +129,7 @@ export function DomainSearchView({
               {page.description}
             </p>
 
-            <div className="mx-auto mt-8 w-full max-w-3xl text-left">
+            <div className="mx-auto mt-6 w-full max-w-none text-left sm:mt-8">
               <DomainSearchPanel
                 mode={mode}
                 initialQuery={initialQuery}
@@ -138,13 +138,13 @@ export function DomainSearchView({
             </div>
 
             {stats.length > 0 ? (
-              <dl className="mt-8 grid grid-cols-3 gap-4 border-t border-white/15 pt-6">
+              <dl className="mt-6 grid grid-cols-3 gap-2 border-t border-white/15 pt-5 sm:mt-8 sm:gap-4 sm:pt-6">
                 {stats.map((stat) => (
-                  <div key={stat.id} className="text-center">
-                    <dd className="font-heading text-[22px] font-extrabold text-white sm:text-[26px]">
+                  <div key={stat.id} className="min-w-0 px-0.5 text-center">
+                    <dd className="font-heading text-[clamp(1.1rem,3.5vw,1.65rem)] font-extrabold text-white">
                       {stat.value}
                     </dd>
-                    <dt className="mt-1 text-[11px] font-semibold text-white/70">
+                    <dt className="mt-0.5 text-[10px] leading-snug font-semibold text-white/70 sm:mt-1 sm:text-[11px]">
                       {stat.label}
                     </dt>
                   </div>

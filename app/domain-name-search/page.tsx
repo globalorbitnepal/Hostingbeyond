@@ -71,7 +71,7 @@ export default async function DomainNameSearchPage({
   });
 
   return (
-    <div className="hb-band-cream min-h-dvh overflow-x-hidden">
+    <div className="hb-band-cream min-h-dvh overflow-x-clip">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}

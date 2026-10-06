@@ -25,7 +25,11 @@ import { routes } from "@/config/routes";
 import { loginPathForDomainCheckout } from "@/lib/domains/domain-purchase-intent";
 import type { DomainResult } from "@/lib/domains/availability";
 import { dispatchDomainCartUpdated } from "@/lib/domains/domain-cart-events";
-import { sortByRecommendationPriority } from "@/lib/domains/recommendation-tlds";
+import {
+  filterRegisterableRecommendations,
+  sortByRecommendationPriority,
+} from "@/lib/domains/recommendation-tlds";
+import { shouldFetchTier2 } from "@/lib/domains/search-orchestrator";
 import { SUGGESTED_TLDS, formatPrice } from "@/lib/domains/tlds";
 import { cn } from "@/lib/utils";
 
@@ -37,24 +41,28 @@ const BULK_LIMIT = 50;
 const MODE_TABS: Array<{
   id: SearchMode | "transfer";
   label: string;
+  shortLabel: string;
   href: string;
   icon: typeof Search;
 }> = [
   {
     id: "single",
     label: "Search a domain",
+    shortLabel: "Search",
     href: routes.domainSearch,
     icon: Search,
   },
   {
     id: "bulk",
     label: "Bulk search",
+    shortLabel: "Bulk",
     href: routes.bulkDomainSearch,
     icon: Layers,
   },
   {
     id: "transfer",
     label: "Transfer in",
+    shortLabel: "Transfer",
     href: routes.domainTransfer,
     icon: ArrowLeftRight,
   },
@@ -361,98 +369,87 @@ export function DomainSearchPanel({
     setResults([]);
     setSearched(trimmed);
 
-    const applyPhasedJson = (
-      json: {
-        primary?: DomainResult | null;
-        recommendations?: DomainResult[];
+    const searchJson = async (body: Record<string, unknown>) => {
+      const res = await fetch("/api/domains/search", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+      const json = (await res.json()) as {
         results?: DomainResult[];
         anchorDomain?: string;
         error?: string;
-        suggestTier2?: boolean;
-        alternativesComplete?: boolean;
-      },
-      mergeOnlyRecommendations = false,
-    ) => {
-      const primaryRow = json.primary ?? json.results?.[0] ?? null;
-      const recs = json.recommendations ?? json.results?.slice(1) ?? [];
-      if (primaryRow && !mergeOnlyRecommendations) {
-        setResults((prev) =>
-          mergeResults([primaryRow], mergeResults(recs, prev)),
-        );
-        setAnchorDomain(json.anchorDomain ?? primaryRow.domain);
-        setBulkSelected(new Set());
-      } else if (recs.length) {
-        setResults((prev) => mergeResults(prev, recs));
-      }
-      return { suggestTier2: json.suggestTier2, recCount: recs.length };
+      };
+      return { res, json };
     };
 
-    void fetch("/api/domains/search", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ query: trimmed, scope: "phased", tier: 1 }),
-      signal: controller.signal,
-    })
-      .then(async (res) => {
-        const json = (await res.json()) as {
-          primary?: DomainResult | null;
-          recommendations?: DomainResult[];
-          results?: DomainResult[];
-          anchorDomain?: string;
-          error?: string;
-          suggestTier2?: boolean;
-          alternativesComplete?: boolean;
-        };
-        if (gen !== searchGeneration.current) return;
-        if (!res.ok || (!json.primary && !json.results?.length)) {
-          setResults([]);
-          setAnchorDomain("");
-          setError(
-            json.error ||
-              "We couldn't check this domain right now. Please try again.",
-          );
-          setLoadingAlternatives(false);
-          setAlternativesComplete(true);
-          return;
-        }
-        const { suggestTier2, recCount } = applyPhasedJson(json);
-        setLoadingPrimary(false);
-
-        if (suggestTier2) {
-          const tier2Res = await fetch("/api/domains/search", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ query: trimmed, scope: "phased", tier: 2 }),
-            signal: controller.signal,
-          });
-          const tier2Json = (await tier2Res.json()) as {
-            recommendations?: DomainResult[];
-          };
-          if (gen !== searchGeneration.current) return;
-          if (tier2Res.ok && tier2Json.recommendations?.length) {
-            applyPhasedJson(
-              { recommendations: tier2Json.recommendations },
-              true,
-            );
-          }
-        } else if (recCount === 0 && json.alternativesComplete) {
-          /* tier1 complete, no tier2 needed */
-        }
-      })
-      .catch((err) => {
-        if (gen !== searchGeneration.current) return;
-        if (err instanceof DOMException && err.name === "AbortError") return;
+    try {
+      const { res: primaryRes, json: primaryJson } = await searchJson({
+        query: trimmed,
+        scope: "primary",
+      });
+      if (gen !== searchGeneration.current) return;
+      const primaryRow = primaryJson.results?.[0] ?? null;
+      if (!primaryRes.ok || !primaryRow) {
         setResults([]);
         setAnchorDomain("");
-        setError("We couldn't check this domain right now. Please try again.");
-      })
-      .finally(() => {
-        if (gen === searchGeneration.current) {
-          setLoadingPrimary(false);
-          setLoadingAlternatives(false);
-          setAlternativesComplete(true);
-        }
+        setError(
+          primaryJson.error ||
+            "We couldn't check this domain right now. Please try again.",
+        );
+        setLoadingPrimary(false);
+        setLoadingAlternatives(false);
+        setAlternativesComplete(true);
+        return;
+      }
+
+      setResults([primaryRow]);
+      setAnchorDomain(primaryJson.anchorDomain ?? primaryRow.domain);
+      setBulkSelected(new Set());
+      setLoadingPrimary(false);
+
+      const { res: altRes, json: altJson } = await searchJson({
+        query: trimmed,
+        scope: "alternatives",
+        tier: 1,
       });
+      if (gen !== searchGeneration.current) return;
+      let tier1Recs: DomainResult[] = [];
+      if (altRes.ok && altJson.results?.length) {
+        tier1Recs = altJson.results;
+        setResults((prev) => mergeResults(prev, tier1Recs));
+      }
+
+      const registerableCount =
+        filterRegisterableRecommendations(tier1Recs).length;
+      if (
+        shouldFetchTier2(registerableCount, true) &&
+        !controller.signal.aborted
+      ) {
+        const { res: tier2Res, json: tier2Json } = await searchJson({
+          query: trimmed,
+          scope: "alternatives",
+          tier: 2,
+        });
+        if (gen !== searchGeneration.current) return;
+        if (tier2Res.ok && tier2Json.results?.length) {
+          setResults((prev) => mergeResults(prev, tier2Json.results!));
+        }
+      }
+    } catch (err) {
+      if (gen !== searchGeneration.current) return;
+      if (err instanceof DOMException && err.name === "AbortError") return;
+      setResults([]);
+      setAnchorDomain("");
+      setError("We couldn't check this domain right now. Please try again.");
+    } finally {
+      if (gen === searchGeneration.current) {
+        setLoadingPrimary(false);
+        setLoadingAlternatives(false);
+        setAlternativesComplete(true);
+      }
+    }
   }, []);
 
   const registerDomain = useCallback(
@@ -614,13 +611,13 @@ export function DomainSearchPanel({
   return (
     <div
       className={cn(
-        "rounded-[28px] border border-white/70 bg-white shadow-[0_34px_80px_-34px_rgba(15,10,40,0.6)] ring-1 ring-black/[0.03]",
-        hero ? "p-5 sm:rounded-[32px] sm:p-7" : "p-4 sm:rounded-[32px] sm:p-6",
+        "w-full rounded-[24px] border border-white/70 bg-white shadow-[0_34px_80px_-34px_rgba(15,10,40,0.6)] ring-1 ring-black/[0.03] sm:rounded-[28px] 2xl:rounded-[32px]",
+        hero ? "p-4 sm:p-6 md:p-7 lg:p-8" : "p-4 sm:rounded-[32px] sm:p-6",
       )}
     >
       <nav
         aria-label="Search mode"
-        className="flex w-full gap-1 rounded-full bg-[#f3f1ff] p-1"
+        className="flex w-full [scrollbar-width:none] gap-0.5 overflow-x-auto rounded-full bg-[#f3f1ff] p-1 [-ms-overflow-style:none] sm:gap-1 [&::-webkit-scrollbar]:hidden"
       >
         {MODE_TABS.map((tab) => {
           const Icon = tab.icon;
@@ -630,15 +627,17 @@ export function DomainSearchPanel({
               key={tab.id}
               href={tab.href}
               aria-current={active ? "page" : undefined}
+              title={tab.label}
               className={cn(
-                "inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full text-[13px] font-bold transition sm:text-[14px]",
+                "inline-flex h-10 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full px-2 text-[11px] font-bold whitespace-nowrap transition sm:h-11 sm:gap-2 sm:px-3 sm:text-[13px] md:text-[14px]",
                 active
                   ? "bg-white text-[#2f1c6a] shadow-[0_6px_16px_-8px_rgba(47,28,106,0.5)]"
                   : "text-slate-500 hover:text-[#2f1c6a]",
               )}
             >
-              <Icon className="size-4" />
-              {tab.label}
+              <Icon className="size-3.5 shrink-0 sm:size-4" />
+              <span className="sm:hidden">{tab.shortLabel}</span>
+              <span className="hidden sm:inline">{tab.label}</span>
             </Link>
           );
         })}
@@ -856,7 +855,7 @@ export function DomainSearchPanel({
                     ? "Available alternatives"
                     : "Other available extensions"}
                 </p>
-                <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3">
+                <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3 [@media(min-width:1800px)]:grid-cols-4">
                   {recommendationCandidates.map((item) => (
                     <ResultRow
                       key={item.domain}

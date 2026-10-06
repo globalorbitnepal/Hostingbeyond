@@ -233,8 +233,8 @@ function availabilityBatchSize(): number {
 }
 
 function availabilityBatchConcurrency(): number {
-  const raw = Number(process.env.DOMAIN_AVAILABILITY_BATCH_CONCURRENCY ?? 2);
-  if (!Number.isFinite(raw) || raw < 1) return 2;
+  const raw = Number(process.env.DOMAIN_AVAILABILITY_BATCH_CONCURRENCY ?? 3);
+  if (!Number.isFinite(raw) || raw < 1) return 3;
   return Math.min(Math.max(raw, 1), 4);
 }
 

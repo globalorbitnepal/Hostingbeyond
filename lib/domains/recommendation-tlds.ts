@@ -54,8 +54,8 @@ export function sortRecommendationResults(
 }
 
 function tier1SizeLimit(): number {
-  const raw = Number(process.env.DOMAIN_RECOMMENDATION_TIER1_SIZE ?? 55);
-  if (!Number.isFinite(raw) || raw < 5) return 55;
+  const raw = Number(process.env.DOMAIN_RECOMMENDATION_TIER1_SIZE ?? 36);
+  if (!Number.isFinite(raw) || raw < 5) return 36;
   return Math.min(Math.max(raw, 5), 80);
 }
 
