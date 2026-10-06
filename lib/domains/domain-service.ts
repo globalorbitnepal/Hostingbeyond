@@ -227,8 +227,9 @@ export async function mapRowToCustomerResult(
 }
 
 function availabilityBatchSize(): number {
-  const raw = Number(process.env.DOMAIN_AVAILABILITY_BATCH_SIZE ?? 50);
-  if (!Number.isFinite(raw) || raw < 5) return 50;
+  /** LIVE DNA bulk-search returns 403 above ~25 names per request. */
+  const raw = Number(process.env.DOMAIN_AVAILABILITY_BATCH_SIZE ?? 25);
+  if (!Number.isFinite(raw) || raw < 5) return 25;
   return Math.min(Math.max(raw, 5), 50);
 }
 

@@ -14,8 +14,11 @@ describe("recommendation-tlds", () => {
     assert.ok(sortByRecommendationPriority(".chat", ".net") > 0);
   });
 
-  it("ranks country-code TLDs in tier 3", () => {
-    assert.ok(recommendationTierIndex(".in") < recommendationTierIndex(".fun"));
+  it("ranks main TLDs before country and long-tail", () => {
+    assert.ok(recommendationTierIndex(".com") < recommendationTierIndex(".in"));
+    assert.ok(
+      recommendationTierIndex(".net") < recommendationTierIndex(".fun"),
+    );
     assert.ok(recommendationTierIndex(".pk") < 99);
   });
 

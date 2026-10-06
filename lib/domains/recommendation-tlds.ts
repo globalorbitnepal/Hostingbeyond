@@ -94,7 +94,11 @@ export function sortRecommendationResults(
   );
 }
 
-/** Max domains per POST /domains/bulk-search (provider documents up to 50). */
+/**
+ * Ranked TLD candidates per recommendation batch (before anchor exclusion).
+ * Provider HTTP bulk-search on LIVE rejects large single payloads (403); domain-service
+ * splits availability checks into chunks of DOMAIN_AVAILABILITY_BATCH_SIZE (default 25).
+ */
 export function providerBulkSearchMaxDomains(): number {
   const raw = Number(process.env.DOMAIN_BULK_SEARCH_MAX_DOMAINS ?? 50);
   if (!Number.isFinite(raw) || raw < 5) return 50;
