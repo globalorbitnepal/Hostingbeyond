@@ -54,15 +54,15 @@ export function sortRecommendationResults(
 }
 
 function tier1SizeLimit(): number {
-  const raw = Number(process.env.DOMAIN_RECOMMENDATION_TIER1_SIZE ?? 20);
-  if (!Number.isFinite(raw) || raw < 5) return 20;
-  return Math.min(Math.max(raw, 5), 40);
+  const raw = Number(process.env.DOMAIN_RECOMMENDATION_TIER1_SIZE ?? 55);
+  if (!Number.isFinite(raw) || raw < 5) return 55;
+  return Math.min(Math.max(raw, 5), 80);
 }
 
 function tier2SizeLimit(): number {
-  const raw = Number(process.env.DOMAIN_RECOMMENDATION_TIER2_SIZE ?? 45);
-  if (!Number.isFinite(raw) || raw < 0) return 45;
-  return Math.min(Math.max(raw, 0), 80);
+  const raw = Number(process.env.DOMAIN_RECOMMENDATION_TIER2_SIZE ?? 80);
+  if (!Number.isFinite(raw) || raw < 0) return 80;
+  return Math.min(Math.max(raw, 0), 120);
 }
 
 export function recommendationResultLimit(): number {

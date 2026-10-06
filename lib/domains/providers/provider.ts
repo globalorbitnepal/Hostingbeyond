@@ -52,6 +52,10 @@ export interface DomainRegistrarProvider {
   /** Full registrar TLD catalogue (paginated upstream). */
   listAllTldPricing?(): Promise<ProviderTldPricing[]>;
 
+  listAllTldPricingDetailed?(): Promise<
+    import("@/lib/domains/providers/tld-catalogue-fetch").TldCatalogueFetchResult
+  >;
+
   registerDomain(input: ProviderRegisterInput): Promise<ProviderRegisterResult>;
 
   renewDomain(
