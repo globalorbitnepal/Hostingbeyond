@@ -70,25 +70,33 @@ export async function runFastCustomerSearch(
     cacheKey,
     async () => {
       const fastTlds = await getFastCustomerTldPool();
-      const poolTlds = [...new Set([anchorTld, ...fastTlds])];
-      const fqdns = [
+      const splitAt = Math.max(1, Math.ceil(fastTlds.length / 2));
+      const tldsA = fastTlds.slice(0, splitAt);
+      const tldsB = fastTlds.slice(splitAt);
+      const poolA = [...new Set([anchorTld, ...tldsA])];
+      const fqdnsA = [
         ...new Set([
           anchorDomain,
-          ...buildRecommendationFqdns(name, anchorDomain, poolTlds),
+          ...buildRecommendationFqdns(name, anchorDomain, poolA),
         ]),
       ];
-      bulkFqdns = fqdns.length;
+      const fqdnsB = buildRecommendationFqdns(name, anchorDomain, tldsB);
+      bulkFqdns = fqdnsA.length + fqdnsB.length;
 
       const providerStart = Date.now();
-      const lookup = await lookupDomainNames(fqdns, { query, tlds: poolTlds });
+      const [lookupA, lookupB] = await Promise.all([
+        lookupDomainNames(fqdnsA, { query, tlds: poolA }),
+        fqdnsB.length
+          ? lookupDomainNames(fqdnsB, { query, tlds: tldsB })
+          : Promise.resolve({ results: [], source: "registrar" as const }),
+      ]);
       providerMs = Date.now() - providerStart;
 
+      const merged = [...lookupA.results, ...lookupB.results];
       const primary =
-        lookup.results.find((r) => r.domain === anchorDomain) ??
-        lookup.results[0] ??
-        null;
+        merged.find((r) => r.domain === anchorDomain) ?? merged[0] ?? null;
       const alternatives = topRegisterableRecommendations(
-        lookup.results.filter((r) => r.domain !== anchorDomain),
+        merged.filter((r) => r.domain !== anchorDomain),
       );
 
       return {
