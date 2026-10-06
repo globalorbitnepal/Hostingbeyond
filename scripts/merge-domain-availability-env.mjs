@@ -42,7 +42,7 @@ const out = lines.map((line) => {
   for (const [key] of updates) {
     if (line.startsWith(`${key}=`)) {
       seen.add(key);
-      return `${key}="${esc(updates.get(key)!)}"`;
+      return `${key}="${esc(updates.get(key))}"`;
     }
   }
   return line;
