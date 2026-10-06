@@ -104,6 +104,7 @@ jobs:
           VPS_USER: ${{ secrets.VPS_USER }}
           VPS_PORT: ${{ secrets.VPS_PORT }}
           VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          DOMAIN_API_LIVE_KEY: ${{ secrets.DOMAIN_API_LIVE_KEY }}
         run: |
           set -euo pipefail
           export KEY_FILE="${RUNNER_TEMP}/hostingbeyond_gha_ssh_key"
@@ -126,6 +127,16 @@ jobs:
           chmod 700 "${HOME}/.ssh"
           ssh-keyscan -4 -p "${VPS_PORT:-22}" -T 10 "${VPS_HOST}" >> "${HOME}/.ssh/known_hosts"
           SSH=(ssh -4 -i "${KEY_FILE}" -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes -o ServerAliveInterval=15 -o ServerAliveCountMax=40 -p "${VPS_PORT:-22}" "${VPS_USER}@${VPS_HOST}")
+
+          if [ -n "${DOMAIN_API_LIVE_KEY:-}" ]; then
+            echo "==> Staging live availability sync for VPS (value not logged)"
+            python3 - <<PY | "${SSH[@]}" "cat > /tmp/hb-domain-availability.sync"
+          import json, os
+          print(json.dumps({"liveKey": os.environ["DOMAIN_API_LIVE_KEY"]}))
+          PY
+          else
+            echo "DOMAIN_API_LIVE_KEY secret not set; VPS must already have live availability in .env or search stays unconfigured"
+          fi
 
           REMOTE_SCRIPT="/tmp/hostingbeyond-gha-deploy-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.sh"
           echo "==> Uploading remote deploy script"
@@ -185,6 +196,19 @@ jobs:
             exit 1
           fi
           echo "ENV_PRESENT"
+
+          AVAIL_SYNC=/tmp/hb-domain-availability.sync
+          if [ -f "$AVAIL_SYNC" ]; then
+            echo "==> Merging live domain availability credentials"
+            node scripts/merge-domain-availability-env.mjs .env < "$AVAIL_SYNC"
+            rm -f "$AVAIL_SYNC"
+          fi
+          if ! grep -q '^DOMAIN_API_LIVE_KEY=.' .env 2>/dev/null; then
+            echo "LIVE_AVAILABILITY_WARN: DOMAIN_API_LIVE_KEY missing — public search may return lookup_unconfigured"
+          else
+            echo "DOMAIN_API_LIVE_KEY=CONFIGURED"
+            grep -q '^DOMAIN_AVAILABILITY_ENV=live' .env || echo 'DOMAIN_AVAILABILITY_ENV="live"' >> .env
+          fi
 
           export CI=true
           export NODE_OPTIONS="${NODE_OPTIONS:-"--max-old-space-size=4096"}"
@@ -264,6 +288,27 @@ jobs:
           if [ "$LOCAL_CODE" != "200" ]; then
             echo "Local verify failed: expected HTTP 200 on 127.0.0.1:3030, got ${LOCAL_CODE:-none}"
             exit 1
+          fi
+
+          if grep -q '^DOMAIN_API_LIVE_KEY=.' .env 2>/dev/null; then
+            echo "==> Smoke test domain search (live availability)"
+            SEARCH_CODE="$(curl -s -o /tmp/hb-deploy-search.json -w "%{http_code}" \
+              -X POST http://127.0.0.1:3030/api/domains/search \
+              -H 'content-type: application/json' \
+              -d '{"query":"google.com"}' || true)"
+            if [ "$SEARCH_CODE" != "200" ]; then
+              echo "SEARCH_SMOKE_FAIL: expected HTTP 200, got ${SEARCH_CODE:-none}"
+              head -c 200 /tmp/hb-deploy-search.json 2>/dev/null || true
+              exit 1
+            fi
+            python3 - <<'PY'
+          import json, pathlib
+          j = json.loads(pathlib.Path("/tmp/hb-deploy-search.json").read_text())
+          taken = any(r.get("domain") == "google.com" and r.get("status") == "taken" for r in j.get("results", []))
+          if not taken:
+              raise SystemExit("SEARCH_SMOKE_FAIL: google.com not taken in live search")
+          print("SEARCH_SMOKE_OK google.com=taken")
+          PY
           fi
 
           echo "==> HostingBeyond deploy completed"
