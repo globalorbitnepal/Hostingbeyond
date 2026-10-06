@@ -157,7 +157,7 @@ export function lookupErrorMessage(code: string): string {
     case "timeout":
       return "Domain search is taking longer than expected. Please try again.";
     case "rate_limit":
-      return "Availability check is temporarily busy. Please try again.";
+      return "Domain availability is temporarily taking longer than usual. Please try again.";
     case "insufficient_balance":
       return "Domain registration is temporarily unavailable. Please try again later.";
     case "live_api_blocked_in_dev":

@@ -11,12 +11,16 @@ import {
   getSearchableTldCatalogue,
   recommendationResultLimit,
   sortRecommendationResults,
+  topRegisterableRecommendations,
 } from "@/lib/domains/recommendation-tlds";
 import {
   clientKeyFromRequest,
   rateLimitDomainSearch,
 } from "@/lib/domains/rate-limit";
-import { runSingleFlowDomainSearch } from "@/lib/domains/single-flow-search";
+import {
+  runFastAlternativesOnly,
+  runSingleFlowDomainSearch,
+} from "@/lib/domains/single-flow-search";
 import {
   runPhasedDomainSearch,
   shouldFetchTier2,
@@ -117,9 +121,10 @@ export async function POST(request: Request) {
         primary,
         results: primary ? [primary, ...recommendations] : recommendations,
         recommendations,
-        tier1PoolSize: flow.tier1PoolSize,
-        tier2PoolSize: flow.tier2PoolSize,
+        tier1PoolSize: flow.batch1Size,
+        tier2PoolSize: flow.batch2Size,
         tier2Fetched: flow.tier2Fetched,
+        timings: flow.timings,
         searchableTldCount: await countProviderSupportedTlds(),
         alternativesComplete: flow.alternativesComplete,
         resultsCustomer: (primary
@@ -167,8 +172,25 @@ export async function POST(request: Request) {
 
     const { name, tld, query } = normalized;
     const tier = body?.tier === 2 ? 2 : 1;
-    const { tier1, tier2, catalogueSize } = await getRecommendationTierPools();
-    const pool = tier === 2 ? tier2 : tier1;
+
+    if (scope === "alternatives") {
+      const fast = await runFastAlternativesOnly(queryRaw, tier);
+      return NextResponse.json({
+        results: fast.recommendations,
+        source: "registrar",
+        anchorDomain: fast.anchorDomain,
+        query,
+        scope,
+        tier,
+        extensionsChecked: fast.extensionsChecked,
+        alternativesComplete: true,
+        suggestTier2: fast.suggestTier2,
+        timings: { batchMs: fast.batchMs },
+        resultsCustomer: fast.recommendations.map(toCustomerResult),
+      });
+    }
+
+    const { tier1, catalogueSize } = await getRecommendationTierPools();
     const searchable = await getSearchableTldCatalogue();
 
     const anchorDomain = tld
@@ -178,22 +200,18 @@ export async function POST(request: Request) {
     let names: string[];
     if (scope === "primary") {
       names = [anchorDomain];
-    } else if (scope === "alternatives") {
-      names = buildRecommendationFqdns(name, anchorDomain, pool);
     } else {
       names = searchable.map((item) => `${name}${item}`);
     }
 
     const { results, source } = await lookupDomainNames(names, {
       query,
-      tlds: pool,
+      tlds: tier1,
     });
 
     let responseResults = results;
-    if (scope === "alternatives") {
-      responseResults = sortRecommendationResults(
-        filterRegisterableRecommendations(results),
-      ).slice(0, recommendationResultLimit());
+    if (scope === "full") {
+      responseResults = topRegisterableRecommendations(results);
     }
 
     return NextResponse.json({
@@ -204,9 +222,9 @@ export async function POST(request: Request) {
       scope,
       tier,
       extensionsChecked: names.length,
-      recommendationPoolSize: pool.length,
+      recommendationPoolSize: tier1.length,
       catalogueSize,
-      alternativesComplete: scope === "alternatives",
+      alternativesComplete: scope === "full",
       resultsCustomer: responseResults.map(toCustomerResult),
     });
   } catch (error) {

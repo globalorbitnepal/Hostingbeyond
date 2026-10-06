@@ -135,7 +135,7 @@ export function DomainSearchView({
               {page.description}
             </p>
 
-            <div className="mx-auto mt-6 w-full max-w-none text-left sm:mt-8">
+            <div className="mx-auto mt-6 w-full max-w-[min(100%,68rem)] text-left sm:mt-8 lg:max-w-[70rem]">
               <DomainSearchPanel
                 mode={mode}
                 initialQuery={initialQuery}

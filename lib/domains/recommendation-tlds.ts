@@ -1,10 +1,14 @@
 import type { DomainResult } from "@/lib/domains/availability";
 import { getTldCatalogueSnapshot } from "@/lib/domains/tld-catalogue-cache";
 
-/** Ranking preference only — never implies availability. */
+/** Ranking preference only — intersected with synced searchable catalogue. */
 export const PRIORITY_TLD_TIERS: string[][] = [
-  [".com", ".net", ".org", ".co", ".io"],
   [
+    ".com",
+    ".net",
+    ".org",
+    ".co",
+    ".io",
     ".ai",
     ".app",
     ".dev",
@@ -17,19 +21,19 @@ export const PRIORITY_TLD_TIERS: string[][] = [
     ".website",
     ".xyz",
     ".pro",
-  ],
-  [
     ".agency",
     ".digital",
     ".blog",
     ".info",
     ".biz",
+  ],
+  [
     ".me",
     ".tv",
     ".cc",
-    ".live",
     ".chat",
     ".studio",
+    ".live",
     ".world",
     ".space",
     ".fun",
@@ -38,8 +42,27 @@ export const PRIORITY_TLD_TIERS: string[][] = [
     ".solutions",
     ".today",
   ],
-  [".in", ".uk", ".us", ".ca", ".au", ".nz", ".de", ".fr", ".it", ".es", ".nl"],
-  [".ch", ".at", ".ae", ".sg", ".my", ".id", ".jp", ".eu"],
+  [
+    ".in",
+    ".uk",
+    ".us",
+    ".ca",
+    ".au",
+    ".nz",
+    ".de",
+    ".fr",
+    ".it",
+    ".es",
+    ".nl",
+    ".ch",
+    ".at",
+    ".ae",
+    ".sg",
+    ".my",
+    ".id",
+    ".jp",
+    ".eu",
+  ],
 ];
 
 const TIER_INDEX = new Map<string, number>();
@@ -71,22 +94,21 @@ export function sortRecommendationResults(
   );
 }
 
-function tier1SizeLimit(): number {
-  const raw = Number(process.env.DOMAIN_RECOMMENDATION_TIER1_SIZE ?? 52);
-  if (!Number.isFinite(raw) || raw < 5) return 52;
-  return Math.min(Math.max(raw, 5), 80);
+/** Max domains per POST /domains/bulk-search (provider documents up to 50). */
+export function providerBulkSearchMaxDomains(): number {
+  const raw = Number(process.env.DOMAIN_BULK_SEARCH_MAX_DOMAINS ?? 50);
+  if (!Number.isFinite(raw) || raw < 5) return 50;
+  return Math.min(Math.max(raw, 5), 50);
 }
 
-function tier2SizeLimit(): number {
-  const raw = Number(process.env.DOMAIN_RECOMMENDATION_TIER2_SIZE ?? 80);
-  if (!Number.isFinite(raw) || raw < 0) return 80;
-  return Math.min(Math.max(raw, 0), 120);
+export function customerAlternativeLimit(): number {
+  const raw = Number(process.env.DOMAIN_CUSTOMER_ALTERNATIVE_LIMIT ?? 10);
+  if (!Number.isFinite(raw) || raw < 1) return 10;
+  return Math.min(Math.max(raw, 1), 20);
 }
 
 export function recommendationResultLimit(): number {
-  const raw = Number(process.env.DOMAIN_RECOMMENDATION_RESULT_LIMIT ?? 24);
-  if (!Number.isFinite(raw) || raw < 1) return 24;
-  return Math.min(Math.max(raw, 1), 50);
+  return customerAlternativeLimit();
 }
 
 function orderSearchableTlds(searchable: string[]): string[] {
@@ -117,30 +139,30 @@ export async function getSearchableTldCatalogue(): Promise<string[]> {
   return orderSearchableTlds(snap.searchable);
 }
 
+export async function getFastRecommendationBatches(): Promise<{
+  batch1: string[];
+  batch2: string[];
+  catalogueSize: number;
+}> {
+  const ordered = await getSearchableTldCatalogue();
+  const max = providerBulkSearchMaxDomains();
+  const batch1 = ordered.slice(0, max);
+  const batch2 = ordered.slice(max, max * 2);
+  return { batch1, batch2, catalogueSize: ordered.length };
+}
+
 export async function getRecommendationTierPools(): Promise<{
   tier1: string[];
   tier2: string[];
   catalogueSize: number;
 }> {
-  const ordered = await getSearchableTldCatalogue();
-  const t1 = ordered.slice(0, tier1SizeLimit());
-  const t1Set = new Set(t1);
-  const t2 = ordered
-    .filter((tld) => !t1Set.has(tld))
-    .slice(0, tier2SizeLimit());
-
-  const snap = await getTldCatalogueSnapshot();
+  const { batch1, batch2, catalogueSize } =
+    await getFastRecommendationBatches();
   return {
-    tier1: t1,
-    tier2: t2,
-    catalogueSize: snap.searchable.length,
+    tier1: batch1,
+    tier2: batch2,
+    catalogueSize,
   };
-}
-
-/** @deprecated use getRecommendationTierPools */
-export async function getRecommendationTldPool(): Promise<string[]> {
-  const { tier1, tier2 } = await getRecommendationTierPools();
-  return [...tier1, ...tier2];
 }
 
 export function buildRecommendationFqdns(
@@ -162,4 +184,13 @@ export function filterRegisterableRecommendations(
     if (result.status === "premium" && result.register != null) return true;
     return false;
   });
+}
+
+export function topRegisterableRecommendations(
+  results: DomainResult[],
+  limit = customerAlternativeLimit(),
+): DomainResult[] {
+  return sortRecommendationResults(
+    filterRegisterableRecommendations(results),
+  ).slice(0, limit);
 }

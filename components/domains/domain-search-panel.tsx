@@ -388,6 +388,7 @@ export function DomainSearchPanel({
           results?: DomainResult[];
           anchorDomain?: string;
           error?: string;
+          suggestTier2?: boolean;
         };
         if (res.status === 429 && attempt < retries - 1) {
           await sleep(600 * (attempt + 1));
@@ -404,10 +405,17 @@ export function DomainSearchPanel({
     };
 
     try {
-      const { res: primaryRes, json: primaryJson } = await searchJson({
+      const primaryPromise = searchJson({
         query: trimmed,
         scope: "primary",
       });
+      const altPromise = searchJson({
+        query: trimmed,
+        scope: "alternatives",
+        tier: 1,
+      });
+
+      const { res: primaryRes, json: primaryJson } = await primaryPromise;
       if (gen !== searchGeneration.current) return;
       const primaryRow = primaryJson.results?.[0] ?? null;
       if (!primaryRes.ok || !primaryRow) {
@@ -415,7 +423,7 @@ export function DomainSearchPanel({
         setAnchorDomain("");
         setError(
           primaryJson.error ||
-            "We couldn't check this domain right now. Please try again.",
+            "Domain availability is temporarily taking longer than usual. Please try again.",
         );
         setLoadingPrimary(false);
         setLoadingAlternatives(false);
@@ -427,31 +435,30 @@ export function DomainSearchPanel({
       setAnchorDomain(primaryJson.anchorDomain ?? primaryRow.domain);
       setBulkSelected(new Set());
       setLoadingPrimary(false);
-      await sleep(280);
 
-      const { res: altRes, json: altJson } = await searchJson({
-        query: trimmed,
-        scope: "alternatives",
-        tier: 1,
-      });
+      const { res: altRes, json: altJson } = await altPromise;
       if (gen !== searchGeneration.current) return;
       let tier1Recs: DomainResult[] = [];
       if (altRes.ok && altJson.results?.length) {
         tier1Recs = altJson.results;
         setResults((prev) => mergeResults(prev, tier1Recs));
-      } else if (!altRes.ok && altRes.status !== 429) {
-        setError(
-          altJson.error ||
-            "We couldn't load alternative extensions. Please try again.",
-        );
+      } else if (!altRes.ok) {
+        if (altRes.status === 429) {
+          setError(
+            "Domain availability is temporarily taking longer than usual. Please try again.",
+          );
+        } else if (altJson.error) {
+          setError(altJson.error);
+        }
       }
 
-      const registerableCount =
-        filterRegisterableRecommendations(tier1Recs).length;
-      if (
-        shouldFetchTier2(registerableCount, true) &&
-        !controller.signal.aborted
-      ) {
+      const suggestTier2 =
+        altJson.suggestTier2 === true ||
+        shouldFetchTier2(
+          filterRegisterableRecommendations(tier1Recs).length,
+          true,
+        );
+      if (suggestTier2 && !controller.signal.aborted) {
         setLoadingTier2(true);
         const { res: tier2Res, json: tier2Json } = await searchJson({
           query: trimmed,
@@ -874,7 +881,7 @@ export function DomainSearchPanel({
               <p className="flex items-center gap-2 pt-1 text-[12.5px] font-semibold text-slate-500">
                 <Loader2 className="size-4 animate-spin text-[#673de6]" />
                 {loadingTier2
-                  ? "Checking more extensions across our catalogue…"
+                  ? "Finding more alternatives…"
                   : "Finding available alternatives…"}
               </p>
             ) : null}
@@ -885,7 +892,7 @@ export function DomainSearchPanel({
                     ? "Available alternatives"
                     : "Other available extensions"}
                 </p>
-                <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3 [@media(min-width:1800px)]:grid-cols-4">
+                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
                   {recommendationCandidates.map((item) => (
                     <ResultRow
                       key={item.domain}

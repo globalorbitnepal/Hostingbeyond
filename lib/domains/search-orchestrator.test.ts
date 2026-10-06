@@ -25,8 +25,8 @@ function row(
 describe("search-orchestrator", () => {
   it("shouldFetchTier2 when tier1 registerable count is below minimum", () => {
     assert.equal(shouldFetchTier2(0, true), true);
-    assert.equal(shouldFetchTier2(2, true), true);
-    assert.equal(shouldFetchTier2(3, true), false);
+    assert.equal(shouldFetchTier2(9, true), true);
+    assert.equal(shouldFetchTier2(10, true), false);
     assert.equal(shouldFetchTier2(0, false), false);
   });
 

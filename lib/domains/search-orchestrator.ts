@@ -3,10 +3,9 @@ import { lookupDomainNames } from "@/lib/domains/lookup";
 import { normalizeDomainSearchInput } from "@/lib/domains/normalize";
 import {
   buildRecommendationFqdns,
-  filterRegisterableRecommendations,
+  customerAlternativeLimit,
   getRecommendationTierPools,
-  recommendationResultLimit,
-  sortRecommendationResults,
+  topRegisterableRecommendations,
 } from "@/lib/domains/recommendation-tlds";
 
 export type SearchTimings = {
@@ -36,7 +35,7 @@ function isRegisterable(result: DomainResult) {
 }
 
 const TIER2_MIN_RESULTS = Number(
-  process.env.DOMAIN_RECOMMENDATION_TIER2_MIN_RESULTS ?? 3,
+  process.env.DOMAIN_RECOMMENDATION_TIER2_MIN_RESULTS ?? 10,
 );
 
 export async function runPhasedDomainSearch(
@@ -82,11 +81,7 @@ export async function runPhasedDomainSearch(
     primary = primaryLookup.results[0] ?? null;
     extensionsChecked = 1 + tier1Fqdns.length;
 
-    recommendations = filterRegisterableRecommendations(recLookup.results);
-    recommendations = sortRecommendationResults(recommendations).slice(
-      0,
-      recommendationResultLimit(),
-    );
+    recommendations = topRegisterableRecommendations(recLookup.results);
   } else {
     const tier2Fqdns = buildRecommendationFqdns(name, anchorDomain, tier2);
     const recStarted = Date.now();
@@ -96,11 +91,7 @@ export async function runPhasedDomainSearch(
     recommendationsMs = Date.now() - recStarted;
     source = recLookup.source;
     extensionsChecked = tier2Fqdns.length;
-    recommendations = filterRegisterableRecommendations(recLookup.results);
-    recommendations = sortRecommendationResults(recommendations).slice(
-      0,
-      recommendationResultLimit(),
-    );
+    recommendations = topRegisterableRecommendations(recLookup.results);
   }
 
   const existing = options?.existingRecommendations ?? 0;
@@ -136,6 +127,6 @@ export function shouldFetchTier2(
   return (
     tier1Complete &&
     tier1AvailableCount < TIER2_MIN_RESULTS &&
-    tier1AvailableCount < recommendationResultLimit()
+    tier1AvailableCount < customerAlternativeLimit()
   );
 }
