@@ -4,24 +4,42 @@ import { getTldCatalogueSnapshot } from "@/lib/domains/tld-catalogue-cache";
 /** Ranking preference only — never implies availability. */
 export const PRIORITY_TLD_TIERS: string[][] = [
   [".com", ".net", ".org", ".co", ".io"],
-  [".ai", ".app", ".dev", ".tech", ".me", ".cloud"],
-  [".in", ".pk", ".uk", ".us", ".ca", ".au", ".de", ".fr"],
   [
-    ".chat",
-    ".studio",
+    ".ai",
+    ".app",
+    ".dev",
+    ".tech",
+    ".cloud",
     ".online",
     ".site",
     ".store",
-    ".blog",
-    ".fun",
-    ".cc",
-    ".xyz",
-    ".info",
     ".shop",
-    ".space",
+    ".website",
+    ".xyz",
     ".pro",
-    ".icu",
   ],
+  [
+    ".agency",
+    ".digital",
+    ".blog",
+    ".info",
+    ".biz",
+    ".me",
+    ".tv",
+    ".cc",
+    ".live",
+    ".chat",
+    ".studio",
+    ".world",
+    ".space",
+    ".fun",
+    ".life",
+    ".social",
+    ".solutions",
+    ".today",
+  ],
+  [".in", ".uk", ".us", ".ca", ".au", ".nz", ".de", ".fr", ".it", ".es", ".nl"],
+  [".ch", ".at", ".ae", ".sg", ".my", ".id", ".jp", ".eu"],
 ];
 
 const TIER_INDEX = new Map<string, number>();
@@ -54,8 +72,8 @@ export function sortRecommendationResults(
 }
 
 function tier1SizeLimit(): number {
-  const raw = Number(process.env.DOMAIN_RECOMMENDATION_TIER1_SIZE ?? 36);
-  if (!Number.isFinite(raw) || raw < 5) return 36;
+  const raw = Number(process.env.DOMAIN_RECOMMENDATION_TIER1_SIZE ?? 52);
+  if (!Number.isFinite(raw) || raw < 5) return 52;
   return Math.min(Math.max(raw, 5), 80);
 }
 

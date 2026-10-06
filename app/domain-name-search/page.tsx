@@ -10,7 +10,13 @@ import {
 } from "@/lib/orbit/content";
 import { buildDomainPageMetadata } from "@/lib/domains/page-metadata";
 import { buildDomainSchema } from "@/lib/domains/seo";
-import { countProviderSupportedTlds } from "@/lib/domains/tld-catalogue-cache";
+import { visiblePricing } from "@/lib/domains/content";
+import {
+  applyLiveExtensionStats,
+  getRetailRegisterMap,
+  loadDomainSearchPageMetrics,
+  mergeRetailIntoPricingRows,
+} from "@/lib/domains/domain-search-page-data";
 
 function withSupportedExtensionCopy(
   text: string,
@@ -47,16 +53,32 @@ export default async function DomainNameSearchPage({
   const rawQuery = Array.isArray(params.q) ? params.q[0] : params.q;
   const initialQuery = (rawQuery ?? "").slice(0, 80);
   const page = content.single;
-  const supportedTldCount = await countProviderSupportedTlds().catch(
-    () => null,
-  );
+  const metrics = await loadDomainSearchPageMetrics();
+  const supportedTldCount = metrics.searchableCount || null;
   const pageForView = {
     ...page,
     description: withSupportedExtensionCopy(
       page.description,
       supportedTldCount,
     ),
+    stats: applyLiveExtensionStats(page.stats, {
+      searchableCount: metrics.searchableCount,
+      tier1PoolSize: metrics.tier1PoolSize,
+    }),
   };
+
+  const chipTlds = content.shared.heroChips
+    .split(",")
+    .map((c) => c.trim())
+    .filter(Boolean);
+  const retailMap = await getRetailRegisterMap(chipTlds);
+  const chipRetailByTld: Record<string, number> = {};
+  for (const [tld, price] of retailMap) {
+    chipRetailByTld[tld] = price;
+  }
+  const displayPricing = await mergeRetailIntoPricingRows(
+    visiblePricing(content),
+  );
 
   const schema = buildDomainSchema({
     name: page.title,
@@ -66,7 +88,7 @@ export default async function DomainNameSearchPage({
     faqs: page.faqs
       .filter((item) => item.visible !== false)
       .map((item) => ({ question: item.question, answer: item.answer })),
-    prices: content.shared.pricing,
+    prices: displayPricing,
     withSearchAction: true,
   });
 
@@ -93,6 +115,8 @@ export default async function DomainNameSearchPage({
           content={content}
           page={pageForView}
           crossLinkHref={routes.bulkDomainSearch}
+          chipRetailByTld={chipRetailByTld}
+          displayPricing={displayPricing}
         />
       </div>
 

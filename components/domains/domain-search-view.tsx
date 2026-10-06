@@ -53,15 +53,21 @@ export function DomainSearchView({
   content,
   page,
   crossLinkHref,
+  chipRetailByTld,
+  displayPricing,
 }: {
   mode: SearchMode;
   initialQuery?: string;
   content: DomainContent;
   page: DomainPageCopy;
   crossLinkHref: string;
+  /** Retail register prices from DomainTldPrice (hero chips). */
+  chipRetailByTld?: Record<string, number>;
+  /** Price table rows with retail merged from DB when available. */
+  displayPricing?: ReturnType<typeof visiblePricing>;
 }) {
   const { shared } = content;
-  const prices = visiblePricing(content);
+  const prices = displayPricing ?? visiblePricing(content);
   const chips = shared.heroChips
     .split(",")
     .map((chip) => chip.trim())
@@ -155,16 +161,23 @@ export function DomainSearchView({
             {chips.length > 0 ? (
               <ul className="mt-6 flex flex-wrap items-center justify-center gap-1.5">
                 {chips.map((tld) => {
-                  const price = priceByTld(content, tld);
+                  const key = tld.startsWith(".") ? tld : `.${tld}`;
+                  const retail =
+                    chipRetailByTld?.[key.toLowerCase()] ??
+                    chipRetailByTld?.[key] ??
+                    null;
+                  const register = retail ?? null;
                   return (
                     <li
                       key={tld}
                       className="inline-flex items-center gap-1.5 rounded-full border border-white/35 bg-white/10 px-3 py-1.5 text-[12px] font-bold text-white backdrop-blur-md"
                     >
-                      {tld}
-                      <span className="text-white/75">
-                        {price ? formatPrice(price.register) : ""}
-                      </span>
+                      {key}
+                      {register != null ? (
+                        <span className="text-white/75">
+                          {formatPrice(register)}
+                        </span>
+                      ) : null}
                     </li>
                   );
                 })}

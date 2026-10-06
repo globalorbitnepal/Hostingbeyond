@@ -269,6 +269,7 @@ export function DomainSearchPanel({
   const [bulk, setBulk] = useState("");
   const [loadingPrimary, setLoadingPrimary] = useState(false);
   const [loadingAlternatives, setLoadingAlternatives] = useState(false);
+  const [loadingTier2, setLoadingTier2] = useState(false);
   const [alternativesComplete, setAlternativesComplete] = useState(false);
   const [error, setError] = useState("");
   const [cartSuccess, setCartSuccess] = useState("");
@@ -363,25 +364,43 @@ export function DomainSearchPanel({
 
     setLoadingPrimary(true);
     setLoadingAlternatives(true);
+    setLoadingTier2(false);
     setAlternativesComplete(false);
     setError("");
     setCartSuccess("");
     setResults([]);
     setSearched(trimmed);
 
-    const searchJson = async (body: Record<string, unknown>) => {
-      const res = await fetch("/api/domains/search", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(body),
-        signal: controller.signal,
+    const sleep = (ms: number) =>
+      new Promise<void>((resolve) => {
+        window.setTimeout(resolve, ms);
       });
-      const json = (await res.json()) as {
-        results?: DomainResult[];
-        anchorDomain?: string;
-        error?: string;
+
+    const searchJson = async (body: Record<string, unknown>, retries = 4) => {
+      for (let attempt = 0; attempt < retries; attempt++) {
+        const res = await fetch("/api/domains/search", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(body),
+          signal: controller.signal,
+        });
+        const json = (await res.json()) as {
+          results?: DomainResult[];
+          anchorDomain?: string;
+          error?: string;
+        };
+        if (res.status === 429 && attempt < retries - 1) {
+          await sleep(600 * (attempt + 1));
+          continue;
+        }
+        return { res, json };
+      }
+      return {
+        res: new Response(null, { status: 429 }),
+        json: {
+          error: "Availability check is temporarily busy. Please try again.",
+        },
       };
-      return { res, json };
     };
 
     try {
@@ -408,6 +427,7 @@ export function DomainSearchPanel({
       setAnchorDomain(primaryJson.anchorDomain ?? primaryRow.domain);
       setBulkSelected(new Set());
       setLoadingPrimary(false);
+      await sleep(280);
 
       const { res: altRes, json: altJson } = await searchJson({
         query: trimmed,
@@ -419,6 +439,11 @@ export function DomainSearchPanel({
       if (altRes.ok && altJson.results?.length) {
         tier1Recs = altJson.results;
         setResults((prev) => mergeResults(prev, tier1Recs));
+      } else if (!altRes.ok && altRes.status !== 429) {
+        setError(
+          altJson.error ||
+            "We couldn't load alternative extensions. Please try again.",
+        );
       }
 
       const registerableCount =
@@ -427,6 +452,7 @@ export function DomainSearchPanel({
         shouldFetchTier2(registerableCount, true) &&
         !controller.signal.aborted
       ) {
+        setLoadingTier2(true);
         const { res: tier2Res, json: tier2Json } = await searchJson({
           query: trimmed,
           scope: "alternatives",
@@ -436,6 +462,7 @@ export function DomainSearchPanel({
         if (tier2Res.ok && tier2Json.results?.length) {
           setResults((prev) => mergeResults(prev, tier2Json.results!));
         }
+        setLoadingTier2(false);
       }
     } catch (err) {
       if (gen !== searchGeneration.current) return;
@@ -447,6 +474,7 @@ export function DomainSearchPanel({
       if (gen === searchGeneration.current) {
         setLoadingPrimary(false);
         setLoadingAlternatives(false);
+        setLoadingTier2(false);
         setAlternativesComplete(true);
       }
     }
@@ -842,10 +870,12 @@ export function DomainSearchPanel({
                 onBulkToggle={toggleBulkDomain}
               />
             ) : null}
-            {mode === "single" && loadingAlternatives ? (
+            {mode === "single" && (loadingAlternatives || loadingTier2) ? (
               <p className="flex items-center gap-2 pt-1 text-[12.5px] font-semibold text-slate-500">
                 <Loader2 className="size-4 animate-spin text-[#673de6]" />
-                Finding available alternatives…
+                {loadingTier2
+                  ? "Checking more extensions across our catalogue…"
+                  : "Finding available alternatives…"}
               </p>
             ) : null}
             {mode === "single" && recommendationCandidates.length > 0 ? (
@@ -896,6 +926,7 @@ export function DomainSearchPanel({
             exact?.status === "taken" &&
             alternativesComplete &&
             !loadingAlternatives &&
+            !loadingTier2 &&
             recommendationCandidates.length === 0 ? (
               <p className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-[13px] font-medium text-slate-600">
                 No available alternatives were found for this name. Try a

@@ -233,9 +233,43 @@ function availabilityBatchSize(): number {
 }
 
 function availabilityBatchConcurrency(): number {
-  const raw = Number(process.env.DOMAIN_AVAILABILITY_BATCH_CONCURRENCY ?? 3);
-  if (!Number.isFinite(raw) || raw < 1) return 3;
+  const raw = Number(process.env.DOMAIN_AVAILABILITY_BATCH_CONCURRENCY ?? 1);
+  if (!Number.isFinite(raw) || raw < 1) return 1;
   return Math.min(Math.max(raw, 1), 4);
+}
+
+function batchPacingMs(): number {
+  const raw = Number(process.env.DOMAIN_AVAILABILITY_BATCH_PACING_MS ?? 220);
+  if (!Number.isFinite(raw) || raw < 0) return 220;
+  return Math.min(Math.max(raw, 0), 2000);
+}
+
+async function sleep(ms: number) {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function checkAvailabilityChunkWithRetry(
+  provider: NonNullable<ReturnType<typeof resolveAvailabilityProvider>>,
+  fqdns: string[],
+  maxAttempts = 4,
+): Promise<import("@/lib/domains/providers/types").ProviderAvailabilityRow[]> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      return await provider.checkAvailability(fqdns);
+    } catch (error) {
+      lastError = error;
+      const code =
+        error instanceof DomainProviderError
+          ? error.code
+          : error instanceof Error
+            ? error.message
+            : "";
+      if (code !== "rate_limit" || attempt >= maxAttempts - 1) break;
+      await sleep(500 * (attempt + 1));
+    }
+  }
+  throw lastError;
 }
 
 async function checkAvailabilityInBatches(
@@ -244,20 +278,34 @@ async function checkAvailabilityInBatches(
 ): Promise<import("@/lib/domains/providers/types").ProviderAvailabilityRow[]> {
   const size = availabilityBatchSize();
   if (fqdns.length <= size) {
-    return provider.checkAvailability(fqdns);
+    return checkAvailabilityChunkWithRetry(provider, fqdns);
   }
   const chunks: string[][] = [];
   for (let i = 0; i < fqdns.length; i += size) {
     chunks.push(fqdns.slice(i, i + size));
   }
   const limit = availabilityBatchConcurrency();
+  const pacing = batchPacingMs();
   const results: import("@/lib/domains/providers/types").ProviderAvailabilityRow[] =
     [];
+
+  if (limit <= 1) {
+    for (let i = 0; i < chunks.length; i++) {
+      const part = await checkAvailabilityChunkWithRetry(provider, chunks[i]!);
+      results.push(...part);
+      if (i < chunks.length - 1 && pacing > 0) await sleep(pacing);
+    }
+    return results;
+  }
+
   let index = 0;
   async function worker() {
     while (index < chunks.length) {
       const chunkIndex = index++;
-      const part = await provider.checkAvailability(chunks[chunkIndex]!);
+      const part = await checkAvailabilityChunkWithRetry(
+        provider,
+        chunks[chunkIndex]!,
+      );
       results.push(...part);
     }
   }
