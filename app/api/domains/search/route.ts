@@ -6,32 +6,48 @@ import { lookupDomainNames, lookupErrorMessage } from "@/lib/domains/lookup";
 import { normalizeDomainSearchInput } from "@/lib/domains/normalize";
 import {
   buildRecommendationFqdns,
-  getRecommendationTldPool,
+  filterRegisterableRecommendations,
+  getRecommendationTierPools,
+  getSearchableTldCatalogue,
   recommendationResultLimit,
-  sortByRecommendationPriority,
+  sortRecommendationResults,
 } from "@/lib/domains/recommendation-tlds";
 import {
   clientKeyFromRequest,
   rateLimitDomainSearch,
 } from "@/lib/domains/rate-limit";
+import {
+  runPhasedDomainSearch,
+  shouldFetchTier2,
+} from "@/lib/domains/search-orchestrator";
+import { countProviderSupportedTlds } from "@/lib/domains/tld-catalogue-cache";
+
 export const runtime = "nodejs";
 
 const MAX_BULK = 50;
 
-type SearchScope = "full" | "primary" | "alternatives";
+type SearchScope = "full" | "primary" | "alternatives" | "phased";
 
 type SearchBody = {
   query?: string;
   tlds?: string[];
   bulk?: string;
-  /** `primary` = anchor only; `alternatives` = other extensions; default `full`. */
   scope?: SearchScope;
+  /** Tier 2 broader discovery when tier 1 is insufficient. */
+  tier?: 1 | 2;
 };
 
-function isRegisterableRecommendation(result: DomainResult) {
-  if (result.status === "available") return true;
-  if (result.status === "premium" && result.register != null) return true;
-  return false;
+function toCustomerResult(row: DomainResult) {
+  return {
+    domain: row.domain,
+    name: row.name,
+    tld: row.tld,
+    status: row.status,
+    registrationPrice: row.register,
+    renewalPrice: row.renew,
+    transferPrice: row.transfer,
+    message: row.message,
+  };
 }
 
 export async function POST(request: Request) {
@@ -71,7 +87,50 @@ export async function POST(request: Request) {
         );
       }
       const { results, source } = await lookupDomainNames(names, { bulk });
-      return NextResponse.json({ results, source });
+      return NextResponse.json({
+        results,
+        source,
+        resultsCustomer: results.map(toCustomerResult),
+      });
+    }
+
+    const scope: SearchScope =
+      body?.scope === "primary" ||
+      body?.scope === "alternatives" ||
+      body?.scope === "full" ||
+      body?.scope === "phased"
+        ? body.scope
+        : "phased";
+
+    if (scope === "phased") {
+      const tier = body?.tier === 2 ? 2 : 1;
+      const phased = await runPhasedDomainSearch(queryRaw, { tier });
+      const primary = phased.primary;
+      const recommendations = phased.recommendations;
+
+      return NextResponse.json({
+        anchorDomain: phased.anchorDomain,
+        query: phased.query,
+        scope: "phased",
+        tier: phased.tier,
+        source: phased.source,
+        primary: primary ?? null,
+        results: primary ? [primary, ...recommendations] : recommendations,
+        recommendations,
+        extensionsChecked: phased.extensionsChecked,
+        tier1PoolSize: phased.tier1PoolSize,
+        tier2PoolSize: phased.tier2PoolSize,
+        searchableTldCount: await countProviderSupportedTlds(),
+        alternativesComplete: phased.alternativesComplete,
+        suggestTier2:
+          tier === 1 &&
+          shouldFetchTier2(recommendations.length, phased.alternativesComplete),
+        timings: phased.timings,
+        resultsCustomer: (primary
+          ? [primary, ...recommendations]
+          : recommendations
+        ).map(toCustomerResult),
+      });
     }
 
     const normalized = normalizeDomainSearchInput(queryRaw);
@@ -80,46 +139,34 @@ export async function POST(request: Request) {
     }
 
     const { name, tld, query } = normalized;
-    const recommendationPool = await getRecommendationTldPool();
-    const requested = (body?.tlds ?? []).filter((item) =>
-      recommendationPool.includes(item.toLowerCase()),
-    );
-    const extensions = tld
-      ? [tld, ...recommendationPool.filter((item) => item !== tld)]
-      : [...new Set([...requested, ...recommendationPool])];
+    const tier = body?.tier === 2 ? 2 : 1;
+    const { tier1, tier2, catalogueSize } = await getRecommendationTierPools();
+    const pool = tier === 2 ? tier2 : tier1;
+    const searchable = await getSearchableTldCatalogue();
 
     const anchorDomain = tld
-      ? `${name}${tld}`
-      : `${name}${extensions[0] ?? ".com"}`;
-
-    const scope: SearchScope =
-      body?.scope === "primary" ||
-      body?.scope === "alternatives" ||
-      body?.scope === "full"
-        ? body.scope
-        : "full";
+      ? `${name}${tld}`.toLowerCase()
+      : `${name}${tier1[0] ?? ".com"}`.toLowerCase();
 
     let names: string[];
     if (scope === "primary") {
       names = [anchorDomain];
     } else if (scope === "alternatives") {
-      names = buildRecommendationFqdns(name, anchorDomain, recommendationPool);
+      names = buildRecommendationFqdns(name, anchorDomain, pool);
     } else {
-      names = extensions.map((item) => `${name}${item}`);
+      names = searchable.map((item) => `${name}${item}`);
     }
 
     const { results, source } = await lookupDomainNames(names, {
       query,
-      tlds: extensions,
+      tlds: pool,
     });
 
     let responseResults = results;
     if (scope === "alternatives") {
-      const limit = recommendationResultLimit();
-      responseResults = results
-        .filter(isRegisterableRecommendation)
-        .sort((a, b) => sortByRecommendationPriority(a.tld, b.tld))
-        .slice(0, limit);
+      responseResults = sortRecommendationResults(
+        filterRegisterableRecommendations(results),
+      ).slice(0, recommendationResultLimit());
     }
 
     return NextResponse.json({
@@ -128,9 +175,12 @@ export async function POST(request: Request) {
       anchorDomain,
       query,
       scope,
+      tier,
       extensionsChecked: names.length,
-      recommendationPoolSize: recommendationPool.length,
+      recommendationPoolSize: pool.length,
+      catalogueSize,
       alternativesComplete: scope === "alternatives",
+      resultsCustomer: responseResults.map(toCustomerResult),
     });
   } catch (error) {
     const message =

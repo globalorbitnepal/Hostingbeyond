@@ -95,7 +95,7 @@ export function DomainSearchView({
 
         <div className="hb-shell relative z-10">
           <nav aria-label="Breadcrumb" className="mb-6">
-            <ol className="flex flex-wrap items-center justify-center gap-2 text-[12px] font-semibold text-white/75 lg:justify-start">
+            <ol className="flex flex-wrap items-center justify-center gap-2 text-[12px] font-semibold text-white/75">
               <li>
                 <Link href={routes.home} className="hover:text-white">
                   Home
@@ -112,8 +112,8 @@ export function DomainSearchView({
             </ol>
           </nav>
 
-          <div className="mx-auto w-full max-w-[min(100%,76rem)] text-center lg:text-left">
-            <p className="inline-flex items-center gap-2 rounded-full border border-white/40 bg-white/12 px-3.5 py-1.5 text-[11px] font-bold tracking-[0.18em] text-white uppercase backdrop-blur-md">
+          <div className="mx-auto w-full max-w-[min(100%,76rem)] text-center">
+            <p className="inline-flex items-center justify-center gap-2 rounded-full border border-white/40 bg-white/12 px-3.5 py-1.5 text-[11px] font-bold tracking-[0.18em] text-white uppercase backdrop-blur-md">
               <Sparkles className="size-3.5" />
               {page.eyebrow}
             </p>
@@ -129,7 +129,7 @@ export function DomainSearchView({
               {page.description}
             </p>
 
-            <div className="mt-8 text-left">
+            <div className="mx-auto mt-8 w-full max-w-3xl text-left">
               <DomainSearchPanel
                 mode={mode}
                 initialQuery={initialQuery}

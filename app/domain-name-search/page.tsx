@@ -10,6 +10,20 @@ import {
 } from "@/lib/orbit/content";
 import { buildDomainPageMetadata } from "@/lib/domains/page-metadata";
 import { buildDomainSchema } from "@/lib/domains/seo";
+import { countProviderSupportedTlds } from "@/lib/domains/tld-catalogue-cache";
+
+function withSupportedExtensionCopy(
+  text: string,
+  count: number | null,
+): string {
+  if (!text) return text;
+  if (count != null && count > 0) {
+    return text
+      .replace(/300\+/g, `${count}+`)
+      .replace(/300\s*\+/g, `${count}+`);
+  }
+  return text.replace(/300\+\s*extensions/gi, "supported extensions");
+}
 
 const PATH = routes.domainSearch;
 
@@ -33,6 +47,16 @@ export default async function DomainNameSearchPage({
   const rawQuery = Array.isArray(params.q) ? params.q[0] : params.q;
   const initialQuery = (rawQuery ?? "").slice(0, 80);
   const page = content.single;
+  const supportedTldCount = await countProviderSupportedTlds().catch(
+    () => null,
+  );
+  const pageForView = {
+    ...page,
+    description: withSupportedExtensionCopy(
+      page.description,
+      supportedTldCount,
+    ),
+  };
 
   const schema = buildDomainSchema({
     name: page.title,
@@ -67,7 +91,7 @@ export default async function DomainNameSearchPage({
           mode="single"
           initialQuery={initialQuery}
           content={content}
-          page={page}
+          page={pageForView}
           crossLinkHref={routes.bulkDomainSearch}
         />
       </div>

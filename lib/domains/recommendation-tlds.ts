@@ -1,11 +1,14 @@
-import { PRICE_BY_TLD, TLD_PRICES } from "@/lib/domains/tlds";
-import { listRetailTldPrices } from "@/lib/domains/pricing-engine";
+import type { DomainResult } from "@/lib/domains/availability";
+import { getTldCatalogueSnapshot } from "@/lib/domains/tld-catalogue-cache";
 
-/** Ranking preference only — availability is always from the live provider. */
-export const RECOMMENDATION_TLD_TIERS: string[][] = [
+/** Ranking preference only — never implies availability. */
+export const PRIORITY_TLD_TIERS: string[][] = [
   [".com", ".net", ".org", ".co", ".io"],
-  [".ai", ".app", ".dev", ".tech", ".cloud", ".me", ".chat", ".studio"],
+  [".ai", ".app", ".dev", ".tech", ".me", ".cloud"],
+  [".in", ".pk", ".uk", ".us", ".ca", ".au", ".de", ".fr"],
   [
+    ".chat",
+    ".studio",
     ".online",
     ".site",
     ".store",
@@ -22,15 +25,17 @@ export const RECOMMENDATION_TLD_TIERS: string[][] = [
 ];
 
 const TIER_INDEX = new Map<string, number>();
-for (let tier = 0; tier < RECOMMENDATION_TLD_TIERS.length; tier++) {
-  for (const tld of RECOMMENDATION_TLD_TIERS[tier]) {
+for (let tier = 0; tier < PRIORITY_TLD_TIERS.length; tier++) {
+  for (const tld of PRIORITY_TLD_TIERS[tier]) {
     TIER_INDEX.set(tld.toLowerCase(), tier);
   }
 }
 
 export function recommendationTierIndex(tld: string): number {
   const key = tld.startsWith(".") ? tld.toLowerCase() : `.${tld.toLowerCase()}`;
-  return TIER_INDEX.get(key) ?? 99;
+  if (TIER_INDEX.has(key)) return TIER_INDEX.get(key)!;
+  if (key.length === 3) return 50;
+  return 99;
 }
 
 export function sortByRecommendationPriority(a: string, b: string): number {
@@ -40,46 +45,84 @@ export function sortByRecommendationPriority(a: string, b: string): number {
   return a.localeCompare(b);
 }
 
-function poolSizeLimit(): number {
-  const raw = Number(process.env.DOMAIN_RECOMMENDATION_TLD_POOL_SIZE ?? 36);
-  if (!Number.isFinite(raw) || raw < 10) return 36;
-  return Math.min(Math.max(raw, 10), 80);
+export function sortRecommendationResults(
+  results: DomainResult[],
+): DomainResult[] {
+  return [...results].sort((a, b) =>
+    sortByRecommendationPriority(a.tld, b.tld),
+  );
+}
+
+function tier1SizeLimit(): number {
+  const raw = Number(process.env.DOMAIN_RECOMMENDATION_TIER1_SIZE ?? 20);
+  if (!Number.isFinite(raw) || raw < 5) return 20;
+  return Math.min(Math.max(raw, 5), 40);
+}
+
+function tier2SizeLimit(): number {
+  const raw = Number(process.env.DOMAIN_RECOMMENDATION_TIER2_SIZE ?? 45);
+  if (!Number.isFinite(raw) || raw < 0) return 45;
+  return Math.min(Math.max(raw, 0), 80);
 }
 
 export function recommendationResultLimit(): number {
-  const raw = Number(process.env.DOMAIN_RECOMMENDATION_RESULT_LIMIT ?? 12);
-  if (!Number.isFinite(raw) || raw < 1) return 12;
-  return Math.min(Math.max(raw, 1), 30);
+  const raw = Number(process.env.DOMAIN_RECOMMENDATION_RESULT_LIMIT ?? 24);
+  if (!Number.isFinite(raw) || raw < 1) return 24;
+  return Math.min(Math.max(raw, 1), 50);
 }
 
-/** Enabled catalogue TLDs for recommendation discovery (HostingBeyond retail). */
-export async function getRecommendationTldPool(): Promise<string[]> {
-  const rows = await listRetailTldPrices();
-  const enabled = new Set(
-    rows.filter((r) => r.enabled).map((r) => r.tld.toLowerCase()),
-  );
-  for (const row of TLD_PRICES) {
-    enabled.add(row.tld.toLowerCase());
-  }
-
+function orderSearchableTlds(searchable: string[]): string[] {
+  const set = new Set(searchable.map((t) => t.toLowerCase()));
   const ordered: string[] = [];
   const seen = new Set<string>();
-  for (const tier of RECOMMENDATION_TLD_TIERS) {
+
+  for (const tier of PRIORITY_TLD_TIERS) {
     for (const tld of tier) {
       const key = tld.toLowerCase();
-      if (!enabled.has(key) && !PRICE_BY_TLD.has(key)) continue;
-      if (seen.has(key)) continue;
+      if (!set.has(key) || seen.has(key)) continue;
       seen.add(key);
       ordered.push(key);
     }
   }
-  for (const key of [...enabled].sort()) {
+
+  for (const key of [...set].sort()) {
     if (seen.has(key)) continue;
     seen.add(key);
     ordered.push(key);
   }
 
-  return ordered.slice(0, poolSizeLimit());
+  return ordered;
+}
+
+export async function getSearchableTldCatalogue(): Promise<string[]> {
+  const snap = await getTldCatalogueSnapshot();
+  return orderSearchableTlds(snap.searchable);
+}
+
+export async function getRecommendationTierPools(): Promise<{
+  tier1: string[];
+  tier2: string[];
+  catalogueSize: number;
+}> {
+  const ordered = await getSearchableTldCatalogue();
+  const t1 = ordered.slice(0, tier1SizeLimit());
+  const t1Set = new Set(t1);
+  const t2 = ordered
+    .filter((tld) => !t1Set.has(tld))
+    .slice(0, tier2SizeLimit());
+
+  const snap = await getTldCatalogueSnapshot();
+  return {
+    tier1: t1,
+    tier2: t2,
+    catalogueSize: snap.searchable.length,
+  };
+}
+
+/** @deprecated use getRecommendationTierPools */
+export async function getRecommendationTldPool(): Promise<string[]> {
+  const { tier1, tier2 } = await getRecommendationTierPools();
+  return [...tier1, ...tier2];
 }
 
 export function buildRecommendationFqdns(
@@ -91,4 +134,14 @@ export function buildRecommendationFqdns(
   return tldPool
     .map((tld) => `${name}${tld}`.toLowerCase())
     .filter((fqdn) => fqdn !== anchor);
+}
+
+export function filterRegisterableRecommendations(
+  results: DomainResult[],
+): DomainResult[] {
+  return results.filter((result) => {
+    if (result.status === "available") return true;
+    if (result.status === "premium" && result.register != null) return true;
+    return false;
+  });
 }

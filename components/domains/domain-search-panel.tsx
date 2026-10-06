@@ -361,42 +361,83 @@ export function DomainSearchPanel({
     setResults([]);
     setSearched(trimmed);
 
-    const primaryPromise = fetch("/api/domains/search", {
+    const applyPhasedJson = (
+      json: {
+        primary?: DomainResult | null;
+        recommendations?: DomainResult[];
+        results?: DomainResult[];
+        anchorDomain?: string;
+        error?: string;
+        suggestTier2?: boolean;
+        alternativesComplete?: boolean;
+      },
+      mergeOnlyRecommendations = false,
+    ) => {
+      const primaryRow = json.primary ?? json.results?.[0] ?? null;
+      const recs = json.recommendations ?? json.results?.slice(1) ?? [];
+      if (primaryRow && !mergeOnlyRecommendations) {
+        setResults((prev) =>
+          mergeResults([primaryRow], mergeResults(recs, prev)),
+        );
+        setAnchorDomain(json.anchorDomain ?? primaryRow.domain);
+        setBulkSelected(new Set());
+      } else if (recs.length) {
+        setResults((prev) => mergeResults(prev, recs));
+      }
+      return { suggestTier2: json.suggestTier2, recCount: recs.length };
+    };
+
+    void fetch("/api/domains/search", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ query: trimmed, scope: "primary" }),
+      body: JSON.stringify({ query: trimmed, scope: "phased", tier: 1 }),
       signal: controller.signal,
-    });
-
-    const altPromise = fetch("/api/domains/search", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ query: trimmed, scope: "alternatives" }),
-      signal: controller.signal,
-    });
-
-    void primaryPromise
-      .then(async (primaryRes) => {
-        const primaryJson = (await primaryRes.json()) as {
+    })
+      .then(async (res) => {
+        const json = (await res.json()) as {
+          primary?: DomainResult | null;
+          recommendations?: DomainResult[];
           results?: DomainResult[];
-          error?: string;
           anchorDomain?: string;
+          error?: string;
+          suggestTier2?: boolean;
+          alternativesComplete?: boolean;
         };
         if (gen !== searchGeneration.current) return;
-        if (!primaryRes.ok || !primaryJson.results?.length) {
+        if (!res.ok || (!json.primary && !json.results?.length)) {
           setResults([]);
           setAnchorDomain("");
           setError(
-            primaryJson.error ||
+            json.error ||
               "We couldn't check this domain right now. Please try again.",
           );
+          setLoadingAlternatives(false);
+          setAlternativesComplete(true);
           return;
         }
-        setResults((prev) => mergeResults(primaryJson.results!, prev));
-        setAnchorDomain(
-          primaryJson.anchorDomain ?? primaryJson.results[0]?.domain ?? "",
-        );
-        setBulkSelected(new Set());
+        const { suggestTier2, recCount } = applyPhasedJson(json);
+        setLoadingPrimary(false);
+
+        if (suggestTier2) {
+          const tier2Res = await fetch("/api/domains/search", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ query: trimmed, scope: "phased", tier: 2 }),
+            signal: controller.signal,
+          });
+          const tier2Json = (await tier2Res.json()) as {
+            recommendations?: DomainResult[];
+          };
+          if (gen !== searchGeneration.current) return;
+          if (tier2Res.ok && tier2Json.recommendations?.length) {
+            applyPhasedJson(
+              { recommendations: tier2Json.recommendations },
+              true,
+            );
+          }
+        } else if (recCount === 0 && json.alternativesComplete) {
+          /* tier1 complete, no tier2 needed */
+        }
       })
       .catch((err) => {
         if (gen !== searchGeneration.current) return;
@@ -406,24 +447,8 @@ export function DomainSearchPanel({
         setError("We couldn't check this domain right now. Please try again.");
       })
       .finally(() => {
-        if (gen === searchGeneration.current) setLoadingPrimary(false);
-      });
-
-    void altPromise
-      .then(async (altRes) => {
-        const altJson = (await altRes.json()) as {
-          results?: DomainResult[];
-        };
-        if (gen !== searchGeneration.current) return;
-        if (altRes.ok && altJson.results) {
-          setResults((prev) => mergeResults(prev, altJson.results!));
-        }
-      })
-      .catch((err) => {
-        if (err instanceof DOMException && err.name === "AbortError") return;
-      })
-      .finally(() => {
         if (gen === searchGeneration.current) {
+          setLoadingPrimary(false);
           setLoadingAlternatives(false);
           setAlternativesComplete(true);
         }

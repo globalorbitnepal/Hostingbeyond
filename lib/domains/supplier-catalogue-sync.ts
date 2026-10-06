@@ -1,3 +1,4 @@
+import { invalidateTldCatalogueCache } from "@/lib/domains/tld-catalogue-cache";
 import { PRICE_BY_TLD, TLD_PRICES } from "@/lib/domains/tlds";
 import { resolveAvailabilityProvider } from "@/lib/domains/providers/index";
 import type { ProviderTldPricing } from "@/lib/domains/providers/provider";
@@ -121,6 +122,8 @@ export async function syncSupplierCatalogueFromProvider(
   if (status === "FAILED") {
     throw new Error(fetchError ?? "supplier_sync_failed");
   }
+
+  invalidateTldCatalogueCache();
 
   return {
     status,

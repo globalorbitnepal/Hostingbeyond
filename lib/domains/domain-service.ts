@@ -2,6 +2,7 @@ import type { DomainResult } from "@/lib/domains/availability";
 import {
   getRetailQuoteForTld,
   premiumRetailFromSupplier,
+  type RetailQuote,
 } from "@/lib/domains/pricing-engine";
 import { getRetailPricesForTld } from "@/lib/domains/retail-pricing";
 import { splitDomain } from "@/lib/domains/tlds";
@@ -45,13 +46,74 @@ async function logProviderCall(
   }
 }
 
-export async function mapRowToCustomerResult(
-  row: ProviderAvailabilityRow,
-): Promise<DomainResult | null> {
-  const tldKey = row.tld.startsWith(".")
+export type RetailPricingContext = {
+  retailByTld: Map<string, RetailQuote>;
+  premiumMarkupByTld: Map<string, number | null>;
+};
+
+function tldKeyFromRow(row: ProviderAvailabilityRow): string {
+  return row.tld.startsWith(".")
     ? row.tld.toLowerCase()
     : `.${row.tld.toLowerCase()}`;
-  let retail = await getRetailQuoteForTld(tldKey).catch(() => null);
+}
+
+function toNumber(value: unknown): number {
+  if (typeof value === "number") return value;
+  if (value && typeof value === "object" && "toNumber" in value) {
+    return (value as { toNumber: () => number }).toNumber();
+  }
+  return Number(value);
+}
+
+export async function buildRetailPricingContext(
+  tlds: string[],
+): Promise<RetailPricingContext> {
+  const keys = [
+    ...new Set(
+      tlds.map((t) =>
+        t.startsWith(".") ? t.toLowerCase() : `.${t.toLowerCase()}`,
+      ),
+    ),
+  ];
+  const rows = await prisma.domainTldPrice.findMany({
+    where: { tld: { in: keys } },
+  });
+  const retailByTld = new Map<string, RetailQuote>();
+  const premiumMarkupByTld = new Map<string, number | null>();
+  const now = new Date();
+  for (const row of rows) {
+    if (!row.enabled) continue;
+    const promoActive =
+      row.promoRegister != null && (!row.promoEndsAt || row.promoEndsAt > now);
+    retailByTld.set(row.tld.toLowerCase(), {
+      tld: row.tld,
+      register: promoActive
+        ? toNumber(row.promoRegister)
+        : toNumber(row.retailRegister),
+      renew: toNumber(row.retailRenew),
+      transfer: toNumber(row.retailTransfer),
+      restore: row.retailRestore != null ? toNumber(row.retailRestore) : null,
+      currency: row.retailCurrency,
+      isPromo: promoActive,
+    });
+    premiumMarkupByTld.set(
+      row.tld.toLowerCase(),
+      row.premiumMarkupPercent != null
+        ? toNumber(row.premiumMarkupPercent)
+        : null,
+    );
+  }
+  return { retailByTld, premiumMarkupByTld };
+}
+
+export async function mapRowToCustomerResult(
+  row: ProviderAvailabilityRow,
+  pricingCtx?: RetailPricingContext,
+): Promise<DomainResult | null> {
+  const tldKey = tldKeyFromRow(row);
+  let retail =
+    pricingCtx?.retailByTld.get(tldKey) ??
+    (await getRetailQuoteForTld(tldKey).catch(() => null));
   if (!retail) {
     const catalogue = getRetailPricesForTld(tldKey);
     if (!catalogue) {
@@ -135,18 +197,17 @@ export async function mapRowToCustomerResult(
     };
   }
   if (isPremium && supplierReg != null) {
-    const rowDb = await prisma.domainTldPrice
-      .findUnique({
-        where: { tld: tldKey },
-      })
-      .catch(() => null);
-    register = premiumRetailFromSupplier(
-      supplierReg,
-      retail.register,
-      rowDb?.premiumMarkupPercent != null
-        ? Number(rowDb.premiumMarkupPercent)
-        : null,
-    );
+    const markup =
+      pricingCtx?.premiumMarkupByTld.get(tldKey) ??
+      (await prisma.domainTldPrice
+        .findUnique({ where: { tld: tldKey } })
+        .then((r) =>
+          r?.premiumMarkupPercent != null
+            ? Number(r.premiumMarkupPercent)
+            : null,
+        )
+        .catch(() => null));
+    register = premiumRetailFromSupplier(supplierReg, retail.register, markup);
   }
 
   return {
@@ -222,6 +283,8 @@ async function searchDomainsWithProviderUncached(
     const providerRequestMs = Date.now() - providerStarted;
 
     const byDomain = new Map(rows.map((r) => [r.domain.toLowerCase(), r]));
+    const uniqueTlds = rows.map((r) => tldKeyFromRow(r));
+    const pricingCtx = await buildRetailPricingContext(uniqueTlds);
     const results = await Promise.all(
       fqdns.map(async (fqdn) => {
         const key = fqdn.toLowerCase();
@@ -239,7 +302,7 @@ async function searchDomainsWithProviderUncached(
             message: "Unable to check this extension right now.",
           };
         }
-        const mapped = await mapRowToCustomerResult(row);
+        const mapped = await mapRowToCustomerResult(row, pricingCtx);
         if (!mapped) return null;
         return mapped;
       }),
