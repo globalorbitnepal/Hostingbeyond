@@ -25,11 +25,7 @@ import { routes } from "@/config/routes";
 import { loginPathForDomainCheckout } from "@/lib/domains/domain-purchase-intent";
 import type { DomainResult } from "@/lib/domains/availability";
 import { dispatchDomainCartUpdated } from "@/lib/domains/domain-cart-events";
-import {
-  filterRegisterableRecommendations,
-  sortByRecommendationPriority,
-} from "@/lib/domains/recommendation-tlds";
-import { shouldFetchTier2 } from "@/lib/domains/search-orchestrator";
+import { sortByRecommendationPriority } from "@/lib/domains/recommendation-tlds";
 import { SUGGESTED_TLDS, formatPrice } from "@/lib/domains/tlds";
 import { cn } from "@/lib/utils";
 
@@ -389,6 +385,10 @@ export function DomainSearchPanel({
           anchorDomain?: string;
           error?: string;
           suggestTier2?: boolean;
+          deepDiscoveryAvailable?: boolean;
+          primary?: DomainResult | null;
+          recommendations?: DomainResult[];
+          alternativesComplete?: boolean;
         };
         if (res.status === 429 && attempt < retries - 1) {
           await sleep(600 * (attempt + 1));
@@ -405,17 +405,23 @@ export function DomainSearchPanel({
     };
 
     try {
-      const { res: primaryRes, json: primaryJson } = await searchJson({
+      const { res: fastRes, json: fastJson } = await searchJson({
         query: trimmed,
-        scope: "primary",
+        scope: "fast",
       });
       if (gen !== searchGeneration.current) return;
-      const primaryRow = primaryJson.results?.[0] ?? null;
-      if (!primaryRes.ok || !primaryRow) {
+
+      const primaryRow = fastJson.primary ?? fastJson.results?.[0] ?? null;
+      const fastAlts =
+        fastJson.recommendations ??
+        fastJson.results?.filter((r) => r.domain !== primaryRow?.domain) ??
+        [];
+
+      if (!fastRes.ok || !primaryRow) {
         setResults([]);
         setAnchorDomain("");
         setError(
-          primaryJson.error ||
+          fastJson.error ||
             "Domain availability is temporarily taking longer than usual. Please try again.",
         );
         setLoadingPrimary(false);
@@ -424,50 +430,28 @@ export function DomainSearchPanel({
         return;
       }
 
-      setResults([primaryRow]);
-      setAnchorDomain(primaryJson.anchorDomain ?? primaryRow.domain);
+      setResults(mergeResults([primaryRow], fastAlts));
+      setAnchorDomain(fastJson.anchorDomain ?? primaryRow.domain);
       setBulkSelected(new Set());
       setLoadingPrimary(false);
+      setLoadingAlternatives(false);
+      setAlternativesComplete(fastJson.alternativesComplete ?? true);
 
-      setLoadingAlternatives(true);
-      const { res: altRes, json: altJson } = await searchJson({
-        query: trimmed,
-        scope: "alternatives",
-        tier: 1,
-      });
-      if (gen !== searchGeneration.current) return;
-      let tier1Recs: DomainResult[] = [];
-      if (altRes.ok && altJson.results?.length) {
-        tier1Recs = altJson.results;
-        setResults((prev) => mergeResults(prev, tier1Recs));
-      } else if (!altRes.ok) {
-        if (altRes.status === 429) {
-          setError(
-            "Domain availability is temporarily taking longer than usual. Please try again.",
-          );
-        } else if (altJson.error) {
-          setError(altJson.error);
-        }
-      }
-
-      const suggestTier2 =
-        altJson.suggestTier2 === true ||
-        shouldFetchTier2(
-          filterRegisterableRecommendations(tier1Recs).length,
-          true,
-        );
-      if (suggestTier2 && !controller.signal.aborted) {
+      const runDeep =
+        fastJson.deepDiscoveryAvailable === true ||
+        fastJson.suggestTier2 === true;
+      if (runDeep && !controller.signal.aborted) {
         setLoadingTier2(true);
-        const { res: tier2Res, json: tier2Json } = await searchJson({
+        const { res: deepRes, json: deepJson } = await searchJson({
           query: trimmed,
-          scope: "alternatives",
-          tier: 2,
+          scope: "deep",
         });
         if (gen !== searchGeneration.current) return;
-        if (tier2Res.ok && tier2Json.results?.length) {
-          setResults((prev) => mergeResults(prev, tier2Json.results!));
+        if (deepRes.ok && deepJson.results?.length) {
+          setResults((prev) => mergeResults(prev, deepJson.results!));
         }
         setLoadingTier2(false);
+        setAlternativesComplete(true);
       }
     } catch (err) {
       if (gen !== searchGeneration.current) return;

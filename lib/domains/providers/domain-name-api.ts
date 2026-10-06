@@ -75,6 +75,9 @@ function mapHttpError(status: number, body: unknown): DomainProviderError {
   const httpHint = `http_${status}`;
 
   if (status === 429) {
+    void import("@/lib/domains/providers/dna-rate-limiter").then((m) =>
+      m.recordDna429(),
+    );
     return new DomainProviderError("rate_limit");
   }
   if (status === 404) {

@@ -123,6 +123,59 @@ export function recommendationResultLimit(): number {
   return customerAlternativeLimit();
 }
 
+/** Highest-probability extensions for instant customer search (catalogue-intersected). */
+export const FAST_CUSTOMER_TLD_ORDER: string[] = [
+  ".net",
+  ".org",
+  ".in",
+  ".ai",
+  ".io",
+  ".app",
+  ".dev",
+  ".shop",
+  ".store",
+  ".online",
+  ".website",
+  ".digital",
+  ".tech",
+  ".cloud",
+  ".site",
+  ".blog",
+  ".agency",
+  ".studio",
+  ".chat",
+  ".fun",
+  ".co",
+  ".cc",
+  ".me",
+];
+
+export function fastPoolMaxTlds(): number {
+  const raw = Number(process.env.DOMAIN_FAST_POOL_TLDS ?? 18);
+  if (!Number.isFinite(raw) || raw < 5) return 18;
+  return Math.min(Math.max(raw, 5), 24);
+}
+
+export async function getFastCustomerTldPool(): Promise<string[]> {
+  const searchable = new Set(await getSearchableTldCatalogue());
+  const picked: string[] = [];
+  for (const tld of FAST_CUSTOMER_TLD_ORDER) {
+    const key = tld.toLowerCase();
+    if (!searchable.has(key)) continue;
+    picked.push(key);
+    if (picked.length >= fastPoolMaxTlds()) break;
+  }
+  return picked;
+}
+
+export async function getDeepDiscoveryTldPool(): Promise<string[]> {
+  const full = await getSearchableTldCatalogue();
+  const fast = new Set(await getFastCustomerTldPool());
+  const raw = Number(process.env.DOMAIN_DEEP_POOL_TLDS ?? 24);
+  const max = Math.min(Math.max(Number.isFinite(raw) ? raw : 24, 5), 25);
+  return full.filter((t) => t !== ".com" && !fast.has(t)).slice(0, max);
+}
+
 function orderSearchableTlds(searchable: string[]): string[] {
   const set = new Set(searchable.map((t) => t.toLowerCase()));
   const ordered: string[] = [];

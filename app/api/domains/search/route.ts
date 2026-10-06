@@ -18,9 +18,10 @@ import {
   rateLimitDomainSearch,
 } from "@/lib/domains/rate-limit";
 import {
-  runFastAlternativesOnly,
-  runSingleFlowDomainSearch,
-} from "@/lib/domains/single-flow-search";
+  runDeepDiscoverySearch,
+  runFastCustomerSearch,
+} from "@/lib/domains/fast-domain-search";
+import { runSingleFlowDomainSearch } from "@/lib/domains/single-flow-search";
 import {
   runPhasedDomainSearch,
   shouldFetchTier2,
@@ -32,7 +33,13 @@ export const runtime = "nodejs";
 const MAX_BULK = 50;
 
 type SearchScope =
-  "full" | "primary" | "alternatives" | "phased" | "single-flow";
+  | "full"
+  | "primary"
+  | "alternatives"
+  | "phased"
+  | "single-flow"
+  | "fast"
+  | "deep";
 
 type SearchBody = {
   query?: string;
@@ -105,9 +112,47 @@ export async function POST(request: Request) {
       body?.scope === "alternatives" ||
       body?.scope === "full" ||
       body?.scope === "phased" ||
-      body?.scope === "single-flow"
+      body?.scope === "single-flow" ||
+      body?.scope === "fast" ||
+      body?.scope === "deep"
         ? body.scope
-        : "phased";
+        : "fast";
+
+    if (scope === "fast") {
+      const fast = await runFastCustomerSearch(queryRaw);
+      const primary = fast.primary;
+      const recommendations = fast.alternatives;
+      return NextResponse.json({
+        anchorDomain: fast.anchorDomain,
+        query: fast.query,
+        scope: "fast",
+        source: fast.source,
+        primary,
+        recommendations,
+        results: primary ? [primary, ...recommendations] : recommendations,
+        alternativesComplete: fast.alternativesComplete,
+        deepDiscoveryAvailable: fast.deepDiscoveryAvailable,
+        timings: fast.timings,
+        searchableTldCount: await countProviderSupportedTlds(),
+        resultsCustomer: (primary
+          ? [primary, ...recommendations]
+          : recommendations
+        ).map(toCustomerResult),
+      });
+    }
+
+    if (scope === "deep") {
+      const deep = await runDeepDiscoverySearch(queryRaw);
+      return NextResponse.json({
+        scope: "deep",
+        results: deep.alternatives,
+        recommendations: deep.alternatives,
+        extensionsChecked: deep.extensionsChecked,
+        alternativesComplete: true,
+        timings: deep.timings,
+        resultsCustomer: deep.alternatives.map(toCustomerResult),
+      });
+    }
 
     if (scope === "single-flow") {
       const flow = await runSingleFlowDomainSearch(queryRaw);
@@ -174,19 +219,36 @@ export async function POST(request: Request) {
     const tier = body?.tier === 2 ? 2 : 1;
 
     if (scope === "alternatives") {
-      const fast = await runFastAlternativesOnly(queryRaw, tier);
+      if (tier === 2) {
+        const deep = await runDeepDiscoverySearch(queryRaw);
+        return NextResponse.json({
+          results: deep.alternatives,
+          source: "registrar",
+          query,
+          scope,
+          tier,
+          extensionsChecked: deep.extensionsChecked,
+          alternativesComplete: true,
+          suggestTier2: false,
+          timings: deep.timings,
+          resultsCustomer: deep.alternatives.map(toCustomerResult),
+        });
+      }
+      const fast = await runFastCustomerSearch(queryRaw);
       return NextResponse.json({
-        results: fast.recommendations,
-        source: "registrar",
+        results: fast.alternatives,
+        source: fast.source,
         anchorDomain: fast.anchorDomain,
         query,
         scope,
         tier,
-        extensionsChecked: fast.extensionsChecked,
-        alternativesComplete: true,
-        suggestTier2: fast.suggestTier2,
-        timings: { batchMs: fast.batchMs },
-        resultsCustomer: fast.recommendations.map(toCustomerResult),
+        primary: fast.primary,
+        extensionsChecked: fast.timings.bulk_fqdn_count,
+        alternativesComplete: fast.alternativesComplete,
+        suggestTier2: fast.deepDiscoveryAvailable,
+        deepDiscoveryAvailable: fast.deepDiscoveryAvailable,
+        timings: fast.timings,
+        resultsCustomer: fast.alternatives.map(toCustomerResult),
       });
     }
 
