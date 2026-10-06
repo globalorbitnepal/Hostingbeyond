@@ -27,6 +27,28 @@ describe("tld-catalogue-fetch", () => {
     assert.equal(row.maxRegisterYears, 10);
   });
 
+  it("uses period 1 registration when register array is unsorted", () => {
+    const row = parseProductTldListDto({
+      name: "com",
+      maxRegistrationPeriod: 10,
+      prices: [
+        {
+          priceGroup: "Reseller",
+          register: [
+            { period: 3, price: 34.33, currency: "USD" },
+            { period: 1, price: 11.31, currency: "USD" },
+          ],
+          renew: [{ period: 1, price: 11.51, currency: "USD" }],
+          transfer: [{ period: 1, price: 10.61, currency: "USD" }],
+        },
+      ],
+    });
+    assert.ok(row);
+    assert.equal(row.register, 11.31);
+    assert.equal(row.renew, 11.51);
+    assert.equal(row.transfer, 10.61);
+  });
+
   it("paginates until totalCount is reached", async () => {
     const pages: Record<number, { items: unknown[]; totalCount: number }> = {
       0: {

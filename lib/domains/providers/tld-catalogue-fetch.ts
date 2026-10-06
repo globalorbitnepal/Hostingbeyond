@@ -35,16 +35,62 @@ function parsePrice(value: unknown): number | null {
   return null;
 }
 
-function firstPeriodPrice(block: unknown): number | null {
-  if (Array.isArray(block) && block.length > 0) {
-    const first = block[0];
-    if (first && typeof first === "object") {
-      return parsePrice((first as Record<string, unknown>).price);
+/** Supplier catalogue prices are per registration/renewal period; arrays are not ordered. */
+function priceForPeriod(block: unknown, period: number): number | null {
+  if (!Array.isArray(block)) {
+    if (block && typeof block === "object" && !Array.isArray(block)) {
+      const o = block as Record<string, unknown>;
+      if ("price" in o) return parsePrice(o.price);
+    }
+    return null;
+  }
+  for (const row of block) {
+    if (!row || typeof row !== "object") continue;
+    const p = (row as Record<string, unknown>).period;
+    if (typeof p === "number" && p === period) {
+      return parsePrice((row as Record<string, unknown>).price);
     }
   }
-  if (block && typeof block === "object" && !Array.isArray(block)) {
-    const o = block as Record<string, unknown>;
-    if ("price" in o) return parsePrice(o.price);
+  return null;
+}
+
+function standardTermPrice(block: unknown): number | null {
+  const oneYear = priceForPeriod(block, 1);
+  if (oneYear != null) return oneYear;
+  if (!Array.isArray(block) || block.length === 0) return null;
+  let bestPeriod: number | null = null;
+  let bestPrice: number | null = null;
+  for (const row of block) {
+    if (!row || typeof row !== "object") continue;
+    const periodRaw = (row as Record<string, unknown>).period;
+    const period =
+      typeof periodRaw === "number" && Number.isFinite(periodRaw)
+        ? periodRaw
+        : null;
+    const price = parsePrice((row as Record<string, unknown>).price);
+    if (price == null) continue;
+    if (period == null) return price;
+    if (bestPeriod == null || period < bestPeriod) {
+      bestPeriod = period;
+      bestPrice = price;
+    }
+  }
+  return bestPrice;
+}
+
+function currencyFromPriceBlock(block: unknown): string | null {
+  if (!Array.isArray(block)) return null;
+  for (const row of block) {
+    if (!row || typeof row !== "object") continue;
+    if ((row as Record<string, unknown>).period === 1) {
+      const c = (row as Record<string, unknown>).currency;
+      if (typeof c === "string" && c.trim()) return c.trim();
+    }
+  }
+  const first = block[0];
+  if (first && typeof first === "object") {
+    const c = (first as Record<string, unknown>).currency;
+    if (typeof c === "string" && c.trim()) return c.trim();
   }
   return null;
 }
@@ -77,19 +123,14 @@ export function parseProductTldListDto(
       ? item.maxRegistrationPeriod
       : maxYearsFromRegisterBlock(registerBlock);
 
-  const currency =
-    (Array.isArray(registerBlock) &&
-      registerBlock[0] &&
-      typeof registerBlock[0] === "object" &&
-      String((registerBlock[0] as Record<string, unknown>).currency ?? "")) ||
-    "USD";
+  const currency = currencyFromPriceBlock(registerBlock) ?? "USD";
 
   return {
     tld: `.${name}`,
-    register: firstPeriodPrice(registerBlock),
-    renew: firstPeriodPrice(renewBlock),
-    transfer: firstPeriodPrice(transferBlock),
-    restore: firstPeriodPrice(group?.restore),
+    register: standardTermPrice(registerBlock),
+    renew: standardTermPrice(renewBlock),
+    transfer: standardTermPrice(transferBlock),
+    restore: standardTermPrice(group?.restore),
     currency: currency || "USD",
     maxRegisterYears,
   };
