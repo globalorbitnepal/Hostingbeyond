@@ -2,7 +2,7 @@ import type { DomainResult } from "@/lib/domains/availability";
 import { lookupDomainNames } from "@/lib/domains/lookup";
 import { normalizeDomainSearchInput } from "@/lib/domains/normalize";
 import {
-  buildRecommendationFqdns,
+  collectTopRecommendations,
   customerAlternativeLimit,
   getRecommendationTierPools,
   topRegisterableRecommendations,
@@ -62,41 +62,48 @@ export async function runPhasedDomainSearch(
   let recommendationsMs = 0;
   let extensionsChecked = 0;
   let source: "registrar" | "catalog" = "registrar";
+  let tier1ScannedAll = tier !== 1;
 
   if (tier === 1) {
-    const tier1Fqdns = buildRecommendationFqdns(name, anchorDomain, tier1);
     const primaryStarted = Date.now();
-    const recStarted = Date.now();
-
-    const [primaryLookup, recLookup] = await Promise.all([
-      lookupDomainNames([anchorDomain], { query }),
-      tier1Fqdns.length
-        ? lookupDomainNames(tier1Fqdns, { query, tlds: tier1 })
-        : Promise.resolve({ results: [], source: "registrar" as const }),
-    ]);
-
+    const primaryLookup = await lookupDomainNames([anchorDomain], { query });
     primaryMs = Date.now() - primaryStarted;
-    recommendationsMs = Date.now() - recStarted;
     source = primaryLookup.source;
     primary = primaryLookup.results[0] ?? null;
-    extensionsChecked = 1 + tier1Fqdns.length;
 
-    recommendations = topRegisterableRecommendations(recLookup.results);
-  } else {
-    const tier2Fqdns = buildRecommendationFqdns(name, anchorDomain, tier2);
     const recStarted = Date.now();
-    const recLookup = tier2Fqdns.length
-      ? await lookupDomainNames(tier2Fqdns, { query, tlds: tier2 })
-      : { results: [], source: "registrar" as const };
+    const tier1Collected = tier1.length
+      ? await collectTopRecommendations(name, anchorDomain, query, tier1)
+      : {
+          recommendations: [],
+          extensionsChecked: 0,
+          scannedEntirePool: true,
+          providerChunks: 0,
+        };
     recommendationsMs = Date.now() - recStarted;
-    source = recLookup.source;
-    extensionsChecked = tier2Fqdns.length;
-    recommendations = topRegisterableRecommendations(recLookup.results);
+    extensionsChecked = 1 + tier1Collected.extensionsChecked;
+    recommendations = tier1Collected.recommendations;
+    tier1ScannedAll = tier1Collected.scannedEntirePool;
+  } else {
+    const recStarted = Date.now();
+    const tier2Collected = tier2.length
+      ? await collectTopRecommendations(name, anchorDomain, query, tier2)
+      : {
+          recommendations: [],
+          extensionsChecked: 0,
+          scannedEntirePool: true,
+          providerChunks: 0,
+        };
+    recommendationsMs = Date.now() - recStarted;
+    source = "registrar";
+    extensionsChecked = tier2Collected.extensionsChecked;
+    recommendations = tier2Collected.recommendations;
   }
 
   const existing = options?.existingRecommendations ?? 0;
   const needsTier2 =
     tier === 1 &&
+    tier1ScannedAll &&
     recommendations.filter(isRegisterable).length + existing <
       TIER2_MIN_RESULTS &&
     tier2.length > 0;

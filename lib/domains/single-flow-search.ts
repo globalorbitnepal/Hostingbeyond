@@ -2,9 +2,8 @@ import type { DomainResult } from "@/lib/domains/availability";
 import { lookupDomainNames } from "@/lib/domains/lookup";
 import { normalizeDomainSearchInput } from "@/lib/domains/normalize";
 import {
-  buildRecommendationFqdns,
+  collectTopRecommendations,
   getFastRecommendationBatches,
-  topRegisterableRecommendations,
 } from "@/lib/domains/recommendation-tlds";
 import { shouldFetchTier2 } from "@/lib/domains/search-orchestrator";
 
@@ -48,39 +47,36 @@ export async function runSingleFlowDomainSearch(
   const primary = primaryLookup.results[0] ?? null;
   let source = primaryLookup.source;
 
-  const batch1Fqdns = buildRecommendationFqdns(name, anchorDomain, batch1);
   let recommendations: DomainResult[] = [];
   let batch1Ms = 0;
   let batch2Ms = 0;
   let tier2Fetched = false;
 
-  if (batch1Fqdns.length) {
+  if (batch1.length) {
     const b1Start = Date.now();
-    const tier1Lookup = await lookupDomainNames(batch1Fqdns, {
+    const tier1 = await collectTopRecommendations(
+      name,
+      anchorDomain,
       query,
-      tlds: batch1,
-    });
+      batch1,
+    );
     batch1Ms = Date.now() - b1Start;
-    source = tier1Lookup.source;
-    recommendations = topRegisterableRecommendations(tier1Lookup.results);
+    recommendations = tier1.recommendations;
+    source = "registrar";
   }
 
   if (shouldFetchTier2(recommendations.length, true) && batch2.length > 0) {
-    const tier2Fqdns = buildRecommendationFqdns(name, anchorDomain, batch2);
-    if (tier2Fqdns.length) {
-      const b2Start = Date.now();
-      const tier2Lookup = await lookupDomainNames(tier2Fqdns, {
-        query,
-        tlds: batch2,
-      });
-      batch2Ms = Date.now() - b2Start;
-      tier2Fetched = true;
-      const merged = topRegisterableRecommendations([
-        ...recommendations,
-        ...tier2Lookup.results,
-      ]);
-      recommendations = merged;
-    }
+    const b2Start = Date.now();
+    const tier2 = await collectTopRecommendations(
+      name,
+      anchorDomain,
+      query,
+      batch2,
+      recommendations.map((r) => ({ ...r })),
+    );
+    batch2Ms = Date.now() - b2Start;
+    tier2Fetched = true;
+    recommendations = tier2.recommendations;
   }
 
   return {
@@ -120,18 +116,22 @@ export async function runFastAlternativesOnly(
   const anchorDomain = tld
     ? `${name}${tld}`.toLowerCase()
     : `${name}.com`.toLowerCase();
-  const fqdns = buildRecommendationFqdns(name, anchorDomain, pool);
   const started = Date.now();
-  const lookup = fqdns.length
-    ? await lookupDomainNames(fqdns, { query, tlds: pool })
-    : { results: [], source: "registrar" as const };
-  const recommendations = topRegisterableRecommendations(lookup.results);
-  const batchMs = Date.now() - started;
-  return {
-    recommendations,
+  const collected = await collectTopRecommendations(
+    name,
     anchorDomain,
-    extensionsChecked: fqdns.length,
-    suggestTier2: batch === 1 && shouldFetchTier2(recommendations.length, true),
+    query,
+    pool,
+  );
+  const batchMs = Date.now() - started;
+  const scannedEntirePool = collected.scannedEntirePool;
+  return {
+    recommendations: collected.recommendations,
+    anchorDomain,
+    extensionsChecked: collected.extensionsChecked,
+    suggestTier2:
+      batch === 1 &&
+      shouldFetchTier2(collected.recommendations.length, scannedEntirePool),
     batchMs,
   };
 }

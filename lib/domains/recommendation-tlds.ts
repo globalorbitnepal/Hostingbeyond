@@ -1,4 +1,5 @@
 import type { DomainResult } from "@/lib/domains/availability";
+import { lookupDomainNames } from "@/lib/domains/lookup";
 import { getTldCatalogueSnapshot } from "@/lib/domains/tld-catalogue-cache";
 
 /** Ranking preference only — intersected with synced searchable catalogue. */
@@ -111,6 +112,13 @@ export function customerAlternativeLimit(): number {
   return Math.min(Math.max(raw, 1), 20);
 }
 
+/** TLDs per provider availability chunk (LIVE DNA 403 above ~25 names per request). */
+export function recommendationChunkSize(): number {
+  const raw = Number(process.env.DOMAIN_RECOMMENDATION_CHUNK_SIZE ?? 12);
+  if (!Number.isFinite(raw) || raw < 5) return 12;
+  return Math.min(Math.max(raw, 5), 25);
+}
+
 export function recommendationResultLimit(): number {
   return customerAlternativeLimit();
 }
@@ -197,4 +205,57 @@ export function topRegisterableRecommendations(
   return sortRecommendationResults(
     filterRegisterableRecommendations(results),
   ).slice(0, limit);
+}
+
+/** Check ranked TLDs in small provider chunks; stop once enough registerable results exist. */
+export async function collectTopRecommendations(
+  name: string,
+  anchorDomain: string,
+  query: string,
+  tldPool: string[],
+  existing: DomainResult[] = [],
+): Promise<{
+  recommendations: DomainResult[];
+  extensionsChecked: number;
+  scannedEntirePool: boolean;
+  providerChunks: number;
+}> {
+  const limit = customerAlternativeLimit();
+  const chunk = recommendationChunkSize();
+  let merged = [...existing];
+  let extensionsChecked = 0;
+  let providerChunks = 0;
+  let scannedEntirePool = tldPool.length === 0;
+
+  for (let i = 0; i < tldPool.length; i += chunk) {
+    const tldSlice = tldPool.slice(i, i + chunk);
+    const fqdns = buildRecommendationFqdns(name, anchorDomain, tldSlice);
+    if (!fqdns.length) {
+      if (i + chunk >= tldPool.length) scannedEntirePool = true;
+      continue;
+    }
+    providerChunks += 1;
+    const lookup = await lookupDomainNames(fqdns, { query, tlds: tldSlice });
+    merged = [...merged, ...lookup.results];
+    extensionsChecked += fqdns.length;
+    const top = topRegisterableRecommendations(merged);
+    if (top.length >= limit) {
+      return {
+        recommendations: top,
+        extensionsChecked,
+        scannedEntirePool: i + chunk >= tldPool.length,
+        providerChunks,
+      };
+    }
+    if (i + chunk >= tldPool.length) {
+      scannedEntirePool = true;
+    }
+  }
+
+  return {
+    recommendations: topRegisterableRecommendations(merged),
+    extensionsChecked,
+    scannedEntirePool,
+    providerChunks,
+  };
 }

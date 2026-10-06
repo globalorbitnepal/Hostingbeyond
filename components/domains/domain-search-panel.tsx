@@ -405,17 +405,10 @@ export function DomainSearchPanel({
     };
 
     try {
-      const primaryPromise = searchJson({
+      const { res: primaryRes, json: primaryJson } = await searchJson({
         query: trimmed,
         scope: "primary",
       });
-      const altPromise = searchJson({
-        query: trimmed,
-        scope: "alternatives",
-        tier: 1,
-      });
-
-      const { res: primaryRes, json: primaryJson } = await primaryPromise;
       if (gen !== searchGeneration.current) return;
       const primaryRow = primaryJson.results?.[0] ?? null;
       if (!primaryRes.ok || !primaryRow) {
@@ -436,7 +429,12 @@ export function DomainSearchPanel({
       setBulkSelected(new Set());
       setLoadingPrimary(false);
 
-      const { res: altRes, json: altJson } = await altPromise;
+      setLoadingAlternatives(true);
+      const { res: altRes, json: altJson } = await searchJson({
+        query: trimmed,
+        scope: "alternatives",
+        tier: 1,
+      });
       if (gen !== searchGeneration.current) return;
       let tier1Recs: DomainResult[] = [];
       if (altRes.ok && altJson.results?.length) {
