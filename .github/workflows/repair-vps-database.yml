@@ -92,6 +92,7 @@ jobs:
           npx prisma migrate status || true
           npx prisma migrate deploy
           npx prisma migrate status
+          rm -rf .next
           npx prisma generate
           npm run build
           /usr/local/sbin/hostingbeyond-ctl restart || /usr/bin/pm2 restart hostingbeyond
