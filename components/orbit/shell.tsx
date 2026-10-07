@@ -30,6 +30,7 @@ const nav = [
   { href: "/orbit", label: "Dashboard", icon: LayoutDashboard },
   { href: "/orbit/pages", label: "Pages", icon: FileText },
   { href: "/orbit/about", label: "About Page", icon: Building2 },
+  { href: "/orbit/contact", label: "Contact Page", icon: Mail },
   { href: "/orbit/blog", label: "Blog", icon: FileText },
   { href: "/orbit/content", label: "Website Content", icon: Sparkles },
   { href: "/orbit/domains", label: "Domain Pages", icon: Globe },

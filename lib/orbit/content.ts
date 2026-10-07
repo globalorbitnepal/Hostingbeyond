@@ -85,6 +85,11 @@ import {
   type CmsAboutPageContent,
 } from "@/lib/orbit/about-page-content";
 import {
+  defaultContactPageContent,
+  mergeContactPageContent,
+  type CmsContactPageContent,
+} from "@/lib/orbit/contact-page-content";
+import {
   getPublicPageSeoEntry,
   mergeStoredPageSeo,
   metadataFromStoredSeo,
@@ -113,6 +118,7 @@ const DOMAIN_TRANSFER_PAGE_SLUG = "domain-transfer-product";
 const TIPS_HUB_PAGE_SLUG = "tips-hub";
 const UPDATES_HUB_PAGE_SLUG = "updates-hub";
 const ABOUT_PAGE_SLUG = "about-page";
+const CONTACT_PAGE_SLUG = "contact-page";
 /** Safety net so a bad cache entry can never outlive a few minutes. */
 const CMS_REVALIDATE = 300;
 
@@ -433,6 +439,30 @@ export const getAboutPageContent = cache(
   },
 );
 
+const readContactPageContent = nextCache(
+  async (): Promise<CmsContactPageContent> => {
+    const page = await prisma.pageContent.findUnique({
+      where: { slug: CONTACT_PAGE_SLUG },
+    });
+    if (!page) return defaultContactPageContent();
+    return mergeContactPageContent(
+      page.sections as Partial<CmsContactPageContent>,
+    );
+  },
+  ["orbit-contact-page-content"],
+  { tags: [CMS_TAG], revalidate: CMS_REVALIDATE },
+);
+
+export const getContactPageContent = cache(
+  async (): Promise<CmsContactPageContent> => {
+    try {
+      return await readContactPageContent();
+    } catch {
+      return defaultContactPageContent();
+    }
+  },
+);
+
 const readCloudHostingPageContent = nextCache(
   async (): Promise<CmsCloudHostingPageContent> => {
     const page = await prisma.pageContent.findUnique({
@@ -690,6 +720,37 @@ export async function saveAboutPageContent(content: CmsAboutPageContent) {
   revalidateContent();
   revalidatePath(routes.about);
   revalidatePath("/orbit/about");
+  return row;
+}
+
+export async function saveContactPageContent(content: CmsContactPageContent) {
+  const normalized = mergeContactPageContent(content);
+  const row = await prisma.pageContent.upsert({
+    where: { slug: CONTACT_PAGE_SLUG },
+    create: {
+      slug: CONTACT_PAGE_SLUG,
+      title: "Contact HostingBeyond",
+      isPublished: true,
+      isVisible: true,
+      sections: normalized,
+      seo: {
+        title: normalized.seoTitle,
+        description: normalized.seoDescription,
+        keywords:
+          "contact HostingBeyond, hosting support, sales, billing, domain help",
+      },
+    },
+    update: {
+      sections: normalized,
+      seo: {
+        title: normalized.seoTitle,
+        description: normalized.seoDescription,
+      },
+    },
+  });
+  revalidateContent();
+  revalidatePath(routes.contact);
+  revalidatePath("/orbit/contact");
   return row;
 }
 
@@ -1026,6 +1087,12 @@ export async function ensureHomeSeeded() {
     });
     if (!aboutPage) {
       await saveAboutPageContent(defaultAboutPageContent());
+    }
+    const contactPage = await prisma.pageContent.findUnique({
+      where: { slug: CONTACT_PAGE_SLUG },
+    });
+    if (!contactPage) {
+      await saveContactPageContent(defaultContactPageContent());
     }
     await ensureHostingProductsSeeded();
   } catch {
