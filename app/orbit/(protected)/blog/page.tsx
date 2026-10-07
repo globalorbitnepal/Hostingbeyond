@@ -115,12 +115,44 @@ export default function OrbitBlogDashboardPage() {
                 </td>
                 <td className="px-4 py-3">{post.featured ? "Yes" : "—"}</td>
                 <td className="px-4 py-3">
-                  <Link
-                    href={`/orbit/blog/${post.id}/edit`}
-                    className="font-semibold text-[#673de6]"
-                  >
-                    Edit
-                  </Link>
+                  <div className="flex flex-wrap gap-2 text-xs font-semibold">
+                    <Link
+                      href={`/orbit/blog/${post.id}/edit`}
+                      className="text-[#673de6]"
+                    >
+                      Edit
+                    </Link>
+                    <button
+                      type="button"
+                      className="text-slate-600"
+                      onClick={async () => {
+                        await fetch("/api/orbit/blog/posts", {
+                          method: "POST",
+                          headers: { "content-type": "application/json" },
+                          body: JSON.stringify({
+                            title: `${post.title} (copy)`,
+                            duplicateFromId: post.id,
+                          }),
+                        });
+                        window.location.reload();
+                      }}
+                    >
+                      Duplicate
+                    </button>
+                    <button
+                      type="button"
+                      className="text-red-600"
+                      onClick={async () => {
+                        if (!window.confirm("Delete this post?")) return;
+                        await fetch(`/api/orbit/blog/posts/${post.id}`, {
+                          method: "DELETE",
+                        });
+                        window.location.reload();
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

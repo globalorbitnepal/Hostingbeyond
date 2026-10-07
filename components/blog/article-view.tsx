@@ -87,25 +87,55 @@ export function ArticleView({
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start">
           <article className="min-w-0">
             {post.category ? (
-              <p className="text-sm font-semibold text-[#673de6]">
+              <Link
+                href={blogCategoryPath(post.category.slug)}
+                className="inline-flex rounded-full bg-violet-100 px-3 py-1 text-xs font-bold text-[#673de6]"
+              >
                 {post.category.name}
-              </p>
+              </Link>
             ) : null}
-            <h1 className="mt-2 text-3xl leading-tight font-extrabold tracking-tight text-[#1a1035] sm:text-4xl">
+            <h1 className="mt-4 text-[clamp(1.875rem,4vw,2.75rem)] leading-[1.12] font-extrabold tracking-tight text-[#1a1035]">
               {post.title}
             </h1>
             {post.excerpt ? (
-              <p className="mt-4 text-lg leading-relaxed text-slate-600">
+              <p className="mt-4 text-lg leading-relaxed text-slate-600 sm:text-xl">
                 {post.excerpt}
               </p>
             ) : null}
-            <p className="mt-4 text-sm text-slate-500">
-              By {authorName} · Published {formatBlogDate(post.publishedAt)}
-              {post.updatedAt
-                ? ` · Updated ${formatBlogDate(post.updatedAt)}`
-                : ""}
-              · {post.readingTimeMinutes} min read
-            </p>
+            <div className="mt-5 flex flex-wrap items-center gap-3 text-sm text-slate-500">
+              {post.author?.avatarUrl ? (
+                <Image
+                  src={post.author.avatarUrl}
+                  alt=""
+                  width={40}
+                  height={40}
+                  className="rounded-full object-cover"
+                />
+              ) : (
+                <span
+                  className="flex size-10 items-center justify-center rounded-full bg-violet-100 text-sm font-bold text-[#673de6]"
+                  aria-hidden
+                >
+                  {authorName.slice(0, 1)}
+                </span>
+              )}
+              <p>
+                <span className="font-semibold text-slate-700">
+                  {authorName}
+                </span>
+                <span className="mx-2" aria-hidden>
+                  ·
+                </span>
+                Published {formatBlogDate(post.publishedAt)}
+                {post.updatedAt
+                  ? ` · Updated ${formatBlogDate(post.updatedAt)}`
+                  : ""}
+                <span className="mx-2" aria-hidden>
+                  ·
+                </span>
+                {post.readingTimeMinutes} min read
+              </p>
+            </div>
 
             {post.featuredImageUrl ? (
               <div className="relative mt-8 aspect-[16/9] overflow-hidden rounded-2xl bg-violet-50">

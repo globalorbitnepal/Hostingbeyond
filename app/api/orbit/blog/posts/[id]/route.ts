@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 
-import { upsertBlogPost, type BlogPostWriteInput } from "@/lib/blog/queries";
+import {
+  autosaveBlogPost,
+  upsertBlogPost,
+  type BlogPostWriteInput,
+} from "@/lib/blog/queries";
 import { requireOrbitAdmin, unauthorizedJson } from "@/lib/orbit/api";
 import { logActivity } from "@/lib/orbit/session";
 import { prisma } from "@/lib/prisma";
@@ -36,14 +40,15 @@ export async function PATCH(request: Request, { params }: Params) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const body = (await request
-    .json()
-    .catch(() => null)) as BlogPostWriteInput | null;
+  const body = (await request.json().catch(() => null)) as
+    (BlogPostWriteInput & { autosave?: boolean }) | null;
   if (!body?.title?.trim()) {
     return NextResponse.json({ error: "Title is required." }, { status: 400 });
   }
 
-  const post = await upsertBlogPost(id, body, existing.slug);
+  const post = body.autosave
+    ? await autosaveBlogPost(id, body)
+    : await upsertBlogPost(id, body, existing.slug);
   await logActivity({
     adminUserId: admin.id,
     action: "BLOG_UPDATE",

@@ -5,14 +5,22 @@ import type { BlogPostCard } from "@/lib/blog/queries";
 import { blogPostPath } from "@/lib/blog/paths";
 import { formatBlogDate } from "@/lib/blog/format";
 
-export function FeaturedBlogPost({ post }: { post: BlogPostCard }) {
+export function FeaturedBlogPost({
+  post,
+  showFeaturedLabel = true,
+}: {
+  post: BlogPostCard;
+  showFeaturedLabel?: boolean;
+}) {
   const authorName =
     post.author?.displayName || post.author?.name || "HostingBeyond";
   return (
     <section className="rounded-3xl border border-violet-100 bg-white p-4 shadow-[0_16px_48px_rgba(79,70,229,0.1)] sm:p-6 lg:p-8">
-      <p className="mb-4 text-xs font-bold tracking-[0.2em] text-[#673de6] uppercase">
-        Featured
-      </p>
+      {showFeaturedLabel ? (
+        <p className="mb-4 text-xs font-bold tracking-[0.2em] text-[#673de6] uppercase">
+          Featured
+        </p>
+      ) : null}
       <div className="grid gap-6 lg:grid-cols-2 lg:items-center lg:gap-10">
         <Link
           href={blogPostPath(post.slug)}

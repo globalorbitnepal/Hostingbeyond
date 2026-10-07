@@ -9,7 +9,7 @@ export function BlogPostCard({ post }: { post: BlogPostCard }) {
   const authorName =
     post.author?.displayName || post.author?.name || "HostingBeyond";
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-violet-100/80 bg-white shadow-[0_8px_32px_rgba(79,70,229,0.08)] transition hover:border-violet-200/90 hover:shadow-[0_12px_40px_rgba(79,70,229,0.12)]">
+    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-violet-100/80 bg-white shadow-[0_8px_32px_rgba(79,70,229,0.08)] transition duration-200 hover:-translate-y-0.5 hover:border-violet-200/90 hover:shadow-[0_14px_44px_rgba(79,70,229,0.14)] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
       <Link
         href={blogPostPath(post.slug)}
         className="relative block aspect-[16/10] overflow-hidden bg-violet-50"

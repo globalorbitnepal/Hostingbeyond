@@ -36,7 +36,7 @@ const ALLOWED_ATTRIBUTES: sanitizeHtml.IOptions["allowedAttributes"] = {
   a: ["href", "title", "target", "rel"],
   img: ["src", "alt", "title", "width", "height", "loading"],
   iframe: ["src", "title", "allow", "allowfullscreen", "loading"],
-  div: ["class", "data-callout"],
+  div: ["class", "data-callout", "data-hb-cta"],
   span: ["class"],
   code: ["class"],
   pre: ["class"],

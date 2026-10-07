@@ -81,13 +81,32 @@ export async function listPublishedCategories() {
 }
 
 export async function getFeaturedPost(): Promise<BlogPostCard | null> {
+  const { post } = await getBlogHomeFeatured();
+  return post;
+}
+
+export async function getBlogHomeFeatured(): Promise<{
+  post: BlogPostCard | null;
+  isMarkedFeatured: boolean;
+}> {
   await promoteScheduledPosts();
-  const post = await prisma.blogPost.findFirst({
+  const marked = await prisma.blogPost.findFirst({
     where: { ...publishedWhere(), featured: true },
     orderBy: { publishedAt: "desc" },
     include: postInclude,
   });
-  return post ? toCard(post) : null;
+  if (marked) {
+    return { post: toCard(marked), isMarkedFeatured: true };
+  }
+  const latest = await prisma.blogPost.findFirst({
+    where: publishedWhere(),
+    orderBy: { publishedAt: "desc" },
+    include: postInclude,
+  });
+  return {
+    post: latest ? toCard(latest) : null,
+    isMarkedFeatured: false,
+  };
 }
 
 export async function listPublishedPosts(options: {
@@ -271,6 +290,48 @@ export type BlogPostWriteInput = {
   twitterImageUrl?: string | null;
   schemaType?: string;
 };
+
+export async function autosaveBlogPost(
+  id: string,
+  input: Partial<BlogPostWriteInput>,
+) {
+  const existing = await prisma.blogPost.findUnique({ where: { id } });
+  if (!existing) throw new Error("Post not found");
+
+  const title = (input.title ?? existing.title).trim();
+  const slugBase = input.slug?.trim() || title;
+  const slug =
+    slugBase === existing.slug
+      ? existing.slug
+      : await ensureUniqueSlug(slugBase, id);
+
+  const contentHtml = sanitizeBlogHtml(
+    input.contentHtml ?? existing.contentHtml,
+  );
+  const readingTimeMinutes = estimateReadingTimeMinutes(
+    contentHtml,
+    input.readingTimeOverride ?? existing.readingTimeOverride,
+  );
+
+  return prisma.blogPost.update({
+    where: { id },
+    data: {
+      title,
+      slug,
+      excerpt: (input.excerpt ?? existing.excerpt).trim(),
+      contentHtml,
+      readingTimeMinutes,
+      seoTitle: input.seoTitle ?? existing.seoTitle,
+      seoDescription: input.seoDescription ?? existing.seoDescription,
+      focusKeyword: input.focusKeyword ?? existing.focusKeyword,
+      featuredImageUrl: input.featuredImageUrl ?? existing.featuredImageUrl,
+      featuredImageAlt: input.featuredImageAlt ?? existing.featuredImageAlt,
+      categoryId: input.categoryId ?? existing.categoryId,
+      authorId: input.authorId ?? existing.authorId,
+    },
+    include: postInclude,
+  });
+}
 
 export async function upsertBlogPost(
   id: string | null,

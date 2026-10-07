@@ -2,14 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { BlogCategoryNav } from "@/components/blog/category-nav";
+import { BlogEmptyState } from "@/components/blog/blog-empty-state";
+import { BlogHero } from "@/components/blog/blog-hero";
 import { BlogNewsletter } from "@/components/blog/blog-newsletter";
-import { BlogSearch } from "@/components/blog/blog-search";
 import { BlogSiteShell } from "@/components/blog/blog-shell";
 import { FeaturedBlogPost } from "@/components/blog/featured-post";
 import { BlogPostCard } from "@/components/blog/post-card";
 import { BLOG_BASE } from "@/lib/blog/paths";
 import {
-  getFeaturedPost,
+  getBlogHomeFeatured,
   listPublishedCategories,
   listPublishedPosts,
   seedBlogTaxonomyIfEmpty,
@@ -28,11 +29,14 @@ export default async function BlogIndexPage({
   const search = params.search?.trim() ?? "";
   const page = Number(params.page) || 1;
 
-  const [categories, featured, listing] = await Promise.all([
+  const [categories, featuredBundle, listing] = await Promise.all([
     listPublishedCategories(),
-    search ? Promise.resolve(null) : getFeaturedPost(),
+    search
+      ? Promise.resolve({ post: null, isMarkedFeatured: false })
+      : getBlogHomeFeatured(),
     listPublishedPosts({ page, search }),
   ]);
+  const featured = featuredBundle.post;
 
   const categoryNav = categories.map((c) => ({ name: c.name, slug: c.slug }));
   const excludeFeatured = featured?.id;
@@ -42,34 +46,25 @@ export default async function BlogIndexPage({
   return (
     <BlogSiteShell>
       <div className="mx-auto max-w-[1240px] space-y-10">
-        <header className="max-w-3xl">
-          <h1 className="text-3xl font-extrabold tracking-tight text-[#1a1035] sm:text-4xl">
-            HostingBeyond Blog
-          </h1>
-          <p className="mt-3 text-lg font-semibold text-[#673de6]">
-            Build smarter. Host better. Grow online.
-          </p>
-          <p className="mt-3 text-base leading-relaxed text-slate-600">
-            Practical guides, hosting insights, domain tips, WordPress
-            tutorials, security advice, and website performance resources.
-          </p>
-          <div className="mt-6">
-            <BlogSearch initialQuery={search} />
-          </div>
-        </header>
+        <BlogHero initialQuery={search} />
 
-        {featured && !search ? <FeaturedBlogPost post={featured} /> : null}
+        {featured && !search ? (
+          <FeaturedBlogPost
+            post={featured}
+            showFeaturedLabel={featuredBundle.isMarkedFeatured}
+          />
+        ) : null}
 
         <BlogCategoryNav categories={categoryNav} />
 
         <section>
           <h2 className="text-xl font-bold text-[#1a1035]">
-            {search ? `Results for “${search}”` : "Latest from HostingBeyond"}
+            {search
+              ? `Results for “${search}” (${listing.total})`
+              : "Latest from HostingBeyond"}
           </h2>
           {posts.length === 0 ? (
-            <p className="mt-6 text-slate-600">
-              No articles yet. Check back soon.
-            </p>
+            <BlogEmptyState search={search} />
           ) : (
             <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {posts.map((post) => (
