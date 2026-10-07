@@ -9,9 +9,11 @@ import { tipsHubPath } from "@/lib/blog/paths";
 export function TipsSearch({
   initialQuery = "",
   category,
+  variant = "default",
 }: {
   initialQuery?: string;
   category?: string;
+  variant?: "default" | "hero";
 }) {
   const router = useRouter();
   const [q, setQ] = useState(initialQuery);
@@ -41,7 +43,11 @@ export function TipsSearch({
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder="Search tips, guides and tutorials…"
-        className="h-12 w-full rounded-2xl border border-violet-100/90 bg-white pr-12 pl-11 text-sm text-slate-800 shadow-sm ring-[#673de6]/25 outline-none focus:ring-2"
+        className={
+          variant === "hero"
+            ? "h-12 w-full rounded-xl border-0 bg-white pr-12 pl-11 text-sm text-slate-800 shadow-none ring-2 ring-transparent outline-none focus:ring-[#673de6]/40"
+            : "h-12 w-full rounded-2xl border border-violet-100/90 bg-white pr-12 pl-11 text-sm text-slate-800 shadow-sm ring-[#673de6]/25 outline-none focus:ring-2"
+        }
       />
       {q || initialQuery ? (
         <button

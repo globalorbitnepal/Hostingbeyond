@@ -26,8 +26,8 @@ export function TipsGuideCard({ post }: { post: BlogPostCard }) {
             className="object-cover transition duration-300 group-hover:scale-[1.03] motion-reduce:transform-none"
           />
         ) : (
-          <div className="flex h-full items-center justify-center bg-gradient-to-br from-violet-50 to-indigo-50 text-xs font-bold tracking-wide text-violet-700 uppercase">
-            Guide
+          <div className="flex h-full items-center justify-center bg-gradient-to-br from-[#7c3aed] via-[#673de6] to-[#2563eb] text-xs font-bold tracking-wide text-white/90 uppercase">
+            HostingBeyond Guide
           </div>
         )}
         {badge ? (

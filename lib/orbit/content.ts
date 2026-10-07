@@ -70,6 +70,11 @@ import {
   type CmsPricingPageContent,
 } from "@/lib/orbit/pricing-content";
 import {
+  defaultTipsHubPageContent,
+  mergeTipsHubPageContent,
+  type CmsTipsHubPageContent,
+} from "@/lib/orbit/tips-hub-page-content";
+import {
   getPublicPageSeoEntry,
   mergeStoredPageSeo,
   metadataFromStoredSeo,
@@ -95,6 +100,7 @@ const ECOMMERCE_HOSTING_PAGE_SLUG = "ecommerce-hosting-product";
 const PYTHON_HOSTING_PAGE_SLUG = "python-hosting-product";
 const WEBSITE_MIGRATION_PAGE_SLUG = "website-migration-product";
 const DOMAIN_TRANSFER_PAGE_SLUG = "domain-transfer-product";
+const TIPS_HUB_PAGE_SLUG = "tips-hub";
 /** Safety net so a bad cache entry can never outlive a few minutes. */
 const CMS_REVALIDATE = 300;
 
@@ -345,6 +351,30 @@ export const getHostingPageContent = cache(
   },
 );
 
+const readTipsHubPageContent = nextCache(
+  async (): Promise<CmsTipsHubPageContent> => {
+    const page = await prisma.pageContent.findUnique({
+      where: { slug: TIPS_HUB_PAGE_SLUG },
+    });
+    if (!page) return defaultTipsHubPageContent();
+    return mergeTipsHubPageContent(
+      page.sections as Partial<CmsTipsHubPageContent>,
+    );
+  },
+  ["orbit-tips-hub-page-content"],
+  { tags: [CMS_TAG], revalidate: CMS_REVALIDATE },
+);
+
+export const getTipsHubPageContent = cache(
+  async (): Promise<CmsTipsHubPageContent> => {
+    try {
+      return await readTipsHubPageContent();
+    } catch {
+      return defaultTipsHubPageContent();
+    }
+  },
+);
+
 const readCloudHostingPageContent = nextCache(
   async (): Promise<CmsCloudHostingPageContent> => {
     const page = await prisma.pageContent.findUnique({
@@ -571,6 +601,37 @@ export async function saveCloudHostingPageContent(
   revalidatePath(routes.cloud);
   revalidatePath("/cloud");
   revalidatePath("/orbit/cloud");
+  return row;
+}
+
+export async function saveTipsHubPageContent(content: CmsTipsHubPageContent) {
+  const normalized = mergeTipsHubPageContent(content);
+  const row = await prisma.pageContent.upsert({
+    where: { slug: TIPS_HUB_PAGE_SLUG },
+    create: {
+      slug: TIPS_HUB_PAGE_SLUG,
+      title: "Tips & Learning Hub",
+      isPublished: true,
+      isVisible: true,
+      sections: normalized,
+      seo: {
+        title: normalized.seoTitle,
+        description: normalized.seoDescription,
+        keywords:
+          "hosting tips, domain guides, WordPress tutorials, website security, DNS help, HostingBeyond guides",
+      },
+    },
+    update: {
+      sections: normalized,
+      seo: {
+        title: normalized.seoTitle,
+        description: normalized.seoDescription,
+      },
+    },
+  });
+  revalidateContent();
+  revalidatePath("/resources/tips");
+  revalidatePath("/orbit/blog/tips-hub");
   return row;
 }
 
@@ -825,6 +886,12 @@ export async function ensureHomeSeeded() {
       await saveWebsiteMigrationPageContent(
         defaultWebsiteMigrationPageContent(),
       );
+    }
+    const tipsHub = await prisma.pageContent.findUnique({
+      where: { slug: TIPS_HUB_PAGE_SLUG },
+    });
+    if (!tipsHub) {
+      await saveTipsHubPageContent(defaultTipsHubPageContent());
     }
     await ensureHostingProductsSeeded();
   } catch {

@@ -9,9 +9,17 @@ import { TipsCategoryNav } from "@/components/tips/tips-category-nav";
 import { TipsEmptyState } from "@/components/tips/tips-empty-state";
 import { TipsFeaturedGuide } from "@/components/tips/tips-featured-guide";
 import { TipsGuideCard } from "@/components/tips/tips-guide-card";
-import { TipsHero } from "@/components/tips/tips-hero";
-import { routes } from "@/config/routes";
-import { TIP_TOPIC_BLOCKS } from "@/lib/blog/tips-topics";
+import {
+  TipsCtaBand,
+  TipsFaqSection,
+  TipsIntroSection,
+  TipsLearningPathsGrid,
+  TipsPillarsGrid,
+  TipsStatsBand,
+} from "@/components/tips/tips-hub-sections";
+import { TipsPremiumHero } from "@/components/tips/tips-premium-hero";
+import { buildMetadata } from "@/lib/metadata";
+import { BLOG_BASE, tipsHubPath, TIPS_BASE } from "@/lib/blog/paths";
 import {
   countPublishedTips,
   getTipsHomeFeatured,
@@ -19,10 +27,44 @@ import {
   listTipCategoriesWithPublishedPosts,
   seedBlogTaxonomyIfEmpty,
 } from "@/lib/blog/queries";
-import { BLOG_BASE, tipsHubPath, TIPS_BASE } from "@/lib/blog/paths";
-import { breadcrumbJsonLd, tipsHomeMetadata } from "@/lib/blog/seo";
+import { breadcrumbJsonLd } from "@/lib/blog/seo";
+import { getTipsHubPageContent } from "@/lib/orbit/content";
+import { siteConfig } from "@/config/site";
 
-export const metadata: Metadata = tipsHomeMetadata();
+export async function generateMetadata(): Promise<Metadata> {
+  const hub = await getTipsHubPageContent();
+  return buildMetadata({
+    title: hub.seoTitle,
+    description: hub.seoDescription,
+    path: TIPS_BASE,
+  });
+}
+
+function SectionTitle({
+  eyebrow,
+  title,
+  description,
+}: {
+  eyebrow?: string;
+  title: string;
+  description?: string;
+}) {
+  return (
+    <div className="mb-6">
+      {eyebrow ? (
+        <p className="text-xs font-bold tracking-[0.2em] text-[#673de6] uppercase">
+          {eyebrow}
+        </p>
+      ) : null}
+      <h2 className="mt-1 text-2xl font-extrabold tracking-tight text-[#1a1035]">
+        {title}
+      </h2>
+      {description ? (
+        <p className="mt-2 max-w-2xl text-sm text-slate-600">{description}</p>
+      ) : null}
+    </div>
+  );
+}
 
 export default async function TipsHubPage({
   searchParams,
@@ -34,6 +76,7 @@ export default async function TipsHubPage({
   }>;
 }) {
   await seedBlogTaxonomyIfEmpty();
+  const hub = await getTipsHubPageContent();
   const params = await searchParams;
   const search = params.search?.trim() ?? "";
   const category = params.category?.trim() ?? "";
@@ -90,15 +133,39 @@ export default async function TipsHubPage({
   })();
   const showHelpful = helpfulPosts.length > 0 && !isFiltered;
 
-  const topicBlocks = TIP_TOPIC_BLOCKS.filter((block) =>
-    categories.some((c) => c.slug === block.slug && c.count > 0),
-  );
-
   const breadcrumbs = breadcrumbJsonLd([
     { name: "Home", path: "/" },
     { name: "Resources", path: "/resources" },
     { name: "Tips", path: TIPS_BASE },
   ]);
+
+  const faqJsonLd =
+    !isFiltered && hub.faqs.length
+      ? {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: hub.faqs
+            .filter((f) => f.visible !== false && f.question && f.answer)
+            .map((f) => ({
+              "@type": "Question",
+              name: f.question,
+              acceptedAnswer: { "@type": "Answer", text: f.answer },
+            })),
+        }
+      : null;
+
+  const webPageJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: hub.seoTitle,
+    description: hub.seoDescription,
+    url: new URL(TIPS_BASE, siteConfig.url).toString(),
+    isPartOf: {
+      "@type": "WebSite",
+      name: "HostingBeyond",
+      url: siteConfig.url,
+    },
+  };
 
   return (
     <BlogSiteShell>
@@ -107,12 +174,54 @@ export default async function TipsHubPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }}
       />
-      <div className="mx-auto max-w-[1320px] space-y-10 px-1 sm:px-0">
-        <TipsHero
+      <Script
+        id="tips-hub-webpage-jsonld"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageJsonLd) }}
+      />
+      {faqJsonLd ? (
+        <Script
+          id="tips-hub-faq-jsonld"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+      ) : null}
+
+      <div className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2">
+        <TipsPremiumHero
+          content={hub}
           initialQuery={search}
           category={category || undefined}
           compact={Boolean(search)}
         />
+      </div>
+
+      <div className="mx-auto mt-10 max-w-[1320px] space-y-14 px-1 sm:px-0">
+        <nav aria-label="Breadcrumb" className="text-sm text-slate-500">
+          <ol className="flex flex-wrap items-center gap-2">
+            <li>
+              <Link href="/" className="hover:text-[#673de6]">
+                Home
+              </Link>
+            </li>
+            <li aria-hidden>/</li>
+            <li>
+              <Link href="/resources" className="hover:text-[#673de6]">
+                Resources
+              </Link>
+            </li>
+            <li aria-hidden>/</li>
+            <li className="font-medium text-[#1a1035]">Tips</li>
+          </ol>
+        </nav>
+
+        {!isFiltered ? (
+          <>
+            <TipsStatsBand content={hub} />
+            <TipsIntroSection content={hub} />
+            <TipsLearningPathsGrid content={hub} />
+          </>
+        ) : null}
 
         <Suspense fallback={null}>
           <TipsCategoryNav categories={categories} search={search} />
@@ -120,22 +229,19 @@ export default async function TipsHubPage({
 
         {search ? (
           <section>
-            <h2 className="text-lg font-bold text-[#1a1035]">
-              Search results for &ldquo;{search}&rdquo; ({listing.total})
-            </h2>
+            <SectionTitle
+              title={`Search results for “${search}”`}
+              description={`${listing.total} guide${listing.total === 1 ? "" : "s"} found`}
+            />
           </section>
         ) : null}
 
         {category && activeCategory ? (
           <section>
-            <h2 className="text-2xl font-bold text-[#1a1035]">
-              {activeCategory.name} Tips &amp; Guides
-            </h2>
-            {activeCategory.description ? (
-              <p className="mt-2 max-w-2xl text-sm text-slate-600">
-                {activeCategory.description}
-              </p>
-            ) : null}
+            <SectionTitle
+              title={`${activeCategory.name} tips & guides`}
+              description={activeCategory.description}
+            />
           </section>
         ) : null}
 
@@ -143,10 +249,12 @@ export default async function TipsHubPage({
 
         {showHelpful ? (
           <section>
-            <h2 className="text-xl font-bold text-[#1a1035]">
-              Most Helpful Guides
-            </h2>
-            <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <SectionTitle
+              eyebrow="Community"
+              title="Most helpful guides"
+              description="Popular tutorials based on real reader visits."
+            />
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {helpfulPosts.map((post) => (
                 <TipsGuideCard key={post.id} post={post} />
               ))}
@@ -155,15 +263,19 @@ export default async function TipsHubPage({
         ) : null}
 
         <section id="latest-guides">
-          <h2 className="text-xl font-bold text-[#1a1035]">
-            {isFiltered ? "Guides" : "Latest Guides"}
-          </h2>
+          <SectionTitle
+            eyebrow="Library"
+            title={isFiltered ? "Guides" : "Latest guides"}
+            description={
+              isFiltered
+                ? undefined
+                : "Newest practical tutorials from HostingBeyond."
+            }
+          />
           {latestPosts.length === 0 ? (
-            <div className="mt-6">
-              <TipsEmptyState search={search} hasAnyTips={totalTips > 0} />
-            </div>
+            <TipsEmptyState search={search} hasAnyTips={totalTips > 0} />
           ) : (
-            <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {latestPosts.map((post) => (
                 <TipsGuideCard key={post.id} post={post} />
               ))}
@@ -186,8 +298,8 @@ export default async function TipsHubPage({
                     })}
                     className={`rounded-full px-4 py-2 text-sm font-semibold ${
                       p === listing.page
-                        ? "bg-[#673de6] text-white"
-                        : "border border-slate-200 bg-white text-slate-700"
+                        ? "bg-[#673de6] text-white shadow-md"
+                        : "border border-violet-100 bg-white text-slate-700 hover:border-violet-200"
                     }`}
                   >
                     {p}
@@ -200,11 +312,12 @@ export default async function TipsHubPage({
 
         {!isFiltered && howTo && howTo.posts.length > 0 ? (
           <section>
-            <h2 className="text-xl font-bold text-[#1a1035]">How-To Guides</h2>
-            <p className="mt-1 text-sm text-slate-600">
-              Step-by-step tutorials for hosting, domains, WordPress and more.
-            </p>
-            <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <SectionTitle
+              eyebrow="How-to"
+              title="Step-by-step tutorials"
+              description="Actionable walkthroughs for WordPress, hosting, DNS and more."
+            />
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {howTo.posts.slice(0, 4).map((post) => (
                 <TipsGuideCard key={post.id} post={post} />
               ))}
@@ -214,10 +327,12 @@ export default async function TipsHubPage({
 
         {!isFiltered && troubleshooting && troubleshooting.posts.length > 0 ? (
           <section>
-            <h2 className="text-xl font-bold text-[#1a1035]">
-              Quick Fixes &amp; Troubleshooting
-            </h2>
-            <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <SectionTitle
+              eyebrow="Support"
+              title="Quick fixes & troubleshooting"
+              description="Resolve DNS, SSL, downtime and email issues faster."
+            />
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {troubleshooting.posts.slice(0, 4).map((post) => (
                 <TipsGuideCard key={post.id} post={post} />
               ))}
@@ -225,59 +340,22 @@ export default async function TipsHubPage({
           </section>
         ) : null}
 
-        {!isFiltered && topicBlocks.length > 0 ? (
-          <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {topicBlocks.map((block) => (
-              <div
-                key={block.slug}
-                className="rounded-2xl border border-violet-100 bg-white p-6 shadow-sm"
-              >
-                <h3 className="text-lg font-bold text-[#1a1035]">
-                  {block.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                  {block.description}
-                </p>
-                <Link
-                  href={tipsHubPath({ category: block.slug })}
-                  className="mt-4 inline-flex text-sm font-semibold text-[#673de6] hover:underline"
-                >
-                  {block.cta} →
-                </Link>
-              </div>
-            ))}
-          </section>
-        ) : null}
+        {!isFiltered ? <TipsPillarsGrid content={hub} /> : null}
 
-        {totalTips === 0 && !search ? (
+        {totalTips === 0 && !search && !category ? (
           <TipsEmptyState hasAnyTips={false} />
         ) : null}
 
-        <section className="rounded-2xl border border-violet-100 bg-violet-50/40 p-6 text-center sm:p-8">
-          <p className="text-sm font-semibold text-[#673de6]">
-            Ready to put these guides into action?
-          </p>
-          <div className="mt-4 flex flex-wrap justify-center gap-3">
-            <Link
-              href={routes.hosting}
-              className="rounded-full bg-[#673de6] px-5 py-2.5 text-sm font-semibold text-white"
-            >
-              View Hosting Plans
-            </Link>
-            <Link
-              href={routes.domains}
-              className="rounded-full border border-violet-200 bg-white px-5 py-2.5 text-sm font-semibold text-[#673de6]"
-            >
-              Search Your Domain
-            </Link>
-            <Link
-              href={BLOG_BASE}
-              className="rounded-full border border-violet-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700"
-            >
-              Read the Blog
-            </Link>
-          </div>
-        </section>
+        {!isFiltered ? <TipsFaqSection content={hub} /> : null}
+
+        <TipsCtaBand content={hub} />
+
+        <p className="text-center text-sm text-slate-500">
+          Looking for editorial stories?{" "}
+          <Link href={BLOG_BASE} className="font-semibold text-[#673de6]">
+            Visit the HostingBeyond blog →
+          </Link>
+        </p>
 
         <BlogNewsletter />
       </div>
