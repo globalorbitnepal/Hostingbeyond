@@ -84,6 +84,12 @@ export function fastPoolMaxTlds(): number {
 let memoryFastPool: string[] | null = null;
 let memoryFastPoolLoadedAt = 0;
 
+/** Clear in-memory fast pool (experiments / catalogue refresh). */
+export function invalidateFastTldPoolCache(): void {
+  memoryFastPool = null;
+  memoryFastPoolLoadedAt = 0;
+}
+
 export async function getFastCustomerTldPool(): Promise<string[]> {
   const ttl = 4 * 60 * 60 * 1000;
   if (memoryFastPool && Date.now() - memoryFastPoolLoadedAt < ttl) {
