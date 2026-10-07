@@ -492,6 +492,7 @@
 
   .hb-domain-skeleton-shimmer {
     animation: hb-domain-skeleton-shimmer 2.4s ease-in-out infinite;
+    will-change: opacity;
   }
 
   @keyframes hb-domain-skeleton-shimmer {
