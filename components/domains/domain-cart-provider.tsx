@@ -20,7 +20,6 @@ import {
   removeGuestDomainLine,
   type GuestCartLine,
 } from "@/lib/domains/guest-domain-cart";
-import { loginPathForDomainCheckout } from "@/lib/domains/domain-purchase-intent";
 
 export type DomainCartLine = {
   domain: string;
@@ -309,13 +308,7 @@ export function DomainCartProvider({
     [applySnapshot, isAuthenticated],
   );
 
-  const checkoutHref = useMemo(() => {
-    const domains = cart.items.map((i) => i.domain);
-    if (!isAuthenticated && domains.length) {
-      return loginPathForDomainCheckout(domains);
-    }
-    return routes.domainCheckout;
-  }, [cart.items, isAuthenticated]);
+  const checkoutHref = useMemo(() => routes.domainCheckout, []);
 
   const domainsInCart = useMemo(
     () => new Set(cart.items.map((i) => i.domain.toLowerCase())),

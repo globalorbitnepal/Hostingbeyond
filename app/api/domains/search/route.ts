@@ -19,6 +19,8 @@ import {
 } from "@/lib/domains/rate-limit";
 import {
   runDeepDiscoverySearch,
+  runFastAlternativesChunk1,
+  runFastAlternativesChunk2,
   runFastAlternativesOnly,
   runFastCustomerSearch,
 } from "@/lib/domains/fast-domain-search";
@@ -228,21 +230,24 @@ export async function POST(request: Request) {
 
     if (scope === "alternatives") {
       if (tier === 2) {
-        const deep = await runDeepDiscoverySearch(queryRaw);
+        const fastB = await runFastAlternativesChunk2(queryRaw);
         return NextResponse.json({
-          results: deep.alternatives,
+          results: fastB.alternatives,
+          recommendations: fastB.alternatives,
           source: "registrar",
           query,
           scope,
           tier,
-          extensionsChecked: deep.extensionsChecked,
-          alternativesComplete: true,
-          suggestTier2: false,
-          timings: deep.timings,
-          resultsCustomer: deep.alternatives.map(toCustomerResult),
+          extensionsChecked: fastB.timings.bulk_fqdn_count,
+          alternativesComplete: fastB.alternativesComplete,
+          suggestTier2: fastB.deepDiscoveryAvailable,
+          deepDiscoveryAvailable: fastB.deepDiscoveryAvailable,
+          fastChunk2Available: false,
+          timings: fastB.timings,
+          resultsCustomer: fastB.alternatives.map(toCustomerResult),
         });
       }
-      const fastAlts = await runFastAlternativesOnly(queryRaw);
+      const fastAlts = await runFastAlternativesChunk1(queryRaw);
       return NextResponse.json({
         results: fastAlts.alternatives,
         recommendations: fastAlts.alternatives,
@@ -253,8 +258,10 @@ export async function POST(request: Request) {
         tier,
         extensionsChecked: fastAlts.timings.bulk_fqdn_count,
         alternativesComplete: fastAlts.alternativesComplete,
-        suggestTier2: fastAlts.deepDiscoveryAvailable,
+        suggestTier2:
+          fastAlts.fastChunk2Available || fastAlts.deepDiscoveryAvailable,
         deepDiscoveryAvailable: fastAlts.deepDiscoveryAvailable,
+        fastChunk2Available: fastAlts.fastChunk2Available,
         timings: fastAlts.timings,
         resultsCustomer: fastAlts.alternatives.map(toCustomerResult),
       });

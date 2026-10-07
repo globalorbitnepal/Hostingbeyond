@@ -5,6 +5,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { DomainPremiumCheckout } from "@/components/domains/domain-premium-checkout";
 import type { DomainCheckoutOffersPayload } from "@/lib/domains/domain-checkout-offers";
+import {
+  guestCartSnapshot,
+  removeGuestDomainLine,
+} from "@/lib/domains/guest-domain-cart";
 
 export type DomainCheckoutLine = {
   domain: string;
@@ -33,6 +37,7 @@ export type DomainCheckoutResult =
     };
 
 type Props = {
+  isAuthenticated: boolean;
   lines: DomainCheckoutLine[];
   walletBalance: number;
   walletCurrency: string;
@@ -52,7 +57,18 @@ function statusLabelForOrder(status: string): string {
   return "Processing";
 }
 
+function mapGuestLines(): DomainCheckoutLine[] {
+  return guestCartSnapshot().items.map((line) => ({
+    domain: line.domain,
+    status: line.status,
+    register: line.register,
+    renew: line.renew,
+    currency: line.currency,
+  }));
+}
+
 export function DomainCheckoutView({
+  isAuthenticated: initialAuthenticated,
   lines: initialLines,
   walletBalance,
   walletCurrency,
@@ -61,11 +77,16 @@ export function DomainCheckoutView({
   priceChanges = [],
   requiresPriceConfirmation = false,
   offers,
-  customerEmail,
-  customerName,
+  customerEmail: initialEmail,
+  customerName: initialName,
 }: Props) {
   const router = useRouter();
-  const [lines, setLines] = useState(initialLines);
+  const [isAuthenticated, setIsAuthenticated] = useState(initialAuthenticated);
+  const [lines, setLines] = useState(
+    initialAuthenticated ? initialLines : mapGuestLines(),
+  );
+  const [customerEmail, setCustomerEmail] = useState(initialEmail);
+  const [customerName, setCustomerName] = useState(initialName);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<DomainCheckoutResult[]>([]);
@@ -75,12 +96,18 @@ export function DomainCheckoutView({
   );
   const [rejectedNotice, setRejectedNotice] = useState(cartRejected);
 
+  useEffect(() => {
+    if (initialAuthenticated) return;
+    setLines(mapGuestLines());
+  }, [initialAuthenticated]);
+
   const total = useMemo(
     () => lines.reduce((sum, line) => sum + line.register, 0),
     [lines],
   );
 
   const refreshWallet = useCallback(async () => {
+    if (!isAuthenticated) return;
     try {
       const res = await fetch("/api/domains/wallet");
       const json = (await res.json()) as { balance?: number };
@@ -88,15 +115,25 @@ export function DomainCheckoutView({
     } catch {
       /* ignore */
     }
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     void refreshWallet();
   }, [refreshWallet]);
 
+  const handleAuthenticated = useCallback(() => {
+    router.refresh();
+    setIsAuthenticated(true);
+  }, [router]);
+
   async function removeLine(domain: string) {
     if (submitting) return;
     setError(null);
+    if (!isAuthenticated) {
+      removeGuestDomainLine(domain.trim().toLowerCase());
+      setLines(mapGuestLines());
+      return;
+    }
     try {
       const res = await fetch(
         `/api/domains/cart?domain=${encodeURIComponent(domain)}`,
@@ -114,6 +151,10 @@ export function DomainCheckoutView({
   }
 
   async function completeCheckout() {
+    if (!isAuthenticated) {
+      setError("Sign in to complete domain registration.");
+      return;
+    }
     if (submitting || lines.length === 0 || !priceConfirmed) return;
     setSubmitting(true);
     setError(null);
@@ -246,11 +287,31 @@ export function DomainCheckoutView({
     await refreshWallet();
   }
 
+  useEffect(() => {
+    if (!initialAuthenticated) return;
+    setLines(initialLines);
+    setCustomerEmail(initialEmail);
+    setCustomerName(initialName);
+    setBalance(walletBalance);
+    setRejectedNotice(cartRejected);
+    setPriceConfirmed(!requiresPriceConfirmation);
+  }, [
+    initialAuthenticated,
+    initialLines,
+    initialEmail,
+    initialName,
+    walletBalance,
+    cartRejected,
+    requiresPriceConfirmation,
+  ]);
+
   const allDone = results.length === lines.length && lines.length > 0;
-  const insufficient = balance < total && !allDone;
+  const insufficient = isAuthenticated && balance < total && !allDone;
 
   return (
     <DomainPremiumCheckout
+      isAuthenticated={isAuthenticated}
+      onAuthenticated={handleAuthenticated}
       lines={lines}
       walletBalance={balance}
       walletCurrency={walletCurrency}

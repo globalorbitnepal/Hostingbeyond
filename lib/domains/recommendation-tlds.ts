@@ -81,6 +81,22 @@ export function fastPoolMaxTlds(): number {
   return Math.min(Math.max(raw, 5), 24);
 }
 
+/** First LIVE bulk chunk — smallest high-value set for fastest first alternatives. */
+export function fastChunk1TldCount(): number {
+  const raw = Number(process.env.DOMAIN_FAST_CHUNK1_TLDS ?? 7);
+  if (!Number.isFinite(raw) || raw < 4) return 7;
+  return Math.min(Math.max(raw, 4), 12);
+}
+
+export async function getFastCustomerTldPoolChunk(
+  chunk: 1 | 2,
+): Promise<string[]> {
+  const pool = await getFastCustomerTldPool();
+  const split = fastChunk1TldCount();
+  if (chunk === 1) return pool.slice(0, split);
+  return pool.slice(split);
+}
+
 let memoryFastPool: string[] | null = null;
 let memoryFastPoolLoadedAt = 0;
 

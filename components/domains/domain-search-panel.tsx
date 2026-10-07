@@ -36,7 +36,7 @@ export type SearchMode = "single" | "bulk";
 const QUICK_TLDS = SUGGESTED_TLDS.slice(0, 6);
 const BULK_LIMIT = 50;
 const MAX_CUSTOMER_ALTERNATIVES = 10;
-const ALTERNATIVE_SKELETON_COUNT = 6;
+const ALTERNATIVE_SKELETON_COUNT = 3;
 
 const MODE_TABS: Array<{
   id: SearchMode | "transfer";
@@ -491,6 +491,7 @@ export function DomainSearchPanel({
           primary?: DomainResult | null;
           recommendations?: DomainResult[];
           alternativesComplete?: boolean;
+          fastChunk2Available?: boolean;
         };
         if (res.status === 429 && attempt < retries - 1) {
           await sleep(600 * (attempt + 1));
@@ -551,12 +552,39 @@ export function DomainSearchPanel({
         setResults(cappedAlternatives(primaryRow, fastAlts));
       }
       setLoadingAlternatives(false);
-      setAlternativesComplete(altJson.alternativesComplete ?? true);
 
-      const altCount = cappedAlternatives(primaryRow, fastAlts).length - 1;
+      let altCount = cappedAlternatives(primaryRow, fastAlts).length - 1;
+      let deepStillAvailable = altJson.deepDiscoveryAvailable === true;
+      let searchComplete = altJson.alternativesComplete ?? false;
+
+      const runFastChunk2 =
+        altJson.fastChunk2Available === true &&
+        altCount < MAX_CUSTOMER_ALTERNATIVES &&
+        !controller.signal.aborted;
+
+      if (runFastChunk2) {
+        setLoadingTier2(true);
+        const { res: fastBRes, json: fastBJson } = await searchJson({
+          query: trimmed,
+          scope: "alternatives",
+          tier: 2,
+        });
+        if (gen !== searchGeneration.current) return;
+        const fastBAlts =
+          fastBJson.recommendations ??
+          fastBJson.results?.filter((r) => r.domain !== primaryRow.domain) ??
+          [];
+        if (fastBRes.ok && fastBAlts.length) {
+          setResults(cappedAlternatives(primaryRow, fastBAlts));
+          altCount = cappedAlternatives(primaryRow, fastBAlts).length - 1;
+        }
+        deepStillAvailable = fastBJson.deepDiscoveryAvailable === true;
+        searchComplete = fastBJson.alternativesComplete ?? searchComplete;
+        setLoadingTier2(false);
+      }
+
       const runDeep =
-        (altJson.deepDiscoveryAvailable === true ||
-          altJson.suggestTier2 === true) &&
+        deepStillAvailable &&
         altCount < MAX_CUSTOMER_ALTERNATIVES &&
         !controller.signal.aborted;
 
@@ -578,6 +606,8 @@ export function DomainSearchPanel({
         }
         setLoadingTier2(false);
         setAlternativesComplete(true);
+      } else {
+        setAlternativesComplete(searchComplete || altCount >= 0);
       }
     } catch (err) {
       if (gen !== searchGeneration.current) return;

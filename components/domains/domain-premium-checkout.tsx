@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { BrandMark } from "@/components/auth/brand-mark";
+import { CheckoutAuthPanel } from "@/components/domains/checkout-auth-panel";
 import { routes } from "@/config/routes";
 import type {
   DomainCheckoutOffersPayload,
@@ -31,10 +32,10 @@ import type {
 } from "./domain-checkout-view";
 
 const STEPS = [
-  { id: "domains", label: "Domains" },
-  { id: "services", label: "Services" },
-  { id: "details", label: "Details" },
-  { id: "payment", label: "Payment" },
+  { id: "domains", label: "Domains", num: "01" },
+  { id: "services", label: "Services", num: "02" },
+  { id: "details", label: "Details", num: "03" },
+  { id: "payment", label: "Payment", num: "04" },
 ] as const;
 
 type StepId = (typeof STEPS)[number]["id"];
@@ -78,6 +79,8 @@ function offerToSelection(
 }
 
 type PremiumCheckoutProps = {
+  isAuthenticated: boolean;
+  onAuthenticated: () => void;
   lines: DomainCheckoutLine[];
   walletBalance: number;
   walletCurrency: string;
@@ -101,6 +104,8 @@ type PremiumCheckoutProps = {
 };
 
 export function DomainPremiumCheckout({
+  isAuthenticated,
+  onAuthenticated,
   lines,
   walletBalance,
   walletCurrency,
@@ -136,6 +141,10 @@ export function DomainPremiumCheckout({
   }, [offers.optional, selectedKeys]);
 
   const refreshQuote = useCallback(async () => {
+    if (!isAuthenticated) {
+      setQuote(null);
+      return;
+    }
     setQuoteLoading(true);
     try {
       const res = await fetch("/api/domains/checkout/quote", {
@@ -150,7 +159,7 @@ export function DomainPremiumCheckout({
     } finally {
       setQuoteLoading(false);
     }
-  }, [selections]);
+  }, [selections, isAuthenticated]);
 
   useEffect(() => {
     void refreshQuote();
@@ -194,6 +203,13 @@ export function DomainPremiumCheckout({
 
   const primaryCta = useMemo(() => {
     if (step === "payment") {
+      if (!isAuthenticated) {
+        return {
+          label: "Sign in to complete payment",
+          action: () => setStep("details"),
+          disabled: lines.length === 0,
+        };
+      }
       return {
         label: `Register ${lines.length === 1 ? "domain" : `${lines.length} domains`} · ${walletCurrency} ${walletDue.toFixed(2)}`,
         action: () => void onCompleteCheckout(),
@@ -206,7 +222,11 @@ export function DomainPremiumCheckout({
       };
     }
     if (step === "details") {
-      return { label: "Continue to payment", action: goNext, disabled: false };
+      return {
+        label: isAuthenticated ? "Continue to payment" : "Continue",
+        action: goNext,
+        disabled: false,
+      };
     }
     if (step === "services") {
       return { label: "Continue to details", action: goNext, disabled: false };
@@ -230,7 +250,7 @@ export function DomainPremiumCheckout({
 
   return (
     <div className="min-h-dvh bg-gradient-to-b from-[#f6f2ff] via-white to-[#f8fafc] px-4 py-6 pb-28 sm:px-6 sm:py-8 lg:pb-10">
-      <div className="mx-auto w-full max-w-[72rem]">
+      <div className="mx-auto w-full max-w-[77.5rem]">
         <header className="flex flex-wrap items-center justify-between gap-4">
           <Link href={routes.home} className="shrink-0">
             <BrandMark />
@@ -281,7 +301,7 @@ export function DomainPremiumCheckout({
                   )}
                   aria-hidden
                 >
-                  {done ? <Check className="size-3.5" /> : i + 1}
+                  {done ? <Check className="size-3.5" /> : s.num}
                 </span>
                 {s.label}
               </button>
@@ -291,7 +311,24 @@ export function DomainPremiumCheckout({
 
         <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_min(100%,22rem)] lg:items-start">
           <div className="min-w-0 space-y-6">
-            {step === "domains" ? (
+            {lines.length === 0 ? (
+              <section className="rounded-[22px] border border-dashed border-violet-200 bg-white/90 p-8 text-center">
+                <p className="text-[16px] font-extrabold text-[#1a1035]">
+                  Your domains cart is empty
+                </p>
+                <p className="mt-2 text-[14px] text-slate-600">
+                  Search for a domain and add it to continue checkout.
+                </p>
+                <Link
+                  href={routes.domainSearch}
+                  className="mt-5 inline-flex min-h-12 items-center rounded-full bg-[#673de6] px-8 text-[14px] font-bold text-white"
+                >
+                  Search domains
+                </Link>
+              </section>
+            ) : null}
+
+            {step === "domains" && lines.length > 0 ? (
               <section
                 className="rounded-[22px] border border-violet-100/80 bg-white/95 p-5 shadow-[0_16px_40px_-28px_rgba(47,28,106,0.35)] sm:p-6"
                 aria-labelledby="checkout-domains-heading"
@@ -394,7 +431,7 @@ export function DomainPremiumCheckout({
               </section>
             ) : null}
 
-            {step === "services" ? (
+            {step === "services" && lines.length > 0 ? (
               <section
                 className="rounded-[22px] border border-violet-100/80 bg-white/95 p-5 sm:p-6"
                 aria-labelledby="checkout-services-heading"
@@ -403,10 +440,11 @@ export function DomainPremiumCheckout({
                   id="checkout-services-heading"
                   className="text-[15px] font-extrabold text-[#1a1035]"
                 >
-                  Recommended for your domain
+                  Recommended for your business
                 </h2>
                 <p className="mt-1 text-[13px] text-slate-500">
-                  Optional — skip anytime. Prices are confirmed on our servers.
+                  Add useful services to get more from your domain. Optional —
+                  skip anytime. Prices are confirmed on our servers.
                 </p>
                 {offers.optional.length === 0 ? (
                   <p className="mt-4 text-[13px] text-slate-600">
@@ -481,49 +519,52 @@ export function DomainPremiumCheckout({
               </section>
             ) : null}
 
-            {step === "details" ? (
-              <section
-                className="rounded-[22px] border border-violet-100/80 bg-white/95 p-5 sm:p-6"
-                aria-labelledby="checkout-details-heading"
-              >
-                <h2
-                  id="checkout-details-heading"
-                  className="text-[15px] font-extrabold text-[#1a1035]"
+            {step === "details" && lines.length > 0 ? (
+              isAuthenticated ? (
+                <section
+                  className="rounded-[22px] border border-violet-100/80 bg-white/95 p-5 sm:p-6"
+                  aria-labelledby="checkout-details-heading"
                 >
-                  Customer details
-                </h2>
-                <p className="mt-1 text-[13px] text-slate-500">
-                  Registration uses your HostingBeyond account contact. Update
-                  your profile anytime in account settings.
-                </p>
-                <div className="mt-4 space-y-3">
-                  <label className="block">
-                    <span className="text-[12px] font-bold text-slate-500 uppercase">
-                      Email
-                    </span>
-                    <input
-                      readOnly
-                      value={customerEmail}
-                      className="mt-1 flex min-h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[15px] text-slate-800"
-                    />
-                  </label>
-                  {customerName ? (
+                  <h2
+                    id="checkout-details-heading"
+                    className="text-[15px] font-extrabold text-[#1a1035]"
+                  >
+                    Customer details
+                  </h2>
+                  <p className="mt-1 text-[13px] text-slate-500">
+                    Registration uses your HostingBeyond account contact.
+                  </p>
+                  <div className="mt-4 space-y-3">
                     <label className="block">
                       <span className="text-[12px] font-bold text-slate-500 uppercase">
-                        Name
+                        Email
                       </span>
                       <input
                         readOnly
-                        value={customerName}
+                        value={customerEmail}
                         className="mt-1 flex min-h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[15px] text-slate-800"
                       />
                     </label>
-                  ) : null}
-                </div>
-              </section>
+                    {customerName ? (
+                      <label className="block">
+                        <span className="text-[12px] font-bold text-slate-500 uppercase">
+                          Name
+                        </span>
+                        <input
+                          readOnly
+                          value={customerName}
+                          className="mt-1 flex min-h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[15px] text-slate-800"
+                        />
+                      </label>
+                    ) : null}
+                  </div>
+                </section>
+              ) : (
+                <CheckoutAuthPanel onAuthenticated={onAuthenticated} />
+              )
             ) : null}
 
-            {step === "payment" ? (
+            {step === "payment" && lines.length > 0 ? (
               <section
                 className="rounded-[22px] border border-violet-100/80 bg-white/95 p-5 sm:p-6"
                 aria-labelledby="checkout-payment-heading"
@@ -543,6 +584,12 @@ export function DomainPremiumCheckout({
                     {walletCurrency} {walletBalance.toFixed(2)}
                   </span>
                 </div>
+                {!isAuthenticated ? (
+                  <CheckoutAuthPanel
+                    onAuthenticated={onAuthenticated}
+                    className="mt-4"
+                  />
+                ) : null}
                 {insufficient ? (
                   <p className="mt-3 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900">
                     Your wallet balance is too low for domain registration (

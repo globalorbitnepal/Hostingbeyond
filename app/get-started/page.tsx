@@ -12,10 +12,7 @@ import {
   loadCheckoutCart,
   mergeUrlDomainsIntoCart,
 } from "@/lib/domains/domain-cart-service";
-import {
-  loginPathForDomainCheckout,
-  parseDomainListFromSearchParams,
-} from "@/lib/domains/domain-purchase-intent";
+import { parseDomainListFromSearchParams } from "@/lib/domains/domain-purchase-intent";
 import { checkTransferEligibilityAsync } from "@/lib/domains/transfer-service";
 import { getDomainCheckoutOffers } from "@/lib/domains/domain-checkout-offers";
 import { isPaymentProviderConfigured } from "@/lib/domains/wallet-top-up";
@@ -76,53 +73,50 @@ export default async function GetStartedDomainCheckoutPage({
   }
 
   const domainsFromUrl = parseDomainListFromSearchParams(params);
+  const offers = await getDomainCheckoutOffers();
 
-  if (!user) {
-    if (domainsFromUrl.length) {
-      redirect(loginPathForDomainCheckout(domainsFromUrl));
-    }
-    redirect(routes.domainSearch);
-  }
-
-  if (domainsFromUrl.length) {
+  if (user && domainsFromUrl.length) {
     await mergeUrlDomainsIntoCart(user.id, domainsFromUrl);
     redirect(routes.domainCheckout);
   }
 
-  const checkout = await loadCheckoutCart(user.id);
-  if (!checkout.snapshot.items.length) {
-    const err =
-      checkout.rejected.length > 0
-        ? "Some domains in your cart are no longer available."
-        : "Your cart is empty.";
-    redirect(
-      `${routes.domainSearch}?checkout_error=${encodeURIComponent(err)}`,
+  if (user) {
+    const checkout = await loadCheckoutCart(user.id);
+    const wallet = await ensureCustomerWallet(user.id);
+
+    return (
+      <DomainCheckoutView
+        isAuthenticated
+        lines={checkout.snapshot.items.map((item) => ({
+          domain: item.domain,
+          status: item.status,
+          register: item.register,
+          renew: item.renew,
+          currency: item.currency,
+        }))}
+        walletBalance={Number(wallet.balance)}
+        walletCurrency={wallet.currency}
+        paymentProviderReady={isPaymentProviderConfigured()}
+        cartRejected={checkout.rejected}
+        priceChanges={checkout.priceChanges}
+        requiresPriceConfirmation={checkout.requiresConfirmation}
+        offers={offers}
+        customerEmail={user.email}
+        customerName={user.name}
+      />
     );
   }
 
-  const [wallet, offers] = await Promise.all([
-    ensureCustomerWallet(user.id),
-    getDomainCheckoutOffers(),
-  ]);
-
   return (
     <DomainCheckoutView
-      lines={checkout.snapshot.items.map((item) => ({
-        domain: item.domain,
-        status: item.status,
-        register: item.register,
-        renew: item.renew,
-        currency: item.currency,
-      }))}
-      walletBalance={Number(wallet.balance)}
-      walletCurrency={wallet.currency}
+      isAuthenticated={false}
+      lines={[]}
+      walletBalance={0}
+      walletCurrency="USD"
       paymentProviderReady={isPaymentProviderConfigured()}
-      cartRejected={checkout.rejected}
-      priceChanges={checkout.priceChanges}
-      requiresPriceConfirmation={checkout.requiresConfirmation}
       offers={offers}
-      customerEmail={user.email}
-      customerName={user.name}
+      customerEmail=""
+      customerName={null}
     />
   );
 }
