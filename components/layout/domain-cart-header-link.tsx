@@ -55,7 +55,10 @@ export function DomainCartHeaderLink({
   const count = cartCtx?.cart.count ?? fallbackCount;
   const openDrawer = cartCtx?.openDrawer;
 
-  const ariaLabel = count > 0 ? `Cart, ${count} items` : "Cart";
+  const ariaLabel =
+    count > 0
+      ? `Domains cart, ${count === 1 ? "1 domain" : `${count} domains`}`
+      : "Domains cart";
 
   return (
     <button
@@ -74,7 +77,7 @@ export function DomainCartHeaderLink({
         aria-hidden
       />
       {!compact ? (
-        <span className="hidden text-slate-800 lg:inline">Cart</span>
+        <span className="hidden text-slate-800 lg:inline">Domains cart</span>
       ) : null}
       {count > 0 ? (
         <span

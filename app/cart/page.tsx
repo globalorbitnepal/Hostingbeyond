@@ -6,10 +6,11 @@ import { buildMetadata } from "@/lib/metadata";
 import { getHomeSections, getSiteSettings } from "@/lib/orbit/content";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Domain cart — HostingBeyond",
+  title: "Domains cart — HostingBeyond",
   description:
-    "Review domain names in your cart, see first-year and renewal pricing, and continue to secure checkout.",
+    "Review domain names in your domains cart, see first-year and renewal pricing, and continue to secure checkout.",
   path: routes.domainCart,
+  noIndex: true,
 });
 
 export default async function DomainCartPage() {

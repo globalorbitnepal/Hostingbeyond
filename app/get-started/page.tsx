@@ -17,6 +17,7 @@ import {
   parseDomainListFromSearchParams,
 } from "@/lib/domains/domain-purchase-intent";
 import { checkTransferEligibilityAsync } from "@/lib/domains/transfer-service";
+import { getDomainCheckoutOffers } from "@/lib/domains/domain-checkout-offers";
 import { isPaymentProviderConfigured } from "@/lib/domains/wallet-top-up";
 import { ensureCustomerWallet } from "@/lib/domains/wallet";
 import { routes } from "@/config/routes";
@@ -24,6 +25,7 @@ import { routes } from "@/config/routes";
 export const metadata: Metadata = {
   title: "Domain checkout — HostingBeyond",
   description: "Complete your domain registration securely with HostingBeyond.",
+  robots: { index: false, follow: false },
 };
 
 export default async function GetStartedDomainCheckoutPage({
@@ -98,7 +100,10 @@ export default async function GetStartedDomainCheckoutPage({
     );
   }
 
-  const wallet = await ensureCustomerWallet(user.id);
+  const [wallet, offers] = await Promise.all([
+    ensureCustomerWallet(user.id),
+    getDomainCheckoutOffers(),
+  ]);
 
   return (
     <DomainCheckoutView
@@ -115,6 +120,9 @@ export default async function GetStartedDomainCheckoutPage({
       cartRejected={checkout.rejected}
       priceChanges={checkout.priceChanges}
       requiresPriceConfirmation={checkout.requiresConfirmation}
+      offers={offers}
+      customerEmail={user.email}
+      customerName={user.name}
     />
   );
 }

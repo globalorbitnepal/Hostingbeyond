@@ -50,6 +50,7 @@ export function DomainCartDrawer() {
         role="dialog"
         aria-modal="true"
         aria-labelledby="hb-domain-cart-title"
+        aria-describedby="hb-domain-cart-subtitle"
         className={cn(
           "relative flex h-full w-full flex-col bg-white shadow-[0_0_60px_-12px_rgba(47,28,106,0.45)] transition-transform duration-200 ease-out",
           "max-sm:max-h-[92dvh] max-sm:self-end max-sm:rounded-t-[28px]",
@@ -63,10 +64,13 @@ export function DomainCartDrawer() {
               className="flex items-center gap-2 text-[17px] font-extrabold tracking-tight text-[#1a1035]"
             >
               <ShoppingCart className="size-5 text-[#673de6]" aria-hidden />
-              Shopping cart
+              Domains cart
             </p>
-            <p className="mt-0.5 text-[13px] font-medium text-slate-500">
-              {cart.count > 0 ? countLabel : "Your cart is empty"}
+            <p
+              id="hb-domain-cart-subtitle"
+              className="mt-0.5 text-[13px] font-medium text-slate-500"
+            >
+              {cart.count > 0 ? countLabel : "No domains in your cart"}
             </p>
           </div>
           <button
@@ -74,7 +78,7 @@ export function DomainCartDrawer() {
             type="button"
             onClick={closeDrawer}
             className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:bg-slate-50"
-            aria-label="Close shopping cart"
+            aria-label="Close domains cart"
           >
             <X className="size-5" />
           </button>
@@ -112,8 +116,11 @@ export function DomainCartDrawer() {
                       >
                         {line.domain}
                       </p>
+                      <p className="mt-0.5 text-[11px] font-bold text-[#673de6]/90">
+                        Domain registration
+                      </p>
                       <p className="mt-1 text-[12px] font-medium text-slate-500">
-                        {line.periodYears ?? 1} year registration
+                        {line.periodYears ?? 1} year
                       </p>
                     </div>
                     <button
@@ -146,12 +153,12 @@ export function DomainCartDrawer() {
           <footer className="shrink-0 border-t border-slate-100 bg-white px-5 py-4 sm:px-6">
             <div className="space-y-1.5 text-[13px]">
               <div className="flex justify-between font-semibold text-slate-700">
-                <span>Subtotal</span>
+                <span>Domains subtotal</span>
                 <span>{formatPrice(cart.total)}</span>
               </div>
               <div className="flex justify-between text-slate-500">
-                <span>Taxes</span>
-                <span>Calculated at checkout</span>
+                <span>Taxes / fees</span>
+                <span>At checkout</span>
               </div>
               <div className="mt-2 flex justify-between border-t border-slate-100 pt-2 text-[15px] font-extrabold text-[#1a1035]">
                 <span>Total</span>

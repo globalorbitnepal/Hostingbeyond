@@ -30,14 +30,19 @@ export function DomainCartPageView() {
               </Link>
             </li>
             <li aria-hidden>/</li>
-            <li className="text-[#1a1035]">Cart</li>
+            <li className="text-[#1a1035]">Domains cart</li>
           </ol>
         </nav>
 
         <div className="grid gap-8 lg:grid-cols-[1fr_min(100%,22rem)] lg:items-start">
           <div>
             <h1 className="font-heading text-[clamp(1.65rem,3vw,2.25rem)] font-extrabold tracking-tight text-[#1a1035]">
-              Your domain cart
+              Domains cart
+              {cart.count > 0 ? (
+                <span className="mt-1 block text-[15px] font-semibold text-slate-500">
+                  {cart.count === 1 ? "1 domain" : `${cart.count} domains`}
+                </span>
+              ) : null}
             </h1>
             <p className="mt-2 max-w-2xl text-[15px] text-slate-600">
               Review registration pricing before checkout. All totals are
@@ -78,9 +83,13 @@ export function DomainCartPageView() {
                         >
                           {line.domain}
                         </p>
+                        <p className="mt-0.5 text-[12px] font-semibold text-[#673de6]/90">
+                          Domain registration
+                        </p>
                         <p className="mt-1 text-[12.5px] text-slate-500">
-                          {line.periodYears ?? 1} year · Renews{" "}
-                          {formatPrice(line.renew)}/yr
+                          {line.periodYears ?? 1} year ·{" "}
+                          {formatPrice(line.register)} / first year · Renews{" "}
+                          {formatPrice(line.renew)}/year
                         </p>
                       </div>
                       <div className="flex items-center gap-4">
@@ -129,11 +138,11 @@ export function DomainCartPageView() {
             </ul>
             <div className="mt-4 space-y-1.5 text-[13px]">
               <div className="flex justify-between font-semibold text-slate-700">
-                <span>Subtotal</span>
+                <span>Domains subtotal</span>
                 <span>{formatPrice(cart.total)}</span>
               </div>
               <div className="flex justify-between text-slate-500">
-                <span>Taxes & fees</span>
+                <span>Taxes / fees</span>
                 <span>At checkout</span>
               </div>
               <div className="flex justify-between pt-2 text-[16px] font-extrabold text-[#1a1035]">
@@ -159,7 +168,7 @@ export function DomainCartPageView() {
               href={routes.domainSearch}
               className="mt-3 block text-center text-[13px] font-semibold text-slate-500 hover:text-[#673de6]"
             >
-              Continue shopping
+              Continue searching domains
             </Link>
           </aside>
         </div>
