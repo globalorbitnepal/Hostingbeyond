@@ -40,6 +40,37 @@ const QUICK_TLDS = SUGGESTED_TLDS.slice(0, 6);
 const BULK_LIMIT = 50;
 const MAX_CUSTOMER_ALTERNATIVES = 10;
 const ALTERNATIVE_SKELETON_COUNT = 3;
+/** Matches alternative ResultRow + skeleton so slot swaps do not shift the grid. */
+const ALT_RESULT_MIN_H = "min-h-[168px]";
+
+type AlternativeSlotCell =
+  { kind: "result"; result: DomainResult } | { kind: "loading" };
+
+function buildAlternativeSlotCells(
+  results: DomainResult[],
+  busy: boolean,
+  complete: boolean,
+): AlternativeSlotCell[] {
+  const filled =
+    complete && results.length > 0
+      ? [...results].sort(sortRecommendations)
+      : results;
+  const capped = filled.slice(0, MAX_CUSTOMER_ALTERNATIVES);
+  const cells: AlternativeSlotCell[] = capped.map((result) => ({
+    kind: "result",
+    result,
+  }));
+  if (busy) {
+    const skeletonCount = Math.min(
+      ALTERNATIVE_SKELETON_COUNT,
+      MAX_CUSTOMER_ALTERNATIVES - capped.length,
+    );
+    for (let i = 0; i < skeletonCount; i++) {
+      cells.push({ kind: "loading" });
+    }
+  }
+  return cells;
+}
 
 const MODE_TABS: Array<{
   id: SearchMode | "transfer";
@@ -160,7 +191,7 @@ type CartButtonState = "idle" | "loading" | "added" | "in-cart";
 const ResultRow = memo(function ResultRow({
   result,
   featured = false,
-  animateIn = false,
+  compact = false,
   onRegister,
   registering,
   cartButtonState = "idle",
@@ -171,7 +202,8 @@ const ResultRow = memo(function ResultRow({
 }: {
   result: DomainResult;
   featured?: boolean;
-  animateIn?: boolean;
+  /** Alternative grid card — fixed min height, no entrance animation. */
+  compact?: boolean;
   onRegister: (domain: string) => void;
   registering: string | null;
   cartButtonState?: CartButtonState;
@@ -193,11 +225,15 @@ const ResultRow = memo(function ResultRow({
   return (
     <div
       className={cn(
-        "rounded-2xl border p-4 transition",
-        animateIn && "hb-domain-card-in",
+        "rounded-2xl border p-4",
+        compact && ALT_RESULT_MIN_H,
         featured
           ? "border-[#d4c9ff] bg-gradient-to-br from-[#faf8ff] to-white shadow-[0_10px_28px_-18px_rgba(47,28,106,0.28)] sm:p-4"
-          : "border-slate-200 bg-white hover:border-[#c7b8ff] hover:shadow-[0_12px_28px_-22px_rgba(47,28,106,0.6)]",
+          : cn(
+              "border-slate-200 bg-white",
+              !compact &&
+                "transition-[border-color,box-shadow] hover:border-[#c7b8ff] hover:shadow-[0_12px_28px_-22px_rgba(47,28,106,0.6)]",
+            ),
       )}
     >
       <div
@@ -309,7 +345,7 @@ function PrimaryResultSkeleton() {
       aria-busy="true"
       aria-label="Checking domain availability"
     >
-      <div className="hb-domain-skeleton-shimmer flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="hb-domain-skeleton-static flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0 space-y-2">
           <div className="h-6 w-48 max-w-full rounded-lg bg-slate-200/80" />
           <div className="h-3.5 w-56 max-w-full rounded bg-slate-100" />
@@ -373,7 +409,7 @@ const DomainSearchSingleForm = memo(function DomainSearchSingleForm({
           type="submit"
           disabled={searchSubmitting}
           className={cn(
-            "inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#2563eb] to-[#673de6] font-bold text-white shadow-[0_12px_26px_-14px_rgba(37,99,235,0.9)] transition hover:brightness-110 disabled:opacity-70",
+            "inline-flex min-w-[9.75rem] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#2563eb] to-[#673de6] font-bold text-white shadow-[0_12px_26px_-14px_rgba(37,99,235,0.9)] transition-[filter] hover:brightness-110 disabled:opacity-70",
             hero
               ? "h-12 px-7 text-[14px] sm:h-14 sm:px-8 sm:text-[15px]"
               : "h-12 px-6 text-[14px]",
@@ -384,7 +420,7 @@ const DomainSearchSingleForm = memo(function DomainSearchSingleForm({
           ) : (
             <Search className="size-4" />
           )}
-          Search domain
+          {searchSubmitting ? "Searching…" : "Search domain"}
         </button>
       </div>
 
@@ -469,7 +505,12 @@ const AlternativeCardSkeleton = memo(function AlternativeCardSkeleton({
       className="flex h-full min-h-[148px] flex-col rounded-2xl border border-slate-200/90 bg-white p-4 shadow-[0_8px_24px_-20px_rgba(47,28,106,0.32)]"
       aria-hidden
     >
-      <div className="hb-domain-skeleton-shimmer flex min-h-[116px] flex-col space-y-2">
+      <div
+        className={cn(
+          "hb-domain-skeleton-static flex flex-col space-y-2",
+          ALT_RESULT_MIN_H,
+        )}
+      >
         <p className="text-[15.5px] font-extrabold tracking-tight text-[#1a1035]">
           {base}
           <span className="ml-0.5 inline-block h-[0.95em] w-10 translate-y-[1px] rounded bg-slate-200/90 align-middle" />
@@ -484,6 +525,44 @@ const AlternativeCardSkeleton = memo(function AlternativeCardSkeleton({
         <div className="h-11 w-full rounded-full bg-slate-100/90" />
       </div>
     </div>
+  );
+});
+
+const PrimaryDomainResultBlock = memo(function PrimaryDomainResultBlock({
+  exact,
+  mode,
+  onRegister,
+  registering,
+  cartButtonState,
+  onViewCart,
+  buyableResults,
+  bulkSelected,
+  onBulkToggle,
+}: {
+  exact: DomainResult;
+  mode: SearchMode;
+  onRegister: (domain: string) => void;
+  registering: string | null;
+  cartButtonState: CartButtonState;
+  onViewCart: () => void;
+  buyableResults: DomainResult[];
+  bulkSelected: Set<string>;
+  onBulkToggle: (domain: string) => void;
+}) {
+  return (
+    <ResultRow
+      result={exact}
+      featured
+      onRegister={onRegister}
+      registering={registering}
+      cartButtonState={mode === "single" ? cartButtonState : "idle"}
+      onViewCart={onViewCart}
+      bulkSelectable={
+        mode === "bulk" && buyableResults.some((r) => r.domain === exact.domain)
+      }
+      bulkSelected={bulkSelected.has(exact.domain)}
+      onBulkToggle={onBulkToggle}
+    />
   );
 });
 
@@ -1010,10 +1089,19 @@ export function DomainSearchPanel({
         results.find((item) => item.domain === searched) ??
         results[0]);
 
-  const recommendationCandidates = useMemo(() => {
-    if (mode !== "single") return [];
-    return alternativeResults;
-  }, [mode, alternativeResults]);
+  const recommendationAvailableCount = alternativeResults.length;
+
+  const alternativeSlotCells = useMemo(
+    () =>
+      mode === "single"
+        ? buildAlternativeSlotCells(
+            alternativeResults,
+            alternativesBusy,
+            alternativesComplete,
+          )
+        : [],
+    [mode, alternativeResults, alternativesBusy, alternativesComplete],
+  );
 
   const hasResults =
     mode === "single" ? primaryResult != null : results.length > 0;
@@ -1021,31 +1109,17 @@ export function DomainSearchPanel({
   const showAlternativesSection =
     mode === "single" &&
     exact != null &&
-    (alternativesBusy || recommendationCandidates.length > 0);
-
-  const alternativeSkeletonSlots = showAlternativesSection
-    ? Math.max(
-        0,
-        Math.min(
-          ALTERNATIVE_SKELETON_COUNT,
-          MAX_CUSTOMER_ALTERNATIVES - recommendationCandidates.length,
-        ),
-      )
-    : 0;
-
-  const showAlternativeSkeletons =
-    alternativesBusy && alternativeSkeletonSlots > 0;
+    (alternativesBusy || recommendationAvailableCount > 0);
 
   const alternativesHeading =
     exact?.status === "taken"
       ? "Available alternatives"
       : "Other available extensions";
-  const recommendationAvailableCount = recommendationCandidates.length;
   const showAvailabilitySummary =
     mode === "single" &&
     !loadingPrimary &&
     alternativesComplete &&
-    recommendationCandidates.length >= 0 &&
+    recommendationAvailableCount >= 0 &&
     exact != null;
 
   return (
@@ -1131,9 +1205,8 @@ export function DomainSearchPanel({
       ) : null}
 
       <div
-        aria-live="polite"
         aria-busy={loadingPrimary || alternativesBusy}
-        className="mx-auto mt-5 w-full max-w-[78rem]"
+        className="hb-domain-search-results mx-auto mt-5 w-full max-w-[78rem]"
       >
         {loadingPrimary && !hasResults ? (
           <div className="space-y-2.5">
@@ -1142,7 +1215,7 @@ export function DomainSearchPanel({
         ) : null}
 
         {hasResults ? (
-          <div key={searched} className="hb-fade-up space-y-2.5">
+          <div key={searched} className="space-y-2.5">
             {mode === "bulk" && buyableResults.length > 0 ? (
               <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-[#e9e5ff] bg-[#f8f5ff] px-3 py-2">
                 <button
@@ -1180,21 +1253,15 @@ export function DomainSearchPanel({
               </div>
             ) : null}
             {exact ? (
-              <ResultRow
-                result={exact}
-                featured
-                animateIn={mode === "single"}
+              <PrimaryDomainResultBlock
+                exact={exact}
+                mode={mode}
                 onRegister={registerDomain}
                 registering={registering}
-                cartButtonState={
-                  mode === "single" ? cartButtonStateFor(exact.domain) : "idle"
-                }
+                cartButtonState={cartButtonStateFor(exact.domain)}
                 onViewCart={openDrawer}
-                bulkSelectable={
-                  mode === "bulk" &&
-                  buyableResults.some((r) => r.domain === exact.domain)
-                }
-                bulkSelected={bulkSelected.has(exact.domain)}
+                buyableResults={buyableResults}
+                bulkSelected={bulkSelected}
                 onBulkToggle={toggleBulkDomain}
               />
             ) : null}
@@ -1208,34 +1275,36 @@ export function DomainSearchPanel({
                 <p className="text-[12px] font-bold tracking-wide text-slate-500 uppercase">
                   {alternativesHeading}
                 </p>
-                {alternativesBusy && recommendationCandidates.length === 0 ? (
-                  <p className="mt-1 text-[12.5px] font-medium text-slate-500">
+                {alternativesBusy && recommendationAvailableCount === 0 ? (
+                  <p
+                    className="mt-1 text-[12.5px] font-medium text-slate-500"
+                    role="status"
+                    aria-live="polite"
+                  >
                     Checking other extensions for this name…
                   </p>
                 ) : null}
                 <div className="mt-2.5 grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
-                  {recommendationCandidates.map((item) => (
-                    <ResultRow
-                      key={item.domain}
-                      result={item}
-                      onRegister={registerDomain}
-                      registering={registering}
-                      cartButtonState={cartButtonStateFor(item.domain)}
-                      onViewCart={openDrawer}
-                    />
-                  ))}
-                  {showAlternativeSkeletons
-                    ? Array.from({ length: alternativeSkeletonSlots }).map(
-                        (_, index) => (
-                          <AlternativeCardSkeleton
-                            key={`alt-skeleton-${index}`}
-                            nameHint={searched}
-                          />
-                        ),
-                      )
-                    : null}
+                  {alternativeSlotCells.map((cell, index) =>
+                    cell.kind === "loading" ? (
+                      <AlternativeCardSkeleton
+                        key={`alt-slot-${index}`}
+                        nameHint={searched}
+                      />
+                    ) : (
+                      <ResultRow
+                        key={`alt-slot-${index}`}
+                        result={cell.result}
+                        compact
+                        onRegister={registerDomain}
+                        registering={registering}
+                        cartButtonState={cartButtonStateFor(cell.result.domain)}
+                        onViewCart={openDrawer}
+                      />
+                    ),
+                  )}
                 </div>
-                {loadingTier2 && recommendationCandidates.length > 0 ? (
+                {loadingTier2 && recommendationAvailableCount > 0 ? (
                   <p className="mt-2 text-[11.5px] font-medium text-slate-400">
                     Still checking a few more extensions…
                   </p>
@@ -1271,7 +1340,7 @@ export function DomainSearchPanel({
             exact?.status === "taken" &&
             alternativesComplete &&
             !alternativesBusy &&
-            recommendationCandidates.length === 0 ? (
+            recommendationAvailableCount === 0 ? (
               <p className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-[13px] font-medium text-slate-600">
                 No available alternatives were found for this name. Try a
                 different spelling or search another brand.

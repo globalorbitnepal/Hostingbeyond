@@ -490,24 +490,17 @@
     }
   }
 
-  .hb-domain-skeleton-shimmer {
-    animation: hb-domain-skeleton-shimmer 2.4s ease-in-out infinite;
-    will-change: opacity;
+  /* Domain search: static placeholders only (no shimmer — avoids paint jank). */
+  .hb-domain-skeleton-static {
+    background-color: rgb(248 250 252 / 0.95);
   }
 
-  @keyframes hb-domain-skeleton-shimmer {
-    0%,
-    100% {
-      opacity: 0.5;
-    }
-    50% {
-      opacity: 0.82;
-    }
+  .hb-domain-search-results {
+    contain: layout style;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .hb-domain-card-in,
-    .hb-domain-skeleton-shimmer {
+    .hb-domain-card-in {
       animation: none;
     }
   }
@@ -633,6 +626,7 @@
   html {
     @apply scroll-smooth font-sans;
     overflow-x: hidden;
+    scrollbar-gutter: stable;
   }
 
   @view-transition {
