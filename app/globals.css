@@ -475,6 +475,42 @@
     }
   }
 
+  .hb-domain-card-in {
+    animation: hb-domain-card-in 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes hb-domain-card-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .hb-domain-skeleton-shimmer {
+    animation: hb-domain-skeleton-shimmer 2.4s ease-in-out infinite;
+  }
+
+  @keyframes hb-domain-skeleton-shimmer {
+    0%,
+    100% {
+      opacity: 0.5;
+    }
+    50% {
+      opacity: 0.82;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hb-domain-card-in,
+    .hb-domain-skeleton-shimmer {
+      animation: none;
+    }
+  }
+
   .hb-chip-in {
     animation: hb-chip-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
   }

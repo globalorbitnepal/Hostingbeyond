@@ -1,6 +1,7 @@
 import type { DomainResult } from "@/lib/domains/availability";
 import {
   fastSearchCacheKey,
+  getFastSearchCache,
   withFastSearchDedup,
 } from "@/lib/domains/fast-search-cache";
 import { lookupDomainNames } from "@/lib/domains/lookup";
@@ -86,6 +87,180 @@ function tracesOverlap(traces: DnaRequestTiming[]): boolean {
   return a.httpStartAt < b.httpEndAt && b.httpStartAt < a.httpEndAt;
 }
 
+async function loadFastAlternativesFromProvider(
+  name: string,
+  anchorTld: string,
+  anchorDomain: string,
+  query: string,
+  options?: { includeAnchorInBulk?: boolean },
+): Promise<{
+  alternatives: DomainResult[];
+  bulkFqdns: number;
+  providerMs: number;
+  filterMs: number;
+  dnaTimings: DnaRequestTiming[];
+  primary: DomainResult | null;
+}> {
+  const catStart = Date.now();
+  const fastTlds = await getFastCustomerTldPool();
+  const catalogueMs = Date.now() - catStart;
+  void catalogueMs;
+
+  const splitAt = Math.max(1, Math.ceil(fastTlds.length / 2));
+  const tldsA = fastTlds.slice(0, splitAt);
+  const tldsB = fastTlds.slice(splitAt);
+  const includeAnchor = options?.includeAnchorInBulk ?? true;
+  const poolA = includeAnchor
+    ? [...new Set([anchorTld, ...tldsA])]
+    : [...new Set(tldsA)];
+  const fqdnsA = includeAnchor
+    ? [
+        ...new Set([
+          anchorDomain,
+          ...buildRecommendationFqdns(name, anchorDomain, poolA),
+        ]),
+      ]
+    : buildRecommendationFqdns(name, anchorDomain, poolA);
+  const fqdnsB = buildRecommendationFqdns(name, anchorDomain, tldsB);
+  const bulkFqdns = fqdnsA.length + fqdnsB.length;
+
+  clearDnaRequestTraces();
+  const providerStart = Date.now();
+  const [lookupA, lookupB] = await Promise.all([
+    fqdnsA.length
+      ? lookupDomainNames(fqdnsA, { query, tlds: poolA })
+      : Promise.resolve({ results: [], source: "registrar" as const }),
+    fqdnsB.length
+      ? lookupDomainNames(fqdnsB, { query, tlds: tldsB })
+      : Promise.resolve({ results: [], source: "registrar" as const }),
+  ]);
+  const providerMs = Date.now() - providerStart;
+  const dnaTimings = mapDnaTraces(getDnaRequestTraces());
+
+  const filterStart = Date.now();
+  const merged = [...lookupA.results, ...lookupB.results];
+  const primary =
+    merged.find((r) => r.domain === anchorDomain) ?? merged[0] ?? null;
+  const alternatives = topRegisterableRecommendations(
+    merged.filter((r) => r.domain !== anchorDomain),
+  );
+  const filterMs = Date.now() - filterStart;
+
+  return {
+    alternatives,
+    bulkFqdns,
+    providerMs,
+    filterMs,
+    dnaTimings,
+    primary,
+  };
+}
+
+/** Fast-path alternatives only (no anchor lookup — use after `scope: primary`). */
+export async function runFastAlternativesOnly(queryRaw: string): Promise<{
+  anchorDomain: string;
+  query: string;
+  alternatives: DomainResult[];
+  alternativesComplete: boolean;
+  deepDiscoveryAvailable: boolean;
+  source: "registrar" | "catalog";
+  timings: Pick<
+    FastSearchTimings,
+    | "total_request_time"
+    | "provider_request_count"
+    | "bulk_fqdn_count"
+    | "dna_requests"
+    | "dna_requests_overlap"
+    | "cache_hit"
+  >;
+}> {
+  const searchStart = Date.now();
+  const normalized = normalizeDomainSearchInput(queryRaw);
+  if (!normalized.ok) throw new Error(normalized.error);
+
+  const { name, tld, query } = normalized;
+  const anchorTld = (tld || ".com").toLowerCase();
+  const anchorDomain = `${name}${anchorTld}`.toLowerCase();
+  const cacheKey = `${fastSearchCacheKey(name)}:alts`;
+  const metricsBefore = getDnaProviderMetrics();
+
+  const mainCached = getFastSearchCache(fastSearchCacheKey(name));
+  if (mainCached) {
+    const readyAt = Date.now();
+    const limit = customerAlternativeLimit();
+    const deepDiscoveryAvailable =
+      mainCached.alternatives.length < limit &&
+      (await getDeepDiscoveryTldPool()).length > 0;
+    return {
+      anchorDomain: mainCached.anchorDomain,
+      query: mainCached.query,
+      alternatives: mainCached.alternatives,
+      alternativesComplete: !deepDiscoveryAvailable,
+      deepDiscoveryAvailable,
+      source: "registrar",
+      timings: {
+        total_request_time: readyAt - searchStart,
+        provider_request_count: 0,
+        bulk_fqdn_count: 0,
+        dna_requests: [],
+        dna_requests_overlap: false,
+        cache_hit: true,
+      },
+    };
+  }
+
+  let bulkFqdnsForTiming = 0;
+  const { payload, cacheHit } = await withFastSearchDedup(
+    cacheKey,
+    async () => {
+      const loaded = await loadFastAlternativesFromProvider(
+        name,
+        anchorTld,
+        anchorDomain,
+        query,
+        { includeAnchorInBulk: false },
+      );
+      bulkFqdnsForTiming = loaded.bulkFqdns;
+      return {
+        anchorDomain,
+        query,
+        primary: loaded.primary,
+        alternatives: loaded.alternatives,
+      };
+    },
+  );
+
+  const readyAt = Date.now();
+  const metrics = getDnaProviderMetrics();
+  const limit = customerAlternativeLimit();
+  const deepDiscoveryAvailable =
+    !cacheHit &&
+    payload.alternatives.length < limit &&
+    (await getDeepDiscoveryTldPool()).length > 0;
+
+  return {
+    anchorDomain: payload.anchorDomain,
+    query: payload.query,
+    alternatives: payload.alternatives,
+    alternativesComplete: !deepDiscoveryAvailable,
+    deepDiscoveryAvailable,
+    source: "registrar",
+    timings: {
+      total_request_time: readyAt - searchStart,
+      provider_request_count: cacheHit
+        ? 0
+        : Math.max(
+            0,
+            metrics.providerRequestCount - metricsBefore.providerRequestCount,
+          ),
+      bulk_fqdn_count: cacheHit ? 0 : bulkFqdnsForTiming,
+      dna_requests: [],
+      dna_requests_overlap: false,
+      cache_hit: cacheHit,
+    },
+  };
+}
+
 /**
  * Two overlapping LIVE bulks (empirically ~2× faster than one 15-FQDN bulk on DNA).
  * Anchor travels with the first chunk only.
@@ -115,47 +290,26 @@ export async function runFastCustomerSearch(
     cacheKey,
     async () => {
       const catStart = Date.now();
-      const fastTlds = await getFastCustomerTldPool();
+      await getFastCustomerTldPool();
       catalogueMs = Date.now() - catStart;
 
-      const splitAt = Math.max(1, Math.ceil(fastTlds.length / 2));
-      const tldsA = fastTlds.slice(0, splitAt);
-      const tldsB = fastTlds.slice(splitAt);
-      const poolA = [...new Set([anchorTld, ...tldsA])];
-      const fqdnsA = [
-        ...new Set([
-          anchorDomain,
-          ...buildRecommendationFqdns(name, anchorDomain, poolA),
-        ]),
-      ];
-      const fqdnsB = buildRecommendationFqdns(name, anchorDomain, tldsB);
-      bulkFqdns = fqdnsA.length + fqdnsB.length;
-
-      clearDnaRequestTraces();
-      const providerStart = Date.now();
-      const [lookupA, lookupB] = await Promise.all([
-        lookupDomainNames(fqdnsA, { query, tlds: poolA }),
-        fqdnsB.length
-          ? lookupDomainNames(fqdnsB, { query, tlds: tldsB })
-          : Promise.resolve({ results: [], source: "registrar" as const }),
-      ]);
-      providerMs = Date.now() - providerStart;
-      dnaTimings = mapDnaTraces(getDnaRequestTraces());
-
-      const filterStart = Date.now();
-      const merged = [...lookupA.results, ...lookupB.results];
-      const primary =
-        merged.find((r) => r.domain === anchorDomain) ?? merged[0] ?? null;
-      const alternatives = topRegisterableRecommendations(
-        merged.filter((r) => r.domain !== anchorDomain),
+      const loaded = await loadFastAlternativesFromProvider(
+        name,
+        anchorTld,
+        anchorDomain,
+        query,
+        { includeAnchorInBulk: true },
       );
-      filterMs = Date.now() - filterStart;
+      bulkFqdns = loaded.bulkFqdns;
+      providerMs = loaded.providerMs;
+      filterMs = loaded.filterMs;
+      dnaTimings = loaded.dnaTimings;
 
       return {
         anchorDomain,
         query,
-        primary,
-        alternatives,
+        primary: loaded.primary,
+        alternatives: loaded.alternatives,
       };
     },
   );

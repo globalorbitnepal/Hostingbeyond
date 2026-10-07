@@ -19,6 +19,7 @@ import {
 } from "@/lib/domains/rate-limit";
 import {
   runDeepDiscoverySearch,
+  runFastAlternativesOnly,
   runFastCustomerSearch,
 } from "@/lib/domains/fast-domain-search";
 import { runSingleFlowDomainSearch } from "@/lib/domains/single-flow-search";
@@ -241,21 +242,21 @@ export async function POST(request: Request) {
           resultsCustomer: deep.alternatives.map(toCustomerResult),
         });
       }
-      const fast = await runFastCustomerSearch(queryRaw);
+      const fastAlts = await runFastAlternativesOnly(queryRaw);
       return NextResponse.json({
-        results: fast.alternatives,
-        source: fast.source,
-        anchorDomain: fast.anchorDomain,
+        results: fastAlts.alternatives,
+        recommendations: fastAlts.alternatives,
+        source: fastAlts.source,
+        anchorDomain: fastAlts.anchorDomain,
         query,
         scope,
         tier,
-        primary: fast.primary,
-        extensionsChecked: fast.timings.bulk_fqdn_count,
-        alternativesComplete: fast.alternativesComplete,
-        suggestTier2: fast.deepDiscoveryAvailable,
-        deepDiscoveryAvailable: fast.deepDiscoveryAvailable,
-        timings: fast.timings,
-        resultsCustomer: fast.alternatives.map(toCustomerResult),
+        extensionsChecked: fastAlts.timings.bulk_fqdn_count,
+        alternativesComplete: fastAlts.alternativesComplete,
+        suggestTier2: fastAlts.deepDiscoveryAvailable,
+        deepDiscoveryAvailable: fastAlts.deepDiscoveryAvailable,
+        timings: fastAlts.timings,
+        resultsCustomer: fastAlts.alternatives.map(toCustomerResult),
       });
     }
 

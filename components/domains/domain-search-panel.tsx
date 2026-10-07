@@ -14,6 +14,7 @@ import {
   BadgeCheck,
   Check,
   Crown,
+  Globe2,
   Layers,
   Loader2,
   Lock,
@@ -33,6 +34,8 @@ export type SearchMode = "single" | "bulk";
 
 const QUICK_TLDS = SUGGESTED_TLDS.slice(0, 6);
 const BULK_LIMIT = 50;
+const MAX_CUSTOMER_ALTERNATIVES = 10;
+const ALTERNATIVE_SKELETON_COUNT = 6;
 
 const MODE_TABS: Array<{
   id: SearchMode | "transfer";
@@ -88,6 +91,32 @@ function mergeResults(
     map.set(row.domain.toLowerCase(), row);
   }
   return [...map.values()];
+}
+
+function cappedAlternatives(
+  primary: DomainResult,
+  rows: DomainResult[],
+): DomainResult[] {
+  const alts = mergeResults([], rows)
+    .filter(
+      (row) =>
+        row.domain.toLowerCase() !== primary.domain.toLowerCase() &&
+        isRegisterableRecommendation(row),
+    )
+    .sort(sortRecommendations)
+    .slice(0, MAX_CUSTOMER_ALTERNATIVES);
+  return [primary, ...alts];
+}
+
+function appendAlternativesCapped(
+  current: DomainResult[],
+  primaryDomain: string,
+  more: DomainResult[],
+): DomainResult[] {
+  const primary = current.find((r) => r.domain === primaryDomain) ?? current[0];
+  if (!primary) return current;
+  const existing = current.filter((r) => r.domain !== primary.domain);
+  return cappedAlternatives(primary, [...existing, ...more]);
 }
 
 function StatusPill({ status }: { status: DomainResult["status"] }) {
@@ -160,9 +189,9 @@ function ResultRow({
   return (
     <div
       className={cn(
-        "rounded-2xl border p-4 transition",
+        "hb-domain-card-in rounded-2xl border p-4 transition",
         featured
-          ? "border-[#c7b8ff] bg-gradient-to-br from-[#f8f5ff] to-white sm:p-5"
+          ? "border-[#d4c9ff] bg-gradient-to-br from-[#faf8ff] to-white shadow-[0_10px_28px_-18px_rgba(47,28,106,0.28)] sm:p-4"
           : "border-slate-200 bg-white hover:border-[#c7b8ff] hover:shadow-[0_12px_28px_-22px_rgba(47,28,106,0.6)]",
       )}
     >
@@ -183,10 +212,16 @@ function ResultRow({
                 aria-label={`Select ${result.domain}`}
               />
             ) : null}
+            {featured ? (
+              <Globe2
+                className="size-4 shrink-0 text-[#673de6]/80"
+                aria-hidden
+              />
+            ) : null}
             <p
               className={cn(
                 "min-w-0 font-extrabold tracking-tight break-words text-[#1a1035]",
-                featured ? "text-[19px] sm:text-[24px]" : "text-[15.5px]",
+                featured ? "text-[17px] sm:text-[20px]" : "text-[15.5px]",
               )}
             >
               {result.name}
@@ -239,14 +274,47 @@ function ResultRow({
   );
 }
 
-function SkeletonRow() {
+function PrimaryResultSkeleton() {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4">
-      <div className="w-full space-y-2">
-        <div className="h-4 w-1/3 animate-pulse rounded-full bg-slate-200" />
-        <div className="h-3 w-2/3 animate-pulse rounded-full bg-slate-100" />
+    <div
+      className="rounded-2xl border border-[#e8e4ff] bg-gradient-to-br from-[#faf8ff] to-white p-4 shadow-[0_10px_28px_-18px_rgba(47,28,106,0.2)] sm:p-4"
+      aria-busy="true"
+      aria-label="Checking domain availability"
+    >
+      <div className="hb-domain-skeleton-shimmer flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0 space-y-2">
+          <div className="h-6 w-48 max-w-full rounded-lg bg-slate-200/80" />
+          <div className="h-3.5 w-56 max-w-full rounded bg-slate-100" />
+        </div>
+        <div className="h-10 w-32 rounded-full bg-slate-100/90" />
       </div>
-      <div className="h-11 w-28 shrink-0 animate-pulse rounded-full bg-slate-100" />
+    </div>
+  );
+}
+
+function AlternativeCardSkeleton({ nameHint }: { nameHint: string }) {
+  const base = nameHint.split(".")[0]?.trim() || "yourname";
+  return (
+    <div
+      className="flex h-full min-h-[148px] flex-col rounded-2xl border border-slate-200/90 bg-white p-4 shadow-[0_8px_24px_-20px_rgba(47,28,106,0.32)]"
+      aria-hidden
+    >
+      <div className="hb-domain-skeleton-shimmer space-y-2">
+        <p className="text-[15.5px] font-extrabold tracking-tight text-[#1a1035]">
+          {base}
+          <span className="ml-0.5 inline-block h-[0.95em] w-10 translate-y-[1px] rounded bg-slate-200/90 align-middle" />
+        </p>
+        <p className="text-[12px] font-semibold text-slate-400">
+          Checking availability…
+        </p>
+      </div>
+      <div className="mt-auto flex flex-col gap-3 pt-4">
+        <div className="hb-domain-skeleton-shimmer space-y-1.5">
+          <div className="h-5 w-24 rounded bg-slate-200/75" />
+          <div className="h-3 w-[4.5rem] rounded bg-slate-100" />
+        </div>
+        <div className="hb-domain-skeleton-shimmer h-11 w-full rounded-full bg-slate-100/90" />
+      </div>
     </div>
   );
 }
@@ -405,23 +473,20 @@ export function DomainSearchPanel({
     };
 
     try {
-      const { res: fastRes, json: fastJson } = await searchJson({
+      const { res: primaryRes, json: primaryJson } = await searchJson({
         query: trimmed,
-        scope: "fast",
+        scope: "primary",
       });
       if (gen !== searchGeneration.current) return;
 
-      const primaryRow = fastJson.primary ?? fastJson.results?.[0] ?? null;
-      const fastAlts =
-        fastJson.recommendations ??
-        fastJson.results?.filter((r) => r.domain !== primaryRow?.domain) ??
-        [];
+      const primaryRow =
+        primaryJson.primary ?? primaryJson.results?.[0] ?? null;
 
-      if (!fastRes.ok || !primaryRow) {
+      if (!primaryRes.ok || !primaryRow) {
         setResults([]);
         setAnchorDomain("");
         setError(
-          fastJson.error ||
+          primaryJson.error ||
             "Domain availability is temporarily taking longer than usual. Please try again.",
         );
         setLoadingPrimary(false);
@@ -430,17 +495,38 @@ export function DomainSearchPanel({
         return;
       }
 
-      setResults(mergeResults([primaryRow], fastAlts));
-      setAnchorDomain(fastJson.anchorDomain ?? primaryRow.domain);
+      setResults([primaryRow]);
+      setAnchorDomain(primaryJson.anchorDomain ?? primaryRow.domain);
       setBulkSelected(new Set());
       setLoadingPrimary(false);
-      setLoadingAlternatives(false);
-      setAlternativesComplete(fastJson.alternativesComplete ?? true);
+      setLoadingAlternatives(true);
 
+      const { res: altRes, json: altJson } = await searchJson({
+        query: trimmed,
+        scope: "alternatives",
+        tier: 1,
+      });
+      if (gen !== searchGeneration.current) return;
+
+      const fastAlts =
+        altJson.recommendations ??
+        altJson.results?.filter((r) => r.domain !== primaryRow.domain) ??
+        [];
+
+      if (altRes.ok && fastAlts.length) {
+        setResults(cappedAlternatives(primaryRow, fastAlts));
+      }
+      setLoadingAlternatives(false);
+      setAlternativesComplete(altJson.alternativesComplete ?? true);
+
+      const altCount = cappedAlternatives(primaryRow, fastAlts).length - 1;
       const runDeep =
-        fastJson.deepDiscoveryAvailable === true ||
-        fastJson.suggestTier2 === true;
-      if (runDeep && !controller.signal.aborted) {
+        (altJson.deepDiscoveryAvailable === true ||
+          altJson.suggestTier2 === true) &&
+        altCount < MAX_CUSTOMER_ALTERNATIVES &&
+        !controller.signal.aborted;
+
+      if (runDeep) {
         setLoadingTier2(true);
         const { res: deepRes, json: deepJson } = await searchJson({
           query: trimmed,
@@ -448,7 +534,13 @@ export function DomainSearchPanel({
         });
         if (gen !== searchGeneration.current) return;
         if (deepRes.ok && deepJson.results?.length) {
-          setResults((prev) => mergeResults(prev, deepJson.results!));
+          setResults((prev) =>
+            appendAlternativesCapped(
+              prev,
+              primaryRow.domain,
+              deepJson.results!,
+            ),
+          );
         }
         setLoadingTier2(false);
         setAlternativesComplete(true);
@@ -616,7 +708,33 @@ export function DomainSearchPanel({
       (item) =>
         item.domain !== exact?.domain && isRegisterableRecommendation(item),
     )
-    .sort(sortRecommendations);
+    .sort(sortRecommendations)
+    .slice(0, MAX_CUSTOMER_ALTERNATIVES);
+
+  const showAlternativesSection =
+    mode === "single" &&
+    exact != null &&
+    (loadingAlternatives ||
+      loadingTier2 ||
+      recommendationCandidates.length > 0);
+
+  const alternativeSkeletonSlots = showAlternativesSection
+    ? Math.max(
+        0,
+        Math.min(
+          ALTERNATIVE_SKELETON_COUNT,
+          MAX_CUSTOMER_ALTERNATIVES - recommendationCandidates.length,
+        ),
+      )
+    : 0;
+
+  const showAlternativeSkeletons =
+    (loadingAlternatives || loadingTier2) && alternativeSkeletonSlots > 0;
+
+  const alternativesHeading =
+    exact?.status === "taken"
+      ? "Available alternatives"
+      : "Other available extensions";
   const recommendationAvailableCount = recommendationCandidates.length;
   const showAvailabilitySummary =
     mode === "single" &&
@@ -800,10 +918,14 @@ export function DomainSearchPanel({
         </p>
       ) : null}
 
-      <div aria-live="polite" aria-busy={loading} className="mt-5">
+      <div
+        aria-live="polite"
+        aria-busy={loading}
+        className="mx-auto mt-5 w-full max-w-[78rem]"
+      >
         {loadingPrimary && results.length === 0 ? (
           <div className="space-y-2.5">
-            <SkeletonRow />
+            <PrimaryResultSkeleton />
           </div>
         ) : null}
 
@@ -859,22 +981,18 @@ export function DomainSearchPanel({
                 onBulkToggle={toggleBulkDomain}
               />
             ) : null}
-            {mode === "single" && (loadingAlternatives || loadingTier2) ? (
-              <p className="flex items-center gap-2 pt-1 text-[12.5px] font-semibold text-slate-500">
-                <Loader2 className="size-4 animate-spin text-[#673de6]" />
-                {loadingTier2
-                  ? "Finding more alternatives…"
-                  : "Finding available alternatives…"}
-              </p>
-            ) : null}
-            {mode === "single" && recommendationCandidates.length > 0 ? (
-              <>
-                <p className="pt-2 text-[12px] font-bold tracking-wide text-slate-500 uppercase">
-                  {exact?.status === "taken"
-                    ? "Available alternatives"
-                    : "Other available extensions"}
+            {showAlternativesSection ? (
+              <section aria-label={alternativesHeading} className="pt-1">
+                <p className="text-[12px] font-bold tracking-wide text-slate-500 uppercase">
+                  {alternativesHeading}
                 </p>
-                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+                {loadingAlternatives &&
+                recommendationCandidates.length === 0 ? (
+                  <p className="mt-1 text-[12.5px] font-medium text-slate-500">
+                    Checking other extensions for this name…
+                  </p>
+                ) : null}
+                <div className="mt-2.5 grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
                   {recommendationCandidates.map((item) => (
                     <ResultRow
                       key={item.domain}
@@ -883,8 +1001,23 @@ export function DomainSearchPanel({
                       registering={registering}
                     />
                   ))}
+                  {showAlternativeSkeletons
+                    ? Array.from({ length: alternativeSkeletonSlots }).map(
+                        (_, index) => (
+                          <AlternativeCardSkeleton
+                            key={`alt-skeleton-${index}`}
+                            nameHint={searched}
+                          />
+                        ),
+                      )
+                    : null}
                 </div>
-              </>
+                {loadingTier2 && recommendationCandidates.length > 0 ? (
+                  <p className="mt-2 text-[11.5px] font-medium text-slate-400">
+                    Still checking a few more extensions…
+                  </p>
+                ) : null}
+              </section>
             ) : null}
             {mode === "bulk" ? (
               <>
