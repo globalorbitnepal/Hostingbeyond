@@ -3,6 +3,8 @@ import type { MetadataRoute } from "next";
 import { siteConfig } from "@/config/site";
 import { prisma } from "@/lib/prisma";
 
+import { UPDATES_BASE } from "@/lib/updates/paths";
+
 import {
   BLOG_BASE,
   TIPS_BASE,
@@ -73,6 +75,21 @@ export async function tipsSitemapEntries(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: "weekly" as const,
         priority: 0.78,
       })),
+    ];
+  } catch {
+    return [];
+  }
+}
+
+export async function updatesSitemapEntries(): Promise<MetadataRoute.Sitemap> {
+  try {
+    return [
+      {
+        url: new URL(UPDATES_BASE, siteConfig.url).toString(),
+        lastModified: new Date(),
+        changeFrequency: "weekly" as const,
+        priority: 0.86,
+      },
     ];
   } catch {
     return [];

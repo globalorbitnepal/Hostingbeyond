@@ -75,6 +75,11 @@ import {
   type CmsTipsHubPageContent,
 } from "@/lib/orbit/tips-hub-page-content";
 import {
+  defaultUpdatesHubPageContent,
+  mergeUpdatesHubPageContent,
+  type CmsUpdatesHubPageContent,
+} from "@/lib/orbit/updates-hub-page-content";
+import {
   getPublicPageSeoEntry,
   mergeStoredPageSeo,
   metadataFromStoredSeo,
@@ -101,6 +106,7 @@ const PYTHON_HOSTING_PAGE_SLUG = "python-hosting-product";
 const WEBSITE_MIGRATION_PAGE_SLUG = "website-migration-product";
 const DOMAIN_TRANSFER_PAGE_SLUG = "domain-transfer-product";
 const TIPS_HUB_PAGE_SLUG = "tips-hub";
+const UPDATES_HUB_PAGE_SLUG = "updates-hub";
 /** Safety net so a bad cache entry can never outlive a few minutes. */
 const CMS_REVALIDATE = 300;
 
@@ -375,6 +381,30 @@ export const getTipsHubPageContent = cache(
   },
 );
 
+const readUpdatesHubPageContent = nextCache(
+  async (): Promise<CmsUpdatesHubPageContent> => {
+    const page = await prisma.pageContent.findUnique({
+      where: { slug: UPDATES_HUB_PAGE_SLUG },
+    });
+    if (!page) return defaultUpdatesHubPageContent();
+    return mergeUpdatesHubPageContent(
+      page.sections as Partial<CmsUpdatesHubPageContent>,
+    );
+  },
+  ["orbit-updates-hub-page-content"],
+  { tags: [CMS_TAG], revalidate: CMS_REVALIDATE },
+);
+
+export const getUpdatesHubPageContent = cache(
+  async (): Promise<CmsUpdatesHubPageContent> => {
+    try {
+      return await readUpdatesHubPageContent();
+    } catch {
+      return defaultUpdatesHubPageContent();
+    }
+  },
+);
+
 const readCloudHostingPageContent = nextCache(
   async (): Promise<CmsCloudHostingPageContent> => {
     const page = await prisma.pageContent.findUnique({
@@ -601,6 +631,39 @@ export async function saveCloudHostingPageContent(
   revalidatePath(routes.cloud);
   revalidatePath("/cloud");
   revalidatePath("/orbit/cloud");
+  return row;
+}
+
+export async function saveUpdatesHubPageContent(
+  content: CmsUpdatesHubPageContent,
+) {
+  const normalized = mergeUpdatesHubPageContent(content);
+  const row = await prisma.pageContent.upsert({
+    where: { slug: UPDATES_HUB_PAGE_SLUG },
+    create: {
+      slug: UPDATES_HUB_PAGE_SLUG,
+      title: "Product Updates Hub",
+      isPublished: true,
+      isVisible: true,
+      sections: normalized,
+      seo: {
+        title: normalized.seoTitle,
+        description: normalized.seoDescription,
+        keywords:
+          "HostingBeyond updates, release notes, product changelog, hosting news, platform updates",
+      },
+    },
+    update: {
+      sections: normalized,
+      seo: {
+        title: normalized.seoTitle,
+        description: normalized.seoDescription,
+      },
+    },
+  });
+  revalidateContent();
+  revalidatePath("/resources/updates");
+  revalidatePath("/orbit/blog/updates-hub");
   return row;
 }
 
@@ -892,6 +955,12 @@ export async function ensureHomeSeeded() {
     });
     if (!tipsHub) {
       await saveTipsHubPageContent(defaultTipsHubPageContent());
+    }
+    const updatesHub = await prisma.pageContent.findUnique({
+      where: { slug: UPDATES_HUB_PAGE_SLUG },
+    });
+    if (!updatesHub) {
+      await saveUpdatesHubPageContent(defaultUpdatesHubPageContent());
     }
     await ensureHostingProductsSeeded();
   } catch {

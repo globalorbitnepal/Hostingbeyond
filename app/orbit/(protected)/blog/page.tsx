@@ -54,7 +54,13 @@ export default function OrbitBlogDashboardPage() {
             href="/orbit/blog/tips-hub"
             className="rounded-xl border border-violet-200 bg-violet-50 px-4 py-2.5 text-sm font-semibold text-[#673de6]"
           >
-            Edit tips hub page
+            Edit tips hub
+          </Link>
+          <Link
+            href="/orbit/blog/updates-hub"
+            className="rounded-xl border border-violet-200 bg-violet-50 px-4 py-2.5 text-sm font-semibold text-[#673de6]"
+          >
+            Edit updates page
           </Link>
           <Link
             href="/orbit/blog/new"
