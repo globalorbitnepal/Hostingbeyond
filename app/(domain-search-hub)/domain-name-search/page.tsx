@@ -1,13 +1,8 @@
 import type { Metadata } from "next";
 
 import { DomainSearchView } from "@/components/domains/domain-search-view";
-import { SiteFooter, SiteHeader } from "@/components/layout";
 import { routes } from "@/config/routes";
-import {
-  getDomainContent,
-  getHomeSections,
-  getSiteSettings,
-} from "@/lib/orbit/content";
+import { getDomainContent } from "@/lib/orbit/content";
 import { buildDomainPageMetadata } from "@/lib/domains/page-metadata";
 import { buildDomainSchema } from "@/lib/domains/seo";
 import { visiblePricing } from "@/lib/domains/content";
@@ -43,9 +38,7 @@ export default async function DomainNameSearchPage({
 }: {
   searchParams: Promise<{ q?: string | string[] }>;
 }) {
-  const [sections, settings, content, params] = await Promise.all([
-    getHomeSections(),
-    getSiteSettings(),
+  const [content, params] = await Promise.all([
     getDomainContent(),
     searchParams,
   ]);
@@ -93,36 +86,21 @@ export default async function DomainNameSearchPage({
   });
 
   return (
-    <div className="hb-band-cream min-h-dvh overflow-x-clip">
+    <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
-
-      <div className="hb-band-purple relative">
-        <SiteHeader
-          navigation={sections.navigation}
-          loginLabel={settings.loginLabel}
-          loginHref={settings.loginHref}
-          getStartedLabel={settings.getStartedLabel}
-          getStartedHref={settings.getStartedHref}
-          logoPath={settings.logoPath}
-        />
-
-        <DomainSearchView
-          mode="single"
-          initialQuery={initialQuery}
-          content={content}
-          page={pageForView}
-          crossLinkHref={routes.bulkDomainSearch}
-          chipRetailByTld={chipRetailByTld}
-          displayPricing={displayPricing}
-        />
-      </div>
-
-      {sections.footer?.visible !== false ? (
-        <SiteFooter content={sections.footer} logoPath={settings.logoPath} />
-      ) : null}
-    </div>
+      <DomainSearchView
+        mode="single"
+        initialQuery={initialQuery}
+        content={content}
+        page={pageForView}
+        crossLinkHref={routes.bulkDomainSearch}
+        chipRetailByTld={chipRetailByTld}
+        displayPricing={displayPricing}
+        hubBackdrop
+      />
+    </>
   );
 }

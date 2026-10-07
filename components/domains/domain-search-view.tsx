@@ -55,6 +55,7 @@ export function DomainSearchView({
   crossLinkHref,
   chipRetailByTld,
   displayPricing,
+  hubBackdrop = false,
 }: {
   mode: SearchMode;
   initialQuery?: string;
@@ -65,6 +66,8 @@ export function DomainSearchView({
   chipRetailByTld?: Record<string, number>;
   /** Price table rows with retail merged from DB when available. */
   displayPricing?: ReturnType<typeof visiblePricing>;
+  /** Hero image/gradient rendered by (domain-search-hub) layout — skip duplicate layers. */
+  hubBackdrop?: boolean;
 }) {
   const { shared } = content;
   const prices = displayPricing ?? visiblePricing(content);
@@ -84,20 +87,24 @@ export function DomainSearchView({
 
   return (
     <>
-      <section className="relative overflow-hidden pt-6 pb-10 sm:pt-10 sm:pb-14 lg:pb-16">
-        <Image
-          src={shared.heroImage}
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          aria-hidden
-          className="pointer-events-none object-cover object-[50%_20%] opacity-70 mix-blend-screen sm:object-[62%_center]"
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(35,18,84,0.92)_0%,rgba(58,29,150,0.78)_42%,rgba(37,99,235,0.35)_100%)]"
-        />
+      <section className="relative z-10 overflow-hidden pt-6 pb-10 sm:pt-10 sm:pb-14 lg:pb-16">
+        {!hubBackdrop ? (
+          <>
+            <Image
+              src={shared.heroImage}
+              alt=""
+              fill
+              priority
+              sizes="100vw"
+              aria-hidden
+              className="pointer-events-none object-cover object-[50%_20%] opacity-70 mix-blend-screen sm:object-[62%_center]"
+            />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(35,18,84,0.92)_0%,rgba(58,29,150,0.78)_42%,rgba(37,99,235,0.35)_100%)]"
+            />
+          </>
+        ) : null}
 
         <div className="hb-shell relative z-10 mx-auto w-full max-w-[100rem]">
           <nav aria-label="Breadcrumb" className="mb-4 sm:mb-6">

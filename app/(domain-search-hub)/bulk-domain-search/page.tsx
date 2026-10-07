@@ -1,13 +1,8 @@
 import type { Metadata } from "next";
 
 import { DomainSearchView } from "@/components/domains/domain-search-view";
-import { SiteFooter, SiteHeader } from "@/components/layout";
 import { routes } from "@/config/routes";
-import {
-  getDomainContent,
-  getHomeSections,
-  getSiteSettings,
-} from "@/lib/orbit/content";
+import { getDomainContent } from "@/lib/orbit/content";
 import { buildDomainPageMetadata } from "@/lib/domains/page-metadata";
 import { buildDomainSchema } from "@/lib/domains/seo";
 
@@ -19,12 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function BulkDomainSearchPage() {
-  const [sections, settings, content] = await Promise.all([
-    getHomeSections(),
-    getSiteSettings(),
-    getDomainContent(),
-  ]);
-
+  const content = await getDomainContent();
   const page = content.bulk;
 
   const schema = buildDomainSchema({
@@ -39,33 +29,18 @@ export default async function BulkDomainSearchPage() {
   });
 
   return (
-    <div className="hb-band-cream min-h-dvh overflow-x-hidden">
+    <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
-
-      <div className="hb-band-purple relative">
-        <SiteHeader
-          navigation={sections.navigation}
-          loginLabel={settings.loginLabel}
-          loginHref={settings.loginHref}
-          getStartedLabel={settings.getStartedLabel}
-          getStartedHref={settings.getStartedHref}
-          logoPath={settings.logoPath}
-        />
-
-        <DomainSearchView
-          mode="bulk"
-          content={content}
-          page={page}
-          crossLinkHref={routes.domainSearch}
-        />
-      </div>
-
-      {sections.footer?.visible !== false ? (
-        <SiteFooter content={sections.footer} logoPath={settings.logoPath} />
-      ) : null}
-    </div>
+      <DomainSearchView
+        mode="bulk"
+        content={content}
+        page={page}
+        crossLinkHref={routes.domainSearch}
+        hubBackdrop
+      />
+    </>
   );
 }

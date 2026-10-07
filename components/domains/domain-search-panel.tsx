@@ -11,6 +11,7 @@ import {
   useState,
 } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   ArrowLeftRight,
   ArrowRight,
@@ -576,6 +577,16 @@ export function DomainSearchPanel({
   layout?: "default" | "hero";
 }) {
   const hero = layout === "hero";
+  const pathname = usePathname();
+
+  const isTabActive = useCallback(
+    (tabId: SearchMode | "transfer") => {
+      if (tabId === "transfer") return pathname === routes.domainTransfer;
+      if (tabId === "bulk") return pathname === routes.bulkDomainSearch;
+      return pathname === routes.domainSearch;
+    },
+    [pathname],
+  );
   const [query, setQuery] = useState(initialQuery);
   const [bulk, setBulk] = useState("");
   const [loadingPrimary, setLoadingPrimary] = useState(false);
@@ -626,6 +637,13 @@ export function DomainSearchPanel({
   useEffect(() => {
     void refreshCartCount();
   }, [refreshCartCount]);
+
+  useEffect(() => {
+    return () => {
+      searchGeneration.current += 1;
+      abortRef.current?.abort();
+    };
+  }, []);
 
   const runBulk = useCallback(async (bulkPayload: string) => {
     const gen = ++searchGeneration.current;
@@ -1135,11 +1153,13 @@ export function DomainSearchPanel({
       >
         {MODE_TABS.map((tab) => {
           const Icon = tab.icon;
-          const active = tab.id === "transfer" ? false : mode === tab.id;
+          const active = isTabActive(tab.id);
           return (
             <Link
               key={tab.id}
               href={tab.href}
+              prefetch
+              scroll
               aria-current={active ? "page" : undefined}
               title={tab.label}
               className={cn(
