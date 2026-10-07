@@ -320,6 +320,144 @@ function PrimaryResultSkeleton() {
   );
 }
 
+const DomainSearchSingleForm = memo(function DomainSearchSingleForm({
+  query,
+  onQueryChange,
+  searchSubmitting,
+  hero,
+  onSubmit,
+  onQuickTld,
+}: {
+  query: string;
+  onQueryChange: (value: string) => void;
+  searchSubmitting: boolean;
+  hero: boolean;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  onQuickTld: (tld: string) => void;
+}) {
+  return (
+    <form onSubmit={onSubmit} className="mt-4">
+      <label htmlFor="domain-name-search" className="sr-only">
+        Search for a domain name
+      </label>
+      <div
+        className={cn(
+          "flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-2 transition focus-within:border-[#673de6] focus-within:ring-4 focus-within:ring-[#673de6]/10 sm:flex-row sm:items-center",
+          hero && "rounded-[18px] p-2.5 sm:p-3",
+        )}
+      >
+        <div className="flex min-w-0 flex-1 items-center gap-2 px-2">
+          <Search
+            className={cn(
+              "shrink-0 text-[#673de6]",
+              hero ? "size-5 sm:size-6" : "size-5",
+            )}
+          />
+          <input
+            id="domain-name-search"
+            type="text"
+            inputMode="url"
+            autoComplete="off"
+            value={query}
+            onChange={(event) => onQueryChange(event.target.value)}
+            placeholder="Type a domain — e.g. yourbrand.com"
+            className={cn(
+              "min-w-0 flex-1 bg-transparent font-medium text-[#1a1035] outline-none placeholder:text-slate-400",
+              hero
+                ? "py-3.5 text-[16px] sm:py-4 sm:text-[18px]"
+                : "py-3 text-[15px] sm:text-[16px]",
+            )}
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={searchSubmitting}
+          className={cn(
+            "inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#2563eb] to-[#673de6] font-bold text-white shadow-[0_12px_26px_-14px_rgba(37,99,235,0.9)] transition hover:brightness-110 disabled:opacity-70",
+            hero
+              ? "h-12 px-7 text-[14px] sm:h-14 sm:px-8 sm:text-[15px]"
+              : "h-12 px-6 text-[14px]",
+          )}
+        >
+          {searchSubmitting ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <Search className="size-4" />
+          )}
+          Search domain
+        </button>
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center gap-1.5">
+        <span className="text-[12px] font-bold text-slate-500">Popular:</span>
+        {QUICK_TLDS.map((tld) => (
+          <button
+            key={tld}
+            type="button"
+            onClick={() => onQuickTld(tld)}
+            className="rounded-full border border-slate-200 px-2.5 py-1 text-[12px] font-bold text-[#4c1d95] transition hover:border-[#c7b8ff] hover:bg-[#f7f4ff]"
+          >
+            {tld}
+          </button>
+        ))}
+      </div>
+    </form>
+  );
+});
+
+const DomainSearchBulkForm = memo(function DomainSearchBulkForm({
+  bulk,
+  onBulkChange,
+  searchSubmitting,
+  onSubmit,
+}: {
+  bulk: string;
+  onBulkChange: (value: string) => void;
+  searchSubmitting: boolean;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+}) {
+  return (
+    <form onSubmit={onSubmit} className="mt-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <label
+          htmlFor="domain-bulk-search"
+          className="text-[12px] font-bold tracking-wide text-slate-500 uppercase"
+        >
+          One domain per line — up to {BULK_LIMIT}
+        </label>
+        <span className="text-[12px] font-bold text-[#4c1d95]">
+          {countBulkLines(bulk)}/{BULK_LIMIT} names
+        </span>
+      </div>
+      <textarea
+        id="domain-bulk-search"
+        value={bulk}
+        onChange={(event) => onBulkChange(event.target.value)}
+        rows={7}
+        placeholder={"yourbrand.com\nyourbrand.io\nyourbrand.store"}
+        className="mt-2 w-full rounded-2xl border border-slate-200 bg-white p-4 font-mono text-[13.5px] leading-relaxed text-[#1a1035] transition outline-none focus:border-[#673de6] focus:ring-4 focus:ring-[#673de6]/10"
+      />
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+        <p className="text-[12.5px] text-slate-500">
+          Built for agencies clearing a whole brand shortlist at once.
+        </p>
+        <button
+          type="submit"
+          disabled={searchSubmitting}
+          className="inline-flex h-12 items-center gap-2 rounded-xl bg-gradient-to-r from-[#2563eb] to-[#673de6] px-6 text-[14px] font-bold text-white shadow-[0_12px_26px_-14px_rgba(37,99,235,0.9)] transition hover:brightness-110 disabled:opacity-70"
+        >
+          {searchSubmitting ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <Layers className="size-4" />
+          )}
+          Check all domains
+        </button>
+      </div>
+    </form>
+  );
+});
+
 const AlternativeCardSkeleton = memo(function AlternativeCardSkeleton({
   nameHint,
 }: {
@@ -447,10 +585,12 @@ export function DomainSearchPanel({
         );
         return;
       }
-      setResults(json.results);
-      setAnchorDomain(json.results[0]?.domain ?? "");
-      setSearched("bulk");
-      setBulkSelected(new Set());
+      startTransition(() => {
+        setResults(json.results!);
+        setAnchorDomain(json.results![0]?.domain ?? "");
+        setSearched("bulk");
+        setBulkSelected(new Set());
+      });
     } catch (err) {
       if (gen !== searchGeneration.current) return;
       if (err instanceof DOMException && err.name === "AbortError") return;
@@ -825,23 +965,43 @@ export function DomainSearchPanel({
     }
   }, [initialQuery, mode, runSingle]);
 
-  function onSingleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!query.trim()) {
-      setError("Please enter a domain name.");
-      return;
-    }
-    void runSingle(query);
-  }
+  const onSingleSubmit = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      if (!query.trim()) {
+        setError("Please enter a domain name.");
+        return;
+      }
+      void runSingle(query);
+    },
+    [query, runSingle],
+  );
 
-  function onBulkSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!bulk.trim()) {
-      setError(`Add one domain per line, up to ${BULK_LIMIT} at a time.`);
-      return;
-    }
-    void runBulk(bulk);
-  }
+  const onBulkSubmit = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      if (!bulk.trim()) {
+        setError(`Add one domain per line, up to ${BULK_LIMIT} at a time.`);
+        return;
+      }
+      void runBulk(bulk);
+    },
+    [bulk, runBulk],
+  );
+
+  const onQuickTld = useCallback(
+    (tld: string) => {
+      const base = query.split(".")[0]?.trim();
+      if (!base) {
+        setError("Type a name first, then pick an extension.");
+        return;
+      }
+      const next = `${base}${tld}`;
+      setQuery(next);
+      void runSingle(next);
+    },
+    [query, runSingle],
+  );
 
   const exact =
     mode === "single"
@@ -944,122 +1104,21 @@ export function DomainSearchPanel({
       ) : null}
 
       {mode === "single" ? (
-        <form onSubmit={onSingleSubmit} className="mt-4">
-          <label htmlFor="domain-name-search" className="sr-only">
-            Search for a domain name
-          </label>
-          <div
-            className={cn(
-              "flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-2 transition focus-within:border-[#673de6] focus-within:ring-4 focus-within:ring-[#673de6]/10 sm:flex-row sm:items-center",
-              hero && "rounded-[18px] p-2.5 sm:p-3",
-            )}
-          >
-            <div className="flex min-w-0 flex-1 items-center gap-2 px-2">
-              <Search
-                className={cn(
-                  "shrink-0 text-[#673de6]",
-                  hero ? "size-5 sm:size-6" : "size-5",
-                )}
-              />
-              <input
-                id="domain-name-search"
-                type="text"
-                inputMode="url"
-                autoComplete="off"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Type a domain — e.g. yourbrand.com"
-                className={cn(
-                  "min-w-0 flex-1 bg-transparent font-medium text-[#1a1035] outline-none placeholder:text-slate-400",
-                  hero
-                    ? "py-3.5 text-[16px] sm:py-4 sm:text-[18px]"
-                    : "py-3 text-[15px] sm:text-[16px]",
-                )}
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={searchSubmitting}
-              className={cn(
-                "inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#2563eb] to-[#673de6] font-bold text-white shadow-[0_12px_26px_-14px_rgba(37,99,235,0.9)] transition hover:brightness-110 disabled:opacity-70",
-                hero
-                  ? "h-12 px-7 text-[14px] sm:h-14 sm:px-8 sm:text-[15px]"
-                  : "h-12 px-6 text-[14px]",
-              )}
-            >
-              {searchSubmitting ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <Search className="size-4" />
-              )}
-              Search domain
-            </button>
-          </div>
-
-          <div className="mt-3 flex flex-wrap items-center gap-1.5">
-            <span className="text-[12px] font-bold text-slate-500">
-              Popular:
-            </span>
-            {QUICK_TLDS.map((tld) => (
-              <button
-                key={tld}
-                type="button"
-                onClick={() => {
-                  const base = query.split(".")[0]?.trim();
-                  if (!base) {
-                    setError("Type a name first, then pick an extension.");
-                    return;
-                  }
-                  const next = `${base}${tld}`;
-                  setQuery(next);
-                  void runSingle(next);
-                }}
-                className="rounded-full border border-slate-200 px-2.5 py-1 text-[12px] font-bold text-[#4c1d95] transition hover:border-[#c7b8ff] hover:bg-[#f7f4ff]"
-              >
-                {tld}
-              </button>
-            ))}
-          </div>
-        </form>
+        <DomainSearchSingleForm
+          query={query}
+          onQueryChange={setQuery}
+          searchSubmitting={searchSubmitting}
+          hero={hero}
+          onSubmit={onSingleSubmit}
+          onQuickTld={onQuickTld}
+        />
       ) : (
-        <form onSubmit={onBulkSubmit} className="mt-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <label
-              htmlFor="domain-bulk-search"
-              className="text-[12px] font-bold tracking-wide text-slate-500 uppercase"
-            >
-              One domain per line — up to {BULK_LIMIT}
-            </label>
-            <span className="text-[12px] font-bold text-[#4c1d95]">
-              {countBulkLines(bulk)}/{BULK_LIMIT} names
-            </span>
-          </div>
-          <textarea
-            id="domain-bulk-search"
-            value={bulk}
-            onChange={(event) => setBulk(event.target.value)}
-            rows={7}
-            placeholder={"yourbrand.com\nyourbrand.io\nyourbrand.store"}
-            className="mt-2 w-full rounded-2xl border border-slate-200 bg-white p-4 font-mono text-[13.5px] leading-relaxed text-[#1a1035] transition outline-none focus:border-[#673de6] focus:ring-4 focus:ring-[#673de6]/10"
-          />
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-[12.5px] text-slate-500">
-              Built for agencies clearing a whole brand shortlist at once.
-            </p>
-            <button
-              type="submit"
-              disabled={searchSubmitting}
-              className="inline-flex h-12 items-center gap-2 rounded-xl bg-gradient-to-r from-[#2563eb] to-[#673de6] px-6 text-[14px] font-bold text-white shadow-[0_12px_26px_-14px_rgba(37,99,235,0.9)] transition hover:brightness-110 disabled:opacity-70"
-            >
-              {searchSubmitting ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <Layers className="size-4" />
-              )}
-              Check all domains
-            </button>
-          </div>
-        </form>
+        <DomainSearchBulkForm
+          bulk={bulk}
+          onBulkChange={setBulk}
+          searchSubmitting={searchSubmitting}
+          onSubmit={onBulkSubmit}
+        />
       )}
 
       {error ? (
