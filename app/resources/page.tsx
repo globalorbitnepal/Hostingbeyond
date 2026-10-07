@@ -23,6 +23,15 @@ export default function ResourcesIndexPage() {
         </p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Link
+            href="/about"
+            className="rounded-2xl border border-violet-100 bg-white p-6 shadow-sm hover:border-violet-200 sm:col-span-2 lg:col-span-1"
+          >
+            <h2 className="text-lg font-bold text-[#1a1035]">About us</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              USA-based company story, mission and values.
+            </p>
+          </Link>
+          <Link
             href={UPDATES_BASE}
             className="rounded-2xl border border-violet-100 bg-white p-6 shadow-sm hover:border-violet-200"
           >

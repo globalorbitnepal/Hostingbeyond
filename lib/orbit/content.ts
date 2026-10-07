@@ -80,6 +80,11 @@ import {
   type CmsUpdatesHubPageContent,
 } from "@/lib/orbit/updates-hub-page-content";
 import {
+  defaultAboutPageContent,
+  mergeAboutPageContent,
+  type CmsAboutPageContent,
+} from "@/lib/orbit/about-page-content";
+import {
   getPublicPageSeoEntry,
   mergeStoredPageSeo,
   metadataFromStoredSeo,
@@ -107,6 +112,7 @@ const WEBSITE_MIGRATION_PAGE_SLUG = "website-migration-product";
 const DOMAIN_TRANSFER_PAGE_SLUG = "domain-transfer-product";
 const TIPS_HUB_PAGE_SLUG = "tips-hub";
 const UPDATES_HUB_PAGE_SLUG = "updates-hub";
+const ABOUT_PAGE_SLUG = "about-page";
 /** Safety net so a bad cache entry can never outlive a few minutes. */
 const CMS_REVALIDATE = 300;
 
@@ -405,6 +411,28 @@ export const getUpdatesHubPageContent = cache(
   },
 );
 
+const readAboutPageContent = nextCache(
+  async (): Promise<CmsAboutPageContent> => {
+    const page = await prisma.pageContent.findUnique({
+      where: { slug: ABOUT_PAGE_SLUG },
+    });
+    if (!page) return defaultAboutPageContent();
+    return mergeAboutPageContent(page.sections as Partial<CmsAboutPageContent>);
+  },
+  ["orbit-about-page-content"],
+  { tags: [CMS_TAG], revalidate: CMS_REVALIDATE },
+);
+
+export const getAboutPageContent = cache(
+  async (): Promise<CmsAboutPageContent> => {
+    try {
+      return await readAboutPageContent();
+    } catch {
+      return defaultAboutPageContent();
+    }
+  },
+);
+
 const readCloudHostingPageContent = nextCache(
   async (): Promise<CmsCloudHostingPageContent> => {
     const page = await prisma.pageContent.findUnique({
@@ -631,6 +659,37 @@ export async function saveCloudHostingPageContent(
   revalidatePath(routes.cloud);
   revalidatePath("/cloud");
   revalidatePath("/orbit/cloud");
+  return row;
+}
+
+export async function saveAboutPageContent(content: CmsAboutPageContent) {
+  const normalized = mergeAboutPageContent(content);
+  const row = await prisma.pageContent.upsert({
+    where: { slug: ABOUT_PAGE_SLUG },
+    create: {
+      slug: ABOUT_PAGE_SLUG,
+      title: "About HostingBeyond",
+      isPublished: true,
+      isVisible: true,
+      sections: normalized,
+      seo: {
+        title: normalized.seoTitle,
+        description: normalized.seoDescription,
+        keywords:
+          "About HostingBeyond, USA hosting company, web hosting provider, domain registrar",
+      },
+    },
+    update: {
+      sections: normalized,
+      seo: {
+        title: normalized.seoTitle,
+        description: normalized.seoDescription,
+      },
+    },
+  });
+  revalidateContent();
+  revalidatePath(routes.about);
+  revalidatePath("/orbit/about");
   return row;
 }
 
@@ -961,6 +1020,12 @@ export async function ensureHomeSeeded() {
     });
     if (!updatesHub) {
       await saveUpdatesHubPageContent(defaultUpdatesHubPageContent());
+    }
+    const aboutPage = await prisma.pageContent.findUnique({
+      where: { slug: ABOUT_PAGE_SLUG },
+    });
+    if (!aboutPage) {
+      await saveAboutPageContent(defaultAboutPageContent());
     }
     await ensureHostingProductsSeeded();
   } catch {

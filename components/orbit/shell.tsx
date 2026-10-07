@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   Activity,
   ArrowLeftRight,
+  Building2,
   FileText,
   Cloud,
   Globe,
@@ -28,6 +29,7 @@ import { cn } from "@/lib/utils";
 const nav = [
   { href: "/orbit", label: "Dashboard", icon: LayoutDashboard },
   { href: "/orbit/pages", label: "Pages", icon: FileText },
+  { href: "/orbit/about", label: "About Page", icon: Building2 },
   { href: "/orbit/blog", label: "Blog", icon: FileText },
   { href: "/orbit/content", label: "Website Content", icon: Sparkles },
   { href: "/orbit/domains", label: "Domain Pages", icon: Globe },
