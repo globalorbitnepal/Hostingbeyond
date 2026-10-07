@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import { Caveat, DM_Sans, Geist_Mono, Manrope } from "next/font/google";
 
+import { DomainCartShell } from "@/components/domains/domain-cart-shell";
 import { LocaleProvider } from "@/components/locale/locale-provider";
 import { SiteNavigation } from "@/components/navigation/site-navigation";
 import { LOCALE_COOKIE, parsePreferencesCookie } from "@/lib/i18n/preferences";
@@ -69,8 +70,10 @@ export default async function RootLayout({
         className={`${manrope.variable} ${dmSans.variable} ${geistMono.variable} ${caveat.variable} min-h-dvh bg-black font-sans text-white antialiased`}
       >
         <LocaleProvider initialPreferences={initialPreferences}>
-          <SiteNavigation />
-          {children}
+          <DomainCartShell>
+            <SiteNavigation />
+            {children}
+          </DomainCartShell>
         </LocaleProvider>
       </body>
     </html>

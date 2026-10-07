@@ -22,6 +22,7 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
+import { useDomainCart } from "@/components/domains/domain-cart-provider";
 import { routes } from "@/config/routes";
 import { loginPathForDomainCheckout } from "@/lib/domains/domain-purchase-intent";
 import type { DomainResult } from "@/lib/domains/availability";
@@ -159,11 +160,15 @@ function StatusPill({ status }: { status: DomainResult["status"] }) {
   );
 }
 
+type CartButtonState = "idle" | "loading" | "added" | "in-cart";
+
 function ResultRow({
   result,
   featured = false,
   onRegister,
   registering,
+  cartButtonState = "idle",
+  onViewCart,
   bulkSelectable = false,
   bulkSelected = false,
   onBulkToggle,
@@ -172,6 +177,8 @@ function ResultRow({
   featured?: boolean;
   onRegister: (domain: string) => void;
   registering: string | null;
+  cartButtonState?: CartButtonState;
+  onViewCart?: () => void;
   bulkSelectable?: boolean;
   bulkSelected?: boolean;
   onBulkToggle?: (domain: string) => void;
@@ -223,6 +230,7 @@ function ResultRow({
                 "min-w-0 font-extrabold tracking-tight break-words text-[#1a1035]",
                 featured ? "text-[17px] sm:text-[20px]" : "text-[15.5px]",
               )}
+              style={{ overflowWrap: "anywhere" }}
             >
               {result.name}
               <span className="text-[#673de6]">{result.tld}</span>
@@ -252,21 +260,43 @@ function ResultRow({
             </div>
           ) : null}
           {buyable ? (
-            <button
-              type="button"
-              disabled={registering !== null}
-              onClick={() => onRegister(result.domain)}
-              className="inline-flex h-11 w-full shrink-0 items-center justify-center gap-1.5 rounded-full bg-[#673de6] px-5 text-[13.5px] font-bold whitespace-nowrap text-white shadow-[0_10px_22px_-10px_rgba(103,61,230,0.85)] transition hover:bg-[#5a31d4] disabled:opacity-70 sm:w-auto"
-            >
-              {registering === result.domain ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <>
-                  Add to cart
-                  <ArrowRight className="size-4" aria-hidden />
-                </>
-              )}
-            </button>
+            cartButtonState === "in-cart" ? (
+              <button
+                type="button"
+                onClick={() => onViewCart?.()}
+                className="inline-flex h-11 min-h-[44px] w-full shrink-0 items-center justify-center gap-1.5 rounded-full border-2 border-[#673de6] bg-white px-5 text-[13.5px] font-bold whitespace-nowrap text-[#673de6] transition hover:bg-[#f7f4ff] sm:w-auto"
+              >
+                View cart
+                <ArrowRight className="size-4" aria-hidden />
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled={registering !== null}
+                onClick={() => onRegister(result.domain)}
+                className={cn(
+                  "inline-flex h-11 min-h-[44px] w-full shrink-0 items-center justify-center gap-1.5 rounded-full px-5 text-[13.5px] font-bold whitespace-nowrap text-white shadow-[0_10px_22px_-10px_rgba(103,61,230,0.85)] transition disabled:opacity-70 sm:w-auto",
+                  cartButtonState === "added"
+                    ? "bg-[#15803d] hover:bg-[#166534]"
+                    : "bg-[#673de6] hover:bg-[#5a31d4]",
+                )}
+              >
+                {cartButtonState === "loading" ||
+                registering === result.domain ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : cartButtonState === "added" ? (
+                  <>
+                    <Check className="size-4" strokeWidth={3} />
+                    Added
+                  </>
+                ) : (
+                  <>
+                    Add to cart
+                    <ArrowRight className="size-4" aria-hidden />
+                  </>
+                )}
+              </button>
+            )
           ) : null}
         </div>
       </div>
@@ -346,6 +376,10 @@ export function DomainSearchPanel({
   );
   const [bulkAdding, setBulkAdding] = useState(false);
   const [cartCount, setCartCount] = useState(0);
+  const [justAddedDomains, setJustAddedDomains] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const { addDomain, domainsInCart, openDrawer } = useDomainCart();
   const searchGeneration = useRef(0);
   const abortRef = useRef<AbortController | null>(null);
   const loading = loadingPrimary || loadingAlternatives;
@@ -564,35 +598,34 @@ export function DomainSearchPanel({
   const registerDomain = useCallback(
     async (domain: string) => {
       if (registering) return;
+      if (domainsInCart.has(domain.toLowerCase())) {
+        openDrawer();
+        return;
+      }
       setRegistering(domain);
       setError("");
       try {
-        const response = await fetch("/api/domains/cart", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ domain }),
-        });
-        if (response.status === 401) {
-          window.location.assign(loginPathForDomainCheckout([domain]));
-          return;
-        }
-        const json = (await response.json()) as {
-          count?: number;
-          error?: string;
-        };
-        if (!response.ok) {
+        const result = await addDomain(domain);
+        if (!result.ok) {
           setError(
-            json.error ||
-              (response.status === 409
-                ? "This domain is no longer available. Please choose another domain."
-                : "We couldn't add this domain right now. Please try again."),
+            result.error ||
+              "We couldn't add this domain right now. Please try again.",
           );
           return;
         }
-        const nextCount =
-          typeof json.count === "number" ? json.count : cartCount + 1;
-        setCartCount(nextCount);
-        dispatchDomainCartUpdated(nextCount);
+        if (result.duplicate) {
+          setCartSuccess("You already added this domain.");
+          openDrawer();
+          return;
+        }
+        setJustAddedDomains((prev) => new Set(prev).add(domain.toLowerCase()));
+        window.setTimeout(() => {
+          setJustAddedDomains((prev) => {
+            const next = new Set(prev);
+            next.delete(domain.toLowerCase());
+            return next;
+          });
+        }, 2200);
         setCartSuccess(`${domain} was added to your cart.`);
         void refreshCartCount();
       } catch {
@@ -601,7 +634,18 @@ export function DomainSearchPanel({
         setRegistering(null);
       }
     },
-    [registering, refreshCartCount],
+    [registering, addDomain, domainsInCart, openDrawer, refreshCartCount],
+  );
+
+  const cartButtonStateFor = useCallback(
+    (domain: string): CartButtonState => {
+      const key = domain.toLowerCase();
+      if (registering === domain) return "loading";
+      if (justAddedDomains.has(key)) return "added";
+      if (domainsInCart.has(key)) return "in-cart";
+      return "idle";
+    },
+    [registering, justAddedDomains, domainsInCart],
   );
 
   const buyableResults = results.filter(isRegisterableRecommendation);
@@ -784,8 +828,16 @@ export function DomainSearchPanel({
           className="mt-3 rounded-2xl border border-[#bbf7d0] bg-[#f0fdf4] px-4 py-2.5 text-[13px] font-semibold text-[#166534]"
         >
           {cartSuccess}{" "}
-          <Link href={routes.domainCheckout} className="font-bold underline">
+          <button
+            type="button"
+            onClick={() => openDrawer()}
+            className="font-bold underline"
+          >
             View cart
+          </button>
+          <span className="text-slate-400"> · </span>
+          <Link href={routes.domainCart} className="font-bold underline">
+            Full cart page
           </Link>
         </p>
       ) : null}
@@ -973,6 +1025,10 @@ export function DomainSearchPanel({
                 featured
                 onRegister={registerDomain}
                 registering={registering}
+                cartButtonState={
+                  mode === "single" ? cartButtonStateFor(exact.domain) : "idle"
+                }
+                onViewCart={openDrawer}
                 bulkSelectable={
                   mode === "bulk" &&
                   buyableResults.some((r) => r.domain === exact.domain)
@@ -999,6 +1055,8 @@ export function DomainSearchPanel({
                       result={item}
                       onRegister={registerDomain}
                       registering={registering}
+                      cartButtonState={cartButtonStateFor(item.domain)}
+                      onViewCart={openDrawer}
                     />
                   ))}
                   {showAlternativeSkeletons

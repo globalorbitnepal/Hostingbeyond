@@ -248,12 +248,12 @@ export function DomainCheckoutView({
 
   return (
     <div className="hb-band-cream min-h-dvh px-5 py-8 sm:px-8">
-      <div className="mx-auto max-w-2xl">
+      <div className="mx-auto w-full max-w-[78rem]">
         <Link href="/">
           <BrandMark />
         </Link>
 
-        <div className="mt-8 rounded-[28px] border border-white bg-white p-6 shadow-[0_24px_60px_-32px_rgba(15,23,42,0.35)] sm:p-8">
+        <div className="mx-auto mt-8 max-w-2xl rounded-[28px] border border-white bg-white p-6 shadow-[0_24px_60px_-32px_rgba(15,23,42,0.35)] sm:p-8">
           <p className="text-[11px] font-semibold tracking-[0.16em] text-slate-400 uppercase">
             Domain checkout
           </p>

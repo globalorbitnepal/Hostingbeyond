@@ -1,10 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
 
-import { routes } from "@/config/routes";
+import { useDomainCartOptional } from "@/components/domains/domain-cart-provider";
 import {
   DOMAIN_CART_UPDATED_EVENT,
   type DomainCartUpdatedDetail,
@@ -16,48 +15,58 @@ export function DomainCartHeaderLink({
 }: {
   compact?: boolean;
 }) {
-  const [count, setCount] = useState(0);
+  const cartCtx = useDomainCartOptional();
+  const [fallbackCount, setFallbackCount] = useState(0);
 
-  const refresh = useCallback(async () => {
+  const refreshFallback = useCallback(async () => {
+    if (cartCtx) return;
     try {
       const res = await fetch("/api/domains/cart", { cache: "no-store" });
       if (res.status === 401) {
-        setCount(0);
+        const { guestCartSnapshot } =
+          await import("@/lib/domains/guest-domain-cart");
+        setFallbackCount(guestCartSnapshot().count);
         return;
       }
       if (!res.ok) return;
       const json = (await res.json()) as { count?: number };
-      if (typeof json.count === "number") setCount(json.count);
+      if (typeof json.count === "number") setFallbackCount(json.count);
     } catch {
       /* ignore */
     }
-  }, []);
+  }, [cartCtx]);
 
   useEffect(() => {
-    void refresh();
+    if (cartCtx) return;
+    void refreshFallback();
     const onUpdate = (event: Event) => {
       const detail = (event as CustomEvent<DomainCartUpdatedDetail>).detail;
       if (detail && typeof detail.count === "number") {
-        setCount(detail.count);
+        setFallbackCount(detail.count);
         return;
       }
-      void refresh();
+      void refreshFallback();
     };
     window.addEventListener(DOMAIN_CART_UPDATED_EVENT, onUpdate);
     return () =>
       window.removeEventListener(DOMAIN_CART_UPDATED_EVENT, onUpdate);
-  }, [refresh]);
+  }, [cartCtx, refreshFallback]);
+
+  const count = cartCtx?.cart.count ?? fallbackCount;
+  const openDrawer = cartCtx?.openDrawer;
 
   const ariaLabel = count > 0 ? `Cart, ${count} items` : "Cart";
 
   return (
-    <Link
-      href={routes.domainCheckout}
+    <button
+      type="button"
+      onClick={() => openDrawer?.()}
       className={cn(
         "relative inline-flex items-center justify-center gap-2 rounded-full border border-slate-200/90 bg-white font-semibold text-slate-800 shadow-[0_4px_14px_rgba(15,23,42,0.06)] transition hover:border-slate-300 hover:bg-slate-50",
         compact ? "size-9 shrink-0" : "h-[38px] px-3 text-[13px]",
       )}
       aria-label={ariaLabel}
+      aria-haspopup="dialog"
     >
       <ShoppingCart
         className="size-[18px] shrink-0 text-slate-700"
@@ -79,6 +88,6 @@ export function DomainCartHeaderLink({
           {count}
         </span>
       ) : null}
-    </Link>
+    </button>
   );
 }

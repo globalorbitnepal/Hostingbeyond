@@ -25,6 +25,7 @@ export const routes = {
   myDomains: "/account/my-domains",
   getStarted: "/signup",
   domainCheckout: "/get-started",
+  domainCart: "/cart",
 } as const;
 
 export type AppRoute = (typeof routes)[keyof typeof routes];

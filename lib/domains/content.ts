@@ -485,7 +485,8 @@ export function defaultDomainContent(): DomainContent {
       ctaEmailLabel: "Add business email",
     },
     single: {
-      seoTitle: "Domain Name Search & Registration | Check Domain Availability",
+      seoTitle:
+        "Domain Name Search — Check Availability & Register from $0.01 | HostingBeyond",
       seoDescription: `Search and register domain names across ${SUPPORTED_TLD_COUNT} priced extensions. Check .com, .net, .org, .ai and more with transparent first-year and renewal pricing, free WHOIS privacy and DNS management.`,
       seoKeywords:
         "domain name search, check domain availability, buy domain name, register domain, domain lookup, cheap domain registration, .com domain, bulk domain search, domain transfer, WHOIS privacy",
