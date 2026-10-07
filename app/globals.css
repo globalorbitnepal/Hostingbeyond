@@ -1255,15 +1255,57 @@ body {
   text-decoration: none;
 }
 
+.hb-wp-editor-canvas p.is-editor-empty:first-child::before {
+  color: #a7aaad;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
 .hb-orbit-editor-canvas .hb-callout,
-.hb-orbit-editor-canvas [data-callout] {
+.hb-orbit-editor-canvas [data-callout],
+.hb-wp-editor-canvas .hb-callout,
+.hb-wp-editor-canvas [data-callout] {
   border-left: 4px solid #a78bfa;
   background: #f5f3ff;
   padding: 0.75rem 1rem;
   border-radius: 0.5rem;
 }
 
-.hb-orbit-editor-canvas ul[data-type="taskList"] {
+.hb-orbit-editor-canvas ul[data-type="taskList"],
+.hb-wp-editor-canvas ul[data-type="taskList"] {
   list-style: none;
   padding-left: 0;
+}
+
+.hb-wp-editor-canvas h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 1.25rem 0 0.5rem;
+}
+
+.hb-wp-editor-canvas h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 1rem 0 0.5rem;
+}
+
+.hb-wp-editor-canvas blockquote {
+  border-left: 4px solid #c3c4c7;
+  margin: 1rem 0;
+  padding-left: 1rem;
+  color: #50575e;
+}
+
+.hb-wp-editor-canvas table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+}
+
+.hb-wp-editor-canvas th,
+.hb-wp-editor-canvas td {
+  border: 1px solid #c3c4c7;
+  padding: 0.5rem 0.75rem;
 }

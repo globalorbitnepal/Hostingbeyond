@@ -355,7 +355,7 @@ export function OrbitBlogPostEditor({ postId }: { postId?: string }) {
   }
 
   return (
-    <div className="-mx-4 -mt-2 min-h-[calc(100dvh-4rem)] bg-[#f4f0ff] lg:-mx-6">
+    <div className="-mx-4 -mt-2 min-h-[calc(100dvh-4rem)] bg-[#f0f0f1] lg:-mx-6">
       <div className="sticky top-0 z-30 border-b border-violet-100/80 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-3 px-4 py-3">
           <Link
@@ -406,23 +406,28 @@ export function OrbitBlogPostEditor({ postId }: { postId?: string }) {
       </div>
 
       <div className="mx-auto grid max-w-[1600px] gap-6 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
-        <div className="mx-auto w-full max-w-[880px] space-y-5">
-          <textarea
-            value={form.title}
-            rows={2}
-            onChange={(e) => {
-              const title = e.target.value;
-              setForm((f) => ({
-                ...f,
-                title,
-                slug: slugLocked ? f.slug : slugifyTitle(title),
-              }));
-            }}
-            placeholder="Write your article title…"
-            className="w-full resize-none border-0 bg-transparent text-[clamp(2rem,5vw,3.5rem)] leading-[1.1] font-extrabold tracking-tight text-[#1a1035] outline-none placeholder:text-slate-300"
-          />
+        <div className="mx-auto w-full max-w-[920px] space-y-4">
+          <div className="rounded-sm border border-[#c3c4c7] bg-white px-4 py-4 shadow-[0_1px_1px_rgba(0,0,0,0.04)]">
+            <label className="text-[11px] font-semibold tracking-wide text-[#646970] uppercase">
+              Title <span className="text-[#d63638]">*</span>
+            </label>
+            <textarea
+              value={form.title}
+              rows={2}
+              onChange={(e) => {
+                const title = e.target.value;
+                setForm((f) => ({
+                  ...f,
+                  title,
+                  slug: slugLocked ? f.slug : slugifyTitle(title),
+                }));
+              }}
+              placeholder="Add title"
+              className="mt-2 w-full resize-none border-0 bg-transparent text-[clamp(1.75rem,4vw,2.25rem)] leading-tight font-semibold text-[#1d2327] outline-none placeholder:text-[#a7aaad]"
+            />
+          </div>
 
-          <div className="text-sm text-slate-500">
+          <div className="rounded-sm border border-[#c3c4c7] bg-white px-4 py-3 text-sm text-[#646970] shadow-[0_1px_1px_rgba(0,0,0,0.04)]">
             <span className="font-medium text-slate-600">
               SEO-friendly URL:
             </span>
@@ -445,18 +450,17 @@ export function OrbitBlogPostEditor({ postId }: { postId?: string }) {
                   setSlugLocked(true);
                   setForm((f) => ({ ...f, slug: e.target.value }));
                 }}
-                className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
+                className="mt-2 w-full rounded border border-[#8c8f94] bg-white px-3 py-2 text-sm text-[#2c3338]"
               />
             ) : null}
           </div>
 
-          <div>
-            <label className="text-sm font-semibold text-slate-700">
+          <div className="rounded-sm border border-[#c3c4c7] bg-white px-4 py-4 shadow-[0_1px_1px_rgba(0,0,0,0.04)]">
+            <label className="text-[11px] font-semibold tracking-wide text-[#646970] uppercase">
               Excerpt
             </label>
-            <p className="text-xs text-slate-500">
-              Short summary for cards and discovery. Recommended 120–180
-              characters.
+            <p className="mt-1 text-xs text-[#646970]">
+              Short summary for cards and SEO. Recommended 120–180 characters.
             </p>
             <textarea
               value={form.excerpt}
@@ -464,22 +468,21 @@ export function OrbitBlogPostEditor({ postId }: { postId?: string }) {
                 setForm((f) => ({ ...f, excerpt: e.target.value }))
               }
               rows={3}
-              className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+              className="mt-2 w-full rounded border border-[#8c8f94] px-3 py-2 text-sm text-[#2c3338]"
             />
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-xs text-[#787c82]">
               {form.excerpt.length} characters
             </p>
           </div>
 
           <RichTextEditor
             value={form.contentHtml}
+            previewHref={previewHref}
             onChange={(html) => setForm((f) => ({ ...f, contentHtml: html }))}
           />
 
-          <p className="text-sm text-slate-500">
-            {stats.words.toLocaleString()} words ·{" "}
-            {stats.characters.toLocaleString()} characters ·{" "}
-            {stats.readingTimeMinutes} min read
+          <p className="text-xs text-[#646970]">
+            Estimated reading time: {stats.readingTimeMinutes} min
           </p>
         </div>
 
