@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 export function DomainCartHeaderLink({
   compact = false,
 }: {
+  /** @deprecated Icon-only layout; kept for call-site compatibility */
   compact?: boolean;
 }) {
   const cartCtx = useDomainCartOptional();
@@ -65,8 +66,8 @@ export function DomainCartHeaderLink({
       type="button"
       onClick={() => openDrawer?.()}
       className={cn(
-        "relative inline-flex items-center justify-center gap-2 rounded-full border border-slate-200/90 bg-white font-semibold text-slate-800 shadow-[0_4px_14px_rgba(15,23,42,0.06)] transition hover:border-slate-300 hover:bg-slate-50",
-        compact ? "size-9 shrink-0" : "h-[38px] px-3 text-[13px]",
+        "relative inline-flex size-9 shrink-0 touch-manipulation items-center justify-center rounded-full border border-slate-200/90 bg-white text-slate-800 shadow-[0_4px_14px_rgba(15,23,42,0.06)] transition-[border-color,background-color,box-shadow] duration-150 hover:border-slate-300 hover:bg-slate-50",
+        compact && "lg:size-9",
       )}
       aria-label={ariaLabel}
       aria-haspopup="dialog"
@@ -76,17 +77,10 @@ export function DomainCartHeaderLink({
         strokeWidth={2}
         aria-hidden
       />
-      {!compact ? (
-        <span className="hidden text-slate-800 lg:inline">Domains cart</span>
-      ) : null}
       {count > 0 ? (
         <span
-          className={cn(
-            "flex items-center justify-center rounded-full bg-[#673de6] leading-none font-bold text-white",
-            compact
-              ? "absolute -top-1 -right-1 h-4 min-w-4 px-1 text-[10px]"
-              : "lg:static lg:min-w-[1.25rem] lg:px-1.5 lg:py-0.5 lg:text-[11px]",
-          )}
+          className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#673de6] px-1 text-[10px] leading-none font-bold text-white"
+          aria-hidden
         >
           {count}
         </span>

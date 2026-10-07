@@ -527,6 +527,4 @@ export function HostingMegaMenu({
   );
 }
 
-export function isHostingNavLabel(label: string) {
-  return label === "Hosting" || label === "Web Hosting";
-}
+export { isHostingNavLabel } from "@/lib/navigation/hosting-nav";

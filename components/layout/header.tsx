@@ -1,7 +1,9 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ChevronDown, Menu, Sparkles, User, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -11,12 +13,24 @@ import { DomainCartHeaderLink } from "@/components/layout/domain-cart-header-lin
 import { CountryLanguageSelector } from "@/components/locale/country-language-selector";
 import { useLocale } from "@/components/locale/locale-provider";
 import { CANONICAL_HEADER_LOGO_SRC, Logo } from "@/components/shared/logo";
-import { DomainsMegaMenu } from "@/components/layout/domains-mega-menu";
-import {
-  HostingMegaMenu,
-  isHostingNavLabel,
-} from "@/components/layout/hosting-mega-menu";
+import { isHostingNavLabel } from "@/lib/navigation/hosting-nav";
 import { cn } from "@/lib/utils";
+
+const DomainsMegaMenu = dynamic(
+  () =>
+    import("@/components/layout/domains-mega-menu").then((mod) => ({
+      default: mod.DomainsMegaMenu,
+    })),
+  { loading: () => null },
+);
+
+const HostingMegaMenu = dynamic(
+  () =>
+    import("@/components/layout/hosting-mega-menu").then((mod) => ({
+      default: mod.HostingMegaMenu,
+    })),
+  { loading: () => null },
+);
 
 function localizeNavLabel(
   label: string,
@@ -253,6 +267,7 @@ export function SiteHeader({
   logoPath?: string;
 } = {}) {
   const { t, preferences } = useLocale();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [mobileSection, setMobileSection] = useState<string | null>(null);
   const [mega, setMega] = useState<"domains" | "hosting" | null>(null);
@@ -275,6 +290,13 @@ export function SiteHeader({
   };
 
   useEffect(() => () => cancelMegaClose(), []);
+
+  useEffect(() => {
+    setOpen(false);
+    setMobileSection(null);
+    cancelMegaClose();
+    setMega(null);
+  }, [pathname]);
 
   const resolvedLogin =
     preferences.language === "en" ? loginLabel || "Login" : t.nav.login;
@@ -336,7 +358,7 @@ export function SiteHeader({
     <header className="relative z-50 w-full shrink-0 bg-transparent pt-2.5 pb-1 sm:pt-4">
       <div className="hb-shell">
         <div className="relative">
-          <div className="mx-auto flex h-[56px] w-full items-center gap-2 rounded-full border border-white/90 bg-white/[0.92] px-3 shadow-[0_12px_40px_rgba(15,23,42,0.14),inset_0_1px_0_rgba(255,255,255,1)] backdrop-blur-2xl backdrop-saturate-150 sm:h-[70px] sm:gap-3 sm:px-5 lg:px-6">
+          <div className="mx-auto flex h-[56px] w-full items-center gap-2 rounded-full border border-white/90 bg-white/[0.92] px-3 shadow-[0_12px_40px_rgba(15,23,42,0.14),inset_0_1px_0_rgba(255,255,255,1)] backdrop-blur-md backdrop-saturate-150 sm:h-[70px] sm:gap-3 sm:px-5 sm:backdrop-blur-2xl lg:px-6">
             <div className="min-w-0 flex-1 lg:min-w-[210px] lg:flex-none xl:min-w-[270px]">
               <Logo
                 src={CANONICAL_HEADER_LOGO_SRC}
@@ -382,7 +404,7 @@ export function SiteHeader({
               ))}
             </nav>
 
-            <div className="hidden shrink-0 items-center justify-end gap-2.5 lg:flex">
+            <div className="hidden shrink-0 items-center justify-end gap-2 lg:flex xl:gap-2.5">
               <DomainCartHeaderLink />
               <CountryLanguageSelector tone="light" />
               <span
@@ -403,7 +425,7 @@ export function SiteHeader({
               <CountryLanguageSelector compact tone="light" />
               <button
                 type="button"
-                className="inline-flex size-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-800 shadow-sm"
+                className="inline-flex size-9 touch-manipulation items-center justify-center rounded-full border border-slate-200 bg-white text-slate-800 shadow-sm"
                 aria-expanded={open}
                 aria-controls="hb-mobile-nav"
                 aria-label={open ? "Close menu" : "Open menu"}
@@ -461,7 +483,7 @@ export function SiteHeader({
             transition={{ duration: 0.17 }}
             className="hb-shell mt-2 lg:hidden"
           >
-            <div className="w-full overflow-hidden rounded-[22px] border border-slate-200/80 bg-white/95 shadow-[0_20px_56px_rgba(15,23,42,0.12)] backdrop-blur-2xl">
+            <div className="max-h-[min(78dvh,640px)] w-full overflow-x-hidden overflow-y-auto overscroll-contain rounded-[22px] border border-slate-200/80 bg-white/95 shadow-[0_20px_56px_rgba(15,23,42,0.12)] backdrop-blur-md sm:backdrop-blur-2xl">
               <nav
                 className="flex flex-col gap-0.5 p-4"
                 aria-label="Mobile navigation"
@@ -553,13 +575,6 @@ export function SiteHeader({
                   );
                 })}
                 <div className="mt-3 flex flex-col gap-2 border-t border-slate-100 pt-3">
-                  <Link
-                    href={routes.domainCheckout}
-                    className="flex items-center justify-center gap-2 rounded-full border border-slate-200 px-3 py-2.5 text-[14px] font-semibold text-slate-800"
-                    onClick={() => setOpen(false)}
-                  >
-                    Cart
-                  </Link>
                   <Link
                     href={loginHref}
                     className="flex items-center justify-center gap-2 rounded-full border border-slate-200 px-3 py-2.5 text-[14px] font-semibold text-slate-800"
