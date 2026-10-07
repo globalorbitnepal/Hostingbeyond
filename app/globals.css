@@ -1112,3 +1112,102 @@ html {
 body {
   touch-action: manipulation;
 }
+
+.hb-blog-prose h2 {
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.3;
+  color: #1a1035;
+}
+
+.hb-blog-prose h3 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a1035;
+}
+
+.hb-blog-prose h4 {
+  margin-top: 1.25rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.hb-blog-prose p {
+  margin-bottom: 1.1rem;
+}
+
+.hb-blog-prose ul,
+.hb-blog-prose ol {
+  margin: 0 0 1.1rem 1.25rem;
+}
+
+.hb-blog-prose li {
+  margin-bottom: 0.35rem;
+}
+
+.hb-blog-prose blockquote {
+  margin: 1.25rem 0;
+  border-left: 4px solid #c4b5fd;
+  padding-left: 1rem;
+  color: #475569;
+  font-style: italic;
+}
+
+.hb-blog-prose pre {
+  overflow-x: auto;
+  margin: 1.25rem 0;
+  border-radius: 0.75rem;
+  background: #0f172a;
+  padding: 1rem;
+  color: #e2e8f0;
+  font-size: 0.9rem;
+}
+
+.hb-blog-prose code {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.9em;
+}
+
+.hb-blog-prose :not(pre) > code {
+  border-radius: 0.35rem;
+  background: #f1f5f9;
+  padding: 0.1rem 0.35rem;
+}
+
+.hb-blog-prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+}
+
+.hb-blog-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.25rem 0;
+  font-size: 0.95rem;
+}
+
+.hb-blog-prose th,
+.hb-blog-prose td {
+  border: 1px solid #e2e8f0;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+.hb-blog-prose a {
+  color: #673de6;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.hb-blog-prose [data-callout="info"] {
+  margin: 1.25rem 0;
+  border-radius: 0.75rem;
+  border: 1px solid #ddd6fe;
+  background: #f5f3ff;
+  padding: 1rem 1.1rem;
+}

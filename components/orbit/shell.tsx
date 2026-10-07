@@ -28,6 +28,7 @@ import { cn } from "@/lib/utils";
 const nav = [
   { href: "/orbit", label: "Dashboard", icon: LayoutDashboard },
   { href: "/orbit/pages", label: "Pages", icon: FileText },
+  { href: "/orbit/blog", label: "Blog", icon: FileText },
   { href: "/orbit/content", label: "Website Content", icon: Sparkles },
   { href: "/orbit/domains", label: "Domain Pages", icon: Globe },
   {

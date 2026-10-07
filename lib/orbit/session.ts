@@ -151,7 +151,8 @@ export async function logActivity(input: {
     | "MEDIA_DELETE"
     | "SETTINGS_UPDATE"
     | "NAV_UPDATE"
-    | "SEO_UPDATE";
+    | "SEO_UPDATE"
+    | "BLOG_UPDATE";
   resource?: string;
   details?: string;
 }) {

@@ -22,6 +22,7 @@ enum ActivityAction {
   SETTINGS_UPDATE
   NAV_UPDATE
   SEO_UPDATE
+  BLOG_UPDATE
   DOMAIN_PRICING_UPDATE
   DOMAIN_ORDER_UPDATE
   DOMAIN_PROVIDER_SYNC
@@ -675,6 +676,127 @@ model DomainCartItem {
 
   @@unique([cartId, domain])
   @@index([cartId])
+}
+
+enum BlogPostStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+}
+
+model BlogAuthor {
+  id          String     @id @default(cuid())
+  name        String
+  displayName String?
+  bio         String     @default("")
+  avatarUrl   String?
+  role        String?
+  websiteUrl  String?
+  twitterUrl  String?
+  linkedinUrl String?
+  adminUserId String?    @unique
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  posts       BlogPost[]
+}
+
+model BlogCategory {
+  id             String     @id @default(cuid())
+  name           String
+  slug           String     @unique
+  description    String     @default("")
+  imageUrl       String?
+  seoTitle       String?
+  seoDescription String?
+  canonicalUrl   String?
+  noIndex        Boolean    @default(false)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  posts          BlogPost[]
+
+  @@index([slug])
+}
+
+model BlogTag {
+  id             String        @id @default(cuid())
+  name           String
+  slug           String        @unique
+  description    String        @default("")
+  seoTitle       String?
+  seoDescription String?
+  noIndex        Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  posts          BlogPostTag[]
+
+  @@index([slug])
+}
+
+model BlogPost {
+  id                   String                 @id @default(cuid())
+  title                String
+  slug                 String                 @unique
+  excerpt              String                 @default("")
+  contentHtml          String                 @default("") @db.Text
+  status               BlogPostStatus         @default(DRAFT)
+  featured             Boolean                @default(false)
+  featuredImageUrl     String?
+  featuredImageAlt     String?
+  authorId             String?
+  author               BlogAuthor?            @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  categoryId           String?
+  category             BlogCategory?          @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  publishedAt          DateTime?
+  scheduledAt          DateTime?
+  readingTimeMinutes   Int                    @default(0)
+  readingTimeOverride  Int?
+  canonicalUrl         String?
+  noIndex              Boolean                @default(false)
+  seoTitle             String?
+  seoDescription       String?
+  focusKeyword         String?
+  seoKeywords          String[]               @default([])
+  ogTitle              String?
+  ogDescription        String?
+  ogImageUrl           String?
+  twitterTitle         String?
+  twitterDescription   String?
+  twitterImageUrl      String?
+  schemaType           String                 @default("BlogPosting")
+  allowComments        Boolean                @default(false)
+  viewCount            Int                    @default(0)
+  previewToken         String?                @unique
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  tags                 BlogPostTag[]
+  slugRedirects        BlogPostSlugRedirect[]
+
+  @@index([status, publishedAt])
+  @@index([categoryId])
+  @@index([authorId])
+  @@index([featured])
+  @@index([slug])
+}
+
+model BlogPostTag {
+  postId String
+  tagId  String
+  post   BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag    BlogTag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+  @@index([tagId])
+}
+
+model BlogPostSlugRedirect {
+  id        String   @id @default(cuid())
+  postId    String
+  post      BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  fromSlug  String   @unique
+  createdAt DateTime @default(now())
+
+  @@index([postId])
 }
 
 model DomainProviderLog {
