@@ -1,6 +1,11 @@
 import { randomBytes } from "crypto";
 
-import type { BlogPostStatus, Prisma } from "@prisma/client";
+import type {
+  BlogContentType,
+  BlogGuideType,
+  BlogPostStatus,
+  Prisma,
+} from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 
@@ -24,7 +29,11 @@ export type BlogPostCard = {
   featuredImageUrl: string | null;
   featuredImageAlt: string | null;
   publishedAt: Date | null;
+  updatedAt: Date;
   readingTimeMinutes: number;
+  viewCount: number;
+  contentType: BlogContentType;
+  guideType: BlogGuideType | null;
   category: { name: string; slug: string } | null;
   author: { name: string; displayName: string | null } | null;
 };
@@ -40,7 +49,11 @@ function toCard(
     featuredImageUrl: post.featuredImageUrl,
     featuredImageAlt: post.featuredImageAlt,
     publishedAt: post.publishedAt,
+    updatedAt: post.updatedAt,
     readingTimeMinutes: post.readingTimeMinutes,
+    viewCount: post.viewCount,
+    contentType: post.contentType,
+    guideType: post.guideType,
     category: post.category
       ? { name: post.category.name, slug: post.category.slug }
       : null,
@@ -67,9 +80,13 @@ export async function promoteScheduledPosts() {
   });
 }
 
-function publishedWhere(): Prisma.BlogPostWhereInput {
+function publishedWhere(
+  contentType?: BlogContentType,
+): Prisma.BlogPostWhereInput {
   return {
     status: "PUBLISHED",
+    noIndex: false,
+    ...(contentType ? { contentType } : {}),
     OR: [{ publishedAt: { lte: new Date() } }, { publishedAt: null }],
   };
 }
@@ -91,7 +108,7 @@ export async function getBlogHomeFeatured(): Promise<{
 }> {
   await promoteScheduledPosts();
   const marked = await prisma.blogPost.findFirst({
-    where: { ...publishedWhere(), featured: true },
+    where: { ...publishedWhere("BLOG"), featured: true },
     orderBy: { publishedAt: "desc" },
     include: postInclude,
   });
@@ -99,7 +116,7 @@ export async function getBlogHomeFeatured(): Promise<{
     return { post: toCard(marked), isMarkedFeatured: true };
   }
   const latest = await prisma.blogPost.findFirst({
-    where: publishedWhere(),
+    where: publishedWhere("BLOG"),
     orderBy: { publishedAt: "desc" },
     include: postInclude,
   });
@@ -109,20 +126,38 @@ export async function getBlogHomeFeatured(): Promise<{
   };
 }
 
+export async function getTipsHomeFeatured(): Promise<BlogPostCard | null> {
+  await promoteScheduledPosts();
+  const marked = await prisma.blogPost.findFirst({
+    where: { ...publishedWhere("TIP"), featured: true },
+    orderBy: { publishedAt: "desc" },
+    include: postInclude,
+  });
+  return marked ? toCard(marked) : null;
+}
+
 export async function listPublishedPosts(options: {
   page?: number;
   categorySlug?: string;
   tagSlug?: string;
   search?: string;
   excludeId?: string;
+  contentType?: BlogContentType;
+  guideTypes?: BlogGuideType[];
+  orderBy?: "published" | "views";
 }) {
   await promoteScheduledPosts();
   const page = Math.max(1, options.page ?? 1);
   const skip = (page - 1) * POSTS_PER_PAGE;
 
+  const contentType = options.contentType ?? "BLOG";
   const where: Prisma.BlogPostWhereInput = {
-    ...publishedWhere(),
+    ...publishedWhere(contentType),
   };
+
+  if (options.guideTypes?.length) {
+    where.guideType = { in: options.guideTypes };
+  }
 
   if (options.excludeId) {
     where.id = { not: options.excludeId };
@@ -155,7 +190,10 @@ export async function listPublishedPosts(options: {
     prisma.blogPost.count({ where }),
     prisma.blogPost.findMany({
       where,
-      orderBy: { publishedAt: "desc" },
+      orderBy:
+        options.orderBy === "views"
+          ? [{ viewCount: "desc" }, { publishedAt: "desc" }]
+          : { publishedAt: "desc" },
       skip,
       take: POSTS_PER_PAGE,
       include: postInclude,
@@ -171,12 +209,19 @@ export async function listPublishedPosts(options: {
   };
 }
 
-export async function getPublishedPostBySlug(slug: string) {
+export async function getPublishedPostBySlug(
+  slug: string,
+  contentType: BlogContentType = "BLOG",
+) {
   await promoteScheduledPosts();
   return prisma.blogPost.findFirst({
-    where: { slug, ...publishedWhere() },
+    where: { slug, ...publishedWhere(contentType) },
     include: postInclude,
   });
+}
+
+export async function getPublishedTipBySlug(slug: string) {
+  return getPublishedPostBySlug(slug, "TIP");
 }
 
 export async function getSlugRedirect(fromSlug: string) {
@@ -204,8 +249,10 @@ export async function relatedPosts(post: {
   id: string;
   categoryId: string | null;
   tagIds: string[];
+  contentType?: BlogContentType;
 }) {
   await promoteScheduledPosts();
+  const contentType = post.contentType ?? "BLOG";
   const or: Prisma.BlogPostWhereInput[] = [];
   if (post.categoryId) or.push({ categoryId: post.categoryId });
   if (post.tagIds.length > 0) {
@@ -216,7 +263,7 @@ export async function relatedPosts(post: {
     or.length > 0
       ? await prisma.blogPost.findMany({
           where: {
-            ...publishedWhere(),
+            ...publishedWhere(contentType),
             id: { not: post.id },
             OR: or,
           },
@@ -230,7 +277,7 @@ export async function relatedPosts(post: {
 
   const fill = await prisma.blogPost.findMany({
     where: {
-      ...publishedWhere(),
+      ...publishedWhere(contentType),
       id: { notIn: [post.id, ...rows.map((r) => r.id)] },
     },
     orderBy: { publishedAt: "desc" },
@@ -262,12 +309,47 @@ export function newPreviewToken() {
   return randomBytes(24).toString("hex");
 }
 
+export async function listTipCategoriesWithPublishedPosts() {
+  await promoteScheduledPosts();
+  const rows = await prisma.blogCategory.findMany({
+    where: {
+      posts: {
+        some: publishedWhere("TIP"),
+      },
+    },
+    orderBy: { name: "asc" },
+    include: {
+      _count: {
+        select: {
+          posts: {
+            where: publishedWhere("TIP"),
+          },
+        },
+      },
+    },
+  });
+  return rows.map((c) => ({
+    id: c.id,
+    name: c.name,
+    slug: c.slug,
+    description: c.description,
+    count: c._count.posts,
+  }));
+}
+
+export async function countPublishedTips() {
+  await promoteScheduledPosts();
+  return prisma.blogPost.count({ where: publishedWhere("TIP") });
+}
+
 export type BlogPostWriteInput = {
   title: string;
   slug?: string;
   excerpt?: string;
   contentHtml?: string;
   status?: BlogPostStatus;
+  contentType?: BlogContentType;
+  guideType?: BlogGuideType | null;
   featured?: boolean;
   featuredImageUrl?: string | null;
   featuredImageAlt?: string | null;
@@ -349,6 +431,14 @@ export async function upsertBlogPost(
   const tagIds = input.tagIds ?? [];
   const status = input.status ?? "DRAFT";
   const now = new Date();
+  let resolvedContentType: BlogContentType = input.contentType ?? "BLOG";
+  if (id) {
+    const peek = await prisma.blogPost.findUnique({
+      where: { id },
+      select: { contentType: true },
+    });
+    if (peek && !input.contentType) resolvedContentType = peek.contentType;
+  }
 
   let publishedAt: Date | null = null;
   let scheduledAt: Date | null = null;
@@ -368,6 +458,8 @@ export async function upsertBlogPost(
     excerpt: (input.excerpt ?? "").trim(),
     contentHtml,
     status,
+    contentType: resolvedContentType,
+    ...(input.guideType !== undefined ? { guideType: input.guideType } : {}),
     featured: Boolean(input.featured),
     featuredImageUrl: input.featuredImageUrl ?? null,
     featuredImageAlt: input.featuredImageAlt ?? null,
@@ -392,9 +484,14 @@ export async function upsertBlogPost(
     scheduledAt,
   };
 
+  const contentTypeForFeatured = resolvedContentType;
   if (input.featured) {
     await prisma.blogPost.updateMany({
-      where: { featured: true, ...(id ? { id: { not: id } } : {}) },
+      where: {
+        featured: true,
+        contentType: contentTypeForFeatured,
+        ...(id ? { id: { not: id } } : {}),
+      },
       data: { featured: false },
     });
   }

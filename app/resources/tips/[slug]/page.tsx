@@ -3,35 +3,43 @@ import { notFound, permanentRedirect } from "next/navigation";
 import Script from "next/script";
 
 import { ArticleView } from "@/components/blog/article-view";
+import { BlogNewsletter } from "@/components/blog/blog-newsletter";
 import { BlogSiteShell } from "@/components/blog/blog-shell";
 import { adjacentPublishedPosts } from "@/lib/blog/adjacent";
-import { blogPostPath } from "@/lib/blog/paths";
 import {
-  getPublishedPostBySlug,
+  getPublishedTipBySlug,
   getSlugRedirect,
   incrementPostViews,
   relatedPosts,
 } from "@/lib/blog/queries";
-import { articleJsonLd, breadcrumbJsonLd, postMetadata } from "@/lib/blog/seo";
+import { TIPS_BASE, tipsPostPath } from "@/lib/blog/paths";
+import {
+  articleJsonLd,
+  breadcrumbJsonLd,
+  tipPostMetadata,
+} from "@/lib/blog/seo";
 import { extractTocFromHtml, injectHeadingIds } from "@/lib/blog/toc";
 
 type Params = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getPublishedPostBySlug(slug);
-  if (!post) return { title: "Article not found" };
-  return postMetadata(post);
+  const post = await getPublishedTipBySlug(slug);
+  if (!post) return { title: "Guide not found" };
+  return tipPostMetadata(post);
 }
 
-export default async function BlogArticlePage({ params }: Params) {
+export default async function TipGuidePage({ params }: Params) {
   const { slug } = await params;
-  const post = await getPublishedPostBySlug(slug);
+  const post = await getPublishedTipBySlug(slug);
 
   if (!post) {
     const redirect = await getSlugRedirect(slug);
     if (redirect?.post.status === "PUBLISHED") {
-      permanentRedirect(blogPostPath(redirect.post.slug));
+      const target = await getPublishedTipBySlug(redirect.post.slug);
+      if (target?.contentType === "TIP") {
+        permanentRedirect(tipsPostPath(redirect.post.slug));
+      }
     }
     notFound();
   }
@@ -47,43 +55,50 @@ export default async function BlogArticlePage({ params }: Params) {
       id: post.id,
       categoryId: post.categoryId,
       tagIds,
-      contentType: "BLOG",
+      contentType: "TIP",
     }),
-    adjacentPublishedPosts(post.publishedAt, post.id, "BLOG"),
+    adjacentPublishedPosts(post.publishedAt, post.id, "TIP"),
   ]);
 
   const breadcrumbs = breadcrumbJsonLd([
     { name: "Home", path: "/" },
-    { name: "Blog", path: "/resources/blog" },
+    { name: "Resources", path: "/resources" },
+    { name: "Tips", path: TIPS_BASE },
     ...(post.category
       ? [
           {
             name: post.category.name,
-            path: `/resources/blog/category/${post.category.slug}`,
+            path: `${TIPS_BASE}?category=${post.category.slug}`,
           },
         ]
       : []),
-    { name: post.title, path: blogPostPath(post.slug) },
+    { name: post.title, path: tipsPostPath(post.slug) },
   ]);
 
-  const jsonLd = articleJsonLd({
-    ...post,
-    authorName: post.author?.displayName || post.author?.name,
-  });
+  const jsonLd = articleJsonLd(
+    {
+      ...post,
+      authorName: post.author?.displayName || post.author?.name,
+      schemaType: post.schemaType || "Article",
+    },
+    tipsPostPath(post.slug),
+  );
 
   return (
     <BlogSiteShell>
       <Script
-        id="blog-article-jsonld"
+        id="tip-article-jsonld"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Script
-        id="blog-breadcrumb-jsonld"
+        id="tip-breadcrumb-jsonld"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }}
       />
       <ArticleView
+        hub="tips"
+        guideType={post.guideType}
         post={{
           title: post.title,
           slug: post.slug,
@@ -104,6 +119,9 @@ export default async function BlogArticlePage({ params }: Params) {
         prev={adjacent.prev}
         next={adjacent.next}
       />
+      <div className="mx-auto mt-12 max-w-[1240px] px-4">
+        <BlogNewsletter />
+      </div>
     </BlogSiteShell>
   );
 }

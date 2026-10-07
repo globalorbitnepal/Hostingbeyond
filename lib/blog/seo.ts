@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { siteConfig } from "@/config/site";
 import { buildMetadata } from "@/lib/metadata";
 
-import { BLOG_BASE, blogPostPath } from "./paths";
+import { BLOG_BASE, TIPS_BASE, blogPostPath, tipsPostPath } from "./paths";
 
 type PostSeoInput = {
   title: string;
@@ -23,8 +23,8 @@ type PostSeoInput = {
   schemaType?: string | null;
 };
 
-export function resolvePostSeo(post: PostSeoInput) {
-  const path = blogPostPath(post.slug);
+export function resolvePostSeo(post: PostSeoInput, basePath?: string) {
+  const path = basePath ?? blogPostPath(post.slug);
   const title = post.seoTitle?.trim() || post.title;
   const description =
     post.seoDescription?.trim() ||
@@ -53,8 +53,8 @@ export function resolvePostSeo(post: PostSeoInput) {
   };
 }
 
-export function postMetadata(post: PostSeoInput): Metadata {
-  const seo = resolvePostSeo(post);
+export function postMetadata(post: PostSeoInput, basePath?: string): Metadata {
+  const seo = resolvePostSeo(post, basePath);
   return buildMetadata({
     title: seo.title,
     description: seo.description,
@@ -75,6 +75,32 @@ export function blogHomeMetadata(): Metadata {
       "Practical hosting guides, domain tips, WordPress tutorials, security advice, and website performance insights from HostingBeyond.",
     path: BLOG_BASE,
   });
+}
+
+export function tipsHomeMetadata(): Metadata {
+  return buildMetadata({
+    title: "HostingBeyond Tips & Guides | Hosting, Domains, WordPress & More",
+    description:
+      "Practical HostingBeyond tips and guides for hosting, domains, WordPress, websites, security, performance, email and more.",
+    path: TIPS_BASE,
+  });
+}
+
+export function tipPostMetadata(post: PostSeoInput): Metadata {
+  return postMetadata(post, tipsPostPath(post.slug));
+}
+
+export function tipsCategoryMetadata(input: {
+  name: string;
+  slug: string;
+  description?: string;
+}) {
+  const path = `${TIPS_BASE}?category=${encodeURIComponent(input.slug)}`;
+  const title = `${input.name} Tips & Guides`;
+  const description =
+    input.description?.trim() ||
+    `Practical ${input.name.toLowerCase()} guides from HostingBeyond.`;
+  return buildMetadata({ title, description, path });
 }
 
 export function categoryMetadata(input: {
@@ -125,8 +151,9 @@ export function articleJsonLd(
     updatedAt?: Date | string | null;
     authorName?: string | null;
   },
+  basePath?: string,
 ) {
-  const seo = resolvePostSeo(post);
+  const seo = resolvePostSeo(post, basePath);
   const url = new URL(
     seo.canonical.startsWith("http") ? seo.canonical : seo.path,
     siteConfig.url,

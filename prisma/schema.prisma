@@ -685,6 +685,21 @@ enum BlogPostStatus {
   ARCHIVED
 }
 
+enum BlogContentType {
+  BLOG
+  TIP
+}
+
+enum BlogGuideType {
+  HOW_TO
+  STEP_BY_STEP
+  BEGINNER_GUIDE
+  TROUBLESHOOTING
+  BEST_PRACTICES
+  EXPLAINER
+  CHECKLIST
+}
+
 model BlogAuthor {
   id          String     @id @default(cuid())
   name        String
@@ -740,6 +755,8 @@ model BlogPost {
   excerpt              String                 @default("")
   contentHtml          String                 @default("") @db.Text
   status               BlogPostStatus         @default(DRAFT)
+  contentType          BlogContentType        @default(BLOG)
+  guideType            BlogGuideType?
   featured             Boolean                @default(false)
   featuredImageUrl     String?
   featuredImageAlt     String?
@@ -777,6 +794,8 @@ model BlogPost {
   @@index([authorId])
   @@index([featured])
   @@index([slug])
+  @@index([contentType, status, publishedAt])
+  @@index([contentType, viewCount])
 }
 
 model BlogPostTag {

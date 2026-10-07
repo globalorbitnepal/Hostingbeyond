@@ -8,6 +8,7 @@ type PostRow = {
   title: string;
   slug: string;
   status: string;
+  contentType: string;
   featured: boolean;
   updatedAt: string;
   publishedAt: string | null;
@@ -18,18 +19,20 @@ type PostRow = {
 export default function OrbitBlogDashboardPage() {
   const [posts, setPosts] = useState<PostRow[]>([]);
   const [filter, setFilter] = useState("");
+  const [typeFilter, setTypeFilter] = useState("");
   const [q, setQ] = useState("");
 
   useEffect(() => {
     void (async () => {
       const params = new URLSearchParams();
       if (filter) params.set("status", filter);
+      if (typeFilter) params.set("contentType", typeFilter);
       if (q) params.set("q", q);
       const res = await fetch(`/api/orbit/blog/posts?${params}`);
       const json = await res.json();
       setPosts(json.posts ?? []);
     })();
-  }, [filter, q]);
+  }, [filter, typeFilter, q]);
 
   const stats = {
     published: posts.filter((p) => p.status === "PUBLISHED").length,
@@ -42,14 +45,24 @@ export default function OrbitBlogDashboardPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Blog</h1>
-          <p className="text-sm text-slate-500">HostingBeyond editorial CMS</p>
+          <p className="text-sm text-slate-500">
+            Blog posts &amp; tips / guides
+          </p>
         </div>
-        <Link
-          href="/orbit/blog/new"
-          className="rounded-xl bg-[#673de6] px-4 py-2.5 text-sm font-semibold text-white"
-        >
-          New post
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/orbit/blog/new"
+            className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800"
+          >
+            New blog post
+          </Link>
+          <Link
+            href="/orbit/blog/new?type=tip"
+            className="rounded-xl bg-[#673de6] px-4 py-2.5 text-sm font-semibold text-white"
+          >
+            New tip / guide
+          </Link>
+        </div>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
@@ -68,6 +81,20 @@ export default function OrbitBlogDashboardPage() {
       </div>
 
       <div className="flex flex-wrap gap-2">
+        {["", "BLOG", "TIP"].map((s) => (
+          <button
+            key={s || "all-types"}
+            type="button"
+            onClick={() => setTypeFilter(s)}
+            className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
+              typeFilter === s
+                ? "bg-violet-100 text-[#673de6]"
+                : "border border-slate-200 bg-white"
+            }`}
+          >
+            {s === "BLOG" ? "Blog" : s === "TIP" ? "Tips" : "All types"}
+          </button>
+        ))}
         {["", "PUBLISHED", "DRAFT", "SCHEDULED", "ARCHIVED"].map((s) => (
           <button
             key={s || "all"}
@@ -95,6 +122,7 @@ export default function OrbitBlogDashboardPage() {
           <thead className="border-b border-slate-100 text-xs text-slate-500">
             <tr>
               <th className="px-4 py-3">Title</th>
+              <th className="px-4 py-3">Type</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Category</th>
               <th className="px-4 py-3">Author</th>
@@ -107,6 +135,9 @@ export default function OrbitBlogDashboardPage() {
             {posts.map((post) => (
               <tr key={post.id} className="border-b border-slate-50">
                 <td className="px-4 py-3 font-medium">{post.title}</td>
+                <td className="px-4 py-3 text-xs font-semibold text-slate-600">
+                  {post.contentType === "TIP" ? "Tip" : "Blog"}
+                </td>
                 <td className="px-4 py-3">{post.status}</td>
                 <td className="px-4 py-3">{post.category?.name ?? "—"}</td>
                 <td className="px-4 py-3">{post.author?.name ?? "—"}</td>

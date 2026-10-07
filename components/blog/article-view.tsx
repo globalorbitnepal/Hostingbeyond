@@ -8,7 +8,15 @@ import { ArticleToc } from "@/components/blog/article-toc";
 import { ReadingProgress } from "@/components/blog/reading-progress";
 import { BlogCta } from "@/components/blog/blog-cta";
 import type { BlogPostCard as Card } from "@/lib/blog/queries";
-import { BLOG_BASE, blogCategoryPath, blogPostPath } from "@/lib/blog/paths";
+import {
+  BLOG_BASE,
+  TIPS_BASE,
+  blogCategoryPath,
+  blogPostPath,
+  tipsHubPath,
+  tipsPostPath,
+} from "@/lib/blog/paths";
+import { guideTypeBadge } from "@/lib/blog/guide-type";
 import { formatBlogDate } from "@/lib/blog/format";
 import type { TocItem } from "@/lib/blog/toc";
 
@@ -27,6 +35,8 @@ export function ArticleView({
   related,
   prev,
   next,
+  hub = "blog",
+  guideType = null,
 }: {
   post: {
     title: string;
@@ -45,9 +55,21 @@ export function ArticleView({
   related: Card[];
   prev: { title: string; slug: string } | null;
   next: { title: string; slug: string } | null;
+  hub?: "blog" | "tips";
+  guideType?: import("@prisma/client").BlogGuideType | null;
 }) {
   const authorName =
     post.author?.displayName || post.author?.name || "HostingBeyond";
+  const isTips = hub === "tips";
+  const hubLabel = isTips ? "Tips" : "Blog";
+  const hubBase = isTips ? TIPS_BASE : BLOG_BASE;
+  const postPath = (slug: string) =>
+    isTips ? tipsPostPath(slug) : blogPostPath(slug);
+  const categoryPath = (slug: string) =>
+    isTips ? tipsHubPath({ category: slug }) : blogCategoryPath(slug);
+  const typeBadge = guideTypeBadge(
+    guideType as import("@prisma/client").BlogGuideType | null,
+  );
 
   return (
     <>
@@ -62,8 +84,14 @@ export function ArticleView({
             </li>
             <li aria-hidden>/</li>
             <li>
-              <Link href={BLOG_BASE} className="hover:text-[#673de6]">
-                Blog
+              <Link href="/resources" className="hover:text-[#673de6]">
+                Resources
+              </Link>
+            </li>
+            <li aria-hidden>/</li>
+            <li>
+              <Link href={hubBase} className="hover:text-[#673de6]">
+                {hubLabel}
               </Link>
             </li>
             {post.category ? (
@@ -71,7 +99,7 @@ export function ArticleView({
                 <li aria-hidden>/</li>
                 <li>
                   <Link
-                    href={blogCategoryPath(post.category.slug)}
+                    href={categoryPath(post.category.slug)}
                     className="hover:text-[#673de6]"
                   >
                     {post.category.name}
@@ -86,14 +114,21 @@ export function ArticleView({
 
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start">
           <article className="min-w-0">
-            {post.category ? (
-              <Link
-                href={blogCategoryPath(post.category.slug)}
-                className="inline-flex rounded-full bg-violet-100 px-3 py-1 text-xs font-bold text-[#673de6]"
-              >
-                {post.category.name}
-              </Link>
-            ) : null}
+            <div className="flex flex-wrap items-center gap-2">
+              {post.category ? (
+                <Link
+                  href={categoryPath(post.category.slug)}
+                  className="inline-flex rounded-full bg-violet-100 px-3 py-1 text-xs font-bold text-[#673de6]"
+                >
+                  {post.category.name}
+                </Link>
+              ) : null}
+              {typeBadge ? (
+                <span className="rounded-md bg-[#1a1035] px-2 py-0.5 text-[10px] font-bold text-white uppercase">
+                  {typeBadge}
+                </span>
+              ) : null}
+            </div>
             <h1 className="mt-4 text-[clamp(1.875rem,4vw,2.75rem)] leading-[1.12] font-extrabold tracking-tight text-[#1a1035]">
               {post.title}
             </h1>
@@ -182,11 +217,15 @@ export function ArticleView({
             {related.length ? (
               <section className="mt-12">
                 <h2 className="text-xl font-bold text-[#1a1035]">
-                  Related articles
+                  {isTips ? "You may also like" : "Related articles"}
                 </h2>
                 <div className="mt-6 grid gap-6 sm:grid-cols-2">
                   {related.map((item) => (
-                    <BlogPostCard key={item.id} post={item} />
+                    <BlogPostCard
+                      key={item.id}
+                      post={item}
+                      variant={isTips ? "tips" : "blog"}
+                    />
                   ))}
                 </div>
               </section>
@@ -198,7 +237,7 @@ export function ArticleView({
               <nav className="mt-10 flex flex-col gap-3 border-t border-slate-200 pt-8 sm:flex-row sm:justify-between">
                 {prev ? (
                   <Link
-                    href={blogPostPath(prev.slug)}
+                    href={postPath(prev.slug)}
                     className="text-sm font-semibold text-[#673de6]"
                   >
                     ← {prev.title}
@@ -208,7 +247,7 @@ export function ArticleView({
                 )}
                 {next ? (
                   <Link
-                    href={blogPostPath(next.slug)}
+                    href={postPath(next.slug)}
                     className="text-sm font-semibold text-[#673de6] sm:text-right"
                   >
                     {next.title} →

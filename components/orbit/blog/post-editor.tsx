@@ -7,6 +7,7 @@ import { EditorAccordion } from "@/components/orbit/blog/editor-accordion";
 import { MediaPickerModal } from "@/components/orbit/blog/media-picker-modal";
 import { RichTextEditor } from "@/components/orbit/blog/rich-text-editor";
 import { siteConfig } from "@/config/site";
+import { GUIDE_TYPE_OPTIONS } from "@/lib/blog/guide-type";
 import { editorContentStats } from "@/lib/blog/editor-stats";
 import { slugifyTitle } from "@/lib/blog/slug";
 import { readResponseError } from "@/lib/orbit/read-response-error";
@@ -50,6 +51,8 @@ type Post = {
   twitterDescription: string | null;
   twitterImageUrl: string | null;
   previewToken: string | null;
+  contentType: "BLOG" | "TIP";
+  guideType: string | null;
   tags: { tag: Tag }[];
 };
 
@@ -59,7 +62,13 @@ function seoHint(len: number, min: number, max: number) {
   return "Good";
 }
 
-export function OrbitBlogPostEditor({ postId }: { postId?: string }) {
+export function OrbitBlogPostEditor({
+  postId,
+  defaultContentType = "BLOG",
+}: {
+  postId?: string;
+  defaultContentType?: "BLOG" | "TIP";
+}) {
   const [loading, setLoading] = useState(Boolean(postId));
   const [saveState, setSaveState] = useState<
     "idle" | "saving" | "saved" | "dirty"
@@ -104,6 +113,8 @@ export function OrbitBlogPostEditor({ postId }: { postId?: string }) {
     previewToken: "",
     updatedAt: "",
     publishedAt: "",
+    contentType: defaultContentType,
+    guideType: "",
   });
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -169,6 +180,9 @@ export function OrbitBlogPostEditor({ postId }: { postId?: string }) {
         previewToken: post.previewToken ?? "",
         updatedAt: post.updatedAt,
         publishedAt: post.publishedAt ?? "",
+        contentType: (post.contentType === "TIP" ? "TIP" : "BLOG") as
+          "BLOG" | "TIP",
+        guideType: post.guideType ?? "",
       });
       setLoading(false);
     })();
@@ -203,6 +217,10 @@ export function OrbitBlogPostEditor({ postId }: { postId?: string }) {
       twitterTitle: form.twitterTitle || null,
       twitterDescription: form.twitterDescription || null,
       twitterImageUrl: form.twitterImageUrl || null,
+      contentType: form.contentType as "BLOG" | "TIP",
+      guideType: form.guideType
+        ? (form.guideType as import("@prisma/client").BlogGuideType)
+        : null,
     }),
     [form],
   );
@@ -365,7 +383,11 @@ export function OrbitBlogPostEditor({ postId }: { postId?: string }) {
             ← Blog
           </Link>
           <p className="text-sm text-slate-500">
-            {postId ? "Edit post" : "New post"}
+            {postId
+              ? "Edit content"
+              : form.contentType === "TIP"
+                ? "New tip / guide"
+                : "New blog post"}
           </p>
           <p className="ml-auto text-xs text-slate-500">
             {saveState === "saving"
@@ -488,6 +510,43 @@ export function OrbitBlogPostEditor({ postId }: { postId?: string }) {
 
         <aside className="space-y-3 lg:sticky lg:top-[4.5rem] lg:max-h-[calc(100dvh-5rem)] lg:overflow-y-auto">
           <EditorAccordion title="Publishing" defaultOpen>
+            <label className="text-xs font-semibold text-slate-600">
+              Content type
+            </label>
+            <select
+              value={form.contentType}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  contentType: e.target.value as "BLOG" | "TIP",
+                }))
+              }
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            >
+              <option value="BLOG">Blog post</option>
+              <option value="TIP">Tip / guide</option>
+            </select>
+            {form.contentType === "TIP" ? (
+              <>
+                <label className="mt-2 text-xs font-semibold text-slate-600">
+                  Guide type
+                </label>
+                <select
+                  value={form.guideType}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, guideType: e.target.value }))
+                  }
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                >
+                  <option value="">Not set</option>
+                  {GUIDE_TYPE_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </>
+            ) : null}
             <select
               value={form.status}
               onChange={(e) =>
@@ -518,7 +577,9 @@ export function OrbitBlogPostEditor({ postId }: { postId?: string }) {
                   setForm((f) => ({ ...f, featured: e.target.checked }))
                 }
               />
-              Featured on blog home
+              {form.contentType === "TIP"
+                ? "Featured guide on Tips hub"
+                : "Featured on blog home"}
             </label>
             {form.updatedAt ? (
               <p className="text-xs text-slate-500">

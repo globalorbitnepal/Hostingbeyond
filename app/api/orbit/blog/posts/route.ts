@@ -12,11 +12,13 @@ export async function GET(request: NextRequest) {
   if (!admin) return unauthorizedJson();
 
   const status = request.nextUrl.searchParams.get("status");
+  const contentType = request.nextUrl.searchParams.get("contentType");
   const q = request.nextUrl.searchParams.get("q")?.trim();
 
   const posts = await prisma.blogPost.findMany({
     where: {
       ...(status ? { status: status as never } : {}),
+      ...(contentType ? { contentType: contentType as never } : {}),
       ...(q
         ? {
             OR: [
@@ -74,6 +76,8 @@ export async function POST(request: Request) {
       tagIds: source.tags.map((t) => t.tagId),
       status: "DRAFT",
       featured: false,
+      contentType: source.contentType,
+      guideType: source.guideType,
     };
   }
 

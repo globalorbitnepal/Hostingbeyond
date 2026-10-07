@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-import { blogSitemapEntries } from "@/lib/blog/sitemap";
+import { blogSitemapEntries, tipsSitemapEntries } from "@/lib/blog/sitemap";
 import { siteConfig } from "@/config/site";
 import { routes } from "@/config/routes";
 
@@ -36,6 +36,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: path === routes.home ? 1 : 0.8,
   }));
 
-  const blogEntries = await blogSitemapEntries();
-  return [...staticEntries, ...blogEntries];
+  const [blogEntries, tipsEntries] = await Promise.all([
+    blogSitemapEntries(),
+    tipsSitemapEntries(),
+  ]);
+  return [...staticEntries, ...blogEntries, ...tipsEntries];
 }
