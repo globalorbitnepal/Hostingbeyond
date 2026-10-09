@@ -147,7 +147,7 @@ export function BeyondAiPricingMockup({
           </span>
         </div>
 
-        <div className="mt-10 grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-10 grid auto-rows-fr grid-cols-1 items-stretch gap-6 sm:grid-cols-2 xl:grid-cols-4">
           {content.plans
             .filter((p) => p.visible)
             .map((plan) => {
@@ -165,7 +165,7 @@ export function BeyondAiPricingMockup({
               const cardInner = (
                 <article
                   className={cn(
-                    "relative flex h-full min-h-[520px] flex-col rounded-[24px] p-6 sm:min-h-[540px] sm:p-6",
+                    "relative flex h-full min-h-0 flex-col rounded-[24px] p-6 sm:p-6",
                     popular
                       ? "bg-[linear-gradient(168deg,#0c1222_0%,#15103a_48%,#0a0614_100%)] text-white"
                       : "border border-[#e9e4ff]/90 bg-white/95 shadow-[0_28px_64px_-32px_rgba(47,28,106,0.22)] backdrop-blur-sm",
@@ -198,7 +198,7 @@ export function BeyondAiPricingMockup({
                   </h3>
                   <p
                     className={cn(
-                      "mt-1 text-[12px] leading-snug",
+                      "mt-1 line-clamp-2 min-h-[2.5rem] text-[12px] leading-snug",
                       popular ? "text-white/60" : "text-[#94a3b8]",
                     )}
                   >
@@ -282,60 +282,72 @@ export function BeyondAiPricingMockup({
                     <ArrowRight className="size-4" strokeWidth={2.5} />
                   </Link>
 
-                  <ul className="mt-5 flex flex-1 flex-col gap-2">
-                    {plan.features.map((f) => (
-                      <li
-                        key={f}
+                  <div className="mt-5 flex min-h-0 flex-1 flex-col">
+                    <ul className="flex flex-col gap-2">
+                      {plan.features.map((f) => (
+                        <li
+                          key={f}
+                          className={cn(
+                            "flex gap-2 text-[12px] leading-snug",
+                            popular ? "text-white/90" : "text-[#475569]",
+                          )}
+                        >
+                          <Check
+                            className={cn(
+                              "mt-0.5 size-3.5 shrink-0",
+                              popular ? "text-[#a78bfa]" : "text-[#3b82f6]",
+                            )}
+                            strokeWidth={2.5}
+                          />
+                          <span className="line-clamp-2">{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="mt-auto space-y-2 pt-4">
+                      <div
                         className={cn(
-                          "flex gap-2 text-[12px] leading-snug",
-                          popular ? "text-white/90" : "text-[#475569]",
+                          "flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-[12px] font-extrabold tracking-tight",
+                          popular
+                            ? "border-emerald-400/25 bg-gradient-to-r from-emerald-500/20 to-teal-500/10 text-emerald-100"
+                            : "border-emerald-200/80 bg-gradient-to-r from-[#ecfdf5] to-[#f0fdf4] text-[#047857]",
+                        )}
+                      >
+                        <FreeDeployCloudIcon
+                          className="size-8 shrink-0"
+                          dark={popular}
+                        />
+                        Free Deploy
+                      </div>
+                      <p
+                        className={cn(
+                          "flex gap-2 text-[12px]",
+                          popular ? "text-white/70" : "text-[#64748b]",
                         )}
                       >
                         <Check
-                          className={cn(
-                            "mt-0.5 size-3.5 shrink-0",
-                            popular ? "text-[#a78bfa]" : "text-[#3b82f6]",
-                          )}
-                          strokeWidth={2.5}
+                          className="mt-0.5 size-3.5 shrink-0 opacity-50"
+                          strokeWidth={2}
                         />
-                        {f}
-                      </li>
-                    ))}
-                    <li
-                      className={cn(
-                        "mt-2 flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-[12px] font-extrabold tracking-tight",
-                        popular
-                          ? "border-emerald-400/25 bg-gradient-to-r from-emerald-500/20 to-teal-500/10 text-emerald-100"
-                          : "border-emerald-200/80 bg-gradient-to-r from-[#ecfdf5] to-[#f0fdf4] text-[#047857]",
-                      )}
-                    >
-                      <FreeDeployCloudIcon
-                        className="size-8 shrink-0"
-                        dark={popular}
-                      />
-                      Free Deploy
-                    </li>
-                    <li
-                      className={cn(
-                        "flex gap-2 text-[12px]",
-                        popular ? "text-white/70" : "text-[#64748b]",
-                      )}
-                    >
-                      <Check
-                        className="mt-0.5 size-3.5 shrink-0 opacity-50"
-                        strokeWidth={2}
-                      />
-                      {plan.support}
-                    </li>
-                  </ul>
+                        {plan.support}
+                      </p>
+                    </div>
+                  </div>
                 </article>
+              );
+
+              const shellClass = cn(
+                "flex h-full flex-col transition-transform duration-300 motion-reduce:transform-none",
+                !popular && "hover:-translate-y-0.5",
               );
 
               if (popular) {
                 return (
                   <div
                     key={plan.id}
-                    className="rounded-[22px] bg-gradient-to-b from-[#c084fc] via-[#818cf8] to-[#38bdf8] p-[2px] shadow-[0_32px_64px_-24px_rgba(124,58,237,0.65)] xl:scale-[1.03]"
+                    className={cn(
+                      shellClass,
+                      "rounded-[26px] bg-gradient-to-b from-[#c084fc] via-[#818cf8] to-[#38bdf8] p-[2px] shadow-[0_32px_64px_-24px_rgba(124,58,237,0.65)]",
+                    )}
                   >
                     {cardInner}
                   </div>
@@ -343,18 +355,15 @@ export function BeyondAiPricingMockup({
               }
 
               return (
-                <div
-                  key={plan.id}
-                  className="transition-transform duration-300 hover:-translate-y-1"
-                >
+                <div key={plan.id} className={shellClass}>
                   {cardInner}
                 </div>
               );
             })}
         </div>
 
-        <div className="mt-8 grid gap-4 lg:grid-cols-2">
-          <div className="flex gap-5 rounded-[20px] border border-white bg-white/85 p-6 shadow-[0_16px_40px_-24px_rgba(47,28,106,0.18)] backdrop-blur-md">
+        <div className="mt-8 grid auto-rows-fr gap-4 lg:grid-cols-2">
+          <div className="flex h-full gap-5 rounded-[20px] border border-white bg-white/85 p-6 shadow-[0_16px_40px_-24px_rgba(47,28,106,0.18)] backdrop-blur-md">
             <ModelLogoStack className="shrink-0" />
             <div>
               <p className="text-[10px] font-extrabold tracking-[0.14em] text-[#6366f1] uppercase">
@@ -370,7 +379,7 @@ export function BeyondAiPricingMockup({
               </p>
             </div>
           </div>
-          <div className="flex gap-5 rounded-[20px] border border-[#fde68a]/60 bg-gradient-to-br from-[#fffbeb] to-[#fff7ed] p-6 shadow-[0_16px_40px_-24px_rgba(245,158,11,0.2)]">
+          <div className="flex h-full gap-5 rounded-[20px] border border-[#fde68a]/60 bg-gradient-to-br from-[#fffbeb] to-[#fff7ed] p-6 shadow-[0_16px_40px_-24px_rgba(245,158,11,0.2)]">
             <OnDemandCoins className="shrink-0 pt-1" />
             <div>
               <p className="text-[10px] font-extrabold tracking-[0.14em] text-[#ea580c] uppercase">

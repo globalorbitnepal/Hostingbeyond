@@ -103,8 +103,8 @@ export function BeyondAiProductPage({
   return (
     <div className="overflow-x-hidden bg-[#f4f7ff]">
       <section className="hb-band-purple relative overflow-hidden pt-10 pb-14 sm:pt-14 sm:pb-20">
-        <div className="hb-shell relative z-10 grid items-center gap-8 lg:grid-cols-2 lg:gap-10">
-          <div className="max-w-xl">
+        <div className="hb-shell relative z-10 grid items-center gap-10 lg:grid-cols-2 lg:gap-12 xl:gap-14">
+          <div className="flex max-w-xl flex-col justify-center lg:min-h-[22rem] lg:py-4">
             <p className="text-[12px] font-extrabold tracking-[0.22em] text-white/60 uppercase">
               {content.heroEyebrow}
             </p>
@@ -113,10 +113,10 @@ export function BeyondAiProductPage({
               <br />
               <span className="text-[#c7d7ff]">{content.heroTitleAccent}</span>
             </h1>
-            <p className="mt-4 text-[16px] leading-relaxed font-medium text-white/88 sm:text-[17px]">
+            <p className="mt-4 max-w-lg text-[16px] leading-[1.65] font-medium text-white/88 sm:text-[17px]">
               {content.heroDescription}
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link
                 href={content.heroPrimaryHref}
                 className="inline-flex h-12 items-center gap-2 rounded-full bg-white px-6 text-[14px] font-extrabold text-[#2f1c6a] shadow-lg"
@@ -132,7 +132,11 @@ export function BeyondAiProductPage({
               </a>
             </div>
           </div>
-          <HeroDemo reduce={Boolean(reduce)} />
+          <div className="flex w-full items-center justify-center lg:justify-end">
+            <div className="w-full max-w-[34rem]">
+              <HeroDemo reduce={Boolean(reduce)} />
+            </div>
+          </div>
         </div>
       </section>
 
