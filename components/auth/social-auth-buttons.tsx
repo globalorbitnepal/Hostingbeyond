@@ -69,14 +69,20 @@ const PROVIDERS = [
 export function SocialAuthButtons({
   dividerLabel,
   oauthNext = "/account",
+  providers,
 }: {
   dividerLabel?: string;
   oauthNext?: string;
+  providers?: Array<(typeof PROVIDERS)[number]["id"]>;
 }) {
   const safeNext =
     oauthNext.startsWith("/") && !oauthNext.startsWith("//")
       ? oauthNext
       : "/account";
+  const visible = providers
+    ? PROVIDERS.filter((p) => providers.includes(p.id))
+    : PROVIDERS;
+  if (visible.length === 0) return null;
   return (
     <>
       <div className="my-6 flex items-center gap-3 text-[11px] font-semibold tracking-[0.18em] text-slate-400 uppercase">
@@ -85,7 +91,7 @@ export function SocialAuthButtons({
         <span className="h-px flex-1 bg-slate-200" />
       </div>
       <div className="grid gap-2.5">
-        {PROVIDERS.map((item) => {
+        {visible.map((item) => {
           const Icon = item.icon;
           return (
             <a

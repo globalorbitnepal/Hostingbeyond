@@ -1,0 +1,68 @@
+"use client";
+
+import { cn } from "@/lib/utils";
+
+const STEPS = [
+  { id: 1, label: "Cart" },
+  { id: 2, label: "Add-ons" },
+  { id: 3, label: "Account" },
+  { id: 4, label: "Payment" },
+] as const;
+
+export function CheckoutStepNav({
+  current,
+  className,
+}: {
+  current: number;
+  className?: string;
+}) {
+  return (
+    <nav aria-label="Checkout progress" className={cn("w-full", className)}>
+      <ol className="flex flex-wrap items-center justify-between gap-2 sm:justify-center sm:gap-0">
+        {STEPS.map((step, index) => {
+          const done = current > step.id;
+          const active = current === step.id;
+          return (
+            <li
+              key={step.id}
+              className="flex min-w-0 flex-1 items-center sm:max-w-[9rem] sm:flex-none"
+            >
+              <div className="flex w-full flex-col items-center gap-1.5 px-1">
+                <span
+                  className={cn(
+                    "flex size-8 items-center justify-center rounded-full text-[12px] font-extrabold transition-colors",
+                    done && "bg-[var(--hb-co-primary)] text-white",
+                    active &&
+                      "bg-[var(--hb-co-royal)] text-white ring-4 ring-[var(--hb-co-lavender)]/35",
+                    !done &&
+                      !active &&
+                      "border border-[var(--hb-co-border)] bg-white text-[var(--hb-co-text-muted)]",
+                  )}
+                  aria-current={active ? "step" : undefined}
+                >
+                  {done ? "✓" : step.id}
+                </span>
+                <span
+                  className={cn(
+                    "text-center text-[10px] font-bold tracking-wide uppercase sm:text-[11px]",
+                    active
+                      ? "text-[var(--hb-co-royal)]"
+                      : "text-[var(--hb-co-text-muted)]",
+                  )}
+                >
+                  {step.label}
+                </span>
+              </div>
+              {index < STEPS.length - 1 ? (
+                <span
+                  aria-hidden
+                  className="hidden h-px flex-1 bg-[var(--hb-co-border)] sm:block"
+                />
+              ) : null}
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
+  );
+}

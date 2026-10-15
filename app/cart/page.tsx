@@ -21,7 +21,7 @@ export default async function DomainCartPage() {
 
   return (
     <>
-      <div className="hb-band-purple border-b border-white/10">
+      <div className="border-b border-[var(--hb-co-border,#e8e4f0)] bg-white">
         <SiteHeader
           navigation={sections.navigation}
           loginLabel={settings.loginLabel}

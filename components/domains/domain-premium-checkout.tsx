@@ -3,18 +3,23 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  Check,
   ChevronLeft,
   Globe2,
   Loader2,
   Lock,
-  Mail,
-  Server,
   ShieldCheck,
   Wallet,
 } from "lucide-react";
 
 import { BrandMark } from "@/components/auth/brand-mark";
+import {
+  CheckoutAddonOfferList,
+  groupCheckoutOffers,
+  hostingGroupKey,
+  offerKey,
+  offerToSelection,
+} from "@/components/checkout/checkout-addon-offers";
+import { CheckoutStepNav } from "@/components/checkout/checkout-step-nav";
 import { CheckoutAuthPanel } from "@/components/domains/checkout-auth-panel";
 import { routes } from "@/config/routes";
 import type {
@@ -23,6 +28,10 @@ import type {
   DomainCheckoutServiceSelection,
 } from "@/lib/domains/domain-checkout-offers";
 import { formatPrice } from "@/lib/domains/tlds";
+import {
+  readPremiumCartServices,
+  writePremiumCartServices,
+} from "@/lib/checkout/premium-cart-intent";
 import { hostingCheckoutPath } from "@/lib/hosting/purchase-intent";
 import { cn } from "@/lib/utils";
 
@@ -32,13 +41,33 @@ import type {
 } from "./domain-checkout-view";
 
 const STEPS = [
-  { id: "domains", label: "Domains", num: "01" },
-  { id: "services", label: "Services", num: "02" },
-  { id: "details", label: "Details", num: "03" },
-  { id: "payment", label: "Payment", num: "04" },
+  { id: "domains", label: "Cart" },
+  { id: "services", label: "Add-ons" },
+  { id: "details", label: "Account" },
+  { id: "payment", label: "Payment" },
 ] as const;
 
 type StepId = (typeof STEPS)[number]["id"];
+
+const STEP_COPY: Record<StepId, { title: string; subtitle: string }> = {
+  domains: {
+    title: "Your Cart",
+    subtitle: "Review your products and choose the services you need.",
+  },
+  services: {
+    title: "Complete Your Hosting Setup",
+    subtitle:
+      "Add the services you need. Every price is shown before you confirm.",
+  },
+  details: {
+    title: "Your Account & Billing Details",
+    subtitle: "Sign in or confirm your account to continue.",
+  },
+  payment: {
+    title: "Secure Checkout",
+    subtitle: "Pay from your wallet with server-verified totals.",
+  },
+};
 
 type QuoteResponse = {
   currency: string;
@@ -56,27 +85,6 @@ type QuoteResponse = {
   paymentNote?: string;
   serviceErrors?: string[];
 };
-
-function offerKey(offer: DomainCheckoutServiceOffer): string {
-  if (offer.kind === "hosting") {
-    return `hosting:${offer.productSlug}:${offer.planKey}:${offer.billing}`;
-  }
-  return `email:${offer.planId}`;
-}
-
-function offerToSelection(
-  offer: DomainCheckoutServiceOffer,
-): DomainCheckoutServiceSelection {
-  if (offer.kind === "hosting") {
-    return {
-      kind: "hosting",
-      productSlug: offer.productSlug,
-      planKey: offer.planKey,
-      billing: offer.billing,
-    };
-  }
-  return { kind: "business-email", planId: offer.planId };
-}
 
 type PremiumCheckoutProps = {
   isAuthenticated: boolean;
@@ -127,9 +135,30 @@ export function DomainPremiumCheckout({
   allDone,
 }: PremiumCheckoutProps) {
   const [step, setStep] = useState<StepId>("domains");
-  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
+  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(() => {
+    const saved = readPremiumCartServices();
+    if (!saved.length) return new Set();
+    const keys = new Set<string>();
+    for (const sel of saved) {
+      if (sel.kind === "hosting") {
+        keys.add(`hosting:${sel.productSlug}:${sel.planKey}:${sel.billing}`);
+      } else {
+        keys.add(`email:${sel.planId}`);
+      }
+    }
+    return keys;
+  });
   const [quote, setQuote] = useState<QuoteResponse | null>(null);
   const [quoteLoading, setQuoteLoading] = useState(false);
+  const [hostingBilling, setHostingBilling] = useState<
+    Record<string, "monthly" | "annually">
+  >(() => {
+    const initial: Record<string, "monthly" | "annually"> = {};
+    for (const g of groupCheckoutOffers(offers.optional).hostingGroups) {
+      initial[g.groupKey] = g.monthly ? "monthly" : "annually";
+    }
+    return initial;
+  });
 
   const selections = useMemo(() => {
     const out: DomainCheckoutServiceSelection[] = [];
@@ -165,6 +194,10 @@ export function DomainPremiumCheckout({
     void refreshQuote();
   }, [refreshQuote]);
 
+  useEffect(() => {
+    writePremiumCartServices(selections);
+  }, [selections]);
+
   const domainsTotal =
     quote?.domainsSubtotal ?? lines.reduce((s, l) => s + l.register, 0);
   const servicesTotal = quote?.servicesSubtotal ?? 0;
@@ -185,6 +218,29 @@ export function DomainPremiumCheckout({
         }
       }
       next.add(key);
+      return next;
+    });
+  }
+
+  function onHostingBillingChange(
+    groupKey: string,
+    billing: "monthly" | "annually",
+  ) {
+    setHostingBilling((prev) => ({ ...prev, [groupKey]: billing }));
+    setSelectedKeys((prev) => {
+      const hadGroup = [...prev].some((k) => k.startsWith(`${groupKey}:`));
+      if (!hadGroup) return prev;
+      const next = new Set(prev);
+      for (const k of [...next]) {
+        if (k.startsWith(`${groupKey}:`)) next.delete(k);
+      }
+      const offer = offers.optional.find(
+        (o) =>
+          o.kind === "hosting" &&
+          hostingGroupKey(o) === groupKey &&
+          o.billing === billing,
+      );
+      if (offer) next.add(offerKey(offer));
       return next;
     });
   }
@@ -229,10 +285,10 @@ export function DomainPremiumCheckout({
       };
     }
     if (step === "services") {
-      return { label: "Continue to details", action: goNext, disabled: false };
+      return { label: "Continue to account", action: goNext, disabled: false };
     }
     return {
-      label: "Continue to services",
+      label: "Continue to add-ons",
       action: goNext,
       disabled: lines.length === 0,
     };
@@ -248,66 +304,32 @@ export function DomainPremiumCheckout({
     onCompleteCheckout,
   ]);
 
+  const stepCopy = STEP_COPY[step];
+
   return (
-    <div className="min-h-dvh bg-gradient-to-b from-[#f6f2ff] via-white to-[#f8fafc] px-4 py-6 pb-28 sm:px-6 sm:py-8 lg:pb-10">
-      <div className="mx-auto w-full max-w-[77.5rem]">
+    <div className="hb-checkout-premium relative min-h-dvh pb-28 lg:pb-10">
+      <div className="hb-checkout-premium__ambient" aria-hidden />
+      <div className="relative z-10 mx-auto w-full max-w-[77.5rem] px-4 py-6 sm:px-6 sm:py-8">
         <header className="flex flex-wrap items-center justify-between gap-4">
           <Link href={routes.home} className="shrink-0">
             <BrandMark />
           </Link>
-          <p className="inline-flex items-center gap-2 text-[13px] font-semibold text-slate-600">
-            <Lock className="size-4 text-[#673de6]" aria-hidden />
+          <p className="inline-flex items-center gap-2 text-[13px] font-semibold text-[var(--hb-co-text-muted)]">
+            <Lock className="size-4 text-[var(--hb-co-primary)]" aria-hidden />
             Secure checkout
           </p>
         </header>
 
         <div className="mt-6 lg:mt-8">
-          <p className="text-[11px] font-bold tracking-[0.14em] text-[#673de6] uppercase">
-            Domain registration &amp; services
-          </p>
-          <h1 className="font-heading mt-1 text-[clamp(1.35rem,3vw,1.85rem)] font-extrabold tracking-tight text-[#1a1035]">
-            Complete your order
+          <h1 className="font-heading text-[clamp(1.5rem,3vw,2.1rem)] font-extrabold tracking-tight text-[var(--hb-co-text)]">
+            {stepCopy.title}
           </h1>
+          <p className="mt-2 max-w-2xl text-[15px] text-[var(--hb-co-text-muted)]">
+            {stepCopy.subtitle}
+          </p>
         </div>
 
-        <nav
-          aria-label="Checkout steps"
-          className="mt-6 flex flex-wrap gap-2 sm:gap-3"
-        >
-          {STEPS.map((s, i) => {
-            const done = i < stepIndex;
-            const current = s.id === step;
-            return (
-              <button
-                key={s.id}
-                type="button"
-                disabled={i > stepIndex + 1}
-                onClick={() => {
-                  if (i <= stepIndex) setStep(s.id);
-                }}
-                className={cn(
-                  "inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-[13px] font-bold transition",
-                  current
-                    ? "bg-[#673de6] text-white shadow-[0_10px_24px_-14px_rgba(103,61,230,0.65)]"
-                    : done
-                      ? "border border-violet-200 bg-white text-[#673de6]"
-                      : "border border-slate-200 bg-white/80 text-slate-500",
-                )}
-              >
-                <span
-                  className={cn(
-                    "flex size-6 items-center justify-center rounded-full text-[11px]",
-                    current ? "bg-white/20" : "bg-slate-100",
-                  )}
-                  aria-hidden
-                >
-                  {done ? <Check className="size-3.5" /> : s.num}
-                </span>
-                {s.label}
-              </button>
-            );
-          })}
-        </nav>
+        <CheckoutStepNav current={stepIndex + 1} className="mt-8" />
 
         <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_min(100%,22rem)] lg:items-start">
           <div className="min-w-0 space-y-6">
@@ -330,14 +352,14 @@ export function DomainPremiumCheckout({
 
             {step === "domains" && lines.length > 0 ? (
               <section
-                className="rounded-[22px] border border-violet-100/80 bg-white/95 p-5 shadow-[0_16px_40px_-28px_rgba(47,28,106,0.35)] sm:p-6"
+                className="hb-checkout-premium__card p-5 sm:p-6"
                 aria-labelledby="checkout-domains-heading"
               >
                 <h2
                   id="checkout-domains-heading"
-                  className="text-[15px] font-extrabold text-[#1a1035]"
+                  className="text-[13px] font-bold tracking-wide text-[var(--hb-co-text-muted)] uppercase"
                 >
-                  Your domains
+                  Domain registrations
                 </h2>
                 {rejectedNotice.length > 0 ? (
                   <p className="mt-3 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900">
@@ -368,30 +390,24 @@ export function DomainPremiumCheckout({
                   {lines.map((line) => (
                     <li
                       key={line.domain}
-                      className="rounded-2xl border border-slate-100 bg-gradient-to-br from-white to-[#faf8ff] p-4"
+                      className="rounded-[14px] border border-[var(--hb-co-border)] bg-[var(--hb-co-bg-subtle)]/50 p-4"
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p
-                            className="text-[16px] font-extrabold break-words text-[#1a1035]"
+                            className="text-[16px] font-extrabold break-words text-[var(--hb-co-text)]"
                             style={{ overflowWrap: "anywhere" }}
                           >
                             {line.domain}
                           </p>
-                          <p className="mt-1 text-[12.5px] font-medium text-slate-500">
-                            Domain registration · 1 year
+                          <p className="mt-1 text-[12.5px] font-medium text-[var(--hb-co-text-muted)]">
+                            Domain registration · 1 year · Renews{" "}
+                            {formatPrice(line.renew)}/yr
                           </p>
                         </div>
-                        <div className="text-right">
-                          <p className="text-[17px] font-extrabold text-[#673de6]">
+                        <div className="text-right lg:hidden">
+                          <p className="text-[17px] font-extrabold text-[var(--hb-co-primary)]">
                             {formatPrice(line.register)}
-                            <span className="text-[12px] font-bold text-slate-500">
-                              {" "}
-                              / first year
-                            </span>
-                          </p>
-                          <p className="text-[11.5px] font-semibold text-slate-500">
-                            Renews at {formatPrice(line.renew)}/year
                           </p>
                         </div>
                       </div>
@@ -433,88 +449,27 @@ export function DomainPremiumCheckout({
 
             {step === "services" && lines.length > 0 ? (
               <section
-                className="rounded-[22px] border border-violet-100/80 bg-white/95 p-5 sm:p-6"
+                className="space-y-4"
                 aria-labelledby="checkout-services-heading"
               >
-                <h2
-                  id="checkout-services-heading"
-                  className="text-[15px] font-extrabold text-[#1a1035]"
-                >
-                  Recommended for your business
-                </h2>
-                <p className="mt-1 text-[13px] text-slate-500">
-                  Add useful services to get more from your domain. Optional —
-                  skip anytime. Prices are confirmed on our servers.
-                </p>
-                {offers.optional.length === 0 ? (
-                  <p className="mt-4 text-[13px] text-slate-600">
-                    No additional services are available for checkout right now.
-                  </p>
-                ) : (
-                  <ul className="mt-4 space-y-3">
-                    {offers.optional.map((offer) => {
-                      const key = offerKey(offer);
-                      const added = selectedKeys.has(key);
-                      const Icon = offer.kind === "hosting" ? Server : Mail;
-                      const exampleEmail = lines[0]?.domain
-                        ? `info@${lines[0].domain}`
-                        : "info@yourdomain.com";
-                      return (
-                        <li
-                          key={key}
-                          className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-[0_8px_24px_-22px_rgba(47,28,106,0.3)]"
-                        >
-                          <div className="flex items-start gap-3">
-                            <span
-                              className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#f3edff] text-[#673de6]"
-                              aria-hidden
-                            >
-                              <Icon className="size-5" />
-                            </span>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-[15px] font-extrabold text-[#1a1035]">
-                                {offer.label}
-                              </p>
-                              <p className="mt-1 text-[13px] text-slate-600">
-                                {offer.description}
-                              </p>
-                              {offer.kind === "business-email" ? (
-                                <p className="mt-1 text-[12px] font-medium text-[#673de6]">
-                                  {exampleEmail}
-                                </p>
-                              ) : null}
-                              <p className="mt-2 text-[14px] font-extrabold text-slate-900">
-                                {formatPrice(offer.amount)}{" "}
-                                <span className="text-[12px] font-semibold text-slate-500">
-                                  {offer.periodLabel}
-                                </span>
-                              </p>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => toggleOffer(offer)}
-                              className={cn(
-                                "min-h-11 shrink-0 rounded-full px-5 text-[13px] font-bold transition",
-                                added
-                                  ? "border border-emerald-200 bg-emerald-50 text-emerald-800"
-                                  : "bg-[#673de6] text-white hover:bg-[#5b32d6]",
-                              )}
-                              aria-pressed={added}
-                            >
-                              {added ? "✓ Added" : "Add"}
-                            </button>
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
+                <CheckoutAddonOfferList
+                  optional={offers.optional}
+                  selectedKeys={selectedKeys}
+                  hostingBilling={hostingBilling}
+                  onHostingBillingChange={onHostingBillingChange}
+                  onToggleOffer={toggleOffer}
+                  exampleEmail={
+                    lines[0]?.domain
+                      ? `info@${lines[0].domain}`
+                      : "info@yourdomain.com"
+                  }
+                />
                 <button
                   type="button"
                   onClick={goNext}
-                  className="mt-5 min-h-11 text-[13px] font-bold text-[#673de6] hover:underline"
+                  className="min-h-11 text-[13px] font-bold text-[var(--hb-co-primary)] hover:underline"
                 >
-                  Continue without extras
+                  Skip add-ons
                 </button>
               </section>
             ) : null}
@@ -522,7 +477,7 @@ export function DomainPremiumCheckout({
             {step === "details" && lines.length > 0 ? (
               isAuthenticated ? (
                 <section
-                  className="rounded-[22px] border border-violet-100/80 bg-white/95 p-5 sm:p-6"
+                  className="hb-checkout-premium__card p-5 sm:p-6"
                   aria-labelledby="checkout-details-heading"
                 >
                   <h2
@@ -566,7 +521,7 @@ export function DomainPremiumCheckout({
 
             {step === "payment" && lines.length > 0 ? (
               <section
-                className="rounded-[22px] border border-violet-100/80 bg-white/95 p-5 sm:p-6"
+                className="hb-checkout-premium__card p-5 sm:p-6"
                 aria-labelledby="checkout-payment-heading"
               >
                 <h2
@@ -700,8 +655,8 @@ export function DomainPremiumCheckout({
           </div>
 
           <aside className="lg:sticky lg:top-6" aria-label="Order summary">
-            <div className="rounded-[22px] border border-violet-200/55 bg-white/95 p-5 shadow-[0_22px_52px_-30px_rgba(47,28,106,0.4)] ring-1 ring-violet-100/70">
-              <h2 className="text-[12px] font-bold tracking-wide text-slate-500 uppercase">
+            <div className="hb-checkout-premium__card p-5">
+              <h2 className="text-[12px] font-bold tracking-wide text-[var(--hb-co-text-muted)] uppercase">
                 Order summary
               </h2>
               <ul className="mt-4 space-y-3 border-b border-slate-100 pb-4">
@@ -770,7 +725,7 @@ export function DomainPremiumCheckout({
                   type="button"
                   disabled={primaryCta.disabled}
                   onClick={primaryCta.action}
-                  className="mt-5 flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#673de6] to-[#2563eb] text-[14px] font-bold text-white disabled:opacity-55"
+                  className="hb-checkout-premium__btn-primary mt-5 w-full"
                 >
                   {submitting ? (
                     <Loader2 className="size-4 animate-spin" />
@@ -794,7 +749,7 @@ export function DomainPremiumCheckout({
             type="button"
             disabled={primaryCta.disabled}
             onClick={primaryCta.action}
-            className="flex min-h-12 w-full items-center justify-center rounded-full bg-gradient-to-r from-[#673de6] to-[#2563eb] text-[14px] font-bold text-white disabled:opacity-55"
+            className="hb-checkout-premium__btn-primary w-full"
           >
             {primaryCta.label}
           </button>

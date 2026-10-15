@@ -4,15 +4,23 @@ import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { Loader2 } from "lucide-react";
 
+import { SocialAuthButtons } from "@/components/auth/social-auth-buttons";
 import { routes } from "@/config/routes";
 import { cn } from "@/lib/utils";
 
 type Props = {
   onAuthenticated: () => void;
   className?: string;
+  googleOAuth?: boolean;
+  oauthNext?: string;
 };
 
-export function CheckoutAuthPanel({ onAuthenticated, className }: Props) {
+export function CheckoutAuthPanel({
+  onAuthenticated,
+  className,
+  googleOAuth = false,
+  oauthNext = routes.domainCheckout,
+}: Props) {
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -97,6 +105,13 @@ export function CheckoutAuthPanel({ onAuthenticated, className }: Props) {
           Create account
         </button>
       </div>
+      {googleOAuth ? (
+        <SocialAuthButtons
+          dividerLabel="Or continue with"
+          oauthNext={oauthNext}
+          providers={["google"]}
+        />
+      ) : null}
       <form onSubmit={onSubmit} className="mt-4 space-y-3">
         {mode === "signup" ? (
           <label className="block">
