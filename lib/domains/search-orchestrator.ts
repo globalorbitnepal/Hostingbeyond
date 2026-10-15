@@ -34,9 +34,14 @@ function isRegisterable(result: DomainResult) {
   return false;
 }
 
-const TIER2_MIN_RESULTS = Number(
-  process.env.DOMAIN_RECOMMENDATION_TIER2_MIN_RESULTS ?? 10,
-);
+function tier2MinResults(): number {
+  const raw = Number(
+    process.env.DOMAIN_RECOMMENDATION_TIER2_MIN_RESULTS ??
+      customerAlternativeLimit(),
+  );
+  if (!Number.isFinite(raw) || raw < 1) return customerAlternativeLimit();
+  return Math.min(Math.max(raw, 1), 20);
+}
 
 export async function runPhasedDomainSearch(
   queryRaw: string,
@@ -105,7 +110,7 @@ export async function runPhasedDomainSearch(
     tier === 1 &&
     tier1ScannedAll &&
     recommendations.filter(isRegisterable).length + existing <
-      TIER2_MIN_RESULTS &&
+      tier2MinResults() &&
     tier2.length > 0;
 
   return {
@@ -133,7 +138,7 @@ export function shouldFetchTier2(
 ): boolean {
   return (
     tier1Complete &&
-    tier1AvailableCount < TIER2_MIN_RESULTS &&
+    tier1AvailableCount < tier2MinResults() &&
     tier1AvailableCount < customerAlternativeLimit()
   );
 }

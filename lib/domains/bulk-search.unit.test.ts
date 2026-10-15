@@ -6,7 +6,13 @@ import {
   countBulkUniqueDomains,
   parseBulkInputDeduped,
 } from "@/lib/domains/bulk-input";
-import { classifyBulkLine, invalidBulkResult } from "@/lib/domains/bulk-search";
+import {
+  classifyBulkLine,
+  invalidBulkResult,
+  mergeBulkLookupResults,
+  unknownBulkResult,
+} from "@/lib/domains/bulk-search";
+import type { DomainResult } from "@/lib/domains/availability";
 
 describe("bulk-search parsing", () => {
   it("dedupes domains preserving order", () => {
@@ -48,6 +54,46 @@ describe("bulk-search parsing", () => {
     const line = classifyBulkLine("mybrand");
     assert.equal(line.kind, "lookup");
     if (line.kind === "lookup") assert.equal(line.fqdn, "mybrand.com");
+  });
+
+  it("mergeBulkLookupResults preserves line order and uses unknown for gaps", () => {
+    const lines = [
+      classifyBulkLine("first.com"),
+      classifyBulkLine("-bad.com"),
+      classifyBulkLine("third.io"),
+    ];
+    const lookedUp: DomainResult[] = [
+      {
+        domain: "third.io",
+        name: "third",
+        tld: ".io",
+        status: "available",
+        register: 12,
+        renew: null,
+        transfer: null,
+      },
+      {
+        domain: "first.com",
+        name: "first",
+        tld: ".com",
+        status: "taken",
+        register: null,
+        renew: 15,
+        transfer: null,
+      },
+    ];
+    const merged = mergeBulkLookupResults(lines, lookedUp);
+    assert.equal(merged[0]?.domain, "first.com");
+    assert.equal(merged[0]?.status, "taken");
+    assert.equal(merged[1]?.status, "invalid");
+    assert.equal(merged[2]?.domain, "third.io");
+    assert.equal(merged[2]?.status, "available");
+  });
+
+  it("unknownBulkResult is unknown not taken", () => {
+    const row = unknownBulkResult("missing.example");
+    assert.equal(row.status, "unknown");
+    assert.equal(row.register, null);
   });
 
   it("invalidBulkResult uses invalid status", () => {

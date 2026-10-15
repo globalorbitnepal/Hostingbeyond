@@ -98,18 +98,30 @@ export async function runBulkDomainSearch(
   let lookedUp: DomainResult[] = [];
   let source: "registrar" | "catalog" = "registrar";
   if (fqdns.length) {
-    const response = await lookupDomainNames(fqdns, { bulk: bulkText });
+    const response = await lookupDomainNames(
+      fqdns,
+      { bulk: bulkText },
+      { fresh: true },
+    );
     lookedUp = response.results;
     source = response.source;
   }
 
+  const results = mergeBulkLookupResults(lines, lookedUp);
+
+  return { results, source, truncated, uniqueDomainCount };
+}
+
+/** Preserve bulk input order; missing provider rows become unknown, not taken. */
+export function mergeBulkLookupResults(
+  lines: BulkPreparedLine[],
+  lookedUp: DomainResult[],
+): DomainResult[] {
   const byDomain = new Map(
     lookedUp.map((row) => [row.domain.toLowerCase(), row]),
   );
-  const results = lines.map((line) => {
+  return lines.map((line) => {
     if (line.kind === "invalid") return invalidBulkResult(line);
     return byDomain.get(line.fqdn) ?? unknownBulkResult(line.fqdn);
   });
-
-  return { results, source, truncated, uniqueDomainCount };
 }

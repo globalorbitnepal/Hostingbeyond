@@ -736,242 +736,245 @@ export function DomainSearchPanel({
     }
   }, []);
 
-  const runSingle = useCallback(async (queryStr: string) => {
-    const trimmed = queryStr.trim();
-    if (!trimmed) return;
+  const runSingle = useCallback(
+    async (queryStr: string) => {
+      const trimmed = queryStr.trim();
+      if (!trimmed) return;
 
-    const gen = ++searchGeneration.current;
-    abortRef.current?.abort();
-    const controller = new AbortController();
-    abortRef.current = controller;
+      const gen = ++searchGeneration.current;
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
 
-    setLoadingPrimary(true);
-    setLoadingAlternatives(true);
-    setLoadingTier2(false);
-    setAlternativesComplete(false);
-    setAlternativesWarning("");
-    setError("");
-    setCartSuccess("");
-    setPrimaryResult(null);
-    setAlternativeResults([]);
-    setResults([]);
-    setSearched(trimmed);
+      setLoadingPrimary(true);
+      setLoadingAlternatives(true);
+      setLoadingTier2(false);
+      setAlternativesComplete(false);
+      setAlternativesWarning("");
+      setError("");
+      setCartSuccess("");
+      setPrimaryResult(null);
+      setAlternativeResults([]);
+      setResults([]);
+      setSearched(trimmed);
 
-    const sleep = (ms: number) =>
-      new Promise<void>((resolve) => {
-        window.setTimeout(resolve, ms);
-      });
-
-    const searchJson = async (body: Record<string, unknown>) => {
-      const maxAttempts = 2;
-      for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        const res = await fetch("/api/domains/search", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ ...body, country: preferences.country }),
-          signal: controller.signal,
+      const sleep = (ms: number) =>
+        new Promise<void>((resolve) => {
+          window.setTimeout(resolve, ms);
         });
-        const json = (await res.json()) as {
-          results?: DomainResult[];
-          anchorDomain?: string;
-          error?: string;
-          suggestTier2?: boolean;
-          deepDiscoveryAvailable?: boolean;
-          primary?: DomainResult | null;
-          recommendations?: DomainResult[];
-          alternativesComplete?: boolean;
-          fastChunk2Available?: boolean;
-        };
-        const retry = shouldRetryBulkSearchResponse(
-          res.status,
-          attempt,
-          maxAttempts,
-          res.headers.get("retry-after"),
-        );
-        if (retry.retry) {
-          await sleep(retry.delayMs);
-          continue;
+
+      const searchJson = async (body: Record<string, unknown>) => {
+        const maxAttempts = 2;
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+          const res = await fetch("/api/domains/search", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ ...body, country: preferences.country }),
+            signal: controller.signal,
+          });
+          const json = (await res.json()) as {
+            results?: DomainResult[];
+            anchorDomain?: string;
+            error?: string;
+            suggestTier2?: boolean;
+            deepDiscoveryAvailable?: boolean;
+            primary?: DomainResult | null;
+            recommendations?: DomainResult[];
+            alternativesComplete?: boolean;
+            fastChunk2Available?: boolean;
+          };
+          const retry = shouldRetryBulkSearchResponse(
+            res.status,
+            attempt,
+            maxAttempts,
+            res.headers.get("retry-after"),
+          );
+          if (retry.retry) {
+            await sleep(retry.delayMs);
+            continue;
+          }
+          return { res, json };
         }
-        return { res, json };
-      }
-      return {
-        res: new Response(null, { status: 429 }),
-        json: {
-          error: "Availability check is temporarily busy. Please try again.",
-        },
+        return {
+          res: new Response(null, { status: 429 }),
+          json: {
+            error: "Availability check is temporarily busy. Please try again.",
+          },
+        };
       };
-    };
 
-    try {
-      const { res: primaryRes, json: primaryJson } = await searchJson({
-        query: trimmed,
-        scope: "primary",
-      });
-      if (gen !== searchGeneration.current) return;
+      try {
+        const { res: primaryRes, json: primaryJson } = await searchJson({
+          query: trimmed,
+          scope: "primary",
+        });
+        if (gen !== searchGeneration.current) return;
 
-      const primaryRow =
-        primaryJson.primary ?? primaryJson.results?.[0] ?? null;
+        const primaryRow =
+          primaryJson.primary ?? primaryJson.results?.[0] ?? null;
 
-      if (!primaryRes.ok || !primaryRow) {
+        if (!primaryRes.ok || !primaryRow) {
+          setPrimaryResult(null);
+          setAlternativeResults([]);
+          setAnchorDomain("");
+          setError(
+            primaryJson.error ||
+              "Domain availability is temporarily taking longer than usual. Please try again.",
+          );
+          setLoadingPrimary(false);
+          setLoadingAlternatives(false);
+          setAlternativesComplete(true);
+          return;
+        }
+
+        setPrimaryResult(primaryRow);
+        setAlternativeResults([]);
+        setAnchorDomain(primaryJson.anchorDomain ?? primaryRow.domain);
+        setBulkSelected(new Set());
+        setLoadingPrimary(false);
+        setLoadingAlternatives(true);
+
+        const { res: altRes, json: altJson } = await searchJson({
+          query: trimmed,
+          scope: "alternatives",
+          tier: 1,
+        });
+        if (gen !== searchGeneration.current) return;
+
+        const fastAlts =
+          altJson.recommendations ??
+          altJson.results?.filter((r) => r.domain !== primaryRow.domain) ??
+          [];
+
+        if (!altRes.ok) {
+          setAlternativesWarning(
+            "Some additional suggestions could not be loaded.",
+          );
+        } else if (fastAlts.length) {
+          startTransition(() => {
+            setAlternativeResults((prev) =>
+              mergeRegisterableAlternatives(prev, fastAlts, primaryRow.domain, {
+                sort: false,
+              }),
+            );
+          });
+        }
+        setLoadingAlternatives(false);
+
+        let altCount = mergeRegisterableAlternatives(
+          [],
+          fastAlts,
+          primaryRow.domain,
+          { sort: false },
+        ).length;
+        let deepStillAvailable = altJson.deepDiscoveryAvailable === true;
+        let searchComplete = altJson.alternativesComplete ?? false;
+
+        const runFastChunk2 =
+          altJson.fastChunk2Available === true &&
+          altCount < MAX_CUSTOMER_ALTERNATIVES &&
+          !controller.signal.aborted;
+
+        if (runFastChunk2) {
+          setLoadingTier2(true);
+          const { res: fastBRes, json: fastBJson } = await searchJson({
+            query: trimmed,
+            scope: "alternatives",
+            tier: 2,
+          });
+          if (gen !== searchGeneration.current) return;
+          const fastBAlts =
+            fastBJson.recommendations ??
+            fastBJson.results?.filter((r) => r.domain !== primaryRow.domain) ??
+            [];
+          if (fastBRes.ok && fastBAlts.length) {
+            startTransition(() => {
+              setAlternativeResults((prev) =>
+                mergeRegisterableAlternatives(
+                  prev,
+                  fastBAlts,
+                  primaryRow.domain,
+                  {
+                    sort: false,
+                  },
+                ),
+              );
+            });
+            altCount = mergeRegisterableAlternatives(
+              [],
+              [...fastAlts, ...fastBAlts],
+              primaryRow.domain,
+              { sort: false },
+            ).length;
+          } else if (!fastBRes.ok) {
+            setAlternativesWarning(
+              "Some additional suggestions could not be loaded.",
+            );
+          }
+          deepStillAvailable = fastBJson.deepDiscoveryAvailable === true;
+          searchComplete = fastBJson.alternativesComplete ?? searchComplete;
+          setLoadingTier2(false);
+        }
+
+        const runDeep =
+          deepStillAvailable &&
+          altCount < MAX_CUSTOMER_ALTERNATIVES &&
+          !controller.signal.aborted;
+
+        if (runDeep) {
+          setLoadingTier2(true);
+          const { res: deepRes, json: deepJson } = await searchJson({
+            query: trimmed,
+            scope: "deep",
+          });
+          if (gen !== searchGeneration.current) return;
+          if (deepRes.ok && deepJson.results?.length) {
+            startTransition(() => {
+              setAlternativeResults((prev) =>
+                mergeRegisterableAlternatives(
+                  prev,
+                  deepJson.results!,
+                  primaryRow.domain,
+                  { sort: false },
+                ),
+              );
+            });
+          } else if (!deepRes.ok) {
+            setAlternativesWarning(
+              "Some additional suggestions could not be loaded.",
+            );
+          }
+          setLoadingTier2(false);
+          searchComplete = true;
+        }
+
+        if (gen === searchGeneration.current) {
+          startTransition(() => {
+            setAlternativeResults((prev) =>
+              mergeRegisterableAlternatives(prev, [], primaryRow.domain, {
+                sort: true,
+              }),
+            );
+            setAlternativesComplete(searchComplete || altCount >= 0);
+          });
+        }
+      } catch (err) {
+        if (gen !== searchGeneration.current) return;
+        if (err instanceof DOMException && err.name === "AbortError") return;
         setPrimaryResult(null);
         setAlternativeResults([]);
         setAnchorDomain("");
-        setError(
-          primaryJson.error ||
-            "Domain availability is temporarily taking longer than usual. Please try again.",
-        );
-        setLoadingPrimary(false);
-        setLoadingAlternatives(false);
-        setAlternativesComplete(true);
-        return;
-      }
-
-      setPrimaryResult(primaryRow);
-      setAlternativeResults([]);
-      setAnchorDomain(primaryJson.anchorDomain ?? primaryRow.domain);
-      setBulkSelected(new Set());
-      setLoadingPrimary(false);
-      setLoadingAlternatives(true);
-
-      const { res: altRes, json: altJson } = await searchJson({
-        query: trimmed,
-        scope: "alternatives",
-        tier: 1,
-      });
-      if (gen !== searchGeneration.current) return;
-
-      const fastAlts =
-        altJson.recommendations ??
-        altJson.results?.filter((r) => r.domain !== primaryRow.domain) ??
-        [];
-
-      if (!altRes.ok) {
-        setAlternativesWarning(
-          "Some additional suggestions could not be loaded.",
-        );
-      } else if (fastAlts.length) {
-        startTransition(() => {
-          setAlternativeResults((prev) =>
-            mergeRegisterableAlternatives(prev, fastAlts, primaryRow.domain, {
-              sort: false,
-            }),
-          );
-        });
-      }
-      setLoadingAlternatives(false);
-
-      let altCount = mergeRegisterableAlternatives(
-        [],
-        fastAlts,
-        primaryRow.domain,
-        { sort: false },
-      ).length;
-      let deepStillAvailable = altJson.deepDiscoveryAvailable === true;
-      let searchComplete = altJson.alternativesComplete ?? false;
-
-      const runFastChunk2 =
-        altJson.fastChunk2Available === true &&
-        altCount < MAX_CUSTOMER_ALTERNATIVES &&
-        !controller.signal.aborted;
-
-      if (runFastChunk2) {
-        setLoadingTier2(true);
-        const { res: fastBRes, json: fastBJson } = await searchJson({
-          query: trimmed,
-          scope: "alternatives",
-          tier: 2,
-        });
-        if (gen !== searchGeneration.current) return;
-        const fastBAlts =
-          fastBJson.recommendations ??
-          fastBJson.results?.filter((r) => r.domain !== primaryRow.domain) ??
-          [];
-        if (fastBRes.ok && fastBAlts.length) {
-          startTransition(() => {
-            setAlternativeResults((prev) =>
-              mergeRegisterableAlternatives(
-                prev,
-                fastBAlts,
-                primaryRow.domain,
-                {
-                  sort: false,
-                },
-              ),
-            );
-          });
-          altCount = mergeRegisterableAlternatives(
-            [],
-            [...fastAlts, ...fastBAlts],
-            primaryRow.domain,
-            { sort: false },
-          ).length;
-        } else if (!fastBRes.ok) {
-          setAlternativesWarning(
-            "Some additional suggestions could not be loaded.",
-          );
+        setError("We couldn't check this domain right now. Please try again.");
+      } finally {
+        if (gen === searchGeneration.current) {
+          setLoadingPrimary(false);
+          setLoadingAlternatives(false);
+          setLoadingTier2(false);
         }
-        deepStillAvailable = fastBJson.deepDiscoveryAvailable === true;
-        searchComplete = fastBJson.alternativesComplete ?? searchComplete;
-        setLoadingTier2(false);
       }
-
-      const runDeep =
-        deepStillAvailable &&
-        altCount < MAX_CUSTOMER_ALTERNATIVES &&
-        !controller.signal.aborted;
-
-      if (runDeep) {
-        setLoadingTier2(true);
-        const { res: deepRes, json: deepJson } = await searchJson({
-          query: trimmed,
-          scope: "deep",
-        });
-        if (gen !== searchGeneration.current) return;
-        if (deepRes.ok && deepJson.results?.length) {
-          startTransition(() => {
-            setAlternativeResults((prev) =>
-              mergeRegisterableAlternatives(
-                prev,
-                deepJson.results!,
-                primaryRow.domain,
-                { sort: false },
-              ),
-            );
-          });
-        } else if (!deepRes.ok) {
-          setAlternativesWarning(
-            "Some additional suggestions could not be loaded.",
-          );
-        }
-        setLoadingTier2(false);
-        searchComplete = true;
-      }
-
-      if (gen === searchGeneration.current) {
-        startTransition(() => {
-          setAlternativeResults((prev) =>
-            mergeRegisterableAlternatives(prev, [], primaryRow.domain, {
-              sort: true,
-            }),
-          );
-          setAlternativesComplete(searchComplete || altCount >= 0);
-        });
-      }
-    } catch (err) {
-      if (gen !== searchGeneration.current) return;
-      if (err instanceof DOMException && err.name === "AbortError") return;
-      setPrimaryResult(null);
-      setAlternativeResults([]);
-      setAnchorDomain("");
-      setError("We couldn't check this domain right now. Please try again.");
-    } finally {
-      if (gen === searchGeneration.current) {
-        setLoadingPrimary(false);
-        setLoadingAlternatives(false);
-        setLoadingTier2(false);
-      }
-    }
-  }, []);
+    },
+    [preferences.country],
+  );
 
   const registerDomain = useCallback(
     async (domain: string) => {
