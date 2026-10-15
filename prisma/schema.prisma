@@ -464,7 +464,9 @@ model DomainTldPrice {
   supplierCurrency     String    @default("USD")
   supplierSyncedAt     DateTime?
   supplierMaxRegisterYears Int?
+  supplierMinRegistrationPeriod Int?
   retailRegister       Decimal   @db.Decimal(10, 2)
+  retailRegisterTermYears Int    @default(1)
   retailRenew          Decimal   @db.Decimal(10, 2)
   retailTransfer       Decimal   @db.Decimal(10, 2)
   retailRestore        Decimal?  @db.Decimal(10, 2)

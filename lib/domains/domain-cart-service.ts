@@ -108,6 +108,7 @@ export async function addDomainToCart(userId: string, domainInput: string) {
   }
 
   const { tld } = splitDomain(result.domain);
+  const periodYears = result.registerTermYears ?? 1;
   await prisma.domainCartItem.upsert({
     where: {
       cartId_domain: { cartId: cart.id, domain: result.domain },
@@ -116,7 +117,7 @@ export async function addDomainToCart(userId: string, domainInput: string) {
       cartId: cart.id,
       domain: result.domain,
       tld: tld || ".com",
-      periodYears: 1,
+      periodYears,
       status: result.status,
       register: result.register,
       renew: result.renew ?? 0,
@@ -124,6 +125,7 @@ export async function addDomainToCart(userId: string, domainInput: string) {
     },
     update: {
       status: result.status,
+      periodYears,
       register: result.register,
       renew: result.renew ?? 0,
     },
@@ -220,13 +222,18 @@ export async function revalidateDomainCart(
     if (validated.ok && validated.result.register != null) {
       const previous = Number(line.register);
       const current = validated.result.register;
-      if (Math.abs(previous - current) > 0.001) {
+      const termYears = validated.result.registerTermYears ?? 1;
+      if (
+        Math.abs(previous - current) > 0.001 ||
+        line.periodYears !== termYears
+      ) {
         priceChanges.push({ domain: line.domain, previous, current });
       }
       await prisma.domainCartItem.update({
         where: { id: line.id },
         data: {
           status: validated.result.status,
+          periodYears: termYears,
           register: current,
           renew: validated.result.renew ?? 0,
         },

@@ -155,11 +155,19 @@ function toSupplier(item: BulkSearchItem): SupplierPricing {
     typeof item.price === "number" && Number.isFinite(item.price)
       ? item.price
       : null;
+  const periodRaw =
+    item.period ??
+    (item as { registrationPeriod?: unknown }).registrationPeriod;
+  const registrationPeriodYears =
+    typeof periodRaw === "number" && Number.isFinite(periodRaw) && periodRaw > 0
+      ? Math.floor(periodRaw)
+      : null;
   return {
     register: price,
     renew: null,
     transfer: null,
     currency: typeof item.currency === "string" ? item.currency : "USD",
+    registrationPeriodYears,
   };
 }
 

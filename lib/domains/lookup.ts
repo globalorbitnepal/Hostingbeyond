@@ -121,9 +121,15 @@ async function fetchLegacyProxyResults(payload: {
 
 export type LookupSource = "registrar" | "catalog";
 
+export type LookupOptions = {
+  /** Live provider check — do not return a TTL-cached availability snapshot. */
+  fresh?: boolean;
+};
+
 export async function lookupDomainNames(
   names: string[],
   payload: { query?: string; bulk?: string; tlds?: string[] },
+  options?: LookupOptions,
 ): Promise<{ results: DomainResult[]; source: LookupSource }> {
   if (resolveAvailabilityProvider()) {
     const fqdns = names.map((input) => {
@@ -131,7 +137,9 @@ export async function lookupDomainNames(
       return `${name}${tld || ".com"}`.toLowerCase();
     });
     try {
-      return await searchDomainsWithProvider(fqdns);
+      return await searchDomainsWithProvider(fqdns, {
+        fresh: options?.fresh,
+      });
     } catch (error) {
       if (error instanceof DomainProviderError) {
         throw new Error(error.code);

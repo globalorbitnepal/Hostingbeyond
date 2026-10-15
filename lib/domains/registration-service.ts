@@ -2,7 +2,7 @@ import {
   defaultNameservers,
   defaultRegistrationContacts,
 } from "@/lib/domains/contacts";
-import { searchDomainsWithProvider } from "@/lib/domains/domain-service";
+import { assertAvailableForRegistration } from "@/lib/domains/registration-availability";
 import { normalizeDomainSearchInput } from "@/lib/domains/normalize";
 import {
   notifyRegistrationFailed,
@@ -10,6 +10,11 @@ import {
   notifyRegistrationSuccess,
 } from "@/lib/domains/notifications";
 import { getRetailQuoteForTld } from "@/lib/domains/pricing-engine";
+import {
+  assertTermAllowed,
+  supplierQuoteCoversTerm,
+  tldTermContextFromRow,
+} from "@/lib/domains/registration-term";
 import { resolveLifecycleProvider } from "@/lib/domains/providers/index";
 import { DomainProviderError } from "@/lib/domains/providers/types";
 import { publicId } from "@/lib/domains/transfer-service";
@@ -43,15 +48,6 @@ export async function quoteRegistration(domainInput: string) {
     transfer: retail.transfer,
     currency: retail.currency,
   };
-}
-
-async function assertAvailable(domain: string) {
-  const { results } = await searchDomainsWithProvider([domain]);
-  const row = results[0];
-  if (!row || (row.status !== "available" && row.status !== "premium")) {
-    throw new Error("domain_unavailable");
-  }
-  return row;
 }
 
 export async function processDomainRegistrationCheckout(input: {
@@ -107,13 +103,31 @@ export async function processDomainRegistrationCheckout(input: {
     };
   }
 
-  const availability = await assertAvailable(quote.domain);
+  const availability = await assertAvailableForRegistration(quote.domain);
   if (availability.register == null) {
     return {
       ok: false as const,
-      error: "Pricing is unavailable for this domain. Please search again.",
+      error:
+        availability.message ??
+        "Pricing is unavailable for this domain. Please search again.",
       status: 400,
     };
+  }
+  const termYears = availability.registerTermYears ?? 1;
+  const priceRow = await prisma.domainTldPrice.findUnique({
+    where: { tld: quote.tld },
+  });
+  if (!priceRow?.enabled) {
+    return {
+      ok: false as const,
+      error: "We do not sell that extension yet.",
+      status: 400,
+    };
+  }
+  const termCtx = tldTermContextFromRow(priceRow);
+  const termCheck = assertTermAllowed(termYears, termCtx);
+  if (!termCheck.ok) {
+    return { ok: false as const, error: termCheck.message, status: 400 };
   }
   const registerPrice = availability.register;
   await ensureCustomerWallet(input.userId);
@@ -154,13 +168,44 @@ export async function processDomainRegistrationCheckout(input: {
 
     const provider = resolveLifecycleProvider()!;
     const supplierRow = await provider.checkAvailability([quote.domain]);
-    const supplierCost = supplierRow[0]?.supplier.register;
+    const supplier = supplierRow[0]?.supplier;
+    const supplierCost = supplier?.register ?? null;
+    if (
+      !supplier ||
+      !supplierQuoteCoversTerm(
+        supplier,
+        termYears,
+        termCtx.supplierMinRegistrationPeriod,
+      )
+    ) {
+      await rollbackReserve({
+        userId: input.userId,
+        amount: registerPrice,
+        reserveTransactionId: reserve.id,
+        idempotencyKey: input.idempotencyKey,
+      });
+      await prisma.domainOrder.update({
+        where: { id: order.id },
+        data: {
+          status: "FAILED",
+          errorMessageInternal: "supplier_term_mismatch",
+          errorMessageCustomer:
+            "Registration pricing could not be confirmed. Please search again.",
+        },
+      });
+      return {
+        ok: false as const,
+        error:
+          "Registration pricing could not be confirmed. Please search again.",
+        status: 400,
+      };
+    }
 
     let registerOutcome;
     try {
       registerOutcome = await provider.registerDomain({
         domain: quote.domain,
-        periodYears: 1,
+        periodYears: termYears,
         contacts: defaultRegistrationContacts(),
         nameservers: defaultNameservers(),
       });

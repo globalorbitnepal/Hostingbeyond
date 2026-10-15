@@ -5,6 +5,11 @@ export type ProviderTldPricing = SupplierPricing & {
   restore: number | null;
   /** Provider-supported max registration term in years, when known. */
   maxRegisterYears?: number | null;
+  /** Minimum registration period in years from DNA catalogue. */
+  minRegistrationPeriod?: number | null;
+  /** Register total USD per period (years). */
+  registerPricesByPeriod?: Record<number, number>;
+  renewPricesByPeriod?: Record<number, number>;
 };
 
 export type ProviderDomainDetails = {

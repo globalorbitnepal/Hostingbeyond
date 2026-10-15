@@ -188,6 +188,8 @@ export async function syncSupplierCatalogueFromProvider(
                   supplierCurrency: item.currency,
                   supplierSyncedAt: syncedAt,
                   supplierMaxRegisterYears: item.maxRegisterYears ?? null,
+                  supplierMinRegistrationPeriod:
+                    item.minRegistrationPeriod ?? 1,
                 },
               });
               tldsUpdated += 1;
@@ -203,6 +205,8 @@ export async function syncSupplierCatalogueFromProvider(
                   supplierCurrency: item.currency,
                   supplierSyncedAt: syncedAt,
                   supplierMaxRegisterYears: item.maxRegisterYears ?? null,
+                  supplierMinRegistrationPeriod:
+                    item.minRegistrationPeriod ?? 1,
                   enabled: true,
                 },
               });

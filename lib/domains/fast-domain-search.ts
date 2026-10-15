@@ -1,8 +1,7 @@
 import type { DomainResult } from "@/lib/domains/availability";
 import {
   fastSearchCacheKey,
-  getFastSearchCache,
-  withFastSearchDedup,
+  withFastSearchInflightOnly,
 } from "@/lib/domains/fast-search-cache";
 import { lookupDomainNames } from "@/lib/domains/lookup";
 import { normalizeDomainSearchInput } from "@/lib/domains/normalize";
@@ -93,7 +92,7 @@ async function loadFastAlternativesFromProvider(
   anchorTld: string,
   anchorDomain: string,
   query: string,
-  options?: { includeAnchorInBulk?: boolean },
+  options?: { includeAnchorInBulk?: boolean; countryCode?: string | null },
 ): Promise<{
   alternatives: DomainResult[];
   bulkFqdns: number;
@@ -103,7 +102,7 @@ async function loadFastAlternativesFromProvider(
   primary: DomainResult | null;
 }> {
   const catStart = Date.now();
-  const fastTlds = await getFastCustomerTldPool();
+  const fastTlds = await getFastCustomerTldPool(options?.countryCode);
   const catalogueMs = Date.now() - catStart;
   void catalogueMs;
 
@@ -129,10 +128,10 @@ async function loadFastAlternativesFromProvider(
   const providerStart = Date.now();
   const [lookupA, lookupB] = await Promise.all([
     fqdnsA.length
-      ? lookupDomainNames(fqdnsA, { query, tlds: poolA })
+      ? lookupDomainNames(fqdnsA, { query, tlds: poolA }, { fresh: true })
       : Promise.resolve({ results: [], source: "registrar" as const }),
     fqdnsB.length
-      ? lookupDomainNames(fqdnsB, { query, tlds: tldsB })
+      ? lookupDomainNames(fqdnsB, { query, tlds: tldsB }, { fresh: true })
       : Promise.resolve({ results: [], source: "registrar" as const }),
   ]);
   const providerMs = Date.now() - providerStart;
@@ -174,7 +173,7 @@ async function loadAlternativesForTlds(
   clearDnaRequestTraces();
   const providerStart = Date.now();
   const lookup = fqdns.length
-    ? await lookupDomainNames(fqdns, { query, tlds })
+    ? await lookupDomainNames(fqdns, { query, tlds }, { fresh: true })
     : { results: [], source: "registrar" as const };
   const providerMs = Date.now() - providerStart;
   const alternatives = topRegisterableRecommendations(
@@ -187,7 +186,10 @@ async function loadAlternativesForTlds(
  * Stage-1 alternatives: one LIVE bulk on the highest-value TLD chunk only.
  * Stage-2 (`runFastAlternativesChunk2`) covers the rest of the fast pool.
  */
-export async function runFastAlternativesChunk1(queryRaw: string): Promise<{
+export async function runFastAlternativesChunk1(
+  queryRaw: string,
+  countryCode?: string | null,
+): Promise<{
   anchorDomain: string;
   query: string;
   alternatives: DomainResult[];
@@ -212,61 +214,34 @@ export async function runFastAlternativesChunk1(queryRaw: string): Promise<{
   const { name, tld, query } = normalized;
   const anchorTld = (tld || ".com").toLowerCase();
   const anchorDomain = `${name}${anchorTld}`.toLowerCase();
-  const cacheKey = `${fastSearchCacheKey(name)}:alts`;
+  const cacheKey = `${fastSearchCacheKey(name)}:alts:c1:${countryCode ?? "global"}`;
   const metricsBefore = getDnaProviderMetrics();
 
-  const mainCached = getFastSearchCache(fastSearchCacheKey(name));
-  if (mainCached) {
-    const readyAt = Date.now();
-    const limit = customerAlternativeLimit();
-    return {
-      anchorDomain: mainCached.anchorDomain,
-      query: mainCached.query,
-      alternatives: mainCached.alternatives,
-      alternativesComplete: true,
-      fastChunk2Available: false,
-      deepDiscoveryAvailable: false,
-      source: "registrar",
-      timings: {
-        total_request_time: readyAt - searchStart,
-        provider_request_count: 0,
-        bulk_fqdn_count: 0,
-        dna_requests: [],
-        dna_requests_overlap: false,
-        cache_hit: true,
-      },
-    };
-  }
-
-  const chunk1Tlds = await getFastCustomerTldPoolChunk(1);
+  const chunk1Tlds = await getFastCustomerTldPoolChunk(1, countryCode);
   let bulkFqdns = 0;
-  const { payload, cacheHit } = await withFastSearchDedup(
-    `${cacheKey}:c1`,
-    async () => {
-      const loaded = await loadAlternativesForTlds(
-        name,
-        anchorDomain,
-        query,
-        chunk1Tlds,
-      );
-      bulkFqdns = loaded.bulkFqdns;
-      return {
-        anchorDomain,
-        query,
-        primary: null,
-        alternatives: loaded.alternatives,
-      };
-    },
-  );
+  const payload = await withFastSearchInflightOnly(cacheKey, async () => {
+    const loaded = await loadAlternativesForTlds(
+      name,
+      anchorDomain,
+      query,
+      chunk1Tlds,
+    );
+    bulkFqdns = loaded.bulkFqdns;
+    return {
+      anchorDomain,
+      query,
+      primary: null,
+      alternatives: loaded.alternatives,
+    };
+  });
 
   const readyAt = Date.now();
   const metrics = getDnaProviderMetrics();
   const limit = customerAlternativeLimit();
-  const chunk2Tlds = await getFastCustomerTldPoolChunk(2);
+  const chunk2Tlds = await getFastCustomerTldPoolChunk(2, countryCode);
   const fastChunk2Available =
-    !cacheHit && chunk2Tlds.length > 0 && payload.alternatives.length < limit;
+    chunk2Tlds.length > 0 && payload.alternatives.length < limit;
   const deepDiscoveryAvailable =
-    !cacheHit &&
     payload.alternatives.length < limit &&
     (await getDeepDiscoveryTldPool()).length > 0;
 
@@ -280,22 +255,23 @@ export async function runFastAlternativesChunk1(queryRaw: string): Promise<{
     source: "registrar",
     timings: {
       total_request_time: readyAt - searchStart,
-      provider_request_count: cacheHit
-        ? 0
-        : Math.max(
-            0,
-            metrics.providerRequestCount - metricsBefore.providerRequestCount,
-          ),
-      bulk_fqdn_count: cacheHit ? 0 : bulkFqdns,
+      provider_request_count: Math.max(
+        0,
+        metrics.providerRequestCount - metricsBefore.providerRequestCount,
+      ),
+      bulk_fqdn_count: bulkFqdns,
       dna_requests: mapDnaTraces(getDnaRequestTraces()),
       dna_requests_overlap: false,
-      cache_hit: cacheHit,
+      cache_hit: false,
     },
   };
 }
 
 /** Stage-2 fast pool (remaining TLDs before deep discovery). */
-export async function runFastAlternativesChunk2(queryRaw: string): Promise<{
+export async function runFastAlternativesChunk2(
+  queryRaw: string,
+  countryCode?: string | null,
+): Promise<{
   alternatives: DomainResult[];
   alternativesComplete: boolean;
   deepDiscoveryAvailable: boolean;
@@ -307,11 +283,7 @@ export async function runFastAlternativesChunk2(queryRaw: string): Promise<{
 
   const { name, tld, query } = normalized;
   const anchorDomain = `${name}${(tld || ".com").toLowerCase()}`.toLowerCase();
-  const chunk2Tlds = await getFastCustomerTldPoolChunk(2);
-  const cacheKey = fastSearchCacheKey(name);
-
-  const chunk1Cached = getFastSearchCache(`${cacheKey}:alts:c1`);
-  const prior = chunk1Cached?.alternatives ?? [];
+  const chunk2Tlds = await getFastCustomerTldPoolChunk(2, countryCode);
 
   const loaded = await loadAlternativesForTlds(
     name,
@@ -319,20 +291,10 @@ export async function runFastAlternativesChunk2(queryRaw: string): Promise<{
     query,
     chunk2Tlds,
   );
-  const merged = topRegisterableRecommendations([
-    ...prior,
-    ...loaded.alternatives,
-  ]);
+  const merged = topRegisterableRecommendations(loaded.alternatives);
   const limit = customerAlternativeLimit();
   const deepDiscoveryAvailable =
     merged.length < limit && (await getDeepDiscoveryTldPool()).length > 0;
-
-  await withFastSearchDedup(cacheKey, async () => ({
-    anchorDomain,
-    query,
-    primary: null,
-    alternatives: merged,
-  }));
 
   return {
     alternatives: merged.filter((r) => r.domain !== anchorDomain),
@@ -346,7 +308,10 @@ export async function runFastAlternativesChunk2(queryRaw: string): Promise<{
 }
 
 /** Fast-path alternatives only (no anchor lookup — use after `scope: primary`). */
-export async function runFastAlternativesOnly(queryRaw: string): Promise<{
+export async function runFastAlternativesOnly(
+  queryRaw: string,
+  countryCode?: string | null,
+): Promise<{
   anchorDomain: string;
   query: string;
   alternatives: DomainResult[];
@@ -363,80 +328,20 @@ export async function runFastAlternativesOnly(queryRaw: string): Promise<{
     | "cache_hit"
   >;
 }> {
-  const searchStart = Date.now();
-  const normalized = normalizeDomainSearchInput(queryRaw);
-  if (!normalized.ok) throw new Error(normalized.error);
-
-  const { name, tld, query } = normalized;
-  const anchorTld = (tld || ".com").toLowerCase();
-  const anchorDomain = `${name}${anchorTld}`.toLowerCase();
-  const cacheKey = `${fastSearchCacheKey(name)}:alts`;
-  const metricsBefore = getDnaProviderMetrics();
-
-  const mainCached = getFastSearchCache(fastSearchCacheKey(name));
-  if (mainCached) {
-    const readyAt = Date.now();
-    const limit = customerAlternativeLimit();
-    const deepDiscoveryAvailable =
-      mainCached.alternatives.length < limit &&
-      (await getDeepDiscoveryTldPool()).length > 0;
-    return {
-      anchorDomain: mainCached.anchorDomain,
-      query: mainCached.query,
-      alternatives: mainCached.alternatives,
-      alternativesComplete: !deepDiscoveryAvailable,
-      deepDiscoveryAvailable,
-      source: "registrar",
-      timings: {
-        total_request_time: readyAt - searchStart,
-        provider_request_count: 0,
-        bulk_fqdn_count: 0,
-        dna_requests: [],
-        dna_requests_overlap: false,
-        cache_hit: true,
-      },
-    };
-  }
-
-  let bulkFqdnsForTiming = 0;
-  const chunk1 = await runFastAlternativesChunk1(queryRaw);
-  const payload = {
-    anchorDomain: chunk1.anchorDomain,
-    query: chunk1.query,
-    primary: null as DomainResult | null,
-    alternatives: chunk1.alternatives,
-  };
-  const cacheHit = chunk1.timings.cache_hit;
-  bulkFqdnsForTiming = chunk1.timings.bulk_fqdn_count;
-
-  const readyAt = Date.now();
-  const metrics = getDnaProviderMetrics();
+  const chunk1 = await runFastAlternativesChunk1(queryRaw, countryCode);
   const limit = customerAlternativeLimit();
   const deepDiscoveryAvailable =
-    !cacheHit &&
-    payload.alternatives.length < limit &&
-    (await getDeepDiscoveryTldPool()).length > 0;
+    chunk1.alternatives.length < limit &&
+    (chunk1.deepDiscoveryAvailable || chunk1.fastChunk2Available);
 
   return {
-    anchorDomain: payload.anchorDomain,
-    query: payload.query,
-    alternatives: payload.alternatives,
-    alternativesComplete: !deepDiscoveryAvailable,
+    anchorDomain: chunk1.anchorDomain,
+    query: chunk1.query,
+    alternatives: chunk1.alternatives,
+    alternativesComplete: chunk1.alternativesComplete,
     deepDiscoveryAvailable,
-    source: "registrar",
-    timings: {
-      total_request_time: readyAt - searchStart,
-      provider_request_count: cacheHit
-        ? 0
-        : Math.max(
-            0,
-            metrics.providerRequestCount - metricsBefore.providerRequestCount,
-          ),
-      bulk_fqdn_count: cacheHit ? 0 : bulkFqdnsForTiming,
-      dna_requests: [],
-      dna_requests_overlap: false,
-      cache_hit: cacheHit,
-    },
+    source: chunk1.source,
+    timings: chunk1.timings,
   };
 }
 
@@ -446,6 +351,7 @@ export async function runFastAlternativesOnly(queryRaw: string): Promise<{
  */
 export async function runFastCustomerSearch(
   queryRaw: string,
+  countryCode?: string | null,
 ): Promise<FastCustomerSearchResult> {
   const searchStart = Date.now();
   const normalized = normalizeDomainSearchInput(queryRaw);
@@ -465,11 +371,11 @@ export async function runFastCustomerSearch(
   let filterMs = 0;
   let dnaTimings: DnaRequestTiming[] = [];
 
-  const { payload, cacheHit } = await withFastSearchDedup(
-    cacheKey,
+  const payload = await withFastSearchInflightOnly(
+    `${cacheKey}:${countryCode ?? "global"}`,
     async () => {
       const catStart = Date.now();
-      await getFastCustomerTldPool();
+      await getFastCustomerTldPool(countryCode);
       catalogueMs = Date.now() - catStart;
 
       const loaded = await loadFastAlternativesFromProvider(
@@ -477,7 +383,7 @@ export async function runFastCustomerSearch(
         anchorTld,
         anchorDomain,
         query,
-        { includeAnchorInBulk: true },
+        { includeAnchorInBulk: true, countryCode },
       );
       bulkFqdns = loaded.bulkFqdns;
       providerMs = loaded.providerMs;
@@ -492,6 +398,7 @@ export async function runFastCustomerSearch(
       };
     },
   );
+  const cacheHit = false;
 
   const serializeStart = Date.now();
   const readyAt = Date.now();
@@ -581,7 +488,7 @@ export async function runDeepDiscoverySearch(
   const fqdns = buildRecommendationFqdns(name, anchorDomain, deepTlds);
   const started = Date.now();
   const lookup = fqdns.length
-    ? await lookupDomainNames(fqdns, { query, tlds: deepTlds })
+    ? await lookupDomainNames(fqdns, { query, tlds: deepTlds }, { fresh: true })
     : { results: [], source: "registrar" as const };
 
   return {

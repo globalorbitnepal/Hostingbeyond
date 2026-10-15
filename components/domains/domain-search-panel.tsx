@@ -36,14 +36,16 @@ import {
   bulkInputExceedsLimit,
   countBulkUniqueDomains,
 } from "@/lib/domains/bulk-input";
+import { shouldRetryBulkSearchResponse } from "@/lib/domains/client-search-retry";
 import { SUGGESTED_TLDS, formatPrice } from "@/lib/domains/tlds";
+import { useLocale } from "@/components/locale/locale-provider";
 import { cn } from "@/lib/utils";
 
 export type SearchMode = "single" | "bulk";
 
 const QUICK_TLDS = SUGGESTED_TLDS.slice(0, 6);
 const BULK_LIMIT = 50;
-const MAX_CUSTOMER_ALTERNATIVES = 10;
+const MAX_CUSTOMER_ALTERNATIVES = 14;
 const ALTERNATIVE_SKELETON_COUNT = 3;
 /** Matches alternative ResultRow + skeleton so slot swaps do not shift the grid. */
 const ALT_RESULT_MIN_H = "min-h-[168px]";
@@ -618,6 +620,7 @@ export function DomainSearchPanel({
     () => new Set(),
   );
   const { addDomain, domainsInCart, openDrawer } = useDomainCart();
+  const { preferences } = useLocale();
   const searchGeneration = useRef(0);
   const abortRef = useRef<AbortController | null>(null);
   /** Only disables the submit control while the exact match is loading. */
@@ -679,7 +682,8 @@ export function DomainSearchPanel({
         error?: string;
         limitNotice?: string;
       } = {};
-      for (let attempt = 0; attempt < 4; attempt++) {
+      const maxBulkAttempts = 2;
+      for (let attempt = 0; attempt < maxBulkAttempts; attempt++) {
         response = await fetch("/api/domains/search", {
           method: "POST",
           headers: { "content-type": "application/json" },
@@ -691,8 +695,14 @@ export function DomainSearchPanel({
           error?: string;
           limitNotice?: string;
         };
-        if (response.status === 429 && attempt < 3) {
-          await sleep(600 * (attempt + 1));
+        const retry = shouldRetryBulkSearchResponse(
+          response.status,
+          attempt,
+          maxBulkAttempts,
+          response.headers.get("Retry-After"),
+        );
+        if (retry.retry) {
+          await sleep(retry.delayMs);
           continue;
         }
         break;
@@ -752,12 +762,13 @@ export function DomainSearchPanel({
         window.setTimeout(resolve, ms);
       });
 
-    const searchJson = async (body: Record<string, unknown>, retries = 4) => {
-      for (let attempt = 0; attempt < retries; attempt++) {
+    const searchJson = async (body: Record<string, unknown>) => {
+      const maxAttempts = 2;
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
         const res = await fetch("/api/domains/search", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify(body),
+          body: JSON.stringify({ ...body, country: preferences.country }),
           signal: controller.signal,
         });
         const json = (await res.json()) as {
@@ -771,8 +782,14 @@ export function DomainSearchPanel({
           alternativesComplete?: boolean;
           fastChunk2Available?: boolean;
         };
-        if (res.status === 429 && attempt < retries - 1) {
-          await sleep(600 * (attempt + 1));
+        const retry = shouldRetryBulkSearchResponse(
+          res.status,
+          attempt,
+          maxAttempts,
+          res.headers.get("retry-after"),
+        );
+        if (retry.retry) {
+          await sleep(retry.delayMs);
           continue;
         }
         return { res, json };
@@ -1165,7 +1182,7 @@ export function DomainSearchPanel({
 
   const alternativesHeading =
     exact?.status === "taken"
-      ? "Available alternatives"
+      ? "Recommended alternatives"
       : "Other available extensions";
   const showAvailabilitySummary =
     mode === "single" &&

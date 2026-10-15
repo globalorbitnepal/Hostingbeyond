@@ -29,6 +29,7 @@ import {
   runPhasedDomainSearch,
   shouldFetchTier2,
 } from "@/lib/domains/search-orchestrator";
+import { countryFromRequest } from "@/lib/domains/search-country";
 import { countProviderSupportedTlds } from "@/lib/domains/tld-catalogue-cache";
 
 export const runtime = "nodejs";
@@ -51,6 +52,8 @@ type SearchBody = {
   scope?: SearchScope;
   /** Tier 2 broader discovery when tier 1 is insufficient. */
   tier?: 1 | 2;
+  /** ISO 3166-1 alpha-2 — optional; falls back to locale cookie. */
+  country?: string;
 };
 
 function toCustomerResult(row: DomainResult) {
@@ -60,6 +63,7 @@ function toCustomerResult(row: DomainResult) {
     tld: row.tld,
     status: row.status,
     registrationPrice: row.register,
+    registrationTermYears: row.registerTermYears ?? 1,
     renewalPrice: row.renew,
     transferPrice: row.transfer,
     message: row.message,
@@ -78,6 +82,7 @@ export async function POST(request: Request) {
   const body = (await request.json().catch(() => null)) as SearchBody | null;
   const queryRaw = body?.query?.trim() ?? "";
   const bulk = body?.bulk?.trim() ?? "";
+  const searchCountry = countryFromRequest(request, body);
 
   if (!queryRaw && !bulk) {
     return NextResponse.json(
@@ -127,7 +132,7 @@ export async function POST(request: Request) {
         : "fast";
 
     if (scope === "fast") {
-      const fast = await runFastCustomerSearch(queryRaw);
+      const fast = await runFastCustomerSearch(queryRaw, searchCountry);
       const primary = fast.primary;
       const recommendations = fast.alternatives;
       const headers = new Headers();
@@ -235,7 +240,7 @@ export async function POST(request: Request) {
 
     if (scope === "alternatives") {
       if (tier === 2) {
-        const fastB = await runFastAlternativesChunk2(queryRaw);
+        const fastB = await runFastAlternativesChunk2(queryRaw, searchCountry);
         return NextResponse.json({
           results: fastB.alternatives,
           recommendations: fastB.alternatives,
@@ -252,7 +257,7 @@ export async function POST(request: Request) {
           resultsCustomer: fastB.alternatives.map(toCustomerResult),
         });
       }
-      const fastAlts = await runFastAlternativesChunk1(queryRaw);
+      const fastAlts = await runFastAlternativesChunk1(queryRaw, searchCountry);
       return NextResponse.json({
         results: fastAlts.alternatives,
         recommendations: fastAlts.alternatives,
@@ -286,18 +291,25 @@ export async function POST(request: Request) {
       names = searchable.map((item) => `${name}${item}`);
     }
 
-    const { results, source } = await lookupDomainNames(names, {
-      query,
-      tlds: tier1,
-    });
+    const { results, source } = await lookupDomainNames(
+      names,
+      {
+        query,
+        tlds: tier1,
+      },
+      { fresh: scope === "primary" },
+    );
 
     let responseResults = results;
     if (scope === "full") {
       responseResults = topRegisterableRecommendations(results);
     }
 
+    const primaryRow = scope === "primary" ? (results[0] ?? null) : null;
+
     return NextResponse.json({
       results: responseResults,
+      ...(primaryRow != null ? { primary: primaryRow } : {}),
       source,
       anchorDomain,
       query,

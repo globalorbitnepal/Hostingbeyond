@@ -6,6 +6,8 @@ export type SupplierPricing = {
   renew: number | null;
   transfer: number | null;
   currency: string;
+  /** Years covered by `register` when returned by bulk-search (if provider sends it). */
+  registrationPeriodYears?: number | null;
 };
 
 export type ProviderAvailabilityRow = {

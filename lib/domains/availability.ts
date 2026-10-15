@@ -10,9 +10,12 @@ export type DomainResult = {
   name: string;
   tld: string;
   status: DomainStatus;
+  /** Total registration price for `registerTermYears`. */
   register: number | null;
   renew: number | null;
   transfer: number | null;
+  /** Registration term in years that `register` applies to (default 1 when omitted). */
+  registerTermYears?: number | null;
   message?: string;
 };
 

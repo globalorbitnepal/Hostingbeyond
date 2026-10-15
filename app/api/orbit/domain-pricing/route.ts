@@ -6,8 +6,15 @@ import {
   listRetailTldPrices,
 } from "@/lib/domains/pricing-engine";
 import { getLatestSupplierSyncMeta } from "@/lib/domains/supplier-catalogue-sync";
+import {
+  pickBulkRetailUpdateData,
+  pickRetailUpdateData,
+  toPrismaRetailUpdateData,
+  validateBulkRetailItem,
+  validateRetailPricePayload,
+} from "@/lib/orbit/domain-pricing-update";
+import { authorizeDomainPricingAdmin } from "@/lib/orbit/domain-pricing-auth";
 import { prisma } from "@/lib/prisma";
-import { requireOrbitAdmin } from "@/lib/orbit/api";
 
 export const runtime = "nodejs";
 
@@ -38,10 +45,8 @@ function serializeRow(row: Awaited<ReturnType<typeof listRetailTldPrices>>[0]) {
 }
 
 export async function GET() {
-  const admin = await requireOrbitAdmin();
-  if (!admin) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const admin = await authorizeDomainPricingAdmin();
+  if (admin instanceof Response) return admin;
   await ensureDomainTldPricesSeeded();
   const rows = await listRetailTldPrices();
   const supplierSync = await getLatestSupplierSyncMeta();
@@ -53,10 +58,8 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
-  const admin = await requireOrbitAdmin();
-  if (!admin) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const admin = await authorizeDomainPricingAdmin();
+  if (admin instanceof Response) return admin;
   const body = (await request.json()) as {
     tld?: string;
     retailRegister?: number;
@@ -80,6 +83,16 @@ export async function PUT(request: Request) {
   if (Array.isArray(body.bulk) && body.bulk.length > 0) {
     const updated: string[] = [];
     for (const item of body.bulk) {
+      const itemRecord = item as Record<string, unknown>;
+      const bulkErrors = validateBulkRetailItem(itemRecord);
+      if (bulkErrors.length) {
+        return NextResponse.json(
+          { error: bulkErrors[0]!.message, field: bulkErrors[0]!.field },
+          { status: 400 },
+        );
+      }
+      const updateData = pickBulkRetailUpdateData(itemRecord);
+      if (Object.keys(updateData).length === 0) continue;
       const key = item.tld.startsWith(".") ? item.tld : `.${item.tld}`;
       const before = await prisma.domainTldPrice.findUnique({
         where: { tld: key },
@@ -87,11 +100,7 @@ export async function PUT(request: Request) {
       if (!before) continue;
       const row = await prisma.domainTldPrice.update({
         where: { tld: key },
-        data: {
-          retailRegister: item.retailRegister,
-          retailRenew: item.retailRenew,
-          retailTransfer: item.retailTransfer,
-        },
+        data: toPrismaRetailUpdateData(updateData),
       });
       updated.push(key);
       await prisma.domainAuditLog.create({
@@ -133,20 +142,29 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "TLD not found" }, { status: 404 });
   }
 
+  const bodyRecord = body as Record<string, unknown>;
+  const validationErrors = validateRetailPricePayload(bodyRecord);
+  if (validationErrors.length) {
+    return NextResponse.json(
+      {
+        error: validationErrors[0]!.message,
+        field: validationErrors[0]!.field,
+      },
+      { status: 400 },
+    );
+  }
+
+  const updateData = pickRetailUpdateData(bodyRecord);
+  if (Object.keys(updateData).length === 0) {
+    return NextResponse.json(
+      { error: "No retail fields to update." },
+      { status: 400 },
+    );
+  }
+
   const row = await prisma.domainTldPrice.update({
     where: { tld: key },
-    data: {
-      retailRegister: body.retailRegister,
-      retailRenew: body.retailRenew,
-      retailTransfer: body.retailTransfer,
-      retailRestore: body.retailRestore,
-      retailRegisterByYear: body.retailRegisterByYear ?? undefined,
-      retailRenewByYear: body.retailRenewByYear ?? undefined,
-      promoRegister: body.promoRegister,
-      minMarginPercent: body.minMarginPercent,
-      premiumMarkupPercent: body.premiumMarkupPercent,
-      enabled: body.enabled,
-    },
+    data: toPrismaRetailUpdateData(updateData),
   });
 
   await prisma.domainAuditLog.create({
@@ -179,10 +197,8 @@ export async function PUT(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const admin = await requireOrbitAdmin();
-  if (!admin) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const admin = await authorizeDomainPricingAdmin();
+  if (admin instanceof Response) return admin;
   const url = new URL(request.url);
   if (url.searchParams.get("action") !== "refresh-supplier") {
     return NextResponse.json({ error: "Unknown action" }, { status: 400 });

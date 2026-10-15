@@ -4,6 +4,13 @@ import {
   premiumRetailFromSupplier,
   type RetailQuote,
 } from "@/lib/domains/pricing-engine";
+import {
+  buildPremiumRegistrationQuote,
+  buildStandardRegistrationQuote,
+  resolveCheckoutTermYears,
+  tldTermContextFromRow,
+  type TldTermContext,
+} from "@/lib/domains/registration-term";
 import { getRetailPricesForTld } from "@/lib/domains/retail-pricing";
 import { splitDomain } from "@/lib/domains/tlds";
 import {
@@ -49,6 +56,7 @@ async function logProviderCall(
 export type RetailPricingContext = {
   retailByTld: Map<string, RetailQuote>;
   premiumMarkupByTld: Map<string, number | null>;
+  termByTld: Map<string, TldTermContext>;
 };
 
 function tldKeyFromRow(row: ProviderAvailabilityRow): string {
@@ -80,9 +88,12 @@ export async function buildRetailPricingContext(
   });
   const retailByTld = new Map<string, RetailQuote>();
   const premiumMarkupByTld = new Map<string, number | null>();
+  const termByTld = new Map<string, TldTermContext>();
   const now = new Date();
   for (const row of rows) {
     if (!row.enabled) continue;
+    const termCtx = tldTermContextFromRow(row);
+    termByTld.set(row.tld.toLowerCase(), termCtx);
     const promoActive =
       row.promoRegister != null && (!row.promoEndsAt || row.promoEndsAt > now);
     retailByTld.set(row.tld.toLowerCase(), {
@@ -103,7 +114,28 @@ export async function buildRetailPricingContext(
         : null,
     );
   }
-  return { retailByTld, premiumMarkupByTld };
+  return { retailByTld, premiumMarkupByTld, termByTld };
+}
+
+async function termContextForTld(
+  tldKey: string,
+  pricingCtx?: RetailPricingContext,
+): Promise<TldTermContext | null> {
+  const cached = pricingCtx?.termByTld.get(tldKey);
+  if (cached) return cached;
+  const row = await prisma.domainTldPrice.findUnique({
+    where: { tld: tldKey },
+  });
+  if (!row || !row.enabled) return null;
+  return tldTermContextFromRow(row);
+}
+
+function termPricingMessage(
+  termYears: number,
+  base?: string,
+): string | undefined {
+  if (termYears <= 1) return base;
+  return base ? `${base} (${termYears}-year term).` : undefined;
 }
 
 export async function mapRowToCustomerResult(
@@ -180,23 +212,22 @@ export async function mapRowToCustomerResult(
     };
   }
 
-  const isPremium = row.status === "premium";
-  const supplierReg = row.supplier.register;
-  let register = retail.register;
-  if (isPremium && supplierReg == null) {
+  const termCtx = await termContextForTld(tldKey, pricingCtx);
+  if (!termCtx) {
     return {
       domain: row.domain,
       name: row.name,
       tld: tldKey,
-      status: "unknown",
+      status: "invalid",
       register: null,
       renew: null,
       transfer: null,
-      message:
-        "Premium pricing could not be verified. Please try again or contact support.",
+      message: `We do not sell ${tldKey} yet — try another extension.`,
     };
   }
-  if (isPremium && supplierReg != null) {
+
+  const isPremium = row.status === "premium";
+  if (isPremium) {
     const markup =
       pricingCtx?.premiumMarkupByTld.get(tldKey) ??
       (await prisma.domainTldPrice
@@ -207,22 +238,75 @@ export async function mapRowToCustomerResult(
             : null,
         )
         .catch(() => null));
-    register = premiumRetailFromSupplier(supplierReg, retail.register, markup);
+    const quote = buildPremiumRegistrationQuote(
+      termCtx,
+      row.supplier,
+      markup,
+      premiumRetailFromSupplier,
+    );
+    if (!quote) {
+      return {
+        domain: row.domain,
+        name: row.name,
+        tld: tldKey,
+        status: "unknown",
+        register: null,
+        renew: null,
+        transfer: null,
+        message:
+          "Premium pricing could not be verified. Please try again or contact support.",
+      };
+    }
+    return {
+      domain: row.domain,
+      name: row.name,
+      tld: tldKey,
+      status: "premium",
+      register: quote.registerTotal,
+      registerTermYears: quote.termYears,
+      renew: quote.renewPerYear,
+      transfer: quote.transfer,
+      message: termPricingMessage(
+        quote.termYears,
+        "Premium domain — price includes registry fees.",
+      ),
+    };
+  }
+
+  const termYears = resolveCheckoutTermYears(termCtx, null);
+  const quote = buildStandardRegistrationQuote(termCtx, termYears);
+  if (!quote) {
+    return {
+      domain: row.domain,
+      name: row.name,
+      tld: tldKey,
+      status: "unknown",
+      register: null,
+      registerTermYears: termYears,
+      renew: null,
+      transfer: null,
+      message:
+        termYears > 1
+          ? `This extension requires a ${termYears}-year registration; retail pricing is not configured for that term.`
+          : "Pricing is unavailable for this domain. Please search again.",
+    };
   }
 
   return {
     domain: row.domain,
     name: row.name,
     tld: tldKey,
-    status: isPremium ? "premium" : "available",
-    register,
-    renew: retail.renew,
-    transfer: retail.transfer,
-    message: isPremium
-      ? "Premium domain — price includes registry fees."
-      : retail.isPromo
-        ? `Promotional first year — renews at $${retail.renew.toFixed(2)}/yr`
-        : undefined,
+    status: "available",
+    register: quote.registerTotal,
+    registerTermYears: quote.termYears,
+    renew: quote.renewPerYear,
+    transfer: quote.transfer,
+    message:
+      quote.isPromo && quote.termYears === 1
+        ? `Promotional first year — renews at $${quote.renewPerYear?.toFixed(2) ?? "—"}/yr`
+        : quote.termYears > 1
+          ? `${quote.termYears}-year registration — total $${quote.registerTotal.toFixed(2)}`
+          : undefined,
   };
 }
 
@@ -460,9 +544,12 @@ async function searchDomainsWithProviderUncached(
 
 export async function searchDomainsWithProvider(
   fqdns: string[],
+  options?: { fresh?: boolean },
 ): Promise<{ results: DomainResult[]; source: "registrar" | "catalog" }> {
   const key = searchCacheKey(fqdns);
-  return withSearchDedup(key, () => searchDomainsWithProviderUncached(fqdns));
+  return withSearchDedup(key, () => searchDomainsWithProviderUncached(fqdns), {
+    fresh: options?.fresh,
+  });
 }
 
 export async function refreshSupplierTldPricesFromProvider(

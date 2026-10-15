@@ -207,8 +207,18 @@ describe(
       });
 
       if (!result.ok) {
+        const failedOrder = await prisma.domainOrder.findFirst({
+          where: { idempotencyKey },
+          select: { errorMessageInternal: true, errorCode: true },
+        });
+        const providerHint =
+          failedOrder?.errorMessageInternal === "insufficient_funds"
+            ? " (DNA/OTE reseller account balance — fund OTE wallet, not customer wallet)"
+            : failedOrder?.errorMessageInternal
+              ? ` (internal: ${failedOrder.errorMessageInternal})`
+              : "";
         assert.fail(
-          `registration checkout failed: ${result.error ?? "unknown"} (status ${"status" in result ? result.status : "n/a"})`,
+          `registration checkout failed: ${result.error ?? "unknown"} (status ${"status" in result ? result.status : "n/a"})${providerHint}`,
         );
       }
       assert.equal(result.order.status, "REGISTERED");

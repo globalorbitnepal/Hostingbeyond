@@ -71,6 +71,26 @@ export async function withFastSearchDedup(
   }
 }
 
+/** Coalesce concurrent identical searches without serving stale availability from TTL cache. */
+export async function withFastSearchInflightOnly(
+  key: string,
+  run: () => Promise<Omit<FastSearchCachedPayload, "cachedAt" | "expiresAt">>,
+): Promise<FastSearchCachedPayload> {
+  const pending = inflight.get(key);
+  if (pending) return pending;
+
+  const promise = run().then((fresh) => {
+    const now = Date.now();
+    return { ...fresh, cachedAt: now, expiresAt: now };
+  });
+  inflight.set(key, promise);
+  try {
+    return await promise;
+  } finally {
+    inflight.delete(key);
+  }
+}
+
 /** @internal */
 export function clearFastSearchCacheForTests(): void {
   cache.clear();

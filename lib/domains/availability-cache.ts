@@ -51,22 +51,32 @@ export function setCachedSearch(
   });
 }
 
+export type SearchDedupOptions = {
+  /** Skip TTL cache — still coalesces in-flight identical requests. */
+  fresh?: boolean;
+};
+
 export async function withSearchDedup(
   key: string,
   run: () => Promise<{
     results: DomainResult[];
     source: "registrar" | "catalog";
   }>,
+  options?: SearchDedupOptions,
 ): Promise<{ results: DomainResult[]; source: "registrar" | "catalog" }> {
-  const cached = getCachedSearch(key);
-  if (cached) return cached;
+  if (!options?.fresh) {
+    const cached = getCachedSearch(key);
+    if (cached) return cached;
+  }
 
   const pending = inflight.get(key);
   if (pending) return pending;
 
   const promise = run()
     .then((payload) => {
-      setCachedSearch(key, payload);
+      if (!options?.fresh) {
+        setCachedSearch(key, payload);
+      }
       return payload;
     })
     .finally(() => {

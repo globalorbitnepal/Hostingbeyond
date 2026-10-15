@@ -1,3 +1,4 @@
+import { periodPriceMapFromBlock } from "@/lib/domains/registration-term";
 import type { DomainNameApiConfig } from "@/lib/domains/providers/domain-name-api-config";
 import type { ProviderTldPricing } from "@/lib/domains/providers/provider";
 import { DomainProviderError } from "@/lib/domains/providers/types";
@@ -54,28 +55,44 @@ function priceForPeriod(block: unknown, period: number): number | null {
   return null;
 }
 
-function standardTermPrice(block: unknown): number | null {
+function recordFromPeriodMap(map: Map<number, number>): Record<number, number> {
+  const out: Record<number, number> = {};
+  for (const [period, price] of map) out[period] = price;
+  return out;
+}
+
+/** Price for catalogue display/sync at the TLD minimum registration period. */
+function registerPriceAtMinPeriod(
+  block: unknown,
+  minRegistrationPeriod: number,
+): number | null {
+  const atMin = priceForPeriod(block, minRegistrationPeriod);
+  if (atMin != null) return atMin;
   const oneYear = priceForPeriod(block, 1);
   if (oneYear != null) return oneYear;
-  if (!Array.isArray(block) || block.length === 0) return null;
+  const map = periodPriceMapFromBlock(block);
+  if (map.size === 0) return null;
   let bestPeriod: number | null = null;
   let bestPrice: number | null = null;
-  for (const row of block) {
-    if (!row || typeof row !== "object") continue;
-    const periodRaw = (row as Record<string, unknown>).period;
-    const period =
-      typeof periodRaw === "number" && Number.isFinite(periodRaw)
-        ? periodRaw
-        : null;
-    const price = parsePrice((row as Record<string, unknown>).price);
-    if (price == null) continue;
-    if (period == null) return price;
+  for (const [period, price] of map) {
     if (bestPeriod == null || period < bestPeriod) {
       bestPeriod = period;
       bestPrice = price;
     }
   }
   return bestPrice;
+}
+
+function renewPriceAtMinPeriod(
+  block: unknown,
+  minRegistrationPeriod: number,
+): number | null {
+  const atMin = priceForPeriod(block, minRegistrationPeriod);
+  if (atMin != null) return atMin;
+  return (
+    priceForPeriod(block, 1) ??
+    registerPriceAtMinPeriod(block, minRegistrationPeriod)
+  );
 }
 
 function currencyFromPriceBlock(block: unknown): string | null {
@@ -118,19 +135,33 @@ export function parseProductTldListDto(
   const renewBlock = group?.renew ?? group?.renewal;
   const transferBlock = group?.transfer;
 
+  const minRegistrationPeriod =
+    typeof item.minRegistrationPeriod === "number" &&
+    item.minRegistrationPeriod > 0
+      ? item.minRegistrationPeriod
+      : 1;
+
   const maxRegisterYears =
     typeof item.maxRegistrationPeriod === "number"
       ? item.maxRegistrationPeriod
       : maxYearsFromRegisterBlock(registerBlock);
 
+  const registerMap = periodPriceMapFromBlock(registerBlock);
+  const renewMap = periodPriceMapFromBlock(renewBlock);
+
   const currency = currencyFromPriceBlock(registerBlock) ?? "USD";
 
   return {
     tld: `.${name}`,
-    register: standardTermPrice(registerBlock),
-    renew: standardTermPrice(renewBlock),
-    transfer: standardTermPrice(transferBlock),
-    restore: standardTermPrice(group?.restore),
+    minRegistrationPeriod,
+    registerPricesByPeriod: recordFromPeriodMap(registerMap),
+    renewPricesByPeriod: recordFromPeriodMap(renewMap),
+    register: registerPriceAtMinPeriod(registerBlock, minRegistrationPeriod),
+    renew: renewPriceAtMinPeriod(renewBlock, minRegistrationPeriod),
+    transfer:
+      priceForPeriod(transferBlock, 1) ??
+      priceForPeriod(transferBlock, minRegistrationPeriod),
+    restore: priceForPeriod(group?.restore, 1),
     currency: currency || "USD",
     maxRegisterYears,
   };

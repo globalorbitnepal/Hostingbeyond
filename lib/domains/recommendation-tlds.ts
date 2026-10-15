@@ -1,4 +1,9 @@
 import type { DomainResult } from "@/lib/domains/availability";
+import {
+  GLOBAL_ALTERNATIVE_TLD_ORDER,
+  mergeTldPriorityOrder,
+  normalizeCountryCode,
+} from "@/lib/domains/customer-tld-priority";
 import { getTldCatalogueSnapshot } from "@/lib/domains/tld-catalogue-cache";
 import {
   PRIORITY_TLD_TIERS,
@@ -32,8 +37,8 @@ export function providerBulkSearchMaxDomains(): number {
 }
 
 export function customerAlternativeLimit(): number {
-  const raw = Number(process.env.DOMAIN_CUSTOMER_ALTERNATIVE_LIMIT ?? 10);
-  if (!Number.isFinite(raw) || raw < 1) return 10;
+  const raw = Number(process.env.DOMAIN_CUSTOMER_ALTERNATIVE_LIMIT ?? 14);
+  if (!Number.isFinite(raw) || raw < 1) return 14;
   return Math.min(Math.max(raw, 1), 20);
 }
 
@@ -48,80 +53,65 @@ export function recommendationResultLimit(): number {
   return customerAlternativeLimit();
 }
 
-/** Highest-probability extensions for instant customer search (catalogue-intersected). */
-export const FAST_CUSTOMER_TLD_ORDER: string[] = [
-  ".net",
-  ".org",
-  ".in",
-  ".ai",
-  ".io",
-  ".app",
-  ".dev",
-  ".shop",
-  ".store",
-  ".online",
-  ".website",
-  ".digital",
-  ".tech",
-  ".cloud",
-  ".site",
-  ".blog",
-  ".agency",
-  ".studio",
-  ".chat",
-  ".fun",
-  ".co",
-  ".cc",
-  ".me",
-];
+/** Global alternative order (local country TLDs are prepended at runtime). */
+export const FAST_CUSTOMER_TLD_ORDER: string[] = GLOBAL_ALTERNATIVE_TLD_ORDER;
 
 export function fastPoolMaxTlds(): number {
   const raw = Number(process.env.DOMAIN_FAST_POOL_TLDS ?? 14);
-  if (!Number.isFinite(raw) || raw < 5) return 14;
-  return Math.min(Math.max(raw, 5), 24);
+  if (!Number.isFinite(raw) || raw < 7) return 14;
+  return Math.min(Math.max(raw, 7), 24);
 }
 
-/** First LIVE bulk chunk — smallest high-value set for fastest first alternatives. */
+/** First LIVE bulk chunk — keep small for faster DNA response; tier 2 covers the rest. */
 export function fastChunk1TldCount(): number {
   const raw = Number(process.env.DOMAIN_FAST_CHUNK1_TLDS ?? 7);
   if (!Number.isFinite(raw) || raw < 4) return 7;
-  return Math.min(Math.max(raw, 4), 12);
+  return Math.min(Math.max(raw, 4), 24);
 }
 
 export async function getFastCustomerTldPoolChunk(
   chunk: 1 | 2,
+  countryCode?: string | null,
 ): Promise<string[]> {
-  const pool = await getFastCustomerTldPool();
+  const pool = await getFastCustomerTldPool(countryCode);
   const split = fastChunk1TldCount();
   if (chunk === 1) return pool.slice(0, split);
-  return pool.slice(split);
+  return pool.slice(split, fastPoolMaxTlds());
 }
 
 let memoryFastPool: string[] | null = null;
+let memoryFastPoolCountry: string | null = null;
 let memoryFastPoolLoadedAt = 0;
 
 /** Clear in-memory fast pool (experiments / catalogue refresh). */
 export function invalidateFastTldPoolCache(): void {
   memoryFastPool = null;
+  memoryFastPoolCountry = null;
   memoryFastPoolLoadedAt = 0;
 }
 
-export async function getFastCustomerTldPool(): Promise<string[]> {
+export async function getFastCustomerTldPool(
+  countryCode?: string | null,
+): Promise<string[]> {
+  const countryKey = normalizeCountryCode(countryCode) ?? "GLOBAL";
   const ttl = 4 * 60 * 60 * 1000;
-  if (memoryFastPool && Date.now() - memoryFastPoolLoadedAt < ttl) {
+  if (
+    memoryFastPool &&
+    memoryFastPoolCountry === countryKey &&
+    Date.now() - memoryFastPoolLoadedAt < ttl
+  ) {
     return memoryFastPool;
   }
   const searchable = new Set(await getSearchableTldCatalogue());
-  const picked: string[] = [];
-  for (const tld of FAST_CUSTOMER_TLD_ORDER) {
-    const key = tld.toLowerCase();
-    if (!searchable.has(key)) continue;
-    picked.push(key);
-    if (picked.length >= fastPoolMaxTlds()) break;
-  }
-  memoryFastPool = picked;
+  const picked = mergeTldPriorityOrder(
+    countryKey === "GLOBAL" ? null : countryKey,
+    searchable,
+  );
+  const capped = picked.slice(0, fastPoolMaxTlds());
+  memoryFastPool = capped;
+  memoryFastPoolCountry = countryKey;
   memoryFastPoolLoadedAt = Date.now();
-  return picked;
+  return capped;
 }
 
 export async function getDeepDiscoveryTldPool(): Promise<string[]> {
