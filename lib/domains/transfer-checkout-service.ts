@@ -3,7 +3,7 @@ import {
   notifyTransferFailed,
   notifyTransferStarted,
 } from "@/lib/domains/notifications";
-import { getRetailQuoteForTld } from "@/lib/domains/pricing-engine";
+import { getTransferRetailQuote } from "@/lib/domains/transfer-quote";
 import { resolveDomainRegistrarProvider } from "@/lib/domains/providers/index";
 import { searchDomainsWithProvider } from "@/lib/domains/domain-service";
 import { publicId } from "@/lib/domains/transfer-service";
@@ -51,8 +51,8 @@ export async function processDomainTransferCheckout(input: {
     return { ok: false as const, error: normalized.error, status: 400 };
   }
 
-  const retail = await getRetailQuoteForTld(normalized.tld || ".com");
-  if (!retail) {
+  const retail = await getTransferRetailQuote(normalized.tld || ".com");
+  if (!retail?.purchasable) {
     return {
       ok: false as const,
       error: "We do not support transfers for that extension.",
@@ -70,10 +70,12 @@ export async function processDomainTransferCheckout(input: {
       status: 409,
     };
   }
-  if (row.status === "invalid") {
+  if (row.status === "invalid" || row.status === "unknown") {
     return {
       ok: false as const,
-      error: row.message ?? "Enter a valid domain name.",
+      error:
+        row.message ??
+        "We could not confirm transfer eligibility. Please try again.",
       status: 400,
     };
   }

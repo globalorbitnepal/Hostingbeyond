@@ -33,7 +33,6 @@ export default async function GetStartedDomainCheckoutPage({
   const params = await searchParams;
   const transferRaw =
     typeof params.transfer === "string" ? params.transfer.trim() : "";
-  const authRaw = typeof params.auth === "string" ? params.auth.trim() : "";
 
   const jar = await cookies();
   const user = await getCustomerFromToken(
@@ -41,20 +40,12 @@ export default async function GetStartedDomainCheckoutPage({
   );
 
   if (transferRaw) {
+    const transferPath = `${routes.domainCheckout}?transfer=${encodeURIComponent(transferRaw)}`;
     if (!user) {
-      redirect(
-        `${routes.login}?next=${encodeURIComponent(
-          `${routes.domainCheckout}?transfer=${encodeURIComponent(transferRaw)}${authRaw ? `&auth=${encodeURIComponent(authRaw)}` : ""}`,
-        )}`,
-      );
+      redirect(`${routes.login}?next=${encodeURIComponent(transferPath)}`);
     }
-    if (!authRaw) {
-      redirect(
-        `${routes.domainTransfer}?domain=${encodeURIComponent(transferRaw)}#transfer-check`,
-      );
-    }
-    const check = await checkTransferEligibilityAsync(transferRaw, authRaw);
-    if (!check.eligible) {
+    const check = await checkTransferEligibilityAsync(transferRaw);
+    if (!check.eligible || check.transferPrice == null) {
       redirect(
         `${routes.domainTransfer}?domain=${encodeURIComponent(transferRaw)}#transfer-check`,
       );
@@ -63,8 +54,7 @@ export default async function GetStartedDomainCheckoutPage({
     return (
       <DomainTransferCheckoutView
         domain={check.domain}
-        authCode={authRaw}
-        transferPrice={check.transferPrice ?? 0}
+        transferPrice={check.transferPrice}
         renewPrice={check.renewPrice ?? 0}
         currency="USD"
         walletBalance={Number(wallet.balance)}

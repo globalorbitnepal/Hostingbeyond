@@ -29,6 +29,7 @@ import {
   type DomainContent,
   type DomainPageCopy,
 } from "@/lib/domains/content";
+import type { PopularPickPricing } from "@/lib/domains/domain-search-page-data";
 import { formatPrice } from "@/lib/domains/tlds";
 
 const ICONS: Record<string, typeof ShieldCheck> = {
@@ -49,11 +50,13 @@ export function DomainTransferView({
   content,
   page,
   crossLinkHref,
+  popularTransferPricing,
 }: {
   initialDomain?: string;
   content: DomainContent;
   page: DomainPageCopy;
   crossLinkHref: string;
+  popularTransferPricing?: PopularPickPricing[];
 }) {
   const { shared } = content;
   const prices = visiblePricing(content);
@@ -183,17 +186,22 @@ export function DomainTransferView({
         linkLabel={shared.popularLinkLabel}
         linkHref={shared.popularLinkHref}
         picks={popular}
-        pricing={prices.map((row) => ({
-          tld: row.tld,
-          register: row.register,
-          renew: row.renew,
-          termYears: 1,
-          purchasable: row.register > 0,
-          priceCaption: "1st yr",
-          renewCaption: row.renew
-            ? `Renews at $${row.renew.toFixed(2)}/yr`
-            : null,
-        }))}
+        pricing={
+          popularTransferPricing ??
+          prices.map((row) => ({
+            tld: row.tld,
+            register: row.transfer > 0 ? row.transfer : null,
+            renew: row.renew,
+            termYears: 1,
+            purchasable: row.transfer > 0,
+            priceCaption:
+              row.transfer > 0 ? "transfer in" : "Transfer pricing unavailable",
+            renewCaption: row.renew
+              ? `Renews at $${row.renew.toFixed(2)}/yr`
+              : null,
+          }))
+        }
+        transferMode
       />
 
       <section className="hb-home-section hb-band-cream">

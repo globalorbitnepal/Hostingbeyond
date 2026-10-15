@@ -31,12 +31,15 @@ export function DomainPopularTldsSection({
   linkHref,
   picks,
   pricing,
+  transferMode = false,
 }: {
   heading: string;
   linkLabel: string;
   linkHref: string;
   picks: DomainPopularPick[];
   pricing: PopularPickPricing[];
+  /** Use transfer deep-links and CTA copy on /domain-transfer. */
+  transferMode?: boolean;
 }) {
   const reduce = useReducedMotion();
   const scroller = useRef<HTMLDivElement>(null);
@@ -131,7 +134,9 @@ export function DomainPopularTldsSection({
           {visible.map((pick, index) => {
             const row = priceByTld.get(pick.tld.toLowerCase());
             const purchasable = row?.purchasable && row.register != null;
-            const searchHref = `${routes.domainSearch}?q=${encodeURIComponent(`idea${pick.tld}`)}`;
+            const searchHref = transferMode
+              ? `${routes.domainTransfer}?domain=${encodeURIComponent(`idea${pick.tld}`)}#transfer-check`
+              : `${routes.domainSearch}?q=${encodeURIComponent(`idea${pick.tld}`)}`;
             return (
               <motion.article
                 key={pick.id}
@@ -196,7 +201,7 @@ export function DomainPopularTldsSection({
                         : "border border-white/20 bg-white/10 text-white hover:bg-white/15",
                     )}
                   >
-                    Check availability
+                    {transferMode ? "Check transfer" : "Check availability"}
                   </Link>
                 </div>
               </motion.article>

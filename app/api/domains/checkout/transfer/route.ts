@@ -54,6 +54,7 @@ export async function POST(request: Request) {
     duplicate: "duplicate" in result ? result.duplicate : false,
     reconciliation: "reconciliation" in result ? result.reconciliation : false,
     transfer: {
+      publicId: result.transfer.publicId,
       domain: result.transfer.domain,
       status: result.transfer.status,
       total: Number(result.transfer.total),

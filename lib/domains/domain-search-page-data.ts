@@ -64,6 +64,54 @@ export async function getRetailRegisterMap(
   return out;
 }
 
+export async function getPopularPickTransferPricing(
+  tlds: string[],
+  fallbackRows: DomainTldRow[],
+): Promise<PopularPickPricing[]> {
+  const keys = [
+    ...new Set(
+      tlds.map((t) =>
+        t.startsWith(".") ? t.toLowerCase() : `.${t.toLowerCase()}`,
+      ),
+    ),
+  ];
+  const dbRows = keys.length
+    ? await prisma.domainTldPrice.findMany({
+        where: { tld: { in: keys }, enabled: true },
+      })
+    : [];
+  const byTld = new Map(dbRows.map((r) => [r.tld.toLowerCase(), r]));
+  const fallback = new Map(fallbackRows.map((r) => [r.tld.toLowerCase(), r]));
+
+  return keys.map((tld) => {
+    const row = byTld.get(tld);
+    const transferRaw =
+      row && Number(row.retailTransfer) > 0
+        ? toNumber(row.retailTransfer)
+        : (fallback.get(tld)?.transfer ?? null);
+    const renewRaw =
+      row != null
+        ? toNumber(row.retailRenew)
+        : (fallback.get(tld)?.renew ?? null);
+    const transfer = transferRaw ?? 0;
+    const purchasable = transfer > 0;
+    return {
+      tld,
+      register: purchasable ? transfer : null,
+      renew: renewRaw != null && renewRaw > 0 ? renewRaw : null,
+      termYears: 1,
+      purchasable,
+      priceCaption: purchasable
+        ? "transfer in"
+        : "Transfer pricing unavailable",
+      renewCaption:
+        renewRaw != null && renewRaw > 0
+          ? `Renews at $${renewRaw.toFixed(2)}/yr`
+          : null,
+    };
+  });
+}
+
 export async function getPopularPickPricing(
   tlds: string[],
   fallbackRows: DomainTldRow[],

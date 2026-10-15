@@ -1,57 +1,82 @@
-import { prisma } from "@/lib/prisma";
 import { normalizeDomainSearchInput } from "@/lib/domains/normalize";
 import { searchDomainsWithProvider } from "@/lib/domains/domain-service";
-import { getRetailQuoteForTld } from "@/lib/domains/pricing-engine";
 import { resolveAvailabilityProvider } from "@/lib/domains/providers/index";
 import { routes } from "@/config/routes";
 import { checkTransferEligibility as legacyCheck } from "@/lib/domains/transfer";
 import type { TransferCheckResult } from "@/lib/domains/transfer";
+import {
+  buildTransferCheckResult,
+  getTransferRetailQuote,
+  transferCheckoutHref,
+} from "@/lib/domains/transfer-quote";
+import { prisma } from "@/lib/prisma";
 
 export async function checkTransferEligibilityAsync(
   input: string,
-  authCode?: string,
+  _authCode?: string,
 ): Promise<TransferCheckResult> {
   const normalized = normalizeDomainSearchInput(input);
   if (!normalized.ok) {
-    return legacyCheck(input, authCode);
+    return legacyCheck(input);
   }
 
   const provider = resolveAvailabilityProvider();
   if (!provider) {
     if (process.env.NODE_ENV === "production") {
-      return {
+      return buildTransferCheckResult({
         domain: input.trim(),
         status: "invalid",
         eligible: false,
+        message: "Domain transfer is temporarily unavailable.",
         transferPrice: null,
         renewPrice: null,
-        message: "Domain transfer is temporarily unavailable.",
-        checkoutHref: routes.domainTransfer,
-      };
+        purchasable: false,
+      });
     }
-    return legacyCheck(input, authCode);
+    return legacyCheck(input);
+  }
+
+  const quote = await getTransferRetailQuote(normalized.tld || ".com");
+  if (!quote) {
+    return buildTransferCheckResult({
+      domain: normalized.query,
+      status: "unsupported",
+      eligible: false,
+      message: `We do not support transfers for ${normalized.tld || "this extension"} yet.`,
+      transferPrice: null,
+      renewPrice: null,
+      purchasable: false,
+    });
+  }
+
+  if (!quote.purchasable) {
+    return buildTransferCheckResult({
+      domain: normalized.query,
+      status: "unsupported",
+      eligible: false,
+      message:
+        "Transfer pricing is not configured for this extension. Contact support for a quote.",
+      transferPrice: null,
+      renewPrice: quote.renew,
+      purchasable: false,
+    });
   }
 
   try {
     const { results } = await searchDomainsWithProvider([normalized.query]);
     const row = results[0];
-    const retail = await getRetailQuoteForTld(normalized.tld || ".com");
-    const href = `${routes.domainCheckout}?${new URLSearchParams({
-      transfer: normalized.query,
-      ...(authCode?.trim() ? { auth: authCode.trim() } : {}),
-    }).toString()}`;
 
-    if (!row || !retail) {
-      return {
+    if (!row) {
+      return buildTransferCheckResult({
         domain: normalized.query,
         status: "invalid",
         eligible: false,
-        transferPrice: null,
-        renewPrice: null,
         message:
           "We couldn't verify transfer eligibility right now. Please try again.",
-        checkoutHref: routes.domainTransfer,
-      };
+        transferPrice: quote.transfer,
+        renewPrice: quote.renew,
+        purchasable: false,
+      });
     }
 
     if (row.status === "available" || row.status === "premium") {
@@ -59,47 +84,58 @@ export async function checkTransferEligibilityAsync(
         domain: row.domain,
         status: "available",
         eligible: false,
-        transferPrice: retail.transfer,
-        renewPrice: retail.renew,
+        transferPrice: quote.transfer,
+        renewPrice: quote.renew,
         message: `${row.domain} looks available to register — transfer is for domains you already own elsewhere.`,
         checkoutHref: `${routes.domainCheckout}?domain=${encodeURIComponent(row.domain)}`,
       };
     }
 
-    if (row.status === "invalid" || row.status === "unknown") {
-      return {
+    if (row.status === "invalid") {
+      return buildTransferCheckResult({
         domain: row.domain,
         status: "invalid",
         eligible: false,
-        transferPrice: null,
-        renewPrice: null,
-        message:
-          row.message ??
-          "We couldn't verify transfer eligibility right now. Please try again.",
-        checkoutHref: href,
-      };
+        message: row.message ?? "Enter a valid domain name.",
+        transferPrice: quote.transfer,
+        renewPrice: quote.renew,
+        purchasable: false,
+      });
     }
 
-    return {
+    if (row.status === "unknown") {
+      return buildTransferCheckResult({
+        domain: row.domain,
+        status: "invalid",
+        eligible: false,
+        message:
+          "We could not confirm registry status. Try again in a moment — we will not guess transfer eligibility.",
+        transferPrice: quote.transfer,
+        renewPrice: quote.renew,
+        purchasable: false,
+      });
+    }
+
+    return buildTransferCheckResult({
       domain: row.domain,
       status: "eligible",
       eligible: true,
-      transferPrice: retail.transfer,
-      renewPrice: retail.renew,
-      message: `${row.domain} is ready to transfer. Unlock it at your current registrar and enter your auth code.`,
-      checkoutHref: href,
-    };
+      transferPrice: quote.transfer,
+      renewPrice: quote.renew,
+      purchasable: true,
+      message: `${row.domain} appears registered. Unlock it at your current registrar, then enter your auth (EPP) code at checkout. Transfer fee is shown before you pay.`,
+    });
   } catch {
-    return {
+    return buildTransferCheckResult({
       domain: normalized.query,
       status: "invalid",
       eligible: false,
-      transferPrice: null,
-      renewPrice: null,
       message:
         "We couldn't verify transfer eligibility right now. Please try again.",
-      checkoutHref: routes.domainTransfer,
-    };
+      transferPrice: quote.transfer,
+      renewPrice: quote.renew,
+      purchasable: false,
+    });
   }
 }
 
@@ -117,10 +153,12 @@ export async function createPendingDomainOrder(input: {
   const normalized = normalizeDomainSearchInput(input.domain);
   if (!normalized.ok) throw new Error("invalid_domain");
 
-  const retail = await getRetailQuoteForTld(normalized.tld || ".com");
-  if (!retail) throw new Error("tld_unsupported");
+  const quote = await getTransferRetailQuote(normalized.tld || ".com");
+  if (!quote?.purchasable) throw new Error("tld_unsupported");
 
-  const total = retail.register;
+  const isTransfer = input.orderType.toLowerCase().includes("transfer");
+  const total = isTransfer ? quote.transfer : quote.register;
+
   return prisma.domainOrder.create({
     data: {
       publicId: publicId("DOM"),
@@ -131,7 +169,7 @@ export async function createPendingDomainOrder(input: {
       status: "PENDING_PAYMENT",
       retailPrice: total,
       total,
-      currency: retail.currency,
+      currency: quote.currency,
       idempotencyKey: input.idempotencyKey,
     },
   });

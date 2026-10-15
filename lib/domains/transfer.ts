@@ -1,7 +1,7 @@
-import { routes } from "@/config/routes";
-
 import { checkDomain } from "@/lib/domains/availability";
+import { transferCheckoutHref } from "@/lib/domains/transfer-quote";
 import { formatPrice } from "@/lib/domains/tlds";
+import { routes } from "@/config/routes";
 
 export type TransferEligibilityStatus =
   "eligible" | "available" | "invalid" | "unsupported";
@@ -16,12 +16,6 @@ export type TransferCheckResult = {
   checkoutHref: string;
 };
 
-function checkoutHref(domain: string, authCode?: string) {
-  const params = new URLSearchParams({ transfer: domain });
-  if (authCode?.trim()) params.set("auth", authCode.trim());
-  return `${routes.getStarted}?${params.toString()}`;
-}
-
 /**
  * Synchronous transfer eligibility (hash/catalogue fallback only).
  * Production checks use checkTransferEligibilityAsync() → real Domain Name API availability.
@@ -29,11 +23,11 @@ function checkoutHref(domain: string, authCode?: string) {
  */
 export function checkTransferEligibility(
   input: string,
-  authCode?: string,
+  _authCode?: string,
 ): TransferCheckResult {
   const result = checkDomain(input);
   const domain = result.domain;
-  const href = checkoutHref(domain, authCode);
+  const href = transferCheckoutHref(domain);
 
   if (result.status === "invalid") {
     return {

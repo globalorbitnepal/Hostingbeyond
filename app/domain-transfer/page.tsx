@@ -10,6 +10,11 @@ import {
 } from "@/lib/orbit/content";
 import { buildDomainPageMetadata } from "@/lib/domains/page-metadata";
 import { buildDomainSchema } from "@/lib/domains/seo";
+import { visiblePricing } from "@/lib/domains/content";
+import {
+  getPopularPickTransferPricing,
+  mergeRetailIntoPricingRows,
+} from "@/lib/domains/domain-search-page-data";
 
 const PATH = routes.domainTransfer;
 
@@ -34,6 +39,16 @@ export default async function DomainTransferPage({ searchParams }: PageProps) {
   ]);
 
   const page = content.transfer;
+  const displayPricing = await mergeRetailIntoPricingRows(
+    visiblePricing(content),
+  );
+  const popularTlds = content.shared.popularPicks
+    .filter((p) => p.visible !== false)
+    .map((p) => p.tld);
+  const popularTransferPricing = await getPopularPickTransferPricing(
+    popularTlds,
+    displayPricing,
+  );
 
   const schema = buildDomainSchema({
     name: page.title,
@@ -68,6 +83,7 @@ export default async function DomainTransferPage({ searchParams }: PageProps) {
           content={content}
           page={page}
           crossLinkHref={routes.domainSearch}
+          popularTransferPricing={popularTransferPricing}
         />
       </div>
 

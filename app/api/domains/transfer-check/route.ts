@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 
 import { checkTransferEligibilityAsync } from "@/lib/domains/transfer-service";
 import { resolveDomainRegistrarProvider } from "@/lib/domains/providers/index";
+import {
+  clientKeyFromRequest,
+  rateLimitDomainSearch,
+} from "@/lib/domains/rate-limit";
 import type { TransferCheckResult } from "@/lib/domains/transfer";
 
 export const runtime = "nodejs";
@@ -16,6 +20,13 @@ type Body = {
  * set DOMAIN_TRANSFER_LOOKUP_URL to forward { domain, authCode? } to a registrar.
  */
 export async function POST(request: Request) {
+  if (!rateLimitDomainSearch(clientKeyFromRequest(request))) {
+    return NextResponse.json(
+      { error: "Too many requests. Please wait a moment." },
+      { status: 429 },
+    );
+  }
+
   const body = (await request.json().catch(() => null)) as Body | null;
   const domain = body?.domain?.trim() ?? "";
   const authCode = body?.authCode?.trim() ?? "";
