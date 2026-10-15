@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import type { DomainResult } from "@/lib/domains/availability";
-import { parseBulkInput } from "@/lib/domains/availability";
+import { runBulkDomainSearch } from "@/lib/domains/bulk-search";
 import { lookupDomainNames, lookupErrorMessage } from "@/lib/domains/lookup";
 import { normalizeDomainSearchInput } from "@/lib/domains/normalize";
 import {
@@ -88,21 +88,19 @@ export async function POST(request: Request) {
 
   try {
     if (bulk) {
-      const names = parseBulkInput(bulk, MAX_BULK);
-      if (names.length === 0) {
+      if (!bulk.trim()) {
         return NextResponse.json(
           { error: "Add at least one domain, one per line." },
           { status: 400 },
         );
       }
-      const invalid = names.find((n) => !normalizeDomainSearchInput(n).ok);
-      if (invalid) {
+      const { results, source } = await runBulkDomainSearch(bulk, MAX_BULK);
+      if (!results.length) {
         return NextResponse.json(
-          { error: "Please enter a valid domain name on every line." },
+          { error: "Add at least one domain, one per line." },
           { status: 400 },
         );
       }
-      const { results, source } = await lookupDomainNames(names, { bulk });
       return NextResponse.json({
         results,
         source,

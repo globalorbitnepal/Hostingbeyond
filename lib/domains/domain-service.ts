@@ -163,7 +163,7 @@ export async function mapRowToCustomerResult(
       transfer: null,
       message:
         row.message ??
-        "We couldn't verify availability for this name right now. Please try again.",
+        "Temporarily unavailable — registry check did not complete. Please try again.",
     };
   }
 
@@ -290,29 +290,84 @@ async function checkAvailabilityInBatches(
   const results: import("@/lib/domains/providers/types").ProviderAvailabilityRow[] =
     [];
 
+  const fallbackRowsForChunk = (
+    fqdns: string[],
+    message?: string,
+  ): import("@/lib/domains/providers/types").ProviderAvailabilityRow[] =>
+    fqdns.map((fqdn) => {
+      const { name, tld } = splitDomain(fqdn);
+      return {
+        domain: fqdn.toLowerCase(),
+        name,
+        tld: tld || ".com",
+        status: "unknown",
+        supplier: {
+          register: null,
+          renew: null,
+          transfer: null,
+          currency: "USD",
+        },
+        message:
+          message ??
+          "Temporarily unavailable — registry check did not complete. Please try again.",
+      };
+    });
+
   if (limit <= 1) {
     for (let i = 0; i < chunks.length; i++) {
-      const part = await checkAvailabilityChunkWithRetry(provider, chunks[i]!);
-      results.push(...part);
+      try {
+        const part = await checkAvailabilityChunkWithRetry(
+          provider,
+          chunks[i]!,
+        );
+        results.push(...part);
+      } catch (error) {
+        const hint =
+          error instanceof DomainProviderError && error.code === "timeout"
+            ? "Temporarily unavailable — the registry timed out. Please try again."
+            : error instanceof DomainProviderError &&
+                error.code === "rate_limit"
+              ? "Temporarily unavailable — too many checks at once. Please wait and try again."
+              : undefined;
+        results.push(...fallbackRowsForChunk(chunks[i]!, hint));
+      }
       if (i < chunks.length - 1 && pacing > 0) await sleep(pacing);
     }
     return results;
   }
 
+  const chunkResults: import("@/lib/domains/providers/types").ProviderAvailabilityRow[][] =
+    new Array(chunks.length);
   let index = 0;
   async function worker() {
     while (index < chunks.length) {
       const chunkIndex = index++;
-      const part = await checkAvailabilityChunkWithRetry(
-        provider,
-        chunks[chunkIndex]!,
-      );
-      results.push(...part);
+      try {
+        chunkResults[chunkIndex] = await checkAvailabilityChunkWithRetry(
+          provider,
+          chunks[chunkIndex]!,
+        );
+      } catch (error) {
+        const hint =
+          error instanceof DomainProviderError && error.code === "timeout"
+            ? "Temporarily unavailable — the registry timed out. Please try again."
+            : error instanceof DomainProviderError &&
+                error.code === "rate_limit"
+              ? "Temporarily unavailable — too many checks at once. Please wait and try again."
+              : undefined;
+        chunkResults[chunkIndex] = fallbackRowsForChunk(
+          chunks[chunkIndex]!,
+          hint,
+        );
+      }
     }
   }
   await Promise.all(
     Array.from({ length: Math.min(limit, chunks.length) }, () => worker()),
   );
+  for (const part of chunkResults) {
+    if (part?.length) results.push(...part);
+  }
   return results;
 }
 
@@ -348,7 +403,8 @@ async function searchDomainsWithProviderUncached(
             register: null,
             renew: null,
             transfer: null,
-            message: "Unable to check this extension right now.",
+            message:
+              "Temporarily unavailable — registry check did not complete. Please try again.",
           };
         }
         const mapped = await mapRowToCustomerResult(row, pricingCtx);

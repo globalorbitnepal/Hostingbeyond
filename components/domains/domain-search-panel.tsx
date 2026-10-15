@@ -175,7 +175,7 @@ function StatusPill({ status }: { status: DomainResult["status"] }) {
   if (status === "unknown") {
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-extrabold tracking-wide text-amber-800 uppercase">
-        Unavailable
+        Temporarily unavailable
       </span>
     );
   }
@@ -661,17 +661,32 @@ export function DomainSearchPanel({
     setPrimaryResult(null);
     setAlternativeResults([]);
     setResults([]);
-    try {
-      const response = await fetch("/api/domains/search", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ bulk: bulkPayload }),
-        signal: controller.signal,
+    const sleep = (ms: number) =>
+      new Promise<void>((resolve) => {
+        window.setTimeout(resolve, ms);
       });
-      const json = (await response.json()) as {
-        results?: DomainResult[];
-        error?: string;
-      };
+
+    try {
+      let response: Response | null = null;
+      let json: { results?: DomainResult[]; error?: string } = {};
+      for (let attempt = 0; attempt < 4; attempt++) {
+        response = await fetch("/api/domains/search", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ bulk: bulkPayload }),
+          signal: controller.signal,
+        });
+        json = (await response.json()) as {
+          results?: DomainResult[];
+          error?: string;
+        };
+        if (response.status === 429 && attempt < 3) {
+          await sleep(600 * (attempt + 1));
+          continue;
+        }
+        break;
+      }
+      if (!response) return;
       if (gen !== searchGeneration.current) return;
       if (!response.ok || !json.results) {
         setResults([]);
