@@ -188,9 +188,9 @@ function RegistrarMotion({ playing }: { playing: boolean }) {
 
 function PrivacyMotion({ playing }: { playing: boolean }) {
   const rows = [
-    { label: "WHOIS privacy", value: "ON", ok: true },
-    { label: "SSL certificate", value: "Active", ok: true },
-    { label: "Contact details", value: "Hidden", ok: false },
+    { label: "WHOIS privacy", value: "Eligible", ok: true },
+    { label: "SSL certificate", value: "With hosting", ok: true },
+    { label: "Contact details", value: "Protected", ok: false },
   ];
 
   return (

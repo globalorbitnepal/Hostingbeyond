@@ -1,9 +1,23 @@
+"use client";
+
 import Link from "next/link";
+import { motion, useReducedMotion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 
-import { DomainFrameImage } from "@/components/domains/domain-frame-image";
-import { DomainShowcaseMedia } from "@/components/domains/domain-showcase-media";
+import { DomainGuidePillarMotion } from "@/components/domains/domain-guide-pillar-motion";
 import type { DomainGuidePillar } from "@/lib/domains/content";
+
+function reveal(delay: number, reduce: boolean | null) {
+  if (reduce) {
+    return { initial: false as const, animate: { opacity: 1, y: 0 } };
+  }
+  return {
+    initial: { opacity: 0, y: 24 },
+    whileInView: { opacity: 1, y: 0 },
+    viewport: { once: true, margin: "-30px" },
+    transition: { duration: 0.5, delay, ease: [0.22, 1, 0.36, 1] as const },
+  };
+}
 
 export function DomainGuidePillarsSection({
   heading,
@@ -12,79 +26,65 @@ export function DomainGuidePillarsSection({
   heading: string;
   pillars: DomainGuidePillar[];
 }) {
+  const reduce = useReducedMotion();
   const visible = pillars.filter((p) => p.visible !== false);
   if (visible.length === 0) return null;
 
   return (
-    <section id="domain-guide" className="bg-[#0a0f1f] py-16 sm:py-20">
-      <div className="hb-shell">
-        <h2 className="font-heading mx-auto max-w-3xl px-2 text-center text-[clamp(1.55rem,3vw,2.35rem)] leading-[1.12] font-extrabold tracking-[-0.03em] text-white">
+    <section
+      id="domain-guide"
+      className="relative overflow-x-hidden bg-gradient-to-b from-[#0a0f1f] via-[#0c1229] to-[#07051a] py-16 sm:py-20 lg:py-24"
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-30"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 15% 50%, rgba(103,61,230,0.25), transparent 45%), radial-gradient(circle at 90% 20%, rgba(59,130,246,0.18), transparent 40%)",
+        }}
+      />
+
+      <div className="hb-shell relative z-10">
+        <motion.h2
+          className="font-heading mx-auto max-w-3xl px-2 text-center text-[clamp(1.65rem,3.2vw,2.45rem)] leading-[1.1] font-extrabold tracking-[-0.03em] text-white"
+          {...reveal(0, reduce)}
+        >
           {heading}
-        </h2>
+        </motion.h2>
 
-        <ul className="mt-12 grid gap-6 md:grid-cols-3">
-          {visible.map((pillar) => {
-            const bg =
-              pillar.image?.trim() ||
-              `/images/domains/frames/pillar-${pillar.pillar}.svg`;
-            const hasCustomBg = Boolean(pillar.image?.trim());
-
-            return (
-              <li
-                key={pillar.id}
-                className="relative flex min-h-[420px] flex-col overflow-hidden rounded-[24px] border border-white/10 shadow-[0_28px_70px_-40px_rgba(0,0,0,0.8)]"
-              >
-                <div className="absolute inset-0">
-                  {hasCustomBg ? (
-                    <DomainFrameImage
-                      src={bg}
-                      alt=""
-                      overlay="dark"
-                      className="object-cover"
-                    />
-                  ) : (
-                    <>
-                      <DomainFrameImage
-                        src={bg}
-                        alt=""
-                        overlay="none"
-                        className="object-cover"
-                      />
-                      <div
-                        aria-hidden
-                        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0a0f1f] via-[#0a0f1f]/75 to-[#0a0f1f]/35"
-                      />
-                      <div className="absolute inset-x-0 top-0 h-[42%] opacity-90">
-                        <DomainShowcaseMedia
-                          layout={pillar.pillar}
-                          image=""
-                          video={pillar.video}
-                          className="min-h-full"
-                        />
-                      </div>
-                    </>
-                  )}
-                </div>
-                <div className="relative z-10 mt-auto flex flex-1 flex-col justify-end p-6 pt-32">
-                  <h3 className="text-[17px] font-extrabold tracking-tight text-white">
-                    {pillar.title}
-                  </h3>
-                  <p className="mt-2 text-[13.5px] leading-relaxed text-white/80">
-                    {pillar.description}
-                  </p>
-                  {pillar.linkLabel ? (
-                    <Link
-                      href={pillar.linkHref || "#"}
-                      className="mt-4 inline-flex items-center gap-1 text-[13px] font-bold text-[#a5b4fc] hover:text-white"
-                    >
-                      {pillar.linkLabel}
-                      <ArrowUpRight className="size-4" />
-                    </Link>
-                  ) : null}
-                </div>
-              </li>
-            );
-          })}
+        <ul className="mt-12 grid gap-5 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {visible.map((pillar, index) => (
+            <motion.li
+              key={pillar.id}
+              className="group relative flex min-h-[min(88vw,420px)] flex-col overflow-hidden rounded-[26px] border border-white/10 bg-white/[0.04] shadow-[0_32px_80px_-48px_rgba(0,0,0,0.85)] backdrop-blur-md transition duration-300 hover:border-white/20 hover:shadow-[0_40px_90px_-40px_rgba(103,61,230,0.35)] motion-reduce:transform-none"
+              {...reveal(0.08 + index * 0.07, reduce)}
+            >
+              <div className="relative h-[42%] min-h-[180px] shrink-0 overflow-hidden border-b border-white/10">
+                <DomainGuidePillarMotion pillar={pillar.pillar} />
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0a0f1f] via-transparent to-transparent"
+                />
+              </div>
+              <div className="flex flex-1 flex-col p-6 pt-5">
+                <h3 className="text-[17px] font-extrabold tracking-tight text-white">
+                  {pillar.title}
+                </h3>
+                <p className="mt-2 flex-1 text-[14px] leading-relaxed text-white/75">
+                  {pillar.description}
+                </p>
+                {pillar.linkLabel ? (
+                  <Link
+                    href={pillar.linkHref || "#"}
+                    className="mt-5 inline-flex items-center gap-1 text-[13px] font-bold text-[#a5b4fc] transition group-hover:text-white"
+                  >
+                    {pillar.linkLabel}
+                    <ArrowUpRight className="size-4 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  </Link>
+                ) : null}
+              </div>
+            </motion.li>
+          ))}
         </ul>
       </div>
     </section>

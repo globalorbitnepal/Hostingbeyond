@@ -1,10 +1,23 @@
-import Link from "next/link";
-import { ArrowRight, Headphones, ListOrdered } from "lucide-react";
+"use client";
 
-import { DomainWhyPrivacyPanel } from "@/components/domains/domain-why-privacy-panel";
-import { DomainWhySearchIllustration } from "@/components/domains/domain-why-search-illustration";
+import Link from "next/link";
+import { motion, useReducedMotion } from "framer-motion";
+import { ArrowRight } from "lucide-react";
+
+import { DomainBentoShowcaseMotion } from "@/components/domains/domain-bento-showcase-motion";
 import type { DomainShowcaseCard } from "@/lib/domains/content";
-import { cn } from "@/lib/utils";
+
+function reveal(delay: number, reduce: boolean | null) {
+  if (reduce) {
+    return { initial: false as const, animate: { opacity: 1, y: 0 } };
+  }
+  return {
+    initial: { opacity: 0, y: 28 },
+    whileInView: { opacity: 1, y: 0 },
+    viewport: { once: true, margin: "-40px" },
+    transition: { duration: 0.55, delay, ease: [0.22, 1, 0.36, 1] as const },
+  };
+}
 
 export function DomainBentoShowcaseSection({
   eyebrow,
@@ -17,6 +30,7 @@ export function DomainBentoShowcaseSection({
   description: string;
   cards: DomainShowcaseCard[];
 }) {
+  const reduce = useReducedMotion();
   const visible = cards.filter((c) => c.visible !== false);
   if (visible.length === 0) return null;
 
@@ -29,110 +43,140 @@ export function DomainBentoShowcaseSection({
   const setup = byLayout("setup");
 
   return (
-    <section className="overflow-x-hidden bg-[#faf9ff] py-14 sm:py-18 lg:py-20">
-      <div className="hb-shell max-w-[1280px]">
-        <div className="mx-auto max-w-3xl px-1 text-center sm:px-0">
-          <p className="text-[11px] font-bold tracking-[0.28em] text-slate-500 uppercase">
+    <section
+      className="relative overflow-x-hidden bg-gradient-to-b from-[#07051a] via-[#12082e] to-[#0a0f1f] py-16 sm:py-20 lg:py-24"
+      aria-labelledby="why-hostingbeyond-heading"
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.45]"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 20% 10%, rgba(103,61,230,0.35), transparent 42%), radial-gradient(circle at 85% 30%, rgba(37,99,235,0.22), transparent 40%), radial-gradient(circle at 50% 100%, rgba(124,58,237,0.2), transparent 50%)",
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.06]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.85) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.85) 1px, transparent 1px)",
+          backgroundSize: "48px 48px",
+        }}
+      />
+
+      <div className="hb-shell relative z-10 max-w-[1280px]">
+        <motion.header
+          className="mx-auto max-w-3xl px-1 text-center sm:px-0"
+          {...reveal(0, reduce)}
+        >
+          <p className="text-[11px] font-bold tracking-[0.32em] text-[#a5b4fc] uppercase">
             {eyebrow}
           </p>
-          <h2 className="font-heading mt-3 text-[clamp(1.65rem,3.2vw,2.45rem)] leading-[1.1] font-extrabold tracking-[-0.04em] text-[#0f172a]">
+          <h2
+            id="why-hostingbeyond-heading"
+            className="font-heading mt-4 text-[clamp(1.75rem,3.4vw,2.65rem)] leading-[1.08] font-extrabold tracking-[-0.04em] text-white"
+          >
             {heading}
           </h2>
-          <p className="mt-3 text-[15px] leading-relaxed text-slate-600 sm:text-[16px]">
+          <p className="mt-4 text-[15px] leading-relaxed text-white/70 sm:text-[16px]">
             {description}
           </p>
-        </div>
+        </motion.header>
 
-        <div className="mt-10 grid gap-6 lg:mt-12 lg:grid-cols-2 lg:items-start lg:gap-8">
-          <div className="min-w-0 space-y-4">
-            <DomainWhySearchIllustration />
-            {registrar ? (
-              <article className="rounded-[22px] border border-slate-200/80 bg-white p-5 shadow-[0_16px_40px_-30px_rgba(47,28,106,0.25)] sm:p-6">
-                <h3 className="text-[17px] font-extrabold tracking-tight text-[#0f172a]">
-                  {registrar.title}
+        <div className="mt-12 grid gap-5 lg:mt-14 lg:grid-cols-2 lg:gap-6">
+          <motion.div
+            className="min-w-0 overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.03] shadow-[0_40px_100px_-50px_rgba(103,61,230,0.55)] backdrop-blur-sm"
+            {...reveal(0.08, reduce)}
+          >
+            <div className="relative min-h-[min(72vw,380px)] sm:min-h-[400px]">
+              <DomainBentoShowcaseMotion layout="registrar" />
+            </div>
+          </motion.div>
+
+          <motion.div
+            className="flex min-w-0 flex-col gap-4"
+            {...reveal(0.14, reduce)}
+          >
+            <div className="overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.03] shadow-[0_40px_100px_-50px_rgba(37,99,235,0.45)] backdrop-blur-sm">
+              <div className="relative min-h-[min(68vw,340px)] sm:min-h-[360px]">
+                <DomainBentoShowcaseMotion layout="privacy" />
+              </div>
+            </div>
+            {privacy ? (
+              <div className="px-1 sm:px-2">
+                <h3 className="text-[17px] font-extrabold tracking-tight text-white sm:text-[18px]">
+                  {privacy.title}
                 </h3>
-                <p className="mt-2 text-[14px] leading-relaxed text-slate-600">
-                  {registrar.description}
+                <p className="mt-2 text-[14px] leading-relaxed text-white/75">
+                  {privacy.description}
                 </p>
-                {registrar.linkLabel ? (
+                {privacy.linkLabel ? (
                   <Link
-                    href={registrar.linkHref || "#pricing"}
-                    className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-extrabold text-[#2f1c6a] hover:text-[#673de6]"
+                    href={privacy.linkHref || "#domain-guide"}
+                    className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-extrabold text-[#a5b4fc] transition hover:text-white"
                   >
-                    {registrar.linkLabel}
-                    <ArrowRight className="size-4" />
+                    {privacy.linkLabel}
+                    <ArrowRight className="size-4" aria-hidden />
                   </Link>
                 ) : null}
-              </article>
+              </div>
             ) : null}
-          </div>
+          </motion.div>
+        </div>
 
-          <div className="min-w-0 space-y-5">
-            {privacy ? (
-              <DomainWhyPrivacyPanel
-                title={privacy.title}
-                description={privacy.description}
-                linkLabel={privacy.linkLabel || "Learn about privacy"}
-                linkHref={privacy.linkHref || "#domain-guide"}
-              />
-            ) : null}
-            <div className="grid gap-4 sm:grid-cols-2">
-              {support ? (
-                <CompactCard
-                  icon={Headphones}
-                  card={support}
-                  className="sm:col-span-1"
-                />
+        <div className="mt-6 grid gap-5 lg:mt-8 lg:grid-cols-3 lg:gap-6">
+          {registrar ? (
+            <motion.article
+              className="flex flex-col justify-center rounded-[24px] border border-white/10 bg-white/[0.04] p-6 backdrop-blur-md lg:min-h-[200px]"
+              {...reveal(0.18, reduce)}
+            >
+              <h3 className="text-[17px] font-extrabold tracking-tight text-white">
+                {registrar.title}
+              </h3>
+              <p className="mt-2 text-[14px] leading-relaxed text-white/70">
+                {registrar.description}
+              </p>
+              {registrar.linkLabel ? (
+                <Link
+                  href={registrar.linkHref || "#pricing"}
+                  className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-extrabold text-[#c4b5fd] hover:text-white"
+                >
+                  {registrar.linkLabel}
+                  <ArrowRight className="size-4" />
+                </Link>
               ) : null}
-              {setup ? (
-                <CompactCard
-                  icon={ListOrdered}
-                  card={setup}
-                  className="sm:col-span-1"
+            </motion.article>
+          ) : (
+            <span className="hidden lg:block" aria-hidden />
+          )}
+
+          {support ? (
+            <motion.div
+              className="min-w-0 overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.03] shadow-[0_32px_80px_-48px_rgba(103,61,230,0.5)]"
+              {...reveal(0.22, reduce)}
+            >
+              <div className="relative min-h-[280px] sm:min-h-[300px]">
+                <DomainBentoShowcaseMotion
+                  layout="support"
+                  badge={support.badge}
                 />
-              ) : null}
-            </div>
-          </div>
+              </div>
+            </motion.div>
+          ) : null}
+
+          {setup ? (
+            <motion.div
+              className="min-w-0 overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.03] shadow-[0_32px_80px_-48px_rgba(37,99,235,0.4)]"
+              {...reveal(0.26, reduce)}
+            >
+              <div className="relative min-h-[280px] sm:min-h-[300px]">
+                <DomainBentoShowcaseMotion layout="setup" />
+              </div>
+            </motion.div>
+          ) : null}
         </div>
       </div>
     </section>
-  );
-}
-
-function CompactCard({
-  card,
-  icon: Icon,
-  className,
-}: {
-  card: DomainShowcaseCard;
-  icon: typeof Headphones;
-  className?: string;
-}) {
-  return (
-    <article
-      className={cn(
-        "flex h-full flex-col rounded-[20px] border border-slate-200/80 bg-white p-4 shadow-[0_12px_32px_-24px_rgba(47,28,106,0.3)] transition hover:-translate-y-0.5 hover:shadow-lg motion-reduce:transform-none sm:p-5",
-        className,
-      )}
-    >
-      <span className="inline-flex size-10 items-center justify-center rounded-xl bg-[#f3eeff] text-[#673de6]">
-        <Icon className="size-5" strokeWidth={1.9} aria-hidden />
-      </span>
-      <h3 className="mt-3 text-[15px] font-extrabold text-[#0f172a]">
-        {card.title}
-      </h3>
-      <p className="mt-1.5 flex-1 text-[13px] leading-relaxed text-slate-600">
-        {card.description}
-      </p>
-      {card.linkLabel ? (
-        <Link
-          href={card.linkHref || "#"}
-          className="mt-3 inline-flex items-center gap-1 text-[12px] font-extrabold text-[#673de6] hover:text-[#5b2fd4]"
-        >
-          {card.linkLabel}
-          <ArrowRight className="size-3.5" />
-        </Link>
-      ) : null}
-    </article>
   );
 }
