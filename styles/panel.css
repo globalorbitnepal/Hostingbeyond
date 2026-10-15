@@ -1,0 +1,74 @@
+/* HostingBeyond customer panel (hPanel-inspired) */
+.hb-panel {
+  --hb-p-primary: #6025c5;
+  --hb-p-primary-deep: #35106f;
+  --hb-p-blue: #3730a3;
+  --hb-p-surface: #f8f7fc;
+  --hb-p-border: rgb(96 37 197 / 12%);
+  --hb-p-sidebar-w: 17.5rem;
+  --hb-p-sidebar-collapsed: 4.25rem;
+  min-height: 100dvh;
+  background: var(--hb-p-surface);
+  color: #171329;
+}
+
+.hb-panel__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.hb-panel-card {
+  border-radius: 16px;
+  border: 1px solid var(--hb-p-border);
+  background: #fff;
+  box-shadow: 0 12px 40px -24px rgb(53 16 111 / 14%);
+}
+
+.hb-panel-stat {
+  border-radius: 14px;
+  border: 1px solid var(--hb-p-border);
+  background: linear-gradient(145deg, #fff 0%, #faf8ff 100%);
+}
+
+.hb-panel-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  border-radius: 10px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #4b4563;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.hb-panel-nav-link:hover {
+  background: rgb(96 37 197 / 6%);
+  color: var(--hb-p-primary-deep);
+}
+
+.hb-panel-nav-link[data-active="true"] {
+  background: linear-gradient(
+    90deg,
+    rgb(96 37 197 / 14%) 0%,
+    rgb(55 48 163 / 8%) 100%
+  );
+  color: var(--hb-p-primary-deep);
+  font-weight: 600;
+}
+
+.hb-panel-nav-link[data-soon="true"] {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.hb-panel-badge-soon {
+  margin-left: auto;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8b83a8;
+}

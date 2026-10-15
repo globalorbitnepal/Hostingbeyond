@@ -1,11 +1,9 @@
-import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { BrandMark } from "@/components/auth/brand-mark";
-import { LogoutButton } from "@/components/auth/logout-button";
 import { WalletTopUpForm } from "@/components/domains/wallet-top-up-form";
 import { WalletAccountPanel } from "@/components/domains/wallet-account-panel";
+import { routes } from "@/config/routes";
 import {
   CUSTOMER_SESSION_COOKIE,
   getCustomerFromToken,
@@ -15,7 +13,6 @@ import {
   getWalletPaymentForUser,
   isPaymentProviderConfigured,
 } from "@/lib/payments/wallet-payment-service";
-import { routes } from "@/config/routes";
 
 export default async function AccountWalletPage({
   searchParams,
@@ -41,38 +38,24 @@ export default async function AccountWalletPage({
   }
 
   return (
-    <div className="hb-band-cream min-h-dvh px-5 py-8 sm:px-8">
-      <div className="mx-auto max-w-xl">
-        <div className="flex items-center justify-between gap-4">
-          <Link href="/">
-            <BrandMark />
-          </Link>
-          <LogoutButton />
-        </div>
-        <div className="mt-10 rounded-[28px] border border-white bg-white p-6 shadow-[0_24px_60px_-32px_rgba(15,23,42,0.35)]">
-          <Link
-            href={routes.account}
-            className="text-sm font-semibold text-[#673de6]"
-          >
-            ← Account
-          </Link>
-          <h1 className="font-heading mt-4 text-2xl font-semibold text-slate-950">
-            Wallet
-          </h1>
-          <p className="mt-2 text-sm text-slate-500">
-            Domain registrations, renewals, and transfers use your HostingBeyond
-            wallet balance.
-          </p>
-          <WalletAccountPanel
-            initialBalance={Number(wallet.balance)}
-            currency={wallet.currency}
-            topUpStatus={topUpStatus}
-            paymentPublicId={paymentPublicId}
-          />
-          <WalletTopUpForm
-            paymentProviderConfigured={isPaymentProviderConfigured()}
-          />
-        </div>
+    <div className="mx-auto max-w-xl">
+      <div className="hb-panel-card p-6 sm:p-8">
+        <h1 className="font-heading text-2xl font-semibold text-slate-950">
+          Wallet
+        </h1>
+        <p className="mt-2 text-sm text-slate-500">
+          Domain registrations, renewals, and transfers use your HostingBeyond
+          wallet balance.
+        </p>
+        <WalletAccountPanel
+          initialBalance={Number(wallet.balance)}
+          currency={wallet.currency}
+          topUpStatus={topUpStatus}
+          paymentPublicId={paymentPublicId}
+        />
+        <WalletTopUpForm
+          paymentProviderConfigured={isPaymentProviderConfigured()}
+        />
       </div>
     </div>
   );
