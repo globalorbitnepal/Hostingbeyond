@@ -22,8 +22,7 @@ export function DomainBentoShowcaseMotion({
   return (
     <div
       className={cn(
-        "relative h-full min-h-[200px] w-full overflow-hidden",
-        layout === "registrar" && "min-h-[260px]",
+        "absolute inset-0 h-full w-full overflow-hidden",
         className,
       )}
     >
@@ -106,7 +105,7 @@ function RegistrarMotion({ playing }: { playing: boolean }) {
   return (
     <div className="absolute inset-0">
       <MotionBackdrop playing={playing} />
-      <div className="relative z-10 flex h-full min-h-[260px] flex-col p-4 sm:p-5">
+      <div className="relative z-10 flex h-full flex-col p-3 sm:p-4">
         <div
           className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-white/70 bg-white/95 shadow-[0_24px_60px_-28px_rgba(103,61,230,0.45)] backdrop-blur-sm"
           aria-hidden
@@ -224,7 +223,7 @@ function PrivacyMotion({ playing }: { playing: boolean }) {
           ))}
         </>
       ) : null}
-      <div className="relative z-10 flex h-full items-center gap-4 px-4 py-5 sm:gap-8 sm:px-8">
+      <div className="relative z-10 flex h-full items-stretch gap-3 px-3 py-4 sm:gap-6 sm:px-6 sm:py-5">
         <motion.div
           className="relative flex shrink-0 items-center justify-center"
           animate={playing ? { y: [0, -8, 0] } : undefined}
@@ -237,11 +236,11 @@ function PrivacyMotion({ playing }: { playing: boolean }) {
             />
           </div>
         </motion.div>
-        <div className="min-w-0 flex-1 space-y-2.5 sm:space-y-3">
+        <div className="flex min-w-0 flex-1 flex-col justify-center gap-2 sm:gap-2.5">
           {rows.map((row, i) => (
             <motion.div
               key={row.label}
-              className="flex items-center justify-between gap-3 rounded-xl border border-white/20 bg-white/10 px-3 py-2.5 backdrop-blur-md sm:px-4 sm:py-3"
+              className="flex flex-1 items-center justify-between gap-3 rounded-xl border border-white/20 bg-white/10 px-3 py-2 backdrop-blur-md sm:px-4 sm:py-2.5"
               initial={{ opacity: 0, x: 24 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.15 + i * 0.12, duration: 0.4 }}
@@ -366,12 +365,12 @@ function SetupMotion({ playing }: { playing: boolean }) {
   return (
     <div className="absolute inset-0">
       <MotionBackdrop playing={playing} />
-      <div className="relative z-10 flex h-full items-center justify-center p-4 sm:p-5">
-        <div className="w-full max-w-none rounded-2xl border border-white/80 bg-white/95 p-4 shadow-[0_24px_60px_-28px_rgba(103,61,230,0.35)] backdrop-blur-sm sm:p-5">
+      <div className="relative z-10 flex h-full flex-col p-3 sm:p-4">
+        <div className="flex h-full min-h-0 w-full flex-col rounded-2xl border border-white/80 bg-white/95 p-4 shadow-[0_24px_60px_-28px_rgba(103,61,230,0.35)] backdrop-blur-sm sm:p-5">
           <p className="text-[15px] font-extrabold text-[#2f1c6a] sm:text-[17px]">
             Quick domain setup
           </p>
-          <ul className="mt-4 space-y-4">
+          <ul className="mt-3 flex min-h-0 flex-1 flex-col justify-center gap-3 sm:mt-4 sm:gap-3.5">
             {steps.map((label, index) => {
               const done = index < active || (!playing && index < 2);
               const current = index === active;
@@ -411,7 +410,7 @@ function SetupMotion({ playing }: { playing: boolean }) {
             })}
           </ul>
           <motion.div
-            className="mt-5 text-center"
+            className="mt-3 shrink-0 text-center sm:mt-4"
             animate={
               playing
                 ? {

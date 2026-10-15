@@ -19,7 +19,7 @@ export function DomainGuidePillarMotion({
   return (
     <div
       className={cn(
-        "relative h-full min-h-[200px] w-full overflow-hidden",
+        "absolute inset-0 h-full w-full overflow-hidden",
         className,
       )}
       aria-hidden
@@ -42,7 +42,7 @@ export function DomainGuidePillarMotion({
 
 function WhatMotion({ playing }: { playing: boolean }) {
   return (
-    <div className="relative z-10 flex h-full items-center justify-center p-8">
+    <div className="relative z-10 flex h-full items-center justify-center p-4 sm:p-5">
       <motion.div
         className="relative flex size-32 items-center justify-center sm:size-36"
         animate={playing ? { rotate: 360 } : undefined}
@@ -57,7 +57,7 @@ function WhatMotion({ playing }: { playing: boolean }) {
         </div>
       </motion.div>
       <motion.span
-        className="absolute bottom-8 rounded-lg bg-[#673de6] px-2.5 py-1 text-[11px] font-extrabold text-white shadow-lg"
+        className="absolute bottom-4 rounded-lg bg-[#673de6] px-2.5 py-1 text-[11px] font-extrabold text-white shadow-lg sm:bottom-5"
         animate={playing ? { scale: [1, 1.05, 1] } : undefined}
         transition={{ duration: 2.2, repeat: Infinity }}
       >

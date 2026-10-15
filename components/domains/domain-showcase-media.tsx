@@ -50,11 +50,9 @@ export function DomainShowcaseMedia({
 
   if (useBentoMotion) {
     return (
-      <DomainBentoShowcaseMotion
-        layout={layout}
-        badge={badge}
-        className={className}
-      />
+      <div className={cn("relative h-full min-h-[200px] w-full", className)}>
+        <DomainBentoShowcaseMotion layout={layout} badge={badge} />
+      </div>
     );
   }
 

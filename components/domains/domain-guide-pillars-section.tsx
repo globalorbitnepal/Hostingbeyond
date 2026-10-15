@@ -33,7 +33,7 @@ export function DomainGuidePillarsSection({
   return (
     <section
       id="domain-guide"
-      className="relative overflow-x-hidden bg-gradient-to-b from-[#0a0f1f] via-[#0c1229] to-[#07051a] py-16 sm:py-20 lg:py-24"
+      className="relative overflow-x-hidden bg-gradient-to-b from-[#0a0f1f] via-[#0c1229] to-[#07051a] py-14 sm:py-18 lg:py-20"
     >
       <div
         aria-hidden
@@ -52,31 +52,31 @@ export function DomainGuidePillarsSection({
           {heading}
         </motion.h2>
 
-        <ul className="mt-12 grid gap-5 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-10 grid items-stretch gap-4 sm:mt-12 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
           {visible.map((pillar, index) => (
             <motion.li
               key={pillar.id}
-              className="group relative flex min-h-[min(88vw,420px)] flex-col overflow-hidden rounded-[26px] border border-white/10 bg-white/[0.04] shadow-[0_32px_80px_-48px_rgba(0,0,0,0.85)] backdrop-blur-md transition duration-300 hover:border-white/20 hover:shadow-[0_40px_90px_-40px_rgba(103,61,230,0.35)] motion-reduce:transform-none"
+              className="group flex h-full flex-col overflow-hidden rounded-[22px] border border-white/10 bg-white/[0.04] shadow-[0_28px_70px_-40px_rgba(0,0,0,0.85)] backdrop-blur-md transition duration-300 hover:border-white/20 hover:shadow-[0_36px_80px_-36px_rgba(103,61,230,0.35)] motion-reduce:transform-none"
               {...reveal(0.08 + index * 0.07, reduce)}
             >
-              <div className="relative h-[42%] min-h-[180px] shrink-0 overflow-hidden border-b border-white/10">
+              <div className="relative h-[168px] shrink-0 overflow-hidden border-b border-white/10 sm:h-[176px]">
                 <DomainGuidePillarMotion pillar={pillar.pillar} />
                 <div
                   aria-hidden
-                  className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0a0f1f] via-transparent to-transparent"
+                  className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0c1229] via-[#0c1229]/40 to-transparent"
                 />
               </div>
-              <div className="flex flex-1 flex-col p-6 pt-5">
-                <h3 className="text-[17px] font-extrabold tracking-tight text-white">
+              <div className="flex flex-col p-5 sm:p-5">
+                <h3 className="text-[16px] font-extrabold tracking-tight text-white sm:text-[17px]">
                   {pillar.title}
                 </h3>
-                <p className="mt-2 flex-1 text-[14px] leading-relaxed text-white/75">
+                <p className="mt-2 text-[13.5px] leading-relaxed text-white/75 sm:text-[14px]">
                   {pillar.description}
                 </p>
                 {pillar.linkLabel ? (
                   <Link
                     href={pillar.linkHref || "#"}
-                    className="mt-5 inline-flex items-center gap-1 text-[13px] font-bold text-[#a5b4fc] transition group-hover:text-white"
+                    className="mt-3 inline-flex items-center gap-1 text-[13px] font-bold text-[#a5b4fc] transition group-hover:text-white"
                   >
                     {pillar.linkLabel}
                     <ArrowUpRight className="size-4 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />

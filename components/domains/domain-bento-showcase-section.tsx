@@ -19,6 +19,10 @@ function reveal(delay: number, reduce: boolean | null) {
   };
 }
 
+/** Motion panels — height matches content, no dead space below illustrations. */
+const PANEL_TOP_H = "h-[min(92vw,360px)] sm:h-[380px]";
+const PANEL_BOTTOM_H = "h-[min(85vw,300px)] sm:h-[320px]";
+
 export function DomainBentoShowcaseSection({
   eyebrow,
   heading,
@@ -44,7 +48,7 @@ export function DomainBentoShowcaseSection({
 
   return (
     <section
-      className="relative overflow-x-hidden bg-gradient-to-b from-[#07051a] via-[#12082e] to-[#0a0f1f] py-16 sm:py-20 lg:py-24"
+      className="relative overflow-x-hidden bg-gradient-to-b from-[#07051a] via-[#12082e] to-[#0a0f1f] py-14 sm:py-18 lg:py-20"
       aria-labelledby="why-hostingbeyond-heading"
     >
       <div
@@ -75,46 +79,44 @@ export function DomainBentoShowcaseSection({
           </p>
           <h2
             id="why-hostingbeyond-heading"
-            className="font-heading mt-4 text-[clamp(1.75rem,3.4vw,2.65rem)] leading-[1.08] font-extrabold tracking-[-0.04em] text-white"
+            className="font-heading mt-3 text-[clamp(1.75rem,3.4vw,2.65rem)] leading-[1.08] font-extrabold tracking-[-0.04em] text-white"
           >
             {heading}
           </h2>
-          <p className="mt-4 text-[15px] leading-relaxed text-white/70 sm:text-[16px]">
+          <p className="mt-3 text-[15px] leading-relaxed text-white/70 sm:text-[16px]">
             {description}
           </p>
         </motion.header>
 
-        <div className="mt-12 grid gap-5 lg:mt-14 lg:grid-cols-2 lg:gap-6">
+        <div className="mt-10 grid gap-5 lg:mt-12 lg:grid-cols-2 lg:items-start lg:gap-5">
           <motion.div
-            className="min-w-0 overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.03] shadow-[0_40px_100px_-50px_rgba(103,61,230,0.55)] backdrop-blur-sm"
+            className={`relative ${PANEL_TOP_H} min-w-0 overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.04] shadow-[0_40px_100px_-50px_rgba(103,61,230,0.55)]`}
             {...reveal(0.08, reduce)}
           >
-            <div className="relative min-h-[min(72vw,380px)] sm:min-h-[400px]">
-              <DomainBentoShowcaseMotion layout="registrar" />
-            </div>
+            <DomainBentoShowcaseMotion layout="registrar" />
           </motion.div>
 
           <motion.div
             className="flex min-w-0 flex-col gap-4"
             {...reveal(0.14, reduce)}
           >
-            <div className="overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.03] shadow-[0_40px_100px_-50px_rgba(37,99,235,0.45)] backdrop-blur-sm">
-              <div className="relative min-h-[min(68vw,340px)] sm:min-h-[360px]">
-                <DomainBentoShowcaseMotion layout="privacy" />
-              </div>
+            <div
+              className={`relative ${PANEL_TOP_H} overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.04] shadow-[0_40px_100px_-50px_rgba(37,99,235,0.45)]`}
+            >
+              <DomainBentoShowcaseMotion layout="privacy" />
             </div>
             {privacy ? (
-              <div className="px-1 sm:px-2">
+              <div className="px-0.5 sm:px-1">
                 <h3 className="text-[17px] font-extrabold tracking-tight text-white sm:text-[18px]">
                   {privacy.title}
                 </h3>
-                <p className="mt-2 text-[14px] leading-relaxed text-white/75">
+                <p className="mt-1.5 text-[14px] leading-relaxed text-white/75">
                   {privacy.description}
                 </p>
                 {privacy.linkLabel ? (
                   <Link
                     href={privacy.linkHref || "#domain-guide"}
-                    className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-extrabold text-[#a5b4fc] transition hover:text-white"
+                    className="mt-2.5 inline-flex items-center gap-1.5 text-[13px] font-extrabold text-[#a5b4fc] transition hover:text-white"
                   >
                     {privacy.linkLabel}
                     <ArrowRight className="size-4" aria-hidden />
@@ -125,10 +127,10 @@ export function DomainBentoShowcaseSection({
           </motion.div>
         </div>
 
-        <div className="mt-6 grid gap-5 lg:mt-8 lg:grid-cols-3 lg:gap-6">
+        <div className="mt-5 grid gap-5 lg:grid-cols-3 lg:gap-5">
           {registrar ? (
             <motion.article
-              className="flex flex-col justify-center rounded-[24px] border border-white/10 bg-white/[0.04] p-6 backdrop-blur-md lg:min-h-[200px]"
+              className="flex flex-col rounded-[22px] border border-white/10 bg-white/[0.04] p-5 backdrop-blur-md sm:p-6"
               {...reveal(0.18, reduce)}
             >
               <h3 className="text-[17px] font-extrabold tracking-tight text-white">
@@ -140,7 +142,7 @@ export function DomainBentoShowcaseSection({
               {registrar.linkLabel ? (
                 <Link
                   href={registrar.linkHref || "#pricing"}
-                  className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-extrabold text-[#c4b5fd] hover:text-white"
+                  className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-extrabold text-[#c4b5fd] hover:text-white"
                 >
                   {registrar.linkLabel}
                   <ArrowRight className="size-4" />
@@ -153,26 +155,22 @@ export function DomainBentoShowcaseSection({
 
           {support ? (
             <motion.div
-              className="min-w-0 overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.03] shadow-[0_32px_80px_-48px_rgba(103,61,230,0.5)]"
+              className={`relative ${PANEL_BOTTOM_H} min-w-0 overflow-hidden rounded-[22px] border border-white/10 bg-white/[0.04] shadow-[0_32px_80px_-48px_rgba(103,61,230,0.5)]`}
               {...reveal(0.22, reduce)}
             >
-              <div className="relative min-h-[280px] sm:min-h-[300px]">
-                <DomainBentoShowcaseMotion
-                  layout="support"
-                  badge={support.badge}
-                />
-              </div>
+              <DomainBentoShowcaseMotion
+                layout="support"
+                badge={support.badge}
+              />
             </motion.div>
           ) : null}
 
           {setup ? (
             <motion.div
-              className="min-w-0 overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.03] shadow-[0_32px_80px_-48px_rgba(37,99,235,0.4)]"
+              className={`relative ${PANEL_BOTTOM_H} min-w-0 overflow-hidden rounded-[22px] border border-white/10 bg-white/[0.04] shadow-[0_32px_80px_-48px_rgba(37,99,235,0.4)]`}
               {...reveal(0.26, reduce)}
             >
-              <div className="relative min-h-[280px] sm:min-h-[300px]">
-                <DomainBentoShowcaseMotion layout="setup" />
-              </div>
+              <DomainBentoShowcaseMotion layout="setup" />
             </motion.div>
           ) : null}
         </div>
