@@ -14,9 +14,11 @@ import {
   rollbackReserve,
 } from "@/lib/domains/wallet";
 import {
-  internalTransferErrorNote,
-  TRANSFER_IN_PROGRESS_STATUSES,
-} from "@/lib/domains/transfer-security";
+  createInFlightTransferRecord,
+  findInFlightTransferForUserDomain,
+} from "@/lib/domains/transfer-inflight";
+import { resolveTransferProviderAction } from "@/lib/domains/transfer-provider-outcome";
+import { internalTransferErrorNote } from "@/lib/domains/transfer-security";
 import { prisma } from "@/lib/prisma";
 
 /** Registry shows the name is active here — not inferred from HTTP success alone. */
@@ -26,14 +28,29 @@ const COMPLETED_PROVIDER_STATUSES = new Set([
   "transfer completed",
 ]);
 
-export async function processDomainTransferCheckout(input: {
-  userId: string;
-  userEmail: string;
-  domainInput: string;
-  authCode: string;
-  idempotencyKey: string;
-}) {
-  if (!resolveDomainRegistrarProvider()) {
+export type ProcessDomainTransferCheckoutDeps = {
+  searchDomainsWithProvider?: typeof searchDomainsWithProvider;
+  getTransferRetailQuote?: typeof getTransferRetailQuote;
+  resolveDomainRegistrarProvider?: typeof resolveDomainRegistrarProvider;
+};
+
+export async function processDomainTransferCheckout(
+  input: {
+    userId: string;
+    userEmail: string;
+    domainInput: string;
+    authCode: string;
+    idempotencyKey: string;
+  },
+  deps: ProcessDomainTransferCheckoutDeps = {},
+) {
+  const resolveProvider =
+    deps.resolveDomainRegistrarProvider ?? resolveDomainRegistrarProvider;
+  const searchDomains =
+    deps.searchDomainsWithProvider ?? searchDomainsWithProvider;
+  const getQuote = deps.getTransferRetailQuote ?? getTransferRetailQuote;
+
+  if (!resolveProvider()) {
     return {
       ok: false as const,
       error: "Domain transfer is temporarily unavailable.",
@@ -55,7 +72,7 @@ export async function processDomainTransferCheckout(input: {
     return { ok: false as const, error: normalized.error, status: 400 };
   }
 
-  const retail = await getTransferRetailQuote(normalized.tld || ".com");
+  const retail = await getQuote(normalized.tld || ".com");
   if (!retail?.purchasable) {
     return {
       ok: false as const,
@@ -64,7 +81,7 @@ export async function processDomainTransferCheckout(input: {
     };
   }
 
-  const { results } = await searchDomainsWithProvider([normalized.query]);
+  const { results } = await searchDomains([normalized.query]);
   const row = results[0];
   if (!row || row.status === "available" || row.status === "premium") {
     return {
@@ -81,21 +98,6 @@ export async function processDomainTransferCheckout(input: {
         row.message ??
         "We could not confirm transfer eligibility. Please try again.",
       status: 400,
-    };
-  }
-
-  const existing = await prisma.domainTransferRecord.findFirst({
-    where: {
-      domain: normalized.query,
-      userId: input.userId,
-      status: { in: [...TRANSFER_IN_PROGRESS_STATUSES] },
-    },
-  });
-  if (existing) {
-    return {
-      ok: false as const,
-      error: "A transfer for this domain is already in progress.",
-      status: 409,
     };
   }
 
@@ -118,22 +120,41 @@ export async function processDomainTransferCheckout(input: {
     };
   }
 
+  const existing = await findInFlightTransferForUserDomain(
+    input.userId,
+    normalized.query,
+  );
+  if (existing) {
+    return {
+      ok: false as const,
+      error: "A transfer for this domain is already in progress.",
+      status: 409,
+      transfer: existing,
+    };
+  }
+
   await ensureCustomerWallet(input.userId);
   const total = retail.transfer;
 
-  const transfer = await prisma.domainTransferRecord.create({
-    data: {
-      publicId: publicId("TRF"),
-      userId: input.userId,
-      domain: normalized.query,
-      tld: normalized.tld || ".com",
-      status: "PENDING_PAYMENT",
-      retailPrice: retail.transfer,
-      total,
-      currency: retail.currency,
-      authCodeHint: `${authCode.slice(0, 2)}***`,
-    },
+  const claimed = await createInFlightTransferRecord({
+    publicId: publicId("TRF"),
+    userId: input.userId,
+    domain: normalized.query,
+    tld: normalized.tld || ".com",
+    retailPrice: retail.transfer,
+    total,
+    currency: retail.currency,
+    authCodeHint: `${authCode.slice(0, 2)}***`,
   });
+  if (!claimed.ok) {
+    return {
+      ok: false as const,
+      error: "A transfer for this domain is already in progress.",
+      status: 409,
+      transfer: claimed.existing,
+    };
+  }
+  const transfer = claimed.record;
 
   let reserveTxId: string | null = null;
   try {
@@ -146,7 +167,7 @@ export async function processDomainTransferCheckout(input: {
     });
     reserveTxId = reserve.id;
 
-    const provider = resolveDomainRegistrarProvider()!;
+    const provider = resolveProvider()!;
     const availability = await provider.checkAvailability([normalized.query]);
     const supplierCost = availability[0]?.supplier.transfer;
     const outcome = await provider.transferDomain({
@@ -155,7 +176,9 @@ export async function processDomainTransferCheckout(input: {
       periodYears: 1,
     });
 
-    if (outcome.outcome === "unknown") {
+    const providerAction = resolveTransferProviderAction(outcome);
+
+    if (providerAction.action === "reconciliation") {
       const pending = await prisma.domainTransferRecord.update({
         where: { id: transfer.id },
         data: {
@@ -174,7 +197,7 @@ export async function processDomainTransferCheckout(input: {
       return { ok: true as const, transfer: pending, reconciliation: true };
     }
 
-    if (outcome.outcome === "failed") {
+    if (providerAction.action === "failed") {
       await rollbackReserve({
         userId: input.userId,
         amount: total,
