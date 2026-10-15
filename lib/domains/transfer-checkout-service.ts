@@ -13,12 +13,16 @@ import {
   reserveWalletFunds,
   rollbackReserve,
 } from "@/lib/domains/wallet";
+import {
+  internalTransferErrorNote,
+  TRANSFER_IN_PROGRESS_STATUSES,
+} from "@/lib/domains/transfer-security";
 import { prisma } from "@/lib/prisma";
 
+/** Registry shows the name is active here — not inferred from HTTP success alone. */
 const COMPLETED_PROVIDER_STATUSES = new Set([
   "active",
   "ok",
-  "clienttransferprohibited",
   "transfer completed",
 ]);
 
@@ -84,7 +88,7 @@ export async function processDomainTransferCheckout(input: {
     where: {
       domain: normalized.query,
       userId: input.userId,
-      status: { in: ["SUBMITTED", "IN_PROGRESS", "PAID"] },
+      status: { in: [...TRANSFER_IN_PROGRESS_STATUSES] },
     },
   });
   if (existing) {
@@ -99,12 +103,19 @@ export async function processDomainTransferCheckout(input: {
     where: { idempotencyKey: `transfer:${input.idempotencyKey}` },
   });
   if (existingTx) {
-    const linked = await prisma.domainTransferRecord.findFirst({
-      where: { id: existingTx.referenceId ?? "" },
-    });
+    const refId = existingTx.referenceId?.trim();
+    const linked = refId
+      ? await prisma.domainTransferRecord.findUnique({ where: { id: refId } })
+      : null;
     if (linked) {
       return { ok: true as const, transfer: linked, duplicate: true };
     }
+    return {
+      ok: false as const,
+      error:
+        "A transfer request for this domain is already being processed. Retry with the same idempotency key.",
+      status: 409,
+    };
   }
 
   await ensureCustomerWallet(input.userId);
@@ -152,7 +163,7 @@ export async function processDomainTransferCheckout(input: {
           providerTransferId: outcome.providerTransferId,
           supplierCost: supplierCost ?? null,
           errorCode: outcome.errorCode,
-          errorMessageInternal: outcome.errorMessageInternal,
+          errorMessageInternal: internalTransferErrorNote(outcome.errorCode),
         },
       });
       await notifyTransferStarted({
@@ -176,7 +187,7 @@ export async function processDomainTransferCheckout(input: {
           status: "FAILED",
           supplierCost: supplierCost ?? null,
           errorCode: outcome.errorCode,
-          errorMessageInternal: outcome.errorMessageInternal,
+          errorMessageInternal: internalTransferErrorNote(outcome.errorCode),
         },
       });
       await notifyTransferFailed({
@@ -226,8 +237,10 @@ export async function processDomainTransferCheckout(input: {
       where: { id: transfer.id },
       data: {
         status: "FAILED",
-        errorMessageInternal:
-          error instanceof Error ? error.message : "transfer_checkout_failed",
+        errorMessageInternal: internalTransferErrorNote(
+          error instanceof Error ? error.name : null,
+          "transfer_checkout_failed",
+        ),
       },
     });
     await notifyTransferFailed({

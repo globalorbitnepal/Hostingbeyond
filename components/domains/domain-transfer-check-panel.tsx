@@ -280,11 +280,18 @@ export function DomainTransferCheckPanel({
                     : null}
                 </p>
               ) : null}
+              {result.eligible && result.registryCheckOnly ? (
+                <p className="mt-2 text-[12px] leading-relaxed text-slate-600">
+                  This check uses registry availability only. Auth code, lock
+                  status, and ICANN rules are verified when you submit the
+                  transfer — not guaranteed here.
+                </p>
+              ) : null}
             </div>
             {result.eligible ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-extrabold tracking-wide text-white uppercase">
                 <BadgeCheck className="size-3.5" />
-                Ready
+                Registered
               </span>
             ) : null}
           </div>

@@ -12,12 +12,13 @@ export const runtime = "nodejs";
 
 type Body = {
   domain?: string;
+  /** Ignored — auth codes are collected only on secure checkout, never in this API. */
   authCode?: string;
 };
 
 /**
- * Transfer eligibility check. Uses lib/domains/transfer today;
- * set DOMAIN_TRANSFER_LOOKUP_URL to forward { domain, authCode? } to a registrar.
+ * Transfer registry check (availability). No dedicated DNA transfer-eligibility endpoint;
+ * set DOMAIN_TRANSFER_LOOKUP_URL to forward { domain } to an external registrar proxy.
  */
 export async function POST(request: Request) {
   if (!rateLimitDomainSearch(clientKeyFromRequest(request))) {
@@ -29,7 +30,6 @@ export async function POST(request: Request) {
 
   const body = (await request.json().catch(() => null)) as Body | null;
   const domain = body?.domain?.trim() ?? "";
-  const authCode = body?.authCode?.trim() ?? "";
 
   if (!domain) {
     return NextResponse.json(
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
             ? { authorization: `Bearer ${process.env.DOMAIN_TRANSFER_TOKEN}` }
             : {}),
         },
-        body: JSON.stringify({ domain, authCode }),
+        body: JSON.stringify({ domain }),
         cache: "no-store",
       });
       if (response.ok) {
@@ -69,7 +69,7 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({
-    result: await checkTransferEligibilityAsync(domain, authCode),
+    result: await checkTransferEligibilityAsync(domain),
     source: resolveDomainRegistrarProvider() ? "registrar" : "hostingbeyond",
   });
 }

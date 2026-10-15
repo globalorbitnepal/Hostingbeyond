@@ -26,11 +26,15 @@ export function buildTransferCheckResult(input: {
   transferPrice: number | null;
   renewPrice: number | null;
   purchasable: boolean;
+  transferEligibilityConfirmed?: boolean;
+  registryCheckOnly?: boolean;
 }): TransferCheckResult {
   return {
     domain: input.domain,
     status: input.status,
     eligible: input.eligible,
+    transferEligibilityConfirmed: input.transferEligibilityConfirmed ?? false,
+    registryCheckOnly: input.registryCheckOnly,
     transferPrice: input.purchasable ? input.transferPrice : null,
     renewPrice: input.renewPrice,
     message: input.message,

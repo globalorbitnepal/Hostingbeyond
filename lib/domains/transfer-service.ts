@@ -84,6 +84,7 @@ export async function checkTransferEligibilityAsync(
         domain: row.domain,
         status: "available",
         eligible: false,
+        transferEligibilityConfirmed: false,
         transferPrice: quote.transfer,
         renewPrice: quote.renew,
         message: `${row.domain} looks available to register — transfer is for domains you already own elsewhere.`,
@@ -123,7 +124,9 @@ export async function checkTransferEligibilityAsync(
       transferPrice: quote.transfer,
       renewPrice: quote.renew,
       purchasable: true,
-      message: `${row.domain} appears registered. Unlock it at your current registrar, then enter your auth (EPP) code at checkout. Transfer fee is shown before you pay.`,
+      registryCheckOnly: true,
+      transferEligibilityConfirmed: false,
+      message: `${row.domain} appears registered in our availability check — not a guarantee the registry will accept a transfer. Unlock the domain at your current registrar and enter your auth (EPP) code at checkout. Transfer fee is shown before you pay.`,
     });
   } catch {
     return buildTransferCheckResult({

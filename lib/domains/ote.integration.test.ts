@@ -151,6 +151,8 @@ describe(
       const check = await checkTransferEligibilityAsync("google.com");
       assert.equal(check.eligible, true);
       assert.equal(check.status, "eligible");
+      assert.equal(check.transferEligibilityConfirmed, false);
+      assert.equal(check.registryCheckOnly, true);
     });
 
     it("inbound transfer is not safely testable on OTE without a second registrar", () => {

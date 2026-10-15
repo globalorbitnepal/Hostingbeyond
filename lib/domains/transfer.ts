@@ -9,7 +9,15 @@ export type TransferEligibilityStatus =
 export type TransferCheckResult = {
   domain: string;
   status: TransferEligibilityStatus;
+  /**
+   * Customer may continue to checkout (registered + transfer price configured).
+   * Not the same as registrar-confirmed transfer eligibility.
+   */
   eligible: boolean;
+  /** True only when a dedicated transfer-eligibility API confirms fitness. */
+  transferEligibilityConfirmed: boolean;
+  /** When true, `eligible` is based on registry availability only. */
+  registryCheckOnly?: boolean;
   transferPrice: number | null;
   renewPrice: number | null;
   message: string;
@@ -19,7 +27,7 @@ export type TransferCheckResult = {
 /**
  * Synchronous transfer eligibility (hash/catalogue fallback only).
  * Production checks use checkTransferEligibilityAsync() → real Domain Name API availability.
- * Set DOMAIN_TRANSFER_LOOKUP_URL to POST { domain, authCode? } to an external registrar proxy.
+ * Set DOMAIN_TRANSFER_LOOKUP_URL to POST { domain } to an external registrar proxy.
  */
 export function checkTransferEligibility(
   input: string,
@@ -34,6 +42,7 @@ export function checkTransferEligibility(
       domain,
       status: "invalid",
       eligible: false,
+      transferEligibilityConfirmed: false,
       transferPrice: null,
       renewPrice: null,
       message: result.message ?? "Enter a valid domain name to transfer.",
@@ -46,6 +55,7 @@ export function checkTransferEligibility(
       domain,
       status: "available",
       eligible: false,
+      transferEligibilityConfirmed: false,
       transferPrice: result.transfer,
       renewPrice: result.renew,
       message: `${domain} looks available to register — transfer is for domains you already own elsewhere.`,
@@ -58,6 +68,7 @@ export function checkTransferEligibility(
       domain,
       status: "unsupported",
       eligible: false,
+      transferEligibilityConfirmed: false,
       transferPrice: null,
       renewPrice: null,
       message: `We do not support transfers for ${result.tld} yet.`,
@@ -70,9 +81,11 @@ export function checkTransferEligibility(
     domain,
     status: "eligible",
     eligible: true,
+    transferEligibilityConfirmed: false,
+    registryCheckOnly: true,
     transferPrice: result.transfer,
     renewPrice: result.renew,
-    message: `${domain} is ready to transfer — ${priceLine}/yr plus any ICANN fees. Unlock it at your current registrar and grab your auth code.`,
+    message: `${domain} appears registered in our catalogue check — ${priceLine} transfer fee shown at checkout. Final eligibility is confirmed only when the registry accepts your transfer order.`,
     checkoutHref: href,
   };
 }

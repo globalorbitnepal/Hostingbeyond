@@ -24,5 +24,21 @@ describe("transfer quote helpers", () => {
       purchasable: false,
     });
     assert.equal(row.transferPrice, null);
+    assert.equal(row.transferEligibilityConfirmed, false);
+  });
+
+  it("eligible registry-only results are not eligibility-confirmed", () => {
+    const row = buildTransferCheckResult({
+      domain: "taken.com",
+      status: "eligible",
+      eligible: true,
+      message: "appears registered",
+      transferPrice: 12,
+      renewPrice: 14,
+      purchasable: true,
+      registryCheckOnly: true,
+    });
+    assert.equal(row.transferEligibilityConfirmed, false);
+    assert.equal(row.registryCheckOnly, true);
   });
 });
