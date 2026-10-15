@@ -24,7 +24,8 @@ export function buildDomainSchema({
   withSearchAction?: boolean;
 }) {
   const url = new URL(path, siteConfig.url).toString();
-  const sorted = [...prices].sort((a, b) => a.register - b.register);
+  const visible = prices.filter((p) => p.visible !== false && p.register > 0);
+  const sorted = [...visible].sort((a, b) => a.register - b.register);
   const cheapest = sorted[0];
   const highest = sorted[sorted.length - 1];
 
@@ -81,15 +82,19 @@ export function buildDomainSchema({
       brand: { "@type": "Brand", name: siteConfig.name },
       description:
         "Register a domain name with free WHOIS privacy, free DNS management and renewal pricing shown upfront.",
-      offers: {
-        "@type": "AggregateOffer",
-        priceCurrency: "USD",
-        lowPrice: cheapest?.register ?? 0.01,
-        highPrice: highest?.register ?? 89.99,
-        offerCount: prices.length,
-        availability: "https://schema.org/InStock",
-        url,
-      },
+      ...(cheapest && highest
+        ? {
+            offers: {
+              "@type": "AggregateOffer",
+              priceCurrency: "USD",
+              lowPrice: cheapest.register,
+              highPrice: highest.register,
+              offerCount: visible.length,
+              availability: "https://schema.org/InStock",
+              url,
+            },
+          }
+        : {}),
     },
     {
       "@context": "https://schema.org",

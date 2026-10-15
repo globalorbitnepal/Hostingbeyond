@@ -183,10 +183,16 @@ export function DomainTransferView({
         linkLabel={shared.popularLinkLabel}
         linkHref={shared.popularLinkHref}
         picks={popular}
-        prices={prices.map((row) => ({
+        pricing={prices.map((row) => ({
           tld: row.tld,
-          register: row.transfer,
+          register: row.register,
           renew: row.renew,
+          termYears: 1,
+          purchasable: row.register > 0,
+          priceCaption: "1st yr",
+          renewCaption: row.renew
+            ? `Renews at $${row.renew.toFixed(2)}/yr`
+            : null,
         }))}
       />
 

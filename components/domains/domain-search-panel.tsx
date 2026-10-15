@@ -597,6 +597,7 @@ export function DomainSearchPanel({
   const [bulk, setBulk] = useState("");
   const [loadingPrimary, setLoadingPrimary] = useState(false);
   const [loadingAlternatives, setLoadingAlternatives] = useState(false);
+  const [alternativesInFlight, setAlternativesInFlight] = useState(false);
   const [loadingTier2, setLoadingTier2] = useState(false);
   const [alternativesComplete, setAlternativesComplete] = useState(false);
   const [alternativesWarning, setAlternativesWarning] = useState("");
@@ -748,6 +749,7 @@ export function DomainSearchPanel({
 
       setLoadingPrimary(true);
       setLoadingAlternatives(true);
+      setAlternativesInFlight(false);
       setLoadingTier2(false);
       setAlternativesComplete(false);
       setAlternativesWarning("");
@@ -833,32 +835,75 @@ export function DomainSearchPanel({
         setBulkSelected(new Set());
         setLoadingPrimary(false);
         setLoadingAlternatives(true);
+        setAlternativesInFlight(true);
 
-        const { res: altRes, json: altJson } = await searchJson({
-          query: trimmed,
-          scope: "alternatives",
-          tier: 1,
-        });
+        const ALT_SOFT_DEADLINE_MS = 2000;
+        const softDeadline = window.setTimeout(() => {
+          if (gen !== searchGeneration.current) return;
+          setLoadingAlternatives(false);
+        }, ALT_SOFT_DEADLINE_MS);
+
+        const applyAltWave = (
+          res: Response,
+          json: {
+            recommendations?: DomainResult[];
+            results?: DomainResult[];
+            error?: string;
+          },
+        ) => {
+          const waveAlts =
+            json.recommendations ??
+            json.results?.filter((r) => r.domain !== primaryRow.domain) ??
+            [];
+          if (!res.ok) {
+            setAlternativesWarning(
+              "Some additional suggestions could not be loaded.",
+            );
+            return waveAlts;
+          }
+          if (waveAlts.length) {
+            startTransition(() => {
+              setAlternativeResults((prev) =>
+                mergeRegisterableAlternatives(
+                  prev,
+                  waveAlts,
+                  primaryRow.domain,
+                  { sort: false },
+                ),
+              );
+            });
+            setLoadingAlternatives(false);
+          }
+          return waveAlts;
+        };
+
+        const [wave1, wave2] = await Promise.all([
+          searchJson({
+            query: trimmed,
+            scope: "alternatives",
+            tier: 1,
+            subWave: 1,
+          }),
+          searchJson({
+            query: trimmed,
+            scope: "alternatives",
+            tier: 1,
+            subWave: 2,
+          }),
+        ]);
+        window.clearTimeout(softDeadline);
         if (gen !== searchGeneration.current) return;
 
-        const fastAlts =
-          altJson.recommendations ??
-          altJson.results?.filter((r) => r.domain !== primaryRow.domain) ??
-          [];
+        const fastAlts1 = applyAltWave(wave1.res, wave1.json);
+        const fastAlts2 = applyAltWave(wave2.res, wave2.json);
+        const fastAlts = [...fastAlts1, ...fastAlts2];
+        const altJson =
+          wave2.res.ok && wave2.json
+            ? wave2.json
+            : wave1.res.ok
+              ? wave1.json
+              : wave2.json;
 
-        if (!altRes.ok) {
-          setAlternativesWarning(
-            "Some additional suggestions could not be loaded.",
-          );
-        } else if (fastAlts.length) {
-          startTransition(() => {
-            setAlternativeResults((prev) =>
-              mergeRegisterableAlternatives(prev, fastAlts, primaryRow.domain, {
-                sort: false,
-              }),
-            );
-          });
-        }
         setLoadingAlternatives(false);
 
         let altCount = mergeRegisterableAlternatives(
@@ -955,7 +1000,7 @@ export function DomainSearchPanel({
                 sort: true,
               }),
             );
-            setAlternativesComplete(searchComplete || altCount >= 0);
+            setAlternativesComplete(searchComplete);
           });
         }
       } catch (err) {
@@ -969,6 +1014,7 @@ export function DomainSearchPanel({
         if (gen === searchGeneration.current) {
           setLoadingPrimary(false);
           setLoadingAlternatives(false);
+          setAlternativesInFlight(false);
           setLoadingTier2(false);
         }
       }
@@ -1181,7 +1227,9 @@ export function DomainSearchPanel({
   const showAlternativesSection =
     mode === "single" &&
     exact != null &&
-    (alternativesBusy || recommendationAvailableCount > 0);
+    (alternativesBusy ||
+      alternativesInFlight ||
+      recommendationAvailableCount > 0);
 
   const alternativesHeading =
     exact?.status === "taken"
@@ -1197,7 +1245,7 @@ export function DomainSearchPanel({
   return (
     <div
       className={cn(
-        "w-full rounded-[24px] border border-white/70 bg-white shadow-[0_34px_80px_-34px_rgba(15,10,40,0.6)] ring-1 ring-black/[0.03] sm:rounded-[28px] 2xl:rounded-[32px]",
+        "w-full max-w-full min-w-0 rounded-[24px] border border-white/70 bg-white shadow-[0_34px_80px_-34px_rgba(15,10,40,0.6)] ring-1 ring-black/[0.03] sm:rounded-[28px] 2xl:rounded-[32px]",
         hero ? "p-4 sm:p-6 md:p-7 lg:p-8" : "p-4 sm:rounded-[32px] sm:p-6",
       )}
     >
@@ -1358,7 +1406,8 @@ export function DomainSearchPanel({
                 <p className="text-[12px] font-bold tracking-wide text-slate-500 uppercase">
                   {alternativesHeading}
                 </p>
-                {alternativesBusy && recommendationAvailableCount === 0 ? (
+                {(alternativesBusy || alternativesInFlight) &&
+                recommendationAvailableCount === 0 ? (
                   <p
                     className="mt-1 text-[12.5px] font-medium text-slate-500"
                     role="status"

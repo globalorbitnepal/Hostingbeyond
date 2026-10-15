@@ -20,6 +20,7 @@ import {
 import {
   runDeepDiscoverySearch,
   runFastAlternativesChunk1,
+  runFastAlternativesChunk1Wave,
   runFastAlternativesChunk2,
   runFastAlternativesOnly,
   runFastCustomerSearch,
@@ -54,6 +55,8 @@ type SearchBody = {
   tier?: 1 | 2;
   /** ISO 3166-1 alpha-2 — optional; falls back to locale cookie. */
   country?: string;
+  /** Split chunk-1 alternatives into progressive halves (1 = first, 2 = second). */
+  subWave?: 1 | 2;
 };
 
 function toCustomerResult(row: DomainResult) {
@@ -257,7 +260,11 @@ export async function POST(request: Request) {
           resultsCustomer: fastB.alternatives.map(toCustomerResult),
         });
       }
-      const fastAlts = await runFastAlternativesChunk1(queryRaw, searchCountry);
+      const subWave =
+        body?.subWave === 1 || body?.subWave === 2 ? body.subWave : undefined;
+      const fastAlts = subWave
+        ? await runFastAlternativesChunk1Wave(queryRaw, subWave, searchCountry)
+        : await runFastAlternativesChunk1(queryRaw, searchCountry);
       return NextResponse.json({
         results: fastAlts.alternatives,
         recommendations: fastAlts.alternatives,
@@ -266,6 +273,8 @@ export async function POST(request: Request) {
         query,
         scope,
         tier,
+        subWave: subWave ?? null,
+        partialWave: "partialWave" in fastAlts ? fastAlts.partialWave : false,
         extensionsChecked: fastAlts.timings.bulk_fqdn_count,
         alternativesComplete: fastAlts.alternativesComplete,
         suggestTier2:

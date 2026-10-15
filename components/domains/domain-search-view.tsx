@@ -19,6 +19,7 @@ import { DomainBentoShowcaseSection } from "@/components/domains/domain-bento-sh
 import { DomainFaqSection } from "@/components/domains/domain-faq-section";
 import { DomainGuidePillarsSection } from "@/components/domains/domain-guide-pillars-section";
 import { DomainPopularTldsSection } from "@/components/domains/domain-popular-tlds-section";
+import type { PopularPickPricing } from "@/lib/domains/domain-search-page-data";
 import { DomainPriceTable } from "@/components/domains/domain-price-table";
 import {
   DomainSearchPanel,
@@ -55,6 +56,7 @@ export function DomainSearchView({
   crossLinkHref,
   chipRetailByTld,
   displayPricing,
+  popularPricing,
   hubBackdrop = false,
 }: {
   mode: SearchMode;
@@ -66,6 +68,7 @@ export function DomainSearchView({
   chipRetailByTld?: Record<string, number>;
   /** Price table rows with retail merged from DB when available. */
   displayPricing?: ReturnType<typeof visiblePricing>;
+  popularPricing?: PopularPickPricing[];
   /** Hero image/gradient rendered by (domain-search-hub) layout — skip duplicate layers. */
   hubBackdrop?: boolean;
 }) {
@@ -87,7 +90,7 @@ export function DomainSearchView({
 
   return (
     <>
-      <section className="relative z-10 overflow-hidden pt-6 pb-10 sm:pt-10 sm:pb-14 lg:pb-16">
+      <section className="relative z-10 overflow-x-hidden pt-6 pb-10 sm:pt-10 sm:pb-14 lg:pb-16">
         {!hubBackdrop ? (
           <>
             <Image
@@ -206,11 +209,20 @@ export function DomainSearchView({
         linkLabel={shared.popularLinkLabel}
         linkHref={shared.popularLinkHref}
         picks={popular}
-        prices={prices.map((row) => ({
-          tld: row.tld,
-          register: row.register,
-          renew: row.renew,
-        }))}
+        pricing={
+          popularPricing ??
+          prices.map((row) => ({
+            tld: row.tld,
+            register: row.register,
+            renew: row.renew,
+            termYears: 1,
+            purchasable: row.register > 0,
+            priceCaption: "1st yr",
+            renewCaption: row.renew
+              ? `Renews at $${row.renew.toFixed(2)}/yr`
+              : null,
+          }))
+        }
       />
 
       <section className="hb-home-section hb-band-cream">

@@ -6,6 +6,7 @@ import {
   alternativeProviderSubChunkSize,
   FAST_CUSTOMER_TLD_ORDER,
   fastChunk1TldCount,
+  splitAlternativeTldWaves,
 } from "@/lib/domains/recommendation-tlds";
 
 describe("fast alternative chunk sizing", () => {
@@ -30,6 +31,22 @@ describe("fast alternative chunk sizing", () => {
         process.env.DOMAIN_ALT_PROVIDER_PARALLEL = prevPar;
       }
     }
+  });
+
+  it("splits chunk-1 TLDs into two progressive waves", () => {
+    const [a, b] = splitAlternativeTldWaves([
+      ".com",
+      ".net",
+      ".org",
+      ".io",
+      ".co",
+      ".shop",
+      ".online",
+    ]);
+    assert.equal(a.length, 4);
+    assert.equal(b.length, 3);
+    assert.deepEqual(a, [".com", ".net", ".org", ".io"]);
+    assert.deepEqual(b, [".co", ".shop", ".online"]);
   });
 
   it("orders .in, .org, .pro before .net in customer fast pool", () => {

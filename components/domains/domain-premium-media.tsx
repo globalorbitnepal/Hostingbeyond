@@ -170,7 +170,7 @@ function SearchMotion({ playing }: { playing: boolean }) {
 
 function CompareMotion({ playing }: { playing: boolean }) {
   const rows = [
-    { tld: ".com", promo: "$0.01", renew: "$19.99", ok: true },
+    { tld: ".com", promo: "$9.99", renew: "$17.99", ok: true },
     { tld: ".coffee", promo: "$12", renew: "$32", ok: true },
     { tld: ".net", promo: "—", renew: "—", ok: false },
   ];

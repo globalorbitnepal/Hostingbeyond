@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { DomainSearchView } from "@/components/domains/domain-search-view";
 import { routes } from "@/config/routes";
 import { getDomainContent } from "@/lib/orbit/content";
+import { visiblePricing } from "@/lib/domains/content";
+import { mergeRetailIntoPricingRows } from "@/lib/domains/domain-search-page-data";
 import { buildDomainPageMetadata } from "@/lib/domains/page-metadata";
 import { buildDomainSchema } from "@/lib/domains/seo";
 
@@ -16,6 +18,9 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function BulkDomainSearchPage() {
   const content = await getDomainContent();
   const page = content.bulk;
+  const displayPricing = await mergeRetailIntoPricingRows(
+    visiblePricing(content),
+  );
 
   const schema = buildDomainSchema({
     name: page.title,
@@ -25,7 +30,7 @@ export default async function BulkDomainSearchPage() {
     faqs: page.faqs
       .filter((item) => item.visible !== false)
       .map((item) => ({ question: item.question, answer: item.answer })),
-    prices: content.shared.pricing,
+    prices: displayPricing,
   });
 
   return (
@@ -39,6 +44,7 @@ export default async function BulkDomainSearchPage() {
         content={content}
         page={page}
         crossLinkHref={routes.domainSearch}
+        displayPricing={displayPricing}
         hubBackdrop
       />
     </>

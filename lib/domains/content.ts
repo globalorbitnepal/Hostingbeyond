@@ -395,7 +395,7 @@ export function defaultDomainContent(): DomainContent {
           label: "Compare",
           caption:
             "See availability, first-year price and renewal side by side.",
-          prompt: "northpeak.com · $0.01 first year",
+          prompt: "northpeak.com · see live pricing",
           chips: "3 names available | Renewal shown upfront",
           image: "/images/domains/stage-2.jpg",
         },
@@ -486,11 +486,11 @@ export function defaultDomainContent(): DomainContent {
     },
     single: {
       seoTitle:
-        "Domain Name Search — Check Availability & Register from $0.01 | HostingBeyond",
+        "Domain Name Search — Check Availability & Register | HostingBeyond",
       seoDescription: `Search and register domain names across ${SUPPORTED_TLD_COUNT} priced extensions. Check .com, .net, .org, .ai and more with transparent first-year and renewal pricing, free WHOIS privacy and DNS management.`,
       seoKeywords:
         "domain name search, check domain availability, buy domain name, register domain, domain lookup, cheap domain registration, .com domain, bulk domain search, domain transfer, WHOIS privacy",
-      ogTitle: "Domain Name Search — Check Availability & Register from $0.01",
+      ogTitle: "Domain Name Search — Check Availability & Register",
       ogDescription:
         "Search and register your domain in seconds. See renewal pricing upfront, free privacy and DNS on every name.",
       ogImage: "/images/domains/hero.jpg",
@@ -545,7 +545,7 @@ export function defaultDomainContent(): DomainContent {
           order: 1,
           question: "How much does a domain name cost?",
           answer:
-            "Prices depend on the extension. A .com is $0.01 for the first year and renews at $19.99/yr. Extensions like .online, .shop, .store and .site start under $1 for year one, while .io, .ai and .tech sit higher. Every renewal rate is published in the pricing table on this page.",
+            "Prices depend on the extension. First-year registration and standard renewal rates are shown in the pricing table on this page and in your search results — always check live pricing before you buy. Promotional rates apply only when shown with an active promo in search or checkout.",
         },
         {
           id: "renewal",
@@ -704,7 +704,7 @@ export function defaultDomainContent(): DomainContent {
           order: 4,
           question: "Do bulk results show renewal prices too?",
           answer:
-            "Yes. Every row shows the promotional first-year price and the standard renewal, the same way single search does. A .com is $0.01 for year one and $19.99/yr after that.",
+            "Yes. Every row shows the first-year registration price and the standard renewal rate from our current retail catalogue, the same way single search does. Live search always reflects the price you would pay at checkout.",
         },
         {
           id: "order",

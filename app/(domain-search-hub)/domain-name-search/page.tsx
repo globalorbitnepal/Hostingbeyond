@@ -10,6 +10,7 @@ import {
   applyLiveExtensionStats,
   getRetailRegisterMap,
   loadDomainSearchPageMetrics,
+  getPopularPickPricing,
   mergeRetailIntoPricingRows,
 } from "@/lib/domains/domain-search-page-data";
 
@@ -72,6 +73,13 @@ export default async function DomainNameSearchPage({
   const displayPricing = await mergeRetailIntoPricingRows(
     visiblePricing(content),
   );
+  const popularTlds = content.shared.popularPicks
+    .filter((p) => p.visible !== false)
+    .map((p) => p.tld);
+  const popularPricing = await getPopularPickPricing(
+    popularTlds,
+    displayPricing,
+  );
 
   const schema = buildDomainSchema({
     name: page.title,
@@ -99,6 +107,7 @@ export default async function DomainNameSearchPage({
         crossLinkHref={routes.bulkDomainSearch}
         chipRetailByTld={chipRetailByTld}
         displayPricing={displayPricing}
+        popularPricing={popularPricing}
         hubBackdrop
       />
     </>

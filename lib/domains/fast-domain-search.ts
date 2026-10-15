@@ -20,6 +20,7 @@ import {
   getDeepDiscoveryTldPool,
   getFastCustomerTldPool,
   getFastCustomerTldPoolChunk,
+  splitAlternativeTldWaves,
   topRegisterableRecommendations,
 } from "@/lib/domains/recommendation-tlds";
 
@@ -236,6 +237,125 @@ async function loadAlternativesForTlds(
  * Stage-1 alternatives: one LIVE bulk on the highest-value TLD chunk only.
  * Stage-2 (`runFastAlternativesChunk2`) covers the rest of the fast pool.
  */
+/** Progressive half of chunk-1 alternatives (parallel client waves). */
+export async function runFastAlternativesChunk1Wave(
+  queryRaw: string,
+  wave: 1 | 2,
+  countryCode?: string | null,
+): Promise<{
+  anchorDomain: string;
+  query: string;
+  alternatives: DomainResult[];
+  alternativesComplete: boolean;
+  fastChunk2Available: boolean;
+  deepDiscoveryAvailable: boolean;
+  partialWave: boolean;
+  source: "registrar" | "catalog";
+  timings: Pick<
+    FastSearchTimings,
+    | "total_request_time"
+    | "provider_request_count"
+    | "bulk_fqdn_count"
+    | "dna_requests"
+    | "dna_requests_overlap"
+    | "cache_hit"
+  > & { provider_ms?: number; server_overhead_ms?: number };
+}> {
+  const searchStart = Date.now();
+  const normalized = normalizeDomainSearchInput(queryRaw);
+  if (!normalized.ok) throw new Error(normalized.error);
+
+  const { name, tld, query } = normalized;
+  const anchorDomain = `${name}${(tld || ".com").toLowerCase()}`.toLowerCase();
+  const chunk1Tlds = await getFastCustomerTldPoolChunk(1, countryCode);
+  const [wave1, wave2] = splitAlternativeTldWaves(chunk1Tlds);
+  const tlds = wave === 1 ? wave1 : wave2;
+
+  if (!tlds.length) {
+    const chunk2Tlds = await getFastCustomerTldPoolChunk(2, countryCode);
+    const fastChunk2Available = chunk2Tlds.length > 0;
+    const deepDiscoveryAvailable = (await getDeepDiscoveryTldPool()).length > 0;
+    return {
+      anchorDomain,
+      query,
+      alternatives: [],
+      alternativesComplete:
+        wave === 2 && !fastChunk2Available && !deepDiscoveryAvailable,
+      fastChunk2Available: wave === 2 && fastChunk2Available,
+      deepDiscoveryAvailable: wave === 2 && deepDiscoveryAvailable,
+      partialWave: wave === 1,
+      source: "registrar",
+      timings: {
+        total_request_time: Date.now() - searchStart,
+        provider_request_count: 0,
+        bulk_fqdn_count: 0,
+        dna_requests: [],
+        dna_requests_overlap: false,
+        cache_hit: false,
+        provider_ms: 0,
+        server_overhead_ms: Date.now() - searchStart,
+      },
+    };
+  }
+
+  const cacheKey = `${fastSearchCacheKey(name)}:alts:c1:w${wave}:${countryCode ?? "global"}`;
+  const metricsBefore = getDnaProviderMetrics();
+  let bulkFqdns = 0;
+  let providerMs = 0;
+  const payload = await withFastSearchInflightOnly(cacheKey, async () => {
+    const loaded = await loadAlternativesForTlds(
+      name,
+      anchorDomain,
+      query,
+      tlds,
+    );
+    bulkFqdns = loaded.bulkFqdns;
+    providerMs = loaded.providerMs;
+    return {
+      anchorDomain,
+      query,
+      primary: null,
+      alternatives: loaded.alternatives,
+    };
+  });
+
+  const readyAt = Date.now();
+  const metrics = getDnaProviderMetrics();
+  const limit = customerAlternativeLimit();
+  const chunk2Tlds = await getFastCustomerTldPoolChunk(2, countryCode);
+  const fastChunk2Available =
+    wave === 2 && chunk2Tlds.length > 0 && payload.alternatives.length < limit;
+  const deepDiscoveryAvailable =
+    wave === 2 &&
+    payload.alternatives.length < limit &&
+    (await getDeepDiscoveryTldPool()).length > 0;
+
+  return {
+    anchorDomain: payload.anchorDomain,
+    query: payload.query,
+    alternatives: payload.alternatives,
+    alternativesComplete:
+      wave === 2 && !fastChunk2Available && !deepDiscoveryAvailable,
+    fastChunk2Available,
+    deepDiscoveryAvailable,
+    partialWave: wave === 1,
+    source: "registrar",
+    timings: {
+      total_request_time: readyAt - searchStart,
+      provider_request_count: Math.max(
+        0,
+        metrics.providerRequestCount - metricsBefore.providerRequestCount,
+      ),
+      bulk_fqdn_count: bulkFqdns,
+      dna_requests: mapDnaTraces(getDnaRequestTraces()),
+      dna_requests_overlap: false,
+      cache_hit: false,
+      provider_ms: providerMs,
+      server_overhead_ms: Math.max(0, readyAt - searchStart - providerMs),
+    },
+  };
+}
+
 export async function runFastAlternativesChunk1(
   queryRaw: string,
   countryCode?: string | null,

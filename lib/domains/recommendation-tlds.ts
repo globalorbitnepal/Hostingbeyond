@@ -86,6 +86,13 @@ export function alternativeProviderParallelLimit(): number {
   return Math.min(Math.max(raw, 1), 2);
 }
 
+/** Split chunk-1 TLD pool into two progressive UI/provider waves. */
+export function splitAlternativeTldWaves(tlds: string[]): [string[], string[]] {
+  if (tlds.length < 2) return [tlds, []];
+  const mid = Math.ceil(tlds.length / 2);
+  return [tlds.slice(0, mid), tlds.slice(mid)];
+}
+
 export async function getFastCustomerTldPoolChunk(
   chunk: 1 | 2,
   countryCode?: string | null,
