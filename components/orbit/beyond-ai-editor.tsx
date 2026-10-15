@@ -3,6 +3,7 @@
 import { useRef } from "react";
 
 import { OrbitImageField } from "@/components/orbit/image-field";
+import { OrbitVideoField } from "@/components/orbit/video-field";
 import type {
   CmsBeyondAiContent,
   CmsBeyondAiFeature,
@@ -91,8 +92,8 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
         <div>
           <h2 className="font-semibold">Beyond AI homepage banner</h2>
           <p className="mt-0.5 text-xs text-slate-500">
-            Full homepage Beyond AI section: left copy, right workspace text,
-            Popular Templates, and Live Preview site cards.
+            Full homepage Beyond AI section: left copy, right hero (video or
+            workspace UI), templates, and preview cards.
           </p>
         </div>
         <label className="flex items-center gap-2 text-xs text-slate-500">
@@ -103,6 +104,46 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
           />
           Visible
         </label>
+      </div>
+
+      <div className="rounded-xl border border-violet-200 bg-violet-50/50 p-4">
+        <p className="text-sm font-semibold text-slate-900">
+          Right column hero
+        </p>
+        <p className="mt-1 text-xs text-slate-600">
+          Video plays muted on loop (no sound). Use workspace UI to restore the
+          interactive mockup.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-4">
+          <label className="flex items-center gap-2 text-sm text-slate-700">
+            <input
+              type="radio"
+              name="beyond-ai-visual"
+              checked={value.visual === "video"}
+              onChange={() => patch({ visual: "video" }, true)}
+            />
+            Looping video
+          </label>
+          <label className="flex items-center gap-2 text-sm text-slate-700">
+            <input
+              type="radio"
+              name="beyond-ai-visual"
+              checked={value.visual === "workspace"}
+              onChange={() => patch({ visual: "workspace" }, true)}
+            />
+            Workspace UI mockup
+          </label>
+        </div>
+        {value.visual === "video" ? (
+          <div className="mt-3">
+            <OrbitVideoField
+              label="Hero video (MP4/WebM, max 12 MB)"
+              value={value.heroVideoUrl ?? ""}
+              onChange={(heroVideoUrl) => patch({ heroVideoUrl })}
+              onCommit={(heroVideoUrl) => patch({ heroVideoUrl }, true)}
+            />
+          </div>
+        ) : null}
       </div>
 
       <OrbitImageField

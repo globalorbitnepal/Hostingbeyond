@@ -74,6 +74,47 @@ const fallbackThumbs = [
   },
 ];
 
+function BeyondAiHeroVideo({ src }: { src: string }) {
+  const reduce = useReducedMotion();
+  return (
+    <div className="relative overflow-hidden rounded-[22px] border border-white/15 bg-[#0a0f1e] shadow-[0_32px_80px_-24px_rgba(0,0,0,0.75)] ring-1 ring-white/10">
+      <div
+        className="flex items-center gap-2 border-b border-white/10 bg-[#0f172a]/90 px-4 py-2.5"
+        aria-hidden
+      >
+        <span className="size-2.5 rounded-full bg-[#ff5f57]" />
+        <span className="size-2.5 rounded-full bg-[#febc2e]" />
+        <span className="size-2.5 rounded-full bg-[#28c840]" />
+        <span className="ml-2 truncate text-[11px] font-semibold text-white/45">
+          Beyond AI — workspace preview
+        </span>
+      </div>
+      <div className="relative aspect-[16/10] w-full bg-[#050816]">
+        <video
+          className="absolute inset-0 h-full w-full object-cover object-top"
+          src={src}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          aria-label="Beyond AI website builder preview"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#050816]/40 via-transparent to-transparent"
+        />
+      </div>
+      {!reduce ? (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -inset-1 -z-10 rounded-[24px] bg-[radial-gradient(circle,rgba(99,102,241,0.35),transparent_65%)] blur-xl"
+        />
+      ) : null}
+    </div>
+  );
+}
+
 function BeyondAiMark({ compact = false }: { compact?: boolean }) {
   return (
     <span
@@ -378,6 +419,8 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
   const cards = Array.from({ length: 5 }, (_, index) =>
     siteCard(data.sites[index], index),
   );
+  const heroVideo = data.heroVideoUrl?.trim();
+  const useHeroVideo = data.visual === "video" && Boolean(heroVideo);
 
   return (
     <section className="relative w-full overflow-hidden bg-[#050816]">
@@ -483,9 +526,19 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
             className="pointer-events-none absolute -inset-8 rounded-[36px] bg-[radial-gradient(circle,rgba(99,102,241,0.28),transparent_62%)] blur-2xl"
           />
           <div className="relative">
-            <WorkspaceScreen href={ctaHref} data={data} cards={cards} />
-            <div className="mx-auto mt-2 h-2 w-[64%] rounded-b-[18px] bg-[#1e293b]" />
-            <div className="mx-auto h-1.5 w-[38%] rounded-b-full bg-[#334155]" />
+            {useHeroVideo ? (
+              <>
+                <BeyondAiHeroVideo src={heroVideo!} />
+                <div className="mx-auto mt-2 h-2 w-[64%] rounded-b-[18px] bg-[#1e293b]" />
+                <div className="mx-auto h-1.5 w-[38%] rounded-b-full bg-[#334155]" />
+              </>
+            ) : (
+              <>
+                <WorkspaceScreen href={ctaHref} data={data} cards={cards} />
+                <div className="mx-auto mt-2 h-2 w-[64%] rounded-b-[18px] bg-[#1e293b]" />
+                <div className="mx-auto h-1.5 w-[38%] rounded-b-full bg-[#334155]" />
+              </>
+            )}
           </div>
         </motion.div>
       </div>

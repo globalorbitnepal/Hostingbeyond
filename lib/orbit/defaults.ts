@@ -210,8 +210,10 @@ export type CmsBeyondAiFeature = {
 
 export type CmsBeyondAiContent = {
   visible: boolean;
-  /** Homepage always uses the workspace photo. The 2x2 site grid is retired. */
-  visual: "workspace";
+  /** Right column: animated workspace UI or looping hero video. */
+  visual: "workspace" | "video";
+  /** MP4/WebM URL when visual is video (Orbit upload or /videos/…). */
+  heroVideoUrl: string;
   badge: string;
   badgeSecondary: string;
   title: string;
@@ -1086,7 +1088,8 @@ export function defaultHostingPlansSection(): CmsHostingPlansContent {
 export function defaultBeyondAiSection(): CmsBeyondAiContent {
   return {
     visible: true,
-    visual: "workspace",
+    visual: "video",
+    heroVideoUrl: "/videos/beyond-ai-hero-demo.mp4",
     badge: "Beyond AI",
     badgeSecondary: "AI Website Builder",
     title: "Turn Your Ideas",
@@ -1097,9 +1100,9 @@ export function defaultBeyondAiSection(): CmsBeyondAiContent {
     primaryCtaHref: routes.beyondAi,
     secondaryCtaLabel: "",
     secondaryCtaHref: routes.beyondAi,
-    trust1: "50+ Templates",
-    trust2: "20+ AI Models",
-    trust3: "1-Click Publish",
+    trust1: "No credit card required",
+    trust2: "Free to try",
+    trust3: "Launch in minutes",
     dashboardTitle: "Create Your Website with AI",
     toastTitle:
       "Describe your idea, choose a model, and generate a complete website.",
@@ -2984,7 +2987,14 @@ function mergeBeyondAiSection(
         }
       : {}),
     visible: stored.visible !== false,
-    visual: "workspace",
+    visual:
+      stored.visual === "video" || stored.visual === "workspace"
+        ? stored.visual
+        : defaults.visual,
+    heroVideoUrl:
+      typeof stored.heroVideoUrl === "string" && stored.heroVideoUrl.trim()
+        ? stored.heroVideoUrl.trim()
+        : defaults.heroVideoUrl,
     workspaceImageUrl: legacyHero
       ? defaults.workspaceImageUrl
       : typeof stored.workspaceImageUrl === "string" &&
