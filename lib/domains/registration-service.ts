@@ -15,6 +15,7 @@ import {
   supplierQuoteCoversTerm,
   tldTermContextFromRow,
 } from "@/lib/domains/registration-term";
+import { inflightDomainOrderFilter } from "@/lib/domains/domain-order-inflight";
 import { resolveLifecycleProvider } from "@/lib/domains/providers/index";
 import { DomainProviderError } from "@/lib/domains/providers/types";
 import { publicId } from "@/lib/domains/transfer-service";
@@ -69,6 +70,13 @@ export async function processDomainRegistrationCheckout(input: {
     where: { idempotencyKey: input.idempotencyKey },
   });
   if (existingOrder) {
+    if (existingOrder.userId !== input.userId) {
+      return {
+        ok: false as const,
+        error: "Invalid request.",
+        status: 403,
+      };
+    }
     return {
       ok: true as const,
       order: existingOrder,
@@ -77,12 +85,7 @@ export async function processDomainRegistrationCheckout(input: {
   }
 
   const inflight = await prisma.domainOrder.findFirst({
-    where: {
-      domain: quote.domain,
-      status: {
-        in: ["REGISTERING", "RECONCILIATION_REQUIRED", "PROCESSING"],
-      },
-    },
+    where: inflightDomainOrderFilter({ domain: quote.domain }),
   });
   if (inflight) {
     return {

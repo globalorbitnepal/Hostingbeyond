@@ -1,3 +1,5 @@
+import { Prisma } from "@prisma/client";
+
 import { normalizeDomainSearchInput } from "@/lib/domains/normalize";
 import {
   notifyRenewalFailed,
@@ -6,6 +8,7 @@ import {
 import { getRetailQuoteForTld } from "@/lib/domains/pricing-engine";
 import { resolveDomainRegistrarProvider } from "@/lib/domains/providers/index";
 import { DomainProviderError } from "@/lib/domains/providers/types";
+import { inflightDomainOrderFilter } from "@/lib/domains/domain-order-inflight";
 import { publicId } from "@/lib/domains/transfer-service";
 import {
   ensureCustomerWallet,
@@ -62,25 +65,62 @@ export async function processDomainRenewalCheckout(input: {
     where: { idempotencyKey: input.idempotencyKey },
   });
   if (existingOrder) {
+    if (existingOrder.userId !== input.userId) {
+      return {
+        ok: false as const,
+        error: "Invalid request.",
+        status: 403,
+      };
+    }
     return { ok: true as const, order: existingOrder, duplicate: true };
+  }
+
+  const inflight = await prisma.domainOrder.findFirst({
+    where: inflightDomainOrderFilter({
+      domain: normalized.query,
+      userId: input.userId,
+      orderType: "renew",
+    }),
+  });
+  if (inflight) {
+    return {
+      ok: false as const,
+      error: "A renewal for this domain is already in progress.",
+      status: 409,
+    };
   }
 
   await ensureCustomerWallet(input.userId);
 
-  const order = await prisma.domainOrder.create({
-    data: {
-      publicId: publicId("DOM"),
-      userId: input.userId,
-      orderType: "renew",
-      domain: normalized.query,
-      tld: normalized.tld || ".com",
-      status: "PROCESSING",
-      retailPrice: retail.renew,
-      total,
-      currency: retail.currency,
-      idempotencyKey: input.idempotencyKey,
-    },
-  });
+  let order;
+  try {
+    order = await prisma.domainOrder.create({
+      data: {
+        publicId: publicId("DOM"),
+        userId: input.userId,
+        orderType: "renew",
+        domain: normalized.query,
+        tld: normalized.tld || ".com",
+        status: "PROCESSING",
+        retailPrice: retail.renew,
+        total,
+        currency: retail.currency,
+        idempotencyKey: input.idempotencyKey,
+      },
+    });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return {
+        ok: false as const,
+        error: "A renewal for this domain is already in progress.",
+        status: 409,
+      };
+    }
+    throw error;
+  }
 
   let reserveTxId: string | null = null;
   try {
@@ -93,6 +133,11 @@ export async function processDomainRenewalCheckout(input: {
     });
     reserveTxId = reserve.id;
 
+    await prisma.domainOrder.update({
+      where: { id: order.id },
+      data: { walletTransactionId: reserve.id },
+    });
+
     const provider = resolveDomainRegistrarProvider()!;
     let expiresAt: string | null = null;
     try {
@@ -100,10 +145,11 @@ export async function processDomainRenewalCheckout(input: {
       expiresAt = result.expiresAt;
     } catch (error) {
       if (error instanceof DomainProviderError && error.code === "timeout") {
-        await prisma.domainOrder.update({
+        const updated = await prisma.domainOrder.update({
           where: { id: order.id },
           data: {
             status: "RECONCILIATION_REQUIRED",
+            walletTransactionId: reserve.id,
             errorCode: "timeout",
             errorMessageCustomer:
               "We are confirming your renewal with the registry.",
@@ -111,7 +157,7 @@ export async function processDomainRenewalCheckout(input: {
         });
         return {
           ok: true as const,
-          order,
+          order: updated,
           reconciliation: true,
         };
       }

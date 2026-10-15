@@ -63,7 +63,10 @@ export async function POST(request: Request) {
         status: result.order.status,
         total: Number(result.order.total),
         currency: result.order.currency,
-        message: customerMessageForOrderStatus(result.order.status),
+        message: customerMessageForOrderStatus(
+          result.order.status,
+          result.order.orderType,
+        ),
         customerStatus:
           result.order.status === "REGISTERED" ? "Active" : undefined,
       },

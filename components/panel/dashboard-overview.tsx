@@ -266,12 +266,11 @@ export function DashboardOverview({
               ))}
             </ul>
           )}
-          <Link
-            href={routes.accountWallet}
-            className="mt-4 inline-block text-xs font-semibold text-[var(--hb-p-primary)]"
-          >
-            Open wallet
-          </Link>
+          <div className="mt-4 flex flex-wrap gap-4 text-xs font-semibold text-[var(--hb-p-primary)]">
+            <Link href={routes.accountBilling}>All transactions</Link>
+            <Link href={routes.accountOrders}>Domain orders</Link>
+            <Link href={routes.accountWallet}>Wallet</Link>
+          </div>
         </section>
 
         <section className="hb-panel-card p-5 sm:p-6">
@@ -296,8 +295,8 @@ export function DashboardOverview({
             </li>
             <li>
               <strong className="text-slate-800">Invoices & tickets</strong> —
-              wallet history is available; formal invoices and support tickets
-              are not enabled yet.
+              wallet and domain order history are in Billing; formal invoices
+              and support tickets are not enabled yet.
             </li>
           </ul>
           {counts.migrationRequests > 0 ? (

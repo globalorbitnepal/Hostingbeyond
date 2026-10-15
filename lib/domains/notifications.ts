@@ -75,16 +75,30 @@ export async function notifyTransferFailed(input: {
 
 export function customerMessageForOrderStatus(
   status: DomainOrderStatus,
+  orderType?: string,
 ): string {
+  const renew = orderType === "renew";
+  const transfer = orderType === "transfer";
+
   switch (status) {
     case "REGISTERED":
+      if (renew) return "Your domain renewal is complete.";
+      if (transfer) return "Your domain transfer is complete.";
       return "Your domain registration is complete.";
     case "REGISTERING":
     case "PROCESSING":
+      if (renew) return "Your domain renewal is in progress.";
+      if (transfer) return "Your domain transfer is in progress.";
       return "Your domain registration is in progress.";
     case "RECONCILIATION_REQUIRED":
+      if (renew) {
+        return "We're verifying your renewal with the registry. Funds are held until we confirm the outcome.";
+      }
       return "We're verifying your domain registration. Your payment has been safely held while we confirm the registration status.";
     case "FAILED":
+      if (renew) {
+        return "Renewal could not be completed. Reserved funds were returned when possible.";
+      }
       return "Registration could not be completed. Your account was not charged.";
     case "PENDING_PAYMENT":
       return "Complete payment to register this domain.";
