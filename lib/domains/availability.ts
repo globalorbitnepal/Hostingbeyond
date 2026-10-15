@@ -1,3 +1,4 @@
+import { parseBulkInputTokens } from "@/lib/domains/bulk-input";
 import { isAvailabilityProviderConfigured } from "@/lib/domains/providers/index";
 import { PRICE_BY_TLD, splitDomain } from "@/lib/domains/tlds";
 
@@ -118,9 +119,5 @@ export function checkDomains(inputs: string[], fallbackTld = ".com") {
 
 /** Parses a bulk textarea (one domain per line, commas or spaces allowed). */
 export function parseBulkInput(value: string, limit = 50) {
-  return value
-    .split(/[\s,;]+/)
-    .map((item) => item.trim())
-    .filter(Boolean)
-    .slice(0, limit);
+  return parseBulkInputTokens(value, limit);
 }

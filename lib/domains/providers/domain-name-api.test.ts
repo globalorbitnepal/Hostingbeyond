@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import {
+  coerceDnaPremiumFlag,
   createDomainNameApiProvider,
   mapAvailabilityStatusForTests,
   mapHttpErrorForTests,
@@ -68,6 +69,67 @@ describe("Domain Name API provider", () => {
 
   it("maps premium flag", () => {
     assert.equal(mapAvailabilityStatusForTests("available", true), "premium");
+  });
+
+  it("coerces DNA premium flag without truthy strings", () => {
+    assert.equal(coerceDnaPremiumFlag(false), false);
+    assert.equal(coerceDnaPremiumFlag("false"), false);
+    assert.equal(coerceDnaPremiumFlag("0"), false);
+    assert.equal(coerceDnaPremiumFlag("true"), true);
+    assert.equal(coerceDnaPremiumFlag("yes"), true);
+  });
+
+  it("aligns bulk-search rows to requested domains when API reorders", async () => {
+    const mockFetch: typeof fetch = async () =>
+      new Response(
+        JSON.stringify({
+          infos: [
+            {
+              domainName: "second.com",
+              tld: "com",
+              status: "available",
+              price: 10,
+              isPremium: false,
+            },
+            {
+              domainName: "first.com",
+              tld: "com",
+              status: "notavailable",
+            },
+          ],
+        }),
+        { status: 200 },
+      );
+
+    const provider = createDomainNameApiProvider(testConfig, mockFetch);
+    const rows = await provider.checkAvailability(["first.com", "second.com"]);
+    assert.equal(rows.length, 2);
+    assert.equal(rows[0]?.domain, "first.com");
+    assert.equal(rows[0]?.status, "taken");
+    assert.equal(rows[1]?.domain, "second.com");
+    assert.equal(rows[1]?.status, "available");
+  });
+
+  it("marks missing provider rows as unknown", async () => {
+    const mockFetch: typeof fetch = async () =>
+      new Response(
+        JSON.stringify({
+          infos: [
+            {
+              domainName: "only.com",
+              tld: "com",
+              status: "available",
+              price: 10,
+            },
+          ],
+        }),
+        { status: 200 },
+      );
+
+    const provider = createDomainNameApiProvider(testConfig, mockFetch);
+    const rows = await provider.checkAvailability(["only.com", "missing.com"]);
+    assert.equal(rows[1]?.domain, "missing.com");
+    assert.equal(rows[1]?.status, "unknown");
   });
 
   it("maps ambiguous provider status to unknown", () => {

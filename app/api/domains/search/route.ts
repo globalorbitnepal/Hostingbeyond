@@ -94,7 +94,8 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      const { results, source } = await runBulkDomainSearch(bulk, MAX_BULK);
+      const { results, source, truncated, uniqueDomainCount } =
+        await runBulkDomainSearch(bulk, MAX_BULK);
       if (!results.length) {
         return NextResponse.json(
           { error: "Add at least one domain, one per line." },
@@ -105,6 +106,12 @@ export async function POST(request: Request) {
         results,
         source,
         resultsCustomer: results.map(toCustomerResult),
+        uniqueDomainCount,
+        ...(truncated
+          ? {
+              limitNotice: `Only the first ${MAX_BULK} unique domains were checked. Remove extras or run another search for the rest.`,
+            }
+          : {}),
       });
     }
 

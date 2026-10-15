@@ -107,7 +107,15 @@ export async function processDomainRegistrationCheckout(input: {
     };
   }
 
-  await assertAvailable(quote.domain);
+  const availability = await assertAvailable(quote.domain);
+  if (availability.register == null) {
+    return {
+      ok: false as const,
+      error: "Pricing is unavailable for this domain. Please search again.",
+      status: 400,
+    };
+  }
+  const registerPrice = availability.register;
   await ensureCustomerWallet(input.userId);
 
   const order = await prisma.domainOrder.create({
@@ -118,8 +126,8 @@ export async function processDomainRegistrationCheckout(input: {
       domain: quote.domain,
       tld: quote.tld,
       status: "PROCESSING",
-      retailPrice: quote.register,
-      total: quote.register,
+      retailPrice: registerPrice,
+      total: registerPrice,
       currency: quote.currency,
       idempotencyKey: input.idempotencyKey,
     },
@@ -129,7 +137,7 @@ export async function processDomainRegistrationCheckout(input: {
   try {
     const reserve = await reserveWalletFunds({
       userId: input.userId,
-      amount: quote.register,
+      amount: registerPrice,
       idempotencyKey: `register:${input.idempotencyKey}`,
       referenceType: "DomainOrder",
       referenceId: order.id,
@@ -200,7 +208,7 @@ export async function processDomainRegistrationCheckout(input: {
     if (registerOutcome.outcome === "failed") {
       await rollbackReserve({
         userId: input.userId,
-        amount: quote.register,
+        amount: registerPrice,
         reserveTransactionId: reserve.id,
         idempotencyKey: input.idempotencyKey,
       });
@@ -229,7 +237,7 @@ export async function processDomainRegistrationCheckout(input: {
     if (registerOutcome.outcome !== "success") {
       await rollbackReserve({
         userId: input.userId,
-        amount: quote.register,
+        amount: registerPrice,
         reserveTransactionId: reserve.id,
         idempotencyKey: input.idempotencyKey,
       });
@@ -302,7 +310,7 @@ export async function processDomainRegistrationCheckout(input: {
     if (reserveTxId) {
       await rollbackReserve({
         userId: input.userId,
-        amount: quote.register,
+        amount: registerPrice,
         reserveTransactionId: reserveTxId,
         idempotencyKey: input.idempotencyKey,
       }).catch(() => undefined);

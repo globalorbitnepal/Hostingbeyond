@@ -1,27 +1,22 @@
 import type { DomainResult } from "@/lib/domains/availability";
-import { parseBulkInput } from "@/lib/domains/availability";
+import {
+  bulkInputExceedsLimit,
+  countBulkUniqueDomains,
+  parseBulkInputDeduped,
+} from "@/lib/domains/bulk-input";
 import { lookupDomainNames } from "@/lib/domains/lookup";
 import { normalizeDomainSearchInput } from "@/lib/domains/normalize";
 import { splitDomain } from "@/lib/domains/tlds";
 
+export {
+  bulkInputExceedsLimit,
+  countBulkUniqueDomains,
+  parseBulkInputDeduped,
+} from "@/lib/domains/bulk-input";
+
 export type BulkPreparedLine =
   | { kind: "lookup"; raw: string; fqdn: string }
   | { kind: "invalid"; raw: string; domain: string; message: string };
-
-/** Parse textarea input, dedupe (case-insensitive), preserve first-seen order. */
-export function parseBulkInputDeduped(value: string, limit = 50): string[] {
-  const tokens = parseBulkInput(value, limit + 20);
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const token of tokens) {
-    const key = token.trim().toLowerCase();
-    if (!key || seen.has(key)) continue;
-    seen.add(key);
-    out.push(token.trim());
-    if (out.length >= limit) break;
-  }
-  return out;
-}
 
 export function classifyBulkLine(raw: string): BulkPreparedLine {
   const trimmed = raw.trim();
@@ -84,7 +79,14 @@ export function unknownBulkResult(
 export async function runBulkDomainSearch(
   bulkText: string,
   limit = 50,
-): Promise<{ results: DomainResult[]; source: "registrar" | "catalog" }> {
+): Promise<{
+  results: DomainResult[];
+  source: "registrar" | "catalog";
+  truncated: boolean;
+  uniqueDomainCount: number;
+}> {
+  const uniqueDomainCount = countBulkUniqueDomains(bulkText);
+  const truncated = uniqueDomainCount > limit;
   const lines = parseBulkInputDeduped(bulkText, limit).map(classifyBulkLine);
   const fqdns = lines
     .filter(
@@ -109,5 +111,5 @@ export async function runBulkDomainSearch(
     return byDomain.get(line.fqdn) ?? unknownBulkResult(line.fqdn);
   });
 
-  return { results, source };
+  return { results, source, truncated, uniqueDomainCount };
 }

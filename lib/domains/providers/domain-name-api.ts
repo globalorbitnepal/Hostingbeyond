@@ -108,6 +108,18 @@ function mapHttpError(status: number, body: unknown): DomainProviderError {
   return new DomainProviderError("provider_failure", httpHint);
 }
 
+/** DNA may return boolean or string premium flags; never treat "false" as true. */
+export function coerceDnaPremiumFlag(value: unknown): boolean {
+  if (value === true || value === 1) return true;
+  if (value === false || value === 0 || value == null) return false;
+  if (typeof value === "string") {
+    const s = value.trim().toLowerCase();
+    if (s === "true" || s === "1" || s === "yes") return true;
+    if (s === "false" || s === "0" || s === "no" || s === "") return false;
+  }
+  return false;
+}
+
 function mapAvailabilityStatus(
   raw: string | undefined,
   isPremium: boolean,
@@ -360,19 +372,23 @@ export function createDomainNameApiProvider(
               throw new DomainProviderError("provider_failure");
             }
 
-            const rows: ProviderAvailabilityRow[] = items.map((item) => {
-              const domainRaw = String(item.domainName ?? "").toLowerCase();
-              const parsed = parseFqdn(domainRaw || (fqdns[0] ?? ""));
+            const byDomain = new Map<string, ProviderAvailabilityRow>();
+            for (const item of items) {
+              const domainRaw = String(item.domainName ?? "")
+                .trim()
+                .toLowerCase();
+              if (!domainRaw) continue;
+              const parsed = parseFqdn(domainRaw);
               const tldFromApi = item.tld
                 ? `.${String(item.tld).replace(/^\./, "")}`
                 : parsed.tld;
-              const isPremium = Boolean(item.isPremium);
+              const isPremium = coerceDnaPremiumFlag(item.isPremium);
               const status = mapAvailabilityStatus(item.status, isPremium);
               const supplier = toSupplier(item);
 
               if (!quietRowLogs) {
                 logDomainProvider("dna_availability_row", {
-                  domain: parsed.domain || domainRaw,
+                  domain: parsed.domain,
                   status,
                   environment: config.environment,
                   supplierRegister: supplier.register,
@@ -380,8 +396,8 @@ export function createDomainNameApiProvider(
                 });
               }
 
-              return {
-                domain: domainRaw || parsed.domain,
+              byDomain.set(parsed.domain, {
+                domain: parsed.domain,
                 name: parsed.name,
                 tld: tldFromApi,
                 status,
@@ -390,10 +406,29 @@ export function createDomainNameApiProvider(
                   typeof item.reason === "string" && item.reason.trim()
                     ? item.reason.trim()
                     : undefined,
+              });
+            }
+
+            return fqdns.map((fqdn) => {
+              const key = fqdn.toLowerCase();
+              const hit = byDomain.get(key);
+              if (hit) return hit;
+              const { name, tld } = parseFqdn(key);
+              return {
+                domain: key,
+                name,
+                tld: tld || ".com",
+                status: "unknown" as const,
+                supplier: {
+                  register: null,
+                  renew: null,
+                  transfer: null,
+                  currency: "USD",
+                },
+                message:
+                  "Temporarily unavailable — registry check did not complete. Please try again.",
               };
             });
-
-            return rows;
           } catch (error) {
             if (error instanceof DomainProviderError) throw error;
             if (error instanceof Error && error.name === "AbortError") {

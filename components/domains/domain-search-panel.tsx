@@ -32,6 +32,10 @@ import { loginPathForDomainCheckout } from "@/lib/domains/domain-purchase-intent
 import type { DomainResult } from "@/lib/domains/availability";
 import { dispatchDomainCartUpdated } from "@/lib/domains/domain-cart-events";
 import { sortByRecommendationPriority } from "@/lib/domains/recommendation-priority";
+import {
+  bulkInputExceedsLimit,
+  countBulkUniqueDomains,
+} from "@/lib/domains/bulk-input";
 import { SUGGESTED_TLDS, formatPrice } from "@/lib/domains/tlds";
 import { cn } from "@/lib/utils";
 
@@ -104,7 +108,7 @@ const MODE_TABS: Array<{
 ];
 
 function countBulkLines(value: string) {
-  return Math.min(BULK_LIMIT, value.split(/[\s,;]+/).filter(Boolean).length);
+  return Math.min(BULK_LIMIT, countBulkUniqueDomains(value));
 }
 
 function sortRecommendations(a: DomainResult, b: DomainResult) {
@@ -595,6 +599,7 @@ export function DomainSearchPanel({
   const [alternativesComplete, setAlternativesComplete] = useState(false);
   const [alternativesWarning, setAlternativesWarning] = useState("");
   const [error, setError] = useState("");
+  const [bulkLimitNotice, setBulkLimitNotice] = useState("");
   const [cartSuccess, setCartSuccess] = useState("");
   const [primaryResult, setPrimaryResult] = useState<DomainResult | null>(null);
   const [alternativeResults, setAlternativeResults] = useState<DomainResult[]>(
@@ -657,6 +662,7 @@ export function DomainSearchPanel({
     setAlternativesComplete(false);
     setAlternativesWarning("");
     setError("");
+    setBulkLimitNotice("");
     setCartSuccess("");
     setPrimaryResult(null);
     setAlternativeResults([]);
@@ -668,7 +674,11 @@ export function DomainSearchPanel({
 
     try {
       let response: Response | null = null;
-      let json: { results?: DomainResult[]; error?: string } = {};
+      let json: {
+        results?: DomainResult[];
+        error?: string;
+        limitNotice?: string;
+      } = {};
       for (let attempt = 0; attempt < 4; attempt++) {
         response = await fetch("/api/domains/search", {
           method: "POST",
@@ -679,6 +689,7 @@ export function DomainSearchPanel({
         json = (await response.json()) as {
           results?: DomainResult[];
           error?: string;
+          limitNotice?: string;
         };
         if (response.status === 429 && attempt < 3) {
           await sleep(600 * (attempt + 1));
@@ -702,6 +713,7 @@ export function DomainSearchPanel({
         setAnchorDomain(json.results![0]?.domain ?? "");
         setSearched("bulk");
         setBulkSelected(new Set());
+        setBulkLimitNotice(json.limitNotice ?? "");
       });
     } catch (err) {
       if (gen !== searchGeneration.current) return;
@@ -1096,6 +1108,13 @@ export function DomainSearchPanel({
         setError(`Add one domain per line, up to ${BULK_LIMIT} at a time.`);
         return;
       }
+      if (bulkInputExceedsLimit(bulk, BULK_LIMIT)) {
+        setBulkLimitNotice(
+          `Only the first ${BULK_LIMIT} unique domains will be checked. Remove extras or run another search for the rest.`,
+        );
+      } else {
+        setBulkLimitNotice("");
+      }
       void runBulk(bulk);
     },
     [bulk, runBulk],
@@ -1236,6 +1255,15 @@ export function DomainSearchPanel({
           className="mt-4 rounded-2xl border border-[#fecaca] bg-[#fef2f2] px-4 py-3 text-[13px] font-semibold text-[#b91c1c]"
         >
           {error}
+        </p>
+      ) : null}
+
+      {mode === "bulk" && bulkLimitNotice ? (
+        <p
+          role="status"
+          className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] font-semibold text-amber-900"
+        >
+          {bulkLimitNotice}
         </p>
       ) : null}
 
