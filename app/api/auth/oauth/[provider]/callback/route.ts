@@ -9,14 +9,20 @@ import {
   isOAuthProvider,
   oauthCallbackUrl,
 } from "@/lib/customer/oauth";
+import { nextPathFromOAuthStatePayload } from "@/lib/customer/oauth-state";
 import {
   createCustomerSession,
   customerCookieOptions,
 } from "@/lib/customer/session";
+import { sanitizeCustomerRedirectPath } from "@/lib/customer/safe-redirect";
+import { absoluteSiteUrl } from "@/lib/customer/site-origin";
+import { routes } from "@/config/routes";
 import { sessionSecret } from "@/lib/orbit/jwt";
 
 function fail(request: NextRequest, code: string) {
-  return NextResponse.redirect(new URL(`/login?error=${code}`, request.url));
+  return NextResponse.redirect(
+    absoluteSiteUrl(request, `/login?error=${code}`),
+  );
 }
 
 async function exchangeCode(
@@ -63,18 +69,16 @@ export async function GET(
     return fail(request, "oauth");
   }
 
-  let nextPath = "/account";
+  let nextPath: string = routes.account;
   try {
     const { payload } = await jwtVerify(state, sessionSecret());
-    if (payload.kind !== "oauth" || payload.provider !== rawProvider) {
-      return fail(request, "oauth");
-    }
-    if (typeof payload.next === "string" && payload.next.startsWith("/")) {
-      nextPath = payload.next;
-    }
+    const verified = nextPathFromOAuthStatePayload(payload, rawProvider);
+    if (!verified) return fail(request, "oauth");
+    nextPath = verified.nextPath;
   } catch {
     return fail(request, "oauth");
   }
+  nextPath = sanitizeCustomerRedirectPath(nextPath, routes.account);
 
   const provider = getOAuthProvider(rawProvider);
   if (!provider.configured) return fail(request, `${rawProvider}_unavailable`);
@@ -135,7 +139,9 @@ export async function GET(
     userAgent: request.headers.get("user-agent"),
   });
 
-  const response = NextResponse.redirect(new URL(nextPath, request.url));
+  const response = NextResponse.redirect(
+    absoluteSiteUrl(request, nextPath, routes.account),
+  );
   const cookie = customerCookieOptions(expiresAt);
   response.cookies.set(cookie.name, token, cookie);
   response.cookies.set("hb_oauth_state", "", {

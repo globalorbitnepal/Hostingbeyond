@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { sanitizeCustomerRedirectPath } from "@/lib/customer/safe-redirect";
+import { requestSiteOrigin } from "@/lib/customer/site-origin";
+import {
+  CUSTOMER_SESSION_COOKIE,
+  verifyCustomerJwt,
+} from "@/lib/customer/session";
 import { ORBIT_SESSION_COOKIE, verifyOrbitJwt } from "@/lib/orbit/jwt";
 
 /**
@@ -16,6 +22,20 @@ function redirectToOrbit(request: NextRequest) {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  if (pathname.startsWith("/account")) {
+    const token = request.cookies.get(CUSTOMER_SESSION_COOKIE)?.value;
+    const verified = await verifyCustomerJwt(token);
+    if (!verified) {
+      const returnPath = sanitizeCustomerRedirectPath(
+        `${pathname}${request.nextUrl.search}`,
+      );
+      const login = new URL("/login", requestSiteOrigin(request));
+      login.searchParams.set("next", returnPath);
+      return NextResponse.redirect(login);
+    }
+    return NextResponse.next();
+  }
 
   const isOrbitPage = pathname.startsWith("/orbit");
   const isOrbitApi = pathname.startsWith("/api/orbit");
@@ -52,5 +72,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/orbit/:path*", "/api/orbit/:path*"],
+  matcher: ["/account/:path*", "/orbit/:path*", "/api/orbit/:path*"],
 };

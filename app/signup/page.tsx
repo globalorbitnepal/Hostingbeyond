@@ -16,6 +16,8 @@ import {
   getAuthHostingPurchaseProps,
   redirectIfLoggedInWithIntent,
 } from "@/lib/hosting/auth-purchase-props";
+import { listConfiguredCustomerOAuthProviders } from "@/lib/customer/oauth-availability";
+import { sanitizeCustomerRedirectPath } from "@/lib/customer/safe-redirect";
 import { getLoginPage } from "@/lib/orbit/content";
 
 export const metadata: Metadata = {
@@ -42,13 +44,8 @@ export default async function SignupPage({
   const domainList = parseDomainListFromSearchParams(params);
   if (user && domainList.length) redirect(domainCheckoutPath(domainList));
   const next = params.next;
-  if (
-    user &&
-    typeof next === "string" &&
-    next.startsWith("/") &&
-    !next.startsWith("//")
-  ) {
-    redirect(next);
+  if (user && typeof next === "string") {
+    redirect(sanitizeCustomerRedirectPath(next));
   }
   if (user) redirect("/account");
 
@@ -60,6 +57,7 @@ export default async function SignupPage({
         mode="signup"
         purchaseContext={purchaseContext}
         purchaseSelectionInvalid={purchaseSelectionInvalid}
+        oauthProviders={listConfiguredCustomerOAuthProviders()}
       />
     </Suspense>
   );

@@ -17,6 +17,7 @@ import { checkTransferEligibilityAsync } from "@/lib/domains/transfer-service";
 import { getDomainCheckoutOffers } from "@/lib/domains/domain-checkout-offers";
 import { isPaymentProviderConfigured } from "@/lib/domains/wallet-top-up";
 import { ensureCustomerWallet } from "@/lib/domains/wallet";
+import { customerAuthHints } from "@/lib/customer/oauth-availability";
 import { routes } from "@/config/routes";
 
 export const metadata: Metadata = {
@@ -64,6 +65,7 @@ export default async function GetStartedDomainCheckoutPage({
 
   const domainsFromUrl = parseDomainListFromSearchParams(params);
   const offers = await getDomainCheckoutOffers();
+  const { googleOAuth } = customerAuthHints();
 
   if (user && domainsFromUrl.length) {
     await mergeUrlDomainsIntoCart(user.id, domainsFromUrl);
@@ -93,6 +95,7 @@ export default async function GetStartedDomainCheckoutPage({
         offers={offers}
         customerEmail={user.email}
         customerName={user.name}
+        googleOAuth={googleOAuth}
       />
     );
   }
@@ -107,6 +110,7 @@ export default async function GetStartedDomainCheckoutPage({
       offers={offers}
       customerEmail=""
       customerName={null}
+      googleOAuth={googleOAuth}
     />
   );
 }

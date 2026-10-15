@@ -1,11 +1,9 @@
+import { configuredSiteOrigin } from "@/lib/customer/site-origin";
+
 export type OAuthProvider = "google" | "github" | "facebook";
 
 export function publicOrigin() {
-  return (
-    process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
-    process.env.ORBIT_ORIGIN?.trim() ||
-    "https://hosting.theglobalorbit.com"
-  );
+  return configuredSiteOrigin();
 }
 
 export function oauthCallbackUrl(provider: OAuthProvider) {

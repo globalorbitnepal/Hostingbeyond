@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { useDomainCart } from "@/components/domains/domain-cart-provider";
 import { DomainPremiumCheckout } from "@/components/domains/domain-premium-checkout";
 import type { DomainCheckoutOffersPayload } from "@/lib/domains/domain-checkout-offers";
 import {
@@ -48,7 +49,26 @@ type Props = {
   offers: DomainCheckoutOffersPayload;
   customerEmail: string;
   customerName: string | null;
+  googleOAuth?: boolean;
 };
+
+function mapCartLinesToCheckout(
+  items: Array<{
+    domain: string;
+    status: string;
+    register: number;
+    renew: number;
+    currency: string;
+  }>,
+): DomainCheckoutLine[] {
+  return items.map((item) => ({
+    domain: item.domain,
+    status: item.status,
+    register: Number(item.register),
+    renew: Number(item.renew),
+    currency: item.currency,
+  }));
+}
 
 function statusLabelForOrder(status: string): string {
   if (status === "REGISTERED") return "Active";
@@ -79,8 +99,14 @@ export function DomainCheckoutView({
   offers,
   customerEmail: initialEmail,
   customerName: initialName,
+  googleOAuth = false,
 }: Props) {
   const router = useRouter();
+  const {
+    cart,
+    isAuthenticated: cartAuthenticated,
+    refreshCart,
+  } = useDomainCart();
   const [isAuthenticated, setIsAuthenticated] = useState(initialAuthenticated);
   const [lines, setLines] = useState(
     initialAuthenticated ? initialLines : mapGuestLines(),
@@ -97,9 +123,28 @@ export function DomainCheckoutView({
   const [rejectedNotice, setRejectedNotice] = useState(cartRejected);
 
   useEffect(() => {
-    if (initialAuthenticated) return;
+    void refreshCart();
+  }, [refreshCart]);
+
+  useEffect(() => {
+    if (initialAuthenticated || cartAuthenticated) {
+      setIsAuthenticated(true);
+      if (cart.items.length > 0) {
+        setLines(mapCartLinesToCheckout(cart.items));
+      } else if (initialAuthenticated && initialLines.length > 0) {
+        setLines(initialLines);
+      }
+      return;
+    }
     setLines(mapGuestLines());
-  }, [initialAuthenticated]);
+  }, [initialAuthenticated, cartAuthenticated, cart.items, initialLines]);
+
+  useEffect(() => {
+    if (!initialAuthenticated) return;
+    setLines(initialLines);
+    setCustomerEmail(initialEmail);
+    setCustomerName(initialName);
+  }, [initialAuthenticated, initialLines, initialEmail, initialName]);
 
   const total = useMemo(
     () => lines.reduce((sum, line) => sum + line.register, 0),
@@ -121,10 +166,11 @@ export function DomainCheckoutView({
     void refreshWallet();
   }, [refreshWallet]);
 
-  const handleAuthenticated = useCallback(() => {
+  const handleAuthenticated = useCallback(async () => {
+    await refreshCart();
     router.refresh();
     setIsAuthenticated(true);
-  }, [router]);
+  }, [router, refreshCart]);
 
   async function removeLine(domain: string) {
     if (submitting) return;
@@ -335,6 +381,7 @@ export function DomainCheckoutView({
       rejectedNotice={rejectedNotice}
       insufficient={insufficient}
       allDone={allDone}
+      googleOAuth={googleOAuth}
     />
   );
 }

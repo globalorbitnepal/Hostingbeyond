@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type FormEvent } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { Suspense, useMemo, useState, type FormEvent } from "react";
 import { Loader2 } from "lucide-react";
 
 import { SocialAuthButtons } from "@/components/auth/social-auth-buttons";
 import { routes } from "@/config/routes";
+import { sanitizeCustomerRedirectPath } from "@/lib/customer/safe-redirect";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -15,12 +17,23 @@ type Props = {
   oauthNext?: string;
 };
 
-export function CheckoutAuthPanel({
+function CheckoutAuthPanelInner({
   onAuthenticated,
   className,
   googleOAuth = false,
-  oauthNext = routes.domainCheckout,
+  oauthNext,
 }: Props) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const resolvedOAuthNext = useMemo(() => {
+    if (oauthNext) {
+      return sanitizeCustomerRedirectPath(oauthNext, routes.domainCheckout);
+    }
+    const query = searchParams.toString();
+    const current = `${pathname}${query ? `?${query}` : ""}`;
+    return sanitizeCustomerRedirectPath(current, routes.domainCheckout);
+  }, [oauthNext, pathname, searchParams]);
+
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -108,7 +121,7 @@ export function CheckoutAuthPanel({
       {googleOAuth ? (
         <SocialAuthButtons
           dividerLabel="Or continue with"
-          oauthNext={oauthNext}
+          oauthNext={resolvedOAuthNext}
           providers={["google"]}
         />
       ) : null}
@@ -176,12 +189,38 @@ export function CheckoutAuthPanel({
       <p className="mt-3 text-center text-[12px] text-slate-500">
         Prefer the full sign-in page?{" "}
         <Link
-          href={`${routes.login}?next=${encodeURIComponent(routes.domainCheckout)}`}
+          href={`${routes.login}?next=${encodeURIComponent(resolvedOAuthNext)}`}
           className="font-semibold text-[#673de6] hover:underline"
         >
           Open login
         </Link>
       </p>
     </div>
+  );
+}
+
+function CheckoutAuthPanelFallback({ className }: { className?: string }) {
+  return (
+    <div
+      className={cn(
+        "rounded-[20px] border border-violet-200/70 bg-gradient-to-br from-[#f8f4ff] to-white p-5 sm:p-6",
+        className,
+      )}
+    >
+      <div className="flex min-h-[120px] items-center justify-center text-sm text-slate-500">
+        <Loader2 className="mr-2 size-4 animate-spin" />
+        Loading sign-in…
+      </div>
+    </div>
+  );
+}
+
+export function CheckoutAuthPanel(props: Props) {
+  return (
+    <Suspense
+      fallback={<CheckoutAuthPanelFallback className={props.className} />}
+    >
+      <CheckoutAuthPanelInner {...props} />
+    </Suspense>
   );
 }

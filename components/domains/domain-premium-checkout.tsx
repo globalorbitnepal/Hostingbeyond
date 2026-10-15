@@ -110,6 +110,7 @@ type PremiumCheckoutProps = {
   rejectedNotice: string[];
   insufficient: boolean;
   allDone: boolean;
+  googleOAuth?: boolean;
 };
 
 export function DomainPremiumCheckout({
@@ -134,6 +135,7 @@ export function DomainPremiumCheckout({
   rejectedNotice,
   insufficient,
   allDone,
+  googleOAuth = false,
 }: PremiumCheckoutProps) {
   const [step, setStep] = useState<StepId>("domains");
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(() => {
@@ -565,7 +567,10 @@ export function DomainPremiumCheckout({
                   </div>
                 </section>
               ) : (
-                <CheckoutAuthPanel onAuthenticated={onAuthenticated} />
+                <CheckoutAuthPanel
+                  onAuthenticated={onAuthenticated}
+                  googleOAuth={googleOAuth}
+                />
               )
             ) : null}
 
@@ -593,6 +598,7 @@ export function DomainPremiumCheckout({
                   <CheckoutAuthPanel
                     onAuthenticated={onAuthenticated}
                     className="mt-4"
+                    googleOAuth={googleOAuth}
                   />
                 ) : null}
                 {insufficient ? (

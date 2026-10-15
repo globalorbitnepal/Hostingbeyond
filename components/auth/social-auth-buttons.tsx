@@ -1,3 +1,11 @@
+"use client";
+
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
+
+import type { OAuthProvider } from "@/lib/customer/oauth";
+import { sanitizeCustomerRedirectPath } from "@/lib/customer/safe-redirect";
+import { routes } from "@/config/routes";
 import { cn } from "@/lib/utils";
 
 function GoogleMark() {
@@ -47,38 +55,36 @@ function FacebookMark() {
 
 const PROVIDERS = [
   {
-    id: "google",
+    id: "google" as const,
     label: "Continue with Google",
     href: "/api/auth/oauth/google",
     icon: GoogleMark,
   },
   {
-    id: "github",
+    id: "github" as const,
     label: "Continue with GitHub",
     href: "/api/auth/oauth/github",
     icon: GitHubMark,
   },
   {
-    id: "facebook",
+    id: "facebook" as const,
     label: "Continue with Facebook",
     href: "/api/auth/oauth/facebook",
     icon: FacebookMark,
   },
-] as const;
+];
 
 export function SocialAuthButtons({
   dividerLabel,
-  oauthNext = "/account",
+  oauthNext = routes.account,
   providers,
 }: {
   dividerLabel?: string;
   oauthNext?: string;
-  providers?: Array<(typeof PROVIDERS)[number]["id"]>;
+  providers?: OAuthProvider[];
 }) {
-  const safeNext =
-    oauthNext.startsWith("/") && !oauthNext.startsWith("//")
-      ? oauthNext
-      : "/account";
+  const [pending, setPending] = useState<OAuthProvider | null>(null);
+  const safeNext = sanitizeCustomerRedirectPath(oauthNext, routes.account);
   const visible = providers
     ? PROVIDERS.filter((p) => providers.includes(p.id))
     : PROVIDERS;
@@ -93,16 +99,25 @@ export function SocialAuthButtons({
       <div className="grid gap-2.5">
         {visible.map((item) => {
           const Icon = item.icon;
+          const href = `${item.href}?next=${encodeURIComponent(safeNext)}`;
+          const isPending = pending === item.id;
           return (
             <a
               key={item.id}
-              href={`${item.href}?next=${encodeURIComponent(safeNext)}`}
+              href={href}
+              aria-busy={isPending}
+              onClick={() => setPending(item.id)}
               className={cn(
                 "inline-flex h-12 items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800",
-                "transition hover:border-slate-300 hover:bg-slate-50",
+                "transition hover:border-[#6025c5]/35 hover:bg-violet-50/40",
+                isPending && "pointer-events-none opacity-70",
               )}
             >
-              <Icon />
+              {isPending ? (
+                <Loader2 className="size-5 animate-spin text-slate-500" />
+              ) : (
+                <Icon />
+              )}
               {item.label}
             </a>
           );

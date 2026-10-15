@@ -1,3 +1,4 @@
+import { sanitizeCustomerRedirectPath } from "@/lib/customer/safe-redirect";
 import { routes } from "@/config/routes";
 
 import type { HostingCartConfiguration } from "./cart/types";
@@ -48,8 +49,8 @@ export function resolvePostAuthCheckoutRedirect(
     return hostingCheckoutPath(intent);
   }
   const next = searchParams.get("next");
-  if (next && next.startsWith("/") && !next.startsWith("//")) {
-    return next;
+  if (next) {
+    return sanitizeCustomerRedirectPath(next, routes.account);
   }
   return routes.account;
 }

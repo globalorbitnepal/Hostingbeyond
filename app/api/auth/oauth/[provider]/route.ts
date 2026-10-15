@@ -6,6 +6,9 @@ import {
   isOAuthProvider,
   oauthCallbackUrl,
 } from "@/lib/customer/oauth";
+import { sanitizeCustomerRedirectPath } from "@/lib/customer/safe-redirect";
+import { absoluteSiteUrl } from "@/lib/customer/site-origin";
+import { routes } from "@/config/routes";
 import { sessionSecret } from "@/lib/orbit/jwt";
 
 export async function GET(
@@ -14,23 +17,28 @@ export async function GET(
 ) {
   const { provider: rawProvider } = await context.params;
   if (!isOAuthProvider(rawProvider)) {
-    return NextResponse.redirect(new URL("/login?error=oauth", request.url));
+    return NextResponse.redirect(
+      absoluteSiteUrl(request, "/login?error=oauth"),
+    );
   }
 
   const provider = getOAuthProvider(rawProvider);
   if (!provider.configured) {
     return NextResponse.redirect(
-      new URL(`/login?error=${rawProvider}_unavailable`, request.url),
+      absoluteSiteUrl(request, `/login?error=${rawProvider}_unavailable`),
     );
   }
 
-  const next = request.nextUrl.searchParams.get("next") || "/account";
+  const nextPath = sanitizeCustomerRedirectPath(
+    request.nextUrl.searchParams.get("next"),
+    routes.account,
+  );
   const nonce = crypto.randomUUID();
   const state = await new SignJWT({
     kind: "oauth",
     provider: rawProvider,
     nonce,
-    next: next.startsWith("/") ? next : "/account",
+    next: nextPath,
   })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()

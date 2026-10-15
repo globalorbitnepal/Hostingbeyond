@@ -1,3 +1,4 @@
+import { sanitizeCustomerRedirectPath } from "@/lib/customer/safe-redirect";
 import { routes } from "@/config/routes";
 
 import { getRegistryEntryBySlug } from "./products-registry";
@@ -122,8 +123,8 @@ export function resolvePostAuthRedirect(searchParams: URLSearchParams): string {
     return hostingCheckoutPath(intent);
   }
   const next = searchParams.get("next");
-  if (next && next.startsWith("/") && !next.startsWith("//")) {
-    return next;
+  if (next) {
+    return sanitizeCustomerRedirectPath(next, routes.account);
   }
   return routes.account;
 }

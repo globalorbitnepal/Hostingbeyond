@@ -27,6 +27,7 @@ import {
   preserveAuthSearchParams,
   resolvePostAuthRedirect,
 } from "@/lib/hosting/purchase-intent";
+import type { OAuthProvider } from "@/lib/customer/oauth";
 import type { CmsLoginFeature, CmsLoginPage } from "@/lib/orbit/defaults";
 
 const FEATURE_ICONS: Record<CmsLoginFeature["icon"], typeof Shield> = {
@@ -54,11 +55,13 @@ export function AuthPageView({
   mode,
   purchaseContext,
   purchaseSelectionInvalid,
+  oauthProviders = [],
 }: {
   content: CmsLoginPage;
   mode: "login" | "signup";
   purchaseContext?: ResolvedHostingPurchaseContext | null;
   purchaseSelectionInvalid?: boolean;
+  oauthProviders?: OAuthProvider[];
 }) {
   const reduceMotion = useReducedMotion();
   const messageId = useId();
@@ -455,10 +458,13 @@ export function AuthPageView({
                 </button>
               </form>
 
-              <SocialAuthButtons
-                dividerLabel={content.dividerLabel}
-                oauthNext={postAuthPath}
-              />
+              {oauthProviders.length > 0 ? (
+                <SocialAuthButtons
+                  dividerLabel={content.dividerLabel}
+                  oauthNext={postAuthPath}
+                  providers={oauthProviders}
+                />
+              ) : null}
 
               <p className="mt-6 text-center text-sm text-slate-500">
                 {isSignup ? "Already have an account?" : content.signupPrompt}{" "}
