@@ -4,6 +4,7 @@
 .hb-checkout-premium {
   --hb-co-royal: #35106f;
   --hb-co-primary: #6025c5;
+  --hb-co-blue: #3730a3;
   --hb-co-lavender: #9c7ae8;
   --hb-co-surface: #f4f0ff;
   --hb-co-bg: #ffffff;
@@ -35,7 +36,16 @@
       rgb(96 37 197 / 8%),
       transparent 50%
     ),
-    linear-gradient(180deg, var(--hb-co-surface) 0%, var(--hb-co-bg) 42%);
+    linear-gradient(
+      165deg,
+      var(--hb-co-surface) 0%,
+      #eef2ff 38%,
+      var(--hb-co-bg) 72%
+    );
+}
+
+.hb-checkout-premium__table-head {
+  background: linear-gradient(90deg, rgb(96 37 197 / 6%), rgb(55 48 163 / 6%));
 }
 
 .hb-checkout-premium__card {
@@ -61,6 +71,7 @@
   background: linear-gradient(
     135deg,
     var(--hb-co-primary) 0%,
+    var(--hb-co-blue) 55%,
     var(--hb-co-royal) 100%
   );
   transition:

@@ -19,6 +19,7 @@ import {
   offerKey,
   offerToSelection,
 } from "@/components/checkout/checkout-addon-offers";
+import type { EmailBillingTerm } from "@/lib/hosting/business-email-term-pricing";
 import { CheckoutStepNav } from "@/components/checkout/checkout-step-nav";
 import { CheckoutAuthPanel } from "@/components/domains/checkout-auth-panel";
 import { routes } from "@/config/routes";
@@ -143,7 +144,7 @@ export function DomainPremiumCheckout({
       if (sel.kind === "hosting") {
         keys.add(`hosting:${sel.productSlug}:${sel.planKey}:${sel.billing}`);
       } else {
-        keys.add(`email:${sel.planId}`);
+        keys.add(`email:${sel.planId}:${sel.term}`);
       }
     }
     return keys;
@@ -156,6 +157,15 @@ export function DomainPremiumCheckout({
     const initial: Record<string, "monthly" | "annually"> = {};
     for (const g of groupCheckoutOffers(offers.optional).hostingGroups) {
       initial[g.groupKey] = g.monthly ? "monthly" : "annually";
+    }
+    return initial;
+  });
+  const [emailBilling, setEmailBilling] = useState<
+    Record<string, EmailBillingTerm>
+  >(() => {
+    const initial: Record<string, EmailBillingTerm> = {};
+    for (const g of groupCheckoutOffers(offers.optional).emailGroups) {
+      initial[g.groupKey] = "monthly";
     }
     return initial;
   });
@@ -217,7 +227,31 @@ export function DomainPremiumCheckout({
           if (k.startsWith("hosting:")) next.delete(k);
         }
       }
+      if (offer.kind === "business-email") {
+        for (const k of [...next]) {
+          if (k.startsWith("email:")) next.delete(k);
+        }
+      }
       next.add(key);
+      return next;
+    });
+  }
+
+  function onEmailBillingChange(groupKey: string, term: EmailBillingTerm) {
+    setEmailBilling((prev) => ({ ...prev, [groupKey]: term }));
+    setSelectedKeys((prev) => {
+      const hadGroup = [...prev].some((k) => k.startsWith(`${groupKey}:`));
+      if (!hadGroup) return prev;
+      const next = new Set(prev);
+      for (const k of [...next]) {
+        if (k.startsWith(`${groupKey}:`)) next.delete(k);
+      }
+      const planId = groupKey.replace(/^email:/, "");
+      const offer = offers.optional.find(
+        (o) =>
+          o.kind === "business-email" && o.planId === planId && o.term === term,
+      );
+      if (offer) next.add(offerKey(offer));
       return next;
     });
   }
@@ -386,43 +420,57 @@ export function DomainPremiumCheckout({
                     </button>
                   </div>
                 ) : null}
-                <ul className="mt-4 space-y-3">
-                  {lines.map((line) => (
-                    <li
-                      key={line.domain}
-                      className="rounded-[14px] border border-[var(--hb-co-border)] bg-[var(--hb-co-bg-subtle)]/50 p-4"
-                    >
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p
-                            className="text-[16px] font-extrabold break-words text-[var(--hb-co-text)]"
-                            style={{ overflowWrap: "anywhere" }}
-                          >
-                            {line.domain}
-                          </p>
-                          <p className="mt-1 text-[12.5px] font-medium text-[var(--hb-co-text-muted)]">
-                            Domain registration · 1 year · Renews{" "}
-                            {formatPrice(line.renew)}/yr
-                          </p>
-                        </div>
-                        <div className="text-right lg:hidden">
-                          <p className="text-[17px] font-extrabold text-[var(--hb-co-primary)]">
-                            {formatPrice(line.register)}
-                          </p>
-                        </div>
-                      </div>
-                      {!submitting && results.length === 0 ? (
-                        <button
-                          type="button"
-                          className="mt-3 min-h-11 text-[13px] font-bold text-slate-400 hover:text-red-600"
-                          onClick={() => void onRemoveLine(line.domain)}
+                <div className="mt-4 overflow-x-auto rounded-[14px] border border-[var(--hb-co-border)]">
+                  <table className="w-full min-w-[28rem] text-left text-[13px]">
+                    <thead>
+                      <tr className="border-b border-[var(--hb-co-border)] bg-[var(--hb-co-bg-subtle)] text-[11px] font-bold tracking-wide text-[var(--hb-co-text-muted)] uppercase">
+                        <th className="px-4 py-3 font-bold">Item</th>
+                        <th className="px-4 py-3 font-bold">Duration</th>
+                        <th className="px-4 py-3 text-right font-bold">
+                          Price
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {lines.map((line) => (
+                        <tr
+                          key={line.domain}
+                          className="border-b border-[var(--hb-co-border)] last:border-0"
                         >
-                          Remove
-                        </button>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
+                          <td className="px-4 py-3.5 align-top">
+                            <p
+                              className="text-[15px] font-extrabold break-words text-[var(--hb-co-text)]"
+                              style={{ overflowWrap: "anywhere" }}
+                            >
+                              {line.domain}
+                            </p>
+                            <p className="mt-0.5 text-[12px] font-semibold text-[var(--hb-co-primary)]">
+                              Registration
+                            </p>
+                            {!submitting && results.length === 0 ? (
+                              <button
+                                type="button"
+                                className="mt-2 min-h-9 text-[12px] font-bold text-[var(--hb-co-text-muted)] hover:text-[var(--hb-co-error)]"
+                                onClick={() => void onRemoveLine(line.domain)}
+                              >
+                                Remove
+                              </button>
+                            ) : null}
+                          </td>
+                          <td className="px-4 py-3.5 align-top text-[var(--hb-co-text-muted)]">
+                            1 year
+                            <span className="mt-1 block text-[11px]">
+                              Renews {formatPrice(line.renew)}/yr
+                            </span>
+                          </td>
+                          <td className="px-4 py-3.5 text-right align-top font-extrabold text-[var(--hb-co-text)]">
+                            {formatPrice(line.register)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
                 <div className="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50/60 px-4 py-3">
                   <p className="text-[13px] font-bold text-emerald-900">
                     Protect your domain
@@ -456,7 +504,9 @@ export function DomainPremiumCheckout({
                   optional={offers.optional}
                   selectedKeys={selectedKeys}
                   hostingBilling={hostingBilling}
+                  emailBilling={emailBilling}
                   onHostingBillingChange={onHostingBillingChange}
+                  onEmailBillingChange={onEmailBillingChange}
                   onToggleOffer={toggleOffer}
                   exampleEmail={
                     lines[0]?.domain
@@ -660,24 +710,37 @@ export function DomainPremiumCheckout({
                 Order summary
               </h2>
               <ul className="mt-4 space-y-3 border-b border-slate-100 pb-4">
-                {lines.map((line) => (
-                  <li key={line.domain} className="flex justify-between gap-2">
-                    <div className="min-w-0">
-                      <p
-                        className="text-[13px] font-bold break-words text-slate-800"
-                        style={{ overflowWrap: "anywhere" }}
-                      >
-                        {line.domain}
-                      </p>
-                      <p className="text-[11px] text-slate-500">
-                        Domain registration · 1 year
-                      </p>
-                    </div>
-                    <span className="shrink-0 text-[13px] font-bold text-slate-900">
-                      {formatPrice(line.register)}
-                    </span>
+                {step === "domains" ? (
+                  <li className="text-[13px] text-[var(--hb-co-text-muted)]">
+                    <span className="font-bold text-[var(--hb-co-text)]">
+                      {lines.length}
+                    </span>{" "}
+                    domain{lines.length === 1 ? "" : "s"} in cart — see table
+                    for line items
                   </li>
-                ))}
+                ) : (
+                  lines.map((line) => (
+                    <li
+                      key={line.domain}
+                      className="flex justify-between gap-2"
+                    >
+                      <div className="min-w-0">
+                        <p
+                          className="text-[13px] font-bold break-words text-slate-800"
+                          style={{ overflowWrap: "anywhere" }}
+                        >
+                          {line.domain}
+                        </p>
+                        <p className="text-[11px] text-slate-500">
+                          Domain registration · 1 year
+                        </p>
+                      </div>
+                      <span className="shrink-0 text-[13px] font-bold text-slate-900">
+                        {formatPrice(line.register)}
+                      </span>
+                    </li>
+                  ))
+                )}
                 {quote?.serviceLines?.map((line) => (
                   <li key={line.key} className="flex justify-between gap-2">
                     <div className="min-w-0">

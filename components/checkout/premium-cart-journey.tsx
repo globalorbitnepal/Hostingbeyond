@@ -10,6 +10,7 @@ import {
   offerKey,
   offerToSelection,
 } from "@/components/checkout/checkout-addon-offers";
+import type { EmailBillingTerm } from "@/lib/hosting/business-email-term-pricing";
 import { ChevronDown, Lock, ShieldCheck, ShoppingCart } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 
@@ -64,7 +65,10 @@ function selectionsToKeys(
       if (match) keys.add(offerKey(match));
     } else {
       const match = optional.find(
-        (o) => o.kind === "business-email" && o.planId === sel.planId,
+        (o) =>
+          o.kind === "business-email" &&
+          o.planId === sel.planId &&
+          o.term === sel.term,
       );
       if (match) keys.add(offerKey(match));
     }
@@ -107,6 +111,9 @@ export function PremiumCartJourney() {
   const [hostingBilling, setHostingBilling] = useState<
     Record<string, "monthly" | "annually">
   >({});
+  const [emailBilling, setEmailBilling] = useState<
+    Record<string, EmailBillingTerm>
+  >({});
   const [mobileSummaryOpen, setMobileSummaryOpen] = useState(false);
 
   const setStep = useCallback(
@@ -128,11 +135,16 @@ export function PremiumCartJourney() {
         if (!cancelled) {
           setHints(json);
           const billingInit: Record<string, "monthly" | "annually"> = {};
-          for (const g of groupCheckoutOffers(json.offers.optional)
-            .hostingGroups) {
+          const grouped = groupCheckoutOffers(json.offers.optional);
+          for (const g of grouped.hostingGroups) {
             billingInit[g.groupKey] = g.monthly ? "monthly" : "annually";
           }
           setHostingBilling(billingInit);
+          const emailInit: Record<string, EmailBillingTerm> = {};
+          for (const g of grouped.emailGroups) {
+            emailInit[g.groupKey] = "monthly";
+          }
+          setEmailBilling(emailInit);
           const saved = readPremiumCartServices();
           if (saved.length) {
             setSelectedKeys(selectionsToKeys(saved, json.offers.optional));
@@ -201,7 +213,32 @@ export function PremiumCartJourney() {
           if (k.startsWith("hosting:")) next.delete(k);
         }
       }
+      if (offer.kind === "business-email") {
+        for (const k of [...next]) {
+          if (k.startsWith("email:")) next.delete(k);
+        }
+      }
       next.add(key);
+      return next;
+    });
+  }
+
+  function onEmailBillingChange(groupKey: string, term: EmailBillingTerm) {
+    setEmailBilling((prev) => ({ ...prev, [groupKey]: term }));
+    if (!hints) return;
+    setSelectedKeys((prev) => {
+      const hadGroup = [...prev].some((k) => k.startsWith(`${groupKey}:`));
+      if (!hadGroup) return prev;
+      const next = new Set(prev);
+      for (const k of [...next]) {
+        if (k.startsWith(`${groupKey}:`)) next.delete(k);
+      }
+      const planId = groupKey.replace(/^email:/, "");
+      const offer = hints.offers.optional.find(
+        (o) =>
+          o.kind === "business-email" && o.planId === planId && o.term === term,
+      );
+      if (offer) next.add(offerKey(offer));
       return next;
     });
   }
@@ -416,7 +453,9 @@ export function PremiumCartJourney() {
                     optional={hints.offers.optional}
                     selectedKeys={selectedKeys}
                     hostingBilling={hostingBilling}
+                    emailBilling={emailBilling}
                     onHostingBillingChange={onHostingBillingChange}
+                    onEmailBillingChange={onEmailBillingChange}
                     onToggleOffer={toggleOffer}
                     exampleEmail={
                       cart.items[0]?.domain

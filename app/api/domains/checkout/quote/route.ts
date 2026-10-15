@@ -31,8 +31,14 @@ function parseSelections(raw: unknown): DomainCheckoutServiceSelection[] {
       out.push({ kind: "hosting", productSlug, planKey, billing });
     } else if (kind === "business-email") {
       const planId = String((item as { planId?: string }).planId ?? "").trim();
-      if (!planId) continue;
-      out.push({ kind: "business-email", planId });
+      const term = String((item as { term?: string }).term ?? "monthly").trim();
+      const allowed = new Set(["monthly", "12", "24", "36", "48"]);
+      if (!planId || !allowed.has(term)) continue;
+      out.push({
+        kind: "business-email",
+        planId,
+        term: term as "monthly" | "12" | "24" | "36" | "48",
+      });
     }
   }
   return out;

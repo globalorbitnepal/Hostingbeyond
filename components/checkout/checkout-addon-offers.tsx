@@ -6,6 +6,10 @@ import type {
   DomainCheckoutServiceOffer,
   DomainCheckoutServiceSelection,
 } from "@/lib/domains/domain-checkout-offers";
+import {
+  EMAIL_BILLING_TERM_OPTIONS,
+  type EmailBillingTerm,
+} from "@/lib/hosting/business-email-term-pricing";
 import { formatPrice } from "@/lib/domains/tlds";
 import { cn } from "@/lib/utils";
 
@@ -20,19 +24,27 @@ export function offerToSelection(
       billing: offer.billing,
     };
   }
-  return { kind: "business-email", planId: offer.planId };
+  return {
+    kind: "business-email",
+    planId: offer.planId,
+    term: offer.term,
+  };
 }
 
 export function offerKey(offer: DomainCheckoutServiceOffer): string {
   if (offer.kind === "hosting") {
     return `hosting:${offer.productSlug}:${offer.planKey}:${offer.billing}`;
   }
-  return `email:${offer.planId}`;
+  return `email:${offer.planId}:${offer.term}`;
 }
 
 export function hostingGroupKey(offer: DomainCheckoutServiceOffer): string {
   if (offer.kind !== "hosting") return "";
   return `hosting:${offer.productSlug}:${offer.planKey}`;
+}
+
+export function emailGroupKey(planId: string): string {
+  return `email:${planId}`;
 }
 
 export type HostingOfferGroup = {
@@ -44,11 +56,24 @@ export type HostingOfferGroup = {
   annually?: DomainCheckoutServiceOffer & { kind: "hosting" };
 };
 
+export type EmailOfferGroup = {
+  groupKey: string;
+  planId: string;
+  planName: string;
+  description: string;
+  mailboxesLabel: string;
+  storageLabel: string;
+  byTerm: Partial<
+    Record<
+      EmailBillingTerm,
+      DomainCheckoutServiceOffer & { kind: "business-email" }
+    >
+  >;
+};
+
 export function groupCheckoutOffers(optional: DomainCheckoutServiceOffer[]) {
   const hostingGroups = new Map<string, HostingOfferGroup>();
-  const emailOffers: Array<
-    DomainCheckoutServiceOffer & { kind: "business-email" }
-  > = [];
+  const emailGroups = new Map<string, EmailOfferGroup>();
 
   for (const offer of optional) {
     if (offer.kind === "hosting") {
@@ -63,13 +88,24 @@ export function groupCheckoutOffers(optional: DomainCheckoutServiceOffer[]) {
       else existing.annually = offer;
       hostingGroups.set(gk, existing);
     } else if (offer.kind === "business-email") {
-      emailOffers.push(offer);
+      const gk = emailGroupKey(offer.planId);
+      const existing = emailGroups.get(gk) ?? {
+        groupKey: gk,
+        planId: offer.planId,
+        planName: offer.planName,
+        description: offer.description,
+        mailboxesLabel: offer.mailboxesLabel,
+        storageLabel: offer.storageLabel,
+        byTerm: {},
+      };
+      existing.byTerm[offer.term] = offer;
+      emailGroups.set(gk, existing);
     }
   }
 
   return {
     hostingGroups: [...hostingGroups.values()],
-    emailOffers,
+    emailGroups: [...emailGroups.values()],
   };
 }
 
@@ -77,27 +113,68 @@ type AddonListProps = {
   optional: DomainCheckoutServiceOffer[];
   selectedKeys: Set<string>;
   hostingBilling: Record<string, "monthly" | "annually">;
+  emailBilling: Record<string, EmailBillingTerm>;
   onHostingBillingChange: (
     groupKey: string,
     billing: "monthly" | "annually",
   ) => void;
+  onEmailBillingChange: (groupKey: string, term: EmailBillingTerm) => void;
   onToggleOffer: (offer: DomainCheckoutServiceOffer) => void;
   exampleEmail?: string;
   className?: string;
 };
 
+function TermPillGroup<T extends string>({
+  options,
+  value,
+  onChange,
+  ariaLabel,
+}: {
+  options: { value: T; label: string }[];
+  value: T;
+  onChange: (v: T) => void;
+  ariaLabel: string;
+}) {
+  return (
+    <div
+      className="mt-4 flex w-full max-w-full [scrollbar-width:none] overflow-x-auto rounded-2xl border border-[var(--hb-co-border)] bg-[var(--hb-co-bg-subtle)] p-1 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+      role="group"
+      aria-label={ariaLabel}
+    >
+      {options.map((opt) => (
+        <button
+          key={opt.value}
+          type="button"
+          onClick={() => onChange(opt.value)}
+          className={cn(
+            "min-h-10 min-w-[4.5rem] flex-1 touch-manipulation rounded-xl px-2 text-[11px] font-extrabold whitespace-nowrap transition sm:px-3 sm:text-[12px]",
+            value === opt.value
+              ? "bg-gradient-to-r from-[#6025c5] to-[#3730a3] text-white shadow-sm"
+              : "text-[var(--hb-co-text-muted)] hover:text-[var(--hb-co-text)]",
+          )}
+          aria-pressed={value === opt.value}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function CheckoutAddonOfferList({
   optional,
   selectedKeys,
   hostingBilling,
+  emailBilling,
   onHostingBillingChange,
+  onEmailBillingChange,
   onToggleOffer,
   exampleEmail = "info@yourdomain.com",
   className,
 }: AddonListProps) {
-  const { hostingGroups, emailOffers } = groupCheckoutOffers(optional);
+  const { hostingGroups, emailGroups } = groupCheckoutOffers(optional);
 
-  if (hostingGroups.length === 0 && emailOffers.length === 0) {
+  if (hostingGroups.length === 0 && emailGroups.length === 0) {
     return (
       <p className="text-[13px] text-[var(--hb-co-text-muted)]">
         No additional services are available for checkout right now.
@@ -113,7 +190,6 @@ export function CheckoutAddonOfferList({
           (group.monthly ? "monthly" : "annually");
         const activeOffer =
           billing === "monthly" ? group.monthly : group.annually;
-        const altOffer = billing === "monthly" ? group.annually : group.monthly;
         const added = activeOffer
           ? selectedKeys.has(offerKey(activeOffer))
           : false;
@@ -125,71 +201,38 @@ export function CheckoutAddonOfferList({
           >
             <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start sm:gap-5">
               <span
-                className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--hb-co-surface)] text-[var(--hb-co-primary)] shadow-inner"
+                className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#ede9fe] to-[#dbeafe] text-[var(--hb-co-primary)]"
                 aria-hidden
               >
                 <Server className="size-6" />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-bold tracking-wide text-[var(--hb-co-primary)] uppercase">
+                <p className="text-[11px] font-bold tracking-[0.12em] text-[var(--hb-co-primary)] uppercase">
                   Web hosting
                 </p>
-                <p className="mt-0.5 text-[17px] font-extrabold tracking-tight text-[var(--hb-co-text)]">
+                <p className="mt-0.5 text-[18px] font-extrabold tracking-tight text-[var(--hb-co-text)]">
                   {group.planName}
                 </p>
-                <p className="mt-1.5 text-[13px] leading-relaxed text-[var(--hb-co-text-muted)]">
+                <p className="mt-1.5 text-[14px] leading-relaxed text-[var(--hb-co-text-muted)]">
                   {group.description}
                 </p>
                 {group.monthly && group.annually ? (
-                  <div
-                    className="mt-4 inline-flex rounded-full border border-[var(--hb-co-border)] bg-[var(--hb-co-bg-subtle)] p-1"
-                    role="group"
-                    aria-label="Billing period"
-                  >
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onHostingBillingChange(group.groupKey, "monthly")
-                      }
-                      className={cn(
-                        "min-h-10 rounded-full px-4 text-[12px] font-bold transition",
-                        billing === "monthly"
-                          ? "bg-[var(--hb-co-primary)] text-white shadow-sm"
-                          : "text-[var(--hb-co-text-muted)] hover:text-[var(--hb-co-text)]",
-                      )}
-                      aria-pressed={billing === "monthly"}
-                    >
-                      Monthly
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onHostingBillingChange(group.groupKey, "annually")
-                      }
-                      className={cn(
-                        "min-h-10 rounded-full px-4 text-[12px] font-bold transition",
-                        billing === "annually"
-                          ? "bg-[var(--hb-co-primary)] text-white shadow-sm"
-                          : "text-[var(--hb-co-text-muted)] hover:text-[var(--hb-co-text)]",
-                      )}
-                      aria-pressed={billing === "annually"}
-                    >
-                      Annual
-                    </button>
-                  </div>
+                  <TermPillGroup
+                    ariaLabel="Hosting billing period"
+                    options={[
+                      { value: "monthly" as const, label: "Monthly" },
+                      { value: "annually" as const, label: "Annual" },
+                    ]}
+                    value={billing}
+                    onChange={(v) => onHostingBillingChange(group.groupKey, v)}
+                  />
                 ) : null}
                 {activeOffer ? (
-                  <p className="mt-3 text-[15px] font-extrabold text-[var(--hb-co-text)]">
+                  <p className="mt-3 text-[16px] font-extrabold text-[var(--hb-co-text)]">
                     {formatPrice(activeOffer.amount)}
-                    <span className="ml-1 text-[12px] font-semibold text-[var(--hb-co-text-muted)]">
+                    <span className="ml-1.5 text-[13px] font-semibold text-[var(--hb-co-text-muted)]">
                       {activeOffer.periodLabel}
                     </span>
-                    {altOffer && billing === "annually" && group.monthly ? (
-                      <span className="mt-1 block text-[11px] font-medium text-[var(--hb-co-text-muted)]">
-                        vs {formatPrice(group.monthly.amount)}/month billed
-                        monthly
-                      </span>
-                    ) : null}
                   </p>
                 ) : null}
               </div>
@@ -200,7 +243,7 @@ export function CheckoutAddonOfferList({
                   className={cn(
                     "hb-checkout-premium__btn-primary min-h-11 shrink-0 px-6 sm:self-center",
                     added &&
-                      "border-2 border-[var(--hb-co-success)] bg-[var(--hb-co-success)] hover:shadow-none",
+                      "border-2 border-[var(--hb-co-success)] bg-[var(--hb-co-success)]",
                   )}
                   aria-pressed={added}
                 >
@@ -212,50 +255,76 @@ export function CheckoutAddonOfferList({
         );
       })}
 
-      {emailOffers.map((offer) => {
-        const key = offerKey(offer);
-        const added = selectedKeys.has(key);
+      {emailGroups.map((group) => {
+        const availableTerms = EMAIL_BILLING_TERM_OPTIONS.filter(
+          (o) => group.byTerm[o.value],
+        );
+        const term =
+          emailBilling[group.groupKey] ?? availableTerms[0]?.value ?? "monthly";
+        const activeOffer = group.byTerm[term];
+        const added = activeOffer
+          ? selectedKeys.has(offerKey(activeOffer))
+          : false;
+
         return (
-          <li key={key} className="hb-checkout-premium__card p-5">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+          <li
+            key={group.groupKey}
+            className="hb-checkout-premium__card overflow-hidden p-0"
+          >
+            <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start sm:gap-5">
               <span
-                className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--hb-co-surface)] text-[var(--hb-co-primary)]"
+                className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#ede9fe] to-[#dbeafe] text-[var(--hb-co-primary)]"
                 aria-hidden
               >
                 <Mail className="size-6" />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-bold tracking-wide text-[var(--hb-co-primary)] uppercase">
+                <p className="text-[11px] font-bold tracking-[0.12em] text-[var(--hb-co-primary)] uppercase">
                   Business email
                 </p>
-                <p className="mt-0.5 text-[17px] font-extrabold">
-                  {offer.planName}
+                <p className="mt-0.5 text-[18px] font-extrabold tracking-tight">
+                  {group.planName}
                 </p>
-                <p className="mt-1.5 text-[13px] text-[var(--hb-co-text-muted)]">
-                  {offer.description}
-                </p>
-                <p className="mt-1 text-[12px] font-semibold text-[var(--hb-co-primary)]">
+                <p className="mt-1 text-[13px] font-semibold text-[var(--hb-co-primary)]">
                   {exampleEmail}
                 </p>
-                <p className="mt-2 text-[15px] font-extrabold">
-                  {formatPrice(offer.amount)}
-                  <span className="ml-1 text-[12px] font-semibold text-[var(--hb-co-text-muted)]">
-                    {offer.periodLabel}
-                  </span>
+                <p className="mt-1.5 text-[14px] text-[var(--hb-co-text-muted)]">
+                  {group.mailboxesLabel} · {group.storageLabel}
                 </p>
+                {availableTerms.length > 0 ? (
+                  <TermPillGroup
+                    ariaLabel="Email billing term"
+                    options={availableTerms}
+                    value={term}
+                    onChange={(v) => onEmailBillingChange(group.groupKey, v)}
+                  />
+                ) : null}
+                {activeOffer ? (
+                  <p className="mt-3 text-[16px] font-extrabold text-[var(--hb-co-text)]">
+                    {formatPrice(activeOffer.amount)}
+                    <span className="ml-1.5 text-[13px] font-semibold text-[var(--hb-co-text-muted)]">
+                      / mo
+                    </span>
+                    <span className="mt-0.5 block text-[12px] font-medium text-[var(--hb-co-text-muted)]">
+                      {activeOffer.periodLabel}
+                    </span>
+                  </p>
+                ) : null}
               </div>
-              <button
-                type="button"
-                onClick={() => onToggleOffer(offer)}
-                className={cn(
-                  "hb-checkout-premium__btn-primary min-h-11 shrink-0 px-6 sm:self-center",
-                  added &&
-                    "border-2 border-[var(--hb-co-success)] bg-[var(--hb-co-success)]",
-                )}
-                aria-pressed={added}
-              >
-                {added ? "Added" : "Add"}
-              </button>
+              {activeOffer ? (
+                <button
+                  type="button"
+                  onClick={() => onToggleOffer(activeOffer)}
+                  className={cn(
+                    "hb-checkout-premium__btn-primary min-h-11 shrink-0 px-6 sm:self-center",
+                    added &&
+                      "border-2 border-[var(--hb-co-success)] bg-[var(--hb-co-success)]",
+                  )}
+                  aria-pressed={added}
+                >
+                  {added ? "Added" : "Add"}
+                </button>
+              ) : null}
             </div>
           </li>
         );

@@ -1,5 +1,11 @@
 import { getHostingProductBySlug } from "@/lib/hosting/hosting-products";
-import { getBusinessEmailAddonPlans } from "@/lib/hosting/business-email-addon";
+import {
+  availableEmailTermsForPlan,
+  emailPricePerMonthForTerm,
+  emailTermCheckoutLabel,
+  type EmailBillingTerm,
+} from "@/lib/hosting/business-email-term-pricing";
+import { getBusinessEmailPageContent } from "@/lib/orbit/content";
 
 export type DomainCheckoutServiceOffer =
   | {
@@ -20,13 +26,14 @@ export type DomainCheckoutServiceOffer =
       serviceId: "business-email";
       planId: string;
       planName: string;
-      billing: "monthly";
+      term: EmailBillingTerm;
       amount: number;
       currency: string;
       label: string;
       description: string;
       periodLabel: string;
       mailboxesLabel: string;
+      storageLabel: string;
     };
 
 export type DomainCheckoutOffersPayload = {
@@ -40,6 +47,15 @@ export type DomainCheckoutOffersPayload = {
 
 function roundMoney(n: number) {
   return Math.round(n * 100) / 100;
+}
+
+function formatUsdPerMonth(amount: number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
 }
 
 /** Real upsell offers for domain checkout — no invented products or prices. */
@@ -101,22 +117,27 @@ export async function getDomainCheckoutOffers(): Promise<DomainCheckoutOffersPay
     }
   }
 
-  const emailPlans = await getBusinessEmailAddonPlans();
-  const emailEntry = emailPlans[0];
+  const emailContent = await getBusinessEmailPageContent();
+  const emailEntry =
+    emailContent.plans.find((p) => p.visible) ?? emailContent.plans[0];
   if (emailEntry) {
-    optional.push({
-      kind: "business-email",
-      serviceId: "business-email",
-      planId: emailEntry.id,
-      planName: emailEntry.name,
-      billing: "monthly",
-      amount: roundMoney(emailEntry.monthlyPrice),
-      currency: "USD",
-      label: "Business Email",
-      description: "Professional mailboxes on your domain.",
-      periodLabel: "per month",
-      mailboxesLabel: emailEntry.mailboxesLabel,
-    });
+    for (const term of availableEmailTermsForPlan(emailEntry)) {
+      const perMonth = emailPricePerMonthForTerm(emailEntry, term);
+      optional.push({
+        kind: "business-email",
+        serviceId: "business-email",
+        planId: emailEntry.id,
+        planName: emailEntry.name,
+        term,
+        amount: roundMoney(perMonth),
+        currency: "USD",
+        label: "Business Email",
+        description: "Professional mailboxes on your domain.",
+        periodLabel: emailTermCheckoutLabel(term),
+        mailboxesLabel: emailEntry.mailboxes,
+        storageLabel: emailEntry.storage,
+      });
+    }
   }
 
   return { included, optional };
@@ -132,6 +153,7 @@ export type DomainCheckoutServiceSelection =
   | {
       kind: "business-email";
       planId: string;
+      term: EmailBillingTerm;
     };
 
 export async function quoteDomainCheckoutServices(
@@ -185,11 +207,14 @@ export async function quoteDomainCheckoutServices(
         billingLabel: match.periodLabel,
       });
     } else {
-      const key = `email:${selection.planId}`;
+      const key = `email:${selection.planId}:${selection.term}`;
       if (seen.has(key)) continue;
       seen.add(key);
       const match = offers.optional.find(
-        (o) => o.kind === "business-email" && o.planId === selection.planId,
+        (o) =>
+          o.kind === "business-email" &&
+          o.planId === selection.planId &&
+          o.term === selection.term,
       );
       if (!match || match.kind !== "business-email") {
         errors.push("Selected business email plan is no longer available.");
@@ -198,10 +223,10 @@ export async function quoteDomainCheckoutServices(
       lines.push({
         key,
         label: match.label,
-        detail: `${match.planName} · ${match.mailboxesLabel}`,
+        detail: `${match.planName} · ${match.periodLabel} · ${match.mailboxesLabel}`,
         amount: match.amount,
         currency: match.currency,
-        billingLabel: match.periodLabel,
+        billingLabel: `${formatUsdPerMonth(match.amount)} / mo`,
       });
     }
   }

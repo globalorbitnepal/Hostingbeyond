@@ -43,6 +43,15 @@ describe("premium-cart-intent", () => {
     writePremiumCartServices(selections);
     assert.ok(sessionStorage.getItem(PREMIUM_CART_SERVICES_KEY));
     assert.deepEqual(readPremiumCartServices(), selections);
+
+    writePremiumCartServices([
+      { kind: "business-email", planId: "starter", term: "48" },
+    ]);
+    assert.deepEqual(readPremiumCartServices()[0], {
+      kind: "business-email",
+      planId: "starter",
+      term: "48",
+    });
   });
 
   it("returns empty array for invalid JSON", () => {
