@@ -2987,14 +2987,28 @@ function mergeBeyondAiSection(
         }
       : {}),
     visible: stored.visible !== false,
-    visual:
-      stored.visual === "video" || stored.visual === "workspace"
-        ? stored.visual
-        : defaults.visual,
-    heroVideoUrl:
-      typeof stored.heroVideoUrl === "string" && stored.heroVideoUrl.trim()
-        ? stored.heroVideoUrl.trim()
-        : defaults.heroVideoUrl,
+    heroVideoUrl: (() => {
+      const raw = stored.heroVideoUrl;
+      if (typeof raw === "string" && raw.trim() === "") return "";
+      if (typeof raw === "string" && raw.trim()) return raw.trim();
+      return defaults.heroVideoUrl;
+    })(),
+    visual: (() => {
+      const url =
+        typeof stored.heroVideoUrl === "string" && stored.heroVideoUrl.trim()
+          ? stored.heroVideoUrl.trim()
+          : stored.heroVideoUrl === ""
+            ? ""
+            : defaults.heroVideoUrl;
+      if (stored.visual === "workspace" && stored.heroVideoUrl === "") {
+        return "workspace";
+      }
+      if (url) return "video";
+      if (stored.visual === "video" || stored.visual === "workspace") {
+        return stored.visual;
+      }
+      return defaults.visual;
+    })(),
     workspaceImageUrl: legacyHero
       ? defaults.workspaceImageUrl
       : typeof stored.workspaceImageUrl === "string" &&

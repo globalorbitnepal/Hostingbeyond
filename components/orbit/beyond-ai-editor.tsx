@@ -120,7 +120,17 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
               type="radio"
               name="beyond-ai-visual"
               checked={value.visual === "video"}
-              onChange={() => patch({ visual: "video" }, true)}
+              onChange={() =>
+                patch(
+                  {
+                    visual: "video",
+                    heroVideoUrl:
+                      value.heroVideoUrl?.trim() ||
+                      "/videos/beyond-ai-hero-demo.mp4",
+                  },
+                  true,
+                )
+              }
             />
             Looping video
           </label>
@@ -129,7 +139,9 @@ export function BeyondAiEditor({ value, onChange, onPersist }: Props) {
               type="radio"
               name="beyond-ai-visual"
               checked={value.visual === "workspace"}
-              onChange={() => patch({ visual: "workspace" }, true)}
+              onChange={() =>
+                patch({ visual: "workspace", heroVideoUrl: "" }, true)
+              }
             />
             Workspace UI mockup
           </label>

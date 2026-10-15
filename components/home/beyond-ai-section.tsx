@@ -89,9 +89,9 @@ function BeyondAiHeroVideo({ src }: { src: string }) {
           Beyond AI — workspace preview
         </span>
       </div>
-      <div className="relative aspect-[16/10] w-full bg-[#050816]">
+      <div className="relative aspect-[16/10] w-full bg-[#030712] sm:aspect-[16/9]">
         <video
-          className="absolute inset-0 h-full w-full object-cover object-top"
+          className="absolute inset-0 h-full w-full object-contain object-center"
           src={src}
           autoPlay
           muted
@@ -419,8 +419,12 @@ export function BeyondAiSection({ content }: { content?: CmsBeyondAiContent }) {
   const cards = Array.from({ length: 5 }, (_, index) =>
     siteCard(data.sites[index], index),
   );
-  const heroVideo = data.heroVideoUrl?.trim();
-  const useHeroVideo = data.visual === "video" && Boolean(heroVideo);
+  const heroVideo =
+    data.heroVideoUrl?.trim() ||
+    (data.visual !== "workspace"
+      ? defaultBeyondAiSection().heroVideoUrl?.trim()
+      : "");
+  const useHeroVideo = data.visual !== "workspace" && Boolean(heroVideo);
 
   return (
     <section className="relative w-full overflow-hidden bg-[#050816]">
