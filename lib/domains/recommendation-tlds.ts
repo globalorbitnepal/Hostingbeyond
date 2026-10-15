@@ -69,6 +69,23 @@ export function fastChunk1TldCount(): number {
   return Math.min(Math.max(raw, 4), 24);
 }
 
+/**
+ * Split one alternative batch into smaller provider requests (0 = single bulk only).
+ * Tune with measurements — smaller parallel bulks can beat one large DNA payload.
+ */
+export function alternativeProviderSubChunkSize(): number {
+  const raw = Number(process.env.DOMAIN_ALT_SUB_CHUNK_SIZE ?? 0);
+  if (!Number.isFinite(raw) || raw < 2) return 0;
+  return Math.min(Math.max(raw, 2), 12);
+}
+
+/** Max concurrent provider sub-chunks per alternative batch (capped at 2). */
+export function alternativeProviderParallelLimit(): number {
+  const raw = Number(process.env.DOMAIN_ALT_PROVIDER_PARALLEL ?? 1);
+  if (!Number.isFinite(raw) || raw < 1) return 1;
+  return Math.min(Math.max(raw, 1), 2);
+}
+
 export async function getFastCustomerTldPoolChunk(
   chunk: 1 | 2,
   countryCode?: string | null,

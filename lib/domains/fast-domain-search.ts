@@ -13,6 +13,8 @@ import {
 } from "@/lib/domains/providers/dna-request-trace";
 import { buildServerTimingHeader } from "@/lib/domains/search-server-timing";
 import {
+  alternativeProviderParallelLimit,
+  alternativeProviderSubChunkSize,
   buildRecommendationFqdns,
   customerAlternativeLimit,
   getDeepDiscoveryTldPool,
@@ -156,6 +158,22 @@ async function loadFastAlternativesFromProvider(
   };
 }
 
+async function lookupAlternativeFqdns(
+  name: string,
+  anchorDomain: string,
+  query: string,
+  tlds: string[],
+): Promise<DomainResult[]> {
+  const fqdns = buildRecommendationFqdns(name, anchorDomain, tlds);
+  if (!fqdns.length) return [];
+  const lookup = await lookupDomainNames(
+    fqdns,
+    { query, tlds },
+    { fresh: true },
+  );
+  return lookup.results.filter((r) => r.domain !== anchorDomain);
+}
+
 async function loadAlternativesForTlds(
   name: string,
   anchorDomain: string,
@@ -165,21 +183,53 @@ async function loadAlternativesForTlds(
   alternatives: DomainResult[];
   bulkFqdns: number;
   providerMs: number;
+  providerRequestCount: number;
 }> {
   if (!tlds.length) {
-    return { alternatives: [], bulkFqdns: 0, providerMs: 0 };
+    return {
+      alternatives: [],
+      bulkFqdns: 0,
+      providerMs: 0,
+      providerRequestCount: 0,
+    };
   }
-  const fqdns = buildRecommendationFqdns(name, anchorDomain, tlds);
+
+  const subSize = alternativeProviderSubChunkSize();
+  const parallel = alternativeProviderParallelLimit();
   clearDnaRequestTraces();
   const providerStart = Date.now();
-  const lookup = fqdns.length
-    ? await lookupDomainNames(fqdns, { query, tlds }, { fresh: true })
-    : { results: [], source: "registrar" as const };
+  let merged: DomainResult[] = [];
+  let bulkFqdns = 0;
+  let providerRequestCount = 0;
+
+  if (!subSize || tlds.length <= subSize || parallel <= 1) {
+    const fqdns = buildRecommendationFqdns(name, anchorDomain, tlds);
+    bulkFqdns = fqdns.length;
+    providerRequestCount = fqdns.length ? 1 : 0;
+    merged = await lookupAlternativeFqdns(name, anchorDomain, query, tlds);
+  } else {
+    const slices: string[][] = [];
+    for (let i = 0; i < tlds.length; i += subSize) {
+      slices.push(tlds.slice(i, i + subSize));
+    }
+    providerRequestCount = slices.length;
+    for (let i = 0; i < slices.length; i += parallel) {
+      const wave = slices.slice(i, i + parallel);
+      const parts = await Promise.all(
+        wave.map((slice) =>
+          lookupAlternativeFqdns(name, anchorDomain, query, slice),
+        ),
+      );
+      for (const slice of wave) {
+        bulkFqdns += buildRecommendationFqdns(name, anchorDomain, slice).length;
+      }
+      merged = [...merged, ...parts.flat()];
+    }
+  }
+
   const providerMs = Date.now() - providerStart;
-  const alternatives = topRegisterableRecommendations(
-    lookup.results.filter((r) => r.domain !== anchorDomain),
-  );
-  return { alternatives, bulkFqdns: fqdns.length, providerMs };
+  const alternatives = topRegisterableRecommendations(merged);
+  return { alternatives, bulkFqdns, providerMs, providerRequestCount };
 }
 
 /**
@@ -205,7 +255,7 @@ export async function runFastAlternativesChunk1(
     | "dna_requests"
     | "dna_requests_overlap"
     | "cache_hit"
-  >;
+  > & { provider_ms?: number; server_overhead_ms?: number };
 }> {
   const searchStart = Date.now();
   const normalized = normalizeDomainSearchInput(queryRaw);
@@ -219,6 +269,7 @@ export async function runFastAlternativesChunk1(
 
   const chunk1Tlds = await getFastCustomerTldPoolChunk(1, countryCode);
   let bulkFqdns = 0;
+  let providerMs = 0;
   const payload = await withFastSearchInflightOnly(cacheKey, async () => {
     const loaded = await loadAlternativesForTlds(
       name,
@@ -227,6 +278,7 @@ export async function runFastAlternativesChunk1(
       chunk1Tlds,
     );
     bulkFqdns = loaded.bulkFqdns;
+    providerMs = loaded.providerMs;
     return {
       anchorDomain,
       query,
@@ -263,6 +315,8 @@ export async function runFastAlternativesChunk1(
       dna_requests: mapDnaTraces(getDnaRequestTraces()),
       dna_requests_overlap: false,
       cache_hit: false,
+      provider_ms: providerMs,
+      server_overhead_ms: Math.max(0, readyAt - searchStart - providerMs),
     },
   };
 }

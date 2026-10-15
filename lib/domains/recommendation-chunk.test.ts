@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import {
+  alternativeProviderParallelLimit,
+  alternativeProviderSubChunkSize,
   FAST_CUSTOMER_TLD_ORDER,
   fastChunk1TldCount,
 } from "@/lib/domains/recommendation-tlds";
@@ -10,6 +12,11 @@ describe("fast alternative chunk sizing", () => {
   it("defaults chunk 1 to seven TLDs (tunable via DOMAIN_FAST_CHUNK1_TLDS)", () => {
     assert.equal(fastChunk1TldCount(), 7);
     assert.ok(fastChunk1TldCount() <= 25);
+  });
+
+  it("defaults to single provider bulk for alternatives unless sub-chunk env set", () => {
+    assert.equal(alternativeProviderSubChunkSize(), 0);
+    assert.equal(alternativeProviderParallelLimit(), 1);
   });
 
   it("orders .in, .org, .pro before .net in customer fast pool", () => {
