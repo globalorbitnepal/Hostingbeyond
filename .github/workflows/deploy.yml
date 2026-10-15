@@ -254,17 +254,31 @@ jobs:
           /usr/local/sbin/hostingbeyond-ctl restart
           /usr/local/sbin/hostingbeyond-ctl status
 
-          echo "==> Verifying process owner hostingbeyond"
+          echo "==> Verifying PM2 app hostingbeyond is online (npm start, not a bare node PID)"
+          export PM2_HOME=/home/hostingbeyond/.pm2
           PROCESS_OK=0
           for _i in $(seq 1 45); do
-            if pgrep -u hostingbeyond -a node >/dev/null 2>&1; then
+            if /usr/bin/pm2 jlist 2>/dev/null | python3 -c "
+          import json, sys
+          try:
+              apps = json.load(sys.stdin)
+          except json.JSONDecodeError:
+              sys.exit(1)
+          for proc in apps:
+              if proc.get('name') != 'hostingbeyond':
+                  continue
+              if proc.get('pm2_env', {}).get('status') == 'online':
+                  sys.exit(0)
+          sys.exit(1)
+          " 2>/dev/null; then
               PROCESS_OK=1
               break
             fi
             sleep 1
           done
           if [ "$PROCESS_OK" != "1" ]; then
-            echo "PROCESS_USER_FAIL: no node process owned by hostingbeyond after wait"
+            echo "PROCESS_USER_FAIL: PM2 app hostingbeyond not online after wait"
+            /usr/bin/pm2 list >&3 || true
             exit 1
           fi
 
