@@ -15,8 +15,21 @@ describe("fast alternative chunk sizing", () => {
   });
 
   it("defaults to single provider bulk for alternatives unless sub-chunk env set", () => {
-    assert.equal(alternativeProviderSubChunkSize(), 0);
-    assert.equal(alternativeProviderParallelLimit(), 1);
+    const prevSub = process.env.DOMAIN_ALT_SUB_CHUNK_SIZE;
+    const prevPar = process.env.DOMAIN_ALT_PROVIDER_PARALLEL;
+    delete process.env.DOMAIN_ALT_SUB_CHUNK_SIZE;
+    delete process.env.DOMAIN_ALT_PROVIDER_PARALLEL;
+    try {
+      assert.equal(alternativeProviderSubChunkSize(), 0);
+      assert.equal(alternativeProviderParallelLimit(), 1);
+    } finally {
+      if (prevSub !== undefined) {
+        process.env.DOMAIN_ALT_SUB_CHUNK_SIZE = prevSub;
+      }
+      if (prevPar !== undefined) {
+        process.env.DOMAIN_ALT_PROVIDER_PARALLEL = prevPar;
+      }
+    }
   });
 
   it("orders .in, .org, .pro before .net in customer fast pool", () => {
