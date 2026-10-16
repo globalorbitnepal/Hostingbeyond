@@ -1,10 +1,16 @@
 name: Deploy HostingBeyond
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: ["HostingBeyond CI"]
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
+    inputs:
+      confirm_manual_deploy:
+        description: Emergency only — type DEPLOY to confirm (also requires HOSTINGBEYOND_MANUAL_DEPLOY_APPROVED secret)
+        type: string
+        required: true
 
 concurrency:
   group: deploy-hostingbeyond-production
@@ -14,35 +20,53 @@ permissions:
   contents: read
 
 jobs:
-  quality:
-    name: Typecheck
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Generate Prisma client
-        run: npx prisma generate
-
-      - name: Typecheck
-        run: npx tsc --noEmit
-
   deploy:
     name: Deploy to VPS
-    needs: quality
+    if: >-
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main') ||
+      (github.event_name == 'workflow_dispatch' &&
+       github.event.inputs.confirm_manual_deploy == 'DEPLOY' &&
+       secrets.HOSTINGBEYOND_MANUAL_DEPLOY_APPROVED == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
+      - name: Fail if CI did not pass (push to main)
+        if: github.event_name == 'workflow_run'
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event.workflow_run.conclusion }}" != "success" ]; then
+            echo "DEPLOY_BLOCKED: HostingBeyond CI did not succeed"
+            exit 1
+          fi
+
+      - name: Manual deploy acknowledgment (bypasses CI-success path)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          set -euo pipefail
+          echo "MANUAL_DEPLOY: This run deploys production without requiring a preceding CI success on main."
+          echo "Routine releases must use push to main → HostingBeyond CI → automatic deploy."
+          if [ "${{ github.event.inputs.confirm_manual_deploy }}" != "DEPLOY" ]; then
+            echo "MANUAL_DEPLOY_BLOCKED: confirm_manual_deploy must be exactly DEPLOY"
+            exit 1
+          fi
+
+      - name: Production migrate deploy gate (fail closed)
+        env:
+          MIGRATE_SECRET: ${{ secrets.HOSTINGBEYOND_PRODUCTION_MIGRATE_APPROVED }}
+        run: |
+          set -euo pipefail
+          RUN_MIGRATE=0
+          if [ "${MIGRATE_SECRET:-}" = "true" ]; then
+            RUN_MIGRATE=1
+            echo "Migrate enabled via HOSTINGBEYOND_PRODUCTION_MIGRATE_APPROVED repository secret (owner only)."
+          else
+            echo "MIGRATE_SKIPPED: prisma migrate deploy will NOT run (fail closed)."
+            echo "Workflow inputs cannot enable migrations. Set repository secret HOSTINGBEYOND_PRODUCTION_MIGRATE_APPROVED=true only after docs/MIGRATION-HISTORY-REPAIR.md preflight passes."
+          fi
+          echo "RUN_PRISMA_MIGRATE_DEPLOY=${RUN_MIGRATE}" >> "${GITHUB_ENV}"
+
       - name: Confirm SSH secrets exist
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
@@ -105,6 +129,7 @@ jobs:
           VPS_PORT: ${{ secrets.VPS_PORT }}
           VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
           DOMAIN_API_LIVE_KEY: ${{ secrets.DOMAIN_API_LIVE_KEY }}
+          RUN_PRISMA_MIGRATE_DEPLOY: ${{ env.RUN_PRISMA_MIGRATE_DEPLOY }}
         run: |
           set -euo pipefail
           export KEY_FILE="${RUNNER_TEMP}/hostingbeyond_gha_ssh_key"
@@ -140,9 +165,8 @@ jobs:
 
           REMOTE_SCRIPT="/tmp/hostingbeyond-gha-deploy-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.sh"
           echo "==> Uploading remote deploy script"
-          "${SSH[@]}" "cat > '${REMOTE_SCRIPT}'" <<'REMOTE'
-          #!/bin/bash
-          set -euo pipefail
+          "${SSH[@]}" "printf '%s\\n' '#!/bin/bash' 'set -euo pipefail' 'export RUN_PRISMA_MIGRATE_DEPLOY=${RUN_PRISMA_MIGRATE_DEPLOY:-0}' > '${REMOTE_SCRIPT}'"
+          "${SSH[@]}" "cat >> '${REMOTE_SCRIPT}'" <<'REMOTE'
           # Keep the GitHub SSH channel quiet except for heartbeats. Next.js
           # stdout on bash -s previously caused the client to close (~64s).
           exec 3>&1
@@ -220,8 +244,12 @@ jobs:
             npm install </dev/null
           fi
 
-          echo "==> Applying database migrations"
-          npx prisma migrate deploy </dev/null
+          if [ "${RUN_PRISMA_MIGRATE_DEPLOY}" = "1" ]; then
+            echo "==> Applying database migrations (owner-approved)"
+            npx prisma migrate deploy </dev/null
+          else
+            echo "==> SKIP prisma migrate deploy (fail-closed gate; code deploy continues)"
+          fi
 
           echo "==> Clearing stale Next.js generated types"
           rm -rf .next

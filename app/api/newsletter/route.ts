@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { rateLimitResponse } from "@/lib/http/fixed-window-rate-limit";
+import { rateLimitNewsletter } from "@/lib/http/public-endpoint-rate-limit";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -7,6 +9,10 @@ export const runtime = "nodejs";
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(request: Request) {
+  if (!rateLimitNewsletter(request)) {
+    return NextResponse.json(rateLimitResponse(), { status: 429 });
+  }
+
   const body = (await request.json().catch(() => null)) as {
     email?: string;
   } | null;

@@ -3,6 +3,8 @@ import { z } from "zod";
 
 import type { Prisma } from "@prisma/client";
 
+import { rateLimitResponse } from "@/lib/http/fixed-window-rate-limit";
+import { rateLimitContactForm } from "@/lib/http/public-endpoint-rate-limit";
 import { CONTACT_TOPICS } from "@/lib/orbit/contact-page-content";
 import { prisma } from "@/lib/prisma";
 
@@ -27,6 +29,10 @@ const bodySchema = z.object({
 });
 
 export async function POST(request: Request) {
+  if (!rateLimitContactForm(request)) {
+    return NextResponse.json(rateLimitResponse(), { status: 429 });
+  }
+
   const json = await request.json().catch(() => null);
   const parsed = bodySchema.safeParse(json);
   if (!parsed.success) {

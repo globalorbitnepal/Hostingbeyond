@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { rateLimitResponse } from "@/lib/http/fixed-window-rate-limit";
+import { rateLimitAuthEndpoint } from "@/lib/http/public-endpoint-rate-limit";
 import { prisma } from "@/lib/prisma";
 import { normalizeEmail, verifyPassword } from "@/lib/customer/password";
 import {
@@ -15,6 +17,10 @@ const schema = z.object({
 });
 
 export async function POST(request: Request) {
+  if (!rateLimitAuthEndpoint(request)) {
+    return NextResponse.json(rateLimitResponse(), { status: 429 });
+  }
+
   let body: unknown;
   try {
     body = await request.json();

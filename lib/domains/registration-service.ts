@@ -1,3 +1,5 @@
+import { Prisma } from "@prisma/client";
+
 import {
   defaultNameservers,
   defaultRegistrationContacts,
@@ -135,20 +137,35 @@ export async function processDomainRegistrationCheckout(input: {
   const registerPrice = availability.register;
   await ensureCustomerWallet(input.userId);
 
-  const order = await prisma.domainOrder.create({
-    data: {
-      publicId: publicId("DOM"),
-      userId: input.userId,
-      orderType: "register",
-      domain: quote.domain,
-      tld: quote.tld,
-      status: "PROCESSING",
-      retailPrice: registerPrice,
-      total: registerPrice,
-      currency: quote.currency,
-      idempotencyKey: input.idempotencyKey,
-    },
-  });
+  let order;
+  try {
+    order = await prisma.domainOrder.create({
+      data: {
+        publicId: publicId("DOM"),
+        userId: input.userId,
+        orderType: "register",
+        domain: quote.domain,
+        tld: quote.tld,
+        status: "PROCESSING",
+        retailPrice: registerPrice,
+        total: registerPrice,
+        currency: quote.currency,
+        idempotencyKey: input.idempotencyKey,
+      },
+    });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return {
+        ok: false as const,
+        error: "This domain is already being registered.",
+        status: 409,
+      };
+    }
+    throw error;
+  }
 
   let reserveTxId: string | null = null;
   try {

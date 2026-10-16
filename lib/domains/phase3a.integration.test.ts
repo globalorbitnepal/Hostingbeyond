@@ -21,14 +21,17 @@ import {
   ensureCustomerWallet,
 } from "@/lib/domains/wallet";
 
+import { isIntegrationDatabaseConfigured } from "@/lib/test/integration-gate";
+
 function requireIntegrationDb() {
   if (!existsSync(".env.integration.local")) {
     return { skip: true as const, reason: "missing .env.integration.local" };
   }
-  if (!process.env.DATABASE_URL?.includes("hostingbeyond_integration_test")) {
+  if (!isIntegrationDatabaseConfigured()) {
     return {
       skip: true as const,
-      reason: "DATABASE_URL not targeting hostingbeyond_integration_test",
+      reason:
+        "DATABASE_URL must target hostingbeyond_integration_test on localhost",
     };
   }
   return { skip: false as const };
@@ -174,6 +177,15 @@ describe("Phase 3a integration (isolated PostgreSQL)", () => {
       }),
     });
     assert.equal(otherUser, null);
+  });
+
+  it("unique register inflight index exists when migration applied", async () => {
+    const rows = await prisma.$queryRaw<{ indexname: string }[]>`
+      SELECT indexname FROM pg_indexes
+      WHERE schemaname = 'public'
+        AND indexname = 'DomainOrder_domain_register_inflight_key'
+    `;
+    assert.equal(rows.length, 1);
   });
 
   it("unique renew inflight index exists when migration applied", async () => {

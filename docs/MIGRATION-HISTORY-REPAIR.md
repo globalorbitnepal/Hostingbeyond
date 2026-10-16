@@ -40,6 +40,10 @@ Prisma stores this value in `"_prisma_migrations".checksum` when the migration w
 
 **Never** run repair SQL against a database until `DATABASE_URL` (or `psql` connection) is confirmed to be the intended target.
 
+### Production state is unknown until an operator runs preflight
+
+CI and this repository **do not** query production PostgreSQL. All statements about production migration history, duplicate rows, or index presence are **assumptions** until an authorized DBA runs the read-only SQL below and records results in a change ticket. **Do not** enable `HOSTINGBEYOND_PRODUCTION_MIGRATE_APPROVED` until preflight **PASS**.
+
 ---
 
 ## When repair is required
@@ -57,24 +61,46 @@ Prisma stores this value in `"_prisma_migrations".checksum` when the migration w
 
 Do **not** run `npx prisma migrate deploy` from a release that contains the **renamed** migration until history repair **completes successfully** (or the DB already records the new name).
 
-| Step | Action                                                                                                                              |
-| ---- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| 1    | Owner approval, maintenance window, **logical backup**, restore drill evidence                                                      |
-| 2    | Confirm `DATABASE_URL` target (database name + host only)                                                                           |
-| 3    | Deploy application **code** that includes `20260913120000_beyond_ai` and `20261016140000_domain_renew_inflight_unique`              |
-| 4    | Read-only **pre-checks** (below) — stop on failure                                                                                  |
-| 5    | **Phase 3a duplicate in-flight renew pre-check** — stop if duplicates exist                                                         |
-| 6    | **Transactional history repair** (below) — exactly one row updated                                                                  |
-| 7    | **Post-repair verification** (below)                                                                                                |
-| 8    | `npx prisma migrate status` — expect pending `20261016140000_domain_renew_inflight_unique` only (typical prod @ `e1c1fb2` + repair) |
-| 9    | `npx prisma migrate deploy`                                                                                                         |
-| 10   | Post-deploy verification (index exists, `migrate status` clean, app smoke)                                                          |
+| Step | Action                                                                                                                 |
+| ---- | ---------------------------------------------------------------------------------------------------------------------- |
+| 1    | Owner approval, maintenance window, **logical backup**, restore drill evidence                                         |
+| 2    | Confirm `DATABASE_URL` target (database name + host only)                                                              |
+| 3    | Deploy application **code** that includes `20260913120000_beyond_ai` and `20261016140000_domain_renew_inflight_unique` |
+| 4    | Read-only **pre-checks** (below) — stop on failure                                                                     |
+| 5    | **Duplicate in-flight renew pre-check** — stop if any rows (before `20261016140000_*`)                                 |
+| 6    | **Duplicate in-flight register pre-check** — stop if any rows (before `20261016180000_*`)                              |
+| 7    | **Transactional history repair** (below) — exactly one row updated                                                     |
+| 8    | **Post-repair verification** (below)                                                                                   |
+| 9    | `npx prisma migrate status` — pending migrations only as expected for your baseline                                    |
+| 10   | `npx prisma migrate deploy` (production: only when GitHub secret `HOSTINGBEYOND_PRODUCTION_MIGRATE_APPROVED=true`)     |
+| 11   | Post-deploy verification (indexes exist, `migrate status` clean, app smoke)                                            |
 
 ---
 
 ## Read-only pre-checks (stop on any failure)
 
-Run against the **intended** database only.
+Run against the **intended** database only. Confirm **host + database name** with `SELECT current_database(), inet_server_addr();` before P1–P3.
+
+### Classify `beyond_ai` history (run first)
+
+```sql
+SELECT migration_name, finished_at, rolled_back_at, checksum
+FROM "_prisma_migrations"
+WHERE migration_name IN (
+  '20250924190000_beyond_ai',
+  '20260913120000_beyond_ai'
+)
+ORDER BY migration_name;
+```
+
+| `20250924…` rows | `20260913…` rows | Action                                                  |
+| ---------------- | ---------------- | ------------------------------------------------------- |
+| 1                | 0                | **Repair required** before deploy — continue with P1–P3 |
+| 0                | 1                | **Skip repair** — history already has new name          |
+| 0                | 0                | **STOP** on production (investigate)                    |
+| ≥1 on both       | —                | **STOP** (inconsistent)                                 |
+
+P1–P3 apply only on the **repair path** (`20250924` = 1, `20260913` = 0).
 
 ```sql
 -- P1: Exactly one OLD record
@@ -127,6 +153,50 @@ HAVING COUNT(*) > 1;
 | ------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | **Zero rows** | Safe to run `migrate deploy` for Phase 3a                                                                                 |
 | **Any rows**  | **STOP** — reconcile or complete/cancel duplicate in-flight renew orders before deploy; migration will raise an exception |
+
+---
+
+## Duplicate in-flight registrations (before `20261016180000_domain_register_inflight_unique`)
+
+Run **after** history repair (if any), **before** `migrate deploy`:
+
+```sql
+SELECT LOWER("domain") AS domain_key, COUNT(*) AS cnt
+FROM "DomainOrder"
+WHERE "orderType" = 'register'
+  AND status IN ('PROCESSING', 'REGISTERING', 'RECONCILIATION_REQUIRED')
+GROUP BY LOWER("domain")
+HAVING COUNT(*) > 1;
+```
+
+| Result        | Action                                                                                      |
+| ------------- | ------------------------------------------------------------------------------------------- |
+| **Zero rows** | Safe to apply register inflight unique index migration                                      |
+| **Any rows**  | **STOP** — reconcile duplicate in-flight register orders; migration will raise an exception |
+
+### Pending migration history rows (read-only)
+
+```sql
+SELECT migration_name, finished_at, rolled_back_at
+FROM "_prisma_migrations"
+WHERE migration_name IN (
+  '20261016140000_domain_renew_inflight_unique',
+  '20261016180000_domain_register_inflight_unique'
+);
+```
+
+Expect **no finished row** until those migrations have been deployed on that database.
+
+---
+
+## Backup, rollback limits
+
+| Item                          | Guidance                                                                                                                          |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| **Required backup**           | Logical or managed snapshot **before** repair SQL or `migrate deploy`; verify restore on a non-production clone                   |
+| **History repair rollback**   | `ROLLBACK` in the same transaction if pre-checks fail; if committed, restore from backup or reverse rename only with DBA approval |
+| **`migrate deploy` rollback** | Prisma does not auto-reverse applied migrations; use backup restore or forward-fix migration — plan maintenance accordingly       |
+| **Code-only deploy**          | GitHub Actions may deploy application code **without** `migrate deploy` when migrate secret is unset (see `docs/RELEASE-GATE.md`) |
 
 ---
 

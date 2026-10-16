@@ -19,7 +19,8 @@ export function inflightDomainOrderFilter(input: {
   orderType?: string;
 }): Prisma.DomainOrderWhereInput {
   return {
-    domain: input.domain,
+    // Match partial unique index on LOWER(domain) for register inflight rows.
+    domain: { equals: input.domain, mode: "insensitive" },
     ...(input.userId ? { userId: input.userId } : {}),
     ...(input.orderType ? { orderType: input.orderType } : {}),
     status: { in: INFLIGHT_DOMAIN_ORDER_STATUSES },

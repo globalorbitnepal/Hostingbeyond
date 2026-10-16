@@ -84,7 +84,7 @@ describe(
       await creditWallet({
         userId,
         amount: 500,
-        idempotencyKey: `renewal-checkout-fund-${userId}`,
+        idempotencyKey: `renewal-checkout-fund-${userId}-${Date.now()}`,
         note: "renewal checkout integration test",
       });
     });

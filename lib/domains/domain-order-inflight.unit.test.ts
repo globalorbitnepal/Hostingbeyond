@@ -21,17 +21,23 @@ describe("domain order inflight guard", () => {
       userId: "user_1",
       orderType: "renew",
     });
-    assert.deepEqual(where, {
-      domain: "example.com",
-      userId: "user_1",
-      orderType: "renew",
-      status: { in: ["PROCESSING", "REGISTERING", "RECONCILIATION_REQUIRED"] },
+    assert.deepEqual(where.domain, {
+      equals: "example.com",
+      mode: "insensitive",
+    });
+    assert.equal(where.userId, "user_1");
+    assert.equal(where.orderType, "renew");
+    assert.deepEqual(where.status, {
+      in: ["PROCESSING", "REGISTERING", "RECONCILIATION_REQUIRED"],
     });
   });
 
   it("registration inflight is global per domain when user omitted", () => {
     const where = inflightDomainOrderFilter({ domain: "example.com" });
     assert.equal(where.userId, undefined);
-    assert.equal(where.domain, "example.com");
+    assert.deepEqual(where.domain, {
+      equals: "example.com",
+      mode: "insensitive",
+    });
   });
 });
