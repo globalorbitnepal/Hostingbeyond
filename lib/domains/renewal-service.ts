@@ -18,14 +18,32 @@ import {
 } from "@/lib/domains/wallet";
 import { prisma } from "@/lib/prisma";
 
-export async function processDomainRenewalCheckout(input: {
-  userId: string;
-  userEmail: string;
-  domainInput: string;
-  idempotencyKey: string;
-  periodYears?: number;
-}) {
-  if (!resolveDomainRegistrarProvider()) {
+export type ProcessDomainRenewalCheckoutDeps = {
+  resolveDomainRegistrarProvider?: typeof resolveDomainRegistrarProvider;
+  getRetailQuoteForTld?: typeof getRetailQuoteForTld;
+  createDomainOrder?: (
+    args: Parameters<typeof prisma.domainOrder.create>[0],
+  ) => ReturnType<typeof prisma.domainOrder.create>;
+};
+
+export async function processDomainRenewalCheckout(
+  input: {
+    userId: string;
+    userEmail: string;
+    domainInput: string;
+    idempotencyKey: string;
+    periodYears?: number;
+  },
+  deps: ProcessDomainRenewalCheckoutDeps = {},
+) {
+  const resolveProvider =
+    deps.resolveDomainRegistrarProvider ?? resolveDomainRegistrarProvider;
+  const getRetailQuote = deps.getRetailQuoteForTld ?? getRetailQuoteForTld;
+  const createDomainOrder =
+    deps.createDomainOrder ??
+    prisma.domainOrder.create.bind(prisma.domainOrder);
+
+  if (!resolveProvider()) {
     return {
       ok: false as const,
       error: "Domain renewal is temporarily unavailable.",
@@ -49,7 +67,7 @@ export async function processDomainRenewalCheckout(input: {
     };
   }
 
-  const retail = await getRetailQuoteForTld(normalized.tld || ".com");
+  const retail = await getRetailQuote(normalized.tld || ".com");
   if (!retail) {
     return {
       ok: false as const,
@@ -94,7 +112,7 @@ export async function processDomainRenewalCheckout(input: {
 
   let order;
   try {
-    order = await prisma.domainOrder.create({
+    order = await createDomainOrder({
       data: {
         publicId: publicId("DOM"),
         userId: input.userId,
@@ -138,7 +156,7 @@ export async function processDomainRenewalCheckout(input: {
       data: { walletTransactionId: reserve.id },
     });
 
-    const provider = resolveDomainRegistrarProvider()!;
+    const provider = resolveProvider()!;
     let expiresAt: string | null = null;
     try {
       const result = await provider.renewDomain(normalized.query, period);

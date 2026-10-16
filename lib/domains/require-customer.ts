@@ -4,8 +4,13 @@ import {
   CUSTOMER_SESSION_COOKIE,
   getCustomerFromToken,
 } from "@/lib/customer/session";
+import { getCustomerSessionTestOverride } from "@/lib/test/customer-session-test-control";
 
 export async function requireCustomerSession() {
+  const override = getCustomerSessionTestOverride();
+  if (override) {
+    return override();
+  }
   const jar = await cookies();
   const user = await getCustomerFromToken(
     jar.get(CUSTOMER_SESSION_COOKIE)?.value,

@@ -33,6 +33,7 @@ yarn-error.log*
 .env.*
 !.env.example
 .env*.local
+.env.integration.local
 .env.production
 .env.development
 
@@ -61,6 +62,9 @@ headers.txt
 next-env.d.ts
 
 # Prisma — commit migrations; do not ignore lock file
+
+# Local backup output (ops/backup scripts)
+/data/backups/
 
 # Database backups — NEVER commit PostgreSQL dumps
 *.dump

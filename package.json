@@ -11,7 +11,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
-    "test": "node --import ./scripts/register-alias.mjs --import tsx --test --test-concurrency=1 'lib/domains/**/*.test.ts' 'lib/orbit/**/*.test.ts' 'lib/payments/**/*.test.ts' 'lib/blog/**/*.test.ts'",
+    "test": "node --import ./scripts/register-alias.mjs --import tsx --test --test-concurrency=1 'lib/domains/**/*.test.ts' 'lib/orbit/**/*.test.ts' 'lib/payments/**/*.test.ts' 'lib/blog/**/*.test.ts' 'app/api/**/*.integration.test.ts' 'ops/backup/**/*.test.mjs'",
     "test:domains": "npm run test",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",

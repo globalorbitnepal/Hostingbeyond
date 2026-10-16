@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { processDomainRenewalCheckout } from "@/lib/domains/renewal-service";
+import { getRenewalCheckoutTestOverride } from "@/lib/test/renewal-checkout-test-control";
 import {
   readIdempotencyKey,
   requireCustomerSession,
@@ -23,7 +24,9 @@ export async function POST(request: Request) {
   }
 
   const idempotencyKey = readIdempotencyKey(request, body?.idempotencyKey);
-  const result = await processDomainRenewalCheckout({
+  const checkout =
+    getRenewalCheckoutTestOverride() ?? processDomainRenewalCheckout;
+  const result = await checkout({
     userId: user.id,
     userEmail: user.email,
     domainInput: domain,
