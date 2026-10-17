@@ -1,7 +1,8 @@
-import { prisma } from "@/lib/prisma";
 import { listCustomerDomains } from "@/lib/domains/registration-service";
 import { ensureCustomerWallet } from "@/lib/domains/wallet";
 import { listHostingOrdersForUser } from "@/lib/hosting/hosting-orders";
+import { countCustomerMigrationRequests } from "@/lib/migration/customer-migration-requests";
+import { prisma } from "@/lib/prisma";
 
 export type DashboardOverview = {
   user: { name: string | null; email: string; image: string | null };
@@ -24,7 +25,7 @@ export type DashboardOverview = {
     autoRenew: boolean;
   }>;
   counts: {
-    orders: number;
+    hostingOrdersTotal: number;
     activeDomains: number;
     hostingOrdersActive: number;
     migrationRequests: number;
@@ -56,7 +57,7 @@ export async function loadDashboardOverview(
       ensureCustomerWallet(userId),
       listHostingOrdersForUser(userId),
       listCustomerDomains(userId).catch(() => []),
-      prisma.migrationRequest.count({ where: { userId } }),
+      countCustomerMigrationRequests(userId, user.email),
       prisma.beyondAiProject.count({ where: { userId } }),
       prisma.walletTransaction.findMany({
         where: { userId },
@@ -105,7 +106,7 @@ export async function loadDashboardOverview(
       autoRenew: d.autoRenew,
     })),
     counts: {
-      orders: orders.length,
+      hostingOrdersTotal: orders.length,
       activeDomains,
       hostingOrdersActive,
       migrationRequests: migrations,

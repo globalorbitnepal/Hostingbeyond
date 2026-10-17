@@ -23,6 +23,7 @@ export const routes = {
   account: "/account",
   accountWallet: "/account/wallet",
   accountOrders: "/account/orders",
+  accountHostingOrders: "/account/hosting-orders",
   accountBilling: "/account/billing",
   accountInvoices: "/account/invoices",
   myDomains: "/account/my-domains",

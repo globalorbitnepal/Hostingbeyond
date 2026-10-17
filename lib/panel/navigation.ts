@@ -58,7 +58,11 @@ export const PANEL_NAV: PanelNavSection[] = [
       { id: "my-domains", label: "My Domains", href: routes.myDomains },
       { id: "register", label: "Register Domain", href: routes.domainSearch },
       { id: "transfer", label: "Transfer Domain", href: routes.domainTransfer },
-      { id: "dns", label: "DNS Management", soon: true },
+      {
+        id: "dns",
+        label: "DNS & nameservers",
+        href: routes.myDomains,
+      },
       { id: "renewals", label: "Domain Renewals", href: routes.myDomains },
     ],
   },
@@ -96,7 +100,12 @@ export const PANEL_NAV: PanelNavSection[] = [
         label: "Transactions",
         href: routes.accountBilling,
       },
-      { id: "orders", label: "Orders", href: routes.accountOrders },
+      { id: "orders", label: "Domain orders", href: routes.accountOrders },
+      {
+        id: "hosting-orders",
+        label: "Hosting orders",
+        href: routes.accountHostingOrders,
+      },
       { id: "invoices", label: "Invoices", href: routes.accountInvoices },
       { id: "payment-methods", label: "Payment Methods", soon: true },
       { id: "renewals-billing", label: "Renewals", href: routes.myDomains },
@@ -133,6 +142,7 @@ export function panelTitleForPath(pathname: string): string {
   if (pathname.startsWith("/account/my-domains/")) return "Domain details";
   if (pathname.startsWith("/account/orders/")) return "Order details";
   if (pathname.startsWith("/account/invoices/")) return "Invoice details";
+  if (pathname.startsWith("/account/hosting-orders")) return "Hosting orders";
   let best: { label: string; href: string } | null = null;
   for (const section of PANEL_NAV) {
     for (const item of section.items) {

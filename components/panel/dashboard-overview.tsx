@@ -87,12 +87,14 @@ export function DashboardOverview({
           },
           {
             label: "Hosting orders",
-            value: String(counts.orders),
+            value: String(counts.hostingOrdersTotal),
             sub:
-              counts.hostingOrdersActive > 0
-                ? `${counts.hostingOrdersActive} active or provisioning`
-                : undefined,
-            href: routes.account,
+              counts.hostingOrdersTotal === 0
+                ? "None on file"
+                : counts.hostingOrdersActive > 0
+                  ? `${counts.hostingOrdersActive} active or provisioning · ${counts.hostingOrdersTotal} total`
+                  : `${counts.hostingOrdersTotal} total (none active yet)`,
+            href: routes.accountHostingOrders,
           },
           {
             label: "Builder projects",
@@ -138,9 +140,11 @@ export function DashboardOverview({
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="hb-panel-card p-5 sm:p-6">
           <div className="flex items-center justify-between gap-2">
-            <h3 className="text-sm font-bold text-slate-900">Recent orders</h3>
+            <h3 className="text-sm font-bold text-slate-900">
+              Recent hosting orders
+            </h3>
             <Link
-              href={routes.account}
+              href={routes.accountHostingOrders}
               className="text-xs font-semibold text-[var(--hb-p-primary)]"
             >
               View all
@@ -181,7 +185,7 @@ export function DashboardOverview({
               ))}
             </ul>
           )}
-          {counts.hostingOrdersActive === 0 && counts.orders > 0 ? (
+          {counts.hostingOrdersActive === 0 && counts.hostingOrdersTotal > 0 ? (
             <p className="mt-4 text-xs text-slate-500">
               Hosting service management and provisioning controls will appear
               here once your order is activated.
@@ -269,6 +273,7 @@ export function DashboardOverview({
           <div className="mt-4 flex flex-wrap gap-4 text-xs font-semibold text-[var(--hb-p-primary)]">
             <Link href={routes.accountBilling}>All transactions</Link>
             <Link href={routes.accountOrders}>Domain orders</Link>
+            <Link href={routes.accountInvoices}>Invoices</Link>
             <Link href={routes.accountWallet}>Wallet</Link>
           </div>
         </section>
@@ -294,15 +299,37 @@ export function DashboardOverview({
               configured.
             </li>
             <li>
-              <strong className="text-slate-800">Invoices & tickets</strong> —
-              wallet and domain order history are in Billing; formal invoices
-              and support tickets are not enabled yet.
+              <strong className="text-slate-800">Invoices</strong> —{" "}
+              <Link
+                href={routes.accountInvoices}
+                className="font-semibold text-[var(--hb-p-primary)]"
+              >
+                View your invoices
+              </Link>{" "}
+              for issued domain-order billing (PDF when available).
+            </li>
+            <li>
+              <strong className="text-slate-800">Support tickets</strong> — not
+              available in the panel yet; use{" "}
+              <Link
+                href={routes.contact}
+                className="font-semibold text-[var(--hb-p-primary)]"
+              >
+                Contact support
+              </Link>
+              .
             </li>
           </ul>
           {counts.migrationRequests > 0 ? (
             <p className="mt-4 text-xs text-slate-500">
               You have {counts.migrationRequests} website migration request
-              {counts.migrationRequests === 1 ? "" : "s"} on file.
+              {counts.migrationRequests === 1 ? "" : "s"} on file.{" "}
+              <Link
+                href={routes.websiteMigration}
+                className="font-semibold text-[var(--hb-p-primary)]"
+              >
+                Migration info
+              </Link>
             </p>
           ) : null}
         </section>

@@ -20,7 +20,11 @@ describe("panel navigation", () => {
     assert.equal(panelTitleForPath("/account"), "Dashboard");
     assert.equal(panelTitleForPath("/account/wallet"), "Wallet");
     assert.equal(panelTitleForPath("/account/billing"), "Transactions");
-    assert.equal(panelTitleForPath("/account/orders"), "Orders");
+    assert.equal(panelTitleForPath("/account/orders"), "Domain orders");
+    assert.equal(
+      panelTitleForPath("/account/hosting-orders"),
+      "Hosting orders",
+    );
     assert.equal(panelTitleForPath("/account/my-domains"), "My Domains");
     assert.equal(
       panelTitleForPath("/account/my-domains/example.com"),
