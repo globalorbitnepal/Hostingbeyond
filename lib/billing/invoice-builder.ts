@@ -7,6 +7,7 @@ import {
   writeInvoicePdf,
 } from "@/lib/billing/invoice-storage";
 import { reconcileInvoicePaymentForOrder } from "@/lib/billing/reconcile-invoice-payment";
+import { validateDomainOrderTotals } from "@/lib/billing/order-total-validation";
 import { deriveTaxSnapshotFromOrder } from "@/lib/billing/tax-snapshot";
 import { prisma } from "@/lib/prisma";
 
@@ -47,6 +48,16 @@ export async function issueInvoiceForDomainOrder(
   if (!order.userId) return { ok: false, reason: "order_missing_user" };
   if (!BILLABLE_ORDER_STATUSES.has(order.status)) {
     return { ok: false, reason: "order_not_billable" };
+  }
+
+  const totalsCheck = validateDomainOrderTotals({
+    retailPrice: order.retailPrice,
+    discount: order.discount,
+    tax: order.tax,
+    total: order.total,
+  });
+  if (!totalsCheck.ok) {
+    return { ok: false, reason: totalsCheck.reason };
   }
 
   const existing = await prisma.invoice.findUnique({

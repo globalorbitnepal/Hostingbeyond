@@ -685,7 +685,7 @@ model Invoice {
   publicId            String              @unique
   invoiceNumber       String              @unique
   userId              String
-  user                CustomerUser        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                CustomerUser        @relation(fields: [userId], references: [id], onDelete: Restrict)
   status              InvoiceStatus       @default(DRAFT)
   currency            String              @default("USD")
   subtotal            Decimal             @db.Decimal(12, 2)
@@ -742,7 +742,7 @@ model CreditNote {
   invoiceId        String
   invoice          Invoice      @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   userId           String
-  user             CustomerUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user             CustomerUser @relation(fields: [userId], references: [id], onDelete: Restrict)
   amount           Decimal      @db.Decimal(12, 2)
   currency         String       @default("USD")
   reason           String?
