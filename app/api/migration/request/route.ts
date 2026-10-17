@@ -1,30 +1,30 @@
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { z } from "zod";
 
+import {
+  CUSTOMER_SESSION_COOKIE,
+  getCustomerFromToken,
+} from "@/lib/customer/session";
 import { publicId } from "@/lib/domains/transfer-service";
 import { sendMigrationRequestReceived } from "@/lib/domains/email-hooks";
+import { rateLimitResponse } from "@/lib/http/fixed-window-rate-limit";
+import { rateLimitMigrationRequest } from "@/lib/http/public-endpoint-rate-limit";
+import {
+  migrationRequestBodySchema,
+  normalizeMigrationRequestBody,
+  resolveMigrationCustomerEmail,
+} from "@/lib/migration/migration-request-input";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-const bodySchema = z.object({
-  customerName: z.string().min(2).max(120),
-  customerEmail: z.string().email().max(200),
-  customerPhone: z.string().max(40).optional(),
-  websiteUrl: z.string().max(500).optional(),
-  currentProvider: z.string().max(120).optional(),
-  domain: z.string().max(253).optional(),
-  websiteType: z.string().max(80).optional(),
-  emailAccountsCount: z.coerce.number().int().min(0).max(999).optional(),
-  websiteSize: z.string().max(80).optional(),
-  databaseRequired: z.boolean().optional(),
-  preferredDate: z.string().optional(),
-  notes: z.string().max(4000).optional(),
-});
-
 export async function POST(request: Request) {
+  if (!rateLimitMigrationRequest(request)) {
+    return NextResponse.json(rateLimitResponse(), { status: 429 });
+  }
+
   const json = await request.json().catch(() => null);
-  const parsed = bodySchema.safeParse(json);
+  const parsed = migrationRequestBodySchema.safeParse(json);
   if (!parsed.success) {
     return NextResponse.json(
       { error: "Please check the form and try again." },
@@ -32,41 +32,60 @@ export async function POST(request: Request) {
     );
   }
 
-  const data = parsed.data;
-  const preferredDate = data.preferredDate
-    ? new Date(data.preferredDate)
-    : null;
+  const jar = await cookies();
+  const sessionUser = await getCustomerFromToken(
+    jar.get(CUSTOMER_SESSION_COOKIE)?.value,
+  );
 
-  const record = await prisma.migrationRequest.create({
-    data: {
-      publicId: publicId("MIG"),
-      customerName: data.customerName.trim(),
-      customerEmail: data.customerEmail.trim().toLowerCase(),
-      customerPhone: data.customerPhone?.trim(),
-      websiteUrl:
-        data.websiteUrl?.trim() && data.websiteUrl.includes(".")
-          ? data.websiteUrl.trim()
-          : null,
-      currentProvider: data.currentProvider?.trim(),
-      domain: data.domain?.trim().toLowerCase(),
-      websiteType: data.websiteType?.trim(),
-      emailAccountsCount: data.emailAccountsCount,
-      websiteSize: data.websiteSize?.trim(),
-      databaseRequired: data.databaseRequired ?? false,
-      preferredDate:
-        preferredDate && !Number.isNaN(preferredDate.getTime())
-          ? preferredDate
-          : null,
-      notes: data.notes?.trim(),
-      status: "NEW",
-    },
-  });
+  const normalized = normalizeMigrationRequestBody(parsed.data);
+  const customerEmail = resolveMigrationCustomerEmail(
+    sessionUser?.email ?? null,
+    normalized.customerEmail,
+  );
 
-  await sendMigrationRequestReceived({
-    email: record.customerEmail,
-    publicId: record.publicId,
-    domain: record.domain,
-  });
+  let record;
+  try {
+    record = await prisma.migrationRequest.create({
+      data: {
+        publicId: publicId("MIG"),
+        userId: sessionUser?.id ?? null,
+        customerName: normalized.customerName,
+        customerEmail,
+        customerPhone: normalized.customerPhone,
+        websiteUrl: normalized.websiteUrl,
+        currentProvider: normalized.currentProvider,
+        domain: normalized.domain,
+        websiteType: normalized.websiteType,
+        emailAccountsCount: normalized.emailAccountsCount,
+        websiteSize: normalized.websiteSize,
+        databaseRequired: normalized.databaseRequired,
+        preferredDate: normalized.preferredDate,
+        notes: normalized.notes,
+        status: "NEW",
+      },
+    });
+  } catch {
+    return NextResponse.json(
+      { error: "Could not save your request. Please try again later." },
+      { status: 500 },
+    );
+  }
+
+  try {
+    await sendMigrationRequestReceived({
+      email: record.customerEmail,
+      publicId: record.publicId,
+      domain: record.domain,
+    });
+  } catch {
+    console.error(
+      JSON.stringify({
+        scope: "migration.request",
+        event: "notification_failed",
+        publicId: record.publicId,
+      }),
+    );
+  }
 
   return NextResponse.json({
     ok: true,

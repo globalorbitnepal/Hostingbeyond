@@ -19,3 +19,9 @@ export function rateLimitNewsletter(request: Request): boolean {
   const key = `newsletter:${clientKeyFromRequest(request)}`;
   return consumeRateLimit(key, 6, WINDOW_MS);
 }
+
+/** Website migration intake — per-process window; see fixed-window-rate-limit.ts. */
+export function rateLimitMigrationRequest(request: Request): boolean {
+  const key = `migration:${clientKeyFromRequest(request)}`;
+  return consumeRateLimit(key, 6, WINDOW_MS);
+}
