@@ -68,6 +68,7 @@ export type HostingCartCheckoutProps = {
   isLoggedIn: boolean;
   billingMonthlyEnabled: boolean;
   billingYearlyEnabled: boolean;
+  hostingCheckoutPaymentAvailable: boolean;
 };
 
 export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
@@ -212,23 +213,54 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
       router.push(signupPathForCheckout({ purchase: props.intent }));
       return;
     }
+    if (!props.hostingCheckoutPaymentAvailable) {
+      setOrderError(
+        "Online payment for hosting is not available yet. We are not accepting payable hosting orders until billing is enabled. Contact support or check back later.",
+      );
+      return;
+    }
     setLoading(true);
     setOrderError(null);
+    const idempotencyKey =
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `checkout-${Date.now()}`;
     try {
       const res = await fetch("/api/hosting/orders", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          ...quote.configuration,
-          status: "PENDING_PAYMENT",
-        }),
+        body: JSON.stringify(quote.configuration),
       });
       const json = (await res.json()) as { error?: string; orderId?: string };
       if (!res.ok) {
         setOrderError(json.error ?? "Could not save your order.");
         return;
       }
-      router.push(`${routes.account}?order=${json.orderId ?? ""}`);
+      const orderId = json.orderId;
+      if (!orderId) {
+        setOrderError("Could not save your order.");
+        return;
+      }
+      const payRes = await fetch(`/api/hosting/orders/${orderId}/checkout`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "idempotency-key": idempotencyKey,
+        },
+      });
+      const payJson = (await payRes.json()) as {
+        error?: string;
+        checkoutUrl?: string;
+      };
+      if (!payRes.ok) {
+        setOrderError(payJson.error ?? "Could not start payment.");
+        return;
+      }
+      if (!payJson.checkoutUrl) {
+        setOrderError("Could not start payment.");
+        return;
+      }
+      window.location.href = payJson.checkoutUrl;
     } finally {
       setLoading(false);
     }
@@ -682,7 +714,13 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
             </div>
             <button
               type="button"
-              disabled={loading || quote.errors.length > 0}
+              disabled={
+                loading ||
+                quote.errors.length > 0 ||
+                (step === "review" &&
+                  props.isLoggedIn &&
+                  !props.hostingCheckoutPaymentAvailable)
+              }
               onClick={() => void handleContinue()}
               className={`mt-6 flex h-12 w-full items-center justify-center rounded-xl text-[15px] font-bold text-white shadow-[0_12px_28px_-14px_rgba(103,61,230,0.55)] disabled:opacity-60 ${ctaGradient}`}
             >
@@ -691,7 +729,11 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
               ) : step === "configure" ? (
                 "Continue"
               ) : props.isLoggedIn ? (
-                "Save order & continue"
+                props.hostingCheckoutPaymentAvailable ? (
+                  "Pay securely"
+                ) : (
+                  "Payment unavailable"
+                )
               ) : (
                 "Continue to sign up"
               )}

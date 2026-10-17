@@ -50,17 +50,24 @@ export async function POST(request: Request) {
     );
   }
 
-  const status =
+  if (
     typeof body === "object" &&
     body &&
-    (body as { status?: string }).status === "PENDING_PAYMENT"
-      ? "PENDING_PAYMENT"
-      : "DRAFT";
+    (body as { status?: string }).status
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Order status is set by the server. Save a draft, then start checkout payment.",
+      },
+      { status: 400 },
+    );
+  }
 
   const order = await upsertHostingDraftOrder({
     userId: user.id,
     quote,
-    status,
+    status: "DRAFT",
   });
 
   return NextResponse.json({ orderId: order.id, quote });

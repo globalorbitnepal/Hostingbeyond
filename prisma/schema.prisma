@@ -244,6 +244,16 @@ model CustomerUser {
   migrationRequests   MigrationRequest[]
   invoices            Invoice[]
   creditNotes         CreditNote[]
+  hostingOrderCheckouts HostingOrderCheckout[]
+}
+
+enum HostingOrderCheckoutStatus {
+  PENDING
+  CHECKOUT_CREATED
+  COMPLETED
+  EXPIRED
+  CANCELLED
+  FAILED
 }
 
 enum HostingOrderStatus {
@@ -280,10 +290,29 @@ model HostingOrder {
   expiresAt     DateTime?
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
+  checkouts     HostingOrderCheckout[]
 
   @@index([userId])
   @@index([status])
   @@index([productSlug, planKey])
+}
+
+model HostingOrderCheckout {
+  id                      String                     @id @default(cuid())
+  hostingOrderId          String
+  hostingOrder            HostingOrder               @relation(fields: [hostingOrderId], references: [id], onDelete: Cascade)
+  userId                  String
+  user                    CustomerUser               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  idempotencyKey          String                     @unique
+  stripeCheckoutSessionId String?                    @unique
+  stripePaymentIntentId   String?
+  status                  HostingOrderCheckoutStatus @default(PENDING)
+  failureReason           String?
+  createdAt               DateTime                   @default(now())
+  updatedAt               DateTime                   @updatedAt
+
+  @@index([hostingOrderId, status])
+  @@index([userId])
 }
 
 enum HostingAddonBillingMode {

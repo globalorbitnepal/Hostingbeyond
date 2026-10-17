@@ -183,6 +183,12 @@ export async function processStripeWalletWebhook(input: {
 async function handleCheckoutSessionExpired(
   session: Stripe.Checkout.Session,
 ): Promise<WebhookProcessResult> {
+  if (session.metadata?.hostingOrderId) {
+    const { handleHostingOrderCheckoutExpired } =
+      await import("@/lib/hosting/hosting-order-stripe-payment");
+    return handleHostingOrderCheckoutExpired(session);
+  }
+
   const payment = await findPaymentBySession(session);
   if (!payment || payment.status === "SUCCEEDED") {
     return { ok: true, handled: Boolean(payment) };
@@ -197,6 +203,15 @@ async function handleCheckoutSessionExpired(
 async function handlePaymentIntentFailed(
   intent: Stripe.PaymentIntent,
 ): Promise<WebhookProcessResult> {
+  if (intent.metadata?.hostingOrderId || intent.metadata?.hostingCheckoutId) {
+    const { handleHostingOrderPaymentIntentFailed } =
+      await import("@/lib/hosting/hosting-order-stripe-payment");
+    const hosting = await handleHostingOrderPaymentIntentFailed(intent);
+    if (hosting.ok && hosting.handled) {
+      return hosting;
+    }
+  }
+
   const payment = await prisma.walletPayment.findFirst({
     where: { providerPaymentIntentId: intent.id },
   });
@@ -272,6 +287,12 @@ export function verifyPaidCheckoutForWallet(
 export async function handleCheckoutSessionCompleted(
   session: Stripe.Checkout.Session,
 ): Promise<WebhookProcessResult> {
+  if (session.metadata?.hostingOrderId) {
+    const { handleHostingOrderCheckoutCompleted } =
+      await import("@/lib/hosting/hosting-order-stripe-payment");
+    return handleHostingOrderCheckoutCompleted(session);
+  }
+
   const payment = await findPaymentBySession(session);
   if (!payment) {
     return { ok: false, error: "Unknown payment", status: 400 };

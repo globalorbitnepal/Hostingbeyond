@@ -13,6 +13,7 @@ import { quoteHostingCart } from "@/lib/hosting/cart/pricing";
 import { getHostingProductBySlug } from "@/lib/hosting/hosting-products";
 import { parseHostingPurchaseIntentFromRecord } from "@/lib/hosting/purchase-intent";
 import { validateHostingPurchaseIntent } from "@/lib/hosting/validate-purchase-intent";
+import { isHostingCheckoutPaymentAvailable } from "@/lib/hosting/hosting-order-stripe-payment";
 import { getSiteSettings } from "@/lib/orbit/content";
 
 export const metadata: Metadata = {
@@ -82,6 +83,7 @@ export default async function HostingCheckoutPage({
         isLoggedIn={Boolean(user)}
         billingMonthlyEnabled={product.billingMonthlyEnabled}
         billingYearlyEnabled={product.billingYearlyEnabled}
+        hostingCheckoutPaymentAvailable={isHostingCheckoutPaymentAvailable()}
       />
     </Suspense>
   );
