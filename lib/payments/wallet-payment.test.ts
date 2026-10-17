@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { reserveWalletFunds } from "@/lib/domains/wallet";
 import {
   normalizeTopUpAmount,
   processStripeWalletWebhook,
@@ -122,25 +121,5 @@ describe("Stripe webhook signature", () => {
       if (prev === undefined) delete process.env.STRIPE_WEBHOOK_SECRET;
       else process.env.STRIPE_WEBHOOK_SECRET = prev;
     }
-  });
-});
-
-describe("Wallet reserve insufficient balance", () => {
-  it("throws when DATABASE_URL missing", async () => {
-    if (!process.env.DATABASE_URL?.trim()) {
-      assert.ok(true);
-      return;
-    }
-    await assert.rejects(
-      () =>
-        reserveWalletFunds({
-          userId: "nonexistent-user-for-wallet-test",
-          amount: 999_999,
-          idempotencyKey: `test-insufficient-${Date.now()}`,
-          referenceType: "test",
-          referenceId: "test",
-        }),
-      /insufficient_funds/,
-    );
   });
 });

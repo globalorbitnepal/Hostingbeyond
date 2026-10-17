@@ -1,3 +1,5 @@
+import "@/lib/test/integration-env-loader";
+
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
@@ -11,6 +13,7 @@ import {
   tldTermContextFromRow,
 } from "@/lib/domains/registration-term";
 import { prisma } from "@/lib/prisma";
+import { isIntegrationDatabaseConfigured } from "@/lib/test/integration-gate";
 
 const TEST_AI = ".hb-term-ai-test";
 const TEST_COM = ".hb-term-com-test";
@@ -28,7 +31,7 @@ async function migrationApplied(): Promise<boolean> {
 
 describe(
   "mapRowToCustomerResult term alignment",
-  { skip: !process.env.DATABASE_URL },
+  { skip: !isIntegrationDatabaseConfigured() },
   () => {
     it("blocks 1-year .ai quote when min term is 2 and retail is 1-year only", async (t) => {
       if (!(await migrationApplied())) {

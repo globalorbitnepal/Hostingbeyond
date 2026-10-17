@@ -13,15 +13,9 @@ import {
 } from "@/lib/domains/renewal-service";
 import { creditWallet, ensureCustomerWallet } from "@/lib/domains/wallet";
 import { prisma } from "@/lib/prisma";
+import { isIntegrationDatabaseConfigured } from "@/lib/test/integration-gate";
 
 const TEST_EMAIL = "renewal-checkout-test@example.test";
-
-function integrationDb(): boolean {
-  return (
-    process.env.DATABASE_URL?.includes("hostingbeyond_integration_test") ??
-    false
-  );
-}
 
 function buildMockProvider(
   renewDomain: DomainRegistrarProvider["renewDomain"],
@@ -67,7 +61,7 @@ function renewalDeps(
 
 describe(
   "Renewal checkout (integration PostgreSQL)",
-  { skip: !integrationDb(), concurrency: 1 },
+  { skip: !isIntegrationDatabaseConfigured(), concurrency: 1 },
   () => {
     let userId = "";
     let userEmail = "";

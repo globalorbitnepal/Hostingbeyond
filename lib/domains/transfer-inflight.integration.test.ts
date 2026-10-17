@@ -1,6 +1,4 @@
-import { config as loadDotenv } from "dotenv";
-
-loadDotenv();
+import "@/lib/test/integration-env-loader";
 
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
@@ -14,11 +12,7 @@ import { prisma } from "@/lib/prisma";
 
 const TEST_EMAIL = "transfer-inflight-test@hostingbeyond.local";
 
-function shouldRunDbTests(): boolean {
-  return Boolean(process.env.DATABASE_URL?.trim());
-}
-
-const runDb = shouldRunDbTests();
+import { isIntegrationDatabaseConfigured } from "@/lib/test/integration-gate";
 
 async function ensureMigrationApplied() {
   const rows = await prisma.$queryRaw<{ indexname: string }[]>`
@@ -34,7 +28,7 @@ async function ensureMigrationApplied() {
 
 describe(
   "Transfer in-flight unique (database)",
-  { skip: !runDb, concurrency: 1 },
+  { skip: !isIntegrationDatabaseConfigured(), concurrency: 1 },
   () => {
     let userId = "";
 

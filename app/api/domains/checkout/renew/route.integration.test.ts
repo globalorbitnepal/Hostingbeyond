@@ -6,17 +6,11 @@ import { describe, it, afterEach } from "node:test";
 import { setCustomerSessionTestOverride } from "@/lib/test/customer-session-test-control";
 import { setRenewalCheckoutTestOverride } from "@/lib/test/renewal-checkout-test-control";
 import { prisma } from "@/lib/prisma";
-
-function integrationDb(): boolean {
-  return (
-    process.env.DATABASE_URL?.includes("hostingbeyond_integration_test") ??
-    false
-  );
-}
+import { isIntegrationDatabaseConfigured } from "@/lib/test/integration-gate";
 
 describe(
   "POST /api/domains/checkout/renew (HTTP integration)",
-  { skip: !integrationDb(), concurrency: 1 },
+  { skip: !isIntegrationDatabaseConfigured(), concurrency: 1 },
   () => {
     afterEach(() => {
       setCustomerSessionTestOverride(null);

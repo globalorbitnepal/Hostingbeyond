@@ -1,6 +1,4 @@
-import { config as loadDotenv } from "dotenv";
-
-loadDotenv();
+import "@/lib/test/integration-env-loader";
 
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
@@ -15,6 +13,7 @@ import type { DomainRegistrarProvider } from "@/lib/domains/providers/provider";
 import type { ProviderAvailabilityRow } from "@/lib/domains/providers/types";
 import { creditWallet, ensureCustomerWallet } from "@/lib/domains/wallet";
 import { prisma } from "@/lib/prisma";
+import { isIntegrationDatabaseConfigured } from "@/lib/test/integration-gate";
 
 function takenDomainResult(domain: string): DomainResult {
   const name = domain.split(".")[0] ?? "test";
@@ -103,12 +102,6 @@ function buildMockProvider(
 
 const TEST_EMAIL = "transfer-checkout-test@hostingbeyond.local";
 
-function shouldRunDbTests(): boolean {
-  return Boolean(process.env.DATABASE_URL?.trim());
-}
-
-const runDb = shouldRunDbTests();
-
 async function ensureMigrationApplied() {
   const rows = await prisma.$queryRaw<{ indexname: string }[]>`
     SELECT indexname FROM pg_indexes
@@ -123,7 +116,7 @@ async function ensureMigrationApplied() {
 
 describe(
   "Transfer checkout concurrency (database)",
-  { skip: !runDb, concurrency: 1 },
+  { skip: !isIntegrationDatabaseConfigured(), concurrency: 1 },
   () => {
     let userId = "";
     let userEmail = "";

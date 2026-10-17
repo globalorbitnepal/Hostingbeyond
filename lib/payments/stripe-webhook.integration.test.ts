@@ -1,6 +1,4 @@
-import { config as loadDotenv } from "dotenv";
-
-loadDotenv();
+import "@/lib/test/integration-env-loader";
 
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
@@ -14,13 +12,10 @@ import {
   processStripeWalletWebhook,
   verifyPaidCheckoutForWallet,
 } from "@/lib/payments/wallet-payment-service";
+import { isIntegrationDatabaseConfigured } from "@/lib/test/integration-gate";
 
 const TEST_WEBHOOK_SECRET = "whsec_integration_test_secret_only";
 const TEST_EMAIL = "stripe-e2e-test@hostingbeyond.local";
-
-function shouldRunDbWebhookTests(): boolean {
-  return Boolean(process.env.DATABASE_URL?.trim());
-}
 
 function signPayload(payload: string, secret: string): string {
   return Stripe.webhooks.generateTestHeaderString({
@@ -29,12 +24,10 @@ function signPayload(payload: string, secret: string): string {
   });
 }
 
-const runDb = shouldRunDbWebhookTests();
-
 describe(
   "Stripe webhook DB integration (signed HTTP + ledger)",
   {
-    skip: !runDb,
+    skip: !isIntegrationDatabaseConfigured(),
     concurrency: 1,
   },
   () => {

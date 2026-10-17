@@ -67,6 +67,8 @@ jobs:
         run: npm run typecheck
 
       - name: Test
+        env:
+          INTEGRATION_TESTS: required
         run: npm run test
 
       - name: Production build

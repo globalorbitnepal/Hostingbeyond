@@ -30,6 +30,9 @@ if (existsSync(INTEGRATION_ENV)) {
       url = url.slice(1, -1);
     }
     assertIntegrationDatabaseUrl(url);
-    process.env.DATABASE_URL = url;
+    // Do not override CI/shell DATABASE_URL (e.g. GitHub Actions service).
+    if (!process.env.DATABASE_URL?.trim()) {
+      process.env.DATABASE_URL = url;
+    }
   }
 }

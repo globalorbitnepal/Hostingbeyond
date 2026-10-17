@@ -9,17 +9,11 @@ import {
 } from "@/lib/customer/session";
 import { setCustomerSessionTestOverride } from "@/lib/test/customer-session-test-control";
 import { prisma } from "@/lib/prisma";
-
-function integrationDb(): boolean {
-  return (
-    process.env.DATABASE_URL?.includes("hostingbeyond_integration_test") ??
-    false
-  );
-}
+import { isIntegrationDatabaseConfigured } from "@/lib/test/integration-gate";
 
 describe(
   "Domain orders API session (HTTP integration)",
-  { skip: !integrationDb(), concurrency: 1 },
+  { skip: !isIntegrationDatabaseConfigured(), concurrency: 1 },
   () => {
     afterEach(() => {
       setCustomerSessionTestOverride(null);

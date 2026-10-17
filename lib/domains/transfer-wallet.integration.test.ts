@@ -1,6 +1,4 @@
-import { config as loadDotenv } from "dotenv";
-
-loadDotenv();
+import "@/lib/test/integration-env-loader";
 
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
@@ -14,18 +12,13 @@ import {
   rollbackReserve,
 } from "@/lib/domains/wallet";
 import { prisma } from "@/lib/prisma";
+import { isIntegrationDatabaseConfigured } from "@/lib/test/integration-gate";
 
 const TEST_EMAIL = "transfer-wallet-test@hostingbeyond.local";
 
-function shouldRunDbTests(): boolean {
-  return Boolean(process.env.DATABASE_URL?.trim());
-}
-
-const runDb = shouldRunDbTests();
-
 describe(
   "Transfer wallet reserve (database)",
-  { skip: !runDb, concurrency: 1 },
+  { skip: !isIntegrationDatabaseConfigured(), concurrency: 1 },
   () => {
     let userId = "";
 
