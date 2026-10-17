@@ -370,6 +370,10 @@ export async function processDomainRegistrationCheckout(input: {
       orderPublicId: completed.publicId,
     });
 
+    const { tryIssueInvoiceForDomainOrder } =
+      await import("@/lib/billing/issue-invoice-hooks");
+    void tryIssueInvoiceForDomainOrder(completed.id);
+
     return { ok: true as const, order: completed };
   } catch (error) {
     if (reserveTxId) {

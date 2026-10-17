@@ -160,6 +160,10 @@ export async function finalizeReconciliationOrder(input: {
     snapshot: input.snapshot,
   });
 
+  const { tryIssueInvoiceForDomainOrder } =
+    await import("@/lib/billing/issue-invoice-hooks");
+  void tryIssueInvoiceForDomainOrder(updated.id);
+
   return updated;
 }
 

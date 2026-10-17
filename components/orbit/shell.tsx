@@ -41,6 +41,7 @@ const nav = [
   },
   { href: "/orbit/domain-pricing", label: "Domain Pricing", icon: Tags },
   { href: "/orbit/domain-orders", label: "Domain Orders", icon: FileText },
+  { href: "/orbit/invoices", label: "Invoices", icon: FileText },
   {
     href: "/orbit/domain-reconciliation",
     label: "Domain Reconciliation",

@@ -97,7 +97,7 @@ export const PANEL_NAV: PanelNavSection[] = [
         href: routes.accountBilling,
       },
       { id: "orders", label: "Orders", href: routes.accountOrders },
-      { id: "invoices", label: "Invoices", soon: true },
+      { id: "invoices", label: "Invoices", href: routes.accountInvoices },
       { id: "payment-methods", label: "Payment Methods", soon: true },
       { id: "renewals-billing", label: "Renewals", href: routes.myDomains },
     ],
@@ -132,6 +132,7 @@ function pathMatchesNavItem(pathname: string, href: string) {
 export function panelTitleForPath(pathname: string): string {
   if (pathname.startsWith("/account/my-domains/")) return "Domain details";
   if (pathname.startsWith("/account/orders/")) return "Order details";
+  if (pathname.startsWith("/account/invoices/")) return "Invoice details";
   let best: { label: string; href: string } | null = null;
   for (const section of PANEL_NAV) {
     for (const item of section.items) {

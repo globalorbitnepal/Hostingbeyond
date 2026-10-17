@@ -31,6 +31,7 @@ const UNIT_GLOBS = [
   "lib/domains/**/*.test.ts",
   "lib/orbit/**/*.test.ts",
   "lib/payments/**/*.test.ts",
+  "lib/billing/**/*.test.ts",
   "lib/blog/**/*.test.ts",
   "lib/http/**/*.test.ts",
   "lib/test/**/*.test.ts",
@@ -44,6 +45,7 @@ const INTEGRATION_GLOBS = [
   "lib/domains/**/*.integration.test.ts",
   "lib/orbit/**/*.integration.test.ts",
   "lib/payments/**/*.integration.test.ts",
+  "lib/billing/**/*.integration.test.ts",
   "app/api/**/*.integration.test.ts",
 ];
 

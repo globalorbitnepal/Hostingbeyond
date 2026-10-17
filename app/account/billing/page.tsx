@@ -41,6 +41,13 @@ export default async function AccountBillingPage() {
           >
             Domain orders
           </Link>
+          {" · "}
+          <Link
+            href={routes.accountInvoices}
+            className="font-semibold text-[#673de6]"
+          >
+            Invoices
+          </Link>
         </p>
         <BillingLedgerPanel />
       </div>
