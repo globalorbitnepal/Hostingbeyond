@@ -17,6 +17,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
+  actions: read
   contents: read
 
 jobs:
@@ -27,8 +28,7 @@ jobs:
        github.event.workflow_run.conclusion == 'success' &&
        github.event.workflow_run.head_branch == 'main') ||
       (github.event_name == 'workflow_dispatch' &&
-       github.event.inputs.confirm_manual_deploy == 'DEPLOY' &&
-       secrets.HOSTINGBEYOND_MANUAL_DEPLOY_APPROVED == 'true')
+       github.event.inputs.confirm_manual_deploy == 'DEPLOY')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -51,6 +51,18 @@ jobs:
             echo "MANUAL_DEPLOY_BLOCKED: confirm_manual_deploy must be exactly DEPLOY"
             exit 1
           fi
+
+      - name: Manual deploy repository approval (fail closed)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          MANUAL_DEPLOY_APPROVED: ${{ secrets.HOSTINGBEYOND_MANUAL_DEPLOY_APPROVED }}
+        run: |
+          set -euo pipefail
+          if [ "${MANUAL_DEPLOY_APPROVED:-}" != "true" ]; then
+            echo "MANUAL_DEPLOY_BLOCKED: repository secret HOSTINGBEYOND_MANUAL_DEPLOY_APPROVED must be true for manual deploy."
+            exit 1
+          fi
+          echo "Manual deploy approved via repository secret."
 
       - name: Production migrate deploy gate (fail closed)
         env:
