@@ -1,11 +1,15 @@
 import "@/lib/test/integration-env-loader";
 
 import assert from "node:assert/strict";
-import { describe, it } from "node:test";
+import { access, mkdtemp, rm } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import { after, before, describe, it } from "node:test";
 
 import { Prisma } from "@prisma/client";
 
 import { issueInvoiceForDomainOrder } from "@/lib/billing/invoice-builder";
+import { resolveInvoiceStorageRoot } from "@/lib/billing/invoice-storage";
 import { prisma } from "@/lib/prisma";
 import {
   assertIntegrationDatabaseTarget,
@@ -19,6 +23,27 @@ describe(
     const tag = `inv-${Date.now()}`;
     let userId = "";
     let orderId = "";
+    let invoiceStorageTempDir = "";
+    let previousInvoiceStorageDir: string | undefined;
+
+    before(async () => {
+      previousInvoiceStorageDir = process.env.INVOICE_STORAGE_DIR;
+      invoiceStorageTempDir = await mkdtemp(
+        path.join(os.tmpdir(), "hb-invoice-integration-"),
+      );
+      process.env.INVOICE_STORAGE_DIR = invoiceStorageTempDir;
+    });
+
+    after(async () => {
+      if (invoiceStorageTempDir) {
+        await rm(invoiceStorageTempDir, { recursive: true, force: true });
+      }
+      if (previousInvoiceStorageDir !== undefined) {
+        process.env.INVOICE_STORAGE_DIR = previousInvoiceStorageDir;
+      } else {
+        delete process.env.INVOICE_STORAGE_DIR;
+      }
+    });
 
     it("prepares user and registered domain order", async () => {
       assertIntegrationDatabaseTarget();
@@ -106,6 +131,13 @@ describe(
       assert.equal(invoice.total.toFixed(2), "113.00");
       assert.equal(invoice.tax.toFixed(2), "13.00");
       assert.equal(invoice.subtotal.toFixed(2), "100.00");
+      if (invoice.pdfStorageKey) {
+        const pdfPath = path.join(
+          resolveInvoiceStorageRoot(),
+          path.basename(invoice.pdfStorageKey),
+        );
+        await access(pdfPath);
+      }
     });
 
     it("rejects cross-customer invoice read", async () => {

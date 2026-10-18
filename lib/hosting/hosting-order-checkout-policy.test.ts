@@ -73,6 +73,26 @@ describe("decideHostingCheckoutCompletedWebhook", () => {
     }
   });
 
+  it("rejects when registered checkout session id does not match incoming session", () => {
+    const d = decideHostingCheckoutCompletedWebhook({
+      orderStatus: "PENDING_PAYMENT",
+      orderPaymentStatus: "checkout_created",
+      orderPaidPaymentReference: null,
+      sessionId: "cs_other",
+      paymentIntentId: "pi_1",
+      registeredCheckout: {
+        id: "co_1",
+        status: "CHECKOUT_CREATED",
+        stripeCheckoutSessionId: "cs_registered",
+      },
+      verification: { ok: true },
+    });
+    assert.equal(d.action, "reject");
+    if (d.action === "reject") {
+      assert.equal(d.reason, "session_not_registered");
+    }
+  });
+
   it("rejects verification failures", () => {
     const d = decideHostingCheckoutCompletedWebhook({
       orderStatus: "PENDING_PAYMENT",

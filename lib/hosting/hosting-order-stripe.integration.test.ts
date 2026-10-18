@@ -8,6 +8,7 @@ import {
   createHostingOrderStripeCheckout,
   handleHostingOrderCheckoutCompleted,
   handleHostingOrderCheckoutExpired,
+  handleHostingOrderPaymentIntentFailed,
 } from "@/lib/hosting/hosting-order-stripe-payment";
 import { handleCheckoutSessionCompleted } from "@/lib/payments/wallet-payment-service";
 import { verifyPaidCheckoutForHostingOrder } from "@/lib/hosting/hosting-order-stripe-payment";
@@ -221,6 +222,183 @@ describe(
         where: { id: order.id },
       });
       assert.notEqual(updated?.status, "PAID");
+
+      await prisma.hostingOrderCheckout.deleteMany({
+        where: { hostingOrderId: order.id },
+      });
+      await prisma.hostingOrder.delete({ where: { id: order.id } });
+      await prisma.customerUser.delete({ where: { id: user.id } });
+    });
+
+    it("rejects second paid checkout session when order is already PAID", async () => {
+      const user = await prisma.customerUser.create({
+        data: { email: `host-paid-2sess-${Date.now()}@example.test` },
+      });
+      const total = 30;
+      const order = await seedWebhookOrder(user.id, total);
+      const firstSessionId = `cs_first_${Date.now()}`;
+      const piFirst = `pi_first_${Date.now()}`;
+      await seedCheckout(
+        order.id,
+        user.id,
+        firstSessionId,
+        `idem-first-${Date.now()}`,
+      );
+
+      const paidSession = {
+        id: firstSessionId,
+        payment_status: "paid",
+        metadata: { hostingOrderId: order.id, userId: user.id },
+        amount_total: Math.round(total * 100),
+        currency: "usd",
+        payment_intent: piFirst,
+      } as unknown as Stripe.Checkout.Session;
+
+      const first = await handleCheckoutSessionCompleted(paidSession);
+      assert.equal(first.ok, true);
+
+      const paidOrder = await prisma.hostingOrder.findUnique({
+        where: { id: order.id },
+      });
+      assert.equal(paidOrder?.status, "PAID");
+
+      const secondSessionId = `cs_second_${Date.now()}`;
+      const secondCheckout = await seedCheckout(
+        order.id,
+        user.id,
+        secondSessionId,
+        `idem-second-${Date.now()}`,
+      );
+
+      const secondPaidSession = {
+        id: secondSessionId,
+        payment_status: "paid",
+        metadata: { hostingOrderId: order.id, userId: user.id },
+        amount_total: Math.round(total * 100),
+        currency: "usd",
+        payment_intent: `pi_second_${Date.now()}`,
+      } as unknown as Stripe.Checkout.Session;
+
+      const second =
+        await handleHostingOrderCheckoutCompleted(secondPaidSession);
+      assert.equal(second.ok, false);
+      if (!second.ok) {
+        assert.equal(second.status, 409);
+        assert.equal(second.error, "order_already_paid");
+      }
+
+      const stillPaid = await prisma.hostingOrder.findUnique({
+        where: { id: order.id },
+      });
+      assert.equal(stillPaid?.status, "PAID");
+      assert.equal(stillPaid?.paymentReference, piFirst);
+
+      const secondRow = await prisma.hostingOrderCheckout.findUnique({
+        where: { id: secondCheckout.id },
+      });
+      assert.notEqual(secondRow?.status, "COMPLETED");
+
+      await prisma.hostingOrderCheckout.deleteMany({
+        where: { hostingOrderId: order.id },
+      });
+      await prisma.hostingOrder.delete({ where: { id: order.id } });
+      await prisma.customerUser.delete({ where: { id: user.id } });
+    });
+
+    it("rejects checkout.session.completed when payment_status is not paid", async () => {
+      const user = await prisma.customerUser.create({
+        data: { email: `host-unpaid-wh-${Date.now()}@example.test` },
+      });
+      const total = 18;
+      const order = await seedWebhookOrder(user.id, total);
+      const sessionId = `cs_unpaid_${Date.now()}`;
+      const checkout = await seedCheckout(
+        order.id,
+        user.id,
+        sessionId,
+        `idem-unpaid-${Date.now()}`,
+      );
+
+      const session = {
+        id: sessionId,
+        payment_status: "unpaid",
+        metadata: { hostingOrderId: order.id, userId: user.id },
+        amount_total: Math.round(total * 100),
+        currency: "usd",
+        payment_intent: `pi_unpaid_${Date.now()}`,
+      } as unknown as Stripe.Checkout.Session;
+
+      const result = await handleCheckoutSessionCompleted(session);
+      assert.equal(result.ok, false);
+      if (!result.ok) assert.equal(result.error, "not_paid");
+
+      const updated = await prisma.hostingOrder.findUnique({
+        where: { id: order.id },
+      });
+      assert.notEqual(updated?.status, "PAID");
+      assert.equal(updated?.paymentStatus, "failed:not_paid");
+
+      const checkoutAfter = await prisma.hostingOrderCheckout.findUnique({
+        where: { id: checkout.id },
+      });
+      assert.equal(checkoutAfter?.status, "FAILED");
+      assert.equal(checkoutAfter?.failureReason, "not_paid");
+
+      await prisma.hostingOrderCheckout.deleteMany({
+        where: { hostingOrderId: order.id },
+      });
+      await prisma.hostingOrder.delete({ where: { id: order.id } });
+      await prisma.customerUser.delete({ where: { id: user.id } });
+    });
+
+    it("marks hosting checkout failed on payment_intent.payment_failed", async () => {
+      const user = await prisma.customerUser.create({
+        data: { email: `host-pi-fail-${Date.now()}@example.test` },
+      });
+      const total = 21;
+      const order = await seedWebhookOrder(user.id, total);
+      const sessionId = `cs_pi_fail_${Date.now()}`;
+      const checkout = await seedCheckout(
+        order.id,
+        user.id,
+        sessionId,
+        `idem-pi-fail-${Date.now()}`,
+      );
+      await prisma.hostingOrder.update({
+        where: { id: order.id },
+        data: {
+          status: "PENDING_PAYMENT",
+          paymentProvider: "stripe",
+          paymentReference: sessionId,
+          paymentStatus: "checkout_created",
+        },
+      });
+
+      const intent = {
+        id: `pi_fail_${Date.now()}`,
+        metadata: {
+          hostingOrderId: order.id,
+          hostingCheckoutId: checkout.id,
+          userId: user.id,
+        },
+        last_payment_error: { message: "card_declined" },
+      } as unknown as Stripe.PaymentIntent;
+
+      const result = await handleHostingOrderPaymentIntentFailed(intent);
+      assert.equal(result.ok, true);
+      if (result.ok) assert.equal(result.handled, true);
+
+      const updated = await prisma.hostingOrder.findUnique({
+        where: { id: order.id },
+      });
+      assert.notEqual(updated?.status, "PAID");
+      assert.equal(updated?.paymentStatus, "failed:card_declined");
+
+      const checkoutAfter = await prisma.hostingOrderCheckout.findUnique({
+        where: { id: checkout.id },
+      });
+      assert.equal(checkoutAfter?.status, "FAILED");
+      assert.equal(checkoutAfter?.failureReason, "card_declined");
 
       await prisma.hostingOrderCheckout.deleteMany({
         where: { hostingOrderId: order.id },
@@ -459,6 +637,54 @@ describe(
         await prisma.hostingOrderCheckout.deleteMany({
           where: { hostingOrderId: order.id },
         });
+        await prisma.hostingOrder.delete({ where: { id: order.id } });
+        await prisma.customerUser.delete({ where: { id: user.id } });
+      });
+    });
+
+    it("rethrows when mocked Stripe session creation fails and rolls back checkout row", async () => {
+      await withIntegrationStripeConfigured(async () => {
+        const user = await prisma.customerUser.create({
+          data: { email: `host-stripe-down-${Date.now()}@example.test` },
+        });
+        const order = await seedQuotedOrder(user.id);
+        const idempotencyKey = `stripe-fail-${Date.now()}`;
+
+        await assert.rejects(
+          async () =>
+            createHostingOrderStripeCheckout(
+              {
+                orderId: order.id,
+                userId: user.id,
+                idempotencyKey,
+              },
+              {
+                createSession: async () => {
+                  throw new Error("stripe_down");
+                },
+                retrieveSession: async (id) =>
+                  ({
+                    id,
+                    url: "https://checkout.stripe.test/unused",
+                    status: "open",
+                  }) as Stripe.Checkout.Session,
+              },
+            ),
+          (err: unknown) =>
+            err instanceof Error && err.message === "stripe_down",
+        );
+
+        const orderAfter = await prisma.hostingOrder.findUnique({
+          where: { id: order.id },
+        });
+        assert.equal(orderAfter?.status, "DRAFT");
+        assert.equal(orderAfter?.paymentStatus, null);
+
+        const checkoutCount = await prisma.hostingOrderCheckout.count({
+          where: { hostingOrderId: order.id },
+        });
+        assert.equal(checkoutCount, 0);
+
         await prisma.hostingOrder.delete({ where: { id: order.id } });
         await prisma.customerUser.delete({ where: { id: user.id } });
       });

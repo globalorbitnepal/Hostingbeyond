@@ -1,7 +1,10 @@
 import "@/lib/test/integration-env-loader";
 
 import assert from "node:assert/strict";
-import { describe, it } from "node:test";
+import { randomUUID } from "node:crypto";
+import { after, describe, it } from "node:test";
+
+import { Prisma } from "@prisma/client";
 
 import type { DomainResult } from "@/lib/domains/availability";
 import {
@@ -100,7 +103,8 @@ function buildMockProvider(
   };
 }
 
-const TEST_EMAIL = "transfer-checkout-test@hostingbeyond.local";
+/** Mock quote transfer price — must match `mockCheckoutDeps` / `takenDomainResult`. */
+const MOCK_TRANSFER_QUOTE_USD = 12.99;
 
 async function ensureMigrationApplied() {
   const rows = await prisma.$queryRaw<{ indexname: string }[]>`
@@ -118,16 +122,24 @@ describe(
   "Transfer checkout concurrency (database)",
   { skip: !isIntegrationDatabaseConfigured(), concurrency: 1 },
   () => {
+    const suiteTag = `xfer-${Date.now()}-${randomUUID().slice(0, 8)}`;
     let userId = "";
     let userEmail = "";
     let providerCalls = 0;
 
+    after(async () => {
+      if (!userId) return;
+      await prisma.domainTransferRecord.deleteMany({ where: { userId } });
+      await prisma.walletTransaction.deleteMany({ where: { userId } });
+      await prisma.customerWallet.deleteMany({ where: { userId } });
+      await prisma.customerUser.delete({ where: { id: userId } });
+    });
+
     it("prepares user and wallet", async () => {
       await ensureMigrationApplied();
-      const user = await prisma.customerUser.upsert({
-        where: { email: TEST_EMAIL },
-        create: { email: TEST_EMAIL, name: "Transfer Checkout Test" },
-        update: {},
+      const email = `transfer-checkout-${suiteTag}@hostingbeyond.local`;
+      const user = await prisma.customerUser.create({
+        data: { email, name: "Transfer Checkout Test" },
       });
       userId = user.id;
       userEmail = user.email;
@@ -135,9 +147,18 @@ describe(
       await creditWallet({
         userId,
         amount: 500,
-        idempotencyKey: `transfer-checkout-fund-${userId}`,
+        idempotencyKey: `transfer-checkout-fund-${userId}-${suiteTag}`,
         note: "transfer checkout concurrency test",
       });
+      const wallet = await prisma.customerWallet.findUnique({
+        where: { userId },
+      });
+      assert.ok(wallet);
+      const minBalance = new Prisma.Decimal(MOCK_TRANSFER_QUOTE_USD).mul(2);
+      assert.ok(
+        wallet.balance.greaterThanOrEqualTo(minBalance),
+        `wallet balance ${wallet.balance} below minimum ${minBalance} for parallel + timeout tests`,
+      );
     });
 
     it("parallel requests with different idempotency keys create one provider submission", async () => {
