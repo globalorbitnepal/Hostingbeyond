@@ -12,27 +12,74 @@ import {
 import { handleCheckoutSessionCompleted } from "@/lib/payments/wallet-payment-service";
 import { verifyPaidCheckoutForHostingOrder } from "@/lib/hosting/hosting-order-stripe-payment";
 import { prisma } from "@/lib/prisma";
+import { quoteHostingCart } from "@/lib/hosting/cart/pricing";
 import { ensureHostingProductsSeeded } from "@/lib/hosting/seed-hosting-products";
 import { isIntegrationDatabaseConfigured } from "@/lib/test/integration-gate";
 import { Prisma } from "@prisma/client";
 
-async function seedOrder(userId: string, total = 19.99) {
+/** Same pattern as lib/payments/stripe-webhook.integration.test.ts — not real credentials. */
+const TEST_WEBHOOK_SECRET = "whsec_integration_test_secret_only";
+const TEST_STRIPE_KEY = "sk_test_integration_hostingbeyond_ci_only";
+
+async function withIntegrationStripeConfigured<T>(
+  fn: () => Promise<T>,
+): Promise<T> {
+  const prevSk = process.env.STRIPE_SECRET_KEY;
+  const prevWh = process.env.STRIPE_WEBHOOK_SECRET;
+  process.env.STRIPE_SECRET_KEY = TEST_STRIPE_KEY;
+  process.env.STRIPE_WEBHOOK_SECRET = TEST_WEBHOOK_SECRET;
+  try {
+    return await fn();
+  } finally {
+    if (prevSk === undefined) delete process.env.STRIPE_SECRET_KEY;
+    else process.env.STRIPE_SECRET_KEY = prevSk;
+    if (prevWh === undefined) delete process.env.STRIPE_WEBHOOK_SECRET;
+    else process.env.STRIPE_WEBHOOK_SECRET = prevWh;
+  }
+}
+
+const SEED_CART = {
+  productSlug: "web-hosting",
+  planKey: "essential",
+  billingPeriod: "monthly" as const,
+};
+
+/** Order snapshot aligned with server quote (required for checkout create). */
+async function seedQuotedOrder(userId: string) {
+  const quote = await quoteHostingCart(SEED_CART);
+  if (quote.errors.length) {
+    throw new Error(`seedQuotedOrder: ${quote.errors.join(" ")}`);
+  }
   return prisma.hostingOrder.create({
     data: {
       userId,
       status: "DRAFT",
-      productSlug: "web-hosting",
-      planKey: "starter",
-      billingCycle: "monthly",
+      productSlug: SEED_CART.productSlug,
+      planKey: SEED_CART.planKey,
+      billingCycle: SEED_CART.billingPeriod,
+      subtotal: new Prisma.Decimal(quote.subtotal),
+      discount: new Prisma.Decimal(quote.discount),
+      total: new Prisma.Decimal(quote.total),
+      currency: quote.currency,
+      configuration: SEED_CART,
+    },
+  });
+}
+
+/** Fixed total for webhook-only scenarios (no checkout quote path). */
+async function seedWebhookOrder(userId: string, total: number) {
+  return prisma.hostingOrder.create({
+    data: {
+      userId,
+      status: "DRAFT",
+      productSlug: SEED_CART.productSlug,
+      planKey: SEED_CART.planKey,
+      billingCycle: SEED_CART.billingPeriod,
       subtotal: new Prisma.Decimal(total),
       discount: new Prisma.Decimal(0),
       total: new Prisma.Decimal(total),
       currency: "USD",
-      configuration: {
-        productSlug: "web-hosting",
-        planKey: "starter",
-        billingPeriod: "monthly",
-      },
+      configuration: SEED_CART,
     },
   });
 }
@@ -67,7 +114,7 @@ describe(
         data: { email: `host-stripe-${Date.now()}@example.test` },
       });
       const total = 19.99;
-      const order = await seedOrder(user.id, total);
+      const order = await seedWebhookOrder(user.id, total);
       const sessionId = `cs_test_hosting_${Date.now()}`;
       await seedCheckout(order.id, user.id, sessionId, `idem-${Date.now()}`);
 
@@ -115,7 +162,7 @@ describe(
         data: { email: `host-conc-wh-${Date.now()}@example.test` },
       });
       const total = 22.5;
-      const order = await seedOrder(user.id, total);
+      const order = await seedWebhookOrder(user.id, total);
       const sessionId = `cs_conc_${Date.now()}`;
       await seedCheckout(order.id, user.id, sessionId, `idem-cw-${Date.now()}`);
 
@@ -150,7 +197,7 @@ describe(
       const user = await prisma.customerUser.create({
         data: { email: `host-stripe-bad-${Date.now()}@example.test` },
       });
-      const order = await seedOrder(user.id, 50);
+      const order = await seedWebhookOrder(user.id, 50);
       const sessionId = `cs_bad_${Date.now()}`;
       await seedCheckout(
         order.id,
@@ -186,7 +233,7 @@ describe(
       const user = await prisma.customerUser.create({
         data: { email: `host-stripe-2sess-${Date.now()}@example.test` },
       });
-      const order = await seedOrder(user.id, 25);
+      const order = await seedWebhookOrder(user.id, 25);
       await seedCheckout(
         order.id,
         user.id,
@@ -274,7 +321,7 @@ describe(
       const user = await prisma.customerUser.create({
         data: { email: `host-unique-${Date.now()}@example.test` },
       });
-      const order = await seedOrder(user.id);
+      const order = await seedQuotedOrder(user.id);
 
       await seedCheckout(
         order.id,
@@ -306,111 +353,115 @@ describe(
     });
 
     it("concurrent checkout requests share one Stripe session", async () => {
-      const user = await prisma.customerUser.create({
-        data: { email: `host-conc-${Date.now()}@example.test` },
-      });
-      const order = await seedOrder(user.id, 12);
+      await withIntegrationStripeConfigured(async () => {
+        const user = await prisma.customerUser.create({
+          data: { email: `host-conc-${Date.now()}@example.test` },
+        });
+        const order = await seedQuotedOrder(user.id);
 
-      let stripeCreates = 0;
-      const sessionId = `cs_mock_${Date.now()}`;
-      const mockCreate = async () => {
-        stripeCreates += 1;
-        return {
-          id: sessionId,
-          url: "https://checkout.stripe.test/pay",
-          status: "open",
-        } as Stripe.Checkout.Session;
-      };
-      const mockRetrieve = async (id: string) =>
-        ({
-          id,
-          url: "https://checkout.stripe.test/pay",
-          status: "open",
-        }) as Stripe.Checkout.Session;
+        let stripeCreates = 0;
+        const sessionId = `cs_mock_${Date.now()}`;
+        const mockCreate = async () => {
+          stripeCreates += 1;
+          return {
+            id: sessionId,
+            url: "https://checkout.stripe.test/pay",
+            status: "open",
+          } as Stripe.Checkout.Session;
+        };
+        const mockRetrieve = async (id: string) =>
+          ({
+            id,
+            url: "https://checkout.stripe.test/pay",
+            status: "open",
+          }) as Stripe.Checkout.Session;
 
-      const [a, b] = await Promise.all([
-        createHostingOrderStripeCheckout(
-          {
-            orderId: order.id,
-            userId: user.id,
-            idempotencyKey: `key-a-${Date.now()}`,
+        const [a, b] = await Promise.all([
+          createHostingOrderStripeCheckout(
+            {
+              orderId: order.id,
+              userId: user.id,
+              idempotencyKey: `key-a-${Date.now()}`,
+            },
+            { createSession: mockCreate, retrieveSession: mockRetrieve },
+          ),
+          createHostingOrderStripeCheckout(
+            {
+              orderId: order.id,
+              userId: user.id,
+              idempotencyKey: `key-b-${Date.now()}`,
+            },
+            { createSession: mockCreate, retrieveSession: mockRetrieve },
+          ),
+        ]);
+
+        assert.equal(stripeCreates, 1);
+        assert.equal(a.ok, true);
+        assert.equal(b.ok, true);
+        if (a.ok && b.ok) {
+          assert.equal(a.checkoutUrl, b.checkoutUrl);
+        }
+
+        const openRows = await prisma.hostingOrderCheckout.count({
+          where: {
+            hostingOrderId: order.id,
+            status: "CHECKOUT_CREATED",
           },
-          { createSession: mockCreate, retrieveSession: mockRetrieve },
-        ),
-        createHostingOrderStripeCheckout(
-          {
-            orderId: order.id,
-            userId: user.id,
-            idempotencyKey: `key-b-${Date.now()}`,
-          },
-          { createSession: mockCreate, retrieveSession: mockRetrieve },
-        ),
-      ]);
+        });
+        assert.equal(openRows, 1);
 
-      assert.equal(stripeCreates, 1);
-      assert.equal(a.ok, true);
-      assert.equal(b.ok, true);
-      if (a.ok && b.ok) {
-        assert.equal(a.checkoutUrl, b.checkoutUrl);
-      }
-
-      const openRows = await prisma.hostingOrderCheckout.count({
-        where: {
-          hostingOrderId: order.id,
-          status: "CHECKOUT_CREATED",
-        },
+        await prisma.hostingOrderCheckout.deleteMany({
+          where: { hostingOrderId: order.id },
+        });
+        await prisma.hostingOrder.delete({ where: { id: order.id } });
+        await prisma.customerUser.delete({ where: { id: user.id } });
       });
-      assert.equal(openRows, 1);
-
-      await prisma.hostingOrderCheckout.deleteMany({
-        where: { hostingOrderId: order.id },
-      });
-      await prisma.hostingOrder.delete({ where: { id: order.id } });
-      await prisma.customerUser.delete({ where: { id: user.id } });
     });
 
     it("retries after ambiguous create reuse the same session via idempotency row", async () => {
-      const user = await prisma.customerUser.create({
-        data: { email: `host-retry-${Date.now()}@example.test` },
+      await withIntegrationStripeConfigured(async () => {
+        const user = await prisma.customerUser.create({
+          data: { email: `host-retry-${Date.now()}@example.test` },
+        });
+        const order = await seedQuotedOrder(user.id);
+        const idempotencyKey = `retry-key-${Date.now()}`;
+        const sessionId = `cs_retry_${Date.now()}`;
+        let calls = 0;
+
+        const mockCreate = async () => {
+          calls += 1;
+          return {
+            id: sessionId,
+            url: "https://checkout.stripe.test/retry",
+            status: "open",
+          } as Stripe.Checkout.Session;
+        };
+        const mockRetrieve = async (id: string) =>
+          ({
+            id,
+            url: "https://checkout.stripe.test/retry",
+            status: "open",
+          }) as Stripe.Checkout.Session;
+
+        const first = await createHostingOrderStripeCheckout(
+          { orderId: order.id, userId: user.id, idempotencyKey },
+          { createSession: mockCreate, retrieveSession: mockRetrieve },
+        );
+        const second = await createHostingOrderStripeCheckout(
+          { orderId: order.id, userId: user.id, idempotencyKey },
+          { createSession: mockCreate, retrieveSession: mockRetrieve },
+        );
+
+        assert.equal(calls, 1);
+        assert.equal(first.ok, true);
+        assert.equal(second.ok, true);
+
+        await prisma.hostingOrderCheckout.deleteMany({
+          where: { hostingOrderId: order.id },
+        });
+        await prisma.hostingOrder.delete({ where: { id: order.id } });
+        await prisma.customerUser.delete({ where: { id: user.id } });
       });
-      const order = await seedOrder(user.id, 15);
-      const idempotencyKey = `retry-key-${Date.now()}`;
-      const sessionId = `cs_retry_${Date.now()}`;
-      let calls = 0;
-
-      const mockCreate = async () => {
-        calls += 1;
-        return {
-          id: sessionId,
-          url: "https://checkout.stripe.test/retry",
-          status: "open",
-        } as Stripe.Checkout.Session;
-      };
-      const mockRetrieve = async (id: string) =>
-        ({
-          id,
-          url: "https://checkout.stripe.test/retry",
-          status: "open",
-        }) as Stripe.Checkout.Session;
-
-      const first = await createHostingOrderStripeCheckout(
-        { orderId: order.id, userId: user.id, idempotencyKey },
-        { createSession: mockCreate, retrieveSession: mockRetrieve },
-      );
-      const second = await createHostingOrderStripeCheckout(
-        { orderId: order.id, userId: user.id, idempotencyKey },
-        { createSession: mockCreate, retrieveSession: mockRetrieve },
-      );
-
-      assert.equal(calls, 1);
-      assert.equal(first.ok, true);
-      assert.equal(second.ok, true);
-
-      await prisma.hostingOrderCheckout.deleteMany({
-        where: { hostingOrderId: order.id },
-      });
-      await prisma.hostingOrder.delete({ where: { id: order.id } });
-      await prisma.customerUser.delete({ where: { id: user.id } });
     });
   },
 );

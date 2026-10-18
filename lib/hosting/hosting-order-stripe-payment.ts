@@ -114,21 +114,13 @@ export async function createHostingOrderStripeCheckout(
   | { ok: true; checkoutUrl: string }
   | { ok: false; status: number; error: string }
 > {
-  if (!isHostingCheckoutPaymentAvailable()) {
-    return {
-      ok: false,
-      status: 503,
-      error:
-        "Online payment for hosting is not configured yet. Contact support to complete your order.",
-    };
-  }
-
-  const stripe = getStripeClient();
   const createSession =
     deps?.createSession ??
-    ((params, options) => stripe.checkout.sessions.create(params, options));
+    ((params, options) =>
+      getStripeClient().checkout.sessions.create(params, options));
   const retrieveSession =
-    deps?.retrieveSession ?? ((id) => stripe.checkout.sessions.retrieve(id));
+    deps?.retrieveSession ??
+    ((id) => getStripeClient().checkout.sessions.retrieve(id));
 
   try {
     return await prisma.$transaction(async (tx) => {
@@ -173,6 +165,15 @@ export async function createHostingOrderStripeCheckout(
           ok: false,
           status: 409,
           error: "Order pricing is out of date. Please restart checkout.",
+        };
+      }
+
+      if (!isHostingCheckoutPaymentAvailable()) {
+        return {
+          ok: false,
+          status: 503,
+          error:
+            "Online payment for hosting is not configured yet. Contact support to complete your order.",
         };
       }
 
