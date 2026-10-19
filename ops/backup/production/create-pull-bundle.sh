@@ -8,6 +8,7 @@ APP_ROOT="${HB_APP_ROOT:-/srv/apps/hostingbeyond}"
 ENV_FILE="${HB_ENV_FILE:-$APP_ROOT/.env}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+RUN_PG=(node "$SCRIPT_DIR/run-with-pg-env.mjs" --env-file "$ENV_FILE" --)
 
 usage() {
   cat <<'EOF'
@@ -70,55 +71,37 @@ else
   BUNDLE="${HOME}/backup-export/$TS"
 fi
 BUNDLE_OK=0
-cleanup_bundle() {
+OUTER_TAR=""
+OUTER_AGE=""
+META=""
+OUTER_PUBLISHED=0
+
+cleanup_on_exit() {
   if [ "$BUNDLE_OK" != "1" ] && [ -n "${BUNDLE:-}" ] && [ -d "$BUNDLE" ]; then
     rm -rf "$BUNDLE"
   fi
+  if [ "$OUTER_PUBLISHED" != "1" ]; then
+    if [ -n "$OUTER_TAR" ] && [ -f "$OUTER_TAR" ]; then
+      rm -f "$OUTER_TAR"
+    fi
+    if [ -n "$OUTER_AGE" ] && [ -f "$OUTER_AGE" ]; then
+      rm -f "$OUTER_AGE"
+    fi
+    if [ -n "$META" ] && [ -f "$META" ]; then
+      rm -f "$META"
+    fi
+  fi
 }
-trap cleanup_bundle EXIT INT TERM HUP
+trap cleanup_on_exit EXIT INT TERM HUP
 
 mkdir -p "$BUNDLE/database" "$BUNDLE/files" "$BUNDLE/metadata" "$BUNDLE/checksums"
 
-export PGHOST PGPORT PGUSER PGPASSWORD PGDATABASE
-eval "$(ENV_FILE="$ENV_FILE" node <<'NODE'
-const fs = require("fs");
-const envPath = process.env.ENV_FILE;
-const text = fs.readFileSync(envPath, "utf8");
-let raw = "";
-for (const line of text.split("\n")) {
-  const m = line.match(/^DATABASE_URL=(.*)$/);
-  if (!m) continue;
-  let v = m[1].trim();
-  if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
-    v = v.slice(1, -1);
-  }
-  raw = v;
-  break;
+DB_NAME="$(node "$SCRIPT_DIR/parse-database-env.mjs" --database-name "$ENV_FILE")" || {
+  echo "create-pull-bundle: could not parse DATABASE_URL from env file" >&2
+  exit 6
 }
-if (!raw) process.exit(2);
-const u = new URL(raw);
-const sp = new URLSearchParams(u.search);
-for (const k of ["schema", "connection_limit", "pool_timeout", "socket_timeout", "pgbouncer"]) {
-  sp.delete(k);
-}
-let pghost = u.hostname || "";
-if (pghost.startsWith("[") && pghost.endsWith("]")) pghost = pghost.slice(1, -1);
-function sh(n, val) { return `export ${n}=${JSON.stringify(val)}\n`; }
-let out = "";
-out += sh("PGHOST", pghost);
-out += sh("PGPORT", u.port || "5432");
-out += sh("PGUSER", decodeURIComponent(u.username || ""));
-out += sh("PGPASSWORD", decodeURIComponent(u.password || ""));
-out += sh("PGDATABASE", decodeURIComponent(u.pathname.replace(/^\//, "") || ""));
-const sslmode = sp.get("sslmode");
-if (sslmode) out += sh("PGSSLMODE", sslmode);
-process.stdout.write(out);
-NODE
-)"
 
-DB_NAME="${PGDATABASE:-unknown}"
-
-if ! PGDATABASE="$DB_NAME" node "$SCRIPT_DIR/assert-production-database.mjs"; then
+if ! "${RUN_PG[@]}" node "$SCRIPT_DIR/assert-production-database.mjs"; then
   echo "create-pull-bundle: refused database target (non-production name)" >&2
   exit 7
 fi
@@ -129,9 +112,9 @@ if [ "$ENV_FILE" != "$APP_ROOT/.env" ]; then
 fi
 
 echo "==> Database dump (custom format)"
-pg_dump -Fc --no-owner --no-acl -f "$BUNDLE/database/hostingbeyond.dump"
+"${RUN_PG[@]}" pg_dump -Fc --no-owner --no-acl -f "$BUNDLE/database/hostingbeyond.dump"
 
-if ! pg_restore -l "$BUNDLE/database/hostingbeyond.dump" >/dev/null 2>&1; then
+if ! "${RUN_PG[@]}" pg_restore -l "$BUNDLE/database/hostingbeyond.dump" >/dev/null 2>&1; then
   echo "create-pull-bundle: dump list failed" >&2
   exit 4
 fi
@@ -235,6 +218,7 @@ fi
 
 EXPORT_ROOT="${HOME}/backup-export"
 mkdir -p "$EXPORT_ROOT"
+umask 077
 OUTER_TAR="${EXPORT_ROOT}/${TS}.bundle.tar"
 OUTER_AGE="${OUTER_TAR}.age"
 META="${EXPORT_ROOT}/${TS}.bundle.meta.json"
@@ -244,23 +228,22 @@ if ! "$SCRIPT_DIR/encrypt-artifact.sh" "$OUTER_TAR" "$OUTER_AGE"; then
   echo "create-pull-bundle: outer bundle encryption failed" >&2
   exit 11
 fi
+OUTER_TAR=""
+if [ -f "${EXPORT_ROOT}/${TS}.bundle.tar" ]; then
+  echo "create-pull-bundle: plaintext outer tar still present after encryption" >&2
+  exit 11
+fi
 
 CIPHER_SHA="$(sha256sum "$OUTER_AGE" | awk '{print $1}')"
-node -e "
-const fs=require('fs');
-const j={
-  backupSetId: process.argv[1],
-  ciphertextPath: process.argv[2],
-  ciphertextSha256: process.argv[3],
-  encryption: 'age',
-  plaintextDatabaseOnServer: false,
-  createdAt: new Date().toISOString()
-};
-fs.writeFileSync(process.argv[4], JSON.stringify(j,null,2));
-" "$TS" "$OUTER_AGE" "$CIPHER_SHA" "$META"
-
-ln -sfn "$OUTER_AGE" "${EXPORT_ROOT}/LATEST.bundle.tar.age"
-ln -sfn "$META" "${EXPORT_ROOT}/LATEST.bundle.meta.json"
+if ! node "$SCRIPT_DIR/publish-export.mjs" \
+  --export-root "$EXPORT_ROOT" \
+  --backup-set-id "$TS" \
+  --ciphertext "$OUTER_AGE" \
+  --ciphertext-sha256 "$CIPHER_SHA"; then
+  echo "create-pull-bundle: export publication failed" >&2
+  exit 12
+fi
+OUTER_PUBLISHED=1
 
 rm -rf "$BUNDLE"
 

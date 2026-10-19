@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
 
-const SCRIPT = path.resolve(
-  new URL(".", import.meta.url).pathname,
+const SCRIPT = path.join(
+  fileURLToPath(new URL(".", import.meta.url)),
   "assert-production-database.mjs",
 );
 

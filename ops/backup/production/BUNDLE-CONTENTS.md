@@ -17,7 +17,7 @@
 | Aggregates       | `metadata/source-aggregates.json`                              | Sanitized table counts when query succeeds                                                     |
 | Integrity        | `checksums/SHA256SUMS`, `manifest.json`                        | Per-file SHA-256; manifest rejects plaintext dumps                                             |
 
-**Outer transfer artifact:** `~/backup-export/<timestamp>.bundle.tar.age` + `.bundle.meta.json` (ciphertext SHA-256). Symlink `LATEST.bundle.tar.age` updates **only** after full success.
+**Outer transfer artifact:** `~/backup-export/<timestamp>.bundle.tar.age` + `.bundle.meta.json` (ciphertext SHA-256). Plaintext `*.bundle.tar` is removed by `encrypt-artifact.sh` on success; failed runs delete unpublished tar/ciphertext/meta for that timestamp only. `LATEST.*` symlinks update **only** after outer encryption and `publish-export.mjs` succeed.
 
 ## Excluded (by design)
 
@@ -60,11 +60,12 @@ On Windows after pull (optional phases):
 
 ## Failure behavior
 
-- `set -euo pipefail`; non-zero exit on dump/encrypt/manifest/checksum failure.
-- Failed run: `trap` removes incomplete inner bundle directory; **does not** update `LATEST` symlinks.
+- `set -euo pipefail`; non-zero exit on dump/encrypt/manifest/checksum/publication failure.
+- Failed run: `trap` removes incomplete inner bundle directory and unpublished outer plaintext/ciphertext/meta for the current timestamp; **does not** change `LATEST` symlinks or delete prior successful exports.
+- Two-link `LATEST` update is best-effort atomic per link (staging + rename); a crash between age and meta symlink steps is possible — see `README.md`.
 - Windows pull: staging under `backups\_staging\` removed on failure; prior `backups\<timestamp>\` untouched.
 - Retention: never deletes without finalized `verify-*.json`; never deletes newest verified set (`retention.mjs`).
 
 ## Database name gate
 
-Export runs only when `PGDATABASE` is exactly **`hostingbeyond_db`** (`assert-production-database.mjs`).
+Export runs only when `PGDATABASE` is exactly **`hostingbeyond_db`** (`assert-production-database.mjs`). Host/socket target is not hard-coded in the repo; owner preflight confirms the live connection target separately.
