@@ -41,6 +41,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # Unit tests use git merge-base (Windows backup preflight); default depth-1 PR checkouts omit ancestors.
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
