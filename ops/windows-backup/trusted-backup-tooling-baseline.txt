@@ -1,0 +1,3 @@
+# Minimum git commit that introduced production backup bundle + Windows pull tooling.
+# Preflight passes when HEAD is this commit or any descendant on main.
+34e6c3fd560014b2a63acbe8e8563d6c9c15bfdf

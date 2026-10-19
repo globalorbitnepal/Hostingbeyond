@@ -33,4 +33,19 @@ describe("Test-WindowsBackupPreflight.ps1 encoding", () => {
       /detail = if \(\$configPresent\) \{ "present \(contents not logged\)" \} else \{ "missing; copy from config\.example\.json" \}/,
     );
   });
+
+  it("baseline sidecar is ASCII-only", () => {
+    const baselinePath = path.join(
+      path.dirname(PS1),
+      "trusted-backup-tooling-baseline.txt",
+    );
+    const text = fs.readFileSync(baselinePath, "utf8");
+    for (let i = 0; i < text.length; i++) {
+      const code = text.charCodeAt(i);
+      assert.ok(
+        code === 9 || code === 10 || code === 13 || (code >= 32 && code <= 126),
+        `non-ASCII in baseline at ${i}`,
+      );
+    }
+  });
 });
