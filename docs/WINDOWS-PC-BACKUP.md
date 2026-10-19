@@ -43,17 +43,30 @@ Recommended minimum free space: **50 GB** (`diskSpaceMinFreeGb` in config); incr
 
 ---
 
-## 2. Blockers before first pull (current repo state)
+## 2. Windows PC preflight (run locally)
 
-| Blocker                                                 | Status                                                                               |
-| ------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| `create-pull-bundle.sh` on production VPS at `78a30a7`  | **Missing** — deploy backup tooling first (`docs/BACKUP-TOOLING-DEPLOY-APPROVAL.md`) |
-| Owner approval to run production `pg_dump` export       | **Required**                                                                         |
-| Windows `config.json` + SSH keys + age recipient on VPS | **Owner setup** (`ops/windows-backup/FIRST-MANUAL-BACKUP.md`)                        |
+From a clone at commit `34e6c3f` or newer:
+
+```powershell
+cd <clone>\Hostingbeyond\ops\windows-backup
+powershell -NoProfile -ExecutionPolicy Bypass `
+  -File .\Test-WindowsBackupPreflight.ps1 `
+  -BackupRoot "C:\Users\User\HostingBeyond-Backups"
+```
+
+Sanitized JSON is written under `%USERPROFILE%\HostingBeyond-Backups\reports\preflight-windows-*.json` (safe to share; no key contents).
+
+## 3. Blockers before first pull
+
+| Blocker                                                 | Status                                                            |
+| ------------------------------------------------------- | ----------------------------------------------------------------- |
+| `create-pull-bundle.sh` on production VPS               | **Deployed** at `34e6c3f`                                         |
+| Owner approval to run production `pg_dump` export       | **Required**                                                      |
+| Windows `config.json` + SSH keys + age recipient on VPS | **Owner setup** (`FIRST-MANUAL-BACKUP.md`, `SSH-KEYS-INSTALL.md`) |
 
 ---
 
-## 3. Secure transfer model (encrypted only)
+## 4. Secure transfer model (encrypted only)
 
 1. **VPS (as `hostingbeyond`):** `create-pull-bundle.sh` → `pg_dump`, pack uploads (includes `invoices-private` under `ORBIT_UPLOAD_DIR` when configured), encrypt with **age** using **public recipient** on server.
 2. **Transfer:** Windows runs `Invoke-HostingBeyondBackup.ps1` — SSH **fetch** key streams **only** `~/backup-export/LATEST.bundle.tar.age` (ciphertext). No plaintext database over the wire.
@@ -64,7 +77,7 @@ Optional first run: `-RunDecryptTest` to decrypt and run `verify-backup-set.mjs`
 
 ---
 
-## 4. Configure Windows pull
+## 5. Configure Windows pull
 
 1. Copy from repo: `ops/windows-backup/Invoke-HostingBeyondBackup.ps1`, `HostingBeyondBackup-Lock.ps1`, `ops/backup/dr/*.mjs` (or clone repo on PC).
 2. Copy `ops/windows-backup/config.example.json` → `%USERPROFILE%\HostingBeyond-Backups\config.json`.
@@ -80,7 +93,7 @@ Use doubled backslashes in JSON. Replace `YOUR_USER` with the output of `$env:US
 
 ---
 
-## 5. After transfer — verify before calling SUCCESS
+## 6. After transfer — verify before calling SUCCESS
 
 On Windows (after manual pull or `-RunDecryptTest`):
 
@@ -104,13 +117,13 @@ For **invoice/upload coverage** after decrypt test:
 
 ---
 
-## 6. Isolated restore (not on production)
+## 7. Isolated restore (not on production)
 
 Use **`hostingbeyond_restore_test`** only: `ops/backup/dr/RESTORE-DRILL-LAB.md`. Never restore into `hostingbeyond_db` from this procedure.
 
 ---
 
-## 7. One-shot manual pull (after approvals)
+## 8. One-shot manual pull (after approvals)
 
 ```powershell
 cd (Join-Path $env:USERPROFILE "HostingBeyond-Backups")
