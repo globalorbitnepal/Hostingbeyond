@@ -36,12 +36,26 @@ chmod +x ops/backup/*.sh
 
 ## Production backups
 
-Production is **out of scope** for these scripts. Use:
+The scripts in **this directory** (`hostingbeyond-backup.sh`, etc.) **refuse** `/srv/apps/hostingbeyond/.env` — they remain **staging/local only**.
 
-- Managed database snapshots (if applicable), or
-- A dedicated ops runbook run **on the server** as `hostingbeyond` with encrypted off-site storage — scheduled separately after owner approval.
+For **production → Windows desktop** disaster recovery, use:
 
-**Do not** copy production dumps into staging.
+| Piece                       | Location                                                                              |
+| --------------------------- | ------------------------------------------------------------------------------------- |
+| VPS bundle export           | `ops/backup/production/create-pull-bundle.sh`                                         |
+| Windows pull + schedule     | `ops/windows-backup/`                                                                 |
+| Audit matrix                | `docs/BACKUP-DR-AUDIT.md`                                                             |
+| DR runbook index            | `docs/DISASTER-RECOVERY-RUNBOOK.md`                                                   |
+| Owner PC/HDD copy           | `docs/OWNER-OFFLINE-BACKUP-COPY.md`                                                   |
+| Production preflight        | `docs/PRODUCTION-PREFLIGHT-RUNBOOK.md`, `docs/DAY2-PRODUCTION-PREFLIGHT-CHECKLIST.md` |
+| Isolated restore drill      | `ops/backup/dr/RESTORE-DRILL-LAB.md`                                                  |
+| Owner Day 2 steps (ordered) | `docs/OWNER-DAY2-EXECUTION-CHECKLIST.md`                                              |
+| Deploy backup tooling       | `docs/BACKUP-TOOLING-DEPLOY-APPROVAL.md`                                              |
+| Recovery runbook template   | `ops/windows-backup/templates/README-RECOVERY.md`                                     |
+
+Also maintain provider-level PostgreSQL snapshots where available.
+
+**Do not** copy production dumps into staging without owner policy.
 
 ## Daily automation (after approval)
 
