@@ -1,6 +1,6 @@
 #Requires -Version 5.1
 <#
-  HostingBeyond — Windows PC backup setup preflight (read-only).
+  HostingBeyond - Windows PC backup setup preflight (read-only).
   Does not connect to production, create keys, or run backups.
   Safe to share: writes sanitized JSON report (no key/config secret values).
 #>
@@ -173,7 +173,7 @@ $report.checks += @{
   check = "config_json"
   path = $configPath
   ok = $configPresent
-  detail = if ($configPresent) { "present (contents not logged)" } else { "missing — copy from config.example.json" }
+  detail = if ($configPresent) { "present (contents not logged)" } else { "missing; copy from config.example.json" }
 }
 
 $minFreeGb = 50
@@ -226,7 +226,7 @@ $report.checks += Test-FileNonEmpty $keyPaths.fetchPub "ssh_fetch_public_key"
 $report.checks += Test-FileNonEmpty $keyPaths.knownHosts "ssh_known_hosts"
 $report.checks += Test-AgeIdentityPresent $keyPaths.ageIdentity
 
-# Public age recipient belongs on VPS only — optional local copy for owner reference
+# Public age recipient belongs on VPS only - optional local copy for owner reference
 $localRecipient = Join-Path $BackupRoot "keys\age-recipient-public.txt"
 if (Test-Path -LiteralPath $localRecipient) {
   $line = Get-Content -LiteralPath $localRecipient -TotalCount 1 -ErrorAction SilentlyContinue
@@ -242,7 +242,7 @@ else {
   $report.checks += @{
     check = "local_age_recipient_copy"
     ok = $true
-    detail = "optional — public recipient must be on VPS at ~/.config/hostingbeyond-backup/age-recipient.txt"
+    detail = "optional; public recipient must be on VPS at ~/.config/hostingbeyond-backup/age-recipient.txt"
   }
 }
 
@@ -284,7 +284,7 @@ Write-Host "HostingBeyond Windows backup preflight"
 Write-Host "Report: $ReportPath"
 Write-Host ("PASS={0} FAIL={1}" -f $report.summary.pass, $report.summary.fail)
 Write-Host ("readyForFirstPull={0} (VPS setup + owner approval still required)" -f $report.summary.readyForFirstPull)
-Write-Host "Share the JSON report file only — it contains no private key or config secret values."
+Write-Host "Share the JSON report file only - it contains no private key or config secret values."
 
 if ($report.summary.fail -gt 0) { exit 2 }
 exit 0
