@@ -1,6 +1,7 @@
 # HostingBeyond — production backup policy
 
 **Last reviewed:** 2026-10-21 (dev host inspection; no production backup executed).  
+**Deploy runbook:** `docs/DEPLOYMENT-READINESS-RUNBOOK.md` · **Owner checklists:** `docs/OWNER-AUTHORIZATION-CHECKLISTS.md`  
 **Owner approval:** required before first `create-pull-bundle.sh` on VPS.
 
 ## Protection layers (do not conflate)
