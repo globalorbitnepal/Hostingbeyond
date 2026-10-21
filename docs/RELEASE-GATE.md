@@ -37,7 +37,8 @@ Fork PRs cannot dispatch deploy workflows on the upstream repo.
 
 | Step                                                         | Default on deploy                                                                                  |
 | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| `git reset --hard origin/main`, `npm ci`, build, PM2 restart | **Runs** when deploy job runs                                                                      |
+| Automatic deploy after CI on `main`                          | **Blocked** unless repository secret `HOSTINGBEYOND_PRODUCTION_DEPLOY_APPROVED` is exactly `true` |
+| `git reset --hard origin/main`, `npm ci`, build, PM2 restart | **Runs** when deploy job runs and deploy authorization step passed (automatic or manual path)                                                                      |
 | `npx prisma migrate deploy` on production                    | **Skipped** unless repository secret `HOSTINGBEYOND_PRODUCTION_MIGRATE_APPROVED` is exactly `true` |
 
 **Workflow inputs cannot enable migrations.** Only the owner-controlled repository secret can. Remove or unset the secret immediately after a successful migrate window if desired.

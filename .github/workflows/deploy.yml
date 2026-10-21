@@ -41,6 +41,19 @@ jobs:
             exit 1
           fi
 
+      - name: Production code deploy authorization (fail closed)
+        if: github.event_name == 'workflow_run'
+        env:
+          DEPLOY_APPROVED: ${{ secrets.HOSTINGBEYOND_PRODUCTION_DEPLOY_APPROVED }}
+        run: |
+          set -euo pipefail
+          if [ "${DEPLOY_APPROVED:-}" != "true" ]; then
+            echo "DEPLOY_BLOCKED: automatic production deploy is disabled."
+            echo "Set repository secret HOSTINGBEYOND_PRODUCTION_DEPLOY_APPROVED=true only when owner approves a release."
+            exit 1
+          fi
+          echo "Production deploy authorized via HOSTINGBEYOND_PRODUCTION_DEPLOY_APPROVED."
+
       - name: Manual deploy acknowledgment (bypasses CI-success path)
         if: github.event_name == 'workflow_dispatch'
         run: |

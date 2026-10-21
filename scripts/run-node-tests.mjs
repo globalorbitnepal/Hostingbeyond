@@ -40,6 +40,7 @@ const UNIT_GLOBS = [
   "app/api/**/*.test.ts",
   "ops/backup/**/*.test.mjs",
   "ops/backup/dr/**/*.test.mjs",
+  "ops/ci/*.test.mjs",
   "scripts/**/*.test.mjs",
 ];
 
