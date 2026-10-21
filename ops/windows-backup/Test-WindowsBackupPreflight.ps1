@@ -51,6 +51,20 @@ function Test-FileNonEmpty([string]$Path, [string]$Label) {
   }
 }
 
+function Get-BackupToolingBaselineCommit([string]$ScriptDir) {
+  $baselinePath = Join-Path $ScriptDir "trusted-backup-tooling-baseline.txt"
+  if (-not (Test-Path -LiteralPath $baselinePath)) {
+    return $null
+  }
+  foreach ($line in Get-Content -LiteralPath $baselinePath) {
+    $t = $line.Trim()
+    if ($t -match '^[0-9a-f]{40}$') {
+      return $t
+    }
+  }
+  return $null
+}
+
 function Test-AgeIdentityPresent([string]$Path) {
   if (-not (Test-Path -LiteralPath $Path)) {
     return @{
@@ -135,18 +149,33 @@ $report.checks += Test-CommandAvailable "npm"
 $report.checks += Test-CommandAvailable "ssh" @("-V")
 $report.checks += Test-CommandAvailable "age" @("--version")
 
+$toolingBaseline = Get-BackupToolingBaselineCommit $scriptDir
+$bundleScriptInRepo = Test-Path -LiteralPath (Join-Path $RepoRoot "ops\backup\production\create-pull-bundle.sh")
 try {
   Push-Location $RepoRoot
   $sha = (git rev-parse HEAD 2>$null)
   $report.gitCommit = $sha
+  $ancestorOk = $false
+  if ($sha -and $toolingBaseline) {
+    git merge-base --is-ancestor $toolingBaseline HEAD 2>$null
+    if ($LASTEXITCODE -eq 0) {
+      $ancestorOk = $true
+    }
+  }
+  $commitOk = ($ancestorOk -and $bundleScriptInRepo -and [bool]$sha)
+  $detailParts = @()
+  if ($sha) { $detailParts += "HEAD=$sha" } else { $detailParts += "HEAD=missing" }
+  if ($toolingBaseline) { $detailParts += "baseline=$toolingBaseline" } else { $detailParts += "baseline=missing" }
+  $detailParts += "ancestor_ok=$ancestorOk"
+  $detailParts += "bundle_script_in_repo=$bundleScriptInRepo"
   $report.checks += @{
-    check = "git_repo_commit"
-    ok = ($sha -eq "34e6c3fd560014b2a63acbe8e8563d6c9c15bfdf")
-    detail = if ($sha) { "HEAD=$sha" } else { "not a git repo or git missing" }
+    check = "git_backup_tooling_commit"
+    ok = $commitOk
+    detail = ($detailParts -join " ")
   }
 }
 catch {
-  $report.checks += @{ check = "git_repo_commit"; ok = $false; detail = "could not read HEAD" }
+  $report.checks += @{ check = "git_backup_tooling_commit"; ok = $false; detail = "could not read HEAD" }
 }
 finally {
   Pop-Location -ErrorAction SilentlyContinue
@@ -257,6 +286,7 @@ $setupChecks = @($report.checks | Where-Object {
 $report.summary.readyForKeySetup = (@($setupChecks | Where-Object { -not $_.ok }).Count -eq 0)
 
 $pullBlockers = @(
+  "git_backup_tooling_commit",
   "config_json", "config_ssh_host_set", "config_encryption_enabled",
   "ssh_create_private_key", "ssh_fetch_private_key", "ssh_known_hosts",
   "age_identity_file", "disk_meets_config_min",

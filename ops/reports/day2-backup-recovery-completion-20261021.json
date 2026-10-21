@@ -1,0 +1,70 @@
+{
+  "reportId": "day2-backup-recovery-completion-20261021",
+  "generatedAtUtc": "2026-10-21T13:15:00Z",
+  "branch": "ops/day2-backup-recovery-closure",
+  "baseCommitBeforeWork": "51ab3b2ddd89cd662c595aafc51c8f30737bf310",
+  "repository": "globalorbitnepal/Hostingbeyond",
+  "statusLegend": ["PASS", "FAIL", "BLOCKED", "NOT_RUN", "SYNTHETIC_TEST_ONLY"],
+  "deploymentGate": {
+    "mainHead": "450da7fbd6b97d629300744966334a60b033b303",
+    "gate": "HOSTINGBEYOND_PRODUCTION_DEPLOY_APPROVED",
+    "githubSecretPresent": false,
+    "result": "PASS"
+  },
+  "checks": {
+    "exportApprovalGateImplemented": "PASS",
+    "exportPreflightImplemented": "PASS",
+    "productionBackupBundleExists": "BLOCKED",
+    "productionBackupVerified": "BLOCKED",
+    "windowsProductionPullVerified": "BLOCKED",
+    "productionRestoreDrill": "BLOCKED",
+    "syntheticRestorePipelineTests": "SYNTHETIC_TEST_ONLY",
+    "windowsDevSnapshotManual": "PASS",
+    "windowsDevSnapshotScheduledRun": "NOT_RUN",
+    "windowsProductionBundlePull": "BLOCKED",
+    "productionSchedulerBackupJob": "NOT_RUN",
+    "alerting": "ALERTING_NOT_CONFIGURED"
+  },
+  "productionEvidence": {
+    "backupExportDir": "~/backup-export",
+    "backupExportDirExists": false,
+    "uploadsPath": "/data/hostingbeyond/uploads",
+    "uploadsSizeObserved": "18M",
+    "rootFilesystemFree": "394G of 467G",
+    "deployedCreatePullBundleMtime": "2026-10-19T22:57:15+05:45",
+    "note": "Production checkout has older create-pull-bundle.sh; PR #1 / day2 branch tooling not deployed until approved deploy."
+  },
+  "windowsEvidence": {
+    "manualSnapshot": "C:\\Users\\User\\HostingBeyond-Backups\\project-snapshots\\2026-10-21_171607",
+    "manualSnapshotMarker": "SNAPSHOT_OK.json",
+    "historicalClaims": "52858 files, 2270286651 bytes — re-verify on PC",
+    "scheduledTask": "HostingBeyond-DevProjectSnapshot",
+    "scheduledTaskVerifiedThisSession": "NOT_RUN",
+    "reason": "Computer Use keyboard blocked; owner should run Get-ScheduledTask and verify latest snapshot folder."
+  },
+  "restoreEvidence": {
+    "production": "BLOCKED — no verified production ciphertext bundle",
+    "synthetic": "PASS — ops/backup/dr/*.test.mjs pipeline with fixtures (SYNTHETIC_TEST_ONLY)"
+  },
+  "tests": {
+    "lint": "PASS (0 errors, 43 warnings)",
+    "typecheck": "PASS",
+    "npmTestUnit": "PASS",
+    "integration": "NOT_RUN — DATABASE_URL unset on dev host",
+    "npmRunBuild": "PASS",
+    "newTests": [
+      "ops/backup/production/export-approval.test.mjs",
+      "ops/backup/production/export-preflight.test.mjs"
+    ]
+  },
+  "ownerActionsRequired": [
+    "Merge PR #1 or ops/day2-backup-recovery-closure after review (not done in this task).",
+    "Deploy backup tooling to production via normal pipeline with deploy approval when ready.",
+    "Install age public recipient at ~/.config/hostingbeyond-backup/age-recipient.txt on VPS.",
+    "Set HOSTINGBEYOND_PRODUCTION_BACKUP_EXPORT_APPROVED=true in production .env only during approved backup window.",
+    "Run create-pull-bundle.sh as hostingbeyond; pull ciphertext to Windows; verify manifest checksums against VPS meta.",
+    "Run isolated restore drill per ops/backup/dr/RESTORE-DRILL-LAB.md with age identity offline.",
+    "Configure backup failure notifications (webhook/email) — no destination in repo."
+  ],
+  "productionImpact": "None — no deploy, DB, DNS, secrets, or backup export executed."
+}

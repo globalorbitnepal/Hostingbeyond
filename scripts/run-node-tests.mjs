@@ -41,6 +41,7 @@ const UNIT_GLOBS = [
   "ops/backup/**/*.test.mjs",
   "ops/backup/dr/**/*.test.mjs",
   "ops/ci/*.test.mjs",
+  "ops/windows-backup/*.test.mjs",
   "scripts/**/*.test.mjs",
 ];
 
