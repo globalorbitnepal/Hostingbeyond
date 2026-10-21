@@ -1,0 +1,46 @@
+{
+  "reportId": "day2-finalization-20261021",
+  "generatedAtUtc": "2026-10-21T14:30:00Z",
+  "mainSha": "129c86736657ae5963d9cd3a8cb537f6aa95b433",
+  "day2Status": "BLOCKED_ON_DEPLOYMENT_AUTHORIZATION",
+  "deploymentGate": {
+    "githubSecretHOSTINGBEYOND_PRODUCTION_DEPLOY_APPROVED": "absent",
+    "ciOnMainSha": "SUCCESS",
+    "deployWorkflowOnMainSha": "FAILURE_at_authorization",
+    "deployRunId": 39607064746,
+    "sshDeploySteps": "skipped"
+  },
+  "vpsHistorical": {
+    "appShaAtAudit": "14bb7e510ef7a6639d3196322844b97066680614",
+    "exportPreflightInstalled": false,
+    "hostingbeyondBackupConfigDir": "exists_mode_700",
+    "ageRecipientFileVerified": "BLOCKED_unreadable_by_sysadmin"
+  },
+  "syntheticTests": {
+    "label": "SYNTHETIC_TEST_ONLY",
+    "backupDrUnitTests": "PASS",
+    "note": "Does not prove production recoverability"
+  },
+  "windows": {
+    "scheduledTaskVerification": "NOT_RUN",
+    "reason": "Computer Use session on owner PC; task not queried this session"
+  },
+  "alerting": "ALERTING_NOT_CONFIGURED",
+  "productionImpact": {
+    "deployed": false,
+    "restarted": false,
+    "export": false,
+    "secretsChanged": false,
+    "retentionChanged": false
+  },
+  "engineeringArtifacts": [
+    "docs/DEPLOYMENT-READINESS-RUNBOOK.md",
+    "docs/BACKUP-SCHEDULER-ALERTING.md",
+    "docs/OWNER-AUTHORIZATION-CHECKLISTS.md",
+    "ops/backup/production/*.static.test.mjs"
+  ],
+  "ownerApprovalsRequired": [
+    "Authorization A: deployment window + HOSTINGBEYOND_PRODUCTION_DEPLOY_APPROVED",
+    "Authorization B: backup window + HOSTINGBEYOND_PRODUCTION_BACKUP_EXPORT_APPROVED + restore/alerting"
+  ]
+}
