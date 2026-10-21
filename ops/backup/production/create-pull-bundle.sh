@@ -56,6 +56,15 @@ if [ ! -f "$ENV_FILE" ]; then
   exit 1
 fi
 
+PREFLIGHT_OUTPUT_PARENT="${OUTPUT_PARENT:-${HOME}/backup-export}"
+if ! "$SCRIPT_DIR/export-preflight.sh" \
+  --env-file "$ENV_FILE" \
+  --app-root "$APP_ROOT" \
+  --output-parent "$PREFLIGHT_OUTPUT_PARENT"; then
+  echo "create-pull-bundle: preflight failed (export blocked or environment not ready)" >&2
+  exit 11
+fi
+
 LOCK_DIR="${HOME}/.cache/hostingbeyond-backup"
 mkdir -p "$LOCK_DIR"
 exec 9>"$LOCK_DIR/create-pull-bundle.lock"

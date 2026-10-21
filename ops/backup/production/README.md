@@ -6,10 +6,27 @@
 
 **Bundle inventory:** `BUNDLE-CONTENTS.md` (included/excluded paths, encryption, verification, failure behavior).
 
+## Export approval gate (fail closed)
+
+Before any `pg_dump` or file archive, `create-pull-bundle.sh` runs `export-preflight.sh`, which requires:
+
+1. `HOSTINGBEYOND_PRODUCTION_BACKUP_EXPORT_APPROVED=true` in `/srv/apps/hostingbeyond/.env` (owner sets this only for an approved backup window; **never** commit to Git).
+2. Required tools (`pg_dump`, `age`, …), age **public** recipient file, safe destination under `~/backup-export`, minimum free disk, and a successful `psql` connectivity check.
+
+Missing or false approval exits **11** with `EXPORT_BLOCKED` — no database dump is started.
+
+Dry-run preflight only (no dump):
+
+```bash
+sudo -u hostingbeyond -H /srv/apps/hostingbeyond/ops/backup/production/export-preflight.sh \
+  --env-file /srv/apps/hostingbeyond/.env
+```
+
 ## What it does
 
 `create-pull-bundle.sh` (as `hostingbeyond`):
 
+- Runs `export-preflight.sh` first (approval + environment checks)
 - `pg_dump -Fc` via `run-with-pg-env.mjs` (parses `/srv/apps/hostingbeyond/.env` in Node; **no shell `eval`**; never logs secrets)
 - Asserts database name is exactly **`hostingbeyond_db`** (`assert-production-database.mjs`)
 - Verifies dump with `pg_restore -l`
