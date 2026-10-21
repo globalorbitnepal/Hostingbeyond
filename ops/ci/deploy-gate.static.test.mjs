@@ -4,7 +4,7 @@
  *   node --test ops/ci/proposed/deployment-gate-pr/staged/ops/ci/deploy-gate.static.test.mjs
  */
 import assert from "node:assert/strict";
-import { execFileSync, spawnSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -84,7 +84,10 @@ test("migrate gate logic unchanged (independent secret)", () => {
 test("workflow: auto gate runs only on workflow_run and precedes SSH preflight", () => {
   const gateBlock = stepBlock(workflowYaml, "Production code deploy authorization (fail closed)");
   assert.match(gateBlock, /if: github\.event_name == 'workflow_run'/);
+  assert.doesNotMatch(gateBlock, /workflow_dispatch/);
   assert.match(gateBlock, /HOSTINGBEYOND_PRODUCTION_DEPLOY_APPROVED/);
+  assert.match(gateBlock, /DEPLOY_BLOCKED: automatic production deploy is disabled/);
+  assert.match(gateBlock, /!= "true"/);
   assert.match(gateBlock, /exit 1/);
 
   const gateIdx = stepIndex(workflowYaml, "Production code deploy authorization (fail closed)");
@@ -114,12 +117,9 @@ test("workflow: repair workflows untouched (no deploy approval secret)", () => {
   assert.doesNotMatch(repair, /HOSTINGBEYOND_PRODUCTION_DEPLOY_APPROVED/);
 });
 
-test("origin/main baseline lacked deploy approval (regression guard)", () => {
-  const baseline = execFileSync(
-    "git",
-    ["-C", ROOT, "show", "origin/main:.github/workflows/deploy.yml"],
-    { encoding: "utf8" }
+test("workflow: deploy.yml defines exactly one production deploy authorization step", () => {
+  const matches = workflowYaml.match(
+    /Production code deploy authorization \(fail closed\)/g
   );
-  assert.doesNotMatch(baseline, /HOSTINGBEYOND_PRODUCTION_DEPLOY_APPROVED/);
-  assert.match(workflowYaml, /HOSTINGBEYOND_PRODUCTION_DEPLOY_APPROVED/);
+  assert.equal(matches?.length, 1, "single deploy authorization step");
 });
