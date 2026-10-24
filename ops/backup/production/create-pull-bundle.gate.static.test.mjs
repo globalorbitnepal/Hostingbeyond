@@ -26,4 +26,14 @@ describe("create-pull-bundle.sh export gate (static)", () => {
     const text = fs.readFileSync(SCRIPT, "utf8");
     assert.equal(text.includes("allow-process-env-approval"), false);
   });
+
+  it("documents and prints outer ciphertext path on success (not inner bundle dir)", () => {
+    const text = fs.readFileSync(SCRIPT, "utf8");
+    assert.match(text, /echo "\$OUTER_AGE"/);
+    assert.match(text, /\.bundle\.tar\.age/);
+    assert.doesNotMatch(
+      text,
+      /Stdout: absolute path to bundle directory \(for SCP\/rsync\)/,
+    );
+  });
 });

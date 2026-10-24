@@ -69,16 +69,32 @@ cd D:\GLOBAL-ORBIT-BACKUPS\HostingBeyond
 powershell -NoProfile -ExecutionPolicy Bypass -File .\Invoke-HostingBeyondBackup.ps1 -ConfigPath .\config.json
 ```
 
-Expected: `backups\YYYY-MM-DD_HH-mm-ss\` with `database\hostingbeyond.dump.age`, `manifest.json`, `checksums\`.
+Expected: `backups\YYYY-MM-DD_HH-mm-ss\` with **outer ciphertext only**:
+
+- `ciphertext.bundle.tar.age` — encrypted transfer artifact (matches VPS `*.bundle.tar.age`)
+- `ciphertext.meta.stderr` — server lines `HB_ARTIFACT_SHA256=…` and `HB_BACKUP_SET_ID=…`
+
+The pull script verifies ciphertext SHA-256 against server metadata before finalizing the set. Plaintext database dumps and inner `manifest.json` exist only briefly on the VPS during export, not on Windows unless you run a decrypt test.
 
 ## 8. Verify
 
+**Layer 1 (always):** compare Windows `Get-FileHash` on `ciphertext.bundle.tar.age` to `HB_ARTIFACT_SHA256` in `ciphertext.meta.stderr` (see `docs/WINDOWS-PC-BACKUP.md`).
+
+**Layer 2 (recommended first run):** re-run pull with `-RunDecryptTest` so `verify-encrypted-artifact.mjs` decrypts the outer bundle and `verify-backup-set.mjs` checks the inner tree:
+
 ```powershell
-node D:\path\to\repo\ops\backup\dr\verify-backup-set.mjs `
-  D:\GLOBAL-ORBIT-BACKUPS\HostingBeyond\backups\<set-id>
+powershell -NoProfile -ExecutionPolicy Bypass -File .\Invoke-HostingBeyondBackup.ps1 `
+  -ConfigPath .\config.json -RunDecryptTest
 ```
 
-Note: after encryption, plaintext dump is removed; verification runs **before** encryption during the pull script.
+Or verify an extracted inner set manually:
+
+```powershell
+node D:\path\to\repo\ops\backup\dr\verify-backup-set.mjs `
+  D:\path\to\extracted-inner-bundle\<timestamp>
+```
+
+See `ops/backup/dr/ARTIFACT-INTEGRITY.md` for which SHA-256 applies at each layer.
 
 ## 9. Isolated restore test (lab)
 

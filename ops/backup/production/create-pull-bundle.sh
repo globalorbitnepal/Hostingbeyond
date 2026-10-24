@@ -21,7 +21,10 @@ Creates a timestamped directory (then outer ciphertext for transfer):
   checksums/SHA256SUMS
   manifest.json
 
-Stdout: absolute path to bundle directory (for SCP/rsync).
+Stdout on success: absolute path to outer ciphertext
+  ~/backup-export/<timestamp>.bundle.tar.age
+(inner bundle directory is removed after outer encryption; use ssh-forced-fetch.sh or
+ Windows Invoke-HostingBeyondBackup.ps1 for off-site copy — not a plaintext directory path).
 Never prints secrets.
 
 Requires: pg_dump, pg_restore, psql, node, tar, sha256sum
