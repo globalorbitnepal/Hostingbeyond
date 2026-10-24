@@ -123,3 +123,12 @@ test("workflow: deploy.yml defines exactly one production deploy authorization s
   );
   assert.equal(matches?.length, 1, "single deploy authorization step");
 });
+
+test("docs: RELEASE-GATE does not claim deploy gate is still unmerged on main", () => {
+  const releaseGate = readFileSync(join(ROOT, "docs/RELEASE-GATE.md"), "utf8");
+  assert.doesNotMatch(
+    releaseGate,
+    /Until this gate is \*\*merged to `main` on GitHub\*\*/
+  );
+  assert.match(releaseGate, /fails closed.*HOSTINGBEYOND_PRODUCTION_DEPLOY_APPROVED/s);
+});
