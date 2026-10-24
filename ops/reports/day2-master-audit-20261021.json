@@ -1,0 +1,66 @@
+{
+  "reportId": "day2-master-audit-20261021",
+  "generatedAtUtc": "2026-10-21T16:00:00Z",
+  "finalStatus": "BLOCKED_WITH_REMAINING_ACTIONS",
+  "engineeringStatus": "DAY2_ENGINEERING_READY",
+  "git": {
+    "originMainSha": "129c86736657ae5963d9cd3a8cb537f6aa95b433",
+    "pr4": {
+      "number": 4,
+      "state": "OPEN",
+      "headSha": "862d56cd6bbcf9555997bebf6b0d0048ce2f015b",
+      "mergeRecommendation": "SAFE_TO_MERGE",
+      "ciRunId": 39618049901,
+      "ciResult": "SUCCESS"
+    }
+  },
+  "production": {
+    "touched": false,
+    "vpsAppSha": "14bb7e510ef7a6639d3196322844b97066680614",
+    "exportPreflightDeployed": false,
+    "deployAuthorization": "BLOCKED_ON_DEPLOYMENT_AUTHORIZATION",
+    "exportAuthorization": "BLOCKED_ON_BACKUP_EXPORT_AUTHORIZATION"
+  },
+  "tests": {
+    "lint": "PASS",
+    "typecheck": "PASS",
+    "opsUnitTests": { "count": 114, "pass": 114, "fail": 0 },
+    "npmTestUnit": "PASS",
+    "integration": "NOT_RUN",
+    "build": "PASS"
+  },
+  "operational": {
+    "productionBackup": "NOT_RUN",
+    "windowsPull": "BLOCKED_ON_WINDOWS_ACCESS",
+    "isolatedRestoreProduction": "BLOCKED_ON_ISOLATED_RESTORE",
+    "syntheticRestore": { "status": "PASS", "label": "SYNTHETIC_TEST_ONLY" },
+    "alerting": "BLOCKED_ON_ALERTING_CONFIGURATION",
+    "windowsScheduledTask": "NOT_RUN"
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "info",
+      "title": "LATEST symlinks updated sequentially",
+      "evidence": "ops/backup/production/README.md limitation; publish-export.mjs rollback on meta failure",
+      "fix": "Documented; optional future atomic pair",
+      "safeWithoutProd": true
+    },
+    {
+      "id": "F2",
+      "severity": "low",
+      "title": "tar extract without traversal hardening",
+      "evidence": "extract-outer-bundle.mjs uses tar -xf on trusted self-exported outer tar",
+      "fix": "Accept for own bundles; verify manifest in lab before extract",
+      "safeWithoutProd": true
+    },
+    {
+      "id": "F3",
+      "severity": "high",
+      "title": "VPS lacks post-PR3 backup gate scripts",
+      "evidence": "VPS SHA 14bb7e5; export-preflight.sh absent",
+      "fix": "Authorization A deploy via GitHub workflow",
+      "safeWithoutProd": false
+    }
+  ]
+}

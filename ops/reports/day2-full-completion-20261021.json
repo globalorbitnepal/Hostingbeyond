@@ -1,0 +1,47 @@
+{
+  "reportId": "day2-full-completion-20261021",
+  "generatedAtUtc": "2026-10-21T16:35:00Z",
+  "finalStatus": "BLOCKED_WITH_REMAINING_ACTIONS",
+  "engineeringStatus": "DAY2_ENGINEERING_READY",
+  "operationalStatus": "NOT_COMPLETE",
+  "git": {
+    "originMainSha": "129c86736657ae5963d9cd3a8cb537f6aa95b433",
+    "pr4": {
+      "number": 4,
+      "state": "OPEN",
+      "url": "https://github.com/globalorbitnepal/Hostingbeyond/pull/4",
+      "headSha": "9c79dbd42721863ac3f3e2717bf1805079dc2bc6",
+      "ciRunId": 39632616581,
+      "ciResult": "SUCCESS",
+      "mergeReady": "SAFE_TO_MERGE_HUMAN_APPROVAL_REQUIRED"
+    }
+  },
+  "production": {
+    "actionsPerformedThisAudit": [],
+    "vpsAppSha": "14bb7e510ef7a6639d3196322844b97066680614",
+    "exportPreflightDeployed": false,
+    "rollbackReferenceSha": "14bb7e510ef7a6639d3196322844b97066680614"
+  },
+  "completionStandard": {
+    "prMergedOrOnMain": "FAIL",
+    "ciGreenOnRelevantSha": "PASS",
+    "toolingDeployedViaWorkflow": "BLOCKED_ON_DEPLOYMENT_AUTHORIZATION",
+    "exportGateVerifiedOnVps": "BLOCKED_ON_DEPLOYMENT_AUTHORIZATION",
+    "encryptedProductionBackup": "BLOCKED_ON_BACKUP_EXPORT_AUTHORIZATION",
+    "trustedManifestVerification": "NOT_RUN",
+    "windowsTransferVerification": "BLOCKED_ON_WINDOWS_ACCESS",
+    "realIsolatedRestore": "BLOCKED_ON_ISOLATED_RESTORE",
+    "schedulerConfigured": "NOT_RUN",
+    "alertingVerified": "BLOCKED_ON_ALERTING_CONFIGURATION"
+  },
+  "tests": {
+    "lint": "PASS",
+    "typecheck": "PASS",
+    "opsUnitTests": { "total": 114, "pass": 114, "fail": 0 },
+    "npmTestUnit": "PASS",
+    "integration": "NOT_RUN",
+    "build": "PASS",
+    "syntheticDrPipeline": { "status": "PASS", "label": "SYNTHETIC_TEST_ONLY" }
+  },
+  "githubSecretsPresent": ["VPS_HOST", "VPS_PORT", "VPS_SSH_KEY", "VPS_USER"]
+}
