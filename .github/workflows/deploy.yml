@@ -17,7 +17,10 @@ jobs:
   quality:
     name: Typecheck
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -28,8 +31,16 @@ jobs:
           node-version: "22"
           cache: npm
 
+      - name: Restore Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: hb-next-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            hb-next-${{ runner.os }}-
+
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --no-audit --no-fund
 
       - name: Generate Prisma client
         run: npx prisma generate
@@ -37,12 +48,34 @@ jobs:
       - name: Typecheck
         run: npx tsc --noEmit
 
+      - name: Production build (CI)
+        env:
+          CI: "true"
+        run: npm run build
+
+      - name: Upload production build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hostingbeyond-next-build
+          path: .next
+          retention-days: 1
+          if-no-files-found: error
+
   deploy:
     name: Deploy to VPS
     needs: quality
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: read
     steps:
+      - name: Download production build from Typecheck job
+        uses: actions/download-artifact@v4
+        with:
+          name: hostingbeyond-next-build
+          path: ${{ runner.temp }}/next-artifact
+
       - name: Production migrate deploy gate (fail closed)
         env:
           MIGRATE_SECRET: ${{ secrets.HOSTINGBEYOND_PRODUCTION_MIGRATE_APPROVED }}
@@ -154,6 +187,15 @@ jobs:
             echo "DOMAIN_API_LIVE_KEY secret not set; VPS must already have live availability in .env or search stays unconfigured"
           fi
 
+          NEXT_ARTIFACT="${RUNNER_TEMP}/next-artifact/.next"
+          if [ ! -d "${NEXT_ARTIFACT}" ]; then
+            echo "BUILD_ARTIFACT_MISSING: expected ${NEXT_ARTIFACT}"
+            exit 1
+          fi
+          echo "==> Uploading CI-built .next to VPS (skip server-side next build)"
+          tar -C "${RUNNER_TEMP}/next-artifact" -czf "${RUNNER_TEMP}/hb-next.tgz" .next
+          "${SSH[@]}" "cat > /tmp/hb-next.tgz" < "${RUNNER_TEMP}/hb-next.tgz"
+
           REMOTE_SCRIPT="/tmp/hostingbeyond-gha-deploy-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.sh"
           echo "==> Uploading remote deploy script"
           "${SSH[@]}" "printf '%s\\n' '#!/bin/bash' 'set -euo pipefail' 'export RUN_PRISMA_MIGRATE_DEPLOY=${RUN_PRISMA_MIGRATE_DEPLOY:-0}' > '${REMOTE_SCRIPT}'"
@@ -203,7 +245,8 @@ jobs:
             -e public/uploads \
             -e data/uploads \
             -e data/hostingbeyond \
-            -e node_modules
+            -e node_modules \
+            -e .deploy-package-lock-sha
 
           if [ ! -f .env ]; then
             echo "ENV_MISSING: /srv/apps/hostingbeyond/.env is required on the server"
@@ -224,15 +267,15 @@ jobs:
             grep -q '^DOMAIN_AVAILABILITY_ENV=live' .env || echo 'DOMAIN_AVAILABILITY_ENV="live"' >> .env
           fi
 
-          export CI=true
-          export NODE_OPTIONS="${NODE_OPTIONS:-"--max-old-space-size=4096"}"
-
-          echo "==> Installing dependencies"
-          if [ -f package-lock.json ]; then
-            npm ci </dev/null
+          LOCK_SHA="$(sha256sum package-lock.json | awk '{print $1}')"
+          if [ -f .deploy-package-lock-sha ] && [ "$(cat .deploy-package-lock-sha)" = "${LOCK_SHA}" ]; then
+            echo "SKIP npm ci — package-lock.json unchanged"
           else
-            npm install </dev/null
+            echo "==> Installing dependencies (lockfile changed)"
+            npm ci --no-audit --no-fund </dev/null
+            echo "${LOCK_SHA}" > .deploy-package-lock-sha
           fi
+          npx prisma generate </dev/null
 
           if [ "${RUN_PRISMA_MIGRATE_DEPLOY}" = "1" ]; then
             echo "==> Applying database migrations (owner-approved)"
@@ -241,24 +284,11 @@ jobs:
             echo "==> SKIP prisma migrate deploy (fail-closed gate; code deploy continues)"
           fi
 
-          echo "==> Clearing stale Next.js build output"
+          echo "==> Installing CI-built Next.js output"
+          test -f /tmp/hb-next.tgz
           rm -rf .next
-
-          echo "==> Building production bundle (retry on Google font fetch flakes)"
-          BUILD_OK=0
-          for attempt in 1 2 3 4 5; do
-            echo "Build attempt ${attempt}/5"
-            if npm run build </dev/null; then
-              BUILD_OK=1
-              break
-            fi
-            echo "Build failed; waiting 20s before retry..."
-            sleep 20
-          done
-          if [ "$BUILD_OK" != "1" ]; then
-            echo "BUILD_FAIL: npm run build failed after 5 attempts"
-            exit 1
-          fi
+          tar xzf /tmp/hb-next.tgz -C .
+          rm -f /tmp/hb-next.tgz
 
           echo "==> Allowing the runtime user to write the Next cache"
           mkdir -p .next/cache/images .next/cache/fetch-cache
@@ -324,7 +354,7 @@ jobs:
           set -euo pipefail
 
           echo "==> Verifying https://hosting.theglobalorbit.com"
-          HTTP_CODE="$(curl -fsS -o /tmp/hostingbeyond-verify.html -w "%{http_code}" --retry 4 --retry-delay 2 --retry-all-errors --max-time 30 https://hosting.theglobalorbit.com/)"
+          HTTP_CODE="$(curl -fsS -o /tmp/hostingbeyond-verify.html -w "%{http_code}" --retry 3 --retry-delay 1 --retry-all-errors --max-time 20 https://hosting.theglobalorbit.com/)"
 
           if [ "$HTTP_CODE" != "200" ]; then
             echo "Deployment verification failed: expected HTTP 200, got ${HTTP_CODE}"
