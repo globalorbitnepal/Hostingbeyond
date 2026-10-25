@@ -29,6 +29,9 @@ describe("search availability dedup", () => {
     });
     assert.ok(getCachedSearch(key));
 
+    const namesiloKey = searchCacheKey(["example.com"], "namesilo");
+    assert.equal(getCachedSearch(namesiloKey), null);
+
     let runs = 0;
     const payload = await withSearchDedup(
       key,

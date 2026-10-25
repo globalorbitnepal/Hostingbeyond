@@ -18,7 +18,12 @@ import {
   withSearchDedup,
 } from "@/lib/domains/availability-cache";
 import { logDomainProvider } from "@/lib/domains/domain-provider-log";
+import { getNameSiloAvailabilityProvider } from "@/lib/domains/providers/namesilo-availability";
 import { resolveAvailabilityProvider } from "@/lib/domains/providers/index";
+import {
+  getSearchAvailabilityBackend,
+  shouldUseNameSiloForCurrentSearch,
+} from "@/lib/domains/search-availability-backend";
 import {
   DomainProviderError,
   type ProviderAvailabilityRow,
@@ -455,10 +460,17 @@ async function checkAvailabilityInBatches(
   return results;
 }
 
+function resolveSearchAvailabilityProvider() {
+  if (shouldUseNameSiloForCurrentSearch()) {
+    return getNameSiloAvailabilityProvider();
+  }
+  return resolveAvailabilityProvider();
+}
+
 async function searchDomainsWithProviderUncached(
   fqdns: string[],
 ): Promise<{ results: DomainResult[]; source: "registrar" | "catalog" }> {
-  const provider = resolveAvailabilityProvider();
+  const provider = resolveSearchAvailabilityProvider();
   if (!provider) {
     throw new Error("lookup_unconfigured");
   }
@@ -546,7 +558,8 @@ export async function searchDomainsWithProvider(
   fqdns: string[],
   options?: { fresh?: boolean },
 ): Promise<{ results: DomainResult[]; source: "registrar" | "catalog" }> {
-  const key = searchCacheKey(fqdns);
+  const backend = getSearchAvailabilityBackend();
+  const key = searchCacheKey(fqdns, backend);
   return withSearchDedup(key, () => searchDomainsWithProviderUncached(fqdns), {
     fresh: options?.fresh,
   });

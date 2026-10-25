@@ -1,4 +1,5 @@
 import type { DomainResult } from "@/lib/domains/availability";
+import type { SearchAvailabilityBackend } from "@/lib/domains/search-availability-backend";
 
 const DEFAULT_TTL_MS = 20_000;
 
@@ -21,12 +22,16 @@ function ttlMs(): number {
   return Math.min(Math.max(raw, 5_000), 60_000);
 }
 
-export function searchCacheKey(fqdns: string[]): string {
-  return fqdns
+export function searchCacheKey(
+  fqdns: string[],
+  backend: SearchAvailabilityBackend = "dna",
+): string {
+  const domains = fqdns
     .map((d) => d.trim().toLowerCase())
     .filter(Boolean)
     .sort()
     .join("|");
+  return `${backend}:${domains}`;
 }
 
 export function getCachedSearch(

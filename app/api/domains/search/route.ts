@@ -32,6 +32,10 @@ import {
 } from "@/lib/domains/search-orchestrator";
 import { countryFromRequest } from "@/lib/domains/search-country";
 import { countProviderSupportedTlds } from "@/lib/domains/tld-catalogue-cache";
+import {
+  resolveSearchRouteAvailabilityBackend,
+  runWithSearchAvailabilityBackend,
+} from "@/lib/domains/search-availability-backend";
 
 export const runtime = "nodejs";
 
@@ -57,6 +61,11 @@ type SearchBody = {
   country?: string;
   /** Split chunk-1 alternatives into progressive halves (1 = first, 2 = second). */
   subWave?: 1 | 2;
+  /**
+   * Optional client hint (e.g. domain-page). Availability backend is chosen from
+   * DOMAIN_PUBLIC_SEARCH_AVAILABILITY_PROVIDER server env, not from this field.
+   */
+  searchContext?: string;
 };
 
 function toCustomerResult(row: DomainResult) {
@@ -83,266 +92,282 @@ export async function POST(request: Request) {
   }
 
   const body = (await request.json().catch(() => null)) as SearchBody | null;
-  const queryRaw = body?.query?.trim() ?? "";
-  const bulk = body?.bulk?.trim() ?? "";
-  const searchCountry = countryFromRequest(request, body);
+  const availabilityBackend = resolveSearchRouteAvailabilityBackend(
+    body?.searchContext,
+  );
 
-  if (!queryRaw && !bulk) {
-    return NextResponse.json(
-      { error: "Please enter a domain name." },
-      { status: 400 },
-    );
-  }
+  return runWithSearchAvailabilityBackend(availabilityBackend, async () => {
+    const queryRaw = body?.query?.trim() ?? "";
+    const bulk = body?.bulk?.trim() ?? "";
+    const searchCountry = countryFromRequest(request, body);
 
-  try {
-    if (bulk) {
-      if (!bulk.trim()) {
-        return NextResponse.json(
-          { error: "Add at least one domain, one per line." },
-          { status: 400 },
-        );
-      }
-      const { results, source, truncated, uniqueDomainCount } =
-        await runBulkDomainSearch(bulk, MAX_BULK);
-      if (!results.length) {
-        return NextResponse.json(
-          { error: "Add at least one domain, one per line." },
-          { status: 400 },
-        );
-      }
-      return NextResponse.json({
-        results,
-        source,
-        resultsCustomer: results.map(toCustomerResult),
-        uniqueDomainCount,
-        ...(truncated
-          ? {
-              limitNotice: `Only the first ${MAX_BULK} unique domains were checked. Remove extras or run another search for the rest.`,
-            }
-          : {}),
-      });
+    if (!queryRaw && !bulk) {
+      return NextResponse.json(
+        { error: "Please enter a domain name." },
+        { status: 400 },
+      );
     }
 
-    const scope: SearchScope =
-      body?.scope === "primary" ||
-      body?.scope === "alternatives" ||
-      body?.scope === "full" ||
-      body?.scope === "phased" ||
-      body?.scope === "single-flow" ||
-      body?.scope === "fast" ||
-      body?.scope === "deep"
-        ? body.scope
-        : "fast";
-
-    if (scope === "fast") {
-      const fast = await runFastCustomerSearch(queryRaw, searchCountry);
-      const primary = fast.primary;
-      const recommendations = fast.alternatives;
-      const headers = new Headers();
-      if (fast.timings.server_timing) {
-        headers.set("Server-Timing", fast.timings.server_timing);
+    try {
+      if (bulk) {
+        if (!bulk.trim()) {
+          return NextResponse.json(
+            { error: "Add at least one domain, one per line." },
+            { status: 400 },
+          );
+        }
+        const { results, source, truncated, uniqueDomainCount } =
+          await runBulkDomainSearch(bulk, MAX_BULK);
+        if (!results.length) {
+          return NextResponse.json(
+            { error: "Add at least one domain, one per line." },
+            { status: 400 },
+          );
+        }
+        return NextResponse.json({
+          results,
+          source,
+          resultsCustomer: results.map(toCustomerResult),
+          uniqueDomainCount,
+          ...(truncated
+            ? {
+                limitNotice: `Only the first ${MAX_BULK} unique domains were checked. Remove extras or run another search for the rest.`,
+              }
+            : {}),
+        });
       }
-      return NextResponse.json(
-        {
-          anchorDomain: fast.anchorDomain,
-          query: fast.query,
-          scope: "fast",
-          source: fast.source,
+
+      const scope: SearchScope =
+        body?.scope === "primary" ||
+        body?.scope === "alternatives" ||
+        body?.scope === "full" ||
+        body?.scope === "phased" ||
+        body?.scope === "single-flow" ||
+        body?.scope === "fast" ||
+        body?.scope === "deep"
+          ? body.scope
+          : "fast";
+
+      if (scope === "fast") {
+        const fast = await runFastCustomerSearch(queryRaw, searchCountry);
+        const primary = fast.primary;
+        const recommendations = fast.alternatives;
+        const headers = new Headers();
+        if (fast.timings.server_timing) {
+          headers.set("Server-Timing", fast.timings.server_timing);
+        }
+        return NextResponse.json(
+          {
+            anchorDomain: fast.anchorDomain,
+            query: fast.query,
+            scope: "fast",
+            source: fast.source,
+            primary,
+            recommendations,
+            results: primary ? [primary, ...recommendations] : recommendations,
+            alternativesComplete: fast.alternativesComplete,
+            deepDiscoveryAvailable: fast.deepDiscoveryAvailable,
+            timings: fast.timings,
+            searchableTldCount: await countProviderSupportedTlds(),
+            resultsCustomer: (primary
+              ? [primary, ...recommendations]
+              : recommendations
+            ).map(toCustomerResult),
+          },
+          { headers },
+        );
+      }
+
+      if (scope === "deep") {
+        const deep = await runDeepDiscoverySearch(queryRaw);
+        return NextResponse.json({
+          scope: "deep",
+          results: deep.alternatives,
+          recommendations: deep.alternatives,
+          extensionsChecked: deep.extensionsChecked,
+          alternativesComplete: true,
+          timings: deep.timings,
+          resultsCustomer: deep.alternatives.map(toCustomerResult),
+        });
+      }
+
+      if (scope === "single-flow") {
+        const flow = await runSingleFlowDomainSearch(queryRaw);
+        const primary = flow.primary;
+        const recommendations = flow.recommendations;
+        return NextResponse.json({
+          anchorDomain: flow.anchorDomain,
+          query: flow.query,
+          scope: "single-flow",
+          source: flow.source,
           primary,
-          recommendations,
           results: primary ? [primary, ...recommendations] : recommendations,
-          alternativesComplete: fast.alternativesComplete,
-          deepDiscoveryAvailable: fast.deepDiscoveryAvailable,
-          timings: fast.timings,
+          recommendations,
+          tier1PoolSize: flow.batch1Size,
+          tier2PoolSize: flow.batch2Size,
+          tier2Fetched: flow.tier2Fetched,
+          timings: flow.timings,
           searchableTldCount: await countProviderSupportedTlds(),
+          alternativesComplete: flow.alternativesComplete,
           resultsCustomer: (primary
             ? [primary, ...recommendations]
             : recommendations
           ).map(toCustomerResult),
-        },
-        { headers },
-      );
-    }
+        });
+      }
 
-    if (scope === "deep") {
-      const deep = await runDeepDiscoverySearch(queryRaw);
-      return NextResponse.json({
-        scope: "deep",
-        results: deep.alternatives,
-        recommendations: deep.alternatives,
-        extensionsChecked: deep.extensionsChecked,
-        alternativesComplete: true,
-        timings: deep.timings,
-        resultsCustomer: deep.alternatives.map(toCustomerResult),
-      });
-    }
+      if (scope === "phased") {
+        const tier = body?.tier === 2 ? 2 : 1;
+        const phased = await runPhasedDomainSearch(queryRaw, { tier });
+        const primary = phased.primary;
+        const recommendations = phased.recommendations;
 
-    if (scope === "single-flow") {
-      const flow = await runSingleFlowDomainSearch(queryRaw);
-      const primary = flow.primary;
-      const recommendations = flow.recommendations;
-      return NextResponse.json({
-        anchorDomain: flow.anchorDomain,
-        query: flow.query,
-        scope: "single-flow",
-        source: flow.source,
-        primary,
-        results: primary ? [primary, ...recommendations] : recommendations,
-        recommendations,
-        tier1PoolSize: flow.batch1Size,
-        tier2PoolSize: flow.batch2Size,
-        tier2Fetched: flow.tier2Fetched,
-        timings: flow.timings,
-        searchableTldCount: await countProviderSupportedTlds(),
-        alternativesComplete: flow.alternativesComplete,
-        resultsCustomer: (primary
-          ? [primary, ...recommendations]
-          : recommendations
-        ).map(toCustomerResult),
-      });
-    }
-
-    if (scope === "phased") {
-      const tier = body?.tier === 2 ? 2 : 1;
-      const phased = await runPhasedDomainSearch(queryRaw, { tier });
-      const primary = phased.primary;
-      const recommendations = phased.recommendations;
-
-      return NextResponse.json({
-        anchorDomain: phased.anchorDomain,
-        query: phased.query,
-        scope: "phased",
-        tier: phased.tier,
-        source: phased.source,
-        primary: primary ?? null,
-        results: primary ? [primary, ...recommendations] : recommendations,
-        recommendations,
-        extensionsChecked: phased.extensionsChecked,
-        tier1PoolSize: phased.tier1PoolSize,
-        tier2PoolSize: phased.tier2PoolSize,
-        searchableTldCount: await countProviderSupportedTlds(),
-        alternativesComplete: phased.alternativesComplete,
-        suggestTier2:
-          tier === 1 &&
-          shouldFetchTier2(recommendations.length, phased.alternativesComplete),
-        timings: phased.timings,
-        resultsCustomer: (primary
-          ? [primary, ...recommendations]
-          : recommendations
-        ).map(toCustomerResult),
-      });
-    }
-
-    const normalized = normalizeDomainSearchInput(queryRaw);
-    if (!normalized.ok) {
-      return NextResponse.json({ error: normalized.error }, { status: 400 });
-    }
-
-    const { name, tld, query } = normalized;
-    const tier = body?.tier === 2 ? 2 : 1;
-
-    if (scope === "alternatives") {
-      if (tier === 2) {
-        const fastB = await runFastAlternativesChunk2(queryRaw, searchCountry);
         return NextResponse.json({
-          results: fastB.alternatives,
-          recommendations: fastB.alternatives,
-          source: "registrar",
+          anchorDomain: phased.anchorDomain,
+          query: phased.query,
+          scope: "phased",
+          tier: phased.tier,
+          source: phased.source,
+          primary: primary ?? null,
+          results: primary ? [primary, ...recommendations] : recommendations,
+          recommendations,
+          extensionsChecked: phased.extensionsChecked,
+          tier1PoolSize: phased.tier1PoolSize,
+          tier2PoolSize: phased.tier2PoolSize,
+          searchableTldCount: await countProviderSupportedTlds(),
+          alternativesComplete: phased.alternativesComplete,
+          suggestTier2:
+            tier === 1 &&
+            shouldFetchTier2(
+              recommendations.length,
+              phased.alternativesComplete,
+            ),
+          timings: phased.timings,
+          resultsCustomer: (primary
+            ? [primary, ...recommendations]
+            : recommendations
+          ).map(toCustomerResult),
+        });
+      }
+
+      const normalized = normalizeDomainSearchInput(queryRaw);
+      if (!normalized.ok) {
+        return NextResponse.json({ error: normalized.error }, { status: 400 });
+      }
+
+      const { name, tld, query } = normalized;
+      const tier = body?.tier === 2 ? 2 : 1;
+
+      if (scope === "alternatives") {
+        if (tier === 2) {
+          const fastB = await runFastAlternativesChunk2(
+            queryRaw,
+            searchCountry,
+          );
+          return NextResponse.json({
+            results: fastB.alternatives,
+            recommendations: fastB.alternatives,
+            source: "registrar",
+            query,
+            scope,
+            tier,
+            extensionsChecked: fastB.timings.bulk_fqdn_count,
+            alternativesComplete: fastB.alternativesComplete,
+            suggestTier2: fastB.deepDiscoveryAvailable,
+            deepDiscoveryAvailable: fastB.deepDiscoveryAvailable,
+            fastChunk2Available: false,
+            timings: fastB.timings,
+            resultsCustomer: fastB.alternatives.map(toCustomerResult),
+          });
+        }
+        const subWave =
+          body?.subWave === 1 || body?.subWave === 2 ? body.subWave : undefined;
+        const fastAlts = subWave
+          ? await runFastAlternativesChunk1Wave(
+              queryRaw,
+              subWave,
+              searchCountry,
+            )
+          : await runFastAlternativesChunk1(queryRaw, searchCountry);
+        return NextResponse.json({
+          results: fastAlts.alternatives,
+          recommendations: fastAlts.alternatives,
+          source: fastAlts.source,
+          anchorDomain: fastAlts.anchorDomain,
           query,
           scope,
           tier,
-          extensionsChecked: fastB.timings.bulk_fqdn_count,
-          alternativesComplete: fastB.alternativesComplete,
-          suggestTier2: fastB.deepDiscoveryAvailable,
-          deepDiscoveryAvailable: fastB.deepDiscoveryAvailable,
-          fastChunk2Available: false,
-          timings: fastB.timings,
-          resultsCustomer: fastB.alternatives.map(toCustomerResult),
+          subWave: subWave ?? null,
+          partialWave: "partialWave" in fastAlts ? fastAlts.partialWave : false,
+          extensionsChecked: fastAlts.timings.bulk_fqdn_count,
+          alternativesComplete: fastAlts.alternativesComplete,
+          suggestTier2:
+            fastAlts.fastChunk2Available || fastAlts.deepDiscoveryAvailable,
+          deepDiscoveryAvailable: fastAlts.deepDiscoveryAvailable,
+          fastChunk2Available: fastAlts.fastChunk2Available,
+          timings: fastAlts.timings,
+          resultsCustomer: fastAlts.alternatives.map(toCustomerResult),
         });
       }
-      const subWave =
-        body?.subWave === 1 || body?.subWave === 2 ? body.subWave : undefined;
-      const fastAlts = subWave
-        ? await runFastAlternativesChunk1Wave(queryRaw, subWave, searchCountry)
-        : await runFastAlternativesChunk1(queryRaw, searchCountry);
+
+      const { tier1, catalogueSize } = await getRecommendationTierPools();
+      const searchable = await getSearchableTldCatalogue();
+
+      const anchorDomain = tld
+        ? `${name}${tld}`.toLowerCase()
+        : `${name}${tier1[0] ?? ".com"}`.toLowerCase();
+
+      let names: string[];
+      if (scope === "primary") {
+        names = [anchorDomain];
+      } else {
+        names = searchable.map((item) => `${name}${item}`);
+      }
+
+      const { results, source } = await lookupDomainNames(
+        names,
+        {
+          query,
+          tlds: tier1,
+        },
+        { fresh: scope === "primary" },
+      );
+
+      let responseResults = results;
+      if (scope === "full") {
+        responseResults = topRegisterableRecommendations(results);
+      }
+
+      const primaryRow = scope === "primary" ? (results[0] ?? null) : null;
+
       return NextResponse.json({
-        results: fastAlts.alternatives,
-        recommendations: fastAlts.alternatives,
-        source: fastAlts.source,
-        anchorDomain: fastAlts.anchorDomain,
+        results: responseResults,
+        ...(primaryRow != null ? { primary: primaryRow } : {}),
+        source,
+        anchorDomain,
         query,
         scope,
         tier,
-        subWave: subWave ?? null,
-        partialWave: "partialWave" in fastAlts ? fastAlts.partialWave : false,
-        extensionsChecked: fastAlts.timings.bulk_fqdn_count,
-        alternativesComplete: fastAlts.alternativesComplete,
-        suggestTier2:
-          fastAlts.fastChunk2Available || fastAlts.deepDiscoveryAvailable,
-        deepDiscoveryAvailable: fastAlts.deepDiscoveryAvailable,
-        fastChunk2Available: fastAlts.fastChunk2Available,
-        timings: fastAlts.timings,
-        resultsCustomer: fastAlts.alternatives.map(toCustomerResult),
+        extensionsChecked: names.length,
+        recommendationPoolSize: tier1.length,
+        catalogueSize,
+        alternativesComplete: scope === "full",
+        resultsCustomer: responseResults.map(toCustomerResult),
       });
+    } catch (error) {
+      const message =
+        error instanceof Error && error.name === "AbortError"
+          ? lookupErrorMessage("timeout")
+          : lookupErrorMessage(
+              error instanceof Error ? error.message : "lookup_failed",
+            );
+      const status =
+        error instanceof Error && error.message === "rate_limit"
+          ? 429
+          : error instanceof Error && error.message === "lookup_unconfigured"
+            ? 503
+            : 502;
+      return NextResponse.json({ error: message }, { status });
     }
-
-    const { tier1, catalogueSize } = await getRecommendationTierPools();
-    const searchable = await getSearchableTldCatalogue();
-
-    const anchorDomain = tld
-      ? `${name}${tld}`.toLowerCase()
-      : `${name}${tier1[0] ?? ".com"}`.toLowerCase();
-
-    let names: string[];
-    if (scope === "primary") {
-      names = [anchorDomain];
-    } else {
-      names = searchable.map((item) => `${name}${item}`);
-    }
-
-    const { results, source } = await lookupDomainNames(
-      names,
-      {
-        query,
-        tlds: tier1,
-      },
-      { fresh: scope === "primary" },
-    );
-
-    let responseResults = results;
-    if (scope === "full") {
-      responseResults = topRegisterableRecommendations(results);
-    }
-
-    const primaryRow = scope === "primary" ? (results[0] ?? null) : null;
-
-    return NextResponse.json({
-      results: responseResults,
-      ...(primaryRow != null ? { primary: primaryRow } : {}),
-      source,
-      anchorDomain,
-      query,
-      scope,
-      tier,
-      extensionsChecked: names.length,
-      recommendationPoolSize: tier1.length,
-      catalogueSize,
-      alternativesComplete: scope === "full",
-      resultsCustomer: responseResults.map(toCustomerResult),
-    });
-  } catch (error) {
-    const message =
-      error instanceof Error && error.name === "AbortError"
-        ? lookupErrorMessage("timeout")
-        : lookupErrorMessage(
-            error instanceof Error ? error.message : "lookup_failed",
-          );
-    const status =
-      error instanceof Error && error.message === "rate_limit"
-        ? 429
-        : error instanceof Error && error.message === "lookup_unconfigured"
-          ? 503
-          : 502;
-    return NextResponse.json({ error: message }, { status });
-  }
+  });
 }

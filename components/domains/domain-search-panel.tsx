@@ -688,7 +688,10 @@ export function DomainSearchPanel({
         response = await fetch("/api/domains/search", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ bulk: bulkPayload }),
+          body: JSON.stringify({
+            bulk: bulkPayload,
+            searchContext: "domain-page",
+          }),
           signal: controller.signal,
         });
         json = (await response.json()) as {
@@ -771,7 +774,11 @@ export function DomainSearchPanel({
           const res = await fetch("/api/domains/search", {
             method: "POST",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ ...body, country: preferences.country }),
+            body: JSON.stringify({
+              ...body,
+              country: preferences.country,
+              searchContext: "domain-page",
+            }),
             signal: controller.signal,
           });
           const json = (await res.json()) as {

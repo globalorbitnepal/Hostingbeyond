@@ -226,6 +226,13 @@ jobs:
             grep -q '^DOMAIN_AVAILABILITY_ENV=live' .env || echo 'DOMAIN_AVAILABILITY_ENV="live"' >> .env
           fi
 
+          if grep -q '^NAMESILO_API_KEY=.' .env 2>/dev/null; then
+            echo "==> Enabling NameSilo for customer search (key present; value not logged)"
+            echo '{"provider":"namesilo"}' | node scripts/merge-namesilo-search-env.mjs .env
+          else
+            echo "NAMESILO_SEARCH_SKIPPED: NAMESILO_API_KEY not in server .env"
+          fi
+
           LOCK_SHA="$(sha256sum package-lock.json | awk '{print $1}')"
           if [ -f .deploy-package-lock-sha ] && [ "$(cat .deploy-package-lock-sha)" = "${LOCK_SHA}" ]; then
             echo "SKIP npm ci — package-lock.json unchanged"
