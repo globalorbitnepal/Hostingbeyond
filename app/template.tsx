@@ -1,5 +1,5 @@
 /**
- * Re-mounted on client navigations — subtle enter fade only (no layout shift).
+ * Re-mounted on client navigations — opacity fade only (no transform; keeps header stable).
  */
 export default function RootTemplate({
   children,

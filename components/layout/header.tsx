@@ -347,10 +347,10 @@ export function SiteHeader({
       if (e.key === "Escape") setOpen(false);
     };
     document.addEventListener("keydown", onKeyDown);
-    document.body.style.overflow = "hidden";
+    document.documentElement.classList.add("hb-scroll-lock");
     return () => {
       document.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = "";
+      document.documentElement.classList.remove("hb-scroll-lock");
     };
   }, [open]);
 
