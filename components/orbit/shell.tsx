@@ -105,9 +105,12 @@ export function OrbitShell({
           )}
         >
           <div className="mb-8 flex items-center justify-between px-2">
-            <div>
-              <HostingBeyondLogo className="h-7 w-auto" />
-              <p className="mt-2 text-[10px] font-semibold tracking-[0.22em] text-white/55 uppercase">
+            <div className="min-w-0 flex-1 pr-2">
+              <HostingBeyondLogo
+                variant="onDark"
+                className="h-9 w-full max-w-[220px]"
+              />
+              <p className="mt-2.5 text-[10px] font-bold tracking-[0.28em] text-white/80 uppercase">
                 Orbit
               </p>
             </div>

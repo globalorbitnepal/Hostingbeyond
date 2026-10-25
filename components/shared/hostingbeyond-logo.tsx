@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 type Props = {
   className?: string;
   title?: string;
+  /** Light wordmark for purple/dark headers (Orbit sidebar). */
+  variant?: "default" | "onDark";
 };
 
 /**
@@ -16,7 +18,9 @@ type Props = {
 export function HostingBeyondLogo({
   className,
   title = "HostingBeyond",
+  variant = "default",
 }: Props) {
+  const onDark = variant === "onDark";
   const uid = useId().replace(/:/g, "");
   const markGrad = `hb-g-mark-${uid}`;
   const textGrad = `hb-g-text-${uid}`;
@@ -26,7 +30,12 @@ export function HostingBeyondLogo({
       viewBox="0 0 372 56"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={cn("h-auto w-auto shrink-0 overflow-visible", className)}
+      className={cn(
+        "h-auto w-auto shrink-0 overflow-visible",
+        onDark &&
+          "drop-shadow-[0_1px_0_rgba(255,255,255,0.35),0_6px_18px_rgba(0,0,0,0.35)]",
+        className,
+      )}
       role="img"
       aria-label={title}
     >
@@ -59,7 +68,7 @@ export function HostingBeyondLogo({
       </defs>
 
       {/* Monogram group */}
-      <g fill={`url(#${markGrad})`}>
+      <g fill={onDark ? "#FFFFFF" : `url(#${markGrad})`}>
         {/* H left stem */}
         <path d="M4 11.5c0-2.5 2-4.5 4.5-4.5h4c2.5 0 4.5 2 4.5 4.5v33c0 2.5-2 4.5-4.5 4.5h-4c-2.5 0-4.5-2-4.5-4.5v-33z" />
 
@@ -81,8 +90,13 @@ export function HostingBeyondLogo({
         fontWeight="800"
         letterSpacing="-0.038em"
       >
-        <tspan fill="#0F172A">Hosting</tspan>
-        <tspan fill={`url(#${textGrad})`}>Beyond</tspan>
+        <tspan fill={onDark ? "#FFFFFF" : "#0F172A"}>Hosting</tspan>
+        <tspan
+          fill={onDark ? "#E9D5FF" : `url(#${textGrad})`}
+          style={onDark ? { fontWeight: 800 } : undefined}
+        >
+          Beyond
+        </tspan>
       </text>
     </svg>
   );
