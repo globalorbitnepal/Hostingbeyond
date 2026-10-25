@@ -31,13 +31,13 @@ export function HostingBeyondLogo({
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={cn(
-        "h-auto w-auto shrink-0 overflow-visible",
-        onDark &&
-          "drop-shadow-[0_1px_0_rgba(255,255,255,0.35),0_6px_18px_rgba(0,0,0,0.35)]",
+        "h-auto w-auto shrink-0 overflow-visible select-none [shape-rendering:geometricPrecision]",
+        onDark && "drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]",
         className,
       )}
       role="img"
       aria-label={title}
+      textRendering="geometricPrecision"
     >
       <defs>
         <linearGradient

@@ -104,13 +104,10 @@ export function OrbitShell({
             open ? "translate-x-0" : "-translate-x-full",
           )}
         >
-          <div className="mb-8 flex items-center justify-between px-2">
-            <div className="min-w-0 flex-1 pr-2">
-              <HostingBeyondLogo
-                variant="onDark"
-                className="h-9 w-full max-w-[220px]"
-              />
-              <p className="mt-2.5 text-[10px] font-bold tracking-[0.28em] text-white/80 uppercase">
+          <div className="mb-8 flex items-start justify-between gap-2 px-1">
+            <div className="min-w-0 flex-1 rounded-2xl border border-white/25 bg-white px-3.5 py-3 shadow-[0_8px_28px_rgba(15,23,42,0.18)]">
+              <HostingBeyondLogo className="h-8 w-auto max-w-full" />
+              <p className="mt-2 text-center text-[10px] font-semibold tracking-[0.28em] text-slate-400 uppercase">
                 Orbit
               </p>
             </div>
