@@ -1,9 +1,8 @@
 /**
- * Mirrors the bash gate in deploy-gate.patch (workflow_run path only).
- * GitHub Actions: unset secrets expand to empty string in env (not null).
+ * Automatic production deploy after CI on main (no repository secret).
  */
-export function automaticDeployAllowed(deployApprovedSecret) {
-  return deployApprovedSecret === "true";
+export function automaticDeployAllowed(ciConclusion, headBranch) {
+  return ciConclusion === "success" && headBranch === "main";
 }
 
 export function manualDeployAllowed(manualApprovedSecret, confirmInput) {

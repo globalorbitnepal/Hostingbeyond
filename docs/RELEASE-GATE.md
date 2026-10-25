@@ -7,7 +7,7 @@
 | Workflow                                                  | Trigger                                                                                | Purpose                                                                                                                          |
 | --------------------------------------------------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | **HostingBeyond CI** (`.github/workflows/ci.yml`)         | `pull_request`, push to `main`                                                         | `ci-assert-integration-database.mjs` → `prisma migrate deploy` (integration DB only) → lint → typecheck → **full tests** → build |
-| **Deploy HostingBeyond** (`.github/workflows/deploy.yml`) | `workflow_run` after **successful** CI on **`main`**, or emergency `workflow_dispatch` | Production deploy job (SSH) — **automatic path blocked** unless `HOSTINGBEYOND_PRODUCTION_DEPLOY_APPROVED=true` (see below)      |
+| **Deploy HostingBeyond** (`.github/workflows/deploy.yml`) | `workflow_run` after **successful** CI on **`main`**, or emergency `workflow_dispatch` | Production deploy job (SSH) after CI passes on `main` (see below)                                                                |
 
 ### Integration database in CI
 
@@ -19,12 +19,12 @@
 
 | Event                                                      | Deploy workflow starts?                                                              | Production SSH / VPS deploy executes?                                                                                          |
 | ---------------------------------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
-| CI success on **push to `main`**                           | **Yes** — `workflow_run` after **HostingBeyond CI** succeeds (`head_branch == main`) | **No** (fail closed) unless `HOSTINGBEYOND_PRODUCTION_DEPLOY_APPROVED` is exactly `true`                                       |
+| CI success on **push to `main`**                           | **Yes** — `workflow_run` after **HostingBeyond CI** succeeds (`head_branch == main`) | **Yes** — SSH deploy runs when CI succeeded on `main`                                                                          |
 | CI failure on `main`                                       | **No**                                                                               | **No**                                                                                                                         |
 | Pull request CI                                            | **No** deploy workflow for PR branch                                                 | **No**                                                                                                                         |
 | `workflow_dispatch` with `confirm_manual_deploy == DEPLOY` | **Yes** (manual job entry)                                                           | **Only if** `HOSTINGBEYOND_MANUAL_DEPLOY_APPROVED` is `true` (does **not** require `HOSTINGBEYOND_PRODUCTION_DEPLOY_APPROVED`) |
 
-**Gate activation:** Production deploy authorization is enforced in `deploy.yml` on the repository **default branch (`main`)**. After **HostingBeyond CI** succeeds on `main`, the **Deploy HostingBeyond** workflow may start, but the SSH deploy job **fails closed** unless repository secret `HOSTINGBEYOND_PRODUCTION_DEPLOY_APPROVED` is exactly `true`. Migrations remain gated separately by `HOSTINGBEYOND_PRODUCTION_MIGRATE_APPROVED`.
+**Deploy chain:** Push to **`main`** runs **HostingBeyond CI**. When CI succeeds, **Deploy HostingBeyond** starts via `workflow_run` and runs the SSH production deploy. **Database migrations** remain gated separately by `HOSTINGBEYOND_PRODUCTION_MIGRATE_APPROVED` (fail closed by default).
 
 Fork PRs cannot dispatch deploy workflows on the upstream repo.
 
@@ -39,7 +39,7 @@ Fork PRs cannot dispatch deploy workflows on the upstream repo.
 
 | Step                                                         | Default on deploy                                                                                  |
 | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| Automatic deploy after CI on `main`                          | **Blocked** unless repository secret `HOSTINGBEYOND_PRODUCTION_DEPLOY_APPROVED` is exactly `true`  |
+| Automatic deploy after CI on `main`                          | **Runs** when **HostingBeyond CI** succeeded on `main` (no extra deploy secret)                    |
 | `git reset --hard origin/main`, `npm ci`, build, PM2 restart | **Runs** when deploy job runs and deploy authorization step passed (automatic or manual path)      |
 | `npx prisma migrate deploy` on production                    | **Skipped** unless repository secret `HOSTINGBEYOND_PRODUCTION_MIGRATE_APPROVED` is exactly `true` |
 

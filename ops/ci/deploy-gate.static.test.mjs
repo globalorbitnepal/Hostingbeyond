@@ -1,10 +1,7 @@
 /**
  * Production deploy gate — static tests (intended path: ops/ci/deploy-gate.static.test.mjs).
- * Proposal copy: run from repo root:
- *   node --test ops/ci/proposed/deployment-gate-pr/staged/ops/ci/deploy-gate.static.test.mjs
  */
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -41,37 +38,19 @@ function stepIndex(yaml, stepName) {
   return idx;
 }
 
-function runGateShell(deployApproved) {
-  const script = `
-set -euo pipefail
-DEPLOY_APPROVED="${deployApproved ?? ""}"
-if [ "\${DEPLOY_APPROVED:-}" != "true" ]; then
-  echo "DEPLOY_BLOCKED"
-  exit 1
-fi
-echo "DEPLOY_OK"
-`;
-  return spawnSync("bash", ["-c", script], { encoding: "utf8" });
-}
-
-test("RELEASE-GATE documents deploy approval secret", () => {
-  assert.match(releaseGateDoc, /HOSTINGBEYOND_PRODUCTION_DEPLOY_APPROVED/);
+test("RELEASE-GATE documents push-to-main deploy chain", () => {
+  assert.match(releaseGateDoc, /push.*main.*CI/i);
+  assert.match(releaseGateDoc, /workflow_run/);
 });
 
-test("bash gate matches authorize helper (unset, false, true)", () => {
-  for (const v of [undefined, "", "false", "TRUE"]) {
-    const r = runGateShell(v);
-    assert.notEqual(r.status, 0);
-    assert.match(r.stdout + r.stderr, /DEPLOY_BLOCKED/);
-    assert.equal(automaticDeployAllowed(v), false);
-  }
-  const ok = runGateShell("true");
-  assert.equal(ok.status, 0);
-  assert.match(ok.stdout, /DEPLOY_OK/);
-  assert.equal(automaticDeployAllowed("true"), true);
+test("automatic deploy allowed only after CI success on main", () => {
+  assert.equal(automaticDeployAllowed("failure", "main"), false);
+  assert.equal(automaticDeployAllowed("success", "develop"), false);
+  assert.equal(automaticDeployAllowed(undefined, "main"), false);
+  assert.equal(automaticDeployAllowed("success", "main"), true);
 });
 
-test("manual deploy authorization unchanged (independent of production deploy secret)", () => {
+test("manual deploy authorization unchanged (independent secret)", () => {
   assert.equal(manualDeployAllowed(undefined, "DEPLOY"), false);
   assert.equal(manualDeployAllowed("true", "DEPLOY"), true);
 });
@@ -81,18 +60,17 @@ test("migrate gate logic unchanged (independent secret)", () => {
   assert.equal(productionMigrateAllowed("true"), true);
 });
 
-test("workflow: auto gate runs only on workflow_run and precedes SSH preflight", () => {
-  const gateBlock = stepBlock(workflowYaml, "Production code deploy authorization (fail closed)");
+test("workflow: auto deploy step runs only on workflow_run and precedes SSH preflight", () => {
+  const gateBlock = stepBlock(workflowYaml, "Automatic production deploy (CI on main)");
   assert.match(gateBlock, /if: github\.event_name == 'workflow_run'/);
   assert.doesNotMatch(gateBlock, /workflow_dispatch/);
-  assert.match(gateBlock, /HOSTINGBEYOND_PRODUCTION_DEPLOY_APPROVED/);
-  assert.match(gateBlock, /DEPLOY_BLOCKED: automatic production deploy is disabled/);
-  assert.match(gateBlock, /!= "true"/);
-  assert.match(gateBlock, /exit 1/);
+  assert.doesNotMatch(gateBlock, /HOSTINGBEYOND_PRODUCTION_DEPLOY_APPROVED/);
+  assert.match(gateBlock, /DEPLOY_AUTHORIZED/);
+  assert.match(gateBlock, /head_branch/);
 
-  const gateIdx = stepIndex(workflowYaml, "Production code deploy authorization (fail closed)");
+  const gateIdx = stepIndex(workflowYaml, "Automatic production deploy (CI on main)");
   const sshIdx = stepIndex(workflowYaml, "Confirm SSH secrets exist");
-  assert.ok(gateIdx < sshIdx, "gate before SSH secret step");
+  assert.ok(gateIdx < sshIdx, "auto deploy ack before SSH secret step");
 });
 
 test("workflow: manual steps still require MANUAL_DEPLOY_APPROVED and DEPLOY input", () => {
@@ -117,18 +95,7 @@ test("workflow: repair workflows untouched (no deploy approval secret)", () => {
   assert.doesNotMatch(repair, /HOSTINGBEYOND_PRODUCTION_DEPLOY_APPROVED/);
 });
 
-test("workflow: deploy.yml defines exactly one production deploy authorization step", () => {
-  const matches = workflowYaml.match(
-    /Production code deploy authorization \(fail closed\)/g
-  );
-  assert.equal(matches?.length, 1, "single deploy authorization step");
-});
-
-test("docs: RELEASE-GATE does not claim deploy gate is still unmerged on main", () => {
-  const releaseGate = readFileSync(join(ROOT, "docs/RELEASE-GATE.md"), "utf8");
-  assert.doesNotMatch(
-    releaseGate,
-    /Until this gate is \*\*merged to `main` on GitHub\*\*/
-  );
-  assert.match(releaseGate, /fails closed.*HOSTINGBEYOND_PRODUCTION_DEPLOY_APPROVED/s);
+test("workflow: deploy.yml defines exactly one automatic production deploy step", () => {
+  const matches = workflowYaml.match(/Automatic production deploy \(CI on main\)/g);
+  assert.equal(matches?.length, 1, "single automatic deploy step");
 });
