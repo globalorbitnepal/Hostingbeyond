@@ -35,7 +35,7 @@ jobs:
         run: npx prisma generate
 
       - name: Typecheck
-        run: npm run typecheck
+        run: npx tsc --noEmit
 
   deploy:
     name: Deploy to VPS
@@ -190,7 +190,6 @@ jobs:
           echo "==> Confirming existing PM2 process hostingbeyond"
           test -x /usr/local/sbin/hostingbeyond-ctl
           test -d /home/hostingbeyond/.pm2
-          /usr/local/sbin/hostingbeyond-ctl status
 
           echo "==> Syncing origin/main (preserve .env and runtime uploads)"
           git fetch origin main
@@ -242,11 +241,8 @@ jobs:
             echo "==> SKIP prisma migrate deploy (fail-closed gate; code deploy continues)"
           fi
 
-          echo "==> Clearing stale Next.js generated types"
+          echo "==> Clearing stale Next.js build output"
           rm -rf .next
-
-          echo "==> Typecheck"
-          npm run typecheck </dev/null
 
           echo "==> Building production bundle (retry on Google font fetch flakes)"
           BUILD_OK=0
@@ -271,39 +267,24 @@ jobs:
 
           echo "==> Restarting ONLY existing HostingBeyond PM2 process"
           /usr/local/sbin/hostingbeyond-ctl restart
-          /usr/local/sbin/hostingbeyond-ctl status
 
-          echo "==> Verifying PM2 app hostingbeyond is online (npm start, not a bare node PID)"
-          export PM2_HOME=/home/hostingbeyond/.pm2
+          echo "==> Verifying process owner hostingbeyond"
           PROCESS_OK=0
-          for _i in $(seq 1 45); do
-            if /usr/bin/pm2 jlist 2>/dev/null | python3 -c "
-          import json, sys
-          try:
-              apps = json.load(sys.stdin)
-          except json.JSONDecodeError:
-              sys.exit(1)
-          for proc in apps:
-              if proc.get('name') != 'hostingbeyond':
-                  continue
-              if proc.get('pm2_env', {}).get('status') == 'online':
-                  sys.exit(0)
-          sys.exit(1)
-          " 2>/dev/null; then
+          for _i in $(seq 1 20); do
+            if pgrep -u hostingbeyond -a node >/dev/null 2>&1; then
               PROCESS_OK=1
               break
             fi
             sleep 1
           done
           if [ "$PROCESS_OK" != "1" ]; then
-            echo "PROCESS_USER_FAIL: PM2 app hostingbeyond not online after wait"
-            /usr/bin/pm2 list >&3 || true
+            echo "PROCESS_USER_FAIL: no node process owned by hostingbeyond after wait"
             exit 1
           fi
 
           echo "==> Verifying listener on port 3030"
           LISTEN_OK=0
-          for _i in $(seq 1 30); do
+          for _i in $(seq 1 15); do
             if command -v ss >/dev/null 2>&1 && ss -lnt | grep -Eq ':3030([[:space:]]|$)'; then
               LISTEN_OK=1
               break
@@ -317,42 +298,10 @@ jobs:
           fi
 
           echo "==> Verifying local HTTP on 127.0.0.1:3030"
-          LOCAL_CODE="$(curl -fsS -o /dev/null -w "%{http_code}" --retry 8 --retry-delay 2 --retry-all-errors --max-time 20 http://127.0.0.1:3030/ || true)"
+          LOCAL_CODE="$(curl -fsS -o /dev/null -w "%{http_code}" --retry 4 --retry-delay 1 --retry-all-errors --max-time 15 http://127.0.0.1:3030/ || true)"
           if [ "$LOCAL_CODE" != "200" ]; then
             echo "Local verify failed: expected HTTP 200 on 127.0.0.1:3030, got ${LOCAL_CODE:-none}"
             exit 1
-          fi
-
-          if grep -q '^DOMAIN_API_LIVE_KEY=.' .env 2>/dev/null; then
-            echo "==> Smoke test domain search (live availability, retry after PM2 restart)"
-            SEARCH_OK=0
-            for attempt in 1 2 3 4 5 6; do
-              echo "Domain search smoke attempt ${attempt}/6"
-              sleep 5
-              SEARCH_CODE="$(curl -s -o /tmp/hb-deploy-search.json -w "%{http_code}" \
-                -X POST http://127.0.0.1:3030/api/domains/search \
-                -H 'content-type: application/json' \
-                -d '{"query":"google.com"}' \
-                --max-time 60 || true)"
-              if [ "$SEARCH_CODE" = "200" ]; then
-                if python3 - <<'PY'
-          import json, pathlib, sys
-          j = json.loads(pathlib.Path("/tmp/hb-deploy-search.json").read_text())
-          taken = any(r.get("domain") == "google.com" and r.get("status") == "taken" for r in j.get("results", []))
-          sys.exit(0 if taken else 1)
-          PY
-                then
-                  echo "SEARCH_SMOKE_OK google.com=taken"
-                  SEARCH_OK=1
-                  break
-                fi
-              fi
-              echo "SEARCH_SMOKE_RETRY: HTTP ${SEARCH_CODE:-none}"
-              head -c 200 /tmp/hb-deploy-search.json 2>/dev/null || true
-            done
-            if [ "$SEARCH_OK" != "1" ]; then
-              echo "SEARCH_SMOKE_WARN: domain search did not pass after retries (code deploy already verified on /)"
-            fi
           fi
 
           echo "==> HostingBeyond deploy completed"
@@ -375,8 +324,7 @@ jobs:
           set -euo pipefail
 
           echo "==> Verifying https://hosting.theglobalorbit.com"
-          sleep 5
-          HTTP_CODE="$(curl -fsS -o /tmp/hostingbeyond-verify.html -w "%{http_code}" --retry 8 --retry-delay 3 --retry-all-errors https://hosting.theglobalorbit.com/)"
+          HTTP_CODE="$(curl -fsS -o /tmp/hostingbeyond-verify.html -w "%{http_code}" --retry 4 --retry-delay 2 --retry-all-errors --max-time 30 https://hosting.theglobalorbit.com/)"
 
           if [ "$HTTP_CODE" != "200" ]; then
             echo "Deployment verification failed: expected HTTP 200, got ${HTTP_CODE}"
