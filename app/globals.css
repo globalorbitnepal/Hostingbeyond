@@ -630,8 +630,9 @@
     scrollbar-gutter: stable;
   }
 
+  /* Disabled: cross-route view transitions caused visible root/header shift in Chrome. */
   @view-transition {
-    navigation: auto;
+    navigation: none;
   }
 
   h1,
@@ -1048,20 +1049,24 @@
   }
 }
 
-/* ——— Route transitions (subtle; no layout shift) ——— */
+/* ——— Route transitions (opacity only — no transform; avoids header/page shake) ——— */
 .hb-route-surface {
   min-height: 0;
-  animation: hb-route-enter 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: hb-route-enter 0.16s ease-out both;
 }
 
 @keyframes hb-route-enter {
   from {
-    transform: translateY(3px);
+    opacity: 0.92;
   }
 
   to {
-    transform: translateY(0);
+    opacity: 1;
   }
+}
+
+html.hb-scroll-lock {
+  overflow: hidden;
 }
 
 .hb-nav-progress--active {
