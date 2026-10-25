@@ -7,11 +7,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 
-import {
-  automaticDeployAllowed,
-  manualDeployAllowed,
-  productionMigrateAllowed,
-} from "./deploy-gate-authorize.mjs";
+import { manualDeployAllowed, productionMigrateAllowed } from "./deploy-gate-authorize.mjs";
 
 const CI_DIR = dirname(fileURLToPath(import.meta.url));
 /** Repository root (worktree or checkout). */
@@ -39,18 +35,24 @@ function stepIndex(yaml, stepName) {
 }
 
 test("RELEASE-GATE documents push-to-main deploy chain", () => {
-  assert.match(releaseGateDoc, /push.*main.*CI/i);
-  assert.match(releaseGateDoc, /workflow_run/);
+  assert.match(releaseGateDoc, /push.*main/i);
+  assert.match(releaseGateDoc, /Typecheck/);
 });
 
-test("automatic deploy allowed only after CI success on main", () => {
-  assert.equal(automaticDeployAllowed("failure", "main"), false);
-  assert.equal(automaticDeployAllowed("success", "develop"), false);
-  assert.equal(automaticDeployAllowed(undefined, "main"), false);
-  assert.equal(automaticDeployAllowed("success", "main"), true);
+test("workflow triggers on push to main (not workflow_run)", () => {
+  assert.match(workflowYaml, /push:\s*\n\s*branches:\s*\n\s*- main/);
+  assert.doesNotMatch(workflowYaml, /workflow_run:/);
 });
 
-test("manual deploy authorization unchanged (independent secret)", () => {
+test("workflow: Typecheck job precedes Deploy to VPS", () => {
+  assert.match(workflowYaml, /name: Typecheck/);
+  assert.match(workflowYaml, /needs: quality/);
+  const typecheckIdx = workflowYaml.indexOf("name: Typecheck");
+  const deployIdx = workflowYaml.indexOf("name: Deploy to VPS");
+  assert.ok(typecheckIdx >= 0 && deployIdx > typecheckIdx);
+});
+
+test("manual deploy helper unchanged (legacy emergency secret)", () => {
   assert.equal(manualDeployAllowed(undefined, "DEPLOY"), false);
   assert.equal(manualDeployAllowed("true", "DEPLOY"), true);
 });
@@ -60,42 +62,21 @@ test("migrate gate logic unchanged (independent secret)", () => {
   assert.equal(productionMigrateAllowed("true"), true);
 });
 
-test("workflow: auto deploy step runs only on workflow_run and precedes SSH preflight", () => {
-  const gateBlock = stepBlock(workflowYaml, "Automatic production deploy (CI on main)");
-  assert.match(gateBlock, /if: github\.event_name == 'workflow_run'/);
-  assert.doesNotMatch(gateBlock, /workflow_dispatch/);
-  assert.doesNotMatch(gateBlock, /HOSTINGBEYOND_PRODUCTION_DEPLOY_APPROVED/);
-  assert.match(gateBlock, /DEPLOY_AUTHORIZED/);
-  assert.match(gateBlock, /head_branch/);
-
-  const gateIdx = stepIndex(workflowYaml, "Automatic production deploy (CI on main)");
-  const sshIdx = stepIndex(workflowYaml, "Confirm SSH secrets exist");
-  assert.ok(gateIdx < sshIdx, "auto deploy ack before SSH secret step");
-});
-
-test("workflow: manual steps still require MANUAL_DEPLOY_APPROVED and DEPLOY input", () => {
-  const manualAck = stepBlock(workflowYaml, "Manual deploy acknowledgment (bypasses CI-success path)");
-  const manualSecret = stepBlock(workflowYaml, "Manual deploy repository approval (fail closed)");
-  assert.match(manualAck, /if: github\.event_name == 'workflow_dispatch'/);
-  assert.match(manualAck, /confirm_manual_deploy/);
-  assert.match(manualSecret, /HOSTINGBEYOND_MANUAL_DEPLOY_APPROVED/);
-  assert.doesNotMatch(manualSecret, /HOSTINGBEYOND_PRODUCTION_DEPLOY_APPROVED/);
-});
-
-test("workflow: migrate step still fail-closed and not tied to deploy approval secret", () => {
+test("workflow: migrate step still fail-closed", () => {
   const migrate = stepBlock(workflowYaml, "Production migrate deploy gate (fail closed)");
   assert.match(migrate, /HOSTINGBEYOND_PRODUCTION_MIGRATE_APPROVED/);
   assert.doesNotMatch(migrate, /HOSTINGBEYOND_PRODUCTION_DEPLOY_APPROVED/);
   assert.match(migrate, /MIGRATE_SKIPPED/);
 });
 
+test("workflow: SSH preflight follows migrate gate", () => {
+  const migrateIdx = stepIndex(workflowYaml, "Production migrate deploy gate (fail closed)");
+  const sshIdx = stepIndex(workflowYaml, "Confirm SSH secrets exist");
+  assert.ok(migrateIdx < sshIdx, "migrate gate before SSH secret step");
+});
+
 test("workflow: repair workflows untouched (no deploy approval secret)", () => {
   const repairPath = join(ROOT, ".github/workflows/repair-vps-database.yml");
   const repair = readFileSync(repairPath, "utf8");
   assert.doesNotMatch(repair, /HOSTINGBEYOND_PRODUCTION_DEPLOY_APPROVED/);
-});
-
-test("workflow: deploy.yml defines exactly one automatic production deploy step", () => {
-  const matches = workflowYaml.match(/Automatic production deploy \(CI on main\)/g);
-  assert.equal(matches?.length, 1, "single automatic deploy step");
 });

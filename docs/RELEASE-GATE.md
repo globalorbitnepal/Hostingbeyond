@@ -4,10 +4,10 @@
 
 ## CI safety (GitHub Actions)
 
-| Workflow                                                  | Trigger                                                                                | Purpose                                                                                                                          |
-| --------------------------------------------------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| **HostingBeyond CI** (`.github/workflows/ci.yml`)         | `pull_request`, push to `main`                                                         | `ci-assert-integration-database.mjs` → `prisma migrate deploy` (integration DB only) → lint → typecheck → **full tests** → build |
-| **Deploy HostingBeyond** (`.github/workflows/deploy.yml`) | `workflow_run` after **successful** CI on **`main`**, or emergency `workflow_dispatch` | Production deploy job (SSH) after CI passes on `main` (see below)                                                                |
+| Workflow                                                  | Trigger                                        | Purpose                                                                                                                          |
+| --------------------------------------------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **HostingBeyond CI** (`.github/workflows/ci.yml`)         | `pull_request`, push to `main`                 | `ci-assert-integration-database.mjs` → `prisma migrate deploy` (integration DB only) → lint → typecheck → **full tests** → build |
+| **Deploy HostingBeyond** (`.github/workflows/deploy.yml`) | **push** to **`main`**, or `workflow_dispatch` | **Typecheck** → **Deploy to VPS** (SSH) on `main` push (see below)                                                               |
 
 ### Integration database in CI
 
@@ -17,30 +17,30 @@
 
 ### Deploy trigger rules
 
-| Event                                                      | Deploy workflow starts?                                                              | Production SSH / VPS deploy executes?                                                                                          |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
-| CI success on **push to `main`**                           | **Yes** — `workflow_run` after **HostingBeyond CI** succeeds (`head_branch == main`) | **Yes** — SSH deploy runs when CI succeeded on `main`                                                                          |
-| CI failure on `main`                                       | **No**                                                                               | **No**                                                                                                                         |
-| Pull request CI                                            | **No** deploy workflow for PR branch                                                 | **No**                                                                                                                         |
-| `workflow_dispatch` with `confirm_manual_deploy == DEPLOY` | **Yes** (manual job entry)                                                           | **Only if** `HOSTINGBEYOND_MANUAL_DEPLOY_APPROVED` is `true` (does **not** require `HOSTINGBEYOND_PRODUCTION_DEPLOY_APPROVED`) |
+| Event                                           | Deploy workflow starts?                                      | Production SSH / VPS deploy executes?                             |
+| ----------------------------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------- |
+| **Push to `main`**                              | **Yes** — **Deploy HostingBeyond** runs (Typecheck → Deploy) | **Yes** — SSH deploy after Typecheck passes                       |
+| **HostingBeyond CI** on push to `main`          | **Yes** — lint, tests, build (parallel)                      | **No** — deploy is not gated on full CI (same as historical flow) |
+| Typecheck failure on deploy workflow            | **Yes** (workflow fails at Typecheck)                        | **No**                                                            |
+| Pull request CI                                 | **No** deploy workflow for PR branch                         | **No**                                                            |
+| `workflow_dispatch` on **Deploy HostingBeyond** | **Yes**                                                      | **Yes** — Typecheck then SSH deploy (emergency / re-run)          |
 
-**Deploy chain:** Push to **`main`** runs **HostingBeyond CI**. When CI succeeds, **Deploy HostingBeyond** starts via `workflow_run` and runs the SSH production deploy. **Database migrations** remain gated separately by `HOSTINGBEYOND_PRODUCTION_MIGRATE_APPROVED` (fail closed by default).
+**Deploy chain:** Push to **`main`** runs **Deploy HostingBeyond**: **Typecheck** → **Deploy to VPS**. **HostingBeyond CI** still runs on the same push for lint/tests/build but does not block deploy. **Database migrations** remain gated by `HOSTINGBEYOND_PRODUCTION_MIGRATE_APPROVED` (fail closed by default).
 
 Fork PRs cannot dispatch deploy workflows on the upstream repo.
 
-### Manual emergency deploy (not routine)
+### Manual re-run (not routine)
 
-- **Bypasses** the normal `push → CI success → deploy` chain.
-- Requires **both** typing `DEPLOY` in the workflow input **and** `HOSTINGBEYOND_MANUAL_DEPLOY_APPROVED=true` (unset after use if policy requires).
+- Use **Actions → Deploy HostingBeyond → Run workflow** to redeploy `main` without a new commit.
+- Still runs **Typecheck** before SSH deploy.
 - Does **not** enable migrations (migrate secret is separate).
-- GitHub runtime behavior for `workflow_run` / PR branches has **not** been verified in this repo until first Actions run after push.
 
 ## Deploy vs migrate (fail closed)
 
 | Step                                                         | Default on deploy                                                                                  |
 | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| Automatic deploy after CI on `main`                          | **Runs** when **HostingBeyond CI** succeeded on `main` (no extra deploy secret)                    |
-| `git reset --hard origin/main`, `npm ci`, build, PM2 restart | **Runs** when deploy job runs and deploy authorization step passed (automatic or manual path)      |
+| Deploy after push to `main`                                  | **Runs** when workflow **Typecheck** passes (no deploy approval secret)                            |
+| `git reset --hard origin/main`, `npm ci`, build, PM2 restart | **Runs** when **Deploy to VPS** job runs                                                           |
 | `npx prisma migrate deploy` on production                    | **Skipped** unless repository secret `HOSTINGBEYOND_PRODUCTION_MIGRATE_APPROVED` is exactly `true` |
 
 **Workflow inputs cannot enable migrations.** Only the owner-controlled repository secret can. Remove or unset the secret immediately after a successful migrate window if desired.

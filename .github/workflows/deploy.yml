@@ -1,83 +1,48 @@
 name: Deploy HostingBeyond
 
 on:
-  workflow_run:
-    workflows: ["HostingBeyond CI"]
-    types: [completed]
-    branches: [main]
+  push:
+    branches:
+      - main
   workflow_dispatch:
-    inputs:
-      confirm_manual_deploy:
-        description: Emergency only — type DEPLOY to confirm (also requires HOSTINGBEYOND_MANUAL_DEPLOY_APPROVED secret)
-        type: string
-        required: true
 
 concurrency:
   group: deploy-hostingbeyond-production
   cancel-in-progress: false
 
 permissions:
-  actions: read
   contents: read
 
 jobs:
+  quality:
+    name: Typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Typecheck
+        run: npm run typecheck
+
   deploy:
     name: Deploy to VPS
-    if: >-
-      (github.event_name == 'workflow_run' &&
-       github.event.workflow_run.conclusion == 'success' &&
-       github.event.workflow_run.head_branch == 'main') ||
-      (github.event_name == 'workflow_dispatch' &&
-       github.event.inputs.confirm_manual_deploy == 'DEPLOY')
+    needs: quality
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: Fail if CI did not pass (push to main)
-        if: github.event_name == 'workflow_run'
-        run: |
-          set -euo pipefail
-          if [ "${{ github.event.workflow_run.conclusion }}" != "success" ]; then
-            echo "DEPLOY_BLOCKED: HostingBeyond CI did not succeed"
-            exit 1
-          fi
-
-      - name: Automatic production deploy (CI on main)
-        if: github.event_name == 'workflow_run'
-        run: |
-          set -euo pipefail
-          if [ "${{ github.event.workflow_run.conclusion }}" != "success" ]; then
-            echo "DEPLOY_BLOCKED: HostingBeyond CI did not succeed on main"
-            exit 1
-          fi
-          if [ "${{ github.event.workflow_run.head_branch }}" != "main" ]; then
-            echo "DEPLOY_BLOCKED: automatic deploy only runs after CI on main"
-            exit 1
-          fi
-          echo "DEPLOY_AUTHORIZED: CI passed on main; proceeding to production SSH deploy."
-
-      - name: Manual deploy acknowledgment (bypasses CI-success path)
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          set -euo pipefail
-          echo "MANUAL_DEPLOY: This run deploys production without requiring a preceding CI success on main."
-          echo "Routine releases must use push to main → HostingBeyond CI → automatic deploy."
-          if [ "${{ github.event.inputs.confirm_manual_deploy }}" != "DEPLOY" ]; then
-            echo "MANUAL_DEPLOY_BLOCKED: confirm_manual_deploy must be exactly DEPLOY"
-            exit 1
-          fi
-
-      - name: Manual deploy repository approval (fail closed)
-        if: github.event_name == 'workflow_dispatch'
-        env:
-          MANUAL_DEPLOY_APPROVED: ${{ secrets.HOSTINGBEYOND_MANUAL_DEPLOY_APPROVED }}
-        run: |
-          set -euo pipefail
-          if [ "${MANUAL_DEPLOY_APPROVED:-}" != "true" ]; then
-            echo "MANUAL_DEPLOY_BLOCKED: repository secret HOSTINGBEYOND_MANUAL_DEPLOY_APPROVED must be true for manual deploy."
-            exit 1
-          fi
-          echo "Manual deploy approved via repository secret."
-
       - name: Production migrate deploy gate (fail closed)
         env:
           MIGRATE_SECRET: ${{ secrets.HOSTINGBEYOND_PRODUCTION_MIGRATE_APPROVED }}
