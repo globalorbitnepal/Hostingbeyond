@@ -53,11 +53,14 @@ jobs:
           CI: "true"
         run: npm run build
 
+      - name: Archive production build for artifact upload
+        run: tar -czf next-build.tgz .next
+
       - name: Upload production build artifact
         uses: actions/upload-artifact@v4
         with:
           name: hostingbeyond-next-build
-          path: .next
+          path: next-build.tgz
           retention-days: 1
           if-no-files-found: error
 
@@ -187,14 +190,13 @@ jobs:
             echo "DOMAIN_API_LIVE_KEY secret not set; VPS must already have live availability in .env or search stays unconfigured"
           fi
 
-          NEXT_ARTIFACT="${RUNNER_TEMP}/next-artifact/.next"
-          if [ ! -d "${NEXT_ARTIFACT}" ]; then
-            echo "BUILD_ARTIFACT_MISSING: expected ${NEXT_ARTIFACT}"
+          NEXT_TGZ="${RUNNER_TEMP}/next-artifact/next-build.tgz"
+          if [ ! -f "${NEXT_TGZ}" ]; then
+            echo "BUILD_ARTIFACT_MISSING: expected ${NEXT_TGZ}"
             exit 1
           fi
           echo "==> Uploading CI-built .next to VPS (skip server-side next build)"
-          tar -C "${RUNNER_TEMP}/next-artifact" -czf "${RUNNER_TEMP}/hb-next.tgz" .next
-          "${SSH[@]}" "cat > /tmp/hb-next.tgz" < "${RUNNER_TEMP}/hb-next.tgz"
+          "${SSH[@]}" "cat > /tmp/hb-next.tgz" < "${NEXT_TGZ}"
 
           REMOTE_SCRIPT="/tmp/hostingbeyond-gha-deploy-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.sh"
           echo "==> Uploading remote deploy script"
