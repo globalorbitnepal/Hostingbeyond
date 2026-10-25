@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 
-import { HostingBeyondLogo } from "@/components/shared/hostingbeyond-logo";
+import { Logo } from "@/components/shared/logo";
 
 const capabilities = [
   { label: "Website management", icon: Globe },
@@ -79,7 +79,10 @@ export function OrbitLoginForm() {
 
       <div className="relative mx-auto flex min-h-dvh w-full max-w-[1280px] flex-col px-5 py-6 sm:px-8 lg:px-10">
         <header className="flex items-center justify-between gap-4">
-          <HostingBeyondLogo className="h-9 w-auto sm:h-10" />
+          <Logo
+            href="/"
+            className="[&_img]:h-9 [&_img]:w-auto sm:[&_img]:h-10"
+          />
           <Link
             href="/"
             className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/80 px-3.5 py-2 text-sm font-medium text-slate-600 shadow-sm backdrop-blur-sm transition outline-none hover:border-slate-300 hover:text-slate-900 focus-visible:ring-2 focus-visible:ring-[var(--hb-blue)]/30"
@@ -136,7 +139,10 @@ export function OrbitLoginForm() {
           >
             <div className="rounded-[28px] border border-white bg-white p-6 shadow-[0_24px_80px_rgba(15,23,42,0.12)] sm:p-8">
               <div className="flex justify-center">
-                <HostingBeyondLogo className="h-8 w-auto" />
+                <Logo
+                  href="/"
+                  className="justify-center [&_img]:h-8 [&_img]:w-auto"
+                />
               </div>
 
               <div className="mt-6 text-center">

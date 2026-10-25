@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-import { HostingBeyondLogo } from "@/components/shared/hostingbeyond-logo";
+import { Logo } from "@/components/shared/logo";
 import { cn } from "@/lib/utils";
 
 const nav = [
@@ -105,9 +105,14 @@ export function OrbitShell({
           )}
         >
           <div className="mb-8 flex items-start justify-between gap-2 px-1">
-            <div className="min-w-0 flex-1 rounded-2xl border border-white/25 bg-white px-3.5 py-3 shadow-[0_8px_28px_rgba(15,23,42,0.18)]">
-              <HostingBeyondLogo className="h-8 w-auto max-w-full" />
-              <p className="mt-2 text-center text-[10px] font-semibold tracking-[0.28em] text-slate-400 uppercase">
+            <div className="min-w-0 flex-1 rounded-2xl border border-white/25 bg-white px-3.5 py-3.5 shadow-[0_8px_28px_rgba(15,23,42,0.18)]">
+              <div className="flex justify-center">
+                <Logo
+                  href="/"
+                  className="w-full max-w-[232px] justify-center [&_img]:mx-auto [&_img]:h-9 [&_img]:w-auto [&_img]:max-w-full sm:[&_img]:h-10"
+                />
+              </div>
+              <p className="mt-2.5 text-center text-[10px] font-semibold tracking-[0.28em] text-slate-400 uppercase">
                 Orbit
               </p>
             </div>
