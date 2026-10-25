@@ -3,11 +3,14 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
+import { createPortal } from "react-dom";
 import { Check, ChevronDown, Search } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -28,8 +31,45 @@ type Props = {
   variant?: "flag" | "globe";
   /** Light glass header uses dark text / white chips */
   tone?: "dark" | "light";
+  /** Horizontal alignment of the menu panel to the trigger */
+  menuAlign?: "start" | "end";
+  /** Prefer opening above the trigger (e.g. footer) */
+  menuSide?: "below" | "above";
   className?: string;
 };
+
+const MENU_WIDTH = { compact: 320, default: 360 } as const;
+
+function computeMenuPosition(
+  trigger: DOMRect,
+  align: "start" | "end",
+  side: "below" | "above",
+  width: number,
+): CSSProperties {
+  const margin = 8;
+  let left = align === "start" ? trigger.left : trigger.right - width;
+  left = Math.max(margin, Math.min(left, window.innerWidth - width - margin));
+
+  if (side === "above") {
+    return {
+      position: "fixed",
+      left,
+      bottom: window.innerHeight - trigger.top + margin,
+      width,
+      maxHeight: "min(520px, 80dvh)",
+      zIndex: 200,
+    };
+  }
+
+  return {
+    position: "fixed",
+    left,
+    top: trigger.bottom + margin,
+    width,
+    maxHeight: "min(520px, 80dvh)",
+    zIndex: 200,
+  };
+}
 
 /** Real US flag first (local SVG); other countries via flagcdn */
 function FlagImg({
@@ -124,6 +164,8 @@ export function CountryLanguageSelector({
   compact = false,
   variant = "flag",
   tone = "dark",
+  menuAlign = "end",
+  menuSide = "below",
   className,
 }: Props) {
   const light = tone === "light";
@@ -136,8 +178,10 @@ export function CountryLanguageSelector({
   const [activeIndex, setActiveIndex] = useState(0);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+  const [menuPosition, setMenuPosition] = useState<CSSProperties | null>(null);
 
   const country = getCountry(preferences.country);
   const results = useMemo(() => searchCountries(query), [query]);
@@ -167,12 +211,10 @@ export function CountryLanguageSelector({
       if (e.key === "Escape") closePanel();
     };
     const onOutside = (e: MouseEvent) => {
-      if (
-        wrapperRef.current &&
-        !wrapperRef.current.contains(e.target as Node)
-      ) {
-        closePanel();
-      }
+      const target = e.target as Node;
+      if (wrapperRef.current?.contains(target)) return;
+      if (menuRef.current?.contains(target)) return;
+      closePanel();
     };
     document.addEventListener("keydown", onKey);
     document.addEventListener("mousedown", onOutside);
@@ -181,6 +223,35 @@ export function CountryLanguageSelector({
       document.removeEventListener("mousedown", onOutside);
     };
   }, [open, closePanel]);
+
+  const menuWidth = compact ? MENU_WIDTH.compact : MENU_WIDTH.default;
+
+  const updateMenuPosition = useCallback(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+    setMenuPosition(
+      computeMenuPosition(
+        el.getBoundingClientRect(),
+        menuAlign,
+        menuSide,
+        menuWidth,
+      ),
+    );
+  }, [menuAlign, menuSide, menuWidth]);
+
+  useLayoutEffect(() => {
+    if (!open) {
+      setMenuPosition(null);
+      return;
+    }
+    updateMenuPosition();
+    window.addEventListener("resize", updateMenuPosition);
+    window.addEventListener("scroll", updateMenuPosition, true);
+    return () => {
+      window.removeEventListener("resize", updateMenuPosition);
+      window.removeEventListener("scroll", updateMenuPosition, true);
+    };
+  }, [open, updateMenuPosition]);
 
   useEffect(() => {
     setActiveIndex(0);
@@ -361,254 +432,263 @@ export function CountryLanguageSelector({
         />
       </button>
 
-      {/* ── Inline dropdown ── */}
+      {/* ── Dropdown (portaled so footer/header overflow does not clip) ── */}
       <AnimatePresence>
-        {open ? (
-          <motion.div
-            initial={{ opacity: 0, y: 4, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 3, scale: 0.97 }}
-            transition={{ duration: 0.15, ease: [0.22, 1, 0.36, 1] }}
-            className={cn(
-              "absolute right-0 z-[200] mt-2 flex flex-col overflow-hidden rounded-[18px] border backdrop-blur-2xl",
-              light
-                ? "border-slate-200/80 bg-white/95 shadow-[0_20px_50px_rgba(15,23,42,0.14)]"
-                : "border-white/[0.12] bg-[#0c1528] shadow-[0_20px_60px_rgba(0,0,0,0.65)]",
-            )}
-            style={{
-              width: compact ? 320 : 360,
-              maxHeight: "min(520px, 80dvh)",
-            }}
-          >
-            {/* Title */}
-            <div
-              className={cn(
-                "shrink-0 border-b px-4 py-3",
-                light ? "border-slate-200/80" : "border-white/[0.07]",
-              )}
-            >
-              <p
+        {open && menuPosition && typeof document !== "undefined"
+          ? createPortal(
+              <motion.div
+                ref={menuRef}
+                initial={{
+                  opacity: 0,
+                  y: menuSide === "above" ? -4 : 4,
+                  scale: 0.97,
+                }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{
+                  opacity: 0,
+                  y: menuSide === "above" ? -3 : 3,
+                  scale: 0.97,
+                }}
+                transition={{ duration: 0.15, ease: [0.22, 1, 0.36, 1] }}
                 className={cn(
-                  "text-[13.5px] font-bold",
-                  light ? "text-slate-900" : "text-white",
+                  "flex flex-col overflow-hidden rounded-[18px] border backdrop-blur-2xl",
+                  light
+                    ? "border-slate-200/80 bg-white/95 shadow-[0_20px_50px_rgba(15,23,42,0.14)]"
+                    : "border-white/[0.12] bg-[#0c1528] shadow-[0_20px_60px_rgba(0,0,0,0.65)]",
                 )}
+                style={menuPosition}
               >
-                {t.locale.selectLocation}
-              </p>
-            </div>
-
-            {/* Search */}
-            <div
-              className={cn(
-                "shrink-0 border-b px-3 py-2.5",
-                light ? "border-slate-200/70" : "border-white/[0.06]",
-              )}
-            >
-              <label className="relative block">
-                <Search
+                {/* Title */}
+                <div
                   className={cn(
-                    "pointer-events-none absolute top-1/2 left-3 size-[13px] -translate-y-1/2",
-                    light ? "text-slate-400" : "text-white/35",
-                  )}
-                  aria-hidden
-                />
-                <input
-                  ref={searchRef}
-                  type="search"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  onKeyDown={onSearchKeyDown}
-                  placeholder="Search country or language…"
-                  className={cn(
-                    "h-[36px] w-full rounded-[9px] border pr-3 pl-9 text-[13px] outline-none",
-                    light
-                      ? "border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:border-[#6366f1]/50 focus:bg-white"
-                      : "border-white/[0.10] bg-white/[0.05] text-white placeholder:text-white/30 focus:border-[#2563eb]/50",
-                  )}
-                  autoComplete="off"
-                />
-              </label>
-            </div>
-
-            {/* Country list */}
-            <div
-              ref={listRef}
-              className="hb-locale-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain py-1"
-              role="listbox"
-            >
-              {results.length === 0 ? (
-                <p
-                  className={cn(
-                    "px-4 py-6 text-center text-[12px]",
-                    light ? "text-slate-400" : "text-white/40",
+                    "shrink-0 border-b px-4 py-3",
+                    light ? "border-slate-200/80" : "border-white/[0.07]",
                   )}
                 >
-                  {t.locale.noResults}
-                </p>
-              ) : (
-                results.map((option, index) => {
-                  const selected = option.code === draftCountry;
-                  const active = index === activeIndex;
-                  const primaryLang = languages[option.defaultLanguage];
-                  const currencyTag =
-                    option.currency !== "USD" ? option.currency : null;
+                  <p
+                    className={cn(
+                      "text-[13.5px] font-bold",
+                      light ? "text-slate-900" : "text-white",
+                    )}
+                  >
+                    {t.locale.selectLocation}
+                  </p>
+                </div>
 
-                  return (
-                    <button
-                      key={option.code}
-                      type="button"
-                      role="option"
-                      aria-selected={selected}
-                      data-active={String(active)}
-                      onMouseEnter={() => setActiveIndex(index)}
-                      onClick={() => selectAndApply(option)}
+                {/* Search */}
+                <div
+                  className={cn(
+                    "shrink-0 border-b px-3 py-2.5",
+                    light ? "border-slate-200/70" : "border-white/[0.06]",
+                  )}
+                >
+                  <label className="relative block">
+                    <Search
                       className={cn(
-                        "flex w-full items-center gap-3 px-3 py-[9px] text-left transition-colors duration-100",
+                        "pointer-events-none absolute top-1/2 left-3 size-[13px] -translate-y-1/2",
+                        light ? "text-slate-400" : "text-white/35",
+                      )}
+                      aria-hidden
+                    />
+                    <input
+                      ref={searchRef}
+                      type="search"
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      onKeyDown={onSearchKeyDown}
+                      placeholder={t.locale.searchPlaceholder}
+                      className={cn(
+                        "h-[36px] w-full rounded-[9px] border pr-3 pl-9 text-[13px] outline-none",
                         light
-                          ? selected
-                            ? "bg-indigo-50 text-slate-900"
-                            : active
-                              ? "bg-slate-100 text-slate-900"
-                              : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
-                          : selected
-                            ? "bg-[rgba(37,99,235,0.20)] text-white"
-                            : active
-                              ? "bg-white/[0.07] text-white"
-                              : "text-white/80 hover:bg-white/[0.05] hover:text-white",
+                          ? "border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:border-[#6366f1]/50 focus:bg-white"
+                          : "border-white/[0.10] bg-white/[0.05] text-white placeholder:text-white/30 focus:border-[#2563eb]/50",
+                      )}
+                      autoComplete="off"
+                    />
+                  </label>
+                </div>
+
+                {/* Country list */}
+                <div
+                  ref={listRef}
+                  className="hb-locale-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain py-1"
+                  role="listbox"
+                >
+                  {results.length === 0 ? (
+                    <p
+                      className={cn(
+                        "px-4 py-6 text-center text-[12px]",
+                        light ? "text-slate-400" : "text-white/40",
                       )}
                     >
-                      <FlagImg code={option.code} size={26} tone={tone} />
+                      {t.locale.noResults}
+                    </p>
+                  ) : (
+                    results.map((option, index) => {
+                      const selected = option.code === draftCountry;
+                      const active = index === activeIndex;
+                      const primaryLang = languages[option.defaultLanguage];
+                      const currencyTag =
+                        option.currency !== "USD" ? option.currency : null;
 
-                      <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">
-                        {option.name}
-                      </span>
-
-                      <span
-                        className={cn(
-                          "shrink-0 text-[11.5px]",
-                          light ? "text-slate-400" : "text-white/45",
-                        )}
-                      >
-                        {primaryLang?.nativeLabel ?? primaryLang?.label}
-                      </span>
-
-                      {currencyTag ? (
-                        <span
+                      return (
+                        <button
+                          key={option.code}
+                          type="button"
+                          role="option"
+                          aria-selected={selected}
+                          data-active={String(active)}
+                          onMouseEnter={() => setActiveIndex(index)}
+                          onClick={() => selectAndApply(option)}
                           className={cn(
-                            "shrink-0 rounded-[5px] border px-1.5 py-0.5 text-[10px] font-bold",
+                            "flex w-full items-center gap-3 px-3 py-[9px] text-left transition-colors duration-100",
                             light
-                              ? "border-slate-200 bg-white text-slate-500"
-                              : "border-white/[0.10] bg-white/[0.06] text-white/45",
+                              ? selected
+                                ? "bg-indigo-50 text-slate-900"
+                                : active
+                                  ? "bg-slate-100 text-slate-900"
+                                  : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+                              : selected
+                                ? "bg-[rgba(37,99,235,0.20)] text-white"
+                                : active
+                                  ? "bg-white/[0.07] text-white"
+                                  : "text-white/80 hover:bg-white/[0.05] hover:text-white",
                           )}
                         >
-                          {currencyTag}
-                        </span>
-                      ) : null}
+                          <FlagImg code={option.code} size={26} tone={tone} />
 
-                      {selected ? (
-                        <Check
-                          className={cn(
-                            "size-3.5 shrink-0",
-                            light ? "text-indigo-600" : "text-[#4f8ef7]",
+                          <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">
+                            {option.name}
+                          </span>
+
+                          <span
+                            className={cn(
+                              "shrink-0 text-[11.5px]",
+                              light ? "text-slate-400" : "text-white/45",
+                            )}
+                          >
+                            {primaryLang?.nativeLabel ?? primaryLang?.label}
+                          </span>
+
+                          {currencyTag ? (
+                            <span
+                              className={cn(
+                                "shrink-0 rounded-[5px] border px-1.5 py-0.5 text-[10px] font-bold",
+                                light
+                                  ? "border-slate-200 bg-white text-slate-500"
+                                  : "border-white/[0.10] bg-white/[0.06] text-white/45",
+                              )}
+                            >
+                              {currencyTag}
+                            </span>
+                          ) : null}
+
+                          {selected ? (
+                            <Check
+                              className={cn(
+                                "size-3.5 shrink-0",
+                                light ? "text-indigo-600" : "text-[#4f8ef7]",
+                              )}
+                              aria-hidden
+                            />
+                          ) : (
+                            <span className="size-3.5 shrink-0" />
                           )}
-                          aria-hidden
-                        />
-                      ) : (
-                        <span className="size-3.5 shrink-0" />
-                      )}
-                    </button>
-                  );
-                })
-              )}
-            </div>
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
 
-            {/* Language picker — only for multi-language countries */}
-            {languageChoices.length > 1 ? (
-              <div
-                className={cn(
-                  "shrink-0 border-t px-3 py-2.5",
-                  light ? "border-slate-200/80" : "border-white/[0.07]",
-                )}
-              >
-                <p
+                {/* Language picker — only for multi-language countries */}
+                {languageChoices.length > 1 ? (
+                  <div
+                    className={cn(
+                      "shrink-0 border-t px-3 py-2.5",
+                      light ? "border-slate-200/80" : "border-white/[0.07]",
+                    )}
+                  >
+                    <p
+                      className={cn(
+                        "mb-2 text-[10px] font-bold tracking-[0.12em] uppercase",
+                        light ? "text-slate-400" : "text-white/35",
+                      )}
+                    >
+                      {t.locale.language}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {languageChoices.map((code) => {
+                        const meta = languages[code];
+                        const sel = draftLanguage === code;
+                        return (
+                          <button
+                            key={code}
+                            type="button"
+                            onClick={() => setDraftLanguage(code)}
+                            className={cn(
+                              "rounded-[7px] border px-2.5 py-1 text-[12px] font-medium transition-colors",
+                              light
+                                ? sel
+                                  ? "border-indigo-300 bg-indigo-50 text-indigo-700"
+                                  : "border-slate-200 bg-white text-slate-600 hover:text-slate-900"
+                                : sel
+                                  ? "border-[#2563eb]/50 bg-[#2563eb]/20 text-white"
+                                  : "border-white/[0.10] bg-white/[0.04] text-white/55 hover:text-white",
+                            )}
+                          >
+                            {meta.nativeLabel}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : null}
+
+                {/* Footer: selected summary + Apply */}
+                <div
                   className={cn(
-                    "mb-2 text-[10px] font-bold tracking-[0.12em] uppercase",
-                    light ? "text-slate-400" : "text-white/35",
+                    "flex shrink-0 items-center justify-between gap-3 border-t px-4 py-2.5",
+                    light
+                      ? "border-slate-200/80 bg-slate-50/90"
+                      : "border-white/[0.07] bg-[rgba(5,8,18,0.7)]",
                   )}
                 >
-                  {t.locale.language}
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {languageChoices.map((code) => {
-                    const meta = languages[code];
-                    const sel = draftLanguage === code;
-                    return (
-                      <button
-                        key={code}
-                        type="button"
-                        onClick={() => setDraftLanguage(code)}
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <FlagImg code={draft.code} size={22} tone={tone} />
+                    <div className="min-w-0">
+                      <p
                         className={cn(
-                          "rounded-[7px] border px-2.5 py-1 text-[12px] font-medium transition-colors",
-                          light
-                            ? sel
-                              ? "border-indigo-300 bg-indigo-50 text-indigo-700"
-                              : "border-slate-200 bg-white text-slate-600 hover:text-slate-900"
-                            : sel
-                              ? "border-[#2563eb]/50 bg-[#2563eb]/20 text-white"
-                              : "border-white/[0.10] bg-white/[0.04] text-white/55 hover:text-white",
+                          "truncate text-[12px] font-semibold",
+                          light ? "text-slate-800" : "text-white/85",
                         )}
                       >
-                        {meta.nativeLabel}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : null}
-
-            {/* Footer: selected summary + Apply */}
-            <div
-              className={cn(
-                "flex shrink-0 items-center justify-between gap-3 border-t px-4 py-2.5",
-                light
-                  ? "border-slate-200/80 bg-slate-50/90"
-                  : "border-white/[0.07] bg-[rgba(5,8,18,0.7)]",
-              )}
-            >
-              <div className="flex min-w-0 items-center gap-2.5">
-                <FlagImg code={draft.code} size={22} tone={tone} />
-                <div className="min-w-0">
-                  <p
-                    className={cn(
-                      "truncate text-[12px] font-semibold",
-                      light ? "text-slate-800" : "text-white/85",
-                    )}
+                        {draft.name}
+                      </p>
+                      <p
+                        className={cn(
+                          "text-[10.5px]",
+                          light ? "text-slate-500" : "text-white/38",
+                        )}
+                      >
+                        {languages[draftLanguage]?.nativeLabel ??
+                          draftLanguage.toUpperCase()}
+                        {" · "}
+                        {draft.currency}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={applyDraft}
+                    className="inline-flex h-8 shrink-0 items-center rounded-[9px] bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-4 text-[12px] font-bold text-white shadow-[0_0_16px_rgba(37,99,235,0.28)] transition hover:brightness-110"
                   >
-                    {draft.name}
-                  </p>
-                  <p
-                    className={cn(
-                      "text-[10.5px]",
-                      light ? "text-slate-500" : "text-white/38",
-                    )}
-                  >
-                    {languages[draftLanguage]?.nativeLabel ??
-                      draftLanguage.toUpperCase()}
-                    {" · "}
-                    {draft.currency}
-                  </p>
+                    {t.locale.apply}
+                  </button>
                 </div>
-              </div>
-              <button
-                type="button"
-                onClick={applyDraft}
-                className="inline-flex h-8 shrink-0 items-center rounded-[9px] bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-4 text-[12px] font-bold text-white shadow-[0_0_16px_rgba(37,99,235,0.28)] transition hover:brightness-110"
-              >
-                {t.locale.apply}
-              </button>
-            </div>
-          </motion.div>
-        ) : null}
+              </motion.div>,
+              document.body,
+            )
+          : null}
       </AnimatePresence>
     </div>
   );

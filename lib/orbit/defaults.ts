@@ -612,7 +612,10 @@ export type CmsStorySlide = {
   body: string;
   ctaLabel: string;
   ctaHref: string;
+  /** Poster / fallback when no video, or static slide art */
   image: string;
+  /** Optional looped MP4/WebM; when set, homepage plays video instead of image */
+  video?: string;
   alt: string;
 };
 
@@ -2569,6 +2572,7 @@ export function defaultControlStorySection(): CmsStoryBandContent {
         ctaLabel: "Explore WordPress hosting",
         ctaHref: routes.hosting,
         image: "/images/home/wordpress.webp",
+        video: "/videos/home/control-wordpress.mp4",
         alt: "WordPress editor on a laptop",
       },
       {
@@ -3331,6 +3335,12 @@ function mergeStoryBandSection(
                 /hostinger/i.test(slide.image))
                 ? fallback.image
                 : text(slide.image, fallback.image),
+            video:
+              slide.video !== undefined
+                ? typeof slide.video === "string" && slide.video.trim()
+                  ? slide.video.trim()
+                  : undefined
+                : fallback.video,
             alt: text(slide.alt, fallback.alt),
           } satisfies CmsStorySlide;
         })

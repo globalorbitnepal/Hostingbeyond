@@ -175,12 +175,13 @@ export function StorySplitSection({
             <TemplateStudio playing={!reduce} />
           ) : (
             <GlassVideoFrame
-              key={active.image}
+              key={`${active.id}-${active.video ?? active.image}`}
               src={
                 active.image.includes("templates.webp")
                   ? "/images/home/wordpress.webp"
                   : active.image
               }
+              videoSrc={active.video}
               alt={active.alt}
               playing={!reduce}
               loop

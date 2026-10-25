@@ -1,15 +1,18 @@
 "use client";
 
-import { type ReactNode } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
 
+import { useInView } from "@/hooks/use-in-view";
 import { useTyped } from "@/hooks/use-typed";
+import { isVideoMediaSrc } from "@/lib/domains/media";
 import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
 import { cn } from "@/lib/utils";
 
 export function GlassVideoFrame({
   src,
+  videoSrc,
   alt,
   playing = true,
   overlay,
@@ -18,6 +21,8 @@ export function GlassVideoFrame({
   loop = false,
 }: {
   src: string;
+  /** When set, plays looped video with `src` as poster / fallback image */
+  videoSrc?: string;
   alt: string;
   playing?: boolean;
   overlay?: ReactNode;
@@ -26,25 +31,60 @@ export function GlassVideoFrame({
   loop?: boolean;
 }) {
   const reduce = useReducedMotion();
+  const { ref, inView } = useInView<HTMLDivElement>("120px");
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const useVideo = isVideoMediaSrc(videoSrc);
+  const shouldPlay = Boolean(playing && !reduce && inView);
+
+  useEffect(() => {
+    const node = videoRef.current;
+    if (!node || !useVideo) return;
+    if (shouldPlay) {
+      void node.play().catch(() => {
+        /* autoplay policies */
+      });
+    } else {
+      node.pause();
+    }
+  }, [shouldPlay, useVideo, videoSrc]);
 
   return (
     <div
+      ref={ref}
       className={cn(
         "relative min-h-[240px] overflow-hidden rounded-[28px] border border-white/45 bg-white/12 shadow-[0_32px_70px_-28px_rgba(15,10,40,0.45)] backdrop-blur-2xl",
         className,
       )}
     >
-      <Image
-        src={src}
-        alt={alt}
-        fill
-        sizes={sizes}
-        unoptimized={isRuntimeMediaSrc(src)}
-        className={cn(
-          "object-cover",
-          playing && !reduce ? (loop ? "hb-video" : "hb-ken") : "scale-[1.06]",
-        )}
-      />
+      {useVideo ? (
+        <video
+          ref={videoRef}
+          className="absolute inset-0 h-full w-full object-cover"
+          src={videoSrc}
+          poster={src}
+          muted
+          playsInline
+          loop={loop}
+          preload={inView ? "auto" : "metadata"}
+          aria-label={alt}
+        />
+      ) : (
+        <Image
+          src={src}
+          alt={alt}
+          fill
+          sizes={sizes}
+          unoptimized={isRuntimeMediaSrc(src)}
+          className={cn(
+            "object-cover",
+            playing && !reduce
+              ? loop
+                ? "hb-video"
+                : "hb-ken"
+              : "scale-[1.06]",
+          )}
+        />
+      )}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#2f1c6a]/28 via-transparent to-white/8" />
       {overlay}
     </div>

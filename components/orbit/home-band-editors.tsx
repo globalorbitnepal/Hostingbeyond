@@ -1,6 +1,7 @@
 "use client";
 
 import { OrbitImageField } from "@/components/orbit/image-field";
+import { OrbitVideoField } from "@/components/orbit/video-field";
 import type {
   CmsCloseCtaContent,
   CmsProofContent,
@@ -101,6 +102,7 @@ export function StoryBandEditor({
                     ctaLabel: "Learn more",
                     ctaHref: "/",
                     image: "",
+                    video: "",
                     alt: "",
                   },
                 ],
@@ -176,9 +178,15 @@ export function StoryBandEditor({
               onChange={(alt) => updateSlide(index, { alt })}
             />
           </div>
-          <div className="mt-3">
+          <div className="mt-3 grid gap-3 lg:grid-cols-2">
+            <OrbitVideoField
+              label="Slide video (optional)"
+              value={slide.video ?? ""}
+              onChange={(video) => updateSlide(index, { video })}
+              onCommit={(video) => updateSlide(index, { video }, true)}
+            />
             <OrbitImageField
-              label="Slide image"
+              label="Slide image (poster / fallback)"
               value={slide.image}
               onChange={(image) => updateSlide(index, { image })}
               onCommit={(image) => updateSlide(index, { image }, true)}

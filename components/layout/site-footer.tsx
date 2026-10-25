@@ -67,15 +67,14 @@ export function SiteFooter({
     .sort((a, b) => a.order - b.order);
 
   return (
-    <footer className="hb-band-cream relative isolate overflow-hidden pt-5 pb-7 text-slate-700">
+    <footer className="hb-band-cream relative isolate overflow-visible pt-5 pb-7 text-slate-700">
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-24 left-[-8%] h-64 w-72 rounded-full bg-[radial-gradient(circle,rgba(147,197,253,0.32),transparent_68%)] blur-2xl"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute right-[-10%] bottom-[-18%] h-72 w-80 rounded-full bg-[radial-gradient(circle,rgba(167,139,250,0.12),transparent_70%)] blur-2xl"
-      />
+        className="pointer-events-none absolute inset-0 overflow-hidden"
+      >
+        <div className="absolute -top-24 left-[-8%] h-64 w-72 rounded-full bg-[radial-gradient(circle,rgba(147,197,253,0.32),transparent_68%)] blur-2xl" />
+        <div className="absolute right-[-10%] bottom-[-18%] h-72 w-80 rounded-full bg-[radial-gradient(circle,rgba(167,139,250,0.12),transparent_70%)] blur-2xl" />
+      </div>
 
       <div className="hb-shell relative z-10">
         <div className="rounded-[28px] border border-white bg-white/90 px-5 py-5 shadow-[0_22px_60px_-36px_rgba(37,80,130,0.38)] sm:px-7 sm:py-6 lg:px-8">
@@ -256,7 +255,13 @@ export function SiteFooter({
 
         <div className="mt-5 flex flex-col gap-3 pb-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            <CountryLanguageSelector compact variant="globe" tone="light" />
+            <CountryLanguageSelector
+              compact
+              variant="globe"
+              tone="light"
+              menuAlign="start"
+              menuSide="above"
+            />
             {legal.map((link) => (
               <Link
                 key={link.id}
