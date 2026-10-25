@@ -120,6 +120,7 @@ jobs:
           VPS_PORT: ${{ secrets.VPS_PORT }}
           VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
           DOMAIN_API_LIVE_KEY: ${{ secrets.DOMAIN_API_LIVE_KEY }}
+          NAMESILO_API_KEY: ${{ secrets.NAMESILO_API_KEY }}
           RUN_PRISMA_MIGRATE_DEPLOY: ${{ env.RUN_PRISMA_MIGRATE_DEPLOY }}
         run: |
           set -euo pipefail
@@ -152,6 +153,16 @@ jobs:
           PY
           else
             echo "DOMAIN_API_LIVE_KEY secret not set; VPS must already have live availability in .env or search stays unconfigured"
+          fi
+
+          if [ -n "${NAMESILO_API_KEY:-}" ]; then
+            echo "==> Staging NameSilo credentials sync for VPS (value not logged)"
+            python3 - <<PY | "${SSH[@]}" "cat > /tmp/hb-namesilo-credentials.sync"
+          import json, os
+          print(json.dumps({"apiKey": os.environ["NAMESILO_API_KEY"]}))
+          PY
+          else
+            echo "NAMESILO_API_KEY secret not set; VPS must already have key in .env to enable NameSilo search"
           fi
 
           REMOTE_SCRIPT="/tmp/hostingbeyond-gha-deploy-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.sh"
@@ -226,6 +237,12 @@ jobs:
             grep -q '^DOMAIN_AVAILABILITY_ENV=live' .env || echo 'DOMAIN_AVAILABILITY_ENV="live"' >> .env
           fi
 
+          NAMESILO_SYNC=/tmp/hb-namesilo-credentials.sync
+          if [ -f "$NAMESILO_SYNC" ]; then
+            echo "==> Merging NameSilo API credentials"
+            node scripts/merge-namesilo-credentials-env.mjs .env < "$NAMESILO_SYNC"
+            rm -f "$NAMESILO_SYNC" 2>/dev/null || true
+          fi
           if grep -q '^NAMESILO_API_KEY=.' .env 2>/dev/null; then
             echo "==> Enabling NameSilo for customer search (key present; value not logged)"
             echo '{"provider":"namesilo"}' | node scripts/merge-namesilo-search-env.mjs .env
