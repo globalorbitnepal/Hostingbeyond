@@ -614,6 +614,8 @@ export type CmsStorySlide = {
   ctaHref: string;
   image: string;
   alt: string;
+  /** Optional looping tab video (MP4/WebM). Poster/fallback uses `image`. */
+  video?: string;
 };
 
 export type CmsStoryBandContent = {
@@ -2570,6 +2572,7 @@ export function defaultControlStorySection(): CmsStoryBandContent {
         ctaHref: routes.hosting,
         image: "/images/home/wordpress.webp",
         alt: "WordPress editor on a laptop",
+        video: "/videos/wordpress-hosting-control.mp4",
       },
       {
         id: "templates",
@@ -3332,6 +3335,10 @@ function mergeStoryBandSection(
                 ? fallback.image
                 : text(slide.image, fallback.image),
             alt: text(slide.alt, fallback.alt),
+            video:
+              typeof slide.video === "string" && slide.video.trim()
+                ? slide.video.trim()
+                : fallback.video,
           } satisfies CmsStorySlide;
         })
       : defaults.slides;

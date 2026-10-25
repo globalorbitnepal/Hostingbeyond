@@ -5,6 +5,7 @@ import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
 
 import { useTyped } from "@/hooks/use-typed";
+import { isVideoUrl } from "@/lib/media/is-video-url";
 import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +17,7 @@ export function GlassVideoFrame({
   className,
   sizes = "(max-width: 1024px) 100vw, 50vw",
   loop = false,
+  poster,
 }: {
   src: string;
   alt: string;
@@ -24,8 +26,12 @@ export function GlassVideoFrame({
   className?: string;
   sizes?: string;
   loop?: boolean;
+  /** Still image while video loads or when reduced motion prefers static media. */
+  poster?: string;
 }) {
   const reduce = useReducedMotion();
+  const video = isVideoUrl(src);
+  const showVideo = video && playing && !reduce;
 
   return (
     <div
@@ -34,17 +40,37 @@ export function GlassVideoFrame({
         className,
       )}
     >
-      <Image
-        src={src}
-        alt={alt}
-        fill
-        sizes={sizes}
-        unoptimized={isRuntimeMediaSrc(src)}
-        className={cn(
-          "object-cover",
-          playing && !reduce ? (loop ? "hb-video" : "hb-ken") : "scale-[1.06]",
-        )}
-      />
+      {showVideo ? (
+        <video
+          className="absolute inset-0 h-full w-full object-cover"
+          src={src}
+          poster={poster?.trim() || undefined}
+          autoPlay
+          muted
+          loop={loop}
+          playsInline
+          preload="auto"
+          aria-label={alt}
+        />
+      ) : (
+        <Image
+          src={video && poster?.trim() ? poster : src}
+          alt={alt}
+          fill
+          sizes={sizes}
+          unoptimized={isRuntimeMediaSrc(
+            video && poster?.trim() ? poster : src,
+          )}
+          className={cn(
+            "object-cover",
+            playing && !reduce && !video
+              ? loop
+                ? "hb-video"
+                : "hb-ken"
+              : "scale-[1.06]",
+          )}
+        />
+      )}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#2f1c6a]/28 via-transparent to-white/8" />
       {overlay}
     </div>

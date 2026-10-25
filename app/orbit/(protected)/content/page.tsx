@@ -1457,7 +1457,7 @@ export default function OrbitContentPage() {
       <div id="orbit-control">
         <StoryBandEditor
           title="WordPress / Templates slider"
-          hint="Hands-on control band — tabs, copy, and images."
+          hint="Hands-on control band — tabs, copy, poster image, and optional WordPress video."
           value={sections.controlStory ?? defaultControlStorySection()}
           onChange={(controlStory) =>
             setSections({ ...sections, controlStory })

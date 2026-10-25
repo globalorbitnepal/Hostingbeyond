@@ -19,9 +19,7 @@ type LibraryAsset = {
   source?: "upload" | "site";
 };
 
-function isVideoUrl(url: string) {
-  return /\.(mp4|webm)(\?|#|$)/i.test(url.trim());
-}
+import { isVideoUrl } from "@/lib/media/is-video-url";
 
 export function OrbitVideoField({
   label,

@@ -42,11 +42,13 @@ export function StorySplitSection({
 
   useEffect(() => {
     if (reduce || slides.length < 2) return;
+    const current = slides[index];
+    if (current?.video?.trim()) return;
     const timer = window.setInterval(() => {
-      setPage(([current]) => [(current + 1) % slides.length, 1]);
+      setPage(([currentIndex]) => [(currentIndex + 1) % slides.length, 1]);
     }, 5600);
     return () => window.clearInterval(timer);
-  }, [reduce, slides.length]);
+  }, [reduce, slides, index]);
 
   if (!content.visible || !active) return null;
 
@@ -175,12 +177,15 @@ export function StorySplitSection({
             <TemplateStudio playing={!reduce} />
           ) : (
             <GlassVideoFrame
-              key={active.image}
+              key={active.video?.trim() || active.image}
               src={
-                active.image.includes("templates.webp")
-                  ? "/images/home/wordpress.webp"
-                  : active.image
+                active.video?.trim()
+                  ? active.video.trim()
+                  : active.image.includes("templates.webp")
+                    ? "/images/home/wordpress.webp"
+                    : active.image
               }
+              poster={active.image}
               alt={active.alt}
               playing={!reduce}
               loop

@@ -1,6 +1,7 @@
 "use client";
 
 import { OrbitImageField } from "@/components/orbit/image-field";
+import { OrbitVideoField } from "@/components/orbit/video-field";
 import type {
   CmsCloseCtaContent,
   CmsProofContent,
@@ -102,6 +103,7 @@ export function StoryBandEditor({
                     ctaHref: "/",
                     image: "",
                     alt: "",
+                    video: "",
                   },
                 ],
               },
@@ -176,12 +178,18 @@ export function StoryBandEditor({
               onChange={(alt) => updateSlide(index, { alt })}
             />
           </div>
-          <div className="mt-3">
+          <div className="mt-3 space-y-3">
             <OrbitImageField
-              label="Slide image"
+              label="Slide image (poster / Templates tab)"
               value={slide.image}
               onChange={(image) => updateSlide(index, { image })}
               onCommit={(image) => updateSlide(index, { image }, true)}
+            />
+            <OrbitVideoField
+              label="Optional tab video (WordPress — MP4/WebM)"
+              value={slide.video ?? ""}
+              onChange={(video) => updateSlide(index, { video })}
+              onCommit={(video) => updateSlide(index, { video }, true)}
             />
           </div>
         </div>
