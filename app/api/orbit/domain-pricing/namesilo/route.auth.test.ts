@@ -35,4 +35,27 @@ describe("/api/orbit/domain-pricing/namesilo", () => {
     );
     assert.equal(res.status, 401);
   });
+
+  it("POST apply-supplier-sync requires confirm even with an admin session", async () => {
+    const now = new Date();
+    setOrbitAdminSessionTestOverride(async () => ({
+      id: "admin-test",
+      displayName: "Test Admin",
+      createdAt: now,
+      updatedAt: now,
+    }));
+    const res = await POST(
+      new Request(
+        "http://localhost/api/orbit/domain-pricing/namesilo?action=apply-supplier-sync",
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ confirm: false }),
+        },
+      ),
+    );
+    assert.equal(res.status, 400);
+    const body = (await res.json()) as { error?: string };
+    assert.match(body.error ?? "", /confirm/i);
+  });
 });

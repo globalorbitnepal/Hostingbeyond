@@ -220,6 +220,9 @@ export async function POST(request: Request) {
     const result = await refreshSupplierTldPricesFromProvider(admin.id);
     return NextResponse.json({
       ok: true,
+      deprecated: true,
+      deprecation:
+        "DNA catalogue refresh is not the authoritative Orbit domain supplier source. Use GET /api/orbit/domain-pricing/namesilo?action=preview-sync then POST ?action=apply-supplier-sync with { confirm: true }.",
       ...result,
       syncedAt: result.syncedAt.toISOString(),
     });

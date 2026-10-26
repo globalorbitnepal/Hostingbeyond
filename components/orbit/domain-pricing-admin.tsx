@@ -5,9 +5,16 @@ import { Loader2, Pencil, Search, X } from "lucide-react";
 
 import {
   PROPOSED_MARGIN_TARGETS,
-  grossMarginPercent,
   recommendRetailPrice,
 } from "@/lib/domains/pricing-margin-policy";
+import {
+  isAuthoritativeNameSiloKind,
+  resolveSupplierCostForOperation,
+} from "@/lib/orbit/bulk-retail-preview";
+import {
+  buildDomainPricingCsv,
+  tldRowToCsvInput,
+} from "@/lib/orbit/domain-pricing-csv";
 
 type TldRow = {
   id: string;
@@ -194,15 +201,15 @@ export function OrbitDomainPricingAdmin() {
       if (q && !bare.includes(q) && !row.tld.toLowerCase().includes(q)) {
         return false;
       }
-      if (supplierFilter === "synced" && !row.supplierSyncedAt) return false;
-      if (supplierFilter === "never" && row.supplierSyncedAt) return false;
-      if (supplierFilter === "noReg" && row.supplierRegister != null) {
+      if (supplierFilter === "synced" && !row.namesiloSyncedAt) return false;
+      if (supplierFilter === "never" && row.namesiloSyncedAt) return false;
+      if (supplierFilter === "noReg" && row.namesiloRegister != null) {
         return false;
       }
-      if (supplierFilter === "noRenew" && row.supplierRenew != null) {
+      if (supplierFilter === "noRenew" && row.namesiloRenew != null) {
         return false;
       }
-      if (supplierFilter === "noTransfer" && row.supplierTransfer != null) {
+      if (supplierFilter === "noTransfer" && row.namesiloTransfer != null) {
         return false;
       }
       if (
@@ -258,9 +265,11 @@ export function OrbitDomainPricingAdmin() {
     setDraft(null);
   }
 
-  async function refreshSupplier() {
+  async function refreshLegacyDnaCatalogue() {
     setRefreshing(true);
-    setMessage("Refreshing supplier catalogue and prices from provider…");
+    setMessage(
+      "Refreshing legacy DNA catalogue (does not update NameSilo supplier costs)…",
+    );
     const res = await fetch(
       "/api/orbit/domain-pricing?action=refresh-supplier",
       { method: "POST" },
@@ -274,10 +283,10 @@ export function OrbitDomainPricingAdmin() {
       error?: string;
     };
     if (!res.ok) {
-      setMessage(json.error ?? "Refresh failed.");
+      setMessage(json.error ?? "Legacy DNA catalogue refresh failed.");
     } else {
       setMessage(
-        `Supplier sync ${json.status ?? "done"}: ${json.tldsUpdated ?? 0} TLDs updated (${json.tldsReceived ?? 0} received, ${json.tldsFailed ?? 0} failed). Last sync: ${formatSyncTime(json.syncedAt ?? null)}`,
+        `Legacy DNA catalogue ${json.status ?? "done"}: ${json.tldsUpdated ?? 0} TLDs updated (${json.tldsReceived ?? 0} received, ${json.tldsFailed ?? 0} failed). This is not the NameSilo pricing source. Last DNA sync: ${formatSyncTime(json.syncedAt ?? null)}`,
       );
     }
     setRefreshing(false);
@@ -475,86 +484,34 @@ export function OrbitDomainPricingAdmin() {
     });
   }
 
-  function proposedSlot(cost: number | null, targetPercent: number) {
-    if (cost == null || !Number.isFinite(cost)) return null;
-    const rec = recommendRetailPrice(cost, targetPercent);
+  function proposedSlot(row: TldRow, field: "register" | "renew" | "transfer") {
+    const cost = resolveSupplierCostForOperation(tldRowToCsvInput(row), field);
+    if (!isAuthoritativeNameSiloKind(cost.kind) || cost.amount == null) {
+      return null;
+    }
+    const targetPercent =
+      field === "transfer"
+        ? PROPOSED_MARGIN_TARGETS.transferGrossPercent
+        : field === "renew"
+          ? PROPOSED_MARGIN_TARGETS.renewalGrossPercent
+          : PROPOSED_MARGIN_TARGETS.registrationGrossPercent;
+    const rec = recommendRetailPrice(cost.amount, targetPercent);
     return rec.ok ? rec : null;
   }
 
+  function namesiloStatusLabel(row: TldRow): string {
+    const kind = resolveSupplierCostForOperation(
+      tldRowToCsvInput(row),
+      "register",
+    ).kind;
+    if (kind === "stale") return "stale";
+    if (kind === "missing") return row.namesiloPriceStatus ?? "missing";
+    return row.namesiloPriceStatus ?? kind;
+  }
+
   function exportPricingCsv() {
-    const header = [
-      "tld",
-      "retail_register",
-      "retail_renew",
-      "retail_transfer",
-      "dna_register",
-      "dna_renew",
-      "dna_transfer",
-      "namesilo_register",
-      "namesilo_renew",
-      "namesilo_transfer",
-      "namesilo_status",
-      "namesilo_synced_at",
-      "proposed_register",
-      "proposed_renew",
-      "proposed_transfer",
-      "margin_register_pct",
-      "margin_renew_pct",
-      "margin_transfer_pct",
-      "retail_locked",
-      "lifecycle_provider",
-    ];
-    const lines = [header.join(",")];
-    for (const row of rows) {
-      const pReg = proposedSlot(
-        row.namesiloRegister,
-        PROPOSED_MARGIN_TARGETS.registrationGrossPercent,
-      );
-      const pRen = proposedSlot(
-        row.namesiloRenew,
-        PROPOSED_MARGIN_TARGETS.renewalGrossPercent,
-      );
-      const pTr = proposedSlot(
-        row.namesiloTransfer,
-        PROPOSED_MARGIN_TARGETS.transferGrossPercent,
-      );
-      const costReg = row.namesiloRegister ?? row.supplierRegister;
-      const costRen = row.namesiloRenew ?? row.supplierRenew;
-      const costTr = row.namesiloTransfer ?? row.supplierTransfer;
-      const mReg =
-        costReg != null
-          ? grossMarginPercent(row.retailRegister, costReg)
-          : null;
-      const mRen =
-        costRen != null ? grossMarginPercent(row.retailRenew, costRen) : null;
-      const mTr =
-        costTr != null ? grossMarginPercent(row.retailTransfer, costTr) : null;
-      lines.push(
-        [
-          row.tld,
-          row.retailRegister,
-          row.retailRenew,
-          row.retailTransfer,
-          row.supplierRegister ?? "",
-          row.supplierRenew ?? "",
-          row.supplierTransfer ?? "",
-          row.namesiloRegister ?? "",
-          row.namesiloRenew ?? "",
-          row.namesiloTransfer ?? "",
-          row.namesiloPriceStatus ?? "",
-          row.namesiloSyncedAt ?? "",
-          pReg?.recommended ?? "",
-          pRen?.recommended ?? "",
-          pTr?.recommended ?? "",
-          mReg != null ? mReg.toFixed(2) : "",
-          mRen != null ? mRen.toFixed(2) : "",
-          mTr != null ? mTr.toFixed(2) : "",
-          row.retailPriceLocked ? "yes" : "no",
-          row.lifecycleProvider ?? "",
-        ].join(","),
-      );
-    }
-    const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+    const csv = buildDomainPricingCsv(rows);
+    const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -574,10 +531,11 @@ export function OrbitDomainPricingAdmin() {
             Domain pricing
           </h1>
           <p className="mt-1 text-sm text-slate-600">
-            Supplier registration, renewal, and transfer costs (DNA catalogue
-            and NameSilo account costs) are shown separately from customer
-            retail prices. Estimated gross profit uses USD catalogue fields only
-            — not net profit; taxes and payment fees are excluded.
+            Authoritative supplier costs are verified, fresh NameSilo account
+            prices in USD. Gross profit is retail minus that NameSilo cost — not
+            net profit. Taxes, payment-processing charges, and registry fees not
+            in the NameSilo price are excluded. Missing, stale, or unverified
+            NameSilo costs show N/A and never fall back to DNA rates.
           </p>
           <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-950">
             NameSilo supplier synchronization updates supplier costs only.
@@ -588,8 +546,10 @@ export function OrbitDomainPricingAdmin() {
             {supplierSync?.status ? (
               <>
                 {" "}
-                · DNA supplier: {formatSyncTime(supplierSync.syncedAt)} (
-                {supplierSync.status})
+                · Legacy DNA catalogue: {formatSyncTime(
+                  supplierSync.syncedAt,
+                )}{" "}
+                ({supplierSync.status})
               </>
             ) : null}
             {namesiloSync?.status ? (
@@ -607,18 +567,9 @@ export function OrbitDomainPricingAdmin() {
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            disabled={refreshing}
-            onClick={() => void refreshSupplier()}
-            className="inline-flex items-center gap-2 rounded-xl bg-[#673de6] px-4 py-2 text-sm font-bold text-white disabled:opacity-70"
-          >
-            {refreshing ? <Loader2 className="size-4 animate-spin" /> : null}
-            Refresh DNA supplier
-          </button>
-          <button
-            type="button"
             disabled={namesiloRefreshing}
             onClick={() => void previewNameSiloSync()}
-            className="inline-flex items-center gap-2 rounded-xl border border-[#673de6] bg-white px-4 py-2 text-sm font-bold text-[#673de6] disabled:opacity-70"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#673de6] px-4 py-2 text-sm font-bold text-white disabled:opacity-70"
           >
             {namesiloRefreshing ? (
               <Loader2 className="size-4 animate-spin" />
@@ -640,6 +591,15 @@ export function OrbitDomainPricingAdmin() {
             className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 disabled:opacity-70"
           >
             Export worklist CSV
+          </button>
+          <button
+            type="button"
+            disabled={refreshing}
+            onClick={() => void refreshLegacyDnaCatalogue()}
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 disabled:opacity-70"
+          >
+            {refreshing ? <Loader2 className="size-4 animate-spin" /> : null}
+            Legacy DNA catalogue refresh
           </button>
         </div>
       </div>
@@ -684,7 +644,8 @@ export function OrbitDomainPricingAdmin() {
         </div>
         <p className="mt-2 text-xs text-slate-500">
           Select TLDs, set retail values, preview margins and warnings, then
-          confirm apply. Supplier prices are never changed by bulk edit.
+          confirm apply. Margins use verified NameSilo costs only. Supplier
+          prices are never changed by bulk edit.
         </p>
       </div>
 
@@ -699,7 +660,9 @@ export function OrbitDomainPricingAdmin() {
               Bulk retail preview
             </h2>
             <p className="mt-1 text-sm text-slate-600">
-              Review supplier cost, margin, and locks before applying.
+              Review verified NameSilo cost, margin, and locks before applying.
+              Rows that still need a NameSilo sync cannot produce authoritative
+              margin updates.
             </p>
             <div className="mt-4 overflow-x-auto">
               <table className="min-w-full text-left text-xs">
@@ -809,11 +772,11 @@ export function OrbitDomainPricingAdmin() {
                 }
               >
                 <option value="all">All TLDs</option>
-                <option value="synced">Synced</option>
-                <option value="never">Never synced</option>
-                <option value="noReg">Missing supplier reg.</option>
-                <option value="noRenew">Missing supplier renew</option>
-                <option value="noTransfer">Missing supplier transfer</option>
+                <option value="synced">NameSilo synced</option>
+                <option value="never">NameSilo never synced</option>
+                <option value="noReg">Missing NameSilo reg.</option>
+                <option value="noRenew">Missing NameSilo renew</option>
+                <option value="noTransfer">Missing NameSilo transfer</option>
                 <option value="nsMissing">NameSilo price missing</option>
                 <option value="nsUnverified">NameSilo unverified</option>
                 <option value="lowMargin">
@@ -831,18 +794,20 @@ export function OrbitDomainPricingAdmin() {
                 <tr>
                   <th className="px-3 py-3">Sel.</th>
                   <th className="px-3 py-3">TLD</th>
-                  <th className="px-3 py-3">DNA supplier reg. cost</th>
-                  <th className="px-3 py-3">NameSilo supplier reg. cost</th>
-                  <th className="px-3 py-3">NameSilo cost status</th>
-                  <th className="px-3 py-3">Reg. gross profit</th>
-                  <th className="px-3 py-3">Reg. gross margin</th>
-                  <th className="px-3 py-3">Lifecycle / lock</th>
-                  <th className="px-3 py-3">Retail reg. price</th>
-                  <th className="px-3 py-3">Retail renew price</th>
-                  <th className="px-3 py-3">Retail transfer price</th>
-                  <th className="px-3 py-3">Max years</th>
-                  <th className="px-3 py-3">DNA sync</th>
-                  <th className="px-3 py-3">NS sync</th>
+                  <th className="px-3 py-3">NameSilo reg. cost</th>
+                  <th className="px-3 py-3">NameSilo renew cost</th>
+                  <th className="px-3 py-3">NameSilo transfer cost</th>
+                  <th className="px-3 py-3">NameSilo status</th>
+                  <th className="px-3 py-3">Last NameSilo sync</th>
+                  <th className="px-3 py-3">Retail reg.</th>
+                  <th className="px-3 py-3">Retail renew</th>
+                  <th className="px-3 py-3">Retail transfer</th>
+                  <th className="px-3 py-3">Reg. GP / margin / markup</th>
+                  <th className="px-3 py-3">Renew GP / margin / markup</th>
+                  <th className="px-3 py-3">Transfer GP / margin / markup</th>
+                  <th className="px-3 py-3">Retail lock</th>
+                  <th className="px-3 py-3">Lifecycle registrar</th>
+                  <th className="px-3 py-3">Legacy DNA (not used)</th>
                   <th className="px-3 py-3" />
                 </tr>
               </thead>
@@ -859,41 +824,50 @@ export function OrbitDomainPricingAdmin() {
                     </td>
                     <td className="px-3 py-2 font-bold">{row.tld}</td>
                     <td className="px-3 py-2 text-slate-600">
-                      {money(row.supplierRegister)}
-                    </td>
-                    <td className="px-3 py-2 text-slate-600">
                       {money(row.namesiloRegister)}
                     </td>
+                    <td className="px-3 py-2 text-slate-600">
+                      {money(row.namesiloRenew)}
+                    </td>
+                    <td className="px-3 py-2 text-slate-600">
+                      {money(row.namesiloTransfer)}
+                    </td>
                     <td className="px-3 py-2 text-xs font-semibold text-slate-500 uppercase">
-                      {row.namesiloPriceStatus ?? "—"}
+                      {namesiloStatusLabel(row)}
                     </td>
-                    <td className="px-3 py-2 text-xs text-slate-600">
-                      {row.metrics?.register.incomplete
-                        ? "—"
-                        : money(row.metrics?.register.grossProfitUsd ?? null)}
-                    </td>
-                    <td className="px-3 py-2 text-xs text-slate-600">
-                      {row.metrics?.register.incomplete
-                        ? "—"
-                        : row.metrics?.register.belowSupplierCost
-                          ? `${row.metrics.register.grossMarginPercent?.toFixed(0) ?? "?"}% ⚠`
-                          : `${row.metrics?.register.grossMarginPercent?.toFixed(0) ?? "—"}%`}
-                    </td>
-                    <td className="px-3 py-2 text-xs text-slate-600">
-                      {row.lifecycleProvider ?? "dna-default"}
-                      {row.retailPriceLocked ? " · locked" : ""}
+                    <td className="px-3 py-2 text-xs text-slate-500">
+                      {formatSyncTime(row.namesiloSyncedAt)}
                     </td>
                     <td className="px-3 py-2">{money(row.retailRegister)}</td>
                     <td className="px-3 py-2">{money(row.retailRenew)}</td>
                     <td className="px-3 py-2">{money(row.retailTransfer)}</td>
-                    <td className="px-3 py-2 text-slate-600">
-                      {row.supplierMaxRegisterYears ?? "—"}
+                    <td className="px-3 py-2 text-xs text-slate-600">
+                      {row.metrics?.register.belowSupplierCost &&
+                      !row.metrics.register.incomplete
+                        ? `${formatGrossSummary(row.metrics.register)} ⚠`
+                        : formatGrossSummary(row.metrics?.register)}
                     </td>
-                    <td className="px-3 py-2 text-xs text-slate-500">
-                      {formatSyncTime(row.supplierSyncedAt)}
+                    <td className="px-3 py-2 text-xs text-slate-600">
+                      {row.metrics?.renew.belowSupplierCost &&
+                      !row.metrics.renew.incomplete
+                        ? `${formatGrossSummary(row.metrics.renew)} ⚠`
+                        : formatGrossSummary(row.metrics?.renew)}
                     </td>
-                    <td className="px-3 py-2 text-xs text-slate-500">
-                      {formatSyncTime(row.namesiloSyncedAt)}
+                    <td className="px-3 py-2 text-xs text-slate-600">
+                      {row.metrics?.transfer.belowSupplierCost &&
+                      !row.metrics.transfer.incomplete
+                        ? `${formatGrossSummary(row.metrics.transfer)} ⚠`
+                        : formatGrossSummary(row.metrics?.transfer)}
+                    </td>
+                    <td className="px-3 py-2 text-xs text-slate-600">
+                      {row.retailPriceLocked ? "Locked" : "Unlocked"}
+                    </td>
+                    <td className="px-3 py-2 text-xs text-slate-600">
+                      {row.lifecycleProvider ?? "dna-default (lifecycle only)"}
+                    </td>
+                    <td className="px-3 py-2 text-xs text-slate-400">
+                      {money(row.supplierRegister)} / {money(row.supplierRenew)}{" "}
+                      / {money(row.supplierTransfer)}
                     </td>
                     <td className="px-3 py-2">
                       <button
@@ -939,49 +913,29 @@ export function OrbitDomainPricingAdmin() {
             </div>
             <section className="mt-4 rounded-xl bg-slate-50 p-4">
               <h3 className="text-xs font-bold text-slate-500 uppercase">
-                Supplier costs (read-only, USD)
+                NameSilo supplier costs (authoritative, read-only, USD)
               </h3>
               <dl className="mt-2 grid grid-cols-2 gap-2 text-sm">
                 <div>
-                  <dt className="text-slate-500">
-                    DNA supplier registration cost
-                  </dt>
-                  <dd className="font-semibold">
-                    {money(editing.supplierRegister)}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-slate-500">DNA supplier renewal cost</dt>
-                  <dd className="font-semibold">
-                    {money(editing.supplierRenew)}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-slate-500">DNA supplier transfer cost</dt>
-                  <dd className="font-semibold">
-                    {money(editing.supplierTransfer)}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-slate-500">NameSilo reg.</dt>
+                  <dt className="text-slate-500">NameSilo registration cost</dt>
                   <dd className="font-semibold">
                     {money(editing.namesiloRegister)}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-slate-500">NameSilo renew</dt>
+                  <dt className="text-slate-500">NameSilo renewal cost</dt>
                   <dd className="font-semibold">
                     {money(editing.namesiloRenew)}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-slate-500">NameSilo transfer</dt>
+                  <dt className="text-slate-500">NameSilo transfer cost</dt>
                   <dd className="font-semibold">
                     {money(editing.namesiloTransfer)}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-slate-500">NS last sync</dt>
+                  <dt className="text-slate-500">NameSilo last sync</dt>
                   <dd className="text-xs font-semibold">
                     {formatSyncTime(editing.namesiloSyncedAt)}
                   </dd>
@@ -989,7 +943,7 @@ export function OrbitDomainPricingAdmin() {
                 <div>
                   <dt className="text-slate-500">NameSilo status</dt>
                   <dd className="text-xs font-semibold uppercase">
-                    {editing.namesiloPriceStatus ?? "—"}
+                    {namesiloStatusLabel(editing)}
                   </dd>
                 </div>
                 <div>
@@ -999,10 +953,18 @@ export function OrbitDomainPricingAdmin() {
                   </dd>
                 </div>
               </dl>
+              <p className="mt-3 text-[10px] font-semibold tracking-wide text-slate-400 uppercase">
+                Legacy DNA catalogue (not used for NameSilo metrics)
+              </p>
+              <p className="text-xs text-slate-500">
+                {money(editing.supplierRegister)} /{" "}
+                {money(editing.supplierRenew)} /{" "}
+                {money(editing.supplierTransfer)}
+              </p>
             </section>
             <section className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
               <h3 className="text-xs font-bold text-slate-500 uppercase">
-                Estimated gross profit (current retail vs authoritative supplier
+                Estimated gross profit (current retail vs verified NameSilo
                 cost)
               </h3>
               <p className="mt-1 text-xs text-slate-500">
@@ -1033,19 +995,7 @@ export function OrbitDomainPricingAdmin() {
               </h3>
               <dl className="mt-2 grid grid-cols-3 gap-2 text-xs">
                 {(["register", "renew", "transfer"] as const).map((op) => {
-                  const cost =
-                    op === "register"
-                      ? editing.namesiloRegister
-                      : op === "renew"
-                        ? editing.namesiloRenew
-                        : editing.namesiloTransfer;
-                  const target =
-                    op === "transfer"
-                      ? PROPOSED_MARGIN_TARGETS.transferGrossPercent
-                      : op === "renew"
-                        ? PROPOSED_MARGIN_TARGETS.renewalGrossPercent
-                        : PROPOSED_MARGIN_TARGETS.registrationGrossPercent;
-                  const slot = proposedSlot(cost, target);
+                  const slot = proposedSlot(editing, op);
                   return (
                     <div key={op}>
                       <dt className="text-slate-500 capitalize">{op}</dt>

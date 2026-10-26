@@ -22,7 +22,7 @@ function row(overrides: Partial<TldPriceRowInput> = {}): TldPriceRowInput {
     namesiloRegister: 11.05,
     namesiloRenew: 11.05,
     namesiloTransfer: 10.8,
-    namesiloSyncedAt: new Date("2026-01-01T00:00:00.000Z"),
+    namesiloSyncedAt: new Date(),
     namesiloPriceStatus: "verified",
     ...overrides,
   };
@@ -66,6 +66,48 @@ describe("bulk retail preview", () => {
       { tld: ".xyz", retailRegister: 3.99 },
     ]);
     assert.ok(preview[0]?.warnings.includes("supplier_register_unverified"));
+    assert.ok(preview[0]?.warnings.includes("namesilo_sync_required"));
+    assert.equal(preview[0]?.analysis.register?.grossProfit, null);
+  });
+
+  it("does not fall back to DNA costs for bulk recommendations", () => {
+    const map = new Map([
+      [
+        ".com",
+        row({
+          namesiloPriceStatus: "missing",
+          namesiloRegister: null,
+          namesiloRenew: null,
+          namesiloTransfer: null,
+          supplierRegister: 1.11,
+          supplierRenew: 1.11,
+          supplierTransfer: 1.11,
+        }),
+      ],
+    ]);
+    const preview = buildBulkRetailPreview(map, [
+      { tld: ".com", retailRegister: 20 },
+    ]);
+    assert.equal(preview[0]?.supplier.register.kind, "missing");
+    assert.equal(preview[0]?.supplier.register.amount, null);
+    assert.equal(preview[0]?.analysis.register?.grossProfit, null);
+    assert.ok(preview[0]?.warnings.includes("namesilo_sync_required"));
+  });
+
+  it("does not treat unverified NameSilo amounts as bulk margin basis", () => {
+    const map = new Map([
+      [
+        ".com",
+        row({
+          namesiloPriceStatus: "unverified",
+          namesiloRegister: 11.05,
+        }),
+      ],
+    ]);
+    const preview = buildBulkRetailPreview(map, [
+      { tld: ".com", retailRegister: 20 },
+    ]);
+    assert.equal(preview[0]?.supplier.register.kind, "unverified");
     assert.equal(preview[0]?.analysis.register?.grossProfit, null);
   });
 });

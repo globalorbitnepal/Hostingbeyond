@@ -308,20 +308,23 @@ export async function previewNameSiloSupplierSync(): Promise<{
         namesiloTransfer: merged.transfer,
         namesiloPriceStatus: plan.status,
       },
-      proposedRetail: {
-        register: proposedForCost(
-          merged.register,
-          PROPOSED_MARGIN_TARGETS.registrationGrossPercent,
-        ),
-        renew: proposedForCost(
-          merged.renew,
-          PROPOSED_MARGIN_TARGETS.renewalGrossPercent,
-        ),
-        transfer: proposedForCost(
-          merged.transfer,
-          PROPOSED_MARGIN_TARGETS.transferGrossPercent,
-        ),
-      },
+      proposedRetail:
+        plan.status === "verified"
+          ? {
+              register: proposedForCost(
+                merged.register,
+                PROPOSED_MARGIN_TARGETS.registrationGrossPercent,
+              ),
+              renew: proposedForCost(
+                merged.renew,
+                PROPOSED_MARGIN_TARGETS.renewalGrossPercent,
+              ),
+              transfer: proposedForCost(
+                merged.transfer,
+                PROPOSED_MARGIN_TARGETS.transferGrossPercent,
+              ),
+            }
+          : undefined,
       currentRetail: {
         register: retailRegister,
         renew: retailRenew,

@@ -65,4 +65,28 @@ describe("NameSilo supplier sync plan", () => {
     assert.equal(plan.data.namesiloPriceStatus, "missing");
     assert.equal(plan.data.namesiloRegister, undefined);
   });
+
+  it("does not mark incomplete API payloads as verified", () => {
+    const syncedAt = new Date("2026-01-01");
+    const plan = planRowUpdate(
+      {
+        ...baseRow,
+        namesiloRegister: null,
+        namesiloRenew: null,
+        namesiloTransfer: null,
+        namesiloPriceStatus: null,
+      },
+      {
+        tld: ".com",
+        register: 11,
+        renew: null,
+        transfer: null,
+        invalidFields: ["renew"],
+      },
+      syncedAt,
+    );
+    assert.equal(plan.status, "invalid");
+    assert.notEqual(plan.status, "verified");
+    assert.equal(plan.data.namesiloRegister, 11);
+  });
 });

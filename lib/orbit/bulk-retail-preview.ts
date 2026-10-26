@@ -17,6 +17,13 @@ export type SupplierCostKind =
   | "unverified"
   | "stale";
 
+/** NameSilo costs older than this are stale and excluded from authoritative metrics. */
+export const NAMESILO_SUPPLIER_MAX_AGE_MS = 30 * 24 * 3600_000;
+
+export function isAuthoritativeNameSiloKind(kind: SupplierCostKind): boolean {
+  return kind === "verified_namesilo";
+}
+
 export type BulkRetailPreviewLine = {
   tld: string;
   rowUpdatedAt: string;
@@ -86,38 +93,29 @@ export function resolveSupplierCostForOperation(
       : field === "renew"
         ? "namesiloRenew"
         : "namesiloTransfer";
-  const dnaKey =
-    field === "register"
-      ? "supplierRegister"
-      : field === "renew"
-        ? "supplierRenew"
-        : "supplierTransfer";
   const nsVal = num(row[nsKey]);
-  const dnaVal = num(row[dnaKey]);
   const status = row.namesiloPriceStatus;
+  const staleByAge =
+    row.namesiloSyncedAt != null &&
+    Date.now() - row.namesiloSyncedAt.getTime() > NAMESILO_SUPPLIER_MAX_AGE_MS;
 
-  if (status === "verified" && nsVal != null) {
-    return { amount: nsVal, kind: "verified_namesilo" };
+  // DNA/legacy `supplier*` costs are never authoritative for NameSilo metrics.
+  if (status === "invalid") {
+    return { amount: nsVal, kind: "invalid" };
   }
-  if (nsVal != null && status !== "missing") {
-    return { amount: nsVal, kind: "unverified" };
+  if (status === "missing") {
+    return { amount: nsVal, kind: "missing" };
   }
-  if (status === "missing" || (nsVal == null && status)) {
-    if (dnaVal != null) {
-      return { amount: dnaVal, kind: "verified_dna" };
-    }
+  if (nsVal == null) {
     return { amount: null, kind: "missing" };
   }
-  if (dnaVal != null) {
-    const stale =
-      row.supplierSyncedAt &&
-      Date.now() - row.supplierSyncedAt.getTime() > 30 * 24 * 3600_000;
-    return {
-      amount: dnaVal,
-      kind: stale ? "stale" : "verified_dna",
-    };
+  if (status === "stale" || staleByAge) {
+    return { amount: nsVal, kind: "stale" };
   }
-  return { amount: null, kind: "missing" };
+  if (status === "verified" && row.namesiloSyncedAt != null && !staleByAge) {
+    return { amount: nsVal, kind: "verified_namesilo" };
+  }
+  return { amount: nsVal, kind: "unverified" };
 }
 
 function analyzeLine(
@@ -126,7 +124,7 @@ function analyzeLine(
   marginTarget: number,
 ): LineAnalysis | undefined {
   if (proposed === undefined) return undefined;
-  if (supplier.kind === "missing" || supplier.kind === "invalid") {
+  if (!isAuthoritativeNameSiloKind(supplier.kind) || supplier.amount == null) {
     return {
       grossProfit: null,
       grossMarginPercent: null,
@@ -229,8 +227,9 @@ export function buildBulkRetailPreview(
     const supRen = resolveSupplierCostForOperation(row, "renew");
     const supTr = resolveSupplierCostForOperation(row, "transfer");
 
-    if (supReg.kind === "missing" || supReg.kind === "invalid") {
+    if (!isAuthoritativeNameSiloKind(supReg.kind)) {
       warnings.push("supplier_register_unverified");
+      warnings.push("namesilo_sync_required");
     }
     if (proposed.register !== undefined) {
       const a = analyzeLine(

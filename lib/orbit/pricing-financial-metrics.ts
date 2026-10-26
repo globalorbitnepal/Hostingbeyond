@@ -1,6 +1,9 @@
 import { grossMarginPercent } from "@/lib/domains/pricing-margin-policy";
 import type { SupplierCostKind } from "@/lib/orbit/bulk-retail-preview";
-import { resolveSupplierCostForOperation } from "@/lib/orbit/bulk-retail-preview";
+import {
+  isAuthoritativeNameSiloKind,
+  resolveSupplierCostForOperation,
+} from "@/lib/orbit/bulk-retail-preview";
 import type { TldPriceRowInput } from "@/lib/orbit/bulk-retail-preview";
 
 export const PRICING_CURRENCY_NOTE =
@@ -27,15 +30,15 @@ export function supplierCostBasisLabel(kind: SupplierCostKind): string {
     case "verified_namesilo":
       return "Verified NameSilo supplier cost (USD)";
     case "verified_dna":
-      return "DNA supplier catalogue cost (USD)";
+      return "Legacy DNA catalogue cost (USD) — not used for NameSilo metrics";
     case "unverified":
-      return "NameSilo cost present but not verified — estimate only";
+      return "NameSilo cost present but not verified — excluded from metrics";
     case "stale":
-      return "DNA supplier cost older than 30 days — may be stale";
+      return "NameSilo cost older than 30 days — excluded from authoritative metrics";
     case "invalid":
-      return "Supplier cost invalid on last sync";
+      return "NameSilo cost invalid on last sync";
     case "missing":
-      return "Supplier cost unavailable";
+      return "NameSilo supplier cost unavailable";
     default:
       return "Supplier cost unavailable";
   }
@@ -59,9 +62,9 @@ export function computeOperationGrossMetrics(
 ): OperationGrossMetrics {
   const basis = supplierCostBasisLabel(supplier.kind);
   const incomplete =
-    supplier.kind === "missing" ||
-    supplier.kind === "invalid" ||
-    supplier.amount == null;
+    !isAuthoritativeNameSiloKind(supplier.kind) ||
+    supplier.amount == null ||
+    !Number.isFinite(supplier.amount);
   if (incomplete || !Number.isFinite(retail)) {
     return {
       grossProfitUsd: null,

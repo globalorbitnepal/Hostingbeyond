@@ -72,6 +72,15 @@ async function namesiloRequest(
   }
 }
 
+export function assertNameSiloLifecycleEnabled(): void {
+  if (process.env.NAMESILO_LIFECYCLE_ENABLED !== "true") {
+    throw new DomainProviderError(
+      "provider_failure",
+      "namesilo_lifecycle_not_enabled",
+    );
+  }
+}
+
 export function getNameSiloLifecycleProvider(): DomainRegistrarProvider | null {
   if (process.env.NAMESILO_API_KEY?.trim()) {
     if (!cached) cached = buildProvider();
@@ -156,12 +165,7 @@ function buildProvider(): DomainRegistrarProvider {
 
     /** Verified API operation name per migration inventory (D6: NS only this phase). */
     async updateNameservers(domain: string, nameservers: string[]) {
-      if (process.env.NAMESILO_LIFECYCLE_ENABLED !== "true") {
-        throw new DomainProviderError(
-          "provider_failure",
-          "namesilo_lifecycle_not_enabled",
-        );
-      }
+      assertNameSiloLifecycleEnabled();
       const params: Record<string, string> = { domain };
       nameservers.slice(0, 13).forEach((ns, i) => {
         params[`ns${i + 1}`] = ns;
@@ -170,12 +174,7 @@ function buildProvider(): DomainRegistrarProvider {
     },
 
     async getAuthCode(domain: string) {
-      if (process.env.NAMESILO_LIFECYCLE_ENABLED !== "true") {
-        throw new DomainProviderError(
-          "provider_failure",
-          "namesilo_lifecycle_not_enabled",
-        );
-      }
+      assertNameSiloLifecycleEnabled();
       const reply = await namesiloRequest("retrieveAuthCode", { domain });
       const code = reply.auth_code ?? reply.code;
       if (!code || code === "300") {
@@ -185,22 +184,12 @@ function buildProvider(): DomainRegistrarProvider {
     },
 
     async lockDomain(domain: string) {
-      if (process.env.NAMESILO_LIFECYCLE_ENABLED !== "true") {
-        throw new DomainProviderError(
-          "provider_failure",
-          "namesilo_lifecycle_not_enabled",
-        );
-      }
+      assertNameSiloLifecycleEnabled();
       await namesiloRequest("domainLock", { domain });
     },
 
     async unlockDomain(domain: string) {
-      if (process.env.NAMESILO_LIFECYCLE_ENABLED !== "true") {
-        throw new DomainProviderError(
-          "provider_failure",
-          "namesilo_lifecycle_not_enabled",
-        );
-      }
+      assertNameSiloLifecycleEnabled();
       await namesiloRequest("domainUnlock", { domain });
     },
 
