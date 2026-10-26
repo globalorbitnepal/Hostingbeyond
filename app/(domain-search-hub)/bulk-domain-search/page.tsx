@@ -6,6 +6,7 @@ import { getDomainContent } from "@/lib/orbit/content";
 import { visiblePricing } from "@/lib/domains/content";
 import { mergeRetailIntoPricingRows } from "@/lib/domains/domain-search-page-data";
 import { buildDomainPageMetadata } from "@/lib/domains/page-metadata";
+import { parseBulkSearchHubParams } from "@/lib/domains/domain-purchase-intent";
 import { buildDomainSchema } from "@/lib/domains/seo";
 
 const PATH = routes.bulkDomainSearch;
@@ -15,8 +16,17 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildDomainPageMetadata(bulk, PATH);
 }
 
-export default async function BulkDomainSearchPage() {
-  const content = await getDomainContent();
+export default async function BulkDomainSearchPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const [content, params] = await Promise.all([
+    getDomainContent(),
+    searchParams,
+  ]);
+  const { initialBulkText, bulkLimitMessage } =
+    parseBulkSearchHubParams(params);
   const page = content.bulk;
   const displayPricing = await mergeRetailIntoPricingRows(
     visiblePricing(content),
@@ -46,6 +56,8 @@ export default async function BulkDomainSearchPage() {
         crossLinkHref={routes.domainSearch}
         displayPricing={displayPricing}
         hubBackdrop
+        initialBulkText={initialBulkText}
+        bulkLimitMessage={bulkLimitMessage}
       />
     </>
   );

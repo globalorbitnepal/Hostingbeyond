@@ -1,5 +1,10 @@
+import { MAX_BULK_DOMAIN_SEARCH } from "@/lib/domains/bulk-search-limit";
+
 /** Parses a bulk textarea (one domain per line, commas or spaces allowed). */
-export function parseBulkInputTokens(value: string, limit = 50): string[] {
+export function parseBulkInputTokens(
+  value: string,
+  limit = MAX_BULK_DOMAIN_SEARCH,
+): string[] {
   return value
     .split(/[\s,;]+/)
     .map((item) => item.trim())
@@ -21,12 +26,18 @@ export function countBulkUniqueDomains(value: string): number {
   return count;
 }
 
-export function bulkInputExceedsLimit(value: string, limit = 50): boolean {
+export function bulkInputExceedsLimit(
+  value: string,
+  limit = MAX_BULK_DOMAIN_SEARCH,
+): boolean {
   return countBulkUniqueDomains(value) > limit;
 }
 
 /** Parse textarea input, dedupe (case-insensitive), preserve first-seen order. */
-export function parseBulkInputDeduped(value: string, limit = 50): string[] {
+export function parseBulkInputDeduped(
+  value: string,
+  limit = MAX_BULK_DOMAIN_SEARCH,
+): string[] {
   const tokens = parseBulkInputTokens(value, 10_000);
   const seen = new Set<string>();
   const out: string[] = [];

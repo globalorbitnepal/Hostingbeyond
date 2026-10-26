@@ -109,6 +109,15 @@ export function WebsiteMigrationPageView({
               >
                 {page.heroPrimaryLabel}
               </Link>
+              <p className="mt-4 text-[14px] text-[#6b6b6b]">
+                Already on a plan?{" "}
+                <a
+                  href="#migration-request"
+                  className="font-bold text-[#673de6] underline-offset-2 hover:underline"
+                >
+                  Submit a migration request
+                </a>
+              </p>
               {page.heroGuarantee ? (
                 <p className="mt-5 flex items-center gap-2.5 text-[15px] font-normal text-[#6b6b6b]">
                   <Shield

@@ -18,6 +18,9 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      ".playwright-browsers/**",
+      ".qa-phase1/**",
+      ".qa-phase2-responsive/**",
     ],
   },
 ];

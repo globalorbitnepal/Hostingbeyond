@@ -22,10 +22,16 @@ export function shouldRetryBulkSearchResponse(
   maxAttempts: number,
   retryAfterHeader?: string | null,
 ): { retry: boolean; delayMs: number } {
-  if (status !== 429 || attempt >= maxAttempts - 1) {
+  if (attempt >= maxAttempts - 1) {
     return { retry: false, delayMs: 0 };
   }
-  const fromHeader = parseRetryAfterMs(retryAfterHeader);
-  const delayMs = fromHeader ?? 800 * (attempt + 1);
-  return { retry: true, delayMs };
+  if (status === 429) {
+    const fromHeader = parseRetryAfterMs(retryAfterHeader);
+    const delayMs = fromHeader ?? 800 * (attempt + 1);
+    return { retry: true, delayMs };
+  }
+  if (status === 502 || status === 503) {
+    return { retry: true, delayMs: 600 * (attempt + 1) };
+  }
+  return { retry: false, delayMs: 0 };
 }

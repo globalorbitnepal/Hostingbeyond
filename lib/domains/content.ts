@@ -1,9 +1,55 @@
+import { MAX_BULK_DOMAIN_SEARCH } from "@/lib/domains/bulk-search-limit";
 import {
   TLD_PRICES,
   type TldCategory,
   SUPPORTED_TLD_COUNT,
   SUGGESTED_TLD_COUNT,
 } from "@/lib/domains/tlds";
+
+/** Orbit CMS may still store pre-10-limit bulk copy; never surface it publicly. */
+const STALE_BULK_LIMIT_COPY =
+  /\b50\s*names?\b|\bcheck\s*50\b|\bup to 50 domain|\b50 domain names\b|\bfifty completely different names/i;
+
+function bulkCopyField(stored: string | undefined, fallback: string): string {
+  const value = text(stored, fallback);
+  return STALE_BULK_LIMIT_COPY.test(value) ? fallback : value;
+}
+
+export function sanitizeBulkPageCopy(
+  merged: DomainPageCopy,
+  defaults: DomainPageCopy,
+): DomainPageCopy {
+  const defaultFaqById = new Map(defaults.faqs.map((f) => [f.id, f]));
+  return {
+    ...merged,
+    seoTitle: bulkCopyField(merged.seoTitle, defaults.seoTitle),
+    seoDescription: bulkCopyField(
+      merged.seoDescription,
+      defaults.seoDescription,
+    ),
+    ogTitle: bulkCopyField(merged.ogTitle, defaults.ogTitle),
+    ogDescription: bulkCopyField(merged.ogDescription, defaults.ogDescription),
+    titleAccent: bulkCopyField(merged.titleAccent, defaults.titleAccent),
+    stats: merged.stats.map((stat) => {
+      if (stat.id !== "names") return stat;
+      const value = stat.value.trim();
+      if (value === "50" || STALE_BULK_LIMIT_COPY.test(stat.label)) {
+        const fb = defaults.stats.find((s) => s.id === "names");
+        return {
+          ...stat,
+          value: fb?.value ?? String(MAX_BULK_DOMAIN_SEARCH),
+          label: fb?.label ?? stat.label,
+        };
+      }
+      return stat;
+    }),
+    faqs: merged.faqs.map((faq) => {
+      if (!STALE_BULK_LIMIT_COPY.test(faq.answer)) return faq;
+      const fb = defaultFaqById.get(faq.id);
+      return fb ? { ...faq, answer: fb.answer } : faq;
+    }),
+  };
+}
 
 /**
  * Editable content for /domain-name-search, /bulk-domain-search, and /domain-transfer.
@@ -614,21 +660,21 @@ export function defaultDomainContent(): DomainContent {
       ],
       crossLinkLabel: "Try bulk domain search",
       crossLinkHelper:
-        "Check it now, lock it for a year, and add hosting or email whenever you are ready. Need a whole shortlist? Run 50 names at once.",
+        "Check it now, lock it for a year, and add hosting or email whenever you are ready. Need a whole shortlist? Run up to 10 names at once.",
     },
     bulk: {
-      seoTitle: "Bulk Domain Search — Check 50 Domain Names at Once",
+      seoTitle: "Bulk Domain Search — Check 10 Domain Names at Once",
       seoDescription:
-        "Check up to 50 domain names at once with our bulk domain search. Paste your shortlist and see availability, first-year pricing and renewal rates for every name in one table.",
+        "Check up to 10 domain names at once with our bulk domain search. Paste your shortlist and see availability, first-year pricing and renewal rates for every name in one table.",
       seoKeywords:
         "bulk domain search, check multiple domains, domain availability list, agency domain search, domain shortlist",
-      ogTitle: "Bulk Domain Search — 50 Names in One Table",
+      ogTitle: "Bulk Domain Search — 10 Names in One Table",
       ogDescription:
-        "Paste up to fifty domains and get availability, promo pricing and renewals in a shareable table.",
+        "Paste up to ten domains and get availability, promo pricing and renewals in a shareable table.",
       ogImage: "/images/domains/hero.jpg",
       eyebrow: "Bulk lookup for teams",
       title: "Bulk domain search",
-      titleAccent: "for 50 names at a time",
+      titleAccent: "for 10 names at a time",
       description:
         "Paste your whole shortlist and get availability, first-year pricing and renewal rates for every line — built for agencies clearing a naming round.",
       stats: [
@@ -636,7 +682,7 @@ export function defaultDomainContent(): DomainContent {
           id: "names",
           visible: true,
           order: 0,
-          value: "50",
+          value: "10",
           label: "Names per run",
         },
         {
@@ -672,7 +718,7 @@ export function defaultDomainContent(): DomainContent {
           order: 0,
           question: "How many domains can I check at once?",
           answer:
-            "Up to 50 names per run. Paste one domain per line — commas and spaces work too — and every line comes back with its availability, first-year price and renewal rate in a single table.",
+            "Up to 10 names per run. Paste one domain per line — commas and spaces work too — and every line comes back with its availability, first-year price and renewal rate in a single table.",
         },
         {
           id: "who",
@@ -688,7 +734,7 @@ export function defaultDomainContent(): DomainContent {
           order: 2,
           question: "Can I mix different extensions in one list?",
           answer:
-            "Yes. Each line is treated on its own, so you can compare yourbrand.com, yourbrand.io and yourbrand.store together, or check fifty completely different names in the same run.",
+            "Yes. Each line is treated on its own, so you can compare yourbrand.com, yourbrand.io and yourbrand.store together in one run (up to 10 names per search).",
         },
         {
           id: "noext",
@@ -1135,7 +1181,10 @@ export function mergeDomainContent(
       })),
     },
     single: mergePageCopy(stored.single, defaults.single),
-    bulk: mergePageCopy(stored.bulk, defaults.bulk),
+    bulk: sanitizeBulkPageCopy(
+      mergePageCopy(stored.bulk, defaults.bulk),
+      defaults.bulk,
+    ),
     transfer: mergePageCopy(stored.transfer, defaults.transfer),
   };
 }

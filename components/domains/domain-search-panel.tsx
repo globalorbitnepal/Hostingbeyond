@@ -22,6 +22,7 @@ import {
   Layers,
   Loader2,
   Lock,
+  RefreshCw,
   Search,
   Sparkles,
   X,
@@ -37,6 +38,10 @@ import {
   countBulkUniqueDomains,
 } from "@/lib/domains/bulk-input";
 import { shouldRetryBulkSearchResponse } from "@/lib/domains/client-search-retry";
+import {
+  BULK_SEARCH_LIMIT_MESSAGE,
+  MAX_BULK_DOMAIN_SEARCH,
+} from "@/lib/domains/bulk-search-limit";
 import { SUGGESTED_TLDS, formatPrice } from "@/lib/domains/tlds";
 import { useLocale } from "@/components/locale/locale-provider";
 import { cn } from "@/lib/utils";
@@ -44,7 +49,7 @@ import { cn } from "@/lib/utils";
 export type SearchMode = "single" | "bulk";
 
 const QUICK_TLDS = SUGGESTED_TLDS.slice(0, 6);
-const BULK_LIMIT = 50;
+const BULK_LIMIT = MAX_BULK_DOMAIN_SEARCH;
 const MAX_CUSTOMER_ALTERNATIVES = 14;
 const ALTERNATIVE_SKELETON_COUNT = 3;
 /** Matches alternative ResultRow + skeleton so slot swaps do not shift the grid. */
@@ -452,24 +457,30 @@ const DomainSearchBulkForm = memo(function DomainSearchBulkForm({
   bulk,
   onBulkChange,
   searchSubmitting,
+  overLimit,
   onSubmit,
 }: {
   bulk: string;
   onBulkChange: (value: string) => void;
   searchSubmitting: boolean;
+  overLimit: boolean;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }) {
   return (
-    <form onSubmit={onSubmit} className="mt-4">
+    <form onSubmit={onSubmit} className="mt-4" noValidate>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <label
           htmlFor="domain-bulk-search"
           className="text-[12px] font-bold tracking-wide text-slate-500 uppercase"
         >
-          One domain per line — up to {BULK_LIMIT}
+          One domain per line — up to {BULK_LIMIT} domains
         </label>
-        <span className="text-[12px] font-bold text-[#4c1d95]">
-          {countBulkLines(bulk)}/{BULK_LIMIT} names
+        <span
+          className="text-[12px] font-bold text-[#4c1d95]"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {countBulkLines(bulk)}/{BULK_LIMIT}
         </span>
       </div>
       <textarea
@@ -478,15 +489,30 @@ const DomainSearchBulkForm = memo(function DomainSearchBulkForm({
         onChange={(event) => onBulkChange(event.target.value)}
         rows={7}
         placeholder={"yourbrand.com\nyourbrand.io\nyourbrand.store"}
-        className="mt-2 w-full rounded-2xl border border-slate-200 bg-white p-4 font-mono text-[13.5px] leading-relaxed text-[#1a1035] transition outline-none focus:border-[#673de6] focus:ring-4 focus:ring-[#673de6]/10"
+        className={cn(
+          "mt-2 w-full rounded-2xl border bg-white p-4 font-mono text-[13.5px] leading-relaxed text-[#1a1035] transition outline-none focus:border-[#673de6] focus:ring-4 focus:ring-[#673de6]/10",
+          overLimit ? "border-red-300 ring-2 ring-red-100" : "border-slate-200",
+        )}
+        aria-invalid={overLimit}
+        aria-describedby={overLimit ? "bulk-limit-error" : undefined}
       />
+      {overLimit ? (
+        <p
+          id="bulk-limit-error"
+          role="alert"
+          className="mt-2 text-[12.5px] font-semibold text-red-700"
+        >
+          {BULK_SEARCH_LIMIT_MESSAGE}
+        </p>
+      ) : null}
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
         <p className="text-[12.5px] text-slate-500">
-          Built for agencies clearing a whole brand shortlist at once.
+          Up to {BULK_LIMIT} domains per search. Built for agencies clearing a
+          shortlist at once.
         </p>
         <button
           type="submit"
-          disabled={searchSubmitting}
+          disabled={searchSubmitting || overLimit || !bulk.trim()}
           className="inline-flex h-12 items-center gap-2 rounded-xl bg-gradient-to-r from-[#2563eb] to-[#673de6] px-6 text-[14px] font-bold text-white shadow-[0_12px_26px_-14px_rgba(37,99,235,0.9)] transition hover:brightness-110 disabled:opacity-70"
         >
           {searchSubmitting ? (
@@ -576,10 +602,14 @@ const PrimaryDomainResultBlock = memo(function PrimaryDomainResultBlock({
 export function DomainSearchPanel({
   mode,
   initialQuery = "",
+  initialBulkText = "",
+  bulkLimitMessage = null,
   layout = "default",
 }: {
   mode: SearchMode;
   initialQuery?: string;
+  initialBulkText?: string;
+  bulkLimitMessage?: string | null;
   layout?: "default" | "hero";
 }) {
   const hero = layout === "hero";
@@ -594,7 +624,7 @@ export function DomainSearchPanel({
     [pathname],
   );
   const [query, setQuery] = useState(initialQuery);
-  const [bulk, setBulk] = useState("");
+  const [bulk, setBulk] = useState(initialBulkText);
   const [loadingPrimary, setLoadingPrimary] = useState(false);
   const [loadingAlternatives, setLoadingAlternatives] = useState(false);
   const [alternativesInFlight, setAlternativesInFlight] = useState(false);
@@ -1087,6 +1117,31 @@ export function DomainSearchPanel({
     [results],
   );
 
+  const bulkRetryDomains = useMemo(
+    () =>
+      results
+        .filter((row) => row.status === "unknown")
+        .map((row) => row.domain),
+    [results],
+  );
+
+  const retryLastSearch = useCallback(() => {
+    setError("");
+    if (mode === "single" && query.trim()) {
+      void runSingle(query);
+      return;
+    }
+    if (mode === "bulk" && bulk.trim()) {
+      void runBulk(bulk);
+    }
+  }, [mode, query, bulk, runSingle, runBulk]);
+
+  const retryFailedBulkChecks = useCallback(() => {
+    if (!bulkRetryDomains.length) return;
+    setError("");
+    void runBulk(bulkRetryDomains.join("\n"));
+  }, [bulkRetryDomains, runBulk]);
+
   const toggleBulkDomain = useCallback((domain: string) => {
     setBulkSelected((prev) => {
       const next = new Set(prev);
@@ -1162,6 +1217,20 @@ export function DomainSearchPanel({
     }
   }, [initialQuery, mode, runSingle]);
 
+  useEffect(() => {
+    if (mode !== "bulk") return;
+    const text = initialBulkText.trim();
+    if (text) {
+      setBulk(initialBulkText);
+      if (!bulkInputExceedsLimit(initialBulkText, BULK_LIMIT)) {
+        void runBulk(initialBulkText);
+      }
+    }
+    if (bulkLimitMessage) {
+      setBulkLimitNotice(bulkLimitMessage);
+    }
+  }, [mode, initialBulkText, bulkLimitMessage, runBulk]);
+
   const onSingleSubmit = useCallback(
     (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
@@ -1182,12 +1251,11 @@ export function DomainSearchPanel({
         return;
       }
       if (bulkInputExceedsLimit(bulk, BULK_LIMIT)) {
-        setBulkLimitNotice(
-          `Only the first ${BULK_LIMIT} unique domains will be checked. Remove extras or run another search for the rest.`,
-        );
-      } else {
-        setBulkLimitNotice("");
+        setError(BULK_SEARCH_LIMIT_MESSAGE);
+        setBulkLimitNotice(BULK_SEARCH_LIMIT_MESSAGE);
+        return;
       }
+      setBulkLimitNotice("");
       void runBulk(bulk);
     },
     [bulk, runBulk],
@@ -1320,17 +1388,26 @@ export function DomainSearchPanel({
           bulk={bulk}
           onBulkChange={setBulk}
           searchSubmitting={searchSubmitting}
+          overLimit={bulkInputExceedsLimit(bulk, BULK_LIMIT)}
           onSubmit={onBulkSubmit}
         />
       )}
 
       {error ? (
-        <p
+        <div
           role="alert"
-          className="mt-4 rounded-2xl border border-[#fecaca] bg-[#fef2f2] px-4 py-3 text-[13px] font-semibold text-[#b91c1c]"
+          className="mt-4 flex flex-col gap-3 rounded-2xl border border-[#fecaca] bg-[#fef2f2] px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
         >
-          {error}
-        </p>
+          <p className="text-[13px] font-semibold text-[#b91c1c]">{error}</p>
+          <button
+            type="button"
+            onClick={retryLastSearch}
+            className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-4 text-[13px] font-bold text-[#b91c1c] hover:bg-red-50"
+          >
+            <RefreshCw className="size-3.5" aria-hidden />
+            Try again
+          </button>
+        </div>
       ) : null}
 
       {mode === "bulk" && bulkLimitNotice ? (
@@ -1449,6 +1526,24 @@ export function DomainSearchPanel({
                   </p>
                 ) : null}
               </section>
+            ) : null}
+            {mode === "bulk" && bulkRetryDomains.length > 0 ? (
+              <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2.5">
+                <p className="text-[12.5px] font-medium text-amber-900">
+                  {bulkRetryDomains.length} domain
+                  {bulkRetryDomains.length === 1 ? "" : "s"} could not be
+                  checked — status is not confirmed.
+                </p>
+                <button
+                  type="button"
+                  disabled={searchSubmitting}
+                  onClick={() => void retryFailedBulkChecks()}
+                  className="ml-auto inline-flex h-9 items-center gap-1.5 rounded-full border border-amber-300 bg-white px-4 text-[12px] font-bold text-amber-900 hover:bg-amber-100 disabled:opacity-60"
+                >
+                  <RefreshCw className="size-3.5" aria-hidden />
+                  Retry failed
+                </button>
+              </div>
             ) : null}
             {mode === "bulk" ? (
               <>

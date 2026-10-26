@@ -6,6 +6,7 @@ import {
   countBulkUniqueDomains,
   parseBulkInputDeduped,
 } from "@/lib/domains/bulk-input";
+import { MAX_BULK_DOMAIN_SEARCH } from "@/lib/domains/bulk-search-limit";
 import {
   classifyBulkLine,
   invalidBulkResult,
@@ -16,27 +17,44 @@ import type { DomainResult } from "@/lib/domains/availability";
 
 describe("bulk-search parsing", () => {
   it("dedupes domains preserving order", () => {
-    const lines = parseBulkInputDeduped("a.com\nA.COM\nb.io", 50);
+    const lines = parseBulkInputDeduped(
+      "a.com\nA.COM\nb.io",
+      MAX_BULK_DOMAIN_SEARCH,
+    );
     assert.deepEqual(lines, ["a.com", "b.io"]);
   });
 
   it("keeps later unique domains after many duplicates", () => {
     const dupes = Array.from({ length: 30 }, () => "repeat.com").join("\n");
-    const lines = parseBulkInputDeduped(`${dupes}\nunique-later.io`, 50);
+    const lines = parseBulkInputDeduped(
+      `${dupes}\nunique-later.io`,
+      MAX_BULK_DOMAIN_SEARCH,
+    );
     assert.deepEqual(lines, ["repeat.com", "unique-later.io"]);
   });
 
-  it("caps at 50 unique domains and detects overflow", () => {
-    const many = Array.from({ length: 55 }, (_, i) => `site${i}.com`).join(
+  it("accepts at most MAX_BULK unique domains and detects overflow at 11", () => {
+    const ten = Array.from({ length: 10 }, (_, i) => `site${i}.com`).join("\n");
+    assert.equal(countBulkUniqueDomains(ten), 10);
+    assert.equal(bulkInputExceedsLimit(ten, MAX_BULK_DOMAIN_SEARCH), false);
+    assert.equal(parseBulkInputDeduped(ten, MAX_BULK_DOMAIN_SEARCH).length, 10);
+
+    const eleven = Array.from({ length: 11 }, (_, i) => `site${i}.com`).join(
       "\n",
     );
-    assert.equal(parseBulkInputDeduped(many, 50).length, 50);
-    assert.equal(countBulkUniqueDomains(many), 55);
-    assert.equal(bulkInputExceedsLimit(many, 50), true);
+    assert.equal(countBulkUniqueDomains(eleven), 11);
+    assert.equal(bulkInputExceedsLimit(eleven, MAX_BULK_DOMAIN_SEARCH), true);
+    assert.equal(
+      parseBulkInputDeduped(eleven, MAX_BULK_DOMAIN_SEARCH).length,
+      10,
+    );
   });
 
   it("parses commas, semicolons and blank lines", () => {
-    const lines = parseBulkInputDeduped("a.com, b.io;\nc.com\n\n", 50);
+    const lines = parseBulkInputDeduped(
+      "a.com, b.io;\nc.com\n\n",
+      MAX_BULK_DOMAIN_SEARCH,
+    );
     assert.deepEqual(lines, ["a.com", "b.io", "c.com"]);
   });
 

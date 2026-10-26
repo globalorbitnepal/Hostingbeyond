@@ -27,10 +27,20 @@ export async function POST(request: Request) {
     }
   }
 
-  const { items, rejected } = await validateDomainsForBulkCart(domains);
+  const result = await validateDomainsForBulkCart(domains);
+  if (!result.ok) {
+    return NextResponse.json(
+      {
+        code: result.code,
+        error: result.error,
+        limit: result.limit,
+      },
+      { status: 400 },
+    );
+  }
   return NextResponse.json({
-    items,
-    rejected,
-    count: items.length,
+    items: result.items,
+    rejected: result.rejected,
+    count: result.items.length,
   });
 }

@@ -78,15 +78,13 @@ export function unknownBulkResult(
 /** Run registrar lookup for a bulk shortlist; invalid lines never block valid ones. */
 export async function runBulkDomainSearch(
   bulkText: string,
-  limit = 50,
+  limit = 10,
 ): Promise<{
   results: DomainResult[];
   source: "registrar" | "catalog";
-  truncated: boolean;
   uniqueDomainCount: number;
 }> {
   const uniqueDomainCount = countBulkUniqueDomains(bulkText);
-  const truncated = uniqueDomainCount > limit;
   const lines = parseBulkInputDeduped(bulkText, limit).map(classifyBulkLine);
   const fqdns = lines
     .filter(
@@ -109,7 +107,7 @@ export async function runBulkDomainSearch(
 
   const results = mergeBulkLookupResults(lines, lookedUp);
 
-  return { results, source, truncated, uniqueDomainCount };
+  return { results, source, uniqueDomainCount };
 }
 
 /** Preserve bulk input order; missing provider rows become unknown, not taken. */
