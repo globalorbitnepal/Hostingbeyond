@@ -1,4 +1,6 @@
-name: HostingBeyond CI
+# Full-app CI (public site + Orbit admin + domain APIs). Display name highlights
+# Orbit Admin / domain-service coverage; triggers, permissions, and steps are unchanged.
+name: HostingBeyond CI — Orbit Admin and domain services
 
 on:
   pull_request:
@@ -19,7 +21,7 @@ env:
 
 jobs:
   quality:
-    name: Lint, test, typecheck, build
+    name: Orbit Admin and domain services — lint, test, typecheck, build
     runs-on: ubuntu-latest
     timeout-minutes: 25
 

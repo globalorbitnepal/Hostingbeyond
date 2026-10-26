@@ -1,6 +1,7 @@
-# Backend Phase 2 — Staging release runbook (NameSilo pricing, registrar routing, transfer wallet)
+# Orbit Admin Phase 2 — Staging release runbook (NameSilo pricing, registrar routing, transfer wallet)
 
-**Scope:** Staging only. Do not run production migrations or deploy without owner approval.  
+**Scope:** Staging only for **Orbit Admin domain pricing** and related backend services. Do not run production migrations or deploy without owner approval. This is not a public website release runbook.
+
 **Branch:** `backend/phase2-domain-registrar` (worktree: `/home/sysadmin/dev/Hostingbeyond-backend-phase2`).  
 **Migrations:** `20261025120000_namesilo_pricing_provider`, `20261025130000_transfer_registrar_wallet`.  
 **Implementation plan (prerequisites):** `docs/BACKEND_PHASE2_STAGING_IMPLEMENTATION_PLAN.md`

@@ -4,10 +4,10 @@
 
 ## CI safety (GitHub Actions)
 
-| Workflow                                                  | Trigger                                        | Purpose                                                                                                                          |
-| --------------------------------------------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| **HostingBeyond CI** (`.github/workflows/ci.yml`)         | `pull_request`, push to `main`                 | `ci-assert-integration-database.mjs` → `prisma migrate deploy` (integration DB only) → lint → typecheck → **full tests** → build |
-| **Deploy HostingBeyond** (`.github/workflows/deploy.yml`) | **push** to **`main`**, or `workflow_dispatch` | **Typecheck** → **Deploy to VPS** (SSH) on `main` push (see below)                                                               |
+| Workflow                                                                            | Trigger                                        | Purpose                                                                                                                                                                                  |
+| ----------------------------------------------------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **HostingBeyond CI — Orbit Admin and domain services** (`.github/workflows/ci.yml`) | `pull_request`, push to `main`                 | `ci-assert-integration-database.mjs` → `prisma migrate deploy` (integration DB only) → lint → typecheck → **full tests** (Orbit admin, domain services, and the rest of the app) → build |
+| **Deploy HostingBeyond** (`.github/workflows/deploy.yml`)                           | **push** to **`main`**, or `workflow_dispatch` | **Typecheck** → **Deploy to VPS** (SSH) on `main` push (see below)                                                                                                                       |
 
 ### Integration database in CI
 
@@ -17,15 +17,15 @@
 
 ### Deploy trigger rules
 
-| Event                                           | Deploy workflow starts?                                      | Production SSH / VPS deploy executes?                             |
-| ----------------------------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------- |
-| **Push to `main`**                              | **Yes** — **Deploy HostingBeyond** runs (Typecheck → Deploy) | **Yes** — SSH deploy after Typecheck passes                       |
-| **HostingBeyond CI** on push to `main`          | **Yes** — lint, tests, build (parallel)                      | **No** — deploy is not gated on full CI (same as historical flow) |
-| Typecheck failure on deploy workflow            | **Yes** (workflow fails at Typecheck)                        | **No**                                                            |
-| Pull request CI                                 | **No** deploy workflow for PR branch                         | **No**                                                            |
-| `workflow_dispatch` on **Deploy HostingBeyond** | **Yes**                                                      | **Yes** — Typecheck then SSH deploy (emergency / re-run)          |
+| Event                                                                    | Deploy workflow starts?                                      | Production SSH / VPS deploy executes?                             |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------ | ----------------------------------------------------------------- |
+| **Push to `main`**                                                       | **Yes** — **Deploy HostingBeyond** runs (Typecheck → Deploy) | **Yes** — SSH deploy after Typecheck passes                       |
+| **HostingBeyond CI — Orbit Admin and domain services** on push to `main` | **Yes** — lint, tests, build (parallel)                      | **No** — deploy is not gated on full CI (same as historical flow) |
+| Typecheck failure on deploy workflow                                     | **Yes** (workflow fails at Typecheck)                        | **No**                                                            |
+| Pull request CI                                                          | **No** deploy workflow for PR branch                         | **No**                                                            |
+| `workflow_dispatch` on **Deploy HostingBeyond**                          | **Yes**                                                      | **Yes** — Typecheck then SSH deploy (emergency / re-run)          |
 
-**Deploy chain:** Push to **`main`** runs **Deploy HostingBeyond**: **Typecheck** → **Deploy to VPS**. **HostingBeyond CI** still runs on the same push for lint/tests/build but does not block deploy. **Database migrations** remain gated by `HOSTINGBEYOND_PRODUCTION_MIGRATE_APPROVED` (fail closed by default).
+**Deploy chain:** Push to **`main`** runs **Deploy HostingBeyond**: **Typecheck** → **Deploy to VPS**. **HostingBeyond CI — Orbit Admin and domain services** still runs on the same push for lint/tests/build but does not block deploy. **Database migrations** remain gated by `HOSTINGBEYOND_PRODUCTION_MIGRATE_APPROVED` (fail closed by default). **Deploy HostingBeyond** ships the public website and Orbit admin together; it is not an Orbit-only workflow.
 
 Fork PRs cannot dispatch deploy workflows on the upstream repo.
 

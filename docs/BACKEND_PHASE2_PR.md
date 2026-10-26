@@ -1,13 +1,16 @@
-# Pull request draft — Backend Phase 2 (domain registrar & Orbit pricing)
+# Pull request draft — Orbit Admin Phase 2 (domain pricing, NameSilo, registrar routing)
 
-**Branch:** `backend/phase2-domain-registrar` (worktree `/home/sysadmin/dev/Hostingbeyond-backend-phase2`).  
-**Base:** `d68f5b3a2fa4ef80e15e186c139d02ed5bd9a91a` (production `main` at frontend ship merge).
+**Scope:** Internal **Orbit admin** (`.orbit` dashboard) and its backend APIs — not a public website redesign.
+
+**Branch:** `backend/phase2-domain-registrar` (worktree `/home/sysadmin/dev/Hostingbeyond-backend-phase2`; branch name unchanged).
+
+**Base:** `d68f5b3a2fa4ef80e15e186c139d02ed5bd9a91a` (production `main` after PR #9 public domain pages; that public work is out of scope here).
 
 ---
 
 ## Title
 
-`feat(domains): Orbit NameSilo pricing, registrar routing, transfer wallet reconciliation`
+`feat(orbit): Orbit Admin domain pricing, NameSilo supplier sync, registrar routing, transfer wallet`
 
 ---
 
@@ -20,6 +23,7 @@
 - **Customer APIs:** `/api/auth/me` and `POST /api/hosting/orders` use `requireCustomerSession()` (same production cookie validation; test overrides only outside production).
 - **Prisma:** Two migrations; **apply migrations before deploying** app code that reads new columns (avoid P2022 on Orbit pricing GET).
 - **Docs:** `docs/BACKEND_PHASE2_STAGING_RUNBOOK.md`; read-only `npm run staging:preflight` checks migrations and staging readiness (no DB/deploy/registrar side effects).
+- **GitHub Actions labels:** PR CI display name is **HostingBeyond CI — Orbit Admin and domain services**. Production **Deploy HostingBeyond** is unchanged (full app, including public homepage).
 
 **Not verified in this branch:** NameSilo production lifecycle, live billable registrar calls, production deployment, production migrations, or GitHub Actions CI (local tests only).
 
@@ -37,12 +41,12 @@
 
 Supplier sync does **not** overwrite retail prices. Retail changes go through PUT or bulk-retail apply with guards.
 
-### Pricing transparency (Orbit domain pricing)
+### Pricing transparency (Orbit Admin — Domain Pricing)
 
-- **Supplier costs:** DNA `supplier*` fields and NameSilo `namesilo*` fields with sync timestamps and `namesiloPriceStatus` (verified / unverified / missing / partial).
+- **Authoritative supplier costs:** verified, fresh NameSilo `namesilo*` fields (`namesiloPriceStatus`, `namesiloSyncedAt`). DNA `supplier*` fields are legacy catalogue only and must not feed NameSilo profit/margin.
 - **Retail prices:** `retailRegister`, `retailRenew`, `retailTransfer` (USD catalogue; `retailCurrency` / `supplierCurrency` on row).
-- **Gross metrics (server-side):** `lib/orbit/pricing-financial-metrics.ts` — gross profit = retail − authoritative supplier cost; gross margin % = profit / retail; markup % = profit / supplier cost. No FX conversion; incomplete when supplier cost is missing/unverified.
-- **UI:** Explicit column labels, low-margin filter, edit dialog shows basis strings. Not net profit (taxes/fees excluded).
+- **Gross metrics (server-side):** `lib/orbit/pricing-financial-metrics.ts` — gross profit = retail − verified NameSilo cost; gross margin % = profit / retail; markup % = profit / supplier cost. No FX conversion; **N/A** when NameSilo cost is missing, stale, unverified, or invalid.
+- **UI:** NameSilo columns and metrics first; DNA labelled legacy. Not net profit (taxes/fees excluded).
 
 ---
 

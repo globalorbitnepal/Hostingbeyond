@@ -8,7 +8,7 @@
 | #   | Check              | Pass criteria                                                                                            |
 | --- | ------------------ | -------------------------------------------------------------------------------------------------------- |
 | 1   | Release SHA        | `git rev-parse origin/main` on GitHub matches intended release (e.g. `129c867…` or newer with green CI). |
-| 2   | CI                 | **HostingBeyond CI** **SUCCESS** on that exact SHA.                                                      |
+| 2   | CI                 | **HostingBeyond CI — Orbit Admin and domain services** **SUCCESS** on that exact SHA.                    |
 | 3   | Maintenance window | Stakeholders notified; **PM2 restart** and brief `127.0.0.1:3030` unavailability acceptable.             |
 | 4   | Rollback target    | Record current VPS `git rev-parse HEAD` (historical: `14bb7e5` before first post–PR #3 deploy).          |
 | 5   | Deploy gate        | `HOSTINGBEYOND_PRODUCTION_DEPLOY_APPROVED` **absent** until window opens.                                |

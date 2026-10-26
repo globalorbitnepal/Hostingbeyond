@@ -1,6 +1,8 @@
-# Backend Phase 2 — Staging implementation plan (non-production)
+# Orbit Admin Phase 2 — Staging implementation plan (non-production)
 
 **Status:** Planning and documentation only. No staging VPS, database, or secrets are defined in this repository.  
+**Scope:** Orbit admin domain pricing, NameSilo supplier sync, registrar routing, and transfer-wallet reconciliation — not a public frontend project.
+
 **PR:** #10 (`backend/phase2-domain-registrar` @ `dcfe928` and later).  
 **Policy:** Do not use production host `51.15.21.166`, path `/srv/apps/hostingbeyond`, database `hostingbeyond_db`, or `hosting.theglobalorbit.com` as staging unless the owner documents formal isolation and approval.
 
@@ -12,7 +14,7 @@
 | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `docs/STAGING-READINESS.md`             | Owner policy: **no staging VPS** (2026-10-16); local `hostingbeyond_integration_test` for CI/integration                                           |
 | `.github/workflows/deploy.yml`          | **Production only** — `VPS_HOST` must be `51.15.21.166`, user `hostingbeyond`, path `/srv/apps/hostingbeyond`, verify `hosting.theglobalorbit.com` |
-| `.github/workflows/ci.yml`              | Lint, typecheck, test, build on PR; Postgres service `hostingbeyond_integration_test`                                                              |
+| `.github/workflows/ci.yml`              | Display name **HostingBeyond CI — Orbit Admin and domain services**; lint, typecheck, test, build on PR; Postgres `hostingbeyond_integration_test` |
 | `config/staging.env.example`            | **Template placeholders** (`staging.example.test`, `hostingbeyond_staging_db`) — not a live environment                                            |
 | `scripts/staging-release-preflight.mjs` | Read-only; fails closed without owner spec + staging deploy workflow                                                                               |
 | `ops/backup/*`                          | Refuses production `.env`; staging/local backup patterns documented                                                                                |

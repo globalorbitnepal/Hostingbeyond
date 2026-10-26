@@ -1,3 +1,5 @@
+# Production deploy of the HostingBeyond Next.js app (public website + Orbit admin).
+# Not an Orbit-only workflow: live verify still checks the public homepage.
 name: Deploy HostingBeyond
 
 on:
