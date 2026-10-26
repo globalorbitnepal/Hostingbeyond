@@ -12,7 +12,11 @@ import {
   loadCheckoutCart,
   mergeUrlDomainsIntoCart,
 } from "@/lib/domains/domain-cart-service";
-import { parseDomainListFromSearchParams } from "@/lib/domains/domain-purchase-intent";
+import {
+  buildBulkSearchOverLimitRedirect,
+  parseDomainListFromSearchParams,
+  shouldRedirectCheckoutDomainsToBulkSearch,
+} from "@/lib/domains/domain-purchase-intent";
 import { checkTransferEligibilityAsync } from "@/lib/domains/transfer-service";
 import { getDomainCheckoutOffers } from "@/lib/domains/domain-checkout-offers";
 import { isPaymentProviderConfigured } from "@/lib/domains/wallet-top-up";
@@ -68,7 +72,13 @@ export default async function GetStartedDomainCheckoutPage({
   const { googleOAuth } = customerAuthHints();
 
   if (user && domainsFromUrl.length) {
-    await mergeUrlDomainsIntoCart(user.id, domainsFromUrl);
+    if (shouldRedirectCheckoutDomainsToBulkSearch(domainsFromUrl)) {
+      redirect(buildBulkSearchOverLimitRedirect(domainsFromUrl));
+    }
+    const mergeResult = await mergeUrlDomainsIntoCart(user.id, domainsFromUrl);
+    if (!mergeResult.ok) {
+      redirect(buildBulkSearchOverLimitRedirect(domainsFromUrl));
+    }
     redirect(routes.domainCheckout);
   }
 

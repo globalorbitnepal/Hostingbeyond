@@ -19,7 +19,9 @@ describe("client-search-retry", () => {
     assert.equal(second.retry, false);
   });
 
-  it("does not retry non-429", () => {
-    assert.equal(shouldRetryBulkSearchResponse(502, 0, 4).retry, false);
+  it("retries 502/503 once before giving up", () => {
+    assert.equal(shouldRetryBulkSearchResponse(503, 0, 2).retry, true);
+    assert.equal(shouldRetryBulkSearchResponse(503, 1, 2).retry, false);
+    assert.equal(shouldRetryBulkSearchResponse(400, 0, 2).retry, false);
   });
 });

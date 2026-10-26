@@ -58,7 +58,11 @@ export async function POST(request: Request) {
 
   const bulk = Array.isArray(body?.domains) ? body!.domains : [];
   if (bulk.length > 0) {
-    const { cart, added, rejected } = await addDomainsToCart(user.id, bulk);
+    const bulkResult = await addDomainsToCart(user.id, bulk);
+    if (!bulkResult.ok) {
+      return NextResponse.json(bulkResult.body, { status: bulkResult.status });
+    }
+    const { cart, added, rejected } = bulkResult;
     return NextResponse.json({ cart, added, rejected });
   }
 

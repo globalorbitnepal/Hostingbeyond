@@ -36,10 +36,13 @@ import {
   resolveSearchRouteAvailabilityBackend,
   runWithSearchAvailabilityBackend,
 } from "@/lib/domains/search-availability-backend";
+import {
+  BULK_SEARCH_LIMIT_MESSAGE,
+  MAX_BULK_DOMAIN_SEARCH,
+} from "@/lib/domains/bulk-search-limit";
+import { bulkInputExceedsLimit } from "@/lib/domains/bulk-input";
 
 export const runtime = "nodejs";
-
-const MAX_BULK = 50;
 
 type SearchScope =
   | "full"
@@ -63,7 +66,7 @@ type SearchBody = {
   subWave?: 1 | 2;
   /**
    * Optional client hint (e.g. domain-page). Availability backend is chosen from
-   * DOMAIN_PUBLIC_SEARCH_AVAILABILITY_PROVIDER server env, not from this field.
+   * server env (NameSilo when NAMESILO_API_KEY is set unless forced to DNA), not from this field.
    */
   searchContext?: string;
 };
@@ -116,8 +119,18 @@ export async function POST(request: Request) {
             { status: 400 },
           );
         }
-        const { results, source, truncated, uniqueDomainCount } =
-          await runBulkDomainSearch(bulk, MAX_BULK);
+        if (bulkInputExceedsLimit(bulk, MAX_BULK_DOMAIN_SEARCH)) {
+          return NextResponse.json(
+            {
+              error: BULK_SEARCH_LIMIT_MESSAGE,
+              code: "bulk_limit_exceeded",
+              limit: MAX_BULK_DOMAIN_SEARCH,
+            },
+            { status: 400 },
+          );
+        }
+        const { results, source, uniqueDomainCount } =
+          await runBulkDomainSearch(bulk, MAX_BULK_DOMAIN_SEARCH);
         if (!results.length) {
           return NextResponse.json(
             { error: "Add at least one domain, one per line." },
@@ -129,11 +142,6 @@ export async function POST(request: Request) {
           source,
           resultsCustomer: results.map(toCustomerResult),
           uniqueDomainCount,
-          ...(truncated
-            ? {
-                limitNotice: `Only the first ${MAX_BULK} unique domains were checked. Remove extras or run another search for the rest.`,
-              }
-            : {}),
         });
       }
 

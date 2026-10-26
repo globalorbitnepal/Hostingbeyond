@@ -10,6 +10,9 @@
 
 # Testing
 /coverage
+.playwright-browsers/
+.qa-phase1/
+.qa-phase2-responsive/
 
 # Next.js
 /.next/

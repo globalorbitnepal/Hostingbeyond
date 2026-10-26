@@ -58,9 +58,13 @@ export function DomainSearchView({
   displayPricing,
   popularPricing,
   hubBackdrop = false,
+  initialBulkText = "",
+  bulkLimitMessage = null,
 }: {
   mode: SearchMode;
   initialQuery?: string;
+  initialBulkText?: string;
+  bulkLimitMessage?: string | null;
   content: DomainContent;
   page: DomainPageCopy;
   crossLinkHref: string;
@@ -149,6 +153,8 @@ export function DomainSearchView({
               <DomainSearchPanel
                 mode={mode}
                 initialQuery={initialQuery}
+                initialBulkText={initialBulkText}
+                bulkLimitMessage={bulkLimitMessage}
                 layout="hero"
               />
             </div>

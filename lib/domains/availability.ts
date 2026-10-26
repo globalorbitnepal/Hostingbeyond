@@ -1,3 +1,4 @@
+import { MAX_BULK_DOMAIN_SEARCH } from "@/lib/domains/bulk-search-limit";
 import { parseBulkInputTokens } from "@/lib/domains/bulk-input";
 import { isAvailabilityProviderConfigured } from "@/lib/domains/providers/index";
 import { PRICE_BY_TLD, splitDomain } from "@/lib/domains/tlds";
@@ -121,6 +122,6 @@ export function checkDomains(inputs: string[], fallbackTld = ".com") {
 }
 
 /** Parses a bulk textarea (one domain per line, commas or spaces allowed). */
-export function parseBulkInput(value: string, limit = 50) {
+export function parseBulkInput(value: string, limit = MAX_BULK_DOMAIN_SEARCH) {
   return parseBulkInputTokens(value, limit);
 }

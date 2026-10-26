@@ -41,15 +41,25 @@ export async function getRetailRegisterMap(
   ];
   if (!keys.length) return new Map();
 
-  const rows = await prisma.domainTldPrice.findMany({
-    where: { tld: { in: keys }, enabled: true },
-    select: {
-      tld: true,
-      retailRegister: true,
-      promoRegister: true,
-      promoEndsAt: true,
-    },
-  });
+  let rows: {
+    tld: string;
+    retailRegister: unknown;
+    promoRegister: unknown;
+    promoEndsAt: Date | null;
+  }[] = [];
+  try {
+    rows = await prisma.domainTldPrice.findMany({
+      where: { tld: { in: keys }, enabled: true },
+      select: {
+        tld: true,
+        retailRegister: true,
+        promoRegister: true,
+        promoEndsAt: true,
+      },
+    });
+  } catch {
+    return new Map();
+  }
 
   const now = new Date();
   const out = new Map<string, number>();
@@ -75,11 +85,16 @@ export async function getPopularPickTransferPricing(
       ),
     ),
   ];
-  const dbRows = keys.length
-    ? await prisma.domainTldPrice.findMany({
+  let dbRows: Awaited<ReturnType<typeof prisma.domainTldPrice.findMany>> = [];
+  if (keys.length) {
+    try {
+      dbRows = await prisma.domainTldPrice.findMany({
         where: { tld: { in: keys }, enabled: true },
-      })
-    : [];
+      });
+    } catch {
+      dbRows = [];
+    }
+  }
   const byTld = new Map(dbRows.map((r) => [r.tld.toLowerCase(), r]));
   const fallback = new Map(fallbackRows.map((r) => [r.tld.toLowerCase(), r]));
 
@@ -123,11 +138,16 @@ export async function getPopularPickPricing(
       ),
     ),
   ];
-  const dbRows = keys.length
-    ? await prisma.domainTldPrice.findMany({
+  let dbRows: Awaited<ReturnType<typeof prisma.domainTldPrice.findMany>> = [];
+  if (keys.length) {
+    try {
+      dbRows = await prisma.domainTldPrice.findMany({
         where: { tld: { in: keys }, enabled: true },
-      })
-    : [];
+      });
+    } catch {
+      dbRows = [];
+    }
+  }
   const byTld = new Map(dbRows.map((r) => [r.tld.toLowerCase(), r]));
   const fallback = new Map(fallbackRows.map((r) => [r.tld.toLowerCase(), r]));
 

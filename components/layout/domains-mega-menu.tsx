@@ -28,7 +28,7 @@ const GROUPS = [
       {
         href: routes.bulkDomainSearch,
         title: "Bulk Domain Search",
-        description: "Check up to 50 names and their prices in one go.",
+        description: "Check up to 10 names and their prices in one go.",
         icon: ShieldCheck,
         tone: "amber",
       },

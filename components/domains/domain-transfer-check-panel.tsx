@@ -10,6 +10,7 @@ import {
   EyeOff,
   Layers,
   Loader2,
+  RefreshCw,
   Search,
 } from "lucide-react";
 
@@ -22,18 +23,21 @@ const MODE_TABS = [
   {
     id: "search",
     label: "Search a domain",
+    shortLabel: "Search",
     href: routes.domainSearch,
     icon: Search,
   },
   {
     id: "bulk",
     label: "Bulk search",
+    shortLabel: "Bulk",
     href: routes.bulkDomainSearch,
     icon: Layers,
   },
   {
     id: "transfer",
     label: "Transfer in",
+    shortLabel: "Transfer",
     href: routes.domainTransfer,
     icon: ArrowLeftRight,
     current: true,
@@ -145,6 +149,7 @@ export function DomainTransferCheckPanel({
               )}
             >
               <Icon className="size-3.5 shrink-0 sm:size-4" />
+              <span className="sm:hidden">{tab.shortLabel}</span>
               <span className="hidden sm:inline">{tab.label}</span>
             </Link>
           );
@@ -245,12 +250,21 @@ export function DomainTransferCheckPanel({
       </form>
 
       {error ? (
-        <p
+        <div
           role="alert"
-          className="mt-3 rounded-xl bg-red-50 px-4 py-3 text-[13px] font-medium text-red-800"
+          className="mt-3 flex flex-col gap-3 rounded-xl bg-red-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
         >
-          {error}
-        </p>
+          <p className="text-[13px] font-medium text-red-800">{error}</p>
+          <button
+            type="button"
+            disabled={loading || !domain.trim()}
+            onClick={() => void run(domain.trim())}
+            className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-4 text-[13px] font-bold text-red-800 hover:bg-red-100 disabled:opacity-60"
+          >
+            <RefreshCw className="size-3.5" aria-hidden />
+            Try again
+          </button>
+        </div>
       ) : null}
 
       {result ? (

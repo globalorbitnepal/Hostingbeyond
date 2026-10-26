@@ -1,7 +1,10 @@
+import {
+  BULK_SEARCH_LIMIT_MESSAGE,
+  domainListExceedsBulkLimit,
+  MAX_BULK_DOMAIN_SEARCH,
+} from "@/lib/domains/bulk-search-limit";
 import { validateDomainForRegistration } from "@/lib/domains/validate-registration";
 import { normalizeDomainSearchInput } from "@/lib/domains/normalize";
-
-const MAX_BULK = 50;
 
 export type BulkCartItem = {
   domain: string;
@@ -12,10 +15,31 @@ export type BulkCartItem = {
   currency: string;
 };
 
-export async function validateDomainsForBulkCart(domains: string[]): Promise<{
-  items: BulkCartItem[];
-  rejected: Array<{ input: string; error: string }>;
-}> {
+export type BulkCartValidationResult =
+  | {
+      ok: true;
+      items: BulkCartItem[];
+      rejected: Array<{ input: string; error: string }>;
+    }
+  | {
+      ok: false;
+      code: "bulk_limit_exceeded";
+      limit: number;
+      error: string;
+    };
+
+export async function validateDomainsForBulkCart(
+  domains: string[],
+): Promise<BulkCartValidationResult> {
+  if (domainListExceedsBulkLimit(domains)) {
+    return {
+      ok: false,
+      code: "bulk_limit_exceeded",
+      limit: MAX_BULK_DOMAIN_SEARCH,
+      error: BULK_SEARCH_LIMIT_MESSAGE,
+    };
+  }
+
   const unique: string[] = [];
   const seen = new Set<string>();
   for (const raw of domains) {
@@ -23,7 +47,6 @@ export async function validateDomainsForBulkCart(domains: string[]): Promise<{
     if (!trimmed || seen.has(trimmed)) continue;
     seen.add(trimmed);
     unique.push(trimmed);
-    if (unique.length >= MAX_BULK) break;
   }
 
   const items: BulkCartItem[] = [];
@@ -65,5 +88,5 @@ export async function validateDomainsForBulkCart(domains: string[]): Promise<{
     });
   }
 
-  return { items, rejected };
+  return { ok: true, items, rejected };
 }

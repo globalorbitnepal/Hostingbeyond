@@ -6,18 +6,30 @@ import { readIdempotencyKey } from "@/lib/domains/require-customer";
 
 describe("Bulk cart validation", () => {
   it("rejects empty selection", async () => {
-    const { items, rejected } = await validateDomainsForBulkCart([]);
-    assert.equal(items.length, 0);
-    assert.equal(rejected.length, 0);
+    const result = await validateDomainsForBulkCart([]);
+    assert.equal(result.ok, true);
+    if (!result.ok) return;
+    assert.equal(result.items.length, 0);
+    assert.equal(result.rejected.length, 0);
+  });
+
+  it("rejects more than 10 unique domains", async () => {
+    const domains = Array.from({ length: 11 }, (_, i) => `limit${i}.com`);
+    const result = await validateDomainsForBulkCart(domains);
+    assert.equal(result.ok, false);
+    if (result.ok) return;
+    assert.equal(result.code, "bulk_limit_exceeded");
   });
 
   it("deduplicates domain inputs", async () => {
-    const { items } = await validateDomainsForBulkCart([
+    const result = await validateDomainsForBulkCart([
       "same.com",
       "same.com",
       "other.com",
     ]);
-    assert.ok(items.length <= 2);
+    assert.equal(result.ok, true);
+    if (!result.ok) return;
+    assert.ok(result.items.length <= 2);
   });
 });
 

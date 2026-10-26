@@ -1,3 +1,7 @@
+import {
+  bulkLimitExceededResponse,
+  domainListExceedsBulkLimit,
+} from "@/lib/domains/bulk-search-limit";
 import { validateDomainForRegistration } from "@/lib/domains/validate-registration";
 import { splitDomain } from "@/lib/domains/tlds";
 import { prisma } from "@/lib/prisma";
@@ -134,7 +138,29 @@ export async function addDomainToCart(userId: string, domainInput: string) {
   return { ok: true as const, cart: await getDomainCartForUser(userId) };
 }
 
-export async function addDomainsToCart(userId: string, domains: string[]) {
+export async function addDomainsToCart(
+  userId: string,
+  domains: string[],
+): Promise<
+  | {
+      ok: true;
+      cart: CartSnapshot;
+      added: string[];
+      rejected: Array<{ domain: string; error: string }>;
+    }
+  | {
+      ok: false;
+      status: 400;
+      body: ReturnType<typeof bulkLimitExceededResponse>;
+    }
+> {
+  if (domainListExceedsBulkLimit(domains)) {
+    return {
+      ok: false,
+      status: 400,
+      body: bulkLimitExceededResponse(),
+    };
+  }
   const added: string[] = [];
   const rejected: Array<{ domain: string; error: string }> = [];
   for (const raw of domains) {
@@ -145,7 +171,7 @@ export async function addDomainsToCart(userId: string, domains: string[]) {
     else rejected.push({ domain, error: result.error });
   }
   const cart = await getDomainCartForUser(userId);
-  return { cart, added, rejected };
+  return { ok: true, cart, added, rejected };
 }
 
 /** Merge legacy URL query domains into server cart after login. */
