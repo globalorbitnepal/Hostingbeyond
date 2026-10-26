@@ -2,7 +2,8 @@
 
 **Scope:** Staging only. Do not run production migrations or deploy without owner approval.  
 **Branch:** `backend/phase2-domain-registrar` (worktree: `/home/sysadmin/dev/Hostingbeyond-backend-phase2`).  
-**Migrations:** `20261025120000_namesilo_pricing_provider`, `20261025130000_transfer_registrar_wallet`.
+**Migrations:** `20261025120000_namesilo_pricing_provider`, `20261025130000_transfer_registrar_wallet`.  
+**Implementation plan (prerequisites):** `docs/BACKEND_PHASE2_STAGING_IMPLEMENTATION_PLAN.md`
 
 Legend: **[AUTO]** safe automation | **[CONFIRM]** operator must verify target and approve | **[SECRET]** set in vault / `.env`, never commit.
 
@@ -58,7 +59,9 @@ Both use `ADD COLUMN IF NOT EXISTS` for safer re-runs on staging.
 **[CONFIRM]** `DATABASE_URL` points at **staging** PostgreSQL.
 
 ```bash
-cd /srv/apps/hostingbeyond   # staging checkout as deploy user
+# <STAGING_APP_PATH> — owner-defined; NOT /srv/apps/hostingbeyond unless formally isolated
+cd "<STAGING_APP_PATH>"
+# Verify DATABASE_URL host + database name before migrate (see implementation plan §5)
 npx prisma migrate deploy
 npx prisma migrate status    # must report "up to date"
 ```

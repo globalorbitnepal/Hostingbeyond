@@ -87,7 +87,8 @@ Integration DB URL loaded from dev `.env.integration.local` (not committed). **G
 - [ ] Bulk domain search limit **10** unchanged.
 - [ ] `NAMESILO_LIFECYCLE_ENABLED` remains false until owner approval.
 
-**Runbook:** `docs/BACKEND_PHASE2_STAGING_RUNBOOK.md`
+**Runbook:** `docs/BACKEND_PHASE2_STAGING_RUNBOOK.md`  
+**Staging implementation plan:** `docs/BACKEND_PHASE2_STAGING_IMPLEMENTATION_PLAN.md` (infrastructure not provisioned; preflight remains fail-closed)
 
 ---
 

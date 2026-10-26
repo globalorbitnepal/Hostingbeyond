@@ -51,20 +51,15 @@ function parseDatabaseUrlMeta(raw) {
   }
 }
 
-function inspectDeployWorkflow(text) {
+function inspectProductionDeployWorkflow(text) {
   const issues = [];
+  const workflowName = text.match(/^name:\s*(.+)$/m)?.[1]?.trim() ?? "unknown";
   const hasProductionAnchor =
     text.includes("51.15.21.166") && text.includes("hostingbeyond");
-  const hasStagingSecret =
-    /\bSTAGING_/i.test(text) ||
-    /staging-host/i.test(text) ||
-    /deploy-staging/i.test(text);
-  const workflowName = text.match(/^name:\s*(.+)$/m)?.[1]?.trim() ?? "unknown";
-
-  if (hasProductionAnchor && !hasStagingSecret) {
+  if (hasProductionAnchor) {
     issues.push(
-      fail(
-        `STAGING_TARGET_NOT_DEFINED: workflow "${workflowName}" references production VPS (51.15.21.166 / hostingbeyond) with no STAGING_* deploy target`,
+      warn(
+        `PRODUCTION_DEPLOY_WORKFLOW: "${workflowName}" targets production VPS — not valid for staging validation`,
       ),
     );
   }
@@ -76,6 +71,34 @@ function inspectDeployWorkflow(text) {
     );
   }
   return issues;
+}
+
+function inspectStagingDeployWorkflow() {
+  const stagingPath = path.join(ROOT, ".github/workflows/deploy-staging.yml");
+  if (!existsSync(stagingPath)) {
+    return [
+      fail(
+        "STAGING_DEPLOY_WORKFLOW: missing — add .github/workflows/deploy-staging.yml from docs/deploy-staging-workflow.example.yml after STAGING_* secrets exist",
+      ),
+    ];
+  }
+  const text = readFileSync(stagingPath, "utf8");
+  if (!/\bSTAGING_/i.test(text)) {
+    return [
+      fail("STAGING_DEPLOY_WORKFLOW: must reference STAGING_* GitHub secrets"),
+    ];
+  }
+  if (
+    text.includes("51.15.21.166") &&
+    !/\$\{\{\s*secrets\.STAGING_VPS_HOST\s*\}\}/.test(text)
+  ) {
+    return [
+      fail(
+        "STAGING_DEPLOY_WORKFLOW: must not hardcode production VPS IP; use secrets.STAGING_VPS_HOST",
+      ),
+    ];
+  }
+  return [ok("STAGING_DEPLOY_WORKFLOW: deploy-staging.yml present")];
 }
 
 function main() {
@@ -135,10 +158,16 @@ function main() {
   const deployPath = path.join(ROOT, ".github/workflows/deploy.yml");
   if (existsSync(deployPath)) {
     const deployText = readFileSync(deployPath, "utf8");
-    results.push(...inspectDeployWorkflow(deployText));
+    results.push(...inspectProductionDeployWorkflow(deployText));
   } else {
     results.push(warn("DEPLOY_WORKFLOW: .github/workflows/deploy.yml not found"));
   }
+  results.push(...inspectStagingDeployWorkflow());
+
+  const stagingDbNames = new Set([
+    "hostingbeyond_staging_db",
+    "hostingbeyond_integration_test",
+  ]);
 
   const dbMeta = parseDatabaseUrlMeta(process.env.DATABASE_URL);
   if (!dbMeta.set) {
@@ -164,6 +193,19 @@ function main() {
     if (dbMeta.database === "hostingbeyond_integration_test") {
       results.push(
         ok("DATABASE_TARGET: disposable integration test name (local)"),
+      );
+    } else if (stagingDbNames.has(dbMeta.database)) {
+      results.push(ok(`DATABASE_TARGET: staging/test name (${dbMeta.database})`));
+    } else if (
+      dbMeta.database.includes("staging") &&
+      !PRODUCTION_DB_NAMES.has(dbMeta.database)
+    ) {
+      results.push(ok(`DATABASE_TARGET: name suggests staging (${dbMeta.database})`));
+    } else if (PRODUCTION_DB_NAMES.has(dbMeta.database)) {
+      results.push(
+        fail(
+          `PRODUCTION_DATABASE_NAME: DATABASE_URL uses ${dbMeta.database} — use isolated staging database`,
+        ),
       );
     }
   }

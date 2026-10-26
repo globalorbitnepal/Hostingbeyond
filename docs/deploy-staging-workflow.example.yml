@@ -1,0 +1,90 @@
+# COPY TO: .github/workflows/deploy-staging.yml (after STAGING_* GitHub secrets exist)
+# DO NOT enable until owner provisions staging host + isolated database.
+# workflow_dispatch only — never auto-deploy to staging on push.
+
+name: Deploy HostingBeyond (staging)
+
+on:
+  workflow_dispatch:
+    inputs:
+      git_ref:
+        description: "Git ref to deploy (commit SHA or tag)"
+        required: true
+        type: string
+
+concurrency:
+  group: deploy-hostingbeyond-staging
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  PRODUCTION_VPS_IPV4: "51.15.21.166"
+  PRODUCTION_APP_PATH: "/srv/apps/hostingbeyond"
+  PRODUCTION_DB_NAME: "hostingbeyond_db"
+
+jobs:
+  validate-target:
+    name: Fail-closed staging target check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Reject production VPS as staging host
+        env:
+          STAGING_VPS_HOST: ${{ secrets.STAGING_VPS_HOST }}
+        run: |
+          set -euo pipefail
+          if [ -z "${STAGING_VPS_HOST:-}" ]; then
+            echo "STAGING_FAIL: missing GitHub secret STAGING_VPS_HOST"
+            exit 1
+          fi
+          if [ "${STAGING_VPS_HOST}" = "${PRODUCTION_VPS_IPV4}" ]; then
+            echo "STAGING_FAIL: STAGING_VPS_HOST must not equal production IP ${PRODUCTION_VPS_IPV4}"
+            exit 1
+          fi
+          echo "STAGING_OK: host is not production IP literal"
+
+      - name: Staging migrate gate (fail closed)
+        env:
+          MIGRATE_SECRET: ${{ secrets.HOSTINGBEYOND_STAGING_MIGRATE_APPROVED }}
+        run: |
+          set -euo pipefail
+          RUN_MIGRATE=0
+          if [ "${MIGRATE_SECRET:-}" = "true" ]; then
+            RUN_MIGRATE=1
+            echo "Staging migrate enabled via HOSTINGBEYOND_STAGING_MIGRATE_APPROVED"
+          else
+            echo "STAGING_MIGRATE_SKIPPED: prisma migrate deploy will NOT run"
+          fi
+          echo "RUN_PRISMA_MIGRATE_DEPLOY=${RUN_MIGRATE}" >> "${GITHUB_ENV}"
+
+  deploy-staging:
+    name: Deploy to staging VPS
+    needs: validate-target
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.git_ref }}
+
+      - name: Confirm staging SSH secrets exist
+        env:
+          STAGING_VPS_HOST: ${{ secrets.STAGING_VPS_HOST }}
+          STAGING_VPS_USER: ${{ secrets.STAGING_VPS_USER }}
+          STAGING_VPS_SSH_KEY: ${{ secrets.STAGING_VPS_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          missing=0
+          for v in STAGING_VPS_HOST STAGING_VPS_USER STAGING_VPS_SSH_KEY; do
+            if [ -z "${!v:-}" ]; then echo "Missing secret: $v"; missing=1; fi
+          done
+          [ "$missing" -eq 0 ] || exit 1
+
+      - name: Deploy placeholder (operator completes)
+        run: |
+          echo "Implement SSH deploy to STAGING_APP_PATH on STAGING_VPS_HOST."
+          echo "Use STAGING_* secrets only. Never reuse VPS_HOST / hostingbeyond production paths."
+          echo "Set server .env: NAMESILO_LIFECYCLE_ENABLED=false, DOMAIN_API_ENV=test."
+          echo "Run prisma migrate deploy only when RUN_PRISMA_MIGRATE_DEPLOY=1 and DATABASE_URL is staging."
