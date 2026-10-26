@@ -8,6 +8,7 @@ import {
   isDomainNameApiLifecycleConfigured,
 } from "@/lib/domains/providers/domain-name-api-config";
 import type { DomainRegistrarProvider } from "@/lib/domains/providers/provider";
+import { isNameSiloSearchEnabledInEnv } from "@/lib/domains/namesilo-search-env";
 
 export function resolveAvailabilityProvider(): DomainRegistrarProvider | null {
   const live = getDomainNameApiAvailabilityProvider();
@@ -26,11 +27,13 @@ export function resolveDomainRegistrarProvider(): DomainRegistrarProvider | null
 }
 
 export function isAvailabilityProviderConfigured(): boolean {
+  if (isNameSiloSearchEnabledInEnv()) return true;
   if (isDomainNameApiAvailabilityConfigured()) return true;
   return Boolean(process.env.DOMAIN_LOOKUP_URL?.trim());
 }
 
 export function isDomainProviderConfigured(): boolean {
+  if (isNameSiloSearchEnabledInEnv()) return true;
   if (isAvailabilityProviderConfigured()) return true;
   if (isDomainNameApiLifecycleConfigured()) return true;
   return Boolean(process.env.DOMAIN_LOOKUP_URL?.trim());

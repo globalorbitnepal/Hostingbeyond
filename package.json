@@ -23,6 +23,7 @@
     "db:export": "node scripts/export-orbit-db.mjs",
     "db:import": "node scripts/import-orbit-db.mjs",
     "db:generate-seed": "node --import ./scripts/register-alias.mjs --experimental-strip-types ./scripts/generate-orbit-seed.ts",
+    "staging:preflight": "node scripts/staging-release-preflight.mjs",
     "prepare": "husky"
   },
   "prisma": {

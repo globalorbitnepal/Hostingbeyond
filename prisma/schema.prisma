@@ -527,6 +527,17 @@ model DomainTldPrice {
   premiumMarkupPercent Decimal?  @db.Decimal(5, 2)
   promoRegister        Decimal?  @db.Decimal(10, 2)
   promoEndsAt          DateTime?
+  /// NameSilo account costs (separate from DNA supplier* fields).
+  namesiloRegister     Decimal?  @db.Decimal(10, 4)
+  namesiloRenew        Decimal?  @db.Decimal(10, 4)
+  namesiloTransfer     Decimal?  @db.Decimal(10, 4)
+  namesiloSyncedAt     DateTime?
+  /// verified | unverified | missing — NameSilo price evidence for this TLD.
+  namesiloPriceStatus  String?
+  /// Per-TLD lifecycle registrar for new operations after approval: namesilo | domain-name-api.
+  lifecycleProvider    String?
+  /// When true, supplier/NameSilo sync must not overwrite retail prices.
+  retailPriceLocked    Boolean   @default(false)
   enabled              Boolean   @default(true)
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
@@ -577,6 +588,8 @@ model DomainRegistration {
   domain           String              @unique
   tld              String
   status           DomainServiceStatus @default(PENDING_REGISTRATION)
+  /// Registrar that owns lifecycle for this domain (domain-name-api | namesilo).
+  registrarProvider String             @default("domain-name-api")
   providerDomainId String?
   orderId          String?             @unique
   order            DomainOrder?        @relation(fields: [orderId], references: [id], onDelete: SetNull)
@@ -605,6 +618,9 @@ model DomainTransferRecord {
   authCodeHint         String?
   currentRegistrar     String?
   providerTransferId   String?
+  /// Registrar bound at checkout (domain-name-api | namesilo) — used for status polling.
+  registrarProvider    String?
+  walletTransactionId  String?
   supplierCost         Decimal?             @db.Decimal(10, 4)
   retailPrice          Decimal              @db.Decimal(10, 2)
   total                Decimal              @db.Decimal(10, 2)

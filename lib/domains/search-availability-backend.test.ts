@@ -38,13 +38,20 @@ describe("search availability backend routing", () => {
     );
   });
 
-  it("falls back to DNA when flag is off", () => {
+  it("does not enable NameSilo from API key alone (explicit env flag required)", () => {
     process.env.NAMESILO_API_KEY = "test-key";
     delete process.env.DOMAIN_PUBLIC_SEARCH_AVAILABILITY_PROVIDER;
     assert.equal(
       resolveSearchRouteAvailabilityBackend(DOMAIN_PAGE_SEARCH_CONTEXT),
       "dna",
     );
+    assert.equal(isNameSiloSearchEnabledInEnv(), false);
+  });
+
+  it("forces DNA when DOMAIN_PUBLIC_SEARCH_AVAILABILITY_PROVIDER=dna", () => {
+    process.env.NAMESILO_API_KEY = "test-key";
+    process.env.DOMAIN_PUBLIC_SEARCH_AVAILABILITY_PROVIDER = "dna";
+    assert.equal(resolveSearchRouteAvailabilityBackend(), "dna");
     assert.equal(isNameSiloSearchEnabledInEnv(), false);
   });
 

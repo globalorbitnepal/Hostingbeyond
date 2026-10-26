@@ -15,6 +15,22 @@ import { prisma } from "@/lib/prisma";
 import { isIntegrationDatabaseConfigured } from "@/lib/test/integration-gate";
 
 const TEST_EMAIL = "transfer-wallet-test@hostingbeyond.local";
+const MIN_TEST_BALANCE = 250;
+
+async function ensureIntegrationWalletFunded(userId: string) {
+  await ensureCustomerWallet(userId);
+  const wallet = await prisma.customerWallet.findUnique({ where: { userId } });
+  const balance = wallet?.balance ?? new Prisma.Decimal(0);
+  if (balance.lessThan(MIN_TEST_BALANCE)) {
+    const topUp = MIN_TEST_BALANCE - balance.toNumber() + 50;
+    await creditWallet({
+      userId,
+      amount: topUp,
+      idempotencyKey: `transfer-wallet-topup-${userId}-${Date.now()}`,
+      note: "transfer wallet integration test top-up",
+    });
+  }
+}
 
 describe(
   "Transfer wallet reserve (database)",
@@ -29,16 +45,15 @@ describe(
         update: {},
       });
       userId = user.id;
-      await ensureCustomerWallet(userId);
-      await creditWallet({
-        userId,
-        amount: 200,
-        idempotencyKey: `transfer-wallet-fund-${userId}`,
-        note: "transfer wallet integration test",
-      });
+      await ensureIntegrationWalletFunded(userId);
     });
 
     it("duplicate reserve idempotency key does not double-debit", async () => {
+      await ensureIntegrationWalletFunded(userId);
+      const before = await prisma.customerWallet.findUnique({
+        where: { userId },
+      });
+      assert.ok(before);
       const key = `transfer:wallet-idem-${Date.now()}`;
       const ref = `ref-${Date.now()}`;
       const first = await reserveWalletFunds({
@@ -60,10 +75,8 @@ describe(
         where: { userId },
       });
       assert.ok(wallet);
-      const debitedOnce = wallet!.balance.lessThanOrEqualTo(
-        new Prisma.Decimal(190),
-      );
-      assert.ok(debitedOnce);
+      const expectedOnce = before.balance.sub(new Prisma.Decimal(10));
+      assert.equal(wallet.balance.toString(), expectedOnce.toString());
       await rollbackReserve({
         userId,
         amount: 10,
@@ -73,6 +86,7 @@ describe(
     });
 
     it("rollback is idempotent", async () => {
+      await ensureIntegrationWalletFunded(userId);
       const key = `transfer:wallet-release-${Date.now()}`;
       const reserve = await reserveWalletFunds({
         userId,
@@ -98,6 +112,7 @@ describe(
     });
 
     it("finalize does not change balance again", async () => {
+      await ensureIntegrationWalletFunded(userId);
       const key = `transfer:wallet-finalize-${Date.now()}`;
       const reserve = await reserveWalletFunds({
         userId,
@@ -115,6 +130,12 @@ describe(
       });
       assert.ok(before && after);
       assert.equal(after.balance.toString(), before.balance.toString());
+      await creditWallet({
+        userId,
+        amount: 7,
+        idempotencyKey: `transfer-wallet-finalize-cleanup-${Date.now()}`,
+        note: "restore after finalize integration test",
+      });
     });
   },
 );

@@ -7,6 +7,7 @@ import {
 } from "@/lib/domains/notifications";
 import { getRetailQuoteForTld } from "@/lib/domains/pricing-engine";
 import { resolveDomainRegistrarProvider } from "@/lib/domains/providers/index";
+import { resolveLifecycleProviderForDomain } from "@/lib/domains/registrar-router";
 import { DomainProviderError } from "@/lib/domains/providers/types";
 import { inflightDomainOrderFilter } from "@/lib/domains/domain-order-inflight";
 import { publicId } from "@/lib/domains/transfer-service";
@@ -20,6 +21,7 @@ import { prisma } from "@/lib/prisma";
 
 export type ProcessDomainRenewalCheckoutDeps = {
   resolveDomainRegistrarProvider?: typeof resolveDomainRegistrarProvider;
+  resolveLifecycleProviderForDomain?: typeof resolveLifecycleProviderForDomain;
   getRetailQuoteForTld?: typeof getRetailQuoteForTld;
   createDomainOrder?: (
     args: Parameters<typeof prisma.domainOrder.create>[0],
@@ -38,6 +40,8 @@ export async function processDomainRenewalCheckout(
 ) {
   const resolveProvider =
     deps.resolveDomainRegistrarProvider ?? resolveDomainRegistrarProvider;
+  const resolveLifecycle =
+    deps.resolveLifecycleProviderForDomain ?? resolveLifecycleProviderForDomain;
   const getRetailQuote = deps.getRetailQuoteForTld ?? getRetailQuoteForTld;
   const createDomainOrder =
     deps.createDomainOrder ??
@@ -156,7 +160,15 @@ export async function processDomainRenewalCheckout(
       data: { walletTransactionId: reserve.id },
     });
 
-    const provider = resolveProvider()!;
+    const provider =
+      (await resolveLifecycle(registration.domain)) ?? resolveProvider();
+    if (!provider) {
+      return {
+        ok: false as const,
+        error: "Domain renewal is temporarily unavailable.",
+        status: 503,
+      };
+    }
     let expiresAt: string | null = null;
     try {
       const result = await provider.renewDomain(normalized.query, period);

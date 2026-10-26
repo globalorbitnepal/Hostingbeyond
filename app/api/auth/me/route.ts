@@ -1,16 +1,9 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-import {
-  CUSTOMER_SESSION_COOKIE,
-  getCustomerFromToken,
-} from "@/lib/customer/session";
+import { requireCustomerSession } from "@/lib/domains/require-customer";
 
 export async function GET() {
-  const jar = await cookies();
-  const user = await getCustomerFromToken(
-    jar.get(CUSTOMER_SESSION_COOKIE)?.value,
-  );
+  const user = await requireCustomerSession();
   if (!user) {
     return NextResponse.json({ user: null }, { status: 401 });
   }

@@ -1,20 +1,13 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 
-import {
-  CUSTOMER_SESSION_COOKIE,
-  getCustomerFromToken,
-} from "@/lib/customer/session";
+import { requireCustomerSession } from "@/lib/domains/require-customer";
 import { parseCartBody, quoteHostingCart } from "@/lib/hosting/cart/pricing";
 import { upsertHostingDraftOrder } from "@/lib/hosting/hosting-orders";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  const jar = await cookies();
-  const user = await getCustomerFromToken(
-    jar.get(CUSTOMER_SESSION_COOKIE)?.value,
-  );
+  const user = await requireCustomerSession();
   if (!user) {
     return NextResponse.json({ error: "Sign in required." }, { status: 401 });
   }

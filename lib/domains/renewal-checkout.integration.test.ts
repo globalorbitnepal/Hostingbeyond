@@ -56,6 +56,7 @@ function renewalDeps(
 ): ProcessDomainRenewalCheckoutDeps {
   return {
     resolveDomainRegistrarProvider: () => provider,
+    resolveLifecycleProviderForDomain: async () => provider,
   };
 }
 

@@ -3,10 +3,11 @@ import { searchDomainsWithProvider } from "@/lib/domains/domain-service";
 import { DomainProviderError } from "@/lib/domains/providers/types";
 import { splitDomain } from "@/lib/domains/tlds";
 import { PRICE_BY_TLD } from "@/lib/domains/tlds";
+import { isAvailabilityProviderConfigured } from "@/lib/domains/providers/index";
 import {
-  isAvailabilityProviderConfigured,
-  resolveAvailabilityProvider,
-} from "@/lib/domains/providers/index";
+  resolveSearchRouteAvailabilityBackend,
+  runWithSearchAvailabilityBackend,
+} from "@/lib/domains/search-availability-backend";
 
 const LOOKUP_TIMEOUT_MS = 15_000;
 
@@ -131,33 +132,38 @@ export async function lookupDomainNames(
   payload: { query?: string; bulk?: string; tlds?: string[] },
   options?: LookupOptions,
 ): Promise<{ results: DomainResult[]; source: LookupSource }> {
-  if (resolveAvailabilityProvider()) {
-    const fqdns = names.map((input) => {
-      const { name, tld } = splitDomain(input);
-      return `${name}${tld || ".com"}`.toLowerCase();
-    });
-    try {
-      return await searchDomainsWithProvider(fqdns, {
-        fresh: options?.fresh,
-      });
-    } catch (error) {
-      if (error instanceof DomainProviderError) {
-        throw new Error(error.code);
+  return runWithSearchAvailabilityBackend(
+    resolveSearchRouteAvailabilityBackend(),
+    async () => {
+      if (isAvailabilityProviderConfigured()) {
+        const fqdns = names.map((input) => {
+          const { name, tld } = splitDomain(input);
+          return `${name}${tld || ".com"}`.toLowerCase();
+        });
+        try {
+          return await searchDomainsWithProvider(fqdns, {
+            fresh: options?.fresh,
+          });
+        } catch (error) {
+          if (error instanceof DomainProviderError) {
+            throw new Error(error.code);
+          }
+          throw error;
+        }
       }
-      throw error;
-    }
-  }
 
-  if (isRegistrarLookupConfigured()) {
-    const results = await fetchLegacyProxyResults({ ...payload, names });
-    return { results, source: "registrar" };
-  }
+      if (isRegistrarLookupConfigured()) {
+        const results = await fetchLegacyProxyResults({ ...payload, names });
+        return { results, source: "registrar" };
+      }
 
-  if (process.env.NODE_ENV === "production") {
-    throw new Error("lookup_unconfigured");
-  }
+      if (process.env.NODE_ENV === "production") {
+        throw new Error("lookup_unconfigured");
+      }
 
-  throw new Error("lookup_unconfigured");
+      throw new Error("lookup_unconfigured");
+    },
+  );
 }
 
 export function lookupErrorMessage(code: string): string {

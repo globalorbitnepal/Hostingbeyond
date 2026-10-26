@@ -19,6 +19,7 @@ import {
 } from "@/lib/domains/registration-term";
 import { inflightDomainOrderFilter } from "@/lib/domains/domain-order-inflight";
 import { resolveLifecycleProvider } from "@/lib/domains/providers/index";
+import { resolveLifecycleProviderForNewRegistration } from "@/lib/domains/registrar-router";
 import { DomainProviderError } from "@/lib/domains/providers/types";
 import { publicId } from "@/lib/domains/transfer-service";
 import {
@@ -59,7 +60,7 @@ export async function processDomainRegistrationCheckout(input: {
   domainInput: string;
   idempotencyKey: string;
 }) {
-  if (!resolveLifecycleProvider()) {
+  if (!resolveLifecycleProvider() && !process.env.NAMESILO_API_KEY?.trim()) {
     throw new Error("lookup_unconfigured");
   }
 
@@ -186,7 +187,31 @@ export async function processDomainRegistrationCheckout(input: {
       },
     });
 
-    const provider = resolveLifecycleProvider()!;
+    const routed = await resolveLifecycleProviderForNewRegistration(quote.tld);
+    if (!routed.provider) {
+      await rollbackReserve({
+        userId: input.userId,
+        amount: registerPrice,
+        reserveTransactionId: reserve.id,
+        idempotencyKey: input.idempotencyKey,
+      });
+      await prisma.domainOrder.update({
+        where: { id: order.id },
+        data: {
+          status: "FAILED",
+          errorMessageInternal: routed.blockReason ?? "registrar_unavailable",
+          errorMessageCustomer:
+            "This extension is not available for registration right now.",
+        },
+      });
+      return {
+        ok: false as const,
+        error: "This extension is not available for registration right now.",
+        status: 400,
+      };
+    }
+    const provider = routed.provider;
+    const registrarProviderId = provider.id;
     const supplierRow = await provider.checkAvailability([quote.domain]);
     const supplier = supplierRow[0]?.supplier;
     const supplierCost = supplier?.register ?? null;
@@ -346,6 +371,7 @@ export async function processDomainRegistrationCheckout(input: {
           domain: quote.domain,
           tld: quote.tld,
           status: "ACTIVE",
+          registrarProvider: registrarProviderId,
           orderId: order.id,
           providerDomainId: registerOutcome.providerOrderId,
           registeredAt: new Date(),
@@ -355,6 +381,7 @@ export async function processDomainRegistrationCheckout(input: {
         update: {
           userId: input.userId,
           status: "ACTIVE",
+          registrarProvider: registrarProviderId,
           orderId: order.id,
           providerDomainId: registerOutcome.providerOrderId,
           registeredAt: new Date(),

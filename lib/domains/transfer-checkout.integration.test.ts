@@ -9,7 +9,9 @@ import { Prisma } from "@prisma/client";
 import type { DomainResult } from "@/lib/domains/availability";
 import {
   type ProcessDomainTransferCheckoutDeps,
+  type RefreshTransferStatusDeps,
   processDomainTransferCheckout,
+  refreshTransferStatus,
 } from "@/lib/domains/transfer-checkout-service";
 import { TRANSFER_INFLIGHT_UNIQUE_INDEX } from "@/lib/domains/transfer-inflight";
 import type { DomainRegistrarProvider } from "@/lib/domains/providers/provider";
@@ -17,6 +19,10 @@ import type { ProviderAvailabilityRow } from "@/lib/domains/providers/types";
 import { creditWallet, ensureCustomerWallet } from "@/lib/domains/wallet";
 import { prisma } from "@/lib/prisma";
 import { isIntegrationDatabaseConfigured } from "@/lib/test/integration-gate";
+
+/** Gate in `processDomainTransferCheckout`; real registrar calls are mocked via deps. */
+process.env.DOMAIN_API_RESELLER_ID ||= "integration-test";
+process.env.DOMAIN_API_TEST_KEY ||= "integration-test-key";
 
 function takenDomainResult(domain: string): DomainResult {
   const name = domain.split(".")[0] ?? "test";
@@ -37,7 +43,7 @@ function mockCheckoutDeps(
   provider: DomainRegistrarProvider,
 ): ProcessDomainTransferCheckoutDeps {
   return {
-    resolveDomainRegistrarProvider: () => provider,
+    resolveTransferTargetRegistrar: async () => ({ provider }),
     searchDomainsWithProvider: async () => ({
       results: [takenDomainResult(domain)],
       source: "registrar",
@@ -76,7 +82,7 @@ function buildMockProvider(
   transferDomain: DomainRegistrarProvider["transferDomain"],
 ): DomainRegistrarProvider {
   return {
-    id: "mock",
+    id: "domain-name-api",
     checkAvailability: async () => [mockAvailabilityRow(domain)],
     getPricing: async () => [],
     registerDomain: async () => ({
@@ -159,6 +165,39 @@ describe(
         wallet.balance.greaterThanOrEqualTo(minBalance),
         `wallet balance ${wallet.balance} below minimum ${minBalance} for parallel + timeout tests`,
       );
+    });
+
+    it("fails closed when per-domain transfer resolver returns no provider", async () => {
+      const domain = `checkout-blocked-${Date.now()}.com`;
+      const mockProvider = buildMockProvider(domain, async () => ({
+        outcome: "success",
+        domain,
+        providerTransferId: "mock-transfer-order",
+      }));
+      const deps = {
+        ...mockCheckoutDeps(domain, mockProvider),
+        resolveTransferTargetRegistrar: async () => ({
+          provider: null,
+          blockReason: "namesilo_cost_unverified",
+        }),
+      };
+      const result = await processDomainTransferCheckout(
+        {
+          userId,
+          userEmail,
+          domainInput: domain,
+          authCode: "VALID-AUTH-CODE-1",
+          idempotencyKey: `blocked-${Date.now()}`,
+        },
+        deps,
+      );
+      assert.equal(result.ok, false);
+      if (!result.ok) {
+        assert.equal(result.status, 503);
+      }
+      await prisma.domainTransferRecord.deleteMany({
+        where: { userId, domain },
+      });
     });
 
     it("parallel requests with different idempotency keys create one provider submission", async () => {
@@ -261,6 +300,75 @@ describe(
       assert.ok(reserve);
       assert.equal(reserve.type, "RESERVE");
 
+      await prisma.domainTransferRecord.deleteMany({
+        where: { userId, domain },
+      });
+    });
+
+    it("persists registrar at checkout and finalizes reserve on status poll completion", async () => {
+      const domain = `checkout-poll-${Date.now()}.com`;
+      const mockProvider = buildMockProvider(domain, async () => ({
+        outcome: "unknown",
+        domain,
+        errorCode: "timeout",
+      }));
+      mockProvider.getDomainDetails = async () => ({
+        domain,
+        status: "active",
+        expiresAt: null,
+        nameservers: [],
+        transferLock: false,
+      });
+      const deps = mockCheckoutDeps(domain, mockProvider);
+      const key = `poll-finalize-${Date.now()}`;
+      const started = await processDomainTransferCheckout(
+        {
+          userId,
+          userEmail,
+          domainInput: domain,
+          authCode: "VALID-AUTH-CODE-4",
+          idempotencyKey: key,
+        },
+        deps,
+      );
+      assert.equal(started.ok, true);
+      if (!started.ok) return;
+      assert.equal(started.reconciliation, true);
+      const row = await prisma.domainTransferRecord.findUnique({
+        where: { id: started.transfer.id },
+      });
+      assert.ok(row);
+      assert.equal(row.registrarProvider, "domain-name-api");
+      assert.ok(row.walletTransactionId);
+
+      const reserveBefore = await prisma.walletTransaction.findUnique({
+        where: { id: row.walletTransactionId! },
+      });
+      assert.equal(reserveBefore?.type, "RESERVE");
+
+      const pollDeps: RefreshTransferStatusDeps = {
+        resolveProviderForTransferRecord: () => ({
+          provider: mockProvider,
+        }),
+      };
+      const polled = await refreshTransferStatus(
+        {
+          userId,
+          userEmail,
+          publicId: row.publicId,
+        },
+        pollDeps,
+      );
+      assert.equal(polled.ok, true);
+      if (!polled.ok) return;
+      assert.equal(polled.transfer.status, "COMPLETED");
+
+      const reserveAfter = await prisma.walletTransaction.findUnique({
+        where: { id: row.walletTransactionId! },
+      });
+      assert.equal(reserveAfter?.type, "DEBIT");
+
+      await prisma.domainRegistration.deleteMany({ where: { domain } });
       await prisma.domainTransferRecord.deleteMany({
         where: { userId, domain },
       });

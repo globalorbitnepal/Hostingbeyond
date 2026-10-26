@@ -1,5 +1,8 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 
+import { isNameSiloSearchEnabledInEnv } from "@/lib/domains/namesilo-search-env";
+import { isAvailabilityProviderConfigured } from "@/lib/domains/providers/index";
+
 /** Which upstream performs availability for the current domain search request. */
 export type SearchAvailabilityBackend = "dna" | "namesilo";
 
@@ -18,13 +21,7 @@ export function getSearchAvailabilityBackend(): SearchAvailabilityBackend {
   return storage.getStore() ?? "dna";
 }
 
-export function isNameSiloSearchEnabledInEnv(): boolean {
-  const flag =
-    process.env.DOMAIN_PUBLIC_SEARCH_AVAILABILITY_PROVIDER?.trim().toLowerCase() ??
-    "";
-  if (flag !== "namesilo") return false;
-  return Boolean(process.env.NAMESILO_API_KEY?.trim());
-}
+export { isNameSiloSearchEnabledInEnv } from "@/lib/domains/namesilo-search-env";
 
 /**
  * Customer-facing `/api/domains/search` availability when env enables NameSilo.
@@ -34,8 +31,14 @@ export function isNameSiloSearchEnabledInEnv(): boolean {
 export function resolveSearchRouteAvailabilityBackend(
   _searchContext?: string,
 ): SearchAvailabilityBackend {
-  if (!isNameSiloSearchEnabledInEnv()) return "dna";
-  return "namesilo";
+  if (isNameSiloSearchEnabledInEnv()) return "namesilo";
+  return "dna";
+}
+
+/** True when customer search can call a live registrar (NameSilo or DNA), not legacy proxy only. */
+export function isLiveRegistrarSearchConfigured(): boolean {
+  if (isNameSiloSearchEnabledInEnv()) return true;
+  return isAvailabilityProviderConfigured();
 }
 
 export function shouldUseNameSiloForCurrentSearch(): boolean {

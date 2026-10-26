@@ -58,6 +58,16 @@ describe("domain search provider isolation", () => {
     });
   });
 
+  it("does not enable NameSilo search when only NAMESILO_API_KEY is set", () => {
+    delete process.env.DOMAIN_PUBLIC_SEARCH_AVAILABILITY_PROVIDER;
+    process.env.NAMESILO_API_KEY = "test-key";
+    assert.equal(resolveSearchRouteAvailabilityBackend(undefined), "dna");
+    assert.equal(
+      resolveSearchRouteAvailabilityBackend(DOMAIN_PAGE_SEARCH_CONTEXT),
+      "dna",
+    );
+  });
+
   it("search route stays on DNA when provider flag is dna", () => {
     process.env.DOMAIN_PUBLIC_SEARCH_AVAILABILITY_PROVIDER = "dna";
     process.env.NAMESILO_API_KEY = "test-key";
@@ -73,9 +83,9 @@ describe("domain search provider isolation", () => {
     });
   });
 
-  it("ALS namesilo without env flag does not select NameSilo provider", () => {
+  it("ALS namesilo without API key does not select NameSilo provider", () => {
+    delete process.env.NAMESILO_API_KEY;
     delete process.env.DOMAIN_PUBLIC_SEARCH_AVAILABILITY_PROVIDER;
-    process.env.NAMESILO_API_KEY = "test-key";
     runWithSearchAvailabilityBackend("namesilo", () => {
       assert.equal(shouldUseNameSiloForCurrentSearch(), false);
       const provider = resolveSearchAvailabilityProviderForTest();

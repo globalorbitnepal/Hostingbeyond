@@ -1,6 +1,10 @@
 import { normalizeDomainSearchInput } from "@/lib/domains/normalize";
 import { searchDomainsWithProvider } from "@/lib/domains/domain-service";
-import { resolveAvailabilityProvider } from "@/lib/domains/providers/index";
+import { isAvailabilityProviderConfigured } from "@/lib/domains/providers/index";
+import {
+  resolveSearchRouteAvailabilityBackend,
+  runWithSearchAvailabilityBackend,
+} from "@/lib/domains/search-availability-backend";
 import { routes } from "@/config/routes";
 import { checkTransferEligibility as legacyCheck } from "@/lib/domains/transfer";
 import type { TransferCheckResult } from "@/lib/domains/transfer";
@@ -15,13 +19,21 @@ export async function checkTransferEligibilityAsync(
   input: string,
   _authCode?: string,
 ): Promise<TransferCheckResult> {
+  return runWithSearchAvailabilityBackend(
+    resolveSearchRouteAvailabilityBackend(),
+    async () => checkTransferEligibilityAsyncScoped(input),
+  );
+}
+
+async function checkTransferEligibilityAsyncScoped(
+  input: string,
+): Promise<TransferCheckResult> {
   const normalized = normalizeDomainSearchInput(input);
   if (!normalized.ok) {
     return legacyCheck(input);
   }
 
-  const provider = resolveAvailabilityProvider();
-  if (!provider) {
+  if (!isAvailabilityProviderConfigured()) {
     if (process.env.NODE_ENV === "production") {
       return buildTransferCheckResult({
         domain: input.trim(),

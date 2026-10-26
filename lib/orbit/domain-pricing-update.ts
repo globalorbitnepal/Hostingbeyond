@@ -12,6 +12,8 @@ export type RetailPriceFields = {
   minMarginPercent?: number;
   premiumMarkupPercent?: number | null;
   enabled?: boolean;
+  retailPriceLocked?: boolean;
+  lifecycleProvider?: string | null;
 };
 
 export type PricingValidationError = { field: string; message: string };
@@ -163,6 +165,13 @@ export function pickRetailUpdateData(
   if ("enabled" in body) {
     assign("enabled", Boolean(body.enabled));
   }
+  if ("retailPriceLocked" in body) {
+    assign("retailPriceLocked", Boolean(body.retailPriceLocked));
+  }
+  if ("lifecycleProvider" in body) {
+    const v = body.lifecycleProvider;
+    assign("lifecycleProvider", v === null || v === "" ? null : String(v));
+  }
   return data;
 }
 
@@ -214,5 +223,11 @@ export function toPrismaRetailUpdateData(
     out.premiumMarkupPercent = data.premiumMarkupPercent;
   }
   if (data.enabled !== undefined) out.enabled = data.enabled;
+  if (data.retailPriceLocked !== undefined) {
+    out.retailPriceLocked = data.retailPriceLocked;
+  }
+  if (data.lifecycleProvider !== undefined) {
+    out.lifecycleProvider = data.lifecycleProvider;
+  }
   return out;
 }

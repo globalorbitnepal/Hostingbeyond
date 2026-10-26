@@ -1,5 +1,5 @@
 import { DomainProviderError } from "@/lib/domains/providers/types";
-import { resolveDomainRegistrarProvider } from "@/lib/domains/providers/index";
+import { resolveLifecycleProviderForDomain } from "@/lib/domains/registrar-router";
 import { requireActiveDomainRegistration } from "@/lib/domains/require-domain-ownership";
 import { getRetailQuoteForTld } from "@/lib/domains/pricing-engine";
 import { prisma } from "@/lib/prisma";
@@ -39,7 +39,7 @@ export async function getCustomerDomainDetail(userId: string, domain: string) {
   if (!owned.ok) return owned;
 
   const retail = await getRetailQuoteForTld(owned.registration.tld);
-  const provider = resolveDomainRegistrarProvider();
+  const provider = await resolveLifecycleProviderForDomain(domain);
   let nameservers: string[] = [];
   let transferLock = owned.registration.transferLock;
   let providerStatus: string | null = null;
@@ -107,7 +107,7 @@ export async function updateCustomerNameservers(
     };
   }
 
-  const provider = resolveDomainRegistrarProvider();
+  const provider = await resolveLifecycleProviderForDomain(domain);
   if (!provider) {
     return {
       ok: false as const,
@@ -143,7 +143,7 @@ export async function setCustomerDomainLock(
   const owned = await requireActiveDomainRegistration(userId, domain);
   if (!owned.ok) return owned;
 
-  const provider = resolveDomainRegistrarProvider();
+  const provider = await resolveLifecycleProviderForDomain(domain);
   if (!provider) {
     return {
       ok: false as const,
@@ -186,7 +186,7 @@ export async function getCustomerAuthCode(userId: string, domain: string) {
     };
   }
 
-  const provider = resolveDomainRegistrarProvider();
+  const provider = await resolveLifecycleProviderForDomain(domain);
   if (!provider) {
     return {
       ok: false as const,

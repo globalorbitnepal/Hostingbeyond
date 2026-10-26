@@ -5,18 +5,26 @@ import {
   ensureDomainTldPricesSeeded,
   listRetailTldPrices,
 } from "@/lib/domains/pricing-engine";
+import { getLatestNameSiloSyncMeta } from "@/lib/domains/namesilo-supplier-sync";
 import { getLatestSupplierSyncMeta } from "@/lib/domains/supplier-catalogue-sync";
+import { invalidateTldCatalogueCache } from "@/lib/domains/tld-catalogue-cache";
+import { bulkRetailPreviewRequiredResponse } from "@/lib/orbit/bulk-retail-policy";
 import {
-  pickBulkRetailUpdateData,
   pickRetailUpdateData,
   toPrismaRetailUpdateData,
-  validateBulkRetailItem,
   validateRetailPricePayload,
 } from "@/lib/orbit/domain-pricing-update";
 import { authorizeDomainPricingAdmin } from "@/lib/orbit/domain-pricing-auth";
+import {
+  assertRetailUpdateAllowed,
+  retailPriceFieldsInUpdate,
+} from "@/lib/orbit/retail-price-lock";
+import { buildCatalogueRowMetrics } from "@/lib/orbit/pricing-financial-metrics";
+import type { TldPriceRowInput } from "@/lib/orbit/bulk-retail-preview";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 function serializeRow(row: Awaited<ReturnType<typeof listRetailTldPrices>>[0]) {
   const num = (v: unknown) =>
@@ -25,9 +33,29 @@ function serializeRow(row: Awaited<ReturnType<typeof listRetailTldPrices>>[0]) {
       : typeof v === "object" && v !== null && "toNumber" in v
         ? (v as { toNumber: () => number }).toNumber()
         : Number(v);
+  const input: TldPriceRowInput = {
+    tld: row.tld,
+    updatedAt: row.updatedAt,
+    retailPriceLocked: row.retailPriceLocked,
+    retailRegister: num(row.retailRegister) ?? 0,
+    retailRenew: num(row.retailRenew) ?? 0,
+    retailTransfer: num(row.retailTransfer) ?? 0,
+    supplierRegister: num(row.supplierRegister),
+    supplierRenew: num(row.supplierRenew),
+    supplierTransfer: num(row.supplierTransfer),
+    supplierSyncedAt: row.supplierSyncedAt,
+    namesiloRegister: num(row.namesiloRegister),
+    namesiloRenew: num(row.namesiloRenew),
+    namesiloTransfer: num(row.namesiloTransfer),
+    namesiloSyncedAt: row.namesiloSyncedAt,
+    namesiloPriceStatus: row.namesiloPriceStatus,
+  };
+  const metrics = buildCatalogueRowMetrics(input);
   return {
     id: row.id,
     tld: row.tld,
+    supplierCurrency: row.supplierCurrency,
+    retailCurrency: row.retailCurrency,
     supplierRegister: num(row.supplierRegister),
     supplierRenew: num(row.supplierRenew),
     supplierTransfer: num(row.supplierTransfer),
@@ -41,6 +69,14 @@ function serializeRow(row: Awaited<ReturnType<typeof listRetailTldPrices>>[0]) {
     retailRegisterByYear: row.retailRegisterByYear,
     retailRenewByYear: row.retailRenewByYear,
     enabled: row.enabled,
+    namesiloRegister: num(row.namesiloRegister),
+    namesiloRenew: num(row.namesiloRenew),
+    namesiloTransfer: num(row.namesiloTransfer),
+    namesiloSyncedAt: row.namesiloSyncedAt?.toISOString() ?? null,
+    namesiloPriceStatus: row.namesiloPriceStatus,
+    lifecycleProvider: row.lifecycleProvider,
+    retailPriceLocked: row.retailPriceLocked,
+    metrics,
   };
 }
 
@@ -50,11 +86,20 @@ export async function GET() {
   await ensureDomainTldPricesSeeded();
   const rows = await listRetailTldPrices();
   const supplierSync = await getLatestSupplierSyncMeta();
-  return NextResponse.json({
-    rows: rows.map(serializeRow),
-    supplierSync,
-    tldCount: rows.length,
-  });
+  const namesiloSync = await getLatestNameSiloSyncMeta();
+  return NextResponse.json(
+    {
+      rows: rows.map(serializeRow),
+      supplierSync,
+      namesiloSync,
+      tldCount: rows.length,
+    },
+    {
+      headers: {
+        "Cache-Control": "private, no-store, max-age=0",
+      },
+    },
+  );
 }
 
 export async function PUT(request: Request) {
@@ -81,52 +126,9 @@ export async function PUT(request: Request) {
   };
 
   if (Array.isArray(body.bulk) && body.bulk.length > 0) {
-    const updated: string[] = [];
-    for (const item of body.bulk) {
-      const itemRecord = item as Record<string, unknown>;
-      const bulkErrors = validateBulkRetailItem(itemRecord);
-      if (bulkErrors.length) {
-        return NextResponse.json(
-          { error: bulkErrors[0]!.message, field: bulkErrors[0]!.field },
-          { status: 400 },
-        );
-      }
-      const updateData = pickBulkRetailUpdateData(itemRecord);
-      if (Object.keys(updateData).length === 0) continue;
-      const key = item.tld.startsWith(".") ? item.tld : `.${item.tld}`;
-      const before = await prisma.domainTldPrice.findUnique({
-        where: { tld: key },
-      });
-      if (!before) continue;
-      const row = await prisma.domainTldPrice.update({
-        where: { tld: key },
-        data: toPrismaRetailUpdateData(updateData),
-      });
-      updated.push(key);
-      await prisma.domainAuditLog.create({
-        data: {
-          adminUserId: admin.id,
-          action: "DOMAIN_PRICING_UPDATE",
-          resource: "DomainTldPrice",
-          resourceId: row.id,
-          details: {
-            tld: key,
-            bulk: true,
-            before: {
-              retailRegister: before.retailRegister,
-              retailRenew: before.retailRenew,
-              retailTransfer: before.retailTransfer,
-            },
-            after: {
-              retailRegister: row.retailRegister,
-              retailRenew: row.retailRenew,
-              retailTransfer: row.retailTransfer,
-            },
-          },
-        },
-      });
-    }
-    return NextResponse.json({ ok: true, updated });
+    return NextResponse.json(bulkRetailPreviewRequiredResponse(), {
+      status: 400,
+    });
   }
 
   const tld = body.tld?.trim();
@@ -162,10 +164,21 @@ export async function PUT(request: Request) {
     );
   }
 
+  const lock = assertRetailUpdateAllowed(before, updateData, {
+    unlocking: bodyRecord.retailPriceLocked === false,
+  });
+  if (!lock.ok && retailPriceFieldsInUpdate(updateData)) {
+    return NextResponse.json(
+      { error: "Retail price is locked. Unlock before editing retail fields." },
+      { status: 403 },
+    );
+  }
+
   const row = await prisma.domainTldPrice.update({
     where: { tld: key },
     data: toPrismaRetailUpdateData(updateData),
   });
+  invalidateTldCatalogueCache();
 
   await prisma.domainAuditLog.create({
     data: {
