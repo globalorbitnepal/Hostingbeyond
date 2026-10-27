@@ -265,13 +265,13 @@ const readDomainContent = nextCache(
     if (!page) return defaultDomainContent();
     return mergeDomainContent(page.sections as Partial<DomainContent>);
   },
-  ["orbit-domain-content"],
+  ["orbit-domain-content", "public-copy-v2"],
   { tags: [CMS_TAG], revalidate: CMS_REVALIDATE },
 );
 
 export const getDomainContent = cache(async (): Promise<DomainContent> => {
   try {
-    return await readDomainContent();
+    return mergeDomainContent(await readDomainContent());
   } catch {
     return defaultDomainContent();
   }
