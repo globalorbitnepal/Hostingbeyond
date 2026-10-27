@@ -59,5 +59,29 @@ describe("parseNameSiloGetPricesReply malformed TLD costs", () => {
       isUsableSupplierCost(parseNameSiloSupplierPrice("N/A")),
       false,
     );
+    assert.equal(com?.maxRegisterYears ?? null, null);
+  });
+
+  it("parses NameSilo max registration years when the API sends them", () => {
+    const rows = parseNameSiloGetPricesReply({
+      code: "300",
+      com: {
+        registration: "11.05",
+        renew: "11.05",
+        transfer: "10.80",
+        max_period: "10",
+      },
+      net: {
+        registration: "12",
+        renew: "12",
+        transfer: "12",
+        max_years: 0,
+      },
+    });
+    assert.equal(rows.find((r) => r.tld === ".com")?.maxRegisterYears, 10);
+    assert.equal(
+      rows.find((r) => r.tld === ".net")?.maxRegisterYears ?? null,
+      null,
+    );
   });
 });

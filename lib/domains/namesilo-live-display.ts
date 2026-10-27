@@ -99,6 +99,19 @@ export function overlayRowWithLiveNameSilo(
   };
 }
 
+export function extraLiveOnlyTlds(
+  catalogueTlds: Iterable<string>,
+  byTld: Map<string, NameSiloPriceRow>,
+): NameSiloPriceRow[] {
+  const seen = new Set(
+    [...catalogueTlds].map((tld) => normalizeCatalogueTld(tld)),
+  );
+  return [...byTld.entries()]
+    .filter(([tld]) => !seen.has(tld))
+    .map(([, row]) => row)
+    .sort((a, b) => a.tld.localeCompare(b.tld));
+}
+
 export async function readLiveNameSiloOverlay(now = Date.now()): Promise<{
   meta: NameSiloLiveMeta;
   byTld: Map<string, NameSiloPriceRow>;

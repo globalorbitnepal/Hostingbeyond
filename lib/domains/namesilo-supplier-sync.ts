@@ -73,6 +73,7 @@ export type NameSiloSyncApplyResult = {
   tldsInvalidOnApi: number;
   tldsPartial: number;
   tldsVerified: number;
+  tldsInserted: number;
 };
 
 /** Catalogue TLD key: lowercase with leading dot (matches `DomainTldPrice.tld`). */
@@ -144,6 +145,7 @@ export type PlanRowUpdateDb = {
   namesiloTransfer: unknown;
   namesiloPriceStatus: string | null;
   namesiloSyncedAt: Date | null;
+  supplierMaxRegisterYears?: number | null;
 };
 
 export function planRowUpdate(
@@ -185,13 +187,18 @@ export function planRowUpdate(
     namesiloSyncedAt: syncedAt,
     namesiloPriceStatus: status,
   };
+  if (ns.maxRegisterYears != null) {
+    data.supplierMaxRegisterYears = ns.maxRegisterYears;
+  }
 
   const changed =
     num(db.namesiloRegister) !== merged.register ||
     num(db.namesiloRenew) !== merged.renew ||
     num(db.namesiloTransfer) !== merged.transfer ||
     db.namesiloPriceStatus !== status ||
-    db.namesiloSyncedAt?.getTime() !== syncedAt.getTime();
+    db.namesiloSyncedAt?.getTime() !== syncedAt.getTime() ||
+    (ns.maxRegisterYears != null &&
+      (db.supplierMaxRegisterYears ?? null) !== ns.maxRegisterYears);
 
   return { data, status, changed };
 }
@@ -409,16 +416,53 @@ export async function applyNameSiloSupplierSync(
       });
     }
 
+    const existing = new Set(
+      dbRows.map((row) => normalizeCatalogueTld(row.tld)),
+    );
+    const toInsert = apiRows.filter(
+      (row) => !existing.has(normalizeCatalogueTld(row.tld)),
+    );
+    let tldsInserted = 0;
+    for (let i = 0; i < toInsert.length; i += chunkSize) {
+      const chunk = toInsert.slice(i, i + chunkSize);
+      await prisma.$transaction(async (tx) => {
+        for (const ns of chunk) {
+          const status = deriveNameSiloCatalogueStatus(incomingCosts(ns), {
+            hadInvalidField: ns.invalidFields.length > 0,
+            onApi: true,
+          });
+          await tx.domainTldPrice.create({
+            data: {
+              tld: normalizeCatalogueTld(ns.tld),
+              namesiloRegister: ns.register,
+              namesiloRenew: ns.renew,
+              namesiloTransfer: ns.transfer,
+              namesiloSyncedAt: fetchedAt,
+              namesiloPriceStatus: status,
+              supplierMaxRegisterYears: ns.maxRegisterYears ?? null,
+              retailRegister: 0,
+              retailRenew: 0,
+              retailTransfer: 0,
+              enabled: false,
+              retailPriceLocked: true,
+            },
+          });
+          tldsInserted += 1;
+        }
+      });
+    }
+
     const result: NameSiloSyncApplyResult = {
       syncedAt: fetchedAt.toISOString(),
       apiTldCount: apiRows.length,
-      catalogueRows: dbRows.length,
+      catalogueRows: dbRows.length + tldsInserted,
       tldsUpdated,
       tldsUnchanged,
       tldsMissingOnApi,
       tldsInvalidOnApi,
       tldsPartial,
       tldsVerified,
+      tldsInserted,
     };
 
     try {

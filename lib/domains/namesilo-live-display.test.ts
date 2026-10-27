@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { overlayRowWithLiveNameSilo } from "@/lib/domains/namesilo-live-display";
+import {
+  extraLiveOnlyTlds,
+  overlayRowWithLiveNameSilo,
+} from "@/lib/domains/namesilo-live-display";
 
 describe("overlayRowWithLiveNameSilo", () => {
   const stored = {
@@ -57,5 +60,36 @@ describe("overlayRowWithLiveNameSilo", () => {
     assert.equal(overlaid.namesiloPriceSource, "stored_catalogue");
     assert.equal(overlaid.namesiloRegister, 10);
     assert.equal(overlaid.namesiloPriceStatus, "stale");
+  });
+
+  it("lists live NameSilo TLDs that are not in the catalogue", () => {
+    const extra = extraLiveOnlyTlds(
+      [".com"],
+      new Map([
+        [
+          ".com",
+          {
+            tld: ".com",
+            register: 11,
+            renew: 11,
+            transfer: 11,
+            invalidFields: [],
+          },
+        ],
+        [
+          ".xyz",
+          {
+            tld: ".xyz",
+            register: 1,
+            renew: 2,
+            transfer: 1,
+            maxRegisterYears: 10,
+            invalidFields: [],
+          },
+        ],
+      ]),
+    );
+    assert.equal(extra.length, 1);
+    assert.equal(extra[0]?.tld, ".xyz");
   });
 });

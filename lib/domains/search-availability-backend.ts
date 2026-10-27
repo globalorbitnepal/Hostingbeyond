@@ -18,15 +18,16 @@ export function runWithSearchAvailabilityBackend<T>(
 }
 
 export function getSearchAvailabilityBackend(): SearchAvailabilityBackend {
-  return storage.getStore() ?? "dna";
+  return (
+    storage.getStore() ?? (isNameSiloSearchEnabledInEnv() ? "namesilo" : "dna")
+  );
 }
 
 export { isNameSiloSearchEnabledInEnv } from "@/lib/domains/namesilo-search-env";
 
 /**
- * Customer-facing `/api/domains/search` availability when env enables NameSilo.
- * `searchContext` is accepted for forward compatibility; DNA lifecycle and
- * `/api/domains/validate` are unaffected (they do not use this helper).
+ * Customer-facing `/api/domains/search` and transfer eligibility.
+ * NameSilo when API key is set; DNA only if the provider flag is explicitly `dna`.
  */
 export function resolveSearchRouteAvailabilityBackend(
   _searchContext?: string,

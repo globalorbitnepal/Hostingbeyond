@@ -28,7 +28,10 @@ export function OrbitDomainDashboard() {
         Domain services
       </h1>
       <p className="text-sm text-slate-600">
-        HostingBeyond domain operations — supplier details stay in admin only.
+        HostingBeyond domain operations use NameSilo for public search, bulk
+        lookup, transfer checks, and supplier pricing. Billable register / renew
+        / transfer still require NameSilo lifecycle approval. Supplier details
+        stay in admin only.
       </p>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map(([label, value]) => (

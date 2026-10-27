@@ -58,13 +58,13 @@ describe("domain search provider isolation", () => {
     });
   });
 
-  it("does not enable NameSilo search when only NAMESILO_API_KEY is set", () => {
+  it("enables NameSilo search when NAMESILO_API_KEY is set", () => {
     delete process.env.DOMAIN_PUBLIC_SEARCH_AVAILABILITY_PROVIDER;
     process.env.NAMESILO_API_KEY = "test-key";
-    assert.equal(resolveSearchRouteAvailabilityBackend(undefined), "dna");
+    assert.equal(resolveSearchRouteAvailabilityBackend(undefined), "namesilo");
     assert.equal(
       resolveSearchRouteAvailabilityBackend(DOMAIN_PAGE_SEARCH_CONTEXT),
-      "dna",
+      "namesilo",
     );
   });
 

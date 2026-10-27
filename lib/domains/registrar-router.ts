@@ -33,7 +33,8 @@ export async function resolveLifecycleProviderForDomain(
 
 /**
  * Choose registrar for a new registration checkout (not billable until approved).
- * Requires explicit per-TLD lifecycleProvider and verified NameSilo cost when using namesilo.
+ * With NAMESILO_API_KEY, NameSilo is used unless the TLD is explicitly DNA.
+ * NameSilo still requires NAMESILO_LIFECYCLE_ENABLED and verified costs.
  */
 export async function resolveLifecycleProviderForNewRegistration(
   tld: string,
@@ -43,7 +44,30 @@ export async function resolveLifecycleProviderForNewRegistration(
     where: { tld: key },
   });
   const configured = row?.lifecycleProvider as RegistrarProviderId | null;
-  if (!configured || configured === DEFAULT_LEGACY_PROVIDER) {
+  const namesiloKey = Boolean(process.env.NAMESILO_API_KEY?.trim());
+  const explicitDna = configured === DEFAULT_LEGACY_PROVIDER;
+  if (namesiloKey && !explicitDna) {
+    if (process.env.NAMESILO_LIFECYCLE_ENABLED !== "true") {
+      return {
+        provider: null,
+        blockReason: "namesilo_lifecycle_not_enabled",
+      };
+    }
+    if (
+      row?.namesiloPriceStatus !== "verified" ||
+      row.namesiloRegister == null
+    ) {
+      return {
+        provider: null,
+        blockReason: "namesilo_cost_unverified",
+      };
+    }
+    const ns = getNameSiloLifecycleProvider();
+    return ns
+      ? { provider: ns }
+      : { provider: null, blockReason: "namesilo_unavailable" };
+  }
+  if (!configured || explicitDna) {
     const dna = resolveLifecycleProvider();
     return dna
       ? { provider: dna }

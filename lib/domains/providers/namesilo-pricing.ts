@@ -26,9 +26,26 @@ export type NameSiloPriceRow = {
   register: number | null;
   renew: number | null;
   transfer: number | null;
+  /** NameSilo max registration years when the API sends a 1–10 value. */
+  maxRegisterYears?: number | null;
   /** Fields present in API payload but failed validation. */
   invalidFields: string[];
 };
+
+function parseMaxRegisterYears(record: Record<string, unknown>): number | null {
+  const raw =
+    record.max_period ??
+    record.maxPeriod ??
+    record.max_years ??
+    record.maxYears ??
+    record.years;
+  if (raw == null || raw === "") return null;
+  const n = typeof raw === "number" ? raw : Number(String(raw).trim());
+  if (!Number.isFinite(n)) return null;
+  const years = Math.trunc(n);
+  if (years < 1 || years > 10) return null;
+  return years;
+}
 
 export function parseNameSiloGetPricesReply(
   reply: Record<string, unknown>,
@@ -56,6 +73,7 @@ export function parseNameSiloGetPricesReply(
       register: nameSiloParsedToNullable(regParsed),
       renew: nameSiloParsedToNullable(renewParsed),
       transfer: nameSiloParsedToNullable(transferParsed),
+      maxRegisterYears: parseMaxRegisterYears(record),
       invalidFields,
     });
   }
@@ -169,5 +187,6 @@ export function toProviderTldPricing(
     transfer: row.transfer,
     restore: null,
     currency: "USD",
+    maxRegisterYears: row.maxRegisterYears,
   };
 }

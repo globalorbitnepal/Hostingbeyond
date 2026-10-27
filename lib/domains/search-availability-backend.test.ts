@@ -20,7 +20,9 @@ describe("search availability backend routing", () => {
     process.env = env;
   });
 
-  it("defaults to DNA outside request scope", () => {
+  it("defaults to DNA outside request scope when NameSilo is not configured", () => {
+    delete process.env.NAMESILO_API_KEY;
+    delete process.env.DOMAIN_PUBLIC_SEARCH_AVAILABILITY_PROVIDER;
     assert.equal(getSearchAvailabilityBackend(), "dna");
   });
 
@@ -38,14 +40,14 @@ describe("search availability backend routing", () => {
     );
   });
 
-  it("does not enable NameSilo from API key alone (explicit env flag required)", () => {
+  it("enables NameSilo from API key unless the provider flag is dna", () => {
     process.env.NAMESILO_API_KEY = "test-key";
     delete process.env.DOMAIN_PUBLIC_SEARCH_AVAILABILITY_PROVIDER;
     assert.equal(
       resolveSearchRouteAvailabilityBackend(DOMAIN_PAGE_SEARCH_CONTEXT),
-      "dna",
+      "namesilo",
     );
-    assert.equal(isNameSiloSearchEnabledInEnv(), false);
+    assert.equal(isNameSiloSearchEnabledInEnv(), true);
   });
 
   it("forces DNA when DOMAIN_PUBLIC_SEARCH_AVAILABILITY_PROVIDER=dna", () => {
@@ -56,6 +58,8 @@ describe("search availability backend routing", () => {
   });
 
   it("scopes async context to the chosen backend", () => {
+    delete process.env.NAMESILO_API_KEY;
+    delete process.env.DOMAIN_PUBLIC_SEARCH_AVAILABILITY_PROVIDER;
     runWithSearchAvailabilityBackend("namesilo", () => {
       assert.equal(getSearchAvailabilityBackend(), "namesilo");
     });

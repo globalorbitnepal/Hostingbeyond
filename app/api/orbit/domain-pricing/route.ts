@@ -6,6 +6,7 @@ import {
   listRetailTldPrices,
 } from "@/lib/domains/pricing-engine";
 import {
+  extraLiveOnlyTlds,
   overlayRowWithLiveNameSilo,
   readLiveNameSiloOverlay,
 } from "@/lib/domains/namesilo-live-display";
@@ -84,6 +85,9 @@ function serializeRow(
     retailCurrency: row.retailCurrency,
   };
   const metrics = buildCatalogueRowMetrics(input);
+  const liveMax = live?.active
+    ? live.byTld.get(normalizeCatalogueTld(row.tld))?.maxRegisterYears
+    : null;
   return {
     id: row.id,
     tld: row.tld,
@@ -94,7 +98,8 @@ function serializeRow(
     supplierTransfer: num(row.supplierTransfer),
     supplierRestore: num(row.supplierRestore),
     supplierSyncedAt: row.supplierSyncedAt?.toISOString() ?? null,
-    supplierMaxRegisterYears: row.supplierMaxRegisterYears,
+    supplierMaxRegisterYears:
+      liveMax != null ? liveMax : row.supplierMaxRegisterYears,
     retailRegister: num(row.retailRegister),
     retailRenew: num(row.retailRenew),
     retailTransfer: num(row.retailTransfer),
@@ -113,6 +118,76 @@ function serializeRow(
     storedNamesiloTransfer: overlaid.storedNamesiloTransfer,
     lifecycleProvider: row.lifecycleProvider,
     retailPriceLocked: row.retailPriceLocked,
+    liveOnly: false,
+    metrics,
+  };
+}
+
+function serializeLiveOnlyRow(
+  liveRow: import("@/lib/domains/providers/namesilo-pricing").NameSiloPriceRow,
+  fetchedAt: Date | null,
+) {
+  const overlaid = overlayRowWithLiveNameSilo(
+    {
+      namesiloRegister: null,
+      namesiloRenew: null,
+      namesiloTransfer: null,
+      namesiloSyncedAt: null,
+      namesiloPriceStatus: null,
+    },
+    liveRow,
+    fetchedAt,
+  );
+  const input: TldPriceRowInput = {
+    tld: liveRow.tld,
+    updatedAt: fetchedAt ?? new Date(0),
+    retailPriceLocked: true,
+    retailRegister: 0,
+    retailRenew: 0,
+    retailTransfer: 0,
+    supplierRegister: null,
+    supplierRenew: null,
+    supplierTransfer: null,
+    supplierSyncedAt: null,
+    namesiloRegister: overlaid.namesiloRegister,
+    namesiloRenew: overlaid.namesiloRenew,
+    namesiloTransfer: overlaid.namesiloTransfer,
+    namesiloSyncedAt: overlaid.namesiloSyncedAt,
+    namesiloPriceStatus: overlaid.namesiloPriceStatus,
+    supplierCurrency: "USD",
+    retailCurrency: "USD",
+  };
+  const metrics = buildCatalogueRowMetrics(input);
+  return {
+    id: `live:${liveRow.tld}`,
+    tld: liveRow.tld,
+    supplierCurrency: "USD",
+    retailCurrency: "USD",
+    supplierRegister: null,
+    supplierRenew: null,
+    supplierTransfer: null,
+    supplierRestore: null,
+    supplierSyncedAt: null,
+    supplierMaxRegisterYears: liveRow.maxRegisterYears ?? null,
+    retailRegister: 0,
+    retailRenew: 0,
+    retailTransfer: 0,
+    retailRestore: null,
+    retailRegisterByYear: null,
+    retailRenewByYear: null,
+    enabled: false,
+    namesiloRegister: overlaid.namesiloRegister,
+    namesiloRenew: overlaid.namesiloRenew,
+    namesiloTransfer: overlaid.namesiloTransfer,
+    namesiloSyncedAt: overlaid.namesiloSyncedAt?.toISOString() ?? null,
+    namesiloPriceStatus: overlaid.namesiloPriceStatus,
+    namesiloPriceSource: overlaid.namesiloPriceSource,
+    storedNamesiloRegister: null,
+    storedNamesiloRenew: null,
+    storedNamesiloTransfer: null,
+    lifecycleProvider: null,
+    retailPriceLocked: true,
+    liveOnly: true,
     metrics,
   };
 }
@@ -127,19 +202,31 @@ export async function GET() {
   const live = await readLiveNameSiloOverlay();
   const liveActive =
     live.meta.status === "live" || live.meta.status === "cached";
+  const liveFetchedAt = live.meta.fetchedAt
+    ? new Date(live.meta.fetchedAt)
+    : null;
+  const serialized = rows.map((row) =>
+    serializeRow(row, {
+      byTld: live.byTld,
+      fetchedAt: liveFetchedAt,
+      active: liveActive,
+    }),
+  );
+  if (liveActive) {
+    for (const liveRow of extraLiveOnlyTlds(
+      rows.map((row) => row.tld),
+      live.byTld,
+    )) {
+      serialized.push(serializeLiveOnlyRow(liveRow, liveFetchedAt));
+    }
+  }
   return NextResponse.json(
     {
-      rows: rows.map((row) =>
-        serializeRow(row, {
-          byTld: live.byTld,
-          fetchedAt: live.meta.fetchedAt ? new Date(live.meta.fetchedAt) : null,
-          active: liveActive,
-        }),
-      ),
+      rows: serialized,
       supplierSync,
       namesiloSync,
       namesiloLive: live.meta,
-      tldCount: rows.length,
+      tldCount: serialized.length,
     },
     {
       headers: {

@@ -41,6 +41,7 @@ type TldRow = {
   retailRegisterByYear: Record<string, number> | null;
   retailRenewByYear: Record<string, number> | null;
   enabled: boolean;
+  liveOnly?: boolean;
   supplierCurrency?: string;
   retailCurrency?: string;
   metrics?: {
@@ -360,12 +361,13 @@ export function OrbitDomainPricingAdmin() {
       tldsVerified?: number;
       tldsPartial?: number;
       tldsInvalidOnApi?: number;
+      tldsInserted?: number;
       apiTldCount?: number;
       syncedAt?: string;
     };
     setMessage(
       res.ok
-        ? `NameSilo sync OK @ ${formatSyncTime(json.syncedAt ?? null)}: API ${json.apiTldCount ?? "?"} TLDs · updated ${json.tldsUpdated ?? 0} · unchanged ${json.tldsUnchanged ?? 0} · verified ${json.tldsVerified ?? 0} · partial ${json.tldsPartial ?? 0} · missing on API ${json.tldsMissingOnApi ?? 0} · invalid fields ${json.tldsInvalidOnApi ?? 0}. Retail unchanged.`
+        ? `NameSilo sync OK @ ${formatSyncTime(json.syncedAt ?? null)}: API ${json.apiTldCount ?? "?"} TLDs · updated ${json.tldsUpdated ?? 0} · inserted ${json.tldsInserted ?? 0} · unchanged ${json.tldsUnchanged ?? 0} · verified ${json.tldsVerified ?? 0} · partial ${json.tldsPartial ?? 0} · missing on API ${json.tldsMissingOnApi ?? 0} · invalid fields ${json.tldsInvalidOnApi ?? 0}. Retail unchanged.`
         : (json.error ?? "NameSilo sync failed."),
     );
     setNamesiloRefreshing(false);
@@ -498,6 +500,8 @@ export function OrbitDomainPricingAdmin() {
   }
 
   function toggleBulk(tld: string) {
+    const row = rows.find((item) => item.tld === tld);
+    if (row?.liveOnly) return;
     setBulkSelected((prev) => {
       const next = new Set(prev);
       if (next.has(tld)) next.delete(tld);
@@ -830,6 +834,7 @@ export function OrbitDomainPricingAdmin() {
                   <th className="px-3 py-3">NameSilo reg. cost</th>
                   <th className="px-3 py-3">NameSilo renew cost</th>
                   <th className="px-3 py-3">NameSilo transfer cost</th>
+                  <th className="px-3 py-3">Max years</th>
                   <th className="px-3 py-3">NameSilo status</th>
                   <th className="px-3 py-3">Last NameSilo sync</th>
                   <th className="px-3 py-3">Retail reg.</th>
@@ -851,11 +856,19 @@ export function OrbitDomainPricingAdmin() {
                       <input
                         type="checkbox"
                         checked={bulkSelected.has(row.tld)}
+                        disabled={row.liveOnly}
                         onChange={() => toggleBulk(row.tld)}
                         aria-label={`Select ${row.tld}`}
                       />
                     </td>
-                    <td className="px-3 py-2 font-bold">{row.tld}</td>
+                    <td className="px-3 py-2 font-bold">
+                      {row.tld}
+                      {row.liveOnly ? (
+                        <span className="ml-1 text-[10px] font-bold text-violet-700 uppercase">
+                          API list
+                        </span>
+                      ) : null}
+                    </td>
                     <td className="px-3 py-2 text-slate-600">
                       {money(row.namesiloRegister)}
                       {row.namesiloPriceSource === "live_api" ? (
@@ -869,6 +882,9 @@ export function OrbitDomainPricingAdmin() {
                     </td>
                     <td className="px-3 py-2 text-slate-600">
                       {money(row.namesiloTransfer)}
+                    </td>
+                    <td className="px-3 py-2 text-slate-600">
+                      {row.supplierMaxRegisterYears ?? "—"}
                     </td>
                     <td className="px-3 py-2 text-xs font-semibold text-slate-500 uppercase">
                       {namesiloStatusLabel(row)}
@@ -901,7 +917,10 @@ export function OrbitDomainPricingAdmin() {
                       {row.retailPriceLocked ? "Locked" : "Unlocked"}
                     </td>
                     <td className="px-3 py-2 text-xs text-slate-600">
-                      {row.lifecycleProvider ?? "dna-default (lifecycle only)"}
+                      {row.lifecycleProvider ??
+                        (row.liveOnly
+                          ? "NameSilo list (not in catalogue)"
+                          : "unset")}
                     </td>
                     <td className="px-3 py-2 text-xs text-slate-400">
                       {money(row.supplierRegister)} / {money(row.supplierRenew)}{" "}
@@ -910,11 +929,12 @@ export function OrbitDomainPricingAdmin() {
                     <td className="px-3 py-2">
                       <button
                         type="button"
-                        className="inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-xs font-semibold"
+                        className="inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-xs font-semibold disabled:opacity-50"
+                        disabled={row.liveOnly}
                         onClick={() => openEdit(row)}
                       >
                         <Pencil className="size-3" />
-                        Edit
+                        {row.liveOnly ? "Apply sync to persist" : "Edit"}
                       </button>
                     </td>
                   </tr>
@@ -1117,7 +1137,9 @@ export function OrbitDomainPricingAdmin() {
                       })
                     }
                   >
-                    <option value="">DNA default (legacy)</option>
+                    <option value="">
+                      Unset (NameSilo when API key is set)
+                    </option>
                     <option value="namesilo">NameSilo (after approval)</option>
                     <option value="domain-name-api">DNA explicit</option>
                   </select>
