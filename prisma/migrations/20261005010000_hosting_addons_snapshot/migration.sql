@@ -1,7 +1,15 @@
 -- CreateEnum
-CREATE TYPE "HostingAddonBillingMode" AS ENUM ('MATCH_HOSTING', 'MONTHLY', 'ANNUAL', 'ONE_TIME');
+DO $$ BEGIN
+  CREATE TYPE "HostingAddonBillingMode" AS ENUM ('MATCH_HOSTING', 'MONTHLY', 'ANNUAL', 'ONE_TIME');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TYPE "HostingAddonType" AS ENUM ('BUSINESS_EMAIL', 'DOMAIN_PRIVACY', 'BACKUP', 'SUPPORT', 'MIGRATION', 'STORAGE', 'IP', 'SSL', 'SECURITY', 'OTHER');
+DO $$ BEGIN
+  CREATE TYPE "HostingAddonType" AS ENUM ('BUSINESS_EMAIL', 'DOMAIN_PRIVACY', 'BACKUP', 'SUPPORT', 'MIGRATION', 'STORAGE', 'IP', 'SSL', 'SECURITY', 'OTHER');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AlterTable HostingOrder
 ALTER TABLE "HostingOrder" ADD COLUMN IF NOT EXISTS "lineItemsSnapshot" JSONB;
@@ -11,7 +19,7 @@ ALTER TABLE "HostingOrder" ADD COLUMN IF NOT EXISTS "paymentStatus" TEXT;
 ALTER TABLE "HostingOrder" ADD COLUMN IF NOT EXISTS "paidAt" TIMESTAMP(3);
 
 -- CreateTable
-CREATE TABLE "HostingAddon" (
+CREATE TABLE IF NOT EXISTS "HostingAddon" (
     "id" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -28,6 +36,6 @@ CREATE TABLE "HostingAddon" (
     CONSTRAINT "HostingAddon_pkey" PRIMARY KEY ("id")
 );
 
-CREATE UNIQUE INDEX "HostingAddon_slug_key" ON "HostingAddon"("slug");
-CREATE INDEX "HostingAddon_active_idx" ON "HostingAddon"("active");
-CREATE INDEX "HostingAddon_displayOrder_idx" ON "HostingAddon"("displayOrder");
+CREATE UNIQUE INDEX IF NOT EXISTS "HostingAddon_slug_key" ON "HostingAddon"("slug");
+CREATE INDEX IF NOT EXISTS "HostingAddon_active_idx" ON "HostingAddon"("active");
+CREATE INDEX IF NOT EXISTS "HostingAddon_displayOrder_idx" ON "HostingAddon"("displayOrder");

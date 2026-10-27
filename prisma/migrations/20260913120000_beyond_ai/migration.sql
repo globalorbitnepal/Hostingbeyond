@@ -1,5 +1,5 @@
 -- CreateTable
-CREATE TABLE "BeyondAiSubscription" (
+CREATE TABLE IF NOT EXISTS "BeyondAiSubscription" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "planId" TEXT NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE "BeyondAiSubscription" (
 );
 
 -- CreateTable
-CREATE TABLE "BeyondAiProject" (
+CREATE TABLE IF NOT EXISTS "BeyondAiProject" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -31,19 +31,27 @@ CREATE TABLE "BeyondAiProject" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "BeyondAiSubscription_userId_key" ON "BeyondAiSubscription"("userId");
+CREATE UNIQUE INDEX IF NOT EXISTS "BeyondAiSubscription_userId_key" ON "BeyondAiSubscription"("userId");
 
 -- CreateIndex
-CREATE INDEX "BeyondAiSubscription_planId_idx" ON "BeyondAiSubscription"("planId");
+CREATE INDEX IF NOT EXISTS "BeyondAiSubscription_planId_idx" ON "BeyondAiSubscription"("planId");
 
 -- CreateIndex
-CREATE INDEX "BeyondAiSubscription_status_idx" ON "BeyondAiSubscription"("status");
+CREATE INDEX IF NOT EXISTS "BeyondAiSubscription_status_idx" ON "BeyondAiSubscription"("status");
 
 -- CreateIndex
-CREATE INDEX "BeyondAiProject_userId_idx" ON "BeyondAiProject"("userId");
+CREATE INDEX IF NOT EXISTS "BeyondAiProject_userId_idx" ON "BeyondAiProject"("userId");
 
 -- AddForeignKey
-ALTER TABLE "BeyondAiSubscription" ADD CONSTRAINT "BeyondAiSubscription_userId_fkey" FOREIGN KEY ("userId") REFERENCES "CustomerUser"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+  ALTER TABLE "BeyondAiSubscription" ADD CONSTRAINT "BeyondAiSubscription_userId_fkey" FOREIGN KEY ("userId") REFERENCES "CustomerUser"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "BeyondAiProject" ADD CONSTRAINT "BeyondAiProject_userId_fkey" FOREIGN KEY ("userId") REFERENCES "CustomerUser"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+  ALTER TABLE "BeyondAiProject" ADD CONSTRAINT "BeyondAiProject_userId_fkey" FOREIGN KEY ("userId") REFERENCES "CustomerUser"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;

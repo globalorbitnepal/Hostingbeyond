@@ -1,11 +1,19 @@
 -- CreateEnum
-CREATE TYPE "HostingProductCategory" AS ENUM ('WEBSITE', 'DEVELOPER', 'VPS', 'BUSINESS');
+DO $$ BEGIN
+  CREATE TYPE "HostingProductCategory" AS ENUM ('WEBSITE', 'DEVELOPER', 'VPS', 'BUSINESS');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
 -- CreateEnum
-CREATE TYPE "HostingProductStatus" AS ENUM ('ACTIVE', 'INACTIVE', 'ARCHIVED');
+DO $$ BEGIN
+  CREATE TYPE "HostingProductStatus" AS ENUM ('ACTIVE', 'INACTIVE', 'ARCHIVED');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
 -- CreateTable
-CREATE TABLE "HostingProduct" (
+CREATE TABLE IF NOT EXISTS "HostingProduct" (
     "id" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -44,7 +52,7 @@ CREATE TABLE "HostingProduct" (
 );
 
 -- CreateTable
-CREATE TABLE "HostingProductPlan" (
+CREATE TABLE IF NOT EXISTS "HostingProductPlan" (
     "id" TEXT NOT NULL,
     "productId" TEXT NOT NULL,
     "planKey" TEXT NOT NULL,
@@ -74,25 +82,29 @@ CREATE TABLE "HostingProductPlan" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "HostingProduct_slug_key" ON "HostingProduct"("slug");
+CREATE UNIQUE INDEX IF NOT EXISTS "HostingProduct_slug_key" ON "HostingProduct"("slug");
 
 -- CreateIndex
-CREATE INDEX "HostingProduct_category_idx" ON "HostingProduct"("category");
+CREATE INDEX IF NOT EXISTS "HostingProduct_category_idx" ON "HostingProduct"("category");
 
 -- CreateIndex
-CREATE INDEX "HostingProduct_status_idx" ON "HostingProduct"("status");
+CREATE INDEX IF NOT EXISTS "HostingProduct_status_idx" ON "HostingProduct"("status");
 
 -- CreateIndex
-CREATE INDEX "HostingProduct_displayOrder_idx" ON "HostingProduct"("displayOrder");
+CREATE INDEX IF NOT EXISTS "HostingProduct_displayOrder_idx" ON "HostingProduct"("displayOrder");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "HostingProductPlan_productId_planKey_key" ON "HostingProductPlan"("productId", "planKey");
+CREATE UNIQUE INDEX IF NOT EXISTS "HostingProductPlan_productId_planKey_key" ON "HostingProductPlan"("productId", "planKey");
 
 -- CreateIndex
-CREATE INDEX "HostingProductPlan_productId_idx" ON "HostingProductPlan"("productId");
+CREATE INDEX IF NOT EXISTS "HostingProductPlan_productId_idx" ON "HostingProductPlan"("productId");
 
 -- CreateIndex
-CREATE INDEX "HostingProductPlan_active_idx" ON "HostingProductPlan"("active");
+CREATE INDEX IF NOT EXISTS "HostingProductPlan_active_idx" ON "HostingProductPlan"("active");
 
 -- AddForeignKey
-ALTER TABLE "HostingProductPlan" ADD CONSTRAINT "HostingProductPlan_productId_fkey" FOREIGN KEY ("productId") REFERENCES "HostingProduct"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+  ALTER TABLE "HostingProductPlan" ADD CONSTRAINT "HostingProductPlan_productId_fkey" FOREIGN KEY ("productId") REFERENCES "HostingProduct"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;

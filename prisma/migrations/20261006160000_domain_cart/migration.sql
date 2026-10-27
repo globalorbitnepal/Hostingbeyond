@@ -1,5 +1,5 @@
 -- CreateTable
-CREATE TABLE "DomainCart" (
+CREATE TABLE IF NOT EXISTS "DomainCart" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -9,7 +9,7 @@ CREATE TABLE "DomainCart" (
 );
 
 -- CreateTable
-CREATE TABLE "DomainCartItem" (
+CREATE TABLE IF NOT EXISTS "DomainCartItem" (
     "id" TEXT NOT NULL,
     "cartId" TEXT NOT NULL,
     "domain" TEXT NOT NULL,
@@ -26,16 +26,24 @@ CREATE TABLE "DomainCartItem" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "DomainCart_userId_key" ON "DomainCart"("userId");
+CREATE UNIQUE INDEX IF NOT EXISTS "DomainCart_userId_key" ON "DomainCart"("userId");
 
 -- CreateIndex
-CREATE INDEX "DomainCartItem_cartId_idx" ON "DomainCartItem"("cartId");
+CREATE INDEX IF NOT EXISTS "DomainCartItem_cartId_idx" ON "DomainCartItem"("cartId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "DomainCartItem_cartId_domain_key" ON "DomainCartItem"("cartId", "domain");
+CREATE UNIQUE INDEX IF NOT EXISTS "DomainCartItem_cartId_domain_key" ON "DomainCartItem"("cartId", "domain");
 
 -- AddForeignKey
-ALTER TABLE "DomainCart" ADD CONSTRAINT "DomainCart_userId_fkey" FOREIGN KEY ("userId") REFERENCES "CustomerUser"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+  ALTER TABLE "DomainCart" ADD CONSTRAINT "DomainCart_userId_fkey" FOREIGN KEY ("userId") REFERENCES "CustomerUser"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "DomainCartItem" ADD CONSTRAINT "DomainCartItem_cartId_fkey" FOREIGN KEY ("cartId") REFERENCES "DomainCart"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+  ALTER TABLE "DomainCartItem" ADD CONSTRAINT "DomainCartItem_cartId_fkey" FOREIGN KEY ("cartId") REFERENCES "DomainCart"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;

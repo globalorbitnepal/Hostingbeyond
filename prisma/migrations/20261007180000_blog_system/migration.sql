@@ -1,11 +1,15 @@
 -- CreateEnum
-CREATE TYPE "BlogPostStatus" AS ENUM ('DRAFT', 'SCHEDULED', 'PUBLISHED', 'ARCHIVED');
+DO $$ BEGIN
+  CREATE TYPE "BlogPostStatus" AS ENUM ('DRAFT', 'SCHEDULED', 'PUBLISHED', 'ARCHIVED');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AlterEnum
 ALTER TYPE "ActivityAction" ADD VALUE IF NOT EXISTS 'BLOG_UPDATE';
 
 -- CreateTable
-CREATE TABLE "BlogAuthor" (
+CREATE TABLE IF NOT EXISTS "BlogAuthor" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "displayName" TEXT,
@@ -23,7 +27,7 @@ CREATE TABLE "BlogAuthor" (
 );
 
 -- CreateTable
-CREATE TABLE "BlogCategory" (
+CREATE TABLE IF NOT EXISTS "BlogCategory" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
@@ -40,7 +44,7 @@ CREATE TABLE "BlogCategory" (
 );
 
 -- CreateTable
-CREATE TABLE "BlogTag" (
+CREATE TABLE IF NOT EXISTS "BlogTag" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
@@ -55,7 +59,7 @@ CREATE TABLE "BlogTag" (
 );
 
 -- CreateTable
-CREATE TABLE "BlogPost" (
+CREATE TABLE IF NOT EXISTS "BlogPost" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
@@ -94,7 +98,7 @@ CREATE TABLE "BlogPost" (
 );
 
 -- CreateTable
-CREATE TABLE "BlogPostTag" (
+CREATE TABLE IF NOT EXISTS "BlogPostTag" (
     "postId" TEXT NOT NULL,
     "tagId" TEXT NOT NULL,
 
@@ -102,7 +106,7 @@ CREATE TABLE "BlogPostTag" (
 );
 
 -- CreateTable
-CREATE TABLE "BlogPostSlugRedirect" (
+CREATE TABLE IF NOT EXISTS "BlogPostSlugRedirect" (
     "id" TEXT NOT NULL,
     "postId" TEXT NOT NULL,
     "fromSlug" TEXT NOT NULL,
@@ -112,61 +116,81 @@ CREATE TABLE "BlogPostSlugRedirect" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "BlogAuthor_adminUserId_key" ON "BlogAuthor"("adminUserId");
+CREATE UNIQUE INDEX IF NOT EXISTS "BlogAuthor_adminUserId_key" ON "BlogAuthor"("adminUserId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "BlogCategory_slug_key" ON "BlogCategory"("slug");
+CREATE UNIQUE INDEX IF NOT EXISTS "BlogCategory_slug_key" ON "BlogCategory"("slug");
 
 -- CreateIndex
-CREATE INDEX "BlogCategory_slug_idx" ON "BlogCategory"("slug");
+CREATE INDEX IF NOT EXISTS "BlogCategory_slug_idx" ON "BlogCategory"("slug");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "BlogTag_slug_key" ON "BlogTag"("slug");
+CREATE UNIQUE INDEX IF NOT EXISTS "BlogTag_slug_key" ON "BlogTag"("slug");
 
 -- CreateIndex
-CREATE INDEX "BlogTag_slug_idx" ON "BlogTag"("slug");
+CREATE INDEX IF NOT EXISTS "BlogTag_slug_idx" ON "BlogTag"("slug");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "BlogPost_slug_key" ON "BlogPost"("slug");
+CREATE UNIQUE INDEX IF NOT EXISTS "BlogPost_slug_key" ON "BlogPost"("slug");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "BlogPost_previewToken_key" ON "BlogPost"("previewToken");
+CREATE UNIQUE INDEX IF NOT EXISTS "BlogPost_previewToken_key" ON "BlogPost"("previewToken");
 
 -- CreateIndex
-CREATE INDEX "BlogPost_status_publishedAt_idx" ON "BlogPost"("status", "publishedAt");
+CREATE INDEX IF NOT EXISTS "BlogPost_status_publishedAt_idx" ON "BlogPost"("status", "publishedAt");
 
 -- CreateIndex
-CREATE INDEX "BlogPost_categoryId_idx" ON "BlogPost"("categoryId");
+CREATE INDEX IF NOT EXISTS "BlogPost_categoryId_idx" ON "BlogPost"("categoryId");
 
 -- CreateIndex
-CREATE INDEX "BlogPost_authorId_idx" ON "BlogPost"("authorId");
+CREATE INDEX IF NOT EXISTS "BlogPost_authorId_idx" ON "BlogPost"("authorId");
 
 -- CreateIndex
-CREATE INDEX "BlogPost_featured_idx" ON "BlogPost"("featured");
+CREATE INDEX IF NOT EXISTS "BlogPost_featured_idx" ON "BlogPost"("featured");
 
 -- CreateIndex
-CREATE INDEX "BlogPost_slug_idx" ON "BlogPost"("slug");
+CREATE INDEX IF NOT EXISTS "BlogPost_slug_idx" ON "BlogPost"("slug");
 
 -- CreateIndex
-CREATE INDEX "BlogPostTag_tagId_idx" ON "BlogPostTag"("tagId");
+CREATE INDEX IF NOT EXISTS "BlogPostTag_tagId_idx" ON "BlogPostTag"("tagId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "BlogPostSlugRedirect_fromSlug_key" ON "BlogPostSlugRedirect"("fromSlug");
+CREATE UNIQUE INDEX IF NOT EXISTS "BlogPostSlugRedirect_fromSlug_key" ON "BlogPostSlugRedirect"("fromSlug");
 
 -- CreateIndex
-CREATE INDEX "BlogPostSlugRedirect_postId_idx" ON "BlogPostSlugRedirect"("postId");
+CREATE INDEX IF NOT EXISTS "BlogPostSlugRedirect_postId_idx" ON "BlogPostSlugRedirect"("postId");
 
 -- AddForeignKey
-ALTER TABLE "BlogPost" ADD CONSTRAINT "BlogPost_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "BlogAuthor"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$ BEGIN
+  ALTER TABLE "BlogPost" ADD CONSTRAINT "BlogPost_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "BlogAuthor"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "BlogPost" ADD CONSTRAINT "BlogPost_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "BlogCategory"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$ BEGIN
+  ALTER TABLE "BlogPost" ADD CONSTRAINT "BlogPost_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "BlogCategory"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "BlogPostTag" ADD CONSTRAINT "BlogPostTag_postId_fkey" FOREIGN KEY ("postId") REFERENCES "BlogPost"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+  ALTER TABLE "BlogPostTag" ADD CONSTRAINT "BlogPostTag_postId_fkey" FOREIGN KEY ("postId") REFERENCES "BlogPost"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "BlogPostTag" ADD CONSTRAINT "BlogPostTag_tagId_fkey" FOREIGN KEY ("tagId") REFERENCES "BlogTag"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+  ALTER TABLE "BlogPostTag" ADD CONSTRAINT "BlogPostTag_tagId_fkey" FOREIGN KEY ("tagId") REFERENCES "BlogTag"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "BlogPostSlugRedirect" ADD CONSTRAINT "BlogPostSlugRedirect_postId_fkey" FOREIGN KEY ("postId") REFERENCES "BlogPost"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+  ALTER TABLE "BlogPostSlugRedirect" ADD CONSTRAINT "BlogPostSlugRedirect_postId_fkey" FOREIGN KEY ("postId") REFERENCES "BlogPost"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;

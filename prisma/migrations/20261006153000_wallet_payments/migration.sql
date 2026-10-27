@@ -1,8 +1,12 @@
 -- CreateEnum
-CREATE TYPE "WalletPaymentStatus" AS ENUM ('PENDING', 'CHECKOUT_CREATED', 'SUCCEEDED', 'FAILED', 'CANCELLED', 'REFUNDED');
+DO $$ BEGIN
+  CREATE TYPE "WalletPaymentStatus" AS ENUM ('PENDING', 'CHECKOUT_CREATED', 'SUCCEEDED', 'FAILED', 'CANCELLED', 'REFUNDED');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
 -- CreateTable
-CREATE TABLE "WalletPayment" (
+CREATE TABLE IF NOT EXISTS "WalletPayment" (
     "id" TEXT NOT NULL,
     "publicId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -23,14 +27,18 @@ CREATE TABLE "WalletPayment" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "WalletPayment_publicId_key" ON "WalletPayment"("publicId");
-CREATE UNIQUE INDEX "WalletPayment_providerCheckoutSessionId_key" ON "WalletPayment"("providerCheckoutSessionId");
-CREATE UNIQUE INDEX "WalletPayment_providerPaymentIntentId_key" ON "WalletPayment"("providerPaymentIntentId");
-CREATE UNIQUE INDEX "WalletPayment_walletTransactionId_key" ON "WalletPayment"("walletTransactionId");
-CREATE UNIQUE INDEX "WalletPayment_idempotencyKey_key" ON "WalletPayment"("idempotencyKey");
-CREATE INDEX "WalletPayment_userId_idx" ON "WalletPayment"("userId");
-CREATE INDEX "WalletPayment_status_idx" ON "WalletPayment"("status");
-CREATE INDEX "WalletPayment_createdAt_idx" ON "WalletPayment"("createdAt");
+CREATE UNIQUE INDEX IF NOT EXISTS "WalletPayment_publicId_key" ON "WalletPayment"("publicId");
+CREATE UNIQUE INDEX IF NOT EXISTS "WalletPayment_providerCheckoutSessionId_key" ON "WalletPayment"("providerCheckoutSessionId");
+CREATE UNIQUE INDEX IF NOT EXISTS "WalletPayment_providerPaymentIntentId_key" ON "WalletPayment"("providerPaymentIntentId");
+CREATE UNIQUE INDEX IF NOT EXISTS "WalletPayment_walletTransactionId_key" ON "WalletPayment"("walletTransactionId");
+CREATE UNIQUE INDEX IF NOT EXISTS "WalletPayment_idempotencyKey_key" ON "WalletPayment"("idempotencyKey");
+CREATE INDEX IF NOT EXISTS "WalletPayment_userId_idx" ON "WalletPayment"("userId");
+CREATE INDEX IF NOT EXISTS "WalletPayment_status_idx" ON "WalletPayment"("status");
+CREATE INDEX IF NOT EXISTS "WalletPayment_createdAt_idx" ON "WalletPayment"("createdAt");
 
 -- AddForeignKey
-ALTER TABLE "WalletPayment" ADD CONSTRAINT "WalletPayment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "CustomerUser"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+  ALTER TABLE "WalletPayment" ADD CONSTRAINT "WalletPayment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "CustomerUser"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;

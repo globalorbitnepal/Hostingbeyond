@@ -1,5 +1,6 @@
 -- Domain services enums (must exist before tables reference them)
-CREATE TYPE "DomainOrderStatus" AS ENUM (
+DO $$ BEGIN
+  CREATE TYPE "DomainOrderStatus" AS ENUM (
   'PENDING_PAYMENT',
   'PAID',
   'PROCESSING',
@@ -11,8 +12,12 @@ CREATE TYPE "DomainOrderStatus" AS ENUM (
   'REFUNDED',
   'CANCELLED'
 );
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TYPE "DomainServiceStatus" AS ENUM (
+DO $$ BEGIN
+  CREATE TYPE "DomainServiceStatus" AS ENUM (
   'ACTIVE',
   'PENDING_REGISTRATION',
   'EXPIRED',
@@ -20,8 +25,12 @@ CREATE TYPE "DomainServiceStatus" AS ENUM (
   'TRANSFER_OUT',
   'FAILED'
 );
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TYPE "DomainTransferStatus" AS ENUM (
+DO $$ BEGIN
+  CREATE TYPE "DomainTransferStatus" AS ENUM (
   'DRAFT',
   'PENDING_PAYMENT',
   'PAID',
@@ -31,8 +40,12 @@ CREATE TYPE "DomainTransferStatus" AS ENUM (
   'FAILED',
   'CANCELLED'
 );
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TYPE "MigrationRequestStatus" AS ENUM (
+DO $$ BEGIN
+  CREATE TYPE "MigrationRequestStatus" AS ENUM (
   'NEW',
   'REVIEWING',
   'SCHEDULED',
@@ -42,23 +55,38 @@ CREATE TYPE "MigrationRequestStatus" AS ENUM (
   'FAILED',
   'CANCELLED'
 );
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TYPE "WalletTransactionType" AS ENUM (
+DO $$ BEGIN
+  CREATE TYPE "WalletTransactionType" AS ENUM (
   'CREDIT',
   'DEBIT',
   'RESERVE',
   'RELEASE',
   'REFUND'
 );
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TYPE "WalletTransactionStatus" AS ENUM (
+DO $$ BEGIN
+  CREATE TYPE "WalletTransactionStatus" AS ENUM (
   'PENDING',
   'COMPLETED',
   'FAILED',
   'REVERSED'
 );
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TYPE "DomainProviderLogLevel" AS ENUM ('INFO', 'WARN', 'ERROR');
+DO $$ BEGIN
+  CREATE TYPE "DomainProviderLogLevel" AS ENUM ('INFO', 'WARN', 'ERROR');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
 ALTER TYPE "ActivityAction" ADD VALUE IF NOT EXISTS 'DOMAIN_PRICING_UPDATE';
 ALTER TYPE "ActivityAction" ADD VALUE IF NOT EXISTS 'DOMAIN_ORDER_UPDATE';
@@ -66,7 +94,7 @@ ALTER TYPE "ActivityAction" ADD VALUE IF NOT EXISTS 'DOMAIN_PROVIDER_SYNC';
 ALTER TYPE "ActivityAction" ADD VALUE IF NOT EXISTS 'MIGRATION_REQUEST_UPDATE';
 ALTER TYPE "ActivityAction" ADD VALUE IF NOT EXISTS 'WALLET_TRANSACTION';
 
-CREATE TABLE "DomainTldPrice" (
+CREATE TABLE IF NOT EXISTS "DomainTldPrice" (
   "id" TEXT NOT NULL,
   "tld" TEXT NOT NULL,
   "supplierRegister" DECIMAL(10,4),
@@ -89,10 +117,10 @@ CREATE TABLE "DomainTldPrice" (
   "updatedAt" TIMESTAMP(3) NOT NULL,
   CONSTRAINT "DomainTldPrice_pkey" PRIMARY KEY ("id")
 );
-CREATE UNIQUE INDEX "DomainTldPrice_tld_key" ON "DomainTldPrice"("tld");
-CREATE INDEX "DomainTldPrice_enabled_idx" ON "DomainTldPrice"("enabled");
+CREATE UNIQUE INDEX IF NOT EXISTS "DomainTldPrice_tld_key" ON "DomainTldPrice"("tld");
+CREATE INDEX IF NOT EXISTS "DomainTldPrice_enabled_idx" ON "DomainTldPrice"("enabled");
 
-CREATE TABLE "DomainOrder" (
+CREATE TABLE IF NOT EXISTS "DomainOrder" (
   "id" TEXT NOT NULL,
   "publicId" TEXT NOT NULL,
   "userId" TEXT,
@@ -120,15 +148,19 @@ CREATE TABLE "DomainOrder" (
   "updatedAt" TIMESTAMP(3) NOT NULL,
   CONSTRAINT "DomainOrder_pkey" PRIMARY KEY ("id")
 );
-CREATE UNIQUE INDEX "DomainOrder_publicId_key" ON "DomainOrder"("publicId");
-CREATE UNIQUE INDEX "DomainOrder_idempotencyKey_key" ON "DomainOrder"("idempotencyKey");
-CREATE INDEX "DomainOrder_userId_idx" ON "DomainOrder"("userId");
-CREATE INDEX "DomainOrder_status_idx" ON "DomainOrder"("status");
-CREATE INDEX "DomainOrder_domain_idx" ON "DomainOrder"("domain");
-CREATE INDEX "DomainOrder_createdAt_idx" ON "DomainOrder"("createdAt");
-ALTER TABLE "DomainOrder" ADD CONSTRAINT "DomainOrder_userId_fkey" FOREIGN KEY ("userId") REFERENCES "CustomerUser"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+CREATE UNIQUE INDEX IF NOT EXISTS "DomainOrder_publicId_key" ON "DomainOrder"("publicId");
+CREATE UNIQUE INDEX IF NOT EXISTS "DomainOrder_idempotencyKey_key" ON "DomainOrder"("idempotencyKey");
+CREATE INDEX IF NOT EXISTS "DomainOrder_userId_idx" ON "DomainOrder"("userId");
+CREATE INDEX IF NOT EXISTS "DomainOrder_status_idx" ON "DomainOrder"("status");
+CREATE INDEX IF NOT EXISTS "DomainOrder_domain_idx" ON "DomainOrder"("domain");
+CREATE INDEX IF NOT EXISTS "DomainOrder_createdAt_idx" ON "DomainOrder"("createdAt");
+DO $$ BEGIN
+  ALTER TABLE "DomainOrder" ADD CONSTRAINT "DomainOrder_userId_fkey" FOREIGN KEY ("userId") REFERENCES "CustomerUser"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TABLE "DomainRegistration" (
+CREATE TABLE IF NOT EXISTS "DomainRegistration" (
   "id" TEXT NOT NULL,
   "userId" TEXT,
   "domain" TEXT NOT NULL,
@@ -146,15 +178,23 @@ CREATE TABLE "DomainRegistration" (
   "updatedAt" TIMESTAMP(3) NOT NULL,
   CONSTRAINT "DomainRegistration_pkey" PRIMARY KEY ("id")
 );
-CREATE UNIQUE INDEX "DomainRegistration_domain_key" ON "DomainRegistration"("domain");
-CREATE UNIQUE INDEX "DomainRegistration_orderId_key" ON "DomainRegistration"("orderId");
-CREATE INDEX "DomainRegistration_userId_idx" ON "DomainRegistration"("userId");
-CREATE INDEX "DomainRegistration_status_idx" ON "DomainRegistration"("status");
-CREATE INDEX "DomainRegistration_expiresAt_idx" ON "DomainRegistration"("expiresAt");
-ALTER TABLE "DomainRegistration" ADD CONSTRAINT "DomainRegistration_userId_fkey" FOREIGN KEY ("userId") REFERENCES "CustomerUser"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-ALTER TABLE "DomainRegistration" ADD CONSTRAINT "DomainRegistration_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "DomainOrder"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+CREATE UNIQUE INDEX IF NOT EXISTS "DomainRegistration_domain_key" ON "DomainRegistration"("domain");
+CREATE UNIQUE INDEX IF NOT EXISTS "DomainRegistration_orderId_key" ON "DomainRegistration"("orderId");
+CREATE INDEX IF NOT EXISTS "DomainRegistration_userId_idx" ON "DomainRegistration"("userId");
+CREATE INDEX IF NOT EXISTS "DomainRegistration_status_idx" ON "DomainRegistration"("status");
+CREATE INDEX IF NOT EXISTS "DomainRegistration_expiresAt_idx" ON "DomainRegistration"("expiresAt");
+DO $$ BEGIN
+  ALTER TABLE "DomainRegistration" ADD CONSTRAINT "DomainRegistration_userId_fkey" FOREIGN KEY ("userId") REFERENCES "CustomerUser"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+DO $$ BEGIN
+  ALTER TABLE "DomainRegistration" ADD CONSTRAINT "DomainRegistration_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "DomainOrder"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TABLE "DomainTransferRecord" (
+CREATE TABLE IF NOT EXISTS "DomainTransferRecord" (
   "id" TEXT NOT NULL,
   "publicId" TEXT NOT NULL,
   "userId" TEXT,
@@ -176,13 +216,17 @@ CREATE TABLE "DomainTransferRecord" (
   "updatedAt" TIMESTAMP(3) NOT NULL,
   CONSTRAINT "DomainTransferRecord_pkey" PRIMARY KEY ("id")
 );
-CREATE UNIQUE INDEX "DomainTransferRecord_publicId_key" ON "DomainTransferRecord"("publicId");
-CREATE INDEX "DomainTransferRecord_userId_idx" ON "DomainTransferRecord"("userId");
-CREATE INDEX "DomainTransferRecord_status_idx" ON "DomainTransferRecord"("status");
-CREATE INDEX "DomainTransferRecord_domain_idx" ON "DomainTransferRecord"("domain");
-ALTER TABLE "DomainTransferRecord" ADD CONSTRAINT "DomainTransferRecord_userId_fkey" FOREIGN KEY ("userId") REFERENCES "CustomerUser"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+CREATE UNIQUE INDEX IF NOT EXISTS "DomainTransferRecord_publicId_key" ON "DomainTransferRecord"("publicId");
+CREATE INDEX IF NOT EXISTS "DomainTransferRecord_userId_idx" ON "DomainTransferRecord"("userId");
+CREATE INDEX IF NOT EXISTS "DomainTransferRecord_status_idx" ON "DomainTransferRecord"("status");
+CREATE INDEX IF NOT EXISTS "DomainTransferRecord_domain_idx" ON "DomainTransferRecord"("domain");
+DO $$ BEGIN
+  ALTER TABLE "DomainTransferRecord" ADD CONSTRAINT "DomainTransferRecord_userId_fkey" FOREIGN KEY ("userId") REFERENCES "CustomerUser"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TABLE "MigrationRequest" (
+CREATE TABLE IF NOT EXISTS "MigrationRequest" (
   "id" TEXT NOT NULL,
   "publicId" TEXT NOT NULL,
   "userId" TEXT,
@@ -207,13 +251,17 @@ CREATE TABLE "MigrationRequest" (
   "updatedAt" TIMESTAMP(3) NOT NULL,
   CONSTRAINT "MigrationRequest_pkey" PRIMARY KEY ("id")
 );
-CREATE UNIQUE INDEX "MigrationRequest_publicId_key" ON "MigrationRequest"("publicId");
-CREATE INDEX "MigrationRequest_status_idx" ON "MigrationRequest"("status");
-CREATE INDEX "MigrationRequest_customerEmail_idx" ON "MigrationRequest"("customerEmail");
-CREATE INDEX "MigrationRequest_createdAt_idx" ON "MigrationRequest"("createdAt");
-ALTER TABLE "MigrationRequest" ADD CONSTRAINT "MigrationRequest_userId_fkey" FOREIGN KEY ("userId") REFERENCES "CustomerUser"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+CREATE UNIQUE INDEX IF NOT EXISTS "MigrationRequest_publicId_key" ON "MigrationRequest"("publicId");
+CREATE INDEX IF NOT EXISTS "MigrationRequest_status_idx" ON "MigrationRequest"("status");
+CREATE INDEX IF NOT EXISTS "MigrationRequest_customerEmail_idx" ON "MigrationRequest"("customerEmail");
+CREATE INDEX IF NOT EXISTS "MigrationRequest_createdAt_idx" ON "MigrationRequest"("createdAt");
+DO $$ BEGIN
+  ALTER TABLE "MigrationRequest" ADD CONSTRAINT "MigrationRequest_userId_fkey" FOREIGN KEY ("userId") REFERENCES "CustomerUser"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TABLE "CustomerWallet" (
+CREATE TABLE IF NOT EXISTS "CustomerWallet" (
   "id" TEXT NOT NULL,
   "userId" TEXT NOT NULL,
   "balance" DECIMAL(12,2) NOT NULL DEFAULT 0,
@@ -222,10 +270,14 @@ CREATE TABLE "CustomerWallet" (
   "updatedAt" TIMESTAMP(3) NOT NULL,
   CONSTRAINT "CustomerWallet_pkey" PRIMARY KEY ("id")
 );
-CREATE UNIQUE INDEX "CustomerWallet_userId_key" ON "CustomerWallet"("userId");
-ALTER TABLE "CustomerWallet" ADD CONSTRAINT "CustomerWallet_userId_fkey" FOREIGN KEY ("userId") REFERENCES "CustomerUser"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+CREATE UNIQUE INDEX IF NOT EXISTS "CustomerWallet_userId_key" ON "CustomerWallet"("userId");
+DO $$ BEGIN
+  ALTER TABLE "CustomerWallet" ADD CONSTRAINT "CustomerWallet_userId_fkey" FOREIGN KEY ("userId") REFERENCES "CustomerUser"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TABLE "WalletTransaction" (
+CREATE TABLE IF NOT EXISTS "WalletTransaction" (
   "id" TEXT NOT NULL,
   "userId" TEXT NOT NULL,
   "type" "WalletTransactionType" NOT NULL,
@@ -240,13 +292,17 @@ CREATE TABLE "WalletTransaction" (
   "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT "WalletTransaction_pkey" PRIMARY KEY ("id")
 );
-CREATE UNIQUE INDEX "WalletTransaction_idempotencyKey_key" ON "WalletTransaction"("idempotencyKey");
-CREATE INDEX "WalletTransaction_userId_idx" ON "WalletTransaction"("userId");
-CREATE INDEX "WalletTransaction_status_idx" ON "WalletTransaction"("status");
-CREATE INDEX "WalletTransaction_createdAt_idx" ON "WalletTransaction"("createdAt");
-ALTER TABLE "WalletTransaction" ADD CONSTRAINT "WalletTransaction_userId_fkey" FOREIGN KEY ("userId") REFERENCES "CustomerUser"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+CREATE UNIQUE INDEX IF NOT EXISTS "WalletTransaction_idempotencyKey_key" ON "WalletTransaction"("idempotencyKey");
+CREATE INDEX IF NOT EXISTS "WalletTransaction_userId_idx" ON "WalletTransaction"("userId");
+CREATE INDEX IF NOT EXISTS "WalletTransaction_status_idx" ON "WalletTransaction"("status");
+CREATE INDEX IF NOT EXISTS "WalletTransaction_createdAt_idx" ON "WalletTransaction"("createdAt");
+DO $$ BEGIN
+  ALTER TABLE "WalletTransaction" ADD CONSTRAINT "WalletTransaction_userId_fkey" FOREIGN KEY ("userId") REFERENCES "CustomerUser"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TABLE "DomainProviderLog" (
+CREATE TABLE IF NOT EXISTS "DomainProviderLog" (
   "id" TEXT NOT NULL,
   "level" "DomainProviderLogLevel" NOT NULL DEFAULT 'INFO',
   "operation" TEXT NOT NULL,
@@ -258,11 +314,11 @@ CREATE TABLE "DomainProviderLog" (
   "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT "DomainProviderLog_pkey" PRIMARY KEY ("id")
 );
-CREATE INDEX "DomainProviderLog_createdAt_idx" ON "DomainProviderLog"("createdAt");
-CREATE INDEX "DomainProviderLog_operation_idx" ON "DomainProviderLog"("operation");
-CREATE INDEX "DomainProviderLog_success_idx" ON "DomainProviderLog"("success");
+CREATE INDEX IF NOT EXISTS "DomainProviderLog_createdAt_idx" ON "DomainProviderLog"("createdAt");
+CREATE INDEX IF NOT EXISTS "DomainProviderLog_operation_idx" ON "DomainProviderLog"("operation");
+CREATE INDEX IF NOT EXISTS "DomainProviderLog_success_idx" ON "DomainProviderLog"("success");
 
-CREATE TABLE "DomainAuditLog" (
+CREATE TABLE IF NOT EXISTS "DomainAuditLog" (
   "id" TEXT NOT NULL,
   "adminUserId" TEXT,
   "action" TEXT NOT NULL,
@@ -272,5 +328,5 @@ CREATE TABLE "DomainAuditLog" (
   "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT "DomainAuditLog_pkey" PRIMARY KEY ("id")
 );
-CREATE INDEX "DomainAuditLog_createdAt_idx" ON "DomainAuditLog"("createdAt");
-CREATE INDEX "DomainAuditLog_resource_idx" ON "DomainAuditLog"("resource");
+CREATE INDEX IF NOT EXISTS "DomainAuditLog_createdAt_idx" ON "DomainAuditLog"("createdAt");
+CREATE INDEX IF NOT EXISTS "DomainAuditLog_resource_idx" ON "DomainAuditLog"("resource");

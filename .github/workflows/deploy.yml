@@ -262,6 +262,13 @@ jobs:
           fi
           npx prisma generate </dev/null
 
+          if [ "${RUN_PRISMA_MIGRATE_DEPLOY:-0}" = "1" ]; then
+            echo "==> Clearing failed Prisma row so already-present tables can be recorded"
+            npx prisma migrate resolve --rolled-back 20260913120000_beyond_ai </dev/null \
+              && echo "RESOLVED_FAILED=20260913120000_beyond_ai" \
+              || echo "RESOLVE_SKIPPED=20260913120000_beyond_ai"
+          fi
+
           echo "==> Checking prisma migrate status (read-only vs _prisma_migrations)"
           set +e
           MIGRATE_STATUS_OUT="$(npx prisma migrate status </dev/null 2>&1)"
