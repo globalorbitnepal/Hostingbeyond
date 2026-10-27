@@ -64,7 +64,7 @@ export function parseNameSiloGetPricesReply(
 
 async function fetchNameSiloAccountPricesOnce(
   apiKey: string,
-  options?: { retailPrices?: boolean },
+  options?: { retailPrices?: boolean; timeoutMs?: number },
 ): Promise<{
   rows: NameSiloPriceRow[];
   apiCode: string;
@@ -79,7 +79,8 @@ async function fetchNameSiloAccountPricesOnce(
     params.set("retail_prices", "1");
   }
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  const timeoutMs = options?.timeoutMs ?? TIMEOUT_MS;
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const res = await fetch(`${API_BASE}/getPrices?${params}`, {
       signal: controller.signal,
@@ -151,6 +152,11 @@ export async function fetchNameSiloAccountPrices(
   throw lastError instanceof Error
     ? lastError
     : new DomainProviderError("provider_failure");
+}
+
+/** Single short attempt for Orbit display — does not persist prices. */
+export async function fetchNameSiloAccountPricesQuick(apiKey: string) {
+  return fetchNameSiloAccountPricesOnce(apiKey, { timeoutMs: 10_000 });
 }
 
 export function toProviderTldPricing(

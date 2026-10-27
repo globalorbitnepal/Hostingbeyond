@@ -29,6 +29,10 @@ type TldRow = {
   namesiloTransfer: number | null;
   namesiloSyncedAt: string | null;
   namesiloPriceStatus: string | null;
+  namesiloPriceSource?: "live_api" | "stored_catalogue";
+  storedNamesiloRegister?: number | null;
+  storedNamesiloRenew?: number | null;
+  storedNamesiloTransfer?: number | null;
   lifecycleProvider: string | null;
   retailPriceLocked: boolean;
   retailRegister: number;
@@ -88,6 +92,14 @@ type NameSiloSyncMeta = {
   error: string | null;
 };
 
+type NameSiloLiveMeta = {
+  status: "live" | "cached" | "key_missing" | "unavailable";
+  fetchedAt: string | null;
+  apiTldCount: number | null;
+  error: string | null;
+  wroteDatabase: false;
+};
+
 function money(v: number | null) {
   if (v == null || !Number.isFinite(v)) return "N/A";
   return `$${v.toFixed(2)}`;
@@ -108,6 +120,9 @@ export function OrbitDomainPricingAdmin() {
     null,
   );
   const [namesiloSync, setNamesiloSync] = useState<NameSiloSyncMeta | null>(
+    null,
+  );
+  const [namesiloLive, setNamesiloLive] = useState<NameSiloLiveMeta | null>(
     null,
   );
   const [tldCount, setTldCount] = useState(0);
@@ -174,11 +189,13 @@ export function OrbitDomainPricingAdmin() {
       rows?: TldRow[];
       supplierSync?: SupplierSyncMeta;
       namesiloSync?: NameSiloSyncMeta;
+      namesiloLive?: NameSiloLiveMeta;
       tldCount?: number;
     };
     setRows(json.rows ?? []);
     setSupplierSync(json.supplierSync ?? null);
     setNamesiloSync(json.namesiloSync ?? null);
+    setNamesiloLive(json.namesiloLive ?? null);
     setTldCount(json.tldCount ?? json.rows?.length ?? 0);
     setLoading(false);
   }
@@ -547,6 +564,16 @@ export function OrbitDomainPricingAdmin() {
             NameSilo supplier synchronization updates supplier costs only.
             Customer retail prices require separate review and approval.
           </p>
+          <p className="mt-2 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-sm text-violet-950">
+            {namesiloLive?.status === "live" ||
+            namesiloLive?.status === "cached"
+              ? `Live NameSilo getPrices: ${namesiloLive.apiTldCount ?? 0} TLDs at ${formatSyncTime(namesiloLive.fetchedAt)}. Display only — not written to the catalogue until Apply.`
+              : namesiloLive?.status === "key_missing"
+                ? "Live NameSilo prices are unavailable: NAMESILO_API_KEY is not set in this environment. Showing stored catalogue only."
+                : namesiloLive?.status === "unavailable"
+                  ? `Live NameSilo getPrices failed (${namesiloLive.error ?? "unavailable"}). Showing last stored catalogue, not invented rates.`
+                  : "Live NameSilo prices have not been fetched yet."}
+          </p>
           <p className="mt-2 text-xs font-semibold text-slate-500">
             TLD catalogue: {tldCount} extensions in Orbit
             {supplierSync?.status ? (
@@ -831,6 +858,11 @@ export function OrbitDomainPricingAdmin() {
                     <td className="px-3 py-2 font-bold">{row.tld}</td>
                     <td className="px-3 py-2 text-slate-600">
                       {money(row.namesiloRegister)}
+                      {row.namesiloPriceSource === "live_api" ? (
+                        <span className="ml-1 text-[10px] font-bold text-violet-700 uppercase">
+                          live
+                        </span>
+                      ) : null}
                     </td>
                     <td className="px-3 py-2 text-slate-600">
                       {money(row.namesiloRenew)}

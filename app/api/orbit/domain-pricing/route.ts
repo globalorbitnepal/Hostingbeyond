@@ -5,7 +5,14 @@ import {
   ensureDomainTldPricesSeeded,
   listRetailTldPrices,
 } from "@/lib/domains/pricing-engine";
-import { getLatestNameSiloSyncMeta } from "@/lib/domains/namesilo-supplier-sync";
+import {
+  overlayRowWithLiveNameSilo,
+  readLiveNameSiloOverlay,
+} from "@/lib/domains/namesilo-live-display";
+import {
+  getLatestNameSiloSyncMeta,
+  normalizeCatalogueTld,
+} from "@/lib/domains/namesilo-supplier-sync";
 import { getLatestSupplierSyncMeta } from "@/lib/domains/supplier-catalogue-sync";
 import { invalidateTldCatalogueCache } from "@/lib/domains/tld-catalogue-cache";
 import { bulkRetailPreviewRequiredResponse } from "@/lib/orbit/bulk-retail-policy";
@@ -26,13 +33,37 @@ import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-function serializeRow(row: Awaited<ReturnType<typeof listRetailTldPrices>>[0]) {
+function serializeRow(
+  row: Awaited<ReturnType<typeof listRetailTldPrices>>[0],
+  live?: {
+    byTld: Map<
+      string,
+      import("@/lib/domains/providers/namesilo-pricing").NameSiloPriceRow
+    >;
+    fetchedAt: Date | null;
+    active: boolean;
+  },
+) {
   const num = (v: unknown) =>
     v == null
       ? null
       : typeof v === "object" && v !== null && "toNumber" in v
         ? (v as { toNumber: () => number }).toNumber()
         : Number(v);
+  const storedNs = {
+    namesiloRegister: num(row.namesiloRegister),
+    namesiloRenew: num(row.namesiloRenew),
+    namesiloTransfer: num(row.namesiloTransfer),
+    namesiloSyncedAt: row.namesiloSyncedAt,
+    namesiloPriceStatus: row.namesiloPriceStatus,
+  };
+  const overlaid = live?.active
+    ? overlayRowWithLiveNameSilo(
+        storedNs,
+        live.byTld.get(normalizeCatalogueTld(row.tld)),
+        live.fetchedAt,
+      )
+    : overlayRowWithLiveNameSilo(storedNs, undefined, null);
   const input: TldPriceRowInput = {
     tld: row.tld,
     updatedAt: row.updatedAt,
@@ -44,11 +75,11 @@ function serializeRow(row: Awaited<ReturnType<typeof listRetailTldPrices>>[0]) {
     supplierRenew: num(row.supplierRenew),
     supplierTransfer: num(row.supplierTransfer),
     supplierSyncedAt: row.supplierSyncedAt,
-    namesiloRegister: num(row.namesiloRegister),
-    namesiloRenew: num(row.namesiloRenew),
-    namesiloTransfer: num(row.namesiloTransfer),
-    namesiloSyncedAt: row.namesiloSyncedAt,
-    namesiloPriceStatus: row.namesiloPriceStatus,
+    namesiloRegister: overlaid.namesiloRegister,
+    namesiloRenew: overlaid.namesiloRenew,
+    namesiloTransfer: overlaid.namesiloTransfer,
+    namesiloSyncedAt: overlaid.namesiloSyncedAt,
+    namesiloPriceStatus: overlaid.namesiloPriceStatus,
     supplierCurrency: row.supplierCurrency,
     retailCurrency: row.retailCurrency,
   };
@@ -71,11 +102,15 @@ function serializeRow(row: Awaited<ReturnType<typeof listRetailTldPrices>>[0]) {
     retailRegisterByYear: row.retailRegisterByYear,
     retailRenewByYear: row.retailRenewByYear,
     enabled: row.enabled,
-    namesiloRegister: num(row.namesiloRegister),
-    namesiloRenew: num(row.namesiloRenew),
-    namesiloTransfer: num(row.namesiloTransfer),
-    namesiloSyncedAt: row.namesiloSyncedAt?.toISOString() ?? null,
-    namesiloPriceStatus: row.namesiloPriceStatus,
+    namesiloRegister: overlaid.namesiloRegister,
+    namesiloRenew: overlaid.namesiloRenew,
+    namesiloTransfer: overlaid.namesiloTransfer,
+    namesiloSyncedAt: overlaid.namesiloSyncedAt?.toISOString() ?? null,
+    namesiloPriceStatus: overlaid.namesiloPriceStatus,
+    namesiloPriceSource: overlaid.namesiloPriceSource,
+    storedNamesiloRegister: overlaid.storedNamesiloRegister,
+    storedNamesiloRenew: overlaid.storedNamesiloRenew,
+    storedNamesiloTransfer: overlaid.storedNamesiloTransfer,
     lifecycleProvider: row.lifecycleProvider,
     retailPriceLocked: row.retailPriceLocked,
     metrics,
@@ -89,11 +124,21 @@ export async function GET() {
   const rows = await listRetailTldPrices();
   const supplierSync = await getLatestSupplierSyncMeta();
   const namesiloSync = await getLatestNameSiloSyncMeta();
+  const live = await readLiveNameSiloOverlay();
+  const liveActive =
+    live.meta.status === "live" || live.meta.status === "cached";
   return NextResponse.json(
     {
-      rows: rows.map(serializeRow),
+      rows: rows.map((row) =>
+        serializeRow(row, {
+          byTld: live.byTld,
+          fetchedAt: live.meta.fetchedAt ? new Date(live.meta.fetchedAt) : null,
+          active: liveActive,
+        }),
+      ),
       supplierSync,
       namesiloSync,
+      namesiloLive: live.meta,
       tldCount: rows.length,
     },
     {
