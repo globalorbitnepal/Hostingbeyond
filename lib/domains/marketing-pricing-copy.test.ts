@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { defaultDomainContent } from "@/lib/domains/content";
+import {
+  defaultDomainContent,
+  mergeDomainContent,
+} from "@/lib/domains/content";
+import { applyRetailOverlay } from "@/lib/domains/domain-search-page-data";
 import { buildDomainSchema } from "@/lib/domains/seo";
 import { TLD_PRICES } from "@/lib/domains/tlds";
 
@@ -40,5 +44,47 @@ describe("marketing pricing copy", () => {
     assert.ok(product?.offers);
     assert.ok(product.offers!.lowPrice > 0.5);
     assert.notEqual(product.offers!.lowPrice, 0.01);
+  });
+
+  it("mergeDomainContent drops $0.01 SEO and stale 50-name CTA", () => {
+    const merged = mergeDomainContent({
+      single: {
+        seoTitle:
+          "Domain Name Search — Check Availability & Register from $0.01 | HostingBeyond",
+        crossLinkHelper: "Need a whole shortlist? Run 50 names at once.",
+      } as import("@/lib/domains/content").DomainPageCopy,
+      shared: {
+        transferDescription:
+          "Transfers add a full extra year. A .com transfer is $9.99.",
+      } as import("@/lib/domains/content").DomainSharedContent,
+    });
+    assert.equal(/\$0\.01/.test(merged.single.seoTitle), false);
+    assert.equal(/\b50\s*names\b/i.test(merged.single.crossLinkHelper), false);
+    assert.equal(
+      /A \.com transfer is \$/i.test(merged.shared.transferDescription),
+      false,
+    );
+  });
+
+  it("applyRetailOverlay uses checkout register/renew/transfer", () => {
+    const rows = [
+      {
+        id: ".com",
+        visible: true,
+        order: 0,
+        tld: ".com",
+        register: 9.99,
+        renew: 19.99,
+        transfer: 9.99,
+        categories: ["popular" as const],
+        note: "",
+      },
+    ];
+    const overlay = applyRetailOverlay(
+      rows,
+      new Map([[".com", { register: 9.99, renew: 17.99, transfer: 12.99 }]]),
+    );
+    assert.equal(overlay[0].renew, 17.99);
+    assert.equal(overlay[0].transfer, 12.99);
   });
 });

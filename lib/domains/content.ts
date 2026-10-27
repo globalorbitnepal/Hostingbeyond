@@ -10,9 +10,30 @@ import {
 const STALE_BULK_LIMIT_COPY =
   /\b50\s*names?\b|\bcheck\s*50\b|\bup to 50 domain|\b50 domain names\b|\bfifty completely different names/i;
 
+/** Stale Orbit SEO that advertised a penny registration promo. */
+const STALE_PENNY_PROMO = /\$0\.01/;
+
 function bulkCopyField(stored: string | undefined, fallback: string): string {
   const value = text(stored, fallback);
   return STALE_BULK_LIMIT_COPY.test(value) ? fallback : value;
+}
+
+export function publicCopyField(
+  stored: string | undefined,
+  fallback: string,
+): string {
+  const value = text(stored, fallback);
+  if (STALE_BULK_LIMIT_COPY.test(value) || STALE_PENNY_PROMO.test(value)) {
+    return fallback;
+  }
+  return value;
+}
+
+/** Live view appends the .com transfer price; drop stale CMS sentences. */
+export function stripInlineComTransferPrice(value: string): string {
+  return value
+    .replace(/\s*A \.com transfer is \$[0-9]+(?:\.[0-9]+)?\.?/gi, "")
+    .trim();
 }
 
 export function sanitizeBulkPageCopy(
@@ -1008,18 +1029,24 @@ function mergePageCopy(
   return {
     ...defaults,
     ...stored,
-    seoTitle: text(stored.seoTitle, defaults.seoTitle),
-    seoDescription: text(stored.seoDescription, defaults.seoDescription),
+    seoTitle: publicCopyField(stored.seoTitle, defaults.seoTitle),
+    seoDescription: publicCopyField(
+      stored.seoDescription,
+      defaults.seoDescription,
+    ),
     seoKeywords: text(stored.seoKeywords, defaults.seoKeywords),
-    ogTitle: text(stored.ogTitle, defaults.ogTitle),
-    ogDescription: text(stored.ogDescription, defaults.ogDescription),
+    ogTitle: publicCopyField(stored.ogTitle, defaults.ogTitle),
+    ogDescription: publicCopyField(
+      stored.ogDescription,
+      defaults.ogDescription,
+    ),
     ogImage: text(stored.ogImage, defaults.ogImage),
     eyebrow: text(stored.eyebrow, defaults.eyebrow),
     title: text(stored.title, defaults.title),
-    titleAccent: text(stored.titleAccent, defaults.titleAccent),
-    description: text(stored.description, defaults.description),
+    titleAccent: publicCopyField(stored.titleAccent, defaults.titleAccent),
+    description: publicCopyField(stored.description, defaults.description),
     pricingHeading: text(stored.pricingHeading, defaults.pricingHeading),
-    pricingCopy: text(stored.pricingCopy, defaults.pricingCopy),
+    pricingCopy: publicCopyField(stored.pricingCopy, defaults.pricingCopy),
     faqEyebrow: text(stored.faqEyebrow, defaults.faqEyebrow),
     faqHeading: text(stored.faqHeading, defaults.faqHeading),
     faqDescription: text(stored.faqDescription, defaults.faqDescription),
@@ -1036,7 +1063,10 @@ function mergePageCopy(
       defaults.faqAccordionDescription,
     ),
     crossLinkLabel: text(stored.crossLinkLabel, defaults.crossLinkLabel),
-    crossLinkHelper: text(stored.crossLinkHelper, defaults.crossLinkHelper),
+    crossLinkHelper: publicCopyField(
+      stored.crossLinkHelper,
+      defaults.crossLinkHelper,
+    ),
     stats: mergeList(stored.stats, defaults.stats, (item, fallback) => ({
       ...fallback,
       value: text(item.value, fallback.value),
@@ -1045,7 +1075,7 @@ function mergePageCopy(
     faqs: mergeList(stored.faqs, defaults.faqs, (item, fallback) => ({
       ...fallback,
       question: text(item.question, fallback.question),
-      answer: text(item.answer, fallback.answer),
+      answer: publicCopyField(item.answer, fallback.answer),
     })),
   };
 }
@@ -1132,9 +1162,11 @@ export function mergeDomainContent(
       ),
       transferEyebrow: text(shared.transferEyebrow, fallback.transferEyebrow),
       transferHeading: text(shared.transferHeading, fallback.transferHeading),
-      transferDescription: text(
-        shared.transferDescription,
-        fallback.transferDescription,
+      transferDescription: stripInlineComTransferPrice(
+        publicCopyField(
+          shared.transferDescription,
+          fallback.transferDescription,
+        ),
       ),
       transferSteps: text(shared.transferSteps, fallback.transferSteps),
       transferCtaLabel: text(

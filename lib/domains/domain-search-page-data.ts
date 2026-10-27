@@ -28,10 +28,16 @@ function toNumber(value: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-/** Retail registration prices from DomainTldPrice (Orbit source of truth). */
-export async function getRetailRegisterMap(
+export type RetailPriceTriple = {
+  register: number;
+  renew: number | null;
+  transfer: number | null;
+};
+
+/** Retail prices from DomainTldPrice (checkout source of truth). */
+export async function getRetailPriceMap(
   tlds: string[],
-): Promise<Map<string, number>> {
+): Promise<Map<string, RetailPriceTriple>> {
   const keys = [
     ...new Set(
       tlds.map((t) =>
@@ -44,6 +50,8 @@ export async function getRetailRegisterMap(
   let rows: {
     tld: string;
     retailRegister: unknown;
+    retailRenew: unknown;
+    retailTransfer: unknown;
     promoRegister: unknown;
     promoEndsAt: Date | null;
   }[] = [];
@@ -53,6 +61,8 @@ export async function getRetailRegisterMap(
       select: {
         tld: true,
         retailRegister: true,
+        retailRenew: true,
+        retailTransfer: true,
         promoRegister: true,
         promoEndsAt: true,
       },
@@ -62,16 +72,47 @@ export async function getRetailRegisterMap(
   }
 
   const now = new Date();
-  const out = new Map<string, number>();
+  const out = new Map<string, RetailPriceTriple>();
   for (const row of rows) {
     const promoActive =
       row.promoRegister != null && (!row.promoEndsAt || row.promoEndsAt > now);
     const register = promoActive
       ? toNumber(row.promoRegister)
       : toNumber(row.retailRegister);
-    if (register != null) out.set(row.tld.toLowerCase(), register);
+    if (register == null) continue;
+    out.set(row.tld.toLowerCase(), {
+      register,
+      renew: toNumber(row.retailRenew),
+      transfer: toNumber(row.retailTransfer),
+    });
   }
   return out;
+}
+
+/** Retail registration prices from DomainTldPrice (Orbit source of truth). */
+export async function getRetailRegisterMap(
+  tlds: string[],
+): Promise<Map<string, number>> {
+  const full = await getRetailPriceMap(tlds);
+  const out = new Map<string, number>();
+  for (const [tld, prices] of full) out.set(tld, prices.register);
+  return out;
+}
+
+export function applyRetailOverlay(
+  rows: DomainTldRow[],
+  retail: Map<string, RetailPriceTriple>,
+): DomainTldRow[] {
+  return rows.map((row) => {
+    const live = retail.get(row.tld.toLowerCase());
+    if (!live) return row;
+    return {
+      ...row,
+      register: live.register,
+      renew: live.renew ?? row.renew,
+      transfer: live.transfer ?? row.transfer,
+    };
+  });
 }
 
 export async function getPopularPickTransferPricing(
@@ -220,12 +261,8 @@ export async function getPopularPickPricing(
 export async function mergeRetailIntoPricingRows(
   rows: DomainTldRow[],
 ): Promise<DomainTldRow[]> {
-  const retail = await getRetailRegisterMap(rows.map((r) => r.tld));
-  return rows.map((row) => {
-    const reg = retail.get(row.tld.toLowerCase());
-    if (reg == null) return row;
-    return { ...row, register: reg };
-  });
+  const retail = await getRetailPriceMap(rows.map((r) => r.tld));
+  return applyRetailOverlay(rows, retail);
 }
 
 export async function loadDomainSearchPageMetrics(): Promise<{
