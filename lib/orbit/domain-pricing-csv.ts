@@ -82,6 +82,8 @@ export function tldRowToCsvInput(row: {
   namesiloSyncedAt: Date | string | null;
   namesiloPriceStatus: string | null;
   lifecycleProvider?: string | null;
+  supplierCurrency?: string | null;
+  retailCurrency?: string | null;
 }): TldPriceRowInput & { lifecycleProvider: string | null } {
   const toDate = (v: Date | string | null | undefined): Date | null => {
     if (v == null) return null;
@@ -104,6 +106,8 @@ export function tldRowToCsvInput(row: {
     namesiloSyncedAt: toDate(row.namesiloSyncedAt),
     namesiloPriceStatus: row.namesiloPriceStatus,
     lifecycleProvider: row.lifecycleProvider ?? null,
+    supplierCurrency: row.supplierCurrency ?? "USD",
+    retailCurrency: row.retailCurrency ?? "USD",
   };
 }
 

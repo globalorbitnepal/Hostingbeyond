@@ -72,7 +72,15 @@ export type TldPriceRowInput = {
   namesiloTransfer: number | null;
   namesiloSyncedAt: Date | null;
   namesiloPriceStatus: string | null;
+  supplierCurrency?: string | null;
+  retailCurrency?: string | null;
 };
+
+export function catalogueCurrenciesCompatible(row: TldPriceRowInput): boolean {
+  const supplier = (row.supplierCurrency ?? "USD").trim().toUpperCase();
+  const retail = (row.retailCurrency ?? "USD").trim().toUpperCase();
+  return supplier === retail && supplier === "USD";
+}
 
 function num(v: unknown): number | null {
   if (v == null) return null;

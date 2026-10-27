@@ -49,6 +49,8 @@ function serializeRow(row: Awaited<ReturnType<typeof listRetailTldPrices>>[0]) {
     namesiloTransfer: num(row.namesiloTransfer),
     namesiloSyncedAt: row.namesiloSyncedAt,
     namesiloPriceStatus: row.namesiloPriceStatus,
+    supplierCurrency: row.supplierCurrency,
+    retailCurrency: row.retailCurrency,
   };
   const metrics = buildCatalogueRowMetrics(input);
   return {

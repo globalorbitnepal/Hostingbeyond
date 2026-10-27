@@ -246,10 +246,10 @@ jobs:
             rm -f "$NAMESILO_SYNC" 2>/dev/null || true
           fi
           if grep -q '^NAMESILO_API_KEY=.' .env 2>/dev/null; then
-            echo "==> Enabling NameSilo for customer search (key present; value not logged)"
-            echo '{"provider":"namesilo"}' | node scripts/merge-namesilo-search-env.mjs .env
+            echo "NAMESILO_API_KEY=CONFIGURED"
+            echo "NAMESILO_SEARCH_UNCHANGED: DOMAIN_PUBLIC_SEARCH_AVAILABILITY_PROVIDER is not set from the API key alone"
           else
-            echo "NAMESILO_SEARCH_SKIPPED: NAMESILO_API_KEY not in server .env"
+            echo "NAMESILO_KEY_SKIPPED: NAMESILO_API_KEY not in server .env"
           fi
 
           LOCK_SHA="$(sha256sum package-lock.json | awk '{print $1}')"

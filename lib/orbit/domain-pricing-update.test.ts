@@ -60,6 +60,22 @@ describe("domain-pricing-update validation", () => {
     );
   });
 
+  it("rejects unknown lifecycleProvider values", () => {
+    assert.ok(
+      validateRetailPricePayload({ lifecycleProvider: "godaddy" }).some(
+        (e) => e.field === "lifecycleProvider",
+      ),
+    );
+    assert.equal(
+      validateRetailPricePayload({ lifecycleProvider: "namesilo" }).length,
+      0,
+    );
+    assert.equal(
+      validateRetailPricePayload({ lifecycleProvider: null }).length,
+      0,
+    );
+  });
+
   it("pickBulkRetailUpdateData is partial", () => {
     const data = pickBulkRetailUpdateData({
       tld: ".com",

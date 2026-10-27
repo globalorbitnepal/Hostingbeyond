@@ -189,4 +189,27 @@ describe("pricing financial metrics", () => {
   it("roundUsd avoids float noise", () => {
     assert.equal(roundUsd(10.126), 10.13);
   });
+
+  it("does not compute profit when supplier and retail currencies differ", () => {
+    const metrics = buildCatalogueRowMetrics(
+      baseRow({
+        supplierCurrency: "USD",
+        retailCurrency: "EUR",
+      }),
+    );
+    assert.equal(metrics.register.incomplete, true);
+    assert.equal(metrics.register.grossProfitUsd, null);
+    assert.match(metrics.currencyNote, /not USD|differ/i);
+  });
+
+  it("does not invent FX when a non-USD catalogue is present", () => {
+    const metrics = buildCatalogueRowMetrics(
+      baseRow({
+        supplierCurrency: "EUR",
+        retailCurrency: "EUR",
+      }),
+    );
+    assert.equal(metrics.register.incomplete, true);
+    assert.equal(metrics.register.grossProfitUsd, null);
+  });
 });

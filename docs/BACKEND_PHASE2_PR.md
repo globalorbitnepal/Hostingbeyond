@@ -18,7 +18,7 @@
 
 - **Orbit `/orbit/domain-pricing`:** NameSilo supplier sync (preview / apply with confirm), bulk retail preview/apply, retail price locks, margin-aware supplier previews, and expanded admin UI.
 - **Registrar routing:** DNA remains default lifecycle provider; NameSilo lifecycle is opt-in via `NAMESILO_LIFECYCLE_ENABLED=true` and per-TLD verified NameSilo costs.
-- **Public search:** NameSilo availability requires `DOMAIN_PUBLIC_SEARCH_AVAILABILITY_PROVIDER=namesilo` **and** `NAMESILO_API_KEY` (API key alone does not enable search).
+- **Public search:** NameSilo availability requires `DOMAIN_PUBLIC_SEARCH_AVAILABILITY_PROVIDER=namesilo` **and** `NAMESILO_API_KEY`. Production **Deploy HostingBeyond** syncs the API key when the GitHub secret is set, but **does not** auto-set the search provider flag from the key alone.
 - **Transfers:** Persist `registrarProvider` and `walletTransactionId`; wallet reserve/finalize/rollback with idempotency keys.
 - **Customer APIs:** `/api/auth/me` and `POST /api/hosting/orders` use `requireCustomerSession()` (same production cookie validation; test overrides only outside production).
 - **Prisma:** Two migrations; **apply migrations before deploying** app code that reads new columns (avoid P2022 on Orbit pricing GET).
@@ -45,7 +45,7 @@ Supplier sync does **not** overwrite retail prices. Retail changes go through PU
 
 - **Authoritative supplier costs:** verified, fresh NameSilo `namesilo*` fields (`namesiloPriceStatus`, `namesiloSyncedAt`). DNA `supplier*` fields are legacy catalogue only and must not feed NameSilo profit/margin.
 - **Retail prices:** `retailRegister`, `retailRenew`, `retailTransfer` (USD catalogue; `retailCurrency` / `supplierCurrency` on row).
-- **Gross metrics (server-side):** `lib/orbit/pricing-financial-metrics.ts` — gross profit = retail − verified NameSilo cost; gross margin % = profit / retail; markup % = profit / supplier cost. No FX conversion; **N/A** when NameSilo cost is missing, stale, unverified, or invalid.
+- **Gross metrics (server-side):** `lib/orbit/pricing-financial-metrics.ts` — gross profit = retail − verified NameSilo cost; gross margin % = profit / retail; markup % = profit / supplier cost. No FX conversion; **N/A** when NameSilo cost is missing, stale, unverified, invalid, or when supplier/retail currencies are not both USD.
 - **UI:** NameSilo columns and metrics first; DNA labelled legacy. Not net profit (taxes/fees excluded).
 
 ---
@@ -65,22 +65,23 @@ Deploy **migrations first**, then application build (see staging runbook).
 - Stripe wallet webhook: signature verification and idempotency keys.
 - Transfer auth codes: hint-only in stored/display paths; full code used only for provider submission.
 - Orbit pricing routes: `authorizeDomainPricingAdmin()`.
+- Orbit domain-orders GET omits internal error text, payment references, and idempotency keys.
 
 ---
 
 ## Local verification (worktree, latest)
 
-| Check                                          | Result                                                                             |
-| ---------------------------------------------- | ---------------------------------------------------------------------------------- |
-| Route auth tests (`auth/me`, `hosting/orders`) | **3 pass**                                                                         |
-| `npm run typecheck`                            | **PASS** (exit 0)                                                                  |
-| `npm run lint`                                 | **PASS** — 0 errors, **47 warnings**                                               |
-| `npm run test:unit`                            | **PASS** — 410 tests (exit 0)                                                      |
-| `INTEGRATION_TESTS=required npm run test`      | **PASS** — 83/83 on local `hostingbeyond_integration_test` @ 127.0.0.1 (exit 0)    |
-| `npm run build`                                | **PASS** (exit 0)                                                                  |
-| `npm run staging:preflight`                    | **Exit 1** (expected fail-closed — no staging spec / no `STAGING_*` deploy target) |
+| Check                                     | Result                                                                                               |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `npx prisma validate`                     | **PASS** (exit 0; placeholder local URL, not production)                                             |
+| `npm run typecheck`                       | **PASS** (exit 0)                                                                                    |
+| `npm run lint`                            | **PASS** — 0 errors, **47 warnings** (pre-existing)                                                  |
+| `npm run test:unit`                       | **PASS** — **440** tests (exit 0)                                                                    |
+| `INTEGRATION_TESTS=required npm run test` | **PASS** — unit 440 + integration **83/83** on `hostingbeyond_integration_test` @ 127.0.0.1 (exit 0) |
+| `npm run build`                           | **PASS** (exit 0)                                                                                    |
+| `npm run staging:preflight`               | **Exit 1** (expected fail-closed — no staging spec / no `deploy-staging.yml`)                        |
 
-Integration DB URL loaded from dev `.env.integration.local` (not committed). **GitHub CI not run** for this audit.
+Integration DB URL loaded from the original checkout `.env.integration.local` (not committed). **GitHub CI for this follow-up commit has not been run yet**; after push, wait for Actions on the PR.
 
 ---
 

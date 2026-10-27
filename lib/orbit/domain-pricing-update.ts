@@ -81,6 +81,15 @@ export function validateRetailPricePayload(
       errors.push({ field: "enabled", message: "Must be true or false." });
     }
   }
+  if ("lifecycleProvider" in body && body.lifecycleProvider != null) {
+    const v = String(body.lifecycleProvider).trim();
+    if (v && v !== "namesilo" && v !== "domain-name-api") {
+      errors.push({
+        field: "lifecycleProvider",
+        message: "Must be empty, namesilo, or domain-name-api.",
+      });
+    }
+  }
   if (!options.partial) {
     for (const field of ["retailRegister", "retailRenew", "retailTransfer"]) {
       if (!(field in body)) {

@@ -1,6 +1,7 @@
 import { grossMarginPercent } from "@/lib/domains/pricing-margin-policy";
 import type { SupplierCostKind } from "@/lib/orbit/bulk-retail-preview";
 import {
+  catalogueCurrenciesCompatible,
   isAuthoritativeNameSiloKind,
   resolveSupplierCostForOperation,
 } from "@/lib/orbit/bulk-retail-preview";
@@ -59,9 +60,14 @@ export type OperationGrossMetrics = {
 export function computeOperationGrossMetrics(
   retail: number,
   supplier: { amount: number | null; kind: SupplierCostKind },
+  options?: { sameCurrencyUsd?: boolean },
 ): OperationGrossMetrics {
-  const basis = supplierCostBasisLabel(supplier.kind);
+  const sameCurrencyUsd = options?.sameCurrencyUsd ?? true;
+  const basis = sameCurrencyUsd
+    ? supplierCostBasisLabel(supplier.kind)
+    : "Currency mismatch or non-USD catalogue — no FX conversion; metrics unavailable";
   const incomplete =
+    !sameCurrencyUsd ||
     !isAuthoritativeNameSiloKind(supplier.kind) ||
     supplier.amount == null ||
     !Number.isFinite(supplier.amount);
@@ -105,19 +111,25 @@ export type CatalogueRowMetrics = {
 export function buildCatalogueRowMetrics(
   row: TldPriceRowInput,
 ): CatalogueRowMetrics {
+  const sameCurrencyUsd = catalogueCurrenciesCompatible(row);
   return {
     register: computeOperationGrossMetrics(
       row.retailRegister,
       resolveSupplierCostForOperation(row, "register"),
+      { sameCurrencyUsd },
     ),
     renew: computeOperationGrossMetrics(
       row.retailRenew,
       resolveSupplierCostForOperation(row, "renew"),
+      { sameCurrencyUsd },
     ),
     transfer: computeOperationGrossMetrics(
       row.retailTransfer,
       resolveSupplierCostForOperation(row, "transfer"),
+      { sameCurrencyUsd },
     ),
-    currencyNote: PRICING_CURRENCY_NOTE,
+    currencyNote: sameCurrencyUsd
+      ? PRICING_CURRENCY_NOTE
+      : "Supplier and retail currencies differ or are not USD; no exchange rate is applied.",
   };
 }

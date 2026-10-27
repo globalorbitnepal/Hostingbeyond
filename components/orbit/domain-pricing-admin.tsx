@@ -367,7 +367,7 @@ export function OrbitDomainPricingAdmin() {
     }
     const y1 = registerByYear["1"] ?? Number(draft.retailRegister);
     const r1 = renewByYear["1"] ?? Number(draft.retailRenew);
-    await fetch("/api/orbit/domain-pricing", {
+    const res = await fetch("/api/orbit/domain-pricing", {
       method: "PUT",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
@@ -384,6 +384,11 @@ export function OrbitDomainPricingAdmin() {
           : null,
       }),
     });
+    const json = (await res.json().catch(() => ({}))) as { error?: string };
+    if (!res.ok) {
+      setMessage(json.error ?? `Could not save ${editing.tld}`);
+      return;
+    }
     setMessage(`Saved ${editing.tld}`);
     closeEdit();
     void load();
@@ -534,8 +539,9 @@ export function OrbitDomainPricingAdmin() {
             Authoritative supplier costs are verified, fresh NameSilo account
             prices in USD. Gross profit is retail minus that NameSilo cost — not
             net profit. Taxes, payment-processing charges, and registry fees not
-            in the NameSilo price are excluded. Missing, stale, or unverified
-            NameSilo costs show N/A and never fall back to DNA rates.
+            in the NameSilo price are excluded. Missing, stale, unverified, or
+            currency-mismatched NameSilo costs show N/A and never fall back to
+            DNA rates. No live FX conversion is applied.
           </p>
           <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-950">
             NameSilo supplier synchronization updates supplier costs only.

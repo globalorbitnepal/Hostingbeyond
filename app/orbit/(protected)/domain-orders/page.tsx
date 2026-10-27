@@ -7,8 +7,11 @@ export default function OrbitDomainOrdersPage() {
     Array<{
       publicId: string;
       domain: string;
+      orderType: string;
       status: string;
-      total: string;
+      total: number;
+      currency: string;
+      errorMessageCustomer?: string | null;
       user?: { email: string | null };
     }>
   >([]);
@@ -28,9 +31,10 @@ export default function OrbitDomainOrdersPage() {
             <tr>
               <th className="px-4 py-3">Order</th>
               <th className="px-4 py-3">Domain</th>
+              <th className="px-4 py-3">Type</th>
               <th className="px-4 py-3">Customer</th>
               <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Total</th>
+              <th className="px-4 py-3">Retail total</th>
             </tr>
           </thead>
           <tbody>
@@ -38,9 +42,17 @@ export default function OrbitDomainOrdersPage() {
               <tr key={row.publicId} className="border-b">
                 <td className="px-4 py-3 font-mono text-xs">{row.publicId}</td>
                 <td className="px-4 py-3">{row.domain}</td>
+                <td className="px-4 py-3">{row.orderType}</td>
                 <td className="px-4 py-3">{row.user?.email ?? "—"}</td>
-                <td className="px-4 py-3">{row.status}</td>
-                <td className="px-4 py-3">{row.total}</td>
+                <td className="px-4 py-3">
+                  {row.status}
+                  {row.errorMessageCustomer
+                    ? ` · ${row.errorMessageCustomer}`
+                    : ""}
+                </td>
+                <td className="px-4 py-3">
+                  {row.currency} {Number(row.total).toFixed(2)}
+                </td>
               </tr>
             ))}
           </tbody>

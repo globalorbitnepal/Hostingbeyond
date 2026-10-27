@@ -49,6 +49,8 @@ function toRowInput(
     namesiloTransfer: num(row.namesiloTransfer),
     namesiloSyncedAt: row.namesiloSyncedAt,
     namesiloPriceStatus: row.namesiloPriceStatus,
+    supplierCurrency: row.supplierCurrency,
+    retailCurrency: row.retailCurrency,
   };
 }
 

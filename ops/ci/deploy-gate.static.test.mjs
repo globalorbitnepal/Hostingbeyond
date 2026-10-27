@@ -69,6 +69,16 @@ test("workflow: migrate step still fail-closed", () => {
   assert.match(migrate, /MIGRATE_SKIPPED/);
 });
 
+test("workflow: NameSilo API key does not auto-enable public search", () => {
+  assert.match(workflowYaml, /merge-namesilo-credentials-env/);
+  assert.doesNotMatch(
+    workflowYaml,
+    /merge-namesilo-search-env/,
+    "deploy must not set DOMAIN_PUBLIC_SEARCH_AVAILABILITY_PROVIDER from API key alone",
+  );
+  assert.match(workflowYaml, /NAMESILO_SEARCH_UNCHANGED/);
+});
+
 test("workflow: SSH preflight follows migrate gate", () => {
   const migrateIdx = stepIndex(workflowYaml, "Production migrate deploy gate (fail closed)");
   const sshIdx = stepIndex(workflowYaml, "Confirm SSH secrets exist");
