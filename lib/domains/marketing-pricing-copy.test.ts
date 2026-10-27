@@ -6,6 +6,7 @@ import {
   mergeDomainContent,
 } from "@/lib/domains/content";
 import { applyRetailOverlay } from "@/lib/domains/domain-search-page-data";
+import { stripBrandTitleSuffix } from "@/lib/domains/page-metadata";
 import { buildDomainSchema } from "@/lib/domains/seo";
 import { TLD_PRICES } from "@/lib/domains/tlds";
 
@@ -86,5 +87,14 @@ describe("marketing pricing copy", () => {
     );
     assert.equal(overlay[0].renew, 17.99);
     assert.equal(overlay[0].transfer, 12.99);
+  });
+
+  it("stripBrandTitleSuffix avoids HostingBeyond | HostingBeyond", () => {
+    assert.equal(
+      stripBrandTitleSuffix(
+        "Domain Name Search — Check Availability & Register | HostingBeyond",
+      ),
+      "Domain Name Search — Check Availability & Register",
+    );
   });
 });
