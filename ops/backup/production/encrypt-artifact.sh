@@ -14,6 +14,10 @@ if [ ! -f "$IN" ]; then
   echo "encrypt-artifact: input missing" >&2
   exit 3
 fi
+if [ -e "$OUT" ]; then
+  echo "encrypt-artifact: output already exists (refusing overwrite)" >&2
+  exit 7
+fi
 if [ ! -f "$RECIPIENT_FILE" ]; then
   echo "encrypt-artifact: recipient file missing (install public age key only)" >&2
   exit 4

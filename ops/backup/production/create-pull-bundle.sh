@@ -82,6 +82,10 @@ if [ -n "$OUTPUT_PARENT" ]; then
 else
   BUNDLE="${HOME}/backup-export/$TS"
 fi
+if [ -e "$BUNDLE" ] || [ -e "${HOME}/backup-export/${TS}.bundle.tar.age" ]; then
+  echo "create-pull-bundle: backup path already exists (refusing overwrite)" >&2
+  exit 13
+fi
 BUNDLE_OK=0
 OUTER_TAR=""
 OUTER_AGE=""

@@ -46,31 +46,18 @@
 
 **Beyond AI tables** (`20260913120000_beyond_ai`): `BeyondAiSubscription`, `BeyondAiProject`
 
-**Repo migration folders (19)** — diff inventory (B9) against `_prisma_migrations.migration_name`:
+**Repo migration inventory** — do not hard-code a folder count in tickets. Canonical list:
 
-```
-20260829120000_orbit_cms_init
-20260912120000_customer_auth
-20260913120000_beyond_ai
-20261004120000_hosting_products
-20261004230000_hosting_orders
-20261005010000_hosting_addons_snapshot
-20261006150000_domain_services
-20261006153000_wallet_payments
-20261006160000_domain_cart
-20261006200000_domain_pricing_multiyear
-20261007180000_blog_system
-20261007200000_blog_content_type
-20261015120000_domain_term_aware_pricing
-20261015220000_transfer_inflight_unique
-20261016140000_domain_renew_inflight_unique
-20261016180000_domain_register_inflight_unique
-20261017163000_invoices
-20261017194500_invoice_user_restrict
-20261018010000_hosting_order_checkout
-```
+- File: `prisma/migrations/INVENTORY.txt`
+- Verify locally/CI: `node scripts/verify-migration-inventory.mjs`
+- Print names for B9 diff: `node scripts/verify-migration-inventory.mjs --print`
 
-**Checkout migration (unverified on production):** `20261018010000_hosting_order_checkout` creates `HostingOrderCheckout`, enum `HostingOrderCheckoutStatus`, and partial unique index `HostingOrderCheckout_one_open_per_order_key`. Deploy at commit `78a30a7` may ship application code while `prisma migrate deploy` was **skipped** on production — **do not assume** B9 includes this name or B10 objects exist until owner runs read-only SQL.
+Phase 2 names that **must** appear in that inventory:
+
+- `20261025120000_namesilo_pricing_provider`
+- `20261025130000_transfer_registrar_wallet`
+
+**Checkout / invoice migrations (unverified on production until B9/B10):** `20261018010000_hosting_order_checkout` creates `HostingOrderCheckout`. **Do not assume** production `_prisma_migrations` contains checkout or Phase 2 names until the owner runs read-only SQL. Current deploy **blocks build/restart** when `prisma migrate status` reports pending migrations and `HOSTINGBEYOND_PRODUCTION_MIGRATE_APPROVED` is not `true`.
 
 ---
 
@@ -433,6 +420,60 @@ SELECT migration_name,
 FROM "_prisma_migrations"
 GROUP BY migration_name
 HAVING COUNT(*) > 1;
+
+-- B10e: Phase 2 NameSilo / transfer columns (existence only — no row data)
+SELECT e.column_name,
+       (c.column_name IS NOT NULL) AS present
+FROM (
+  VALUES
+    ('namesiloRegister'),
+    ('namesiloRenew'),
+    ('namesiloTransfer'),
+    ('namesiloSyncedAt'),
+    ('namesiloPriceStatus'),
+    ('lifecycleProvider'),
+    ('retailPriceLocked')
+) AS e(column_name)
+LEFT JOIN information_schema.columns c
+  ON c.table_schema = 'public'
+ AND c.table_name = 'DomainTldPrice'
+ AND c.column_name = e.column_name
+ORDER BY e.column_name;
+
+SELECT e.column_name,
+       (c.column_name IS NOT NULL) AS present
+FROM (
+  VALUES
+    ('registrarProvider')
+) AS e(column_name)
+LEFT JOIN information_schema.columns c
+  ON c.table_schema = 'public'
+ AND c.table_name = 'DomainRegistration'
+ AND c.column_name = e.column_name
+ORDER BY e.column_name;
+
+SELECT e.column_name,
+       (c.column_name IS NOT NULL) AS present
+FROM (
+  VALUES
+    ('registrarProvider'),
+    ('walletTransactionId')
+) AS e(column_name)
+LEFT JOIN information_schema.columns c
+  ON c.table_schema = 'public'
+ AND c.table_name = 'DomainTransferRecord'
+ AND c.column_name = e.column_name
+ORDER BY e.column_name;
+
+SELECT migration_name,
+       (finished_at IS NOT NULL) AS finished,
+       (rolled_back_at IS NOT NULL) AS rolled_back
+FROM "_prisma_migrations"
+WHERE migration_name IN (
+  '20261025120000_namesilo_pricing_provider',
+  '20261025130000_transfer_registrar_wallet'
+)
+ORDER BY migration_name;
 ```
 
 **Run (only after Section 3 PASS):**
@@ -451,17 +492,18 @@ psql -v ON_ERROR_STOP=1 -f /tmp/hb-preflight-readonly.sql \
 
 **Scope:** A read-only preflight **PASS** means it is safe to _proceed to owner decisions_ (backup, repair window, push, migrate secret). It does **not** authorize `migrate deploy`, `_prisma_migrations` repair, DNS changes, or setting `HOSTINGBEYOND_PRODUCTION_MIGRATE_APPROVED` by itself (see Sections 6–7).
 
-| Check                       | PASS                                                                                                                                                                                                           | STOP                                                                                                                                                                                                             |
-| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Target (Section 3)**      | `PGDATABASE` and `current_database()` equal `EXPECTED_DB_NAME`                                                                                                                                                 | Placeholder `EXPECTED_DB_NAME`; parse/connect failure; either mismatch                                                                                                                                           |
-| **B1 + B2 beyond_ai**       | `(1,0)` with B1 `finished=t`, `rolled_back=f`, checksum `MATCH` → repair path later; `(0,1)` with same flags on new row → skip repair; `(0,0)` only on **confirmed greenfield** DB (no production data — rare) | `(old≥1 AND new≥1)`; `old>1` or `new>1`; **production** `(0,0)` when Beyond AI should exist (`docs/MIGRATION-HISTORY-REPAIR.md`); B1 `finished=f` or `rolled_back=t`; checksum `MISMATCH` on the row you rely on |
-| **B3 tables**               | If B1 implies applied (`finished=t`): both `table_exists` ≥ 1                                                                                                                                                  | Applied history but missing tables                                                                                                                                                                               |
-| **B4 / B5**                 | Counts = **0**                                                                                                                                                                                                 | Count **> 0**                                                                                                                                                                                                    |
-| **B6–B7**                   | Consistent with baseline (indexes absent before migrate is OK)                                                                                                                                                 | B6 `finished=t` but B7 `present=f` for that migration’s index; duplicate B6 rows per name                                                                                                                        |
-| **B9 vs repo (19 folders)** | Every repo migration name has a matching finished row **or** owner documents intentional pending set before migrate                                                                                            | Missing finished rows for migrations already required by deployed app; unexpected extra migration names                                                                                                          |
-| **B10 checkout/invoices**   | If app at `78a30a7+` and checkout enabled: migration rows finished **and** `HostingOrderCheckout` table_exists = 1 **and** partial unique index present                                                        | Migration row missing but table exists (history drift); migration finished but table/index absent; enum missing                                                                                                  |
-| **B10b–B10d columns/FKs**   | Every `present` = true for expected checkout/invoice objects when those migrations are finished                                                                                                                | Any `present` = false while migration row shows `finished=t`                                                                                                                                                     |
-| **B11 duplicates**          | **No rows** returned (empty result)                                                                                                                                                                            | Any `row_count` > 1 for a migration_name                                                                                                                                                                         |
+| Check                     | PASS                                                                                                                                                                                                           | STOP                                                                                                                                                                                                             |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Target (Section 3)**    | `PGDATABASE` and `current_database()` equal `EXPECTED_DB_NAME`                                                                                                                                                 | Placeholder `EXPECTED_DB_NAME`; parse/connect failure; either mismatch                                                                                                                                           |
+| **B1 + B2 beyond_ai**     | `(1,0)` with B1 `finished=t`, `rolled_back=f`, checksum `MATCH` → repair path later; `(0,1)` with same flags on new row → skip repair; `(0,0)` only on **confirmed greenfield** DB (no production data — rare) | `(old≥1 AND new≥1)`; `old>1` or `new>1`; **production** `(0,0)` when Beyond AI should exist (`docs/MIGRATION-HISTORY-REPAIR.md`); B1 `finished=f` or `rolled_back=t`; checksum `MISMATCH` on the row you rely on |
+| **B3 tables**             | If B1 implies applied (`finished=t`): both `table_exists` ≥ 1                                                                                                                                                  | Applied history but missing tables                                                                                                                                                                               |
+| **B4 / B5**               | Counts = **0**                                                                                                                                                                                                 | Count **> 0**                                                                                                                                                                                                    |
+| **B6–B7**                 | Consistent with baseline (indexes absent before migrate is OK)                                                                                                                                                 | B6 `finished=t` but B7 `present=f` for that migration’s index; duplicate B6 rows per name                                                                                                                        |
+| **B9 vs repo inventory**  | Diff B9 names against `node scripts/verify-migration-inventory.mjs --print`. Every inventory name is finished **or** owner documents the pending set (Phase 2 names pending is expected before migrate)        | Missing finished rows for migrations already required by the **running** app; unexpected extra names; duplicate B11 rows                                                                                         |
+| **B10e Phase 2 columns**  | If Phase 2 migrations finished: every listed `present` = true. If not finished: columns may be absent — do not deploy Phase 2 app code until migrate approval                                                  | Migration `finished=t` but column `present=f`; columns present with no matching migration row (history drift)                                                                                                    |
+| **B10 checkout/invoices** | If app at `78a30a7+` and checkout enabled: migration rows finished **and** `HostingOrderCheckout` table_exists = 1 **and** partial unique index present                                                        | Migration row missing but table exists (history drift); migration finished but table/index absent; enum missing                                                                                                  |
+| **B10b–B10d columns/FKs** | Every `present` = true for expected checkout/invoice objects when those migrations are finished                                                                                                                | Any `present` = false while migration row shows `finished=t`                                                                                                                                                     |
+| **B11 duplicates**        | **No rows** returned (empty result)                                                                                                                                                                            | Any `row_count` > 1 for a migration_name                                                                                                                                                                         |
 
 **beyond_ai repair** (if `old=1`, `new=0`, checksum `MATCH`, finished, not rolled back): read-only preflight may **PASS**; **transactional repair** remains a **separate** owner-approved step (`docs/MIGRATION-HISTORY-REPAIR.md`) before deploy of the renamed migration.
 
@@ -485,7 +527,10 @@ From `.github/workflows/deploy.yml`:
 
 - `RUN_PRISMA_MIGRATE_DEPLOY=1` **only** if repository secret `HOSTINGBEYOND_PRODUCTION_MIGRATE_APPROVED` equals **`true`**.
 - `workflow_dispatch` inputs do **not** enable migrations.
-- Remote script runs `npx prisma migrate deploy` only when `RUN_PRISMA_MIGRATE_DEPLOY=1`; otherwise skips migrate and still deploys code.
+- Remote script always runs `npx prisma migrate status`. Pending migrations **without** approval **block** `npm run build` and PM2 restart (`PENDING_MIGRATIONS_BLOCK`).
+- `npx prisma migrate deploy` runs only when approved **and** status reports pending names.
+- There is **no automatic schema rollback** if migrate succeeds and a later build/restart/verify step fails.
+- Unrelated releases whose production schema is already up to date may still deploy code without the migrate secret.
 
 ---
 

@@ -5,6 +5,7 @@ import path from "node:path";
 import { describe, it } from "node:test";
 
 import {
+  commandExists,
   isPathInsideGitCheckout,
   isUnsafeBackupDestination,
   recipientFileLooksValid,
@@ -43,6 +44,10 @@ describe("export-preflight", () => {
     fs.mkdirSync(path.join(root, ".git"), { recursive: true });
     assert.equal(isPathInsideGitCheckout(root), true);
     assert.equal(isUnsafeBackupDestination(path.join(root, "out"), "/tmp/app"), "inside_git_checkout");
+  });
+
+  it("reports missing required tools as a failed preflight stage", () => {
+    assert.equal(commandExists("definitely-not-installed-hb-tool-xyz"), false);
   });
 
   it("validates age recipient file shape", () => {

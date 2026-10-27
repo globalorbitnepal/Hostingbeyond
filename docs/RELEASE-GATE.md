@@ -25,7 +25,7 @@
 | Pull request CI                                                          | **No** deploy workflow for PR branch                         | **No**                                                            |
 | `workflow_dispatch` on **Deploy HostingBeyond**                          | **Yes**                                                      | **Yes** — Typecheck then SSH deploy (emergency / re-run)          |
 
-**Deploy chain:** Push to **`main`** runs **Deploy HostingBeyond**: **Typecheck** → **Deploy to VPS**. **HostingBeyond CI — Orbit Admin and domain services** still runs on the same push for lint/tests/build but does not block deploy. **Database migrations** remain gated by `HOSTINGBEYOND_PRODUCTION_MIGRATE_APPROVED` (fail closed by default). **Deploy HostingBeyond** ships the public website and Orbit admin together; it is not an Orbit-only workflow.
+**Deploy chain:** Push to **`main`** runs **Deploy HostingBeyond**: **Typecheck** → **Deploy to VPS**. **HostingBeyond CI — Orbit Admin and domain services** still runs on the same push for lint/tests/build but does not block deploy. **Database migrations** remain gated by `HOSTINGBEYOND_PRODUCTION_MIGRATE_APPROVED` (fail closed by default). If `prisma migrate status` reports **pending** migrations and the migrate secret is not exactly `true`, **code build and PM2 restart are blocked**. **Deploy HostingBeyond** ships the public website and Orbit admin together; it is not an Orbit-only workflow.
 
 Fork PRs cannot dispatch deploy workflows on the upstream repo.
 
@@ -37,13 +37,27 @@ Fork PRs cannot dispatch deploy workflows on the upstream repo.
 
 ## Deploy vs migrate (fail closed)
 
-| Step                                                         | Default on deploy                                                                                  |
-| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| Deploy after push to `main`                                  | **Runs** when workflow **Typecheck** passes (no deploy approval secret)                            |
-| `git reset --hard origin/main`, `npm ci`, build, PM2 restart | **Runs** when **Deploy to VPS** job runs                                                           |
-| `npx prisma migrate deploy` on production                    | **Skipped** unless repository secret `HOSTINGBEYOND_PRODUCTION_MIGRATE_APPROVED` is exactly `true` |
+| Step                                      | Default on deploy                                                                                                               |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Deploy after push to `main`               | **Runs** when workflow **Typecheck** passes (no deploy approval secret)                                                         |
+| `git reset --hard origin/main`, `npm ci`  | **Runs** when **Deploy to VPS** job runs                                                                                        |
+| `npx prisma migrate status`               | **Always** after `prisma generate` (read of `_prisma_migrations`; not a schema write)                                           |
+| `npx prisma migrate deploy` on production | **Runs only** if secret `HOSTINGBEYOND_PRODUCTION_MIGRATE_APPROVED` is exactly `true` **and** status reports pending migrations |
+| Build + PM2 restart                       | **Blocked** when pending migrations exist and migrate is not approved. Allowed when schema is already up to date.               |
+
+There is **no automatic schema rollback**. If migrate succeeds and build, PM2 restart, or HTTPS verification later fails, the applied migrations remain; this workflow does not revert them.
 
 **Workflow inputs cannot enable migrations.** Only the owner-controlled repository secret can. Remove or unset the secret immediately after a successful migrate window if desired.
+
+### Release evidence layers (do not collapse)
+
+1. **Repository verification** — local/CI lint, typecheck, unit/integration tests, Prisma validate, build, migration inventory script.
+2. **Owner-operated production preflight** — `docs/PRODUCTION-PREFLIGHT-RUNBOOK.md` on the confirmed production host/database (SELECT-only).
+3. **Backup and restore evidence** — approved export + isolated restore drill to `hostingbeyond_restore_test` (not production).
+4. **Migration approval** — set `HOSTINGBEYOND_PRODUCTION_MIGRATE_APPROVED=true` only after 2–3 PASS and a maintenance window.
+5. **Deployment** — must not build/restart schema-dependent code while required migrations remain pending.
+6. **Post-deploy verification** — `prisma migrate status`, HTTPS smoke, Orbit admin auth, wallet/reconciliation, DNA lifecycle unchanged.
+7. **NameSilo live operations** — remain disabled until independently approved (`NAMESILO_LIFECYCLE_ENABLED` is never set by deploy).
 
 ### Operator prerequisites before setting migrate secret
 
@@ -72,4 +86,4 @@ npm run test && npm run lint && npm run typecheck && npm run build
 
 ## Push boundary
 
-Pushing to `main` runs CI, then **production code deploy** on CI success. Migrations remain off until the migrate secret is set. **Production readiness** is separate from **commit review** — see preflight docs.
+Pushing to `main` runs CI, then **production deploy**. If this release has pending Prisma migrations, deploy **fails closed** until the migrate secret is set and `migrate deploy` succeeds. Unrelated releases whose production schema is already up to date can still ship code without the migrate secret. **Production readiness** is separate from **commit review** — see preflight docs.

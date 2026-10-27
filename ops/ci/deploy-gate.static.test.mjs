@@ -85,6 +85,34 @@ test("workflow: SSH preflight follows migrate gate", () => {
   assert.ok(migrateIdx < sshIdx, "migrate gate before SSH secret step");
 });
 
+test("workflow: pending migrations block code build and restart without approval", () => {
+  assert.match(workflowYaml, /pending-migrations-gate\.mjs/);
+  assert.match(workflowYaml, /PENDING_MIGRATIONS_BLOCK/);
+  assert.match(workflowYaml, /PENDING_MIGRATIONS_REQUIRE_APPROVAL|GATE_ACTION/);
+  assert.doesNotMatch(workflowYaml, /code deploy continues/);
+});
+
+test("workflow: approved pending migrations run migrate deploy before build", () => {
+  const generateIdx = workflowYaml.indexOf("npx prisma generate");
+  const gateIdx = workflowYaml.indexOf("pending-migrations-gate.mjs");
+  const migrateIdx = workflowYaml.indexOf("npx prisma migrate deploy");
+  const buildIdx = workflowYaml.indexOf("npm run build");
+  assert.ok(generateIdx >= 0 && gateIdx > generateIdx);
+  assert.ok(migrateIdx > gateIdx);
+  assert.ok(buildIdx > migrateIdx);
+  assert.match(workflowYaml, /MIGRATE_THEN_DEPLOY|GATE_ACTION/);
+  assert.match(workflowYaml, /MIGRATE_DEPLOY_FAIL/);
+});
+
+test("workflow: documents no automatic schema rollback after migrate", () => {
+  assert.match(workflowYaml, /NO_SCHEMA_ROLLBACK/);
+});
+
+test("workflow: build and verification failures are explicit", () => {
+  assert.match(workflowYaml, /BUILD_FAIL/);
+  assert.match(workflowYaml, /VERIFY_FAIL/);
+});
+
 test("workflow: repair workflows untouched (no deploy approval secret)", () => {
   const repairPath = join(ROOT, ".github/workflows/repair-vps-database.yml");
   const repair = readFileSync(repairPath, "utf8");

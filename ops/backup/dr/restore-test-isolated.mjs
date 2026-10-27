@@ -177,6 +177,17 @@ function main() {
   const { port } = resolveLabPort();
 
   if (!fs.existsSync(dump)) process.exit(5);
+  const dumpStat = fs.statSync(dump);
+  if (!dumpStat.isFile() || dumpStat.size < 1) process.exit(5);
+  for (const cmd of ["psql", "pg_restore"]) {
+    const found = spawnSync("/bin/sh", ["-c", `command -v ${cmd}`], {
+      encoding: "utf8",
+    });
+    if (found.status !== 0) {
+      console.error(`restore-test-isolated: missing tool ${cmd}`);
+      process.exit(7);
+    }
+  }
 
   const connEnv = labConnEnv(host, port);
 

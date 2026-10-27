@@ -15,15 +15,20 @@ describe("restore-test-isolated preflight (static, matches RESTORE-DRILL-LAB.md)
 
   it("checks dump exists before any psql current_database guard", () => {
     const existsIdx = text.indexOf("if (!fs.existsSync(dump)) process.exit(5)");
+    const emptyIdx = text.indexOf("dumpStat.size < 1");
+    const toolsIdx = text.indexOf("missing tool");
     const preRestoreIdx = text.indexOf(
       'assertCurrentDatabase(host, port, connEnv, "pre-restore")',
     );
     assert.ok(existsIdx >= 0, "missing dump exit 5");
+    assert.ok(emptyIdx > existsIdx, "empty dump must be rejected after exists check");
+    assert.ok(toolsIdx > emptyIdx, "tool check after dump artifact check");
     assert.ok(preRestoreIdx >= 0, "missing pre-restore current_database check");
     assert.ok(
       existsIdx < preRestoreIdx,
       "dump file must be validated before first database command",
     );
+    assert.ok(toolsIdx < preRestoreIdx, "missing tools must fail before psql");
   });
 
   it("runs current_database checks before pg_restore", () => {

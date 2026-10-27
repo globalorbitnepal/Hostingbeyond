@@ -21,11 +21,11 @@
 - **Public search:** NameSilo availability requires `DOMAIN_PUBLIC_SEARCH_AVAILABILITY_PROVIDER=namesilo` **and** `NAMESILO_API_KEY`. Production **Deploy HostingBeyond** syncs the API key when the GitHub secret is set, but **does not** auto-set the search provider flag from the key alone.
 - **Transfers:** Persist `registrarProvider` and `walletTransactionId`; wallet reserve/finalize/rollback with idempotency keys.
 - **Customer APIs:** `/api/auth/me` and `POST /api/hosting/orders` use `requireCustomerSession()` (same production cookie validation; test overrides only outside production).
-- **Prisma:** Two migrations; **apply migrations before deploying** app code that reads new columns (avoid P2022 on Orbit pricing GET).
+- **Prisma:** Two migrations plus committed `prisma/migrations/INVENTORY.txt` (21 folders). Production deploy **blocks build/PM2 restart** when `prisma migrate status` reports pending migrations unless `HOSTINGBEYOND_PRODUCTION_MIGRATE_APPROVED=true`.
 - **Docs:** `docs/BACKEND_PHASE2_STAGING_RUNBOOK.md`; read-only `npm run staging:preflight` checks migrations and staging readiness (no DB/deploy/registrar side effects).
-- **GitHub Actions labels:** PR CI display name is **HostingBeyond CI — Orbit Admin and domain services**. Production **Deploy HostingBeyond** is unchanged (full app, including public homepage).
+- **GitHub Actions labels:** PR CI display name is **HostingBeyond CI — Orbit Admin and domain services**. Production **Deploy HostingBeyond** is the full app, including public homepage.
 
-**Not verified in this branch:** NameSilo production lifecycle, live billable registrar calls, production deployment, production migrations, or GitHub Actions CI (local tests only).
+**Not claimed:** production schema correctness, production backup/restore, live NameSilo lifecycle, or production readiness. Those require owner-operated evidence.
 
 ---
 
@@ -43,9 +43,9 @@ Supplier sync does **not** overwrite retail prices. Retail changes go through PU
 
 ### Pricing transparency (Orbit Admin — Domain Pricing)
 
-- **Authoritative supplier costs:** verified, fresh NameSilo `namesilo*` fields (`namesiloPriceStatus`, `namesiloSyncedAt`). DNA `supplier*` fields are legacy catalogue only and must not feed NameSilo profit/margin.
-- **Retail prices:** `retailRegister`, `retailRenew`, `retailTransfer` (USD catalogue; `retailCurrency` / `supplierCurrency` on row).
-- **Gross metrics (server-side):** `lib/orbit/pricing-financial-metrics.ts` — gross profit = retail − verified NameSilo cost; gross margin % = profit / retail; markup % = profit / supplier cost. No FX conversion; **N/A** when NameSilo cost is missing, stale, unverified, invalid, or when supplier/retail currencies are not both USD.
+- **Authoritative supplier costs:** verified, fresh NameSilo `namesiloRegister` / `namesiloRenew` / `namesiloTransfer` / `namesiloCurrency` / `namesiloSyncedAt` / `namesiloPriceStatus`. DNA `supplier*` fields are legacy catalogue only and must not feed NameSilo profit/margin.
+- **Retail prices:** catalogue `registerPrice` / `renewPrice` / `transferPrice` (API maps these to `retailRegister` / `retailRenew` / `retailTransfer`). USD only.
+- **Gross metrics (server-side):** `lib/orbit/pricing-financial-metrics.ts` — gross profit = retail − verified NameSilo cost; gross margin % = profit / retail; markup % = profit / supplier cost. No FX conversion; **N/A** when NameSilo cost is missing, stale (>30 days), unverified, invalid, zero denominators, or when supplier/retail currencies are not both USD.
 - **UI:** NameSilo columns and metrics first; DNA labelled legacy. Not net profit (taxes/fees excluded).
 
 ---
@@ -55,7 +55,7 @@ Supplier sync does **not** overwrite retail prices. Retail changes go through PU
 1. `20261025120000_namesilo_pricing_provider` — NameSilo cost columns, `lifecycleProvider`, `retailPriceLocked`, `DomainRegistration.registrarProvider`
 2. `20261025130000_transfer_registrar_wallet` — `DomainTransferRecord.registrarProvider`, `walletTransactionId`
 
-Deploy **migrations first**, then application build (see staging runbook).
+Inventory check: `node scripts/verify-migration-inventory.mjs`
 
 ---
 
@@ -69,25 +69,39 @@ Deploy **migrations first**, then application build (see staging runbook).
 
 ---
 
-## Local verification (worktree, latest)
+## Release evidence layers
+
+Do not treat local tests as production readiness.
+
+1. **Repository verification** — Prisma validate (placeholder URL), typecheck, lint, unit tests, required integration tests on `hostingbeyond_integration_test` @ 127.0.0.1, deploy-workflow tests, migration inventory tests, backup-script tests, production build.
+2. **Owner-operated production preflight** — `docs/PRODUCTION-PREFLIGHT-RUNBOOK.md` (SELECT-only) on the confirmed production host/database. Not run in this environment.
+3. **Backup and restore evidence** — approved `create-pull-bundle.sh` export plus isolated restore to `hostingbeyond_restore_test`. Not performed here.
+4. **Migration approval** — `HOSTINGBEYOND_PRODUCTION_MIGRATE_APPROVED=true` only after 2–3 and a maintenance window.
+5. **Deployment** — pending Prisma migrations block build/restart until migrate is approved and succeeds. No automatic schema rollback if migrate succeeds and build/restart/verify later fails.
+6. **Post-deployment verification** — migrate status, HTTPS, Orbit pricing/auth, wallets/reconciliation, DNA lifecycle unchanged.
+7. **NameSilo live operations** — remain disabled until separately approved. Deploy never sets `NAMESILO_LIFECYCLE_ENABLED`.
+
+---
+
+## Local verification (worktree)
 
 | Check                                     | Result                                                                                               |
 | ----------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | `npx prisma validate`                     | **PASS** (exit 0; placeholder local URL, not production)                                             |
 | `npm run typecheck`                       | **PASS** (exit 0)                                                                                    |
 | `npm run lint`                            | **PASS** — 0 errors, **47 warnings** (pre-existing)                                                  |
-| `npm run test:unit`                       | **PASS** — **440** tests (exit 0)                                                                    |
-| `INTEGRATION_TESTS=required npm run test` | **PASS** — unit 440 + integration **83/83** on `hostingbeyond_integration_test` @ 127.0.0.1 (exit 0) |
+| `npm run test:unit`                       | **PASS** — **465** tests (exit 0)                                                                    |
+| `INTEGRATION_TESTS=required npm run test` | **PASS** — unit 465 + integration **83/83** on `hostingbeyond_integration_test` @ 127.0.0.1 (exit 0) |
 | `npm run build`                           | **PASS** (exit 0)                                                                                    |
-| `npm run staging:preflight`               | **Exit 1** (expected fail-closed — no staging spec / no `deploy-staging.yml`)                        |
+| `npm run staging:preflight`               | **Exit 1** (expected fail-closed — missing staging spec and staging deploy workflow)                 |
 
-Integration DB URL loaded from the original checkout `.env.integration.local` (not committed). **GitHub CI for this follow-up commit has not been run yet**; after push, wait for Actions on the PR.
+GitHub CI for commit `992b110` on PR #10 **passed** (Actions run `40556891369`). CI for the commit after this documentation is **unverified until Actions completes**.
 
 ---
 
 ## Staging acceptance (post-merge)
 
-- [ ] Migrations on staging DB only, then deploy.
+- [ ] Migrations on a real staging DB only, then deploy (staging is **not** provisioned).
 - [ ] Orbit pricing preview/apply and bulk retail locks verified.
 - [ ] Bulk domain search limit **10** unchanged.
 - [ ] `NAMESILO_LIFECYCLE_ENABLED` remains false until owner approval.
@@ -106,14 +120,16 @@ Integration DB URL loaded from the original checkout `.env.integration.local` (n
 
 ## Risks
 
-- P2022 if code deploys before migrations.
-- `npm run staging:preflight` fails closed if `NAMESILO_STAGING_ENVIRONMENT_SPEC.md` is absent (optional staging doc; not required for app runtime).
-- 47 ESLint warnings unchanged.
+- Production schema is unknown until owner preflight. Deploy now **fails closed** on pending migrations without migrate approval (working tree is already `git reset --hard origin/main` before that check; PM2 is not restarted).
+- Migrate-then-build failure does **not** roll back schema.
+- `npm run staging:preflight` fails closed if `NAMESILO_STAGING_ENVIRONMENT_SPEC.md` is absent.
+- ESLint warnings may remain (pre-existing).
 
 ---
 
 ## Reviewer checklist
 
 1. Registrar gating and payment/wallet paths.
-2. Migration ordering on staging.
-3. CI green on PR (not pre-verified locally via Actions).
+2. Deploy pending-migration gate and `NO_SCHEMA_ROLLBACK` documentation.
+3. Migration inventory vs `INVENTORY.txt`.
+4. CI green on the **final** SHA (not only `992b110`).

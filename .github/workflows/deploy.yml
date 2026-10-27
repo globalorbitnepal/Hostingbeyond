@@ -262,11 +262,35 @@ jobs:
           fi
           npx prisma generate </dev/null
 
-          if [ "${RUN_PRISMA_MIGRATE_DEPLOY}" = "1" ]; then
-            echo "==> Applying database migrations (owner-approved)"
-            npx prisma migrate deploy </dev/null
+          echo "==> Checking prisma migrate status (read-only vs _prisma_migrations)"
+          set +e
+          MIGRATE_STATUS_OUT="$(npx prisma migrate status </dev/null 2>&1)"
+          MIGRATE_STATUS_RC=$?
+          set -e
+          STATUS_FILE="$(mktemp)"
+          printf '%s\n' "${MIGRATE_STATUS_OUT}" > "${STATUS_FILE}"
+          set +e
+          GATE_OUT="$(node ops/ci/pending-migrations-gate.mjs --approved "${RUN_PRISMA_MIGRATE_DEPLOY:-0}" --status-exit "${MIGRATE_STATUS_RC}" --status-file "${STATUS_FILE}")"
+          GATE_RC=$?
+          set -e
+          rm -f -- "${STATUS_FILE}"
+          echo "${GATE_OUT}"
+          GATE_ACTION="$(printf '%s\n' "${GATE_OUT}" | awk -F= '/^GATE_ACTION=/{print $2; exit}')"
+          if [ "${GATE_RC}" -ne 0 ] || [ "${GATE_ACTION}" = "block" ]; then
+            echo "PENDING_MIGRATIONS_BLOCK: schema-dependent code will not build or restart until migrations are approved and applied"
+            echo "Set HOSTINGBEYOND_PRODUCTION_MIGRATE_APPROVED=true only after backup/restore evidence and docs/PRODUCTION-PREFLIGHT-RUNBOOK.md PASS"
+            exit 1
+          fi
+          if [ "${GATE_ACTION}" = "migrate" ]; then
+            echo "==> Applying database migrations (owner-approved, pending migrations present)"
+            if ! npx prisma migrate deploy </dev/null; then
+              echo "MIGRATE_DEPLOY_FAIL: prisma migrate deploy failed; build and PM2 restart were not attempted"
+              echo "NO_SCHEMA_ROLLBACK: this workflow does not automatically roll back a failed or partial migrate"
+              exit 1
+            fi
+            echo "NO_SCHEMA_ROLLBACK: if build, PM2 restart, or HTTPS verify fails after a successful migrate, schema is not automatically rolled back"
           else
-            echo "==> SKIP prisma migrate deploy (fail-closed gate; code deploy continues)"
+            echo "==> No pending migrations; code deploy may continue without prisma migrate deploy"
           fi
 
           export CI=true
@@ -286,6 +310,7 @@ jobs:
           done
           if [ "$BUILD_OK" != "1" ]; then
             echo "BUILD_FAIL: npm run build failed after 3 attempts"
+            echo "NO_SCHEMA_ROLLBACK: a successful migrate in this run is not reverted when build fails; PM2 was not restarted"
             exit 1
           fi
 
@@ -329,7 +354,8 @@ jobs:
           echo "==> Verifying local HTTP on 127.0.0.1:3030"
           LOCAL_CODE="$(curl -fsS -o /dev/null -w "%{http_code}" --retry 4 --retry-delay 1 --retry-all-errors --max-time 15 http://127.0.0.1:3030/ || true)"
           if [ "$LOCAL_CODE" != "200" ]; then
-            echo "Local verify failed: expected HTTP 200 on 127.0.0.1:3030, got ${LOCAL_CODE:-none}"
+            echo "VERIFY_FAIL: expected HTTP 200 on 127.0.0.1:3030, got ${LOCAL_CODE:-none}"
+            echo "NO_SCHEMA_ROLLBACK: migrate is not reverted on verification failure"
             exit 1
           fi
 

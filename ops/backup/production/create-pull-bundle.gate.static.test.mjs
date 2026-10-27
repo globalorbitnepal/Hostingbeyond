@@ -22,6 +22,12 @@ describe("create-pull-bundle.sh export gate (static)", () => {
     assert.ok(preflight < dump, "preflight must run before pg_dump");
   });
 
+  it("refuses to overwrite an existing timestamped backup path", () => {
+    const text = fs.readFileSync(SCRIPT, "utf8");
+    assert.match(text, /backup path already exists \(refusing overwrite\)/);
+    assert.match(text, /exit 13/);
+  });
+
   it("does not pass process-env approval override to preflight", () => {
     const text = fs.readFileSync(SCRIPT, "utf8");
     assert.equal(text.includes("allow-process-env-approval"), false);

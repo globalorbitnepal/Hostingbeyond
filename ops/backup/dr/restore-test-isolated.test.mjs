@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { describe, it } from "node:test";
 
@@ -71,5 +73,30 @@ describe("restore-test-isolated.mjs", () => {
   it("refuses PGOPTIONS", () => {
     const r = run(LAB, { PGOPTIONS: "-c search_path=public" });
     assert.equal(r.status, 9);
+  });
+
+  it("refuses an empty dump artifact", () => {
+    const empty = path.join(os.tmpdir(), `hb-empty-${Date.now()}.dump`);
+    fs.writeFileSync(empty, "");
+    const r = spawnSync("node", [SCRIPT, empty, LAB], {
+      encoding: "utf8",
+      env: { PATH: process.env.PATH ?? "", HOME: process.env.HOME ?? "/tmp" },
+    });
+    fs.unlinkSync(empty);
+    assert.equal(r.status, 5);
+  });
+
+  it("refuses when pg_restore/psql are missing from PATH", () => {
+    const dump = path.join(os.tmpdir(), `hb-dump-${Date.now()}.dump`);
+    fs.writeFileSync(dump, "not-a-real-dump-but-nonempty");
+    const r = spawnSync(process.execPath, [SCRIPT, dump, LAB], {
+      encoding: "utf8",
+      env: {
+        PATH: "/nonexistent-hb-tools",
+        HOME: process.env.HOME ?? "/tmp",
+      },
+    });
+    fs.unlinkSync(dump);
+    assert.equal(r.status, 7);
   });
 });
