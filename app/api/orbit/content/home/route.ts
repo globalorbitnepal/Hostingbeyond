@@ -31,8 +31,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "Missing sections" }, { status: 400 });
   }
 
-  await saveHomeSections(body.sections);
-  const sections = await getHomeSections();
+  const sections = await saveHomeSections(body.sections);
   await logActivity({
     adminUserId: admin.id,
     action: "CONTENT_UPDATE",

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import type { CmsHomeSections } from "@/lib/orbit/defaults";
+import { readResponseError } from "@/lib/orbit/read-response-error";
 
 export default function OrbitNavigationPage() {
   const [sections, setSections] = useState<CmsHomeSections | null>(null);
@@ -23,11 +24,17 @@ export default function OrbitNavigationPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ sections }),
     });
-    setStatus(res.ok ? "Navigation saved" : "Save failed");
+    if (!res.ok) {
+      const parsed = await readResponseError(res, "Save failed");
+      setStatus(parsed.text);
+      return;
+    }
+    const json = (await res.json()) as { sections?: CmsHomeSections };
+    if (json.sections) setSections(json.sections);
+    setStatus("Navigation saved — live in the public header");
   }
 
-  if (!sections)
-    return <p className="text-sm text-slate-500">Loading…</p>;
+  if (!sections) return <p className="text-sm text-slate-500">Loading…</p>;
 
   return (
     <div className="space-y-6">

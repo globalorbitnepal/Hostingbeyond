@@ -26,8 +26,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "Missing content" }, { status: 400 });
   }
 
-  await saveDomainContent(body.content);
-  const content = await getDomainContent();
+  const content = await saveDomainContent(body.content);
 
   await logActivity({
     adminUserId: admin.id,

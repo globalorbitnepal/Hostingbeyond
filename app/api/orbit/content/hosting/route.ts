@@ -28,7 +28,6 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "Missing content" }, { status: 400 });
   }
 
-  await saveHostingPageContent(body.content);
-  const content = await getHostingPageContent();
+  const content = await saveHostingPageContent(body.content);
   return NextResponse.json({ ok: true, content });
 }

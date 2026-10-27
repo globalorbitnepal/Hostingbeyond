@@ -10,6 +10,8 @@ import {
   getSiteSettings,
 } from "@/lib/orbit/content";
 
+export const dynamic = "force-dynamic";
+
 const PAGE_PATH = "/business-email";
 
 export async function generateMetadata(): Promise<Metadata> {

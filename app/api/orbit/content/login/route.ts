@@ -33,8 +33,7 @@ export async function PUT(request: NextRequest) {
     );
   }
 
-  await saveLoginPage(body.login);
-  const login = await getLoginPage();
+  const login = await saveLoginPage(body.login);
   await logActivity({
     adminUserId: admin.id,
     action: "CONTENT_UPDATE",

@@ -29,8 +29,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "Missing content" }, { status: 400 });
   }
 
-  await savePricingPageContent(body.content);
-  const content = await getPricingPageContent();
+  const content = await savePricingPageContent(body.content);
   await logActivity({
     adminUserId: admin.id,
     action: "CONTENT_UPDATE",

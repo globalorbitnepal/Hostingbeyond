@@ -7,7 +7,7 @@ import {
   type StoredPageSeo,
 } from "@/lib/orbit/page-seo";
 import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 export async function GET() {
   const admin = await requireOrbitAdmin();
@@ -65,6 +65,8 @@ export async function PUT(request: Request) {
     });
   }
 
+  revalidateTag("orbit-content");
+  revalidatePath("/", "layout");
   revalidatePath(entry.path);
   return NextResponse.json({ ok: true, seo });
 }

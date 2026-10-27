@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { OrbitImageField } from "@/components/orbit/image-field";
 import type { CmsSiteSettings } from "@/lib/orbit/defaults";
+import { readResponseError } from "@/lib/orbit/read-response-error";
 
 export default function OrbitSettingsPage() {
   const [settings, setSettings] = useState<CmsSiteSettings | null>(null);
@@ -24,11 +25,17 @@ export default function OrbitSettingsPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ settings }),
     });
-    setStatus(res.ok ? "Settings saved" : "Save failed");
+    if (!res.ok) {
+      const parsed = await readResponseError(res, "Save failed");
+      setStatus(parsed.text);
+      return;
+    }
+    const json = (await res.json()) as { settings?: CmsSiteSettings };
+    if (json.settings) setSettings(json.settings);
+    setStatus("Settings saved — live on the public site");
   }
 
-  if (!settings)
-    return <p className="text-sm text-slate-500">Loading…</p>;
+  if (!settings) return <p className="text-sm text-slate-500">Loading…</p>;
 
   return (
     <div className="space-y-6">

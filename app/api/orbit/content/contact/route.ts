@@ -28,7 +28,6 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "Missing content" }, { status: 400 });
   }
 
-  await saveContactPageContent(body.content);
-  const content = await getContactPageContent();
+  const content = await saveContactPageContent(body.content);
   return NextResponse.json({ ok: true, content });
 }

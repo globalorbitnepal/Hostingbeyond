@@ -5,6 +5,8 @@ import { routes } from "@/config/routes";
 import { buildMetadata } from "@/lib/metadata";
 import { getHomeSections, getSiteSettings } from "@/lib/orbit/content";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = buildMetadata({
   title: "Domains cart — HostingBeyond",
   description:

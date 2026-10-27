@@ -30,7 +30,6 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "Missing content" }, { status: 400 });
   }
 
-  await saveDomainTransferPageContent(body.content);
-  const content = await getDomainTransferPageContent();
+  const content = await saveDomainTransferPageContent(body.content);
   return NextResponse.json({ ok: true, content });
 }

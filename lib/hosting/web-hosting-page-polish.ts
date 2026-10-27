@@ -13,7 +13,7 @@ function polishFeatureLine(line: string): string {
     .replace(/^(\d+) GB RAM /i, "Up to $1 GB memory (shared) ");
 }
 
-/** Copy/plan tweaks applied only on /web-hosting — does not affect home or other products. */
+/** Checkout URLs stay canonical. Orbit copy is not overwritten when present. */
 export function polishWebHostingPlans(
   content: CmsHostingPlansContent,
 ): CmsHostingPlansContent {
@@ -26,9 +26,6 @@ export function polishWebHostingPlans(
       ...plan,
       ctaLabel: plan.ctaLabel?.trim() ? plan.ctaLabel : "Buy now",
       ctaHref: hostingCheckoutHref("web-hosting", plan.id),
-      domainPerk: plan.domainPerk?.trim()
-        ? "Free domain for 1st year on eligible annual plans"
-        : plan.domainPerk,
       features: plan.features.map(polishFeatureLine),
     })),
   };
@@ -40,19 +37,20 @@ export function polishWebHostingPageContent(
   const wordpressPath = `${routes.hosting}/wordpress`;
   return {
     ...page,
-    wordpressCtaHref: wordpressPath,
-    closingCtaHref: routes.getStarted,
-    features: page.features.map((f) =>
-      f.id === "domain"
-        ? {
-            ...f,
-            title: "Free domain on eligible plans",
-            description:
-              "Free domain for the 1st year on eligible annual plans when you register a new domain with HostingBeyond.",
-          }
-        : f,
-    ),
+    wordpressCtaHref: page.wordpressCtaHref?.trim() || wordpressPath,
+    closingCtaHref: page.closingCtaHref?.trim() || routes.getStarted,
+    features: page.features.map((f) => {
+      if (f.id !== "domain") return f;
+      return {
+        ...f,
+        title: f.title?.trim() || "Free domain on eligible plans",
+        description:
+          f.description?.trim() ||
+          "Free domain for the 1st year on eligible annual plans when you register a new domain with HostingBeyond.",
+      };
+    }),
     faqs: page.faqs.map((faq) => {
+      if (faq.answer?.trim()) return faq;
       if (faq.id === "refund") {
         return {
           ...faq,

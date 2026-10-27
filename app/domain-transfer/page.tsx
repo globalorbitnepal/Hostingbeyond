@@ -18,6 +18,8 @@ import {
 
 const PATH = routes.domainTransfer;
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
   const { transfer } = await getDomainContent();
   return buildDomainPageMetadata(transfer, PATH);

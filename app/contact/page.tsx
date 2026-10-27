@@ -21,6 +21,8 @@ import { breadcrumbJsonLd } from "@/lib/blog/seo";
 import { buildMetadata } from "@/lib/metadata";
 import { getContactPageContent, getSiteSettings } from "@/lib/orbit/content";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getContactPageContent();
   return buildMetadata({

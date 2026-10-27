@@ -28,12 +28,12 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "Missing settings" }, { status: 400 });
   }
 
-  await saveSiteSettings(body.settings);
+  const settings = await saveSiteSettings(body.settings);
   await logActivity({
     adminUserId: admin.id,
     action: "SETTINGS_UPDATE",
     resource: "site-settings",
   });
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, settings });
 }

@@ -29,8 +29,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "Missing content" }, { status: 400 });
   }
 
-  await saveBeyondAiPageContent(body.content);
-  const content = await getBeyondAiPageContent();
+  const content = await saveBeyondAiPageContent(body.content);
   await logActivity({
     adminUserId: admin.id,
     action: "CONTENT_UPDATE",

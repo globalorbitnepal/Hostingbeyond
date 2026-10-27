@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { orbitPageLinks } from "@/lib/orbit/page-editor-links";
+
 type PageRow = {
   id: string;
   slug: string;
@@ -44,41 +46,44 @@ export default function OrbitPagesPage() {
             </tr>
           </thead>
           <tbody>
-            {pages.map((page) => (
-              <tr key={page.id} className="border-t border-slate-200">
-                <td className="px-4 py-3">{page.title}</td>
-                <td className="px-4 py-3 text-slate-500">
-                  /{page.slug === "home" ? "" : page.slug}
-                </td>
-                <td className="px-4 py-3">
-                  {page.isPublished && page.isVisible ? "Published" : "Hidden"}
-                </td>
-                <td className="px-4 py-3 text-slate-500">
-                  {new Date(page.updatedAt).toLocaleString()}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex gap-2">
-                    <Link
-                      href="/orbit/content"
-                      className="text-[var(--hb-blue)]"
-                    >
-                      Edit
-                    </Link>
-                    <a
-                      href="/"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-slate-500"
-                    >
-                      Preview
-                    </a>
-                    <Link href="/orbit/seo" className="text-slate-500">
-                      SEO
-                    </Link>
-                  </div>
-                </td>
-              </tr>
-            ))}
+            {pages.map((page) => {
+              const links = orbitPageLinks(page.slug);
+              return (
+                <tr key={page.id} className="border-t border-slate-200">
+                  <td className="px-4 py-3">{page.title}</td>
+                  <td className="px-4 py-3 text-slate-500">{links.preview}</td>
+                  <td className="px-4 py-3">
+                    {page.isPublished && page.isVisible
+                      ? "Published"
+                      : "Hidden"}
+                  </td>
+                  <td className="px-4 py-3 text-slate-500">
+                    {new Date(page.updatedAt).toLocaleString()}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex gap-2">
+                      <Link
+                        href={links.editor}
+                        className="text-[var(--hb-blue)]"
+                      >
+                        Edit
+                      </Link>
+                      <a
+                        href={links.preview}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-slate-500"
+                      >
+                        Preview
+                      </a>
+                      <Link href="/orbit/seo" className="text-slate-500">
+                        SEO
+                      </Link>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

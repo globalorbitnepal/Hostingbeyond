@@ -9,6 +9,8 @@ import {
   getSiteSettings,
 } from "@/lib/orbit/content";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
   return buildPublicPageMetadata("beyond-ai", "/beyond-ai", {
     title: "Beyond AI — AI Website Builder & Hosting",

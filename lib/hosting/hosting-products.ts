@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 import { prisma } from "@/lib/prisma";
 
@@ -58,6 +58,7 @@ export type HostingPlanUpdateInput = {
 
 function revalidateHostingProducts() {
   revalidateTag(HOSTING_PRODUCTS_TAG);
+  revalidatePath("/", "layout");
 }
 
 export async function listHostingProductsForAdmin() {

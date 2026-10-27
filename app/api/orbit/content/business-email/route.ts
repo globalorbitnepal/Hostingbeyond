@@ -30,7 +30,6 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "Missing content" }, { status: 400 });
   }
 
-  await saveBusinessEmailPageContent(body.content);
-  const content = await getBusinessEmailPageContent();
+  const content = await saveBusinessEmailPageContent(body.content);
   return NextResponse.json({ ok: true, content });
 }

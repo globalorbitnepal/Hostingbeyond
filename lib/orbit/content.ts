@@ -124,6 +124,8 @@ const CMS_REVALIDATE = 300;
 
 function revalidateContent() {
   revalidateTag(CMS_TAG);
+  // Header, footer, and every CMS-backed route share this layout tree.
+  revalidatePath("/", "layout");
 }
 
 /**
@@ -155,15 +157,17 @@ export const getSiteSettings = cache(async (): Promise<CmsSiteSettings> => {
 });
 
 export async function saveSiteSettings(data: CmsSiteSettings) {
-  const row = await prisma.siteSettings.upsert({
+  const normalized: CmsSiteSettings = { ...defaultSiteSettings(), ...data };
+  await prisma.siteSettings.upsert({
     where: { id: "default" },
-    create: { id: "default", data },
-    update: { data },
+    create: { id: "default", data: normalized },
+    update: { data: normalized },
   });
   revalidateContent();
   revalidatePath("/");
   revalidatePath("/orbit/content");
-  return row;
+  revalidatePath("/orbit/settings");
+  return normalized;
 }
 
 const readHomeSections = nextCache(
@@ -188,7 +192,7 @@ export const getHomeSections = cache(async (): Promise<CmsHomeSections> => {
 
 export async function saveHomeSections(sections: CmsHomeSections) {
   const normalized = mergeHomeSections(sections);
-  const row = await prisma.pageContent.upsert({
+  await prisma.pageContent.upsert({
     where: { slug: "home" },
     create: {
       slug: "home",
@@ -207,7 +211,7 @@ export async function saveHomeSections(sections: CmsHomeSections) {
   revalidatePath("/");
   revalidatePath("/pricing");
   revalidatePath("/orbit/content");
-  return row;
+  return normalized;
 }
 
 const readLoginPage = nextCache(
@@ -232,7 +236,7 @@ export const getLoginPage = cache(async (): Promise<CmsLoginPage> => {
 
 export async function saveLoginPage(data: CmsLoginPage) {
   const normalized = mergeLoginPage(data);
-  const row = await prisma.pageContent.upsert({
+  await prisma.pageContent.upsert({
     where: { slug: "login" },
     create: {
       slug: "login",
@@ -250,7 +254,7 @@ export async function saveLoginPage(data: CmsLoginPage) {
   revalidateContent();
   revalidatePath("/");
   revalidatePath("/login");
-  return row;
+  return normalized;
 }
 
 const readDomainContent = nextCache(
@@ -611,7 +615,7 @@ export async function saveDomainTransferPageContent(
   content: CmsDomainTransferPageContent,
 ) {
   const normalized = mergeDomainTransferPageContent(content);
-  const row = await prisma.pageContent.upsert({
+  await prisma.pageContent.upsert({
     where: { slug: DOMAIN_TRANSFER_PAGE_SLUG },
     create: {
       slug: DOMAIN_TRANSFER_PAGE_SLUG,
@@ -632,14 +636,14 @@ export async function saveDomainTransferPageContent(
   revalidateContent();
   revalidatePath(routes.domainTransfer);
   revalidatePath("/orbit/domain-transfer");
-  return row;
+  return normalized;
 }
 
 export async function saveWebsiteMigrationPageContent(
   content: CmsWebsiteMigrationPageContent,
 ) {
   const normalized = mergeWebsiteMigrationPageContent(content);
-  const row = await prisma.pageContent.upsert({
+  await prisma.pageContent.upsert({
     where: { slug: WEBSITE_MIGRATION_PAGE_SLUG },
     create: {
       slug: WEBSITE_MIGRATION_PAGE_SLUG,
@@ -660,14 +664,14 @@ export async function saveWebsiteMigrationPageContent(
   revalidateContent();
   revalidatePath(routes.websiteMigration);
   revalidatePath("/orbit/website-migration");
-  return row;
+  return normalized;
 }
 
 export async function saveCloudHostingPageContent(
   content: CmsCloudHostingPageContent,
 ) {
   const normalized = mergeCloudHostingPageContent(content);
-  const row = await prisma.pageContent.upsert({
+  await prisma.pageContent.upsert({
     where: { slug: CLOUD_PAGE_SLUG },
     create: {
       slug: CLOUD_PAGE_SLUG,
@@ -689,12 +693,12 @@ export async function saveCloudHostingPageContent(
   revalidatePath(routes.cloud);
   revalidatePath("/cloud");
   revalidatePath("/orbit/cloud");
-  return row;
+  return normalized;
 }
 
 export async function saveAboutPageContent(content: CmsAboutPageContent) {
   const normalized = mergeAboutPageContent(content);
-  const row = await prisma.pageContent.upsert({
+  await prisma.pageContent.upsert({
     where: { slug: ABOUT_PAGE_SLUG },
     create: {
       slug: ABOUT_PAGE_SLUG,
@@ -720,12 +724,12 @@ export async function saveAboutPageContent(content: CmsAboutPageContent) {
   revalidateContent();
   revalidatePath(routes.about);
   revalidatePath("/orbit/about");
-  return row;
+  return normalized;
 }
 
 export async function saveContactPageContent(content: CmsContactPageContent) {
   const normalized = mergeContactPageContent(content);
-  const row = await prisma.pageContent.upsert({
+  await prisma.pageContent.upsert({
     where: { slug: CONTACT_PAGE_SLUG },
     create: {
       slug: CONTACT_PAGE_SLUG,
@@ -751,14 +755,14 @@ export async function saveContactPageContent(content: CmsContactPageContent) {
   revalidateContent();
   revalidatePath(routes.contact);
   revalidatePath("/orbit/contact");
-  return row;
+  return normalized;
 }
 
 export async function saveUpdatesHubPageContent(
   content: CmsUpdatesHubPageContent,
 ) {
   const normalized = mergeUpdatesHubPageContent(content);
-  const row = await prisma.pageContent.upsert({
+  await prisma.pageContent.upsert({
     where: { slug: UPDATES_HUB_PAGE_SLUG },
     create: {
       slug: UPDATES_HUB_PAGE_SLUG,
@@ -784,12 +788,12 @@ export async function saveUpdatesHubPageContent(
   revalidateContent();
   revalidatePath("/resources/updates");
   revalidatePath("/orbit/blog/updates-hub");
-  return row;
+  return normalized;
 }
 
 export async function saveTipsHubPageContent(content: CmsTipsHubPageContent) {
   const normalized = mergeTipsHubPageContent(content);
-  const row = await prisma.pageContent.upsert({
+  await prisma.pageContent.upsert({
     where: { slug: TIPS_HUB_PAGE_SLUG },
     create: {
       slug: TIPS_HUB_PAGE_SLUG,
@@ -815,12 +819,12 @@ export async function saveTipsHubPageContent(content: CmsTipsHubPageContent) {
   revalidateContent();
   revalidatePath("/resources/tips");
   revalidatePath("/orbit/blog/tips-hub");
-  return row;
+  return normalized;
 }
 
 export async function saveHostingPageContent(content: CmsHostingPageContent) {
   const normalized = mergeHostingPageContent(content);
-  const row = await prisma.pageContent.upsert({
+  await prisma.pageContent.upsert({
     where: { slug: HOSTING_PAGE_SLUG },
     create: {
       slug: HOSTING_PAGE_SLUG,
@@ -842,14 +846,14 @@ export async function saveHostingPageContent(content: CmsHostingPageContent) {
   revalidatePath(routes.hosting);
   revalidatePath("/hosting");
   revalidatePath("/orbit/hosting");
-  return row;
+  return normalized;
 }
 
 export async function saveBusinessEmailPageContent(
   content: CmsBusinessEmailPageContent,
 ) {
   const normalized = mergeBusinessEmailPageContent(content);
-  const row = await prisma.pageContent.upsert({
+  await prisma.pageContent.upsert({
     where: { slug: BUSINESS_EMAIL_PAGE_SLUG },
     create: {
       slug: BUSINESS_EMAIL_PAGE_SLUG,
@@ -868,12 +872,12 @@ export async function saveBusinessEmailPageContent(
   revalidateContent();
   revalidatePath(routes.businessEmail);
   revalidatePath("/orbit/business-email");
-  return row;
+  return normalized;
 }
 
 export async function saveBeyondAiPageContent(content: CmsBeyondAiPageContent) {
   const normalized = mergeBeyondAiPageContent(content);
-  const row = await prisma.pageContent.upsert({
+  await prisma.pageContent.upsert({
     where: { slug: BEYOND_AI_PAGE_SLUG },
     create: {
       slug: BEYOND_AI_PAGE_SLUG,
@@ -892,12 +896,12 @@ export async function saveBeyondAiPageContent(content: CmsBeyondAiPageContent) {
   revalidateContent();
   revalidatePath(routes.beyondAi);
   revalidatePath("/orbit/beyond-ai");
-  return row;
+  return normalized;
 }
 
 export async function savePricingPageContent(content: CmsPricingPageContent) {
   const normalized = mergePricingPageContent(content);
-  const row = await prisma.pageContent.upsert({
+  await prisma.pageContent.upsert({
     where: { slug: PRICING_SLUG },
     create: {
       slug: PRICING_SLUG,
@@ -916,7 +920,7 @@ export async function savePricingPageContent(content: CmsPricingPageContent) {
   revalidateContent();
   revalidatePath(routes.pricing);
   revalidatePath("/orbit/pricing");
-  return row;
+  return normalized;
 }
 
 function domainRowSeo(single: DomainContent["single"]): StoredPageSeo {
@@ -966,7 +970,7 @@ export async function buildPublicPageMetadata(
 export async function saveDomainContent(content: DomainContent) {
   const normalized = mergeDomainContent(content);
   const seo = domainRowSeo(normalized.single);
-  const row = await prisma.pageContent.upsert({
+  await prisma.pageContent.upsert({
     where: { slug: DOMAIN_SLUG },
     create: {
       slug: DOMAIN_SLUG,
@@ -983,7 +987,7 @@ export async function saveDomainContent(content: DomainContent) {
   revalidatePath(routes.bulkDomainSearch);
   revalidatePath(routes.domainTransfer);
   revalidatePath("/orbit/domains");
-  return row;
+  return normalized;
 }
 
 export async function listPages() {
