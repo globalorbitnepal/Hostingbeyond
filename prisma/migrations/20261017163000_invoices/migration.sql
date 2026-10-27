@@ -1,26 +1,32 @@
--- CreateEnum
-CREATE TYPE "InvoiceStatus" AS ENUM ('DRAFT', 'ISSUED', 'PAID', 'VOID');
+DO $$ BEGIN
+  CREATE TYPE "InvoiceStatus" AS ENUM ('DRAFT', 'ISSUED', 'PAID', 'VOID');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
--- CreateEnum
-CREATE TYPE "InvoiceTaxTreatment" AS ENUM ('NONE', 'STORED_ON_ORDER', 'VAT_INCLUSIVE');
+DO $$ BEGIN
+  CREATE TYPE "InvoiceTaxTreatment" AS ENUM ('NONE', 'STORED_ON_ORDER', 'VAT_INCLUSIVE');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
--- CreateEnum
-CREATE TYPE "InvoiceSourceType" AS ENUM ('DOMAIN_ORDER');
+DO $$ BEGIN
+  CREATE TYPE "InvoiceSourceType" AS ENUM ('DOMAIN_ORDER');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
--- AlterEnum
-ALTER TYPE "ActivityAction" ADD VALUE 'INVOICE_VOID';
-ALTER TYPE "ActivityAction" ADD VALUE 'INVOICE_CREDIT_NOTE';
+ALTER TYPE "ActivityAction" ADD VALUE IF NOT EXISTS 'INVOICE_VOID';
+ALTER TYPE "ActivityAction" ADD VALUE IF NOT EXISTS 'INVOICE_CREDIT_NOTE';
 
--- CreateTable
-CREATE TABLE "InvoiceSequence" (
+CREATE TABLE IF NOT EXISTS "InvoiceSequence" (
     "year" INTEGER NOT NULL,
     "lastValue" INTEGER NOT NULL DEFAULT 0,
 
     CONSTRAINT "InvoiceSequence_pkey" PRIMARY KEY ("year")
 );
 
--- CreateTable
-CREATE TABLE "Invoice" (
+CREATE TABLE IF NOT EXISTS "Invoice" (
     "id" TEXT NOT NULL,
     "publicId" TEXT NOT NULL,
     "invoiceNumber" TEXT NOT NULL,
@@ -50,8 +56,7 @@ CREATE TABLE "Invoice" (
     CONSTRAINT "Invoice_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
-CREATE TABLE "InvoiceLineItem" (
+CREATE TABLE IF NOT EXISTS "InvoiceLineItem" (
     "id" TEXT NOT NULL,
     "invoiceId" TEXT NOT NULL,
     "description" TEXT NOT NULL,
@@ -67,8 +72,7 @@ CREATE TABLE "InvoiceLineItem" (
     CONSTRAINT "InvoiceLineItem_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
-CREATE TABLE "CreditNote" (
+CREATE TABLE IF NOT EXISTS "CreditNote" (
     "id" TEXT NOT NULL,
     "publicId" TEXT NOT NULL,
     "creditNoteNumber" TEXT NOT NULL,
@@ -86,56 +90,46 @@ CREATE TABLE "CreditNote" (
     CONSTRAINT "CreditNote_pkey" PRIMARY KEY ("id")
 );
 
--- CreateIndex
-CREATE UNIQUE INDEX "Invoice_publicId_key" ON "Invoice"("publicId");
+CREATE UNIQUE INDEX IF NOT EXISTS "Invoice_publicId_key" ON "Invoice"("publicId");
+CREATE UNIQUE INDEX IF NOT EXISTS "Invoice_invoiceNumber_key" ON "Invoice"("invoiceNumber");
+CREATE UNIQUE INDEX IF NOT EXISTS "Invoice_domainOrderId_key" ON "Invoice"("domainOrderId");
+CREATE UNIQUE INDEX IF NOT EXISTS "Invoice_sourceType_sourceId_key" ON "Invoice"("sourceType", "sourceId");
+CREATE INDEX IF NOT EXISTS "Invoice_userId_idx" ON "Invoice"("userId");
+CREATE INDEX IF NOT EXISTS "Invoice_status_idx" ON "Invoice"("status");
+CREATE INDEX IF NOT EXISTS "Invoice_issuedAt_idx" ON "Invoice"("issuedAt");
+CREATE INDEX IF NOT EXISTS "Invoice_invoiceNumber_idx" ON "Invoice"("invoiceNumber");
+CREATE INDEX IF NOT EXISTS "InvoiceLineItem_invoiceId_idx" ON "InvoiceLineItem"("invoiceId");
+CREATE UNIQUE INDEX IF NOT EXISTS "CreditNote_publicId_key" ON "CreditNote"("publicId");
+CREATE UNIQUE INDEX IF NOT EXISTS "CreditNote_creditNoteNumber_key" ON "CreditNote"("creditNoteNumber");
+CREATE INDEX IF NOT EXISTS "CreditNote_invoiceId_idx" ON "CreditNote"("invoiceId");
+CREATE INDEX IF NOT EXISTS "CreditNote_userId_idx" ON "CreditNote"("userId");
 
--- CreateIndex
-CREATE UNIQUE INDEX "Invoice_invoiceNumber_key" ON "Invoice"("invoiceNumber");
+DO $$ BEGIN
+  ALTER TABLE "Invoice" ADD CONSTRAINT "Invoice_userId_fkey" FOREIGN KEY ("userId") REFERENCES "CustomerUser"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
--- CreateIndex
-CREATE UNIQUE INDEX "Invoice_domainOrderId_key" ON "Invoice"("domainOrderId");
+DO $$ BEGIN
+  ALTER TABLE "Invoice" ADD CONSTRAINT "Invoice_domainOrderId_fkey" FOREIGN KEY ("domainOrderId") REFERENCES "DomainOrder"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
--- CreateIndex
-CREATE UNIQUE INDEX "Invoice_sourceType_sourceId_key" ON "Invoice"("sourceType", "sourceId");
+DO $$ BEGIN
+  ALTER TABLE "InvoiceLineItem" ADD CONSTRAINT "InvoiceLineItem_invoiceId_fkey" FOREIGN KEY ("invoiceId") REFERENCES "Invoice"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
--- CreateIndex
-CREATE INDEX "Invoice_userId_idx" ON "Invoice"("userId");
+DO $$ BEGIN
+  ALTER TABLE "CreditNote" ADD CONSTRAINT "CreditNote_invoiceId_fkey" FOREIGN KEY ("invoiceId") REFERENCES "Invoice"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
--- CreateIndex
-CREATE INDEX "Invoice_status_idx" ON "Invoice"("status");
-
--- CreateIndex
-CREATE INDEX "Invoice_issuedAt_idx" ON "Invoice"("issuedAt");
-
--- CreateIndex
-CREATE INDEX "Invoice_invoiceNumber_idx" ON "Invoice"("invoiceNumber");
-
--- CreateIndex
-CREATE INDEX "InvoiceLineItem_invoiceId_idx" ON "InvoiceLineItem"("invoiceId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "CreditNote_publicId_key" ON "CreditNote"("publicId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "CreditNote_creditNoteNumber_key" ON "CreditNote"("creditNoteNumber");
-
--- CreateIndex
-CREATE INDEX "CreditNote_invoiceId_idx" ON "CreditNote"("invoiceId");
-
--- CreateIndex
-CREATE INDEX "CreditNote_userId_idx" ON "CreditNote"("userId");
-
--- AddForeignKey
-ALTER TABLE "Invoice" ADD CONSTRAINT "Invoice_userId_fkey" FOREIGN KEY ("userId") REFERENCES "CustomerUser"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Invoice" ADD CONSTRAINT "Invoice_domainOrderId_fkey" FOREIGN KEY ("domainOrderId") REFERENCES "DomainOrder"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "InvoiceLineItem" ADD CONSTRAINT "InvoiceLineItem_invoiceId_fkey" FOREIGN KEY ("invoiceId") REFERENCES "Invoice"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "CreditNote" ADD CONSTRAINT "CreditNote_invoiceId_fkey" FOREIGN KEY ("invoiceId") REFERENCES "Invoice"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "CreditNote" ADD CONSTRAINT "CreditNote_userId_fkey" FOREIGN KEY ("userId") REFERENCES "CustomerUser"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+  ALTER TABLE "CreditNote" ADD CONSTRAINT "CreditNote_userId_fkey" FOREIGN KEY ("userId") REFERENCES "CustomerUser"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;

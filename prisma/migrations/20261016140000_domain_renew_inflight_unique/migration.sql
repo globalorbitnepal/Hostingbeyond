@@ -20,7 +20,7 @@ BEGIN
   END IF;
 END $$;
 
-CREATE UNIQUE INDEX "DomainOrder_user_domain_renew_inflight_key"
+CREATE UNIQUE INDEX IF NOT EXISTS "DomainOrder_user_domain_renew_inflight_key"
 ON "DomainOrder" ("userId", (LOWER("domain")))
 WHERE "userId" IS NOT NULL
   AND "orderType" = 'renew'

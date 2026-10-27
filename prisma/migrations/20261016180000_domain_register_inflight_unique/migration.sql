@@ -19,7 +19,7 @@ BEGIN
   END IF;
 END $$;
 
-CREATE UNIQUE INDEX "DomainOrder_domain_register_inflight_key"
+CREATE UNIQUE INDEX IF NOT EXISTS "DomainOrder_domain_register_inflight_key"
 ON "DomainOrder" ((LOWER("domain")))
 WHERE "orderType" = 'register'
   AND status IN ('PROCESSING', 'REGISTERING', 'RECONCILIATION_REQUIRED');

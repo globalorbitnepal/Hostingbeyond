@@ -24,7 +24,7 @@ BEGIN
   END IF;
 END $$;
 
-CREATE UNIQUE INDEX "DomainTransferRecord_user_domain_inflight_key"
+CREATE UNIQUE INDEX IF NOT EXISTS "DomainTransferRecord_user_domain_inflight_key"
 ON "DomainTransferRecord" ("userId", (LOWER("domain")))
 WHERE "userId" IS NOT NULL
   AND status IN (
