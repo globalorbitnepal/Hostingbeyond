@@ -76,14 +76,6 @@ function formatGrossSummary(m: OperationGrossMetrics | undefined): string {
   return parts.length ? parts.join(" · ") : "N/A";
 }
 
-type SupplierSyncMeta = {
-  status: string | null;
-  syncedAt: string | null;
-  tldsReceived: number | null;
-  tldsUpdated: number | null;
-  tldsFailed: number | null;
-};
-
 type NameSiloSyncMeta = {
   status: "SUCCESS" | "FAILED" | null;
   syncedAt: string | null;
@@ -117,9 +109,6 @@ function formatSyncTime(iso: string | null) {
 
 export function OrbitDomainPricingAdmin() {
   const [rows, setRows] = useState<TldRow[]>([]);
-  const [supplierSync, setSupplierSync] = useState<SupplierSyncMeta | null>(
-    null,
-  );
   const [namesiloSync, setNamesiloSync] = useState<NameSiloSyncMeta | null>(
     null,
   );
@@ -129,7 +118,6 @@ export function OrbitDomainPricingAdmin() {
   const [tldCount, setTldCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
-  const [refreshing, setRefreshing] = useState(false);
   const [namesiloRefreshing, setNamesiloRefreshing] = useState(false);
   const [editing, setEditing] = useState<TldRow | null>(null);
   const [draft, setDraft] = useState<{
@@ -188,13 +176,11 @@ export function OrbitDomainPricingAdmin() {
     const res = await fetch("/api/orbit/domain-pricing", { cache: "no-store" });
     const json = (await res.json()) as {
       rows?: TldRow[];
-      supplierSync?: SupplierSyncMeta;
       namesiloSync?: NameSiloSyncMeta;
       namesiloLive?: NameSiloLiveMeta;
       tldCount?: number;
     };
     setRows(json.rows ?? []);
-    setSupplierSync(json.supplierSync ?? null);
     setNamesiloSync(json.namesiloSync ?? null);
     setNamesiloLive(json.namesiloLive ?? null);
     setTldCount(json.tldCount ?? json.rows?.length ?? 0);
@@ -274,41 +260,13 @@ export function OrbitDomainPricingAdmin() {
       renewYears: ren,
       enabled: row.enabled,
       retailPriceLocked: row.retailPriceLocked,
-      lifecycleProvider: row.lifecycleProvider ?? "",
+      lifecycleProvider: row.lifecycleProvider || "namesilo",
     });
   }
 
   function closeEdit() {
     setEditing(null);
     setDraft(null);
-  }
-
-  async function refreshLegacyDnaCatalogue() {
-    setRefreshing(true);
-    setMessage(
-      "Refreshing legacy DNA catalogue (does not update NameSilo supplier costs)…",
-    );
-    const res = await fetch(
-      "/api/orbit/domain-pricing?action=refresh-supplier",
-      { method: "POST" },
-    );
-    const json = (await res.json()) as {
-      status?: string;
-      tldsUpdated?: number;
-      tldsReceived?: number;
-      tldsFailed?: number;
-      syncedAt?: string;
-      error?: string;
-    };
-    if (!res.ok) {
-      setMessage(json.error ?? "Legacy DNA catalogue refresh failed.");
-    } else {
-      setMessage(
-        `Legacy DNA catalogue ${json.status ?? "done"}: ${json.tldsUpdated ?? 0} TLDs updated (${json.tldsReceived ?? 0} received, ${json.tldsFailed ?? 0} failed). This is not the NameSilo pricing source. Last DNA sync: ${formatSyncTime(json.syncedAt ?? null)}`,
-      );
-    }
-    setRefreshing(false);
-    void load();
   }
 
   async function previewNameSiloSync() {
@@ -557,12 +515,10 @@ export function OrbitDomainPricingAdmin() {
             Domain pricing
           </h1>
           <p className="mt-1 text-sm text-slate-600">
-            Authoritative supplier costs are verified, fresh NameSilo account
-            prices in USD. Gross profit is retail minus that NameSilo cost — not
-            net profit. Taxes, payment-processing charges, and registry fees not
-            in the NameSilo price are excluded. Missing, stale, unverified, or
-            currency-mismatched NameSilo costs show N/A and never fall back to
-            DNA rates. No live FX conversion is applied.
+            One supplier: NameSilo. Table costs come from your NameSilo account
+            (getPrices). Gross profit is retail minus that NameSilo cost.
+            Missing or unverified NameSilo costs show N/A — nothing is invented.
+            Customer retail is edited separately.
           </p>
           <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-950">
             NameSilo supplier synchronization updates supplier costs only.
@@ -580,15 +536,6 @@ export function OrbitDomainPricingAdmin() {
           </p>
           <p className="mt-2 text-xs font-semibold text-slate-500">
             TLD catalogue: {tldCount} extensions in Orbit
-            {supplierSync?.status ? (
-              <>
-                {" "}
-                · Legacy DNA catalogue: {formatSyncTime(
-                  supplierSync.syncedAt,
-                )}{" "}
-                ({supplierSync.status})
-              </>
-            ) : null}
             {namesiloSync?.status ? (
               <>
                 {" "}
@@ -628,15 +575,6 @@ export function OrbitDomainPricingAdmin() {
             className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 disabled:opacity-70"
           >
             Export worklist CSV
-          </button>
-          <button
-            type="button"
-            disabled={refreshing}
-            onClick={() => void refreshLegacyDnaCatalogue()}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 disabled:opacity-70"
-          >
-            {refreshing ? <Loader2 className="size-4 animate-spin" /> : null}
-            Legacy DNA catalogue refresh
           </button>
         </div>
       </div>
@@ -844,8 +782,7 @@ export function OrbitDomainPricingAdmin() {
                   <th className="px-3 py-3">Renew GP / margin / markup</th>
                   <th className="px-3 py-3">Transfer GP / margin / markup</th>
                   <th className="px-3 py-3">Retail lock</th>
-                  <th className="px-3 py-3">Lifecycle registrar</th>
-                  <th className="px-3 py-3">Legacy DNA (not used)</th>
+                  <th className="px-3 py-3">Registrar</th>
                   <th className="px-3 py-3" />
                 </tr>
               </thead>
@@ -917,14 +854,11 @@ export function OrbitDomainPricingAdmin() {
                       {row.retailPriceLocked ? "Locked" : "Unlocked"}
                     </td>
                     <td className="px-3 py-2 text-xs text-slate-600">
-                      {row.lifecycleProvider ??
-                        (row.liveOnly
-                          ? "NameSilo list (not in catalogue)"
-                          : "unset")}
-                    </td>
-                    <td className="px-3 py-2 text-xs text-slate-400">
-                      {money(row.supplierRegister)} / {money(row.supplierRenew)}{" "}
-                      / {money(row.supplierTransfer)}
+                      {row.liveOnly
+                        ? "NameSilo (API list)"
+                        : row.lifecycleProvider === "domain-name-api"
+                          ? "Existing (do not migrate here)"
+                          : "NameSilo"}
                     </td>
                     <td className="px-3 py-2">
                       <button
@@ -1011,14 +945,6 @@ export function OrbitDomainPricingAdmin() {
                   </dd>
                 </div>
               </dl>
-              <p className="mt-3 text-[10px] font-semibold tracking-wide text-slate-400 uppercase">
-                Legacy DNA catalogue (not used for NameSilo metrics)
-              </p>
-              <p className="text-xs text-slate-500">
-                {money(editing.supplierRegister)} /{" "}
-                {money(editing.supplierRenew)} /{" "}
-                {money(editing.supplierTransfer)}
-              </p>
             </section>
             <section className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
               <h3 className="text-xs font-bold text-slate-500 uppercase">
@@ -1137,11 +1063,12 @@ export function OrbitDomainPricingAdmin() {
                       })
                     }
                   >
-                    <option value="">
-                      Unset (NameSilo when API key is set)
-                    </option>
-                    <option value="namesilo">NameSilo (after approval)</option>
-                    <option value="domain-name-api">DNA explicit</option>
+                    <option value="namesilo">NameSilo</option>
+                    {draft.lifecycleProvider === "domain-name-api" ? (
+                      <option value="domain-name-api">
+                        Existing registrar (keep until this TLD is migrated)
+                      </option>
+                    ) : null}
                   </select>
                 </label>
                 <label className="flex items-center gap-2 text-sm font-semibold">

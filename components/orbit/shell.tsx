@@ -67,7 +67,7 @@ const nav = [
   },
   {
     href: "/orbit/domain-transfer",
-    label: "Domain Transfer",
+    label: "Transfer page copy",
     icon: ArrowLeftRight,
   },
   { href: "/orbit/navigation", label: "Navigation", icon: Navigation },
