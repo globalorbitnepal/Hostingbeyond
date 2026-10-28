@@ -4,11 +4,12 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Search } from "lucide-react";
 
+import { useLocale } from "@/components/locale/locale-provider";
 import { routes } from "@/config/routes";
+import { translatePhrase } from "@/lib/i18n/phrases";
 import type { DomainTldRow } from "@/lib/domains/content";
 import {
   TLD_CATEGORIES,
-  formatPrice,
   savePercent,
   type TldCategory,
 } from "@/lib/domains/tlds";
@@ -23,6 +24,8 @@ export function DomainPriceTable({
   prices: DomainTldRow[];
   footnote: string;
 }) {
+  const { formatCatalogUsd, preferences } = useLocale();
+  const tx = (value: string) => translatePhrase(preferences.language, value);
   const [filter, setFilter] = useState<Filter>("popular");
   const [term, setTerm] = useState("");
 
@@ -43,7 +46,7 @@ export function DomainPriceTable({
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div
           role="tablist"
-          aria-label="Domain categories"
+          aria-label={tx("Domain categories")}
           className="-mx-1 flex snap-x gap-1.5 overflow-x-auto px-1 pb-1"
         >
           {TLD_CATEGORIES.map((category) => {
@@ -62,7 +65,7 @@ export function DomainPriceTable({
                     : "border border-slate-200 text-slate-600 hover:border-[#c7b8ff] hover:text-[#4c1d95]",
                 )}
               >
-                {category.label}
+                {tx(category.label)}
               </button>
             );
           })}
@@ -74,18 +77,18 @@ export function DomainPriceTable({
           <input
             value={term}
             onChange={(event) => setTerm(event.target.value)}
-            placeholder="Filter extensions"
+            placeholder={tx("Filter extensions")}
             className="min-w-0 flex-1 bg-transparent text-[13.5px] font-medium text-[#1a1035] outline-none placeholder:text-slate-400"
           />
         </label>
       </div>
 
       <div className="mt-4 hidden grid-cols-[1.1fr_repeat(3,0.8fr)_auto] gap-4 border-b border-slate-200 px-4 pb-2 text-[11.5px] font-extrabold tracking-wide text-slate-500 uppercase lg:grid">
-        <span>Extension</span>
-        <span>First year</span>
-        <span>Renews at</span>
-        <span>Transfer</span>
-        <span className="text-right">Register</span>
+        <span>{tx("Extension")}</span>
+        <span>{tx("First year")}</span>
+        <span>{tx("Renews at")}</span>
+        <span>{tx("Transfer")}</span>
+        <span className="text-right">{tx("Register")}</span>
       </div>
 
       <ul className="mt-2 divide-y divide-slate-100">
@@ -116,19 +119,19 @@ export function DomainPriceTable({
 
               <div>
                 <p className="text-[11px] font-bold tracking-wide text-slate-400 uppercase lg:hidden">
-                  First year
+                  {tx("First year")}
                 </p>
                 <p className="text-[16px] font-extrabold text-[#15803d]">
-                  {formatPrice(row.register)}
+                  {formatCatalogUsd(row.register)}
                 </p>
               </div>
 
               <div>
                 <p className="text-[11px] font-bold tracking-wide text-slate-400 uppercase lg:hidden">
-                  Renews at
+                  {tx("Renews at")}
                 </p>
                 <p className="text-[14.5px] font-bold text-slate-700">
-                  {formatPrice(row.renew)}
+                  {formatCatalogUsd(row.renew)}
                   <span className="text-[11.5px] font-semibold text-slate-400">
                     /yr
                   </span>
@@ -137,10 +140,10 @@ export function DomainPriceTable({
 
               <div>
                 <p className="text-[11px] font-bold tracking-wide text-slate-400 uppercase lg:hidden">
-                  Transfer
+                  {tx("Transfer")}
                 </p>
                 <p className="text-[14.5px] font-bold text-slate-700">
-                  {formatPrice(row.transfer)}
+                  {formatCatalogUsd(row.transfer)}
                 </p>
               </div>
 

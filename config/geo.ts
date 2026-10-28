@@ -235,6 +235,17 @@ export const DEFAULT_COUNTRY = "US";
 export const DEFAULT_LANGUAGE: LanguageCode = "en";
 export const DEFAULT_CURRENCY: CurrencyCode = "USD";
 
+/** Always offered in the header, in this order. More languages are added one at a time. */
+export const ALWAYS_ON_LANGUAGES: LanguageCode[] = ["en", "hi"];
+
+export function languagesForCountry(option: {
+  languages: LanguageCode[];
+}): LanguageCode[] {
+  return Array.from(
+    new Set<LanguageCode>([...ALWAYS_ON_LANGUAGES, ...option.languages, "en"]),
+  ).filter((code) => Boolean(languages[code]));
+}
+
 export function getCountry(code: string): CountryOption {
   return (
     countryOptions.find((country) => country.code === code) ??

@@ -8,6 +8,27 @@ export type Dictionary = {
     resources: string;
     login: string;
     getStarted: string;
+    pricing: string;
+    beyondAi: string;
+    contact: string;
+    about: string;
+    solutions: string;
+    domainSearch: string;
+    bulkDomainSearch: string;
+    domainTransfer: string;
+    websiteMigration: string;
+    sharedHosting: string;
+    wordpressHosting: string;
+    resellerHosting: string;
+    cloudHosting: string;
+    vpsHosting: string;
+    blog: string;
+    expertTips: string;
+    productUpdates: string;
+    cart: string;
+  };
+  common: {
+    billedInUsd: string;
   };
   locale: {
     selectLocation: string;
@@ -68,6 +89,27 @@ const en: Dictionary = {
     resources: "Resources",
     login: "Login",
     getStarted: "GET STARTED",
+    pricing: "Pricing",
+    beyondAi: "Beyond AI",
+    contact: "Contact",
+    about: "Our Story",
+    solutions: "Solutions",
+    domainSearch: "Domain Name Search",
+    bulkDomainSearch: "Bulk Domain Search",
+    domainTransfer: "Transfer Your Domain",
+    websiteMigration: "Free Website Migration",
+    sharedHosting: "Shared Hosting",
+    wordpressHosting: "WordPress Hosting",
+    resellerHosting: "Reseller Hosting",
+    cloudHosting: "Cloud Hosting",
+    vpsHosting: "VPS Hosting",
+    blog: "Blog",
+    expertTips: "Expert Tips",
+    productUpdates: "Product Updates",
+    cart: "Cart",
+  },
+  common: {
+    billedInUsd: "Charged in USD at checkout.",
   },
   locale: {
     selectLocation: "Select location & language",
@@ -142,6 +184,7 @@ const en: Dictionary = {
 const ne: Dictionary = {
   ...en,
   nav: {
+    ...en.nav,
     domains: "डोमेन",
     businessEmail: "व्यवसायिक इमेल",
     hosting: "होस्टिङ",
@@ -223,12 +266,33 @@ const ne: Dictionary = {
 const hi: Dictionary = {
   ...en,
   nav: {
+    ...en.nav,
     domains: "डोमेन",
     businessEmail: "बिज़नेस ईमेल",
     hosting: "होस्टिंग",
     resources: "संसाधन",
     login: "लॉगिन",
     getStarted: "शुरू करें",
+    pricing: "कीमतें",
+    contact: "संपर्क",
+    about: "हमारी कहानी",
+    solutions: "समाधान",
+    domainSearch: "डोमेन नाम खोज",
+    bulkDomainSearch: "बल्क डोमेन खोज",
+    domainTransfer: "डोमेन ट्रांसफर",
+    websiteMigration: "मुफ़्त वेबसाइट माइग्रेशन",
+    sharedHosting: "शेयर्ड होस्टिंग",
+    wordpressHosting: "वर्डप्रेस होस्टिंग",
+    resellerHosting: "रीसेलर होस्टिंग",
+    cloudHosting: "क्लाउड होस्टिंग",
+    vpsHosting: "VPS होस्टिंग",
+    blog: "ब्लॉग",
+    expertTips: "विशेषज्ञ टिप्स",
+    productUpdates: "प्रॉडक्ट अपडेट",
+    cart: "कार्ट",
+  },
+  common: {
+    billedInUsd: "चेकआउट पर भुगतान USD में होगा।",
   },
   locale: {
     selectLocation: "स्थान और भाषा चुनें",
@@ -304,6 +368,7 @@ const hi: Dictionary = {
 const es: Dictionary = {
   ...en,
   nav: {
+    ...en.nav,
     domains: "Dominios",
     businessEmail: "Correo empresarial",
     hosting: "Hosting",
@@ -365,6 +430,7 @@ const es: Dictionary = {
 const fr: Dictionary = {
   ...en,
   nav: {
+    ...en.nav,
     domains: "Domaines",
     businessEmail: "E-mail pro",
     hosting: "Hébergement",
@@ -426,6 +492,7 @@ const fr: Dictionary = {
 const de: Dictionary = {
   ...en,
   nav: {
+    ...en.nav,
     domains: "Domains",
     businessEmail: "Business-E-Mail",
     hosting: "Hosting",
@@ -494,6 +561,7 @@ const dictionaries: Record<LanguageCode, Dictionary> = {
   it: {
     ...en,
     nav: {
+      ...en.nav,
       domains: "Domini",
       businessEmail: "Email aziendale",
       hosting: "Hosting",
@@ -552,6 +620,7 @@ const dictionaries: Record<LanguageCode, Dictionary> = {
   pt: {
     ...en,
     nav: {
+      ...en.nav,
       domains: "Domínios",
       businessEmail: "E-mail comercial",
       hosting: "Hospedagem",
@@ -610,6 +679,7 @@ const dictionaries: Record<LanguageCode, Dictionary> = {
   ja: {
     ...en,
     nav: {
+      ...en.nav,
       domains: "ドメイン",
       businessEmail: "ビジネスメール",
       hosting: "ホスティング",
@@ -668,6 +738,7 @@ const dictionaries: Record<LanguageCode, Dictionary> = {
   ko: {
     ...en,
     nav: {
+      ...en.nav,
       domains: "도메인",
       businessEmail: "비즈니스 이메일",
       hosting: "호스팅",
@@ -726,6 +797,7 @@ const dictionaries: Record<LanguageCode, Dictionary> = {
   zh: {
     ...en,
     nav: {
+      ...en.nav,
       domains: "域名",
       businessEmail: "企业邮箱",
       hosting: "主机托管",
@@ -783,6 +855,7 @@ const dictionaries: Record<LanguageCode, Dictionary> = {
   ar: {
     ...en,
     nav: {
+      ...en.nav,
       domains: "النطاقات",
       businessEmail: "البريد التجاري",
       hosting: "الاستضافة",

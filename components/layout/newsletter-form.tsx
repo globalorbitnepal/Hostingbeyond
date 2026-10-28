@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { ArrowRight, Lock, Mail } from "lucide-react";
 
+import { useLocale } from "@/components/locale/locale-provider";
+import { translatePhrase } from "@/lib/i18n/phrases";
+
 type Props = {
   placeholder: string;
   ctaLabel: string;
@@ -10,6 +13,7 @@ type Props = {
 };
 
 export function NewsletterForm({ placeholder, ctaLabel, privacy }: Props) {
+  const { preferences } = useLocale();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "saving" | "ok" | "error">(
     "idle",
@@ -29,15 +33,30 @@ export function NewsletterForm({ placeholder, ctaLabel, privacy }: Props) {
       const payload = (await response.json()) as { error?: string };
       if (!response.ok) {
         setStatus("error");
-        setMessage(payload.error || "Please enter a valid email.");
+        setMessage(
+          translatePhrase(
+            preferences.language,
+            payload.error || "Please enter a valid email.",
+          ),
+        );
         return;
       }
       setStatus("ok");
-      setMessage("You’re subscribed. Watch your inbox for HostingBeyond news.");
+      setMessage(
+        translatePhrase(
+          preferences.language,
+          "You’re subscribed. Watch your inbox for HostingBeyond news.",
+        ),
+      );
       setEmail("");
     } catch {
       setStatus("error");
-      setMessage("Could not subscribe right now. Please try again.");
+      setMessage(
+        translatePhrase(
+          preferences.language,
+          "Could not subscribe right now. Please try again.",
+        ),
+      );
     }
   }
 
@@ -53,8 +72,8 @@ export function NewsletterForm({ placeholder, ctaLabel, privacy }: Props) {
           required
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          placeholder={placeholder}
-          aria-label={placeholder}
+          placeholder={translatePhrase(preferences.language, placeholder)}
+          aria-label={translatePhrase(preferences.language, placeholder)}
           className="min-w-0 flex-1 bg-transparent text-[13.5px] text-slate-800 outline-none placeholder:text-slate-400"
         />
         <button
@@ -62,13 +81,17 @@ export function NewsletterForm({ placeholder, ctaLabel, privacy }: Props) {
           disabled={status === "saving"}
           className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-4 text-[13px] font-bold text-white shadow-[0_8px_18px_rgba(79,70,229,0.28)] disabled:opacity-60"
         >
-          {status === "saving" ? "…" : ctaLabel}
+          {status === "saving"
+            ? "…"
+            : translatePhrase(preferences.language, ctaLabel)}
           <ArrowRight className="size-3.5" aria-hidden />
         </button>
       </form>
       <p className="mt-2 flex items-center gap-1.5 text-[11.5px] text-slate-500">
         <Lock className="size-3 text-slate-400" aria-hidden />
-        {status === "ok" || status === "error" ? message : privacy}
+        {status === "ok" || status === "error"
+          ? message
+          : translatePhrase(preferences.language, privacy)}
       </p>
     </div>
   );

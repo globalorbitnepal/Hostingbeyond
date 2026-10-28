@@ -33,7 +33,7 @@ import {
   type DomainContent,
   type DomainPageCopy,
 } from "@/lib/domains/content";
-import { formatPrice } from "@/lib/domains/tlds";
+import { CatalogPrice } from "@/components/i18n/localized-text";
 
 const ICONS: Record<string, typeof ShieldCheck> = {
   shield: ShieldCheck,
@@ -191,7 +191,7 @@ export function DomainSearchView({
                       {key}
                       {register != null ? (
                         <span className="text-white/75">
-                          {formatPrice(register)}
+                          <CatalogPrice usd={register} />
                         </span>
                       ) : null}
                     </li>
@@ -317,9 +317,14 @@ export function DomainSearchView({
             </h2>
             <p className="mt-3 text-[15px] leading-relaxed text-white/90">
               {shared.transferDescription}
-              {comTransfer
-                ? ` A .com transfer is ${formatPrice(comTransfer)}.`
-                : ""}
+              {comTransfer ? (
+                <>
+                  {" "}
+                  A .com transfer is <CatalogPrice usd={comTransfer} />.
+                </>
+              ) : (
+                ""
+              )}
             </p>
 
             <ol className="mt-6 space-y-3">

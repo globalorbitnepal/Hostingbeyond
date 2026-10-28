@@ -19,6 +19,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+import { LocalizedText } from "@/components/i18n/localized-text";
 import { routes } from "@/config/routes";
 import { cn } from "@/lib/utils";
 
@@ -270,10 +271,10 @@ function HostingNavLink({
       </span>
       <span className="min-w-0 flex-1">
         <span className="block text-[14px] leading-[1.2] font-semibold tracking-[-0.02em] text-slate-950 group-hover:text-[#1d4ed8]">
-          {item.title}
+          <LocalizedText text={item.title} />
         </span>
         <span className="mt-0.5 line-clamp-2 text-[12px] leading-[1.35] text-slate-500">
-          {item.description}
+          <LocalizedText text={item.description} />
         </span>
       </span>
       <ChevronRight
@@ -295,7 +296,7 @@ function CategoryColumn({
   return (
     <div className="min-w-0">
       <p className="mb-2 inline-flex h-[22px] items-center rounded-full border border-indigo-100 bg-indigo-50/90 px-2.5 py-0 text-[9px] font-extrabold tracking-[0.14em] text-[#4f46e5] uppercase">
-        {group.label}
+        <LocalizedText text={group.label} />
       </p>
       <ul className={cn("space-y-0", group.id === "business" && "space-y-1")}>
         {group.items.map((item) => (
@@ -464,7 +465,7 @@ function MobileCategoryAccordion({ onNavigate }: { onNavigate?: () => void }) {
               onClick={() => setOpenId(expanded ? null : group.id)}
             >
               <span className="text-[12px] font-extrabold tracking-[0.06em] text-[#4f46e5] uppercase">
-                {group.label}
+                <LocalizedText text={group.label} />
               </span>
               <ChevronDown
                 className={cn(

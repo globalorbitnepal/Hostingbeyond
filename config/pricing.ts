@@ -144,6 +144,23 @@ export function getPriceBook(currency: CurrencyCode): PriceBook {
   return priceBooksByCurrency[currency] ?? basePriceBookUsd;
 }
 
+export function convertUsdToLocal(
+  usdAmount: number,
+  currency: CurrencyCode,
+): number {
+  if (!Number.isFinite(usdAmount)) return 0;
+  const rate = usdToLocalRate[currency] ?? 1;
+  return roundCommercial(usdAmount * rate, currency);
+}
+
+export function formatUsdAsLocal(
+  usdAmount: number,
+  currency: CurrencyCode,
+  locale: string,
+): string {
+  return formatMoney(convertUsdToLocal(usdAmount, currency), currency, locale);
+}
+
 export function getProductPrice(
   productId: ProductPriceId,
   currency: CurrencyCode,

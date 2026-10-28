@@ -18,6 +18,7 @@ import {
   flagImgUrl,
   getCountry,
   languages,
+  languagesForCountry,
   searchCountries,
   type CountryOption,
   type LanguageCode,
@@ -267,7 +268,7 @@ export function CountryLanguageSelector({
   }, [open, activeIndex]);
 
   const selectAndApply = (option: CountryOption) => {
-    const langs = Array.from(new Set([...option.languages, "en" as const]));
+    const langs = languagesForCountry(option);
     const lang = langs.includes(draftLanguage)
       ? draftLanguage
       : option.defaultLanguage;
@@ -277,7 +278,7 @@ export function CountryLanguageSelector({
 
   const applyDraft = () => {
     const draft = getCountry(draftCountry);
-    const langs = Array.from(new Set([...draft.languages, "en" as const]));
+    const langs = languagesForCountry(draft);
     const lang = langs.includes(draftLanguage)
       ? draftLanguage
       : draft.defaultLanguage;
@@ -302,8 +303,7 @@ export function CountryLanguageSelector({
 
   const draft = getCountry(draftCountry);
   const languageChoices = useMemo(() => {
-    const codes = Array.from(new Set<LanguageCode>([...draft.languages, "en"]));
-    return codes.filter((c) => Boolean(languages[c]));
+    return languagesForCountry(draft);
   }, [draft.languages]);
 
   const triggerLangCode = preferences.language.toUpperCase();
@@ -369,7 +369,9 @@ export function CountryLanguageSelector({
   const globeLabel =
     preferences.language === "en"
       ? "English (US)"
-      : (languages[preferences.language]?.label ?? "English");
+      : (languages[preferences.language]?.nativeLabel ??
+        languages[preferences.language]?.label ??
+        "English");
 
   return (
     <div ref={wrapperRef} className="relative">

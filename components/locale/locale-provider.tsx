@@ -9,10 +9,12 @@ import {
   useTransition,
   type ReactNode,
 } from "react";
+import { useRouter } from "next/navigation";
 
 import { getCountry, languages, type LanguageCode } from "@/config/geo";
 import {
   formatMoney,
+  formatUsdAsLocal,
   getProductPrice,
   type CurrencyCode,
   type ProductPriceId,
@@ -37,11 +39,13 @@ type LocaleContextValue = {
   setLanguage: (language: LanguageCode) => void;
   applySelection: (input: { country: string; language: LanguageCode }) => void;
   formatPrice: (productId: ProductPriceId) => string;
+  formatCatalogUsd: (usdAmount: number) => string;
   t: {
     nav: Dictionary["nav"];
     locale: Dictionary["locale"];
     hero: Dictionary["hero"];
     products: Dictionary["products"];
+    common: Dictionary["common"];
   };
 };
 
@@ -61,6 +65,7 @@ export function LocaleProvider({
   children: ReactNode;
   initialPreferences: UserPreferences;
 }) {
+  const router = useRouter();
   const [preferences, setPreferences] = useState(() =>
     normalizePreferences(initialPreferences),
   );
@@ -71,18 +76,22 @@ export function LocaleProvider({
     [preferences.language],
   );
 
-  const commit = useCallback((next: UserPreferences) => {
-    const normalized = normalizePreferences(next);
-    startTransition(() => {
-      setPreferences(normalized);
-    });
-    writePrefsCookie(normalized);
-    if (typeof document !== "undefined") {
-      document.documentElement.lang = normalized.language;
-      document.documentElement.dir =
-        normalized.language === "ar" ? "rtl" : "ltr";
-    }
-  }, []);
+  const commit = useCallback(
+    (next: UserPreferences) => {
+      const normalized = normalizePreferences(next);
+      startTransition(() => {
+        setPreferences(normalized);
+      });
+      writePrefsCookie(normalized);
+      if (typeof document !== "undefined") {
+        document.documentElement.lang = normalized.language;
+        document.documentElement.dir =
+          normalized.language === "ar" ? "rtl" : "ltr";
+      }
+      router.refresh();
+    },
+    [router],
+  );
 
   const setCountry = useCallback(
     (countryCode: string, options?: { suggestLanguage?: boolean }) => {
@@ -134,6 +143,22 @@ export function LocaleProvider({
     [preferences.currency, preferences.language],
   );
 
+  const formatCatalogUsd = useCallback(
+    (usdAmount: number) => {
+      const locale =
+        languages[preferences.language]?.locale ?? languages.en.locale;
+      if (preferences.currency === "USD") {
+        return formatMoney(usdAmount, "USD", locale);
+      }
+      return formatUsdAsLocal(
+        usdAmount,
+        preferences.currency as CurrencyCode,
+        locale,
+      );
+    },
+    [preferences.currency, preferences.language],
+  );
+
   const value = useMemo<LocaleContextValue>(
     () => ({
       preferences,
@@ -143,11 +168,13 @@ export function LocaleProvider({
       setLanguage,
       applySelection,
       formatPrice,
+      formatCatalogUsd,
       t: {
         nav: dictionary.nav,
         locale: dictionary.locale,
         hero: dictionary.hero,
         products: dictionary.products,
+        common: dictionary.common,
       },
     }),
     [
@@ -158,6 +185,7 @@ export function LocaleProvider({
       setLanguage,
       applySelection,
       formatPrice,
+      formatCatalogUsd,
     ],
   );
 

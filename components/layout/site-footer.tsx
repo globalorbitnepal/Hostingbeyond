@@ -10,6 +10,7 @@ import {
   Tag,
 } from "lucide-react";
 
+import { LocalizedText } from "@/components/i18n/localized-text";
 import { CountryLanguageSelector } from "@/components/locale/country-language-selector";
 import { NewsletterForm } from "@/components/layout/newsletter-form";
 import { PaymentMark } from "@/components/layout/payment-marks";
@@ -81,16 +82,16 @@ export function SiteFooter({
           <div className="grid items-center gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1.2fr)_auto] lg:gap-8">
             <div>
               <p className="text-[11px] font-bold tracking-[0.22em] text-slate-500 uppercase">
-                {data.newsletterEyebrow}
+                <LocalizedText text={data.newsletterEyebrow} />
               </p>
               <h2 className="font-heading mt-1.5 text-[clamp(1.55rem,2.6vw,2.15rem)] leading-tight font-extrabold tracking-[-0.04em] text-slate-950">
-                {data.newsletterTitle}{" "}
+                <LocalizedText text={data.newsletterTitle} />{" "}
                 <span className="bg-gradient-to-r from-[#2563eb] via-[#4f46e5] to-[#7c3aed] bg-clip-text text-transparent">
-                  {data.newsletterTitleAccent}
+                  <LocalizedText text={data.newsletterTitleAccent} />
                 </span>
               </h2>
               <p className="mt-2 max-w-md text-[13.5px] leading-relaxed text-slate-600">
-                {data.newsletterDescription}
+                <LocalizedText text={data.newsletterDescription} />
               </p>
             </div>
             <NewsletterForm
@@ -110,7 +111,7 @@ export function SiteFooter({
                       <Icon className="size-4" strokeWidth={2.1} />
                     </span>
                     <span className="max-w-[5.5rem] text-[11.5px] leading-tight font-semibold text-slate-700">
-                      {perk.title}
+                      <LocalizedText text={perk.title} />
                     </span>
                   </li>
                 );
@@ -138,10 +139,10 @@ export function SiteFooter({
               />
             </Link>
             <p className="mt-2 text-[10.5px] font-bold tracking-[0.22em] text-[#2563eb] uppercase">
-              {data.brandTagline}
+              <LocalizedText text={data.brandTagline} />
             </p>
             <p className="mt-4 max-w-sm text-[14px] leading-relaxed text-slate-600">
-              {data.brandDescription}
+              <LocalizedText text={data.brandDescription} />
             </p>
             <ul className="mt-5 flex flex-wrap gap-2.5">
               {social.map((item) => (
@@ -164,7 +165,7 @@ export function SiteFooter({
             {columns.map((column) => (
               <div key={column.id}>
                 <h3 className="text-[15px] font-extrabold text-slate-950">
-                  {column.title}
+                  <LocalizedText text={column.title} />
                 </h3>
                 <ul className="mt-3 space-y-2">
                   {column.links.map((link) => (
@@ -173,7 +174,7 @@ export function SiteFooter({
                         href={link.href}
                         className="text-[13.5px] font-medium text-slate-600 transition hover:text-[#2563eb]"
                       >
-                        {link.label}
+                        <LocalizedText text={link.label} />
                       </Link>
                     </li>
                   ))}
@@ -188,10 +189,10 @@ export function SiteFooter({
             <div className="min-w-0">
               <p className="flex items-center gap-2 text-[15px] font-extrabold text-slate-950">
                 <Lock className="size-4 text-slate-800" strokeWidth={2.4} />
-                {data.paymentsTitle}
+                <LocalizedText text={data.paymentsTitle} />
               </p>
               <p className="mt-1 text-[13px] text-slate-500">
-                {data.paymentsDescription}
+                <LocalizedText text={data.paymentsDescription} />
               </p>
               <div className="mt-4 flex flex-wrap items-center gap-2">
                 {payments.map((item) => (
@@ -209,7 +210,7 @@ export function SiteFooter({
                     className="size-4 shrink-0 text-[#2563eb]"
                     strokeWidth={2.6}
                   />
-                  {item.label}
+                  <LocalizedText text={item.label} />
                 </li>
               ))}
             </ul>
@@ -236,10 +237,10 @@ export function SiteFooter({
                   </span>
                   <span>
                     <span className="block text-[14.5px] font-extrabold text-slate-950">
-                      {item.title}
+                      <LocalizedText text={item.title} />
                     </span>
                     <span className="block text-[12.5px] text-slate-500">
-                      {item.subtitle}
+                      <LocalizedText text={item.subtitle} />
                     </span>
                   </span>
                 </li>
@@ -248,7 +249,7 @@ export function SiteFooter({
           </ul>
           {data.handwrittenNote ? (
             <p className="font-hand shrink-0 text-center text-[28px] leading-[1.05] font-semibold whitespace-pre-line text-[#2563eb] lg:rotate-[-8deg] lg:text-right">
-              {data.handwrittenNote}
+              <LocalizedText text={data.handwrittenNote} />
             </p>
           ) : null}
         </div>
@@ -268,7 +269,7 @@ export function SiteFooter({
                 href={link.href}
                 className="text-[12.5px] font-medium text-slate-500 hover:text-[#2563eb]"
               >
-                {link.label}
+                <LocalizedText text={link.label} />
               </Link>
             ))}
           </div>

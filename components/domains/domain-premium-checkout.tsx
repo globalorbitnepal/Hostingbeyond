@@ -34,6 +34,7 @@ import {
   writePremiumCartServices,
 } from "@/lib/checkout/premium-cart-intent";
 import { hostingCheckoutPath } from "@/lib/hosting/purchase-intent";
+import { useLocale } from "@/components/locale/locale-provider";
 import { cn } from "@/lib/utils";
 
 import type {
@@ -137,6 +138,7 @@ export function DomainPremiumCheckout({
   allDone,
   googleOAuth = false,
 }: PremiumCheckoutProps) {
+  const { t } = useLocale();
   const [step, setStep] = useState<StepId>("domains");
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(() => {
     const saved = readPremiumCartServices();
@@ -797,6 +799,12 @@ export function DomainPremiumCheckout({
                 <p className="pt-1 text-[11px] text-slate-500">
                   Due today from wallet: {walletCurrency} {walletDue.toFixed(2)}{" "}
                   (domains)
+                </p>
+                <p className="text-[11px] font-semibold text-slate-500">
+                  {t.common.billedInUsd}
+                </p>
+                <p className="text-[11px] font-semibold text-slate-500">
+                  {t.common.billedInUsd}
                 </p>
               </div>
               {!allDone ? (

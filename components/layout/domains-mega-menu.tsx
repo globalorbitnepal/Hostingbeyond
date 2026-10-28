@@ -9,6 +9,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
+import { LocalizedText } from "@/components/i18n/localized-text";
 import { routes } from "@/config/routes";
 import { cn } from "@/lib/utils";
 
@@ -101,11 +102,10 @@ function PromoPanel({
           ))}
         </div>
         <p className="font-heading text-[1.45rem] leading-[1.15] font-extrabold tracking-[-0.04em] sm:text-[1.65rem]">
-          Choose a name that fits your business.
+          <LocalizedText text="Choose a name that fits your business." />
         </p>
         <p className="mt-2.5 max-w-[34ch] text-[13px] leading-relaxed text-white/85">
-          Register a domain, add hosting, and go live from one HostingBeyond
-          account — not three different vendors.
+          <LocalizedText text="Register a domain, add hosting, and go live from one HostingBeyond account — not three different vendors." />
         </p>
       </div>
 
@@ -114,7 +114,7 @@ function PromoPanel({
         onClick={onNavigate}
         className="relative mt-6 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-white text-[13.5px] font-bold text-[#3730a3] shadow-[0_12px_28px_rgba(15,23,42,0.18)] transition hover:bg-indigo-50"
       >
-        Search domains
+        <LocalizedText text="Search domains" />
         <ArrowRight className="size-4" aria-hidden />
       </Link>
     </div>
@@ -146,7 +146,7 @@ export function DomainsMegaMenu({
         {GROUPS.map((group) => (
           <div key={group.id}>
             <p className="mb-3 inline-flex rounded-full border border-indigo-100 bg-indigo-50/80 px-2.5 py-1 text-[10px] font-extrabold tracking-[0.14em] text-[#4f46e5] uppercase">
-              {group.label}
+              <LocalizedText text={group.label} />
             </p>
             <ul className="space-y-1">
               {group.items.map((item) => {
@@ -168,10 +168,10 @@ export function DomainsMegaMenu({
                       </span>
                       <span className="min-w-0">
                         <span className="block text-[14.5px] font-bold tracking-[-0.02em] text-slate-950 group-hover:text-[#1d4ed8]">
-                          {item.title}
+                          <LocalizedText text={item.title} />
                         </span>
                         <span className="mt-0.5 block text-[12.5px] leading-snug text-slate-500">
-                          {item.description}
+                          <LocalizedText text={item.description} />
                         </span>
                       </span>
                     </Link>
