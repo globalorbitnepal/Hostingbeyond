@@ -360,7 +360,7 @@ export function CountryLanguageSelector({
   }, [draft.languages]);
 
   function languageChipLabel(code: LanguageCode) {
-    if (code === "en") return "EN";
+    if (code === "en") return languages.en.nativeLabel;
     return languages[code]?.nativeLabel ?? code.toUpperCase();
   }
 
@@ -371,7 +371,7 @@ export function CountryLanguageSelector({
   }) {
     return (
       <div
-        className="flex flex-col gap-0.5 py-1"
+        className="hb-locale-scroll flex max-h-[min(240px,50dvh)] flex-col gap-0.5 overflow-y-auto overscroll-contain py-1"
         role="listbox"
         aria-label={t.locale.language}
       >

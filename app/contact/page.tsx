@@ -24,6 +24,7 @@ import {
   localizePublicContent,
 } from "@/lib/i18n/public-chrome";
 import { getContactPageContent } from "@/lib/orbit/content";
+import { ServerLocalizedText } from "@/components/i18n/server-localized-text";
 
 export const dynamic = "force-dynamic";
 
@@ -103,11 +104,13 @@ export default async function ContactPage() {
           <ol className="flex flex-wrap items-center gap-2">
             <li>
               <Link href="/" className="hover:text-[#673de6]">
-                Home
+                <ServerLocalizedText text="Home" />
               </Link>
             </li>
             <li aria-hidden>/</li>
-            <li className="font-medium text-[#1a1035]">Contact</li>
+            <li className="font-medium text-[#1a1035]">
+              <ServerLocalizedText text="Contact" />
+            </li>
           </ol>
         </nav>
 
@@ -121,15 +124,23 @@ export default async function ContactPage() {
             successMessage={content.formSuccessMessage}
           />
           <aside className="space-y-4 rounded-3xl border border-violet-100 bg-violet-50/50 p-6 text-sm text-slate-600">
-            <p className="font-bold text-[#1a1035]">Quick tips</p>
+            <p className="font-bold text-[#1a1035]">
+              <ServerLocalizedText text="Quick tips" />
+            </p>
             <ul className="list-disc space-y-2 pl-5">
-              <li>Include your account email for faster lookup.</li>
-              <li>Add domain names for DNS or SSL issues.</li>
-              <li>Check Tips &amp; guides for common how-tos.</li>
+              <li>
+                <ServerLocalizedText text="Include your account email for faster lookup." />
+              </li>
+              <li>
+                <ServerLocalizedText text="Add domain names for DNS or SSL issues." />
+              </li>
+              <li>
+                <ServerLocalizedText text="Check Tips & guides for common how-tos." />
+              </li>
             </ul>
             {settings.contactPhone ? (
               <p>
-                Phone:{" "}
+                <ServerLocalizedText text="Phone" />:{" "}
                 <a
                   href={`tel:${settings.contactPhone}`}
                   className="font-semibold text-[#673de6]"

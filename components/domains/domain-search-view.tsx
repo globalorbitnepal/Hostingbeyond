@@ -34,6 +34,7 @@ import {
   type DomainPageCopy,
 } from "@/lib/domains/content";
 import { CatalogPrice } from "@/components/i18n/localized-text";
+import { ServerLocalizedText } from "@/components/i18n/server-localized-text";
 
 const ICONS: Record<string, typeof ShieldCheck> = {
   shield: ShieldCheck,
@@ -118,13 +119,13 @@ export function DomainSearchView({
             <ol className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[11px] font-semibold text-white/75 sm:text-[12px]">
               <li>
                 <Link href={routes.home} className="hover:text-white">
-                  Home
+                  <ServerLocalizedText text="Home" />
                 </Link>
               </li>
               <li aria-hidden>/</li>
               <li>
                 <Link href={routes.domainSearch} className="hover:text-white">
-                  Domains
+                  <ServerLocalizedText text="Domains" />
                 </Link>
               </li>
               <li aria-hidden>/</li>

@@ -44,6 +44,7 @@ import {
 } from "@/lib/domains/bulk-search-limit";
 import { SUGGESTED_TLDS, formatPrice } from "@/lib/domains/tlds";
 import { useLocale } from "@/components/locale/locale-provider";
+import { useTranslate } from "@/lib/i18n/use-translate";
 import { cn } from "@/lib/utils";
 
 export type SearchMode = "single" | "bulk";
@@ -159,19 +160,20 @@ function mergeRegisterableAlternatives(
 }
 
 function StatusPill({ status }: { status: DomainResult["status"] }) {
+  const tx = useTranslate();
   if (status === "available") {
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-[#dcfce7] px-2.5 py-1 text-[11px] font-extrabold tracking-wide text-[#15803d] uppercase">
         <Check className="size-3" strokeWidth={3} />
-        Available
+        {tx("Available")}
       </span>
     );
   }
   if (status === "premium") {
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-[#fef3c7] px-2.5 py-1 text-[11px] font-extrabold tracking-wide text-[#b45309] uppercase">
-        <Crown className="size-3" strokeWidth={2.5} />
-        Premium
+        <Crown className="size-3.5" strokeWidth={2.5} />
+        {tx("Premium")}
       </span>
     );
   }
@@ -179,21 +181,21 @@ function StatusPill({ status }: { status: DomainResult["status"] }) {
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-[#ede9fe] px-2.5 py-1 text-[11px] font-extrabold tracking-wide text-[#5b21b6] uppercase">
         <Lock className="size-3" strokeWidth={2.5} />
-        Registered
+        {tx("Registered")}
       </span>
     );
   }
   if (status === "unknown") {
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-extrabold tracking-wide text-amber-800 uppercase">
-        Temporarily unavailable
+        {tx("Temporarily unavailable")}
       </span>
     );
   }
   return (
     <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-extrabold tracking-wide text-slate-500 uppercase">
       <X className="size-3" strokeWidth={3} />
-      Not valid
+      {tx("Not valid")}
     </span>
   );
 }
@@ -224,14 +226,16 @@ const ResultRow = memo(function ResultRow({
   bulkSelected?: boolean;
   onBulkToggle?: (domain: string) => void;
 }) {
+  const tx = useTranslate();
+  const { formatCatalogUsd } = useLocale();
   const buyable = isRegisterableRecommendation(result);
   const meta =
     featured && result.status === "taken"
-      ? "This domain is already registered."
+      ? tx("This domain is already registered.")
       : result.message
         ? result.message
         : buyable
-          ? `Renewal ${formatPrice(result.renew ?? 0)}/year after the first year.`
+          ? `${tx("Renewal ")}${formatCatalogUsd(result.renew ?? 0)}${tx("/year")}${tx(" after the first year.")}`
           : undefined;
 
   return (
@@ -294,14 +298,16 @@ const ResultRow = memo(function ResultRow({
           {buyable ? (
             <div className="text-left sm:text-right">
               <p className="text-[18px] font-extrabold tracking-tight whitespace-nowrap text-[#1a1035] sm:text-[20px]">
-                {formatPrice(result.register ?? 0)}
+                {formatCatalogUsd(result.register ?? 0)}
                 <span className="text-[12px] font-bold text-slate-500">
                   {" "}
-                  / 1st year
+                  {tx("/ 1st year")}
                 </span>
               </p>
               <p className="text-[11.5px] font-semibold text-slate-500">
-                Renews {formatPrice(result.renew ?? 0)}/year
+                {tx("Renews ")}
+                {formatCatalogUsd(result.renew ?? 0)}
+                {tx("/year")}
               </p>
             </div>
           ) : null}
@@ -312,7 +318,7 @@ const ResultRow = memo(function ResultRow({
                 onClick={() => onViewCart?.()}
                 className="inline-flex h-11 min-h-[44px] w-full shrink-0 items-center justify-center gap-1.5 rounded-full border-2 border-[#673de6] bg-white px-5 text-[13.5px] font-bold whitespace-nowrap text-[#673de6] transition hover:bg-[#f7f4ff] sm:w-auto"
               >
-                View cart
+                {tx("View cart")}
                 <ArrowRight className="size-4" aria-hidden />
               </button>
             ) : (
@@ -333,11 +339,11 @@ const ResultRow = memo(function ResultRow({
                 ) : cartButtonState === "added" ? (
                   <>
                     <Check className="size-4" strokeWidth={3} />
-                    Added
+                    {tx("Added")}
                   </>
                 ) : (
                   <>
-                    Add to cart
+                    {tx("Add to cart")}
                     <ArrowRight className="size-4" aria-hidden />
                   </>
                 )}
@@ -383,10 +389,11 @@ const DomainSearchSingleForm = memo(function DomainSearchSingleForm({
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onQuickTld: (tld: string) => void;
 }) {
+  const tx = useTranslate();
   return (
     <form onSubmit={onSubmit} className="mt-4">
       <label htmlFor="domain-name-search" className="sr-only">
-        Search for a domain name
+        {tx("Search for a domain name")}
       </label>
       <div
         className={cn(
@@ -408,7 +415,7 @@ const DomainSearchSingleForm = memo(function DomainSearchSingleForm({
             autoComplete="off"
             value={query}
             onChange={(event) => onQueryChange(event.target.value)}
-            placeholder="Type a domain — e.g. yourbrand.com"
+            placeholder={tx("Type a domain — e.g. yourbrand.com")}
             className={cn(
               "min-w-0 flex-1 bg-transparent font-medium text-[#1a1035] outline-none placeholder:text-slate-400",
               hero
@@ -432,12 +439,14 @@ const DomainSearchSingleForm = memo(function DomainSearchSingleForm({
           ) : (
             <Search className="size-4" />
           )}
-          {searchSubmitting ? "Searching…" : "Search domain"}
+          {searchSubmitting ? tx("Searching…") : tx("Search domain")}
         </button>
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-1.5">
-        <span className="text-[12px] font-bold text-slate-500">Popular:</span>
+        <span className="text-[12px] font-bold text-slate-500">
+          {tx("Popular")}:
+        </span>
         {QUICK_TLDS.map((tld) => (
           <button
             key={tld}
@@ -614,6 +623,7 @@ export function DomainSearchPanel({
 }) {
   const hero = layout === "hero";
   const pathname = usePathname();
+  const tx = useTranslate();
 
   const isTabActive = useCallback(
     (tabId: SearchMode | "transfer") => {
@@ -1308,8 +1318,8 @@ export function DomainSearchPanel({
 
   const alternativesHeading =
     exact?.status === "taken"
-      ? "Recommended alternatives"
-      : "Other available extensions";
+      ? tx("Recommended alternatives")
+      : tx("Other available extensions");
   const showAvailabilitySummary =
     mode === "single" &&
     !loadingPrimary &&
@@ -1338,7 +1348,7 @@ export function DomainSearchPanel({
               prefetch
               scroll
               aria-current={active ? "page" : undefined}
-              title={tab.label}
+              title={tx(tab.label)}
               className={cn(
                 "inline-flex h-10 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full px-2 text-[11px] font-bold whitespace-nowrap transition sm:h-11 sm:gap-2 sm:px-3 sm:text-[13px] md:text-[14px]",
                 active
@@ -1347,8 +1357,8 @@ export function DomainSearchPanel({
               )}
             >
               <Icon className="size-3.5 shrink-0 sm:size-4" />
-              <span className="sm:hidden">{tab.shortLabel}</span>
-              <span className="hidden sm:inline">{tab.label}</span>
+              <span className="sm:hidden">{tx(tab.shortLabel)}</span>
+              <span className="hidden sm:inline">{tx(tab.label)}</span>
             </Link>
           );
         })}
@@ -1359,17 +1369,17 @@ export function DomainSearchPanel({
           role="status"
           className="mt-3 rounded-2xl border border-[#bbf7d0] bg-[#f0fdf4] px-4 py-2.5 text-[13px] font-semibold text-[#166534]"
         >
-          {cartSuccess}{" "}
+          {tx(cartSuccess)}{" "}
           <button
             type="button"
             onClick={() => openDrawer()}
             className="font-bold underline"
           >
-            View cart
+            {tx("View cart")}
           </button>
           <span className="text-slate-400"> · </span>
           <Link href={routes.domainCart} className="font-bold underline">
-            Full cart page
+            {tx("Full cart page")}
           </Link>
         </p>
       ) : null}
@@ -1398,7 +1408,9 @@ export function DomainSearchPanel({
           role="alert"
           className="mt-4 flex flex-col gap-3 rounded-2xl border border-[#fecaca] bg-[#fef2f2] px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
         >
-          <p className="text-[13px] font-semibold text-[#b91c1c]">{error}</p>
+          <p className="text-[13px] font-semibold text-[#b91c1c]">
+            {tx(error)}
+          </p>
           <button
             type="button"
             onClick={retryLastSearch}
