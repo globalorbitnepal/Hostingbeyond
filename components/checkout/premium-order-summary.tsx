@@ -1,6 +1,7 @@
 "use client";
 
-import { formatPrice } from "@/lib/domains/tlds";
+import { CatalogPrice } from "@/components/i18n/localized-text";
+import { useLocale } from "@/components/locale/locale-provider";
 import { cn } from "@/lib/utils";
 
 export type SummaryLine = {
@@ -33,8 +34,8 @@ export function PremiumOrderSummary({
   compact = false,
   className,
 }: Props) {
-  const fmt = (n: number) =>
-    currency === "USD" ? formatPrice(n) : `${n.toFixed(2)} ${currency}`;
+  const { t } = useLocale();
+  const fmt = (n: number) => <CatalogPrice usd={n} />;
 
   return (
     <aside
@@ -104,8 +105,9 @@ export function PremiumOrderSummary({
         </div>
       </div>
       <p className="mt-3 text-[11px] leading-snug text-[var(--hb-co-text-muted)]">
-        Domain registration is charged from your HostingBeyond wallet today.
-        Add-on plans follow their own checkout when applicable.
+        Domain registration is charged from your HostingBeyond wallet today (
+        {currency}). Add-on plans follow their own checkout when applicable.{" "}
+        {t.common.billedInUsd}
       </p>
     </aside>
   );

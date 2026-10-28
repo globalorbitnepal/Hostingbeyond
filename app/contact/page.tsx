@@ -21,7 +21,7 @@ import { breadcrumbJsonLd } from "@/lib/blog/seo";
 import { buildMetadata } from "@/lib/metadata";
 import {
   getLocalizedPublicChrome,
-  localizePublicContent,
+  localizeForPreferences,
 } from "@/lib/i18n/public-chrome";
 import { getContactPageContent } from "@/lib/orbit/content";
 import { ServerLocalizedText } from "@/components/i18n/server-localized-text";
@@ -42,7 +42,7 @@ export default async function ContactPage() {
     getContactPageContent(),
     getLocalizedPublicChrome(),
   ]);
-  const content = localizePublicContent(preferences.language, rawContent);
+  const content = localizeForPreferences(preferences, rawContent);
 
   const breadcrumbs = breadcrumbJsonLd([
     { name: "Home", path: "/" },

@@ -179,7 +179,8 @@ export function OrbitLoginForm() {
                       aria-describedby={
                         status === "error" ? errorId : undefined
                       }
-                      className="h-12 w-full rounded-full border border-slate-200 bg-slate-50/80 px-11 pr-12 text-sm text-slate-900 transition-[border-color,box-shadow,background-color] outline-none placeholder:text-slate-400 focus-visible:border-[var(--hb-blue)]/55 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-[var(--hb-blue)]/18 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="notranslate h-12 w-full rounded-full border border-slate-200 bg-slate-50/80 px-11 pr-12 text-sm text-slate-900 transition-[border-color,box-shadow,background-color] outline-none placeholder:text-slate-400 focus-visible:border-[var(--hb-blue)]/55 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-[var(--hb-blue)]/18 disabled:cursor-not-allowed disabled:opacity-60"
+                      translate="no"
                       placeholder="Enter your Orbit access key"
                       required
                     />

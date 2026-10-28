@@ -1,5 +1,6 @@
 import type { LanguageCode } from "@/config/geo";
 import { localizeCopyTree } from "@/lib/i18n/localize-copy-tree";
+import { serverCopyLanguage } from "@/lib/i18n/server-copy-language";
 import { getRequestPreferences } from "@/lib/i18n/server-locale";
 import { getHomeSections, getSiteSettings } from "@/lib/orbit/content";
 
@@ -10,7 +11,7 @@ export async function getLocalizedPublicChrome() {
     getSiteSettings(),
     getRequestPreferences(),
   ]);
-  const language = preferences.language as LanguageCode;
+  const language = serverCopyLanguage(preferences);
   return {
     preferences,
     sections: localizeCopyTree(language, rawSections),
@@ -20,4 +21,12 @@ export async function getLocalizedPublicChrome() {
 
 export function localizePublicContent<T>(language: LanguageCode, data: T): T {
   return localizeCopyTree(language, data);
+}
+
+/** CMS/public copy respecting Google Translate vs manual i18n. */
+export function localizeForPreferences<T>(
+  preferences: Awaited<ReturnType<typeof getRequestPreferences>>,
+  data: T,
+): T {
+  return localizeCopyTree(serverCopyLanguage(preferences), data);
 }

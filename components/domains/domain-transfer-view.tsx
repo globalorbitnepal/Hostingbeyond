@@ -30,7 +30,7 @@ import {
   type DomainPageCopy,
 } from "@/lib/domains/content";
 import type { PopularPickPricing } from "@/lib/domains/domain-search-page-data";
-import { formatPrice } from "@/lib/domains/tlds";
+import { CatalogPrice } from "@/components/i18n/localized-text";
 
 const ICONS: Record<string, typeof ShieldCheck> = {
   shield: ShieldCheck,
@@ -162,7 +162,7 @@ export function DomainTransferView({
                     >
                       {tld}
                       <span className="text-white/75">
-                        {price ? formatPrice(price.transfer) : ""}
+                        {price ? <CatalogPrice usd={price.transfer} /> : ""}
                       </span>
                       <span className="text-[10px] font-semibold text-white/60">
                         transfer
@@ -292,9 +292,12 @@ export function DomainTransferView({
             </h2>
             <p className="mt-3 text-[15px] leading-relaxed text-white/90">
               {shared.transferDescription}
-              {comTransfer
-                ? ` A .com transfer is ${formatPrice(comTransfer)}.`
-                : ""}
+              {comTransfer ? (
+                <>
+                  {" "}
+                  A .com transfer is <CatalogPrice usd={comTransfer} />.
+                </>
+              ) : null}
             </p>
 
             <ol className="mt-6 space-y-3">

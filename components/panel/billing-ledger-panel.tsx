@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { useLocale } from "@/components/locale/locale-provider";
 import { routes } from "@/config/routes";
 
 type LedgerEntry = {
@@ -49,6 +50,7 @@ function statusBadge(status: string): string {
 }
 
 export function BillingLedgerPanel() {
+  const { t } = useLocale();
   const [entries, setEntries] = useState<LedgerEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -112,40 +114,49 @@ export function BillingLedgerPanel() {
   }
 
   return (
-    <ul className="mt-6 divide-y divide-slate-100">
-      {entries.map((row) => (
-        <li key={row.id} className="flex flex-wrap justify-between gap-3 py-4">
-          <div className="min-w-0">
-            <p className="font-medium text-slate-900">{row.description}</p>
-            <p className="mt-0.5 text-xs text-slate-500">
-              {new Date(row.createdAt).toLocaleString()} ·{" "}
-              {statusBadge(row.status)}
-              {row.type === "RESERVE" ? " · Reserved" : ""}
-            </p>
-            {row.domainOrderPublicId ? (
-              <Link
-                href={`${routes.accountOrders}/${encodeURIComponent(row.domainOrderPublicId)}`}
-                className="mt-1 inline-block text-xs font-semibold text-[#673de6]"
-              >
-                Order {row.domainOrderPublicId}
-              </Link>
-            ) : null}
-          </div>
-          <div className="text-right">
-            <p
-              className={`font-semibold tabular-nums ${ledgerAmountClass(row.type, row.status)}`}
-            >
-              {row.type === "CREDIT" || row.type === "RELEASE" ? "+" : "−"}
-              {formatMoney(row.amount, row.currency)}
-            </p>
-            {row.balanceAfter != null ? (
-              <p className="text-xs text-slate-500 tabular-nums">
-                Balance {formatMoney(row.balanceAfter, row.currency)}
+    <div className="mt-6">
+      <p className="mb-3 text-sm text-slate-500">
+        Billing history is shown in USD, the ledger currency.{" "}
+        {t.common.billedInUsd}
+      </p>
+      <ul className="divide-y divide-slate-100">
+        {entries.map((row) => (
+          <li
+            key={row.id}
+            className="flex flex-wrap justify-between gap-3 py-4"
+          >
+            <div className="min-w-0">
+              <p className="font-medium text-slate-900">{row.description}</p>
+              <p className="mt-0.5 text-xs text-slate-500">
+                {new Date(row.createdAt).toLocaleString()} ·{" "}
+                {statusBadge(row.status)}
+                {row.type === "RESERVE" ? " · Reserved" : ""}
               </p>
-            ) : null}
-          </div>
-        </li>
-      ))}
-    </ul>
+              {row.domainOrderPublicId ? (
+                <Link
+                  href={`${routes.accountOrders}/${encodeURIComponent(row.domainOrderPublicId)}`}
+                  className="mt-1 inline-block text-xs font-semibold text-[#673de6]"
+                >
+                  Order {row.domainOrderPublicId}
+                </Link>
+              ) : null}
+            </div>
+            <div className="text-right">
+              <p
+                className={`font-semibold tabular-nums ${ledgerAmountClass(row.type, row.status)}`}
+              >
+                {row.type === "CREDIT" || row.type === "RELEASE" ? "+" : "−"}
+                {formatMoney(row.amount, row.currency)}
+              </p>
+              {row.balanceAfter != null ? (
+                <p className="text-xs text-slate-500 tabular-nums">
+                  Balance {formatMoney(row.balanceAfter, row.currency)}
+                </p>
+              ) : null}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

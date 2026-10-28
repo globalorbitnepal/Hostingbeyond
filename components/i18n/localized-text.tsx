@@ -5,9 +5,19 @@ import type { ReactNode } from "react";
 import { useLocale } from "@/components/locale/locale-provider";
 import { translatePhrase } from "@/lib/i18n/phrases";
 
-export function CatalogPrice({ usd }: { usd: number }) {
+export function CatalogPrice({
+  usd,
+  className,
+}: {
+  usd: number;
+  className?: string;
+}) {
   const { formatCatalogUsd } = useLocale();
-  return <>{formatCatalogUsd(usd)}</>;
+  return (
+    <span className={className} translate="no">
+      {formatCatalogUsd(usd)}
+    </span>
+  );
 }
 
 export function LocalizedText({

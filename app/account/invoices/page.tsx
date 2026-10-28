@@ -24,7 +24,8 @@ export default async function AccountInvoicesPage() {
         </h1>
         <p className="mt-2 text-sm text-slate-500">
           Tax amounts are snapshotted at issue time from your order. Legal
-          registration details on PDFs are pending owner configuration.
+          registration details on PDFs are pending owner configuration. Invoice
+          totals are in USD (the billed currency), not a display estimate.
         </p>
         <p className="mt-2 text-xs text-slate-500">
           <Link

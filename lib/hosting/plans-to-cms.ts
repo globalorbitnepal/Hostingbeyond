@@ -52,6 +52,7 @@ export function dbPlansToCmsHostingPlans(
     const discountPct =
       monthly > 0 ? Math.round((1 - annualMonthlyEquiv / monthly) * 100) : 0;
     const annualSavingsUsd = monthly * 12 - yearly;
+    const isUsd = (plan.currency || "USD").toUpperCase() === "USD";
 
     return {
       id: plan.planKey,
@@ -81,6 +82,9 @@ export function dbPlansToCmsHostingPlans(
       features: featureLines,
       ctaLabel: "Buy now",
       ctaHref: hostingCheckoutHref(productSlug, plan.planKey, "annually"),
+      ...(isUsd && Number.isFinite(monthly) && Number.isFinite(yearly)
+        ? { monthlyUsd: monthly, yearlyUsd: yearly }
+        : {}),
     };
   });
 

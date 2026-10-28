@@ -10,7 +10,7 @@ import {
 } from "@/lib/orbit/content";
 import {
   getLocalizedPublicChrome,
-  localizePublicContent,
+  localizeForPreferences,
 } from "@/lib/i18n/public-chrome";
 
 export const dynamic = "force-dynamic";
@@ -29,7 +29,7 @@ export default async function WebsiteMigrationPage() {
     getLocalizedPublicChrome(),
     getWebsiteMigrationPageContent(),
   ]);
-  const page = localizePublicContent(preferences.language, rawPage);
+  const page = localizeForPreferences(preferences, rawPage);
 
   const hostingPlans = sections.hostingPlans ?? defaultHostingPlansSection();
 

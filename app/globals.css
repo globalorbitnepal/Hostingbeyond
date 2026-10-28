@@ -714,6 +714,40 @@
     background-clip: padding-box;
   }
 
+  /* Hostinger-style white locale panel scrollbar */
+  .hb-locale-scroll-light {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(100, 116, 139, 0.45) transparent;
+  }
+
+  .hb-locale-scroll-light::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .hb-locale-scroll-light::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(148, 163, 184, 0.55);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
+  /* Hide Google Translate top banner; keep HostingBeyond header */
+  .goog-te-banner-frame,
+  .skiptranslate,
+  #goog-gt-tt {
+    display: none !important;
+  }
+
+  body {
+    top: 0 !important;
+  }
+
+  .goog-te-gadget {
+    height: 0 !important;
+    overflow: hidden !important;
+    visibility: hidden !important;
+  }
+
   @keyframes hb-hero-gradient-shift {
     0% {
       background-position: 0% 50%;

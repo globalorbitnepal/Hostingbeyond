@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+import { useLocale } from "@/components/locale/locale-provider";
+
 type WalletTx = {
   id: string;
   type: string;
@@ -34,6 +36,7 @@ export function WalletAccountPanel({
   topUpStatus?: string | null;
   paymentPublicId?: string | null;
 }) {
+  const { t } = useLocale();
   const [balance, setBalance] = useState(initialBalance);
   const [transactions, setTransactions] = useState<WalletTx[]>([]);
   const [payments, setPayments] = useState<WalletPaymentRow[]>([]);
@@ -80,6 +83,10 @@ export function WalletAccountPanel({
     <div className="mt-6 space-y-6">
       <p className="text-lg font-bold text-slate-900">
         Balance: {currency} {balance.toFixed(2)}
+      </p>
+      <p className="text-sm text-slate-500">
+        Wallet amounts are the USD ledger used for charges and credits.{" "}
+        {t.common.billedInUsd}
       </p>
       {statusBanner ? (
         <p className="rounded-xl bg-violet-50 px-3 py-2 text-sm text-violet-900">

@@ -1,3 +1,4 @@
+import type { HostingOrderStatus } from "@prisma/client";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -8,19 +9,10 @@ import {
   getCustomerFromToken,
 } from "@/lib/customer/session";
 import { listHostingOrdersForUser } from "@/lib/hosting/hosting-orders";
+import { HOSTING_ORDER_STATUS_LABELS } from "@/lib/hosting/provisioning";
 
 function orderStatusLabel(status: string) {
-  const map: Record<string, string> = {
-    PENDING_PAYMENT: "Pending payment",
-    DRAFT: "Draft",
-    PAID: "Paid",
-    PROVISIONING: "Pending activation",
-    ACTIVE: "Active",
-    CANCELLED: "Cancelled",
-    FAILED: "Failed",
-    EXPIRED: "Expired",
-  };
-  return map[status] ?? status;
+  return HOSTING_ORDER_STATUS_LABELS[status as HostingOrderStatus] ?? status;
 }
 
 function formatMoney(amount: number, currency: string) {
@@ -60,6 +52,7 @@ export default async function AccountHostingOrdersPage({
         <p className="mt-2 text-sm text-slate-500">
           Web hosting checkout orders for your account. Service provisioning is
           not automated yet — only orders marked Active represent live hosting.
+          Amounts are in USD, the currency actually billed.
         </p>
         {paymentNotice ? (
           <p

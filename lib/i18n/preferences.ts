@@ -6,6 +6,12 @@ import {
   getCountry,
   type LanguageCode,
 } from "@/config/geo";
+import {
+  DEFAULT_LOCALE_MARKET_ID,
+  englishMarketFor,
+} from "@/lib/i18n/hostinger-locale-markets";
+import { normalizePublicDisplayCurrency } from "@/lib/i18n/display-currencies";
+import { PUBLIC_ENGLISH_ONLY } from "@/lib/i18n/public-language";
 
 export const LOCALE_COOKIE = "hb_prefs";
 export const LOCALE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
@@ -14,6 +20,10 @@ export type UserPreferences = {
   country: string;
   language: LanguageCode;
   currency: CurrencyCode;
+  /** Hostinger-style market row id (e.g. US-en, IN-hi). */
+  localeMarketId: string;
+  /** Google Website Translator target (en = no translation). */
+  googleTargetLang: string;
   /** True once the user explicitly picks a language (don't auto-overwrite). */
   languageLocked: boolean;
 };
@@ -22,6 +32,8 @@ export const defaultPreferences: UserPreferences = {
   country: DEFAULT_COUNTRY,
   language: DEFAULT_LANGUAGE,
   currency: DEFAULT_CURRENCY,
+  localeMarketId: "US-en",
+  googleTargetLang: "en",
   languageLocked: false,
 };
 
@@ -47,24 +59,44 @@ function isLanguageCode(value: unknown): value is LanguageCode {
 export function normalizePreferences(
   input: Partial<UserPreferences> | null | undefined,
 ): UserPreferences {
-  const countryCode =
+  const countryFromInput =
     typeof input?.country === "string" && input.country.length === 2
       ? input.country.toUpperCase()
-      : DEFAULT_COUNTRY;
-  const country = getCountry(countryCode);
-  const languageLocked = Boolean(input?.languageLocked);
-  const language = isLanguageCode(input?.language)
-    ? input.language
-    : DEFAULT_LANGUAGE;
-  const currency =
-    typeof input?.currency === "string" && input.currency.length === 3
-      ? (input.currency.toUpperCase() as CurrencyCode)
-      : country.currency;
+      : null;
+  const languageLocked = PUBLIC_ENGLISH_ONLY
+    ? true
+    : Boolean(input?.languageLocked);
+  const language = PUBLIC_ENGLISH_ONLY
+    ? DEFAULT_LANGUAGE
+    : isLanguageCode(input?.language)
+      ? input.language
+      : DEFAULT_LANGUAGE;
+  const localeMarketId =
+    typeof input?.localeMarketId === "string" && input.localeMarketId.length > 0
+      ? input.localeMarketId
+      : DEFAULT_LOCALE_MARKET_ID;
+  const market = englishMarketFor(
+    localeMarketId,
+    countryFromInput ?? undefined,
+  );
+  const country = getCountry(countryFromInput ?? market.countryCode);
+  const googleTargetLang = PUBLIC_ENGLISH_ONLY
+    ? "en"
+    : typeof input?.googleTargetLang === "string" &&
+        input.googleTargetLang.length > 0
+      ? input.googleTargetLang
+      : market.googleTargetLang;
+  const currency = normalizePublicDisplayCurrency(
+    typeof input?.currency === "string" ? input.currency : undefined,
+    "USD",
+  );
 
   return {
     country: country.code,
     language,
     currency,
+    localeMarketId: market.id,
+    googleTargetLang,
     languageLocked,
   };
 }

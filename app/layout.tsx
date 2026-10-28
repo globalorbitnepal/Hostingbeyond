@@ -9,6 +9,7 @@ import {
 } from "next/font/google";
 
 import { DomainCartShell } from "@/components/domains/domain-cart-shell";
+import { GoogleTranslateBridge } from "@/components/locale/google-translate-bridge";
 import { LocaleProvider } from "@/components/locale/locale-provider";
 import { SiteNavigation } from "@/components/navigation/site-navigation";
 import { LOCALE_COOKIE, parsePreferencesCookie } from "@/lib/i18n/preferences";
@@ -88,6 +89,7 @@ export default async function RootLayout({
           initialPreferences={initialPreferences}
           initialDisplayCurrencyRates={siteSettings.displayCurrencyRates ?? {}}
         >
+          <GoogleTranslateBridge />
           <DomainCartShell>
             <SiteNavigation />
             {children}

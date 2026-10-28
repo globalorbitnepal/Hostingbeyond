@@ -5,8 +5,8 @@ import { useEffect, useRef } from "react";
 import { ShoppingCart, X } from "lucide-react";
 
 import { useDomainCart } from "@/components/domains/domain-cart-provider";
+import { useLocale } from "@/components/locale/locale-provider";
 import { routes } from "@/config/routes";
-import { formatPrice } from "@/lib/domains/tlds";
 import { cn } from "@/lib/utils";
 
 export function DomainCartDrawer() {
@@ -18,6 +18,7 @@ export function DomainCartDrawer() {
     checkoutHref,
     isAuthenticated,
   } = useDomainCart();
+  const { formatCatalogUsd, t } = useLocale();
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
@@ -133,14 +134,14 @@ export function DomainCartDrawer() {
                   </div>
                   <div className="mt-3 flex flex-wrap items-end justify-between gap-2">
                     <p className="text-[18px] font-extrabold text-[#1a1035]">
-                      {formatPrice(line.register)}
+                      {formatCatalogUsd(line.register)}
                       <span className="text-[12px] font-bold text-slate-500">
                         {" "}
                         / 1st year
                       </span>
                     </p>
                     <p className="text-[11.5px] font-semibold text-slate-500">
-                      Renews at {formatPrice(line.renew)}/yr
+                      Renews at {formatCatalogUsd(line.renew)}/yr
                     </p>
                   </div>
                 </li>
@@ -154,7 +155,7 @@ export function DomainCartDrawer() {
             <div className="space-y-1.5 text-[13px]">
               <div className="flex justify-between font-semibold text-slate-700">
                 <span>Domains subtotal</span>
-                <span>{formatPrice(cart.total)}</span>
+                <span>{formatCatalogUsd(cart.total)}</span>
               </div>
               <div className="flex justify-between text-slate-500">
                 <span>Taxes / fees</span>
@@ -162,15 +163,19 @@ export function DomainCartDrawer() {
               </div>
               <div className="mt-2 flex justify-between border-t border-slate-100 pt-2 text-[15px] font-extrabold text-[#1a1035]">
                 <span>Total</span>
-                <span>{formatPrice(cart.total)}</span>
+                <span>{formatCatalogUsd(cart.total)}</span>
               </div>
             </div>
             {!isAuthenticated ? (
               <p className="mt-2 text-[11.5px] leading-snug text-slate-500">
                 Sign in to save your cart and complete registration. Prices are
-                confirmed again at checkout.
+                confirmed again at checkout. {t.common.billedInUsd}
               </p>
-            ) : null}
+            ) : (
+              <p className="mt-2 text-[11.5px] leading-snug text-slate-500">
+                {t.common.billedInUsd}
+              </p>
+            )}
             <Link
               href={checkoutHref}
               onClick={closeDrawer}

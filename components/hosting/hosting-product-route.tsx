@@ -6,7 +6,7 @@ import { WebHostingStructuredData } from "@/components/hosting/web-hosting-struc
 import { loadHostingProductPage } from "@/lib/hosting/load-hosting-product-page";
 import {
   getLocalizedPublicChrome,
-  localizePublicContent,
+  localizeForPreferences,
 } from "@/lib/i18n/public-chrome";
 
 export async function HostingProductRoute({ slug }: { slug: string }) {
@@ -14,7 +14,7 @@ export async function HostingProductRoute({ slug }: { slug: string }) {
   if (!resolved || resolved.inactive) notFound();
 
   const { sections, settings, preferences } = await getLocalizedPublicChrome();
-  const localized = localizePublicContent(preferences.language, resolved);
+  const localized = localizeForPreferences(preferences, resolved);
 
   return (
     <HostingProductSiteShell sections={sections} settings={settings}>

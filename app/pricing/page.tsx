@@ -8,7 +8,7 @@ import {
 } from "@/lib/orbit/content";
 import {
   getLocalizedPublicChrome,
-  localizePublicContent,
+  localizeForPreferences,
 } from "@/lib/i18n/public-chrome";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +27,7 @@ export default async function PricingPage() {
     getLocalizedPublicChrome(),
     getPricingPageContent(),
   ]);
-  const pricing = localizePublicContent(preferences.language, rawPricing);
+  const pricing = localizeForPreferences(preferences, rawPricing);
   const hostingPlans = sections.hostingPlans;
 
   return (

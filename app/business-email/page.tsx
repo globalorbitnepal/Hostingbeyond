@@ -9,7 +9,7 @@ import {
 } from "@/lib/orbit/content";
 import {
   getLocalizedPublicChrome,
-  localizePublicContent,
+  localizeForPreferences,
 } from "@/lib/i18n/public-chrome";
 
 export const dynamic = "force-dynamic";
@@ -30,7 +30,7 @@ export default async function BusinessEmailPage() {
     getLocalizedPublicChrome(),
     getBusinessEmailPageContent(),
   ]);
-  const pageContent = localizePublicContent(preferences.language, rawPage);
+  const pageContent = localizeForPreferences(preferences, rawPage);
 
   const pageUrl = new URL(PAGE_PATH, siteConfig.url).toString();
 

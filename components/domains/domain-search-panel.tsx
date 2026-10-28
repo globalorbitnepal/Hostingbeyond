@@ -42,7 +42,7 @@ import {
   BULK_SEARCH_LIMIT_MESSAGE,
   MAX_BULK_DOMAIN_SEARCH,
 } from "@/lib/domains/bulk-search-limit";
-import { SUGGESTED_TLDS, formatPrice } from "@/lib/domains/tlds";
+import { SUGGESTED_TLDS } from "@/lib/domains/tlds";
 import { useLocale } from "@/components/locale/locale-provider";
 import { useTranslate } from "@/lib/i18n/use-translate";
 import { cn } from "@/lib/utils";

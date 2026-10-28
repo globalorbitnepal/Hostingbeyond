@@ -28,7 +28,6 @@ import type {
   DomainCheckoutServiceOffer,
   DomainCheckoutServiceSelection,
 } from "@/lib/domains/domain-checkout-offers";
-import { formatPrice } from "@/lib/domains/tlds";
 import {
   readPremiumCartServices,
   writePremiumCartServices,
@@ -138,7 +137,7 @@ export function DomainPremiumCheckout({
   allDone,
   googleOAuth = false,
 }: PremiumCheckoutProps) {
-  const { t } = useLocale();
+  const { t, formatCatalogUsd } = useLocale();
   const [step, setStep] = useState<StepId>("domains");
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(() => {
     const saved = readPremiumCartServices();
@@ -412,8 +411,8 @@ export function DomainPremiumCheckout({
                     <ul className="mt-2 list-disc pl-5">
                       {priceChanges.map((change) => (
                         <li key={change.domain}>
-                          {change.domain}: {formatPrice(change.previous)} →{" "}
-                          {formatPrice(change.current)}
+                          {change.domain}: {formatCatalogUsd(change.previous)} →{" "}
+                          {formatCatalogUsd(change.current)}
                         </li>
                       ))}
                     </ul>
@@ -466,11 +465,11 @@ export function DomainPremiumCheckout({
                           <td className="px-4 py-3.5 align-top text-[var(--hb-co-text-muted)]">
                             1 year
                             <span className="mt-1 block text-[11px]">
-                              Renews {formatPrice(line.renew)}/yr
+                              Renews {formatCatalogUsd(line.renew)}/yr
                             </span>
                           </td>
                           <td className="px-4 py-3.5 text-right align-top font-extrabold text-[var(--hb-co-text)]">
-                            {formatPrice(line.register)}
+                            {formatCatalogUsd(line.register)}
                           </td>
                         </tr>
                       ))}
@@ -754,7 +753,7 @@ export function DomainPremiumCheckout({
                         </p>
                       </div>
                       <span className="shrink-0 text-[13px] font-bold text-slate-900">
-                        {formatPrice(line.register)}
+                        {formatCatalogUsd(line.register)}
                       </span>
                     </li>
                   ))
@@ -770,7 +769,7 @@ export function DomainPremiumCheckout({
                       </p>
                     </div>
                     <span className="shrink-0 text-[13px] font-bold text-slate-900">
-                      {formatPrice(line.amount)}
+                      {formatCatalogUsd(line.amount)}
                     </span>
                   </li>
                 ))}
@@ -779,13 +778,13 @@ export function DomainPremiumCheckout({
                 <div className="flex justify-between text-slate-600">
                   <span>Domains subtotal</span>
                   <span className="font-semibold text-slate-900">
-                    {quoteLoading ? "…" : formatPrice(domainsTotal)}
+                    {quoteLoading ? "…" : formatCatalogUsd(domainsTotal)}
                   </span>
                 </div>
                 <div className="flex justify-between text-slate-600">
                   <span>Services</span>
                   <span className="font-semibold text-slate-900">
-                    {quoteLoading ? "…" : formatPrice(servicesTotal)}
+                    {quoteLoading ? "…" : formatCatalogUsd(servicesTotal)}
                   </span>
                 </div>
                 <div className="flex justify-between text-slate-500">
@@ -794,14 +793,13 @@ export function DomainPremiumCheckout({
                 </div>
                 <div className="flex justify-between pt-2 text-[17px] font-extrabold text-[#1a1035]">
                   <span>Total</span>
-                  <span>{quoteLoading ? "…" : formatPrice(displayTotal)}</span>
+                  <span>
+                    {quoteLoading ? "…" : formatCatalogUsd(displayTotal)}
+                  </span>
                 </div>
                 <p className="pt-1 text-[11px] text-slate-500">
                   Due today from wallet: {walletCurrency} {walletDue.toFixed(2)}{" "}
                   (domains)
-                </p>
-                <p className="text-[11px] font-semibold text-slate-500">
-                  {t.common.billedInUsd}
                 </p>
                 <p className="text-[11px] font-semibold text-slate-500">
                   {t.common.billedInUsd}

@@ -6,7 +6,7 @@ import { routes } from "@/config/routes";
 import { getDomainContent } from "@/lib/orbit/content";
 import {
   getLocalizedPublicChrome,
-  localizePublicContent,
+  localizeForPreferences,
 } from "@/lib/i18n/public-chrome";
 import { buildDomainPageMetadata } from "@/lib/domains/page-metadata";
 import { buildDomainSchema } from "@/lib/domains/seo";
@@ -38,7 +38,7 @@ export default async function DomainTransferPage({ searchParams }: PageProps) {
     getLocalizedPublicChrome(),
     getDomainContent(),
   ]);
-  const content = localizePublicContent(preferences.language, rawContent);
+  const content = localizeForPreferences(preferences, rawContent);
 
   const page = content.transfer;
   const displayPricing = await mergeRetailIntoPricingRows(

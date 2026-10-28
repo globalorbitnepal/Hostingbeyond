@@ -162,7 +162,8 @@ function CheckoutAuthPanelInner({
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 flex min-h-12 w-full rounded-xl border border-slate-200 px-4 text-[15px]"
+            translate="no"
+            className="notranslate mt-1 flex min-h-12 w-full rounded-xl border border-slate-200 px-4 text-[15px]"
             autoComplete={
               mode === "signup" ? "new-password" : "current-password"
             }

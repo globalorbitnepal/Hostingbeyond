@@ -28,6 +28,7 @@ import {
   serializeHostingPurchaseIntent,
   type HostingPurchaseIntent,
 } from "@/lib/hosting/purchase-intent";
+import { useLocale } from "@/components/locale/locale-provider";
 
 type DomainSearchResult = {
   domain: string;
@@ -74,9 +75,14 @@ export type HostingCartCheckoutProps = {
 export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { formatCatalogUsd, t } = useLocale();
   const step = searchParams.get("step") === "review" ? "review" : "configure";
 
   const [quote, setQuote] = useState(props.initialQuote);
+  const formatQuoteAmount = (value: number) =>
+    quote.currency === "USD"
+      ? formatCatalogUsd(value)
+      : money(value, quote.currency);
   const [loading, setLoading] = useState(false);
   const [orderError, setOrderError] = useState<string | null>(null);
   const [domainQuery, setDomainQuery] = useState(
@@ -380,7 +386,7 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
                     </p>
                     {quote.monthlyEquivalent != null ? (
                       <p className="mt-3 text-[1.5rem] font-extrabold text-[#673de6]">
-                        {money(quote.monthlyEquivalent, quote.currency)}/mo
+                        {formatQuoteAmount(quote.monthlyEquivalent)}/mo
                         {isAnnual ? (
                           <span className="ml-2 text-[14px] font-medium text-slate-500">
                             promotional equivalent
@@ -389,12 +395,12 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
                       </p>
                     ) : null}
                     <p className="text-[13px] text-slate-500">
-                      Billed {money(quote.billedAmount, quote.currency)}
+                      Billed {formatQuoteAmount(quote.billedAmount)}
                       {isAnnual ? "/year" : "/month"}
                     </p>
                     {quote.renewalPrice != null ? (
                       <p className="mt-1 text-[13px] text-slate-500">
-                        Renewal: {money(quote.renewalPrice, quote.currency)}
+                        Renewal: {formatQuoteAmount(quote.renewalPrice)}
                       </p>
                     ) : null}
                   </div>
@@ -474,7 +480,7 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
                       </span>
                       <p className="mt-1 text-[13px] text-slate-600">
                         {quote.discount > 0
-                          ? `Save ${money(quote.discount, quote.currency)} vs monthly`
+                          ? `Save ${formatQuoteAmount(quote.discount)} vs monthly`
                           : "Best value when available"}
                       </p>
                     </button>
@@ -687,7 +693,7 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
                       ? line.note?.toLowerCase().includes("separately")
                         ? "—"
                         : "FREE"
-                      : money(line.amount, quote.currency)}
+                      : formatQuoteAmount(line.amount)}
                   </span>
                 </li>
               ))}
@@ -696,7 +702,7 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
               <div className="flex justify-between">
                 <span className="text-slate-600">Subtotal</span>
                 <span className="font-semibold">
-                  {money(quote.subtotal, quote.currency)}
+                  {formatQuoteAmount(quote.subtotal)}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -709,9 +715,12 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
                 Total
               </span>
               <span className="bg-gradient-to-r from-[#673de6] to-[#2563eb] bg-clip-text text-[1.25rem] font-extrabold text-transparent">
-                {money(quote.total, quote.currency)}
+                {formatQuoteAmount(quote.total)}
               </span>
             </div>
+            <p className="mt-2 text-[12px] text-slate-500">
+              {t.common.billedInUsd}
+            </p>
             <button
               type="button"
               disabled={

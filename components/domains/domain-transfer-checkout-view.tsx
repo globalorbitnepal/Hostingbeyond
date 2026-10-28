@@ -6,7 +6,8 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 import { BrandMark } from "@/components/auth/brand-mark";
 import { routes } from "@/config/routes";
-import { formatPrice } from "@/lib/domains/tlds";
+import { CatalogPrice } from "@/components/i18n/localized-text";
+import { useLocale } from "@/components/locale/locale-provider";
 
 type Props = {
   domain: string;
@@ -23,6 +24,7 @@ export function DomainTransferCheckoutView({
   currency,
   walletBalance,
 }: Props) {
+  const { t } = useLocale();
   const [authCode, setAuthCode] = useState("");
   const [showAuth, setShowAuth] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
@@ -118,14 +120,22 @@ export function DomainTransferCheckoutView({
             Transfer {domain}
           </h1>
           <p className="mt-2 text-sm text-slate-600">
-            Transfer fee <strong>{formatPrice(transferPrice)}</strong>
-            {renewPrice > 0
-              ? ` · standard renewal ${formatPrice(renewPrice)}/yr`
-              : null}
+            Transfer fee{" "}
+            <strong>
+              <CatalogPrice usd={transferPrice} />
+            </strong>
+            {renewPrice > 0 ? (
+              <>
+                {" "}
+                · standard renewal <CatalogPrice usd={renewPrice} />
+                /yr
+              </>
+            ) : null}
           </p>
           <p className="mt-1 text-xs text-slate-500">
             On most extensions, the transfer fee extends your registration by
-            one year. Final total is charged from your wallet.
+            one year. Final total is charged from your wallet.{" "}
+            {t.common.billedInUsd}
           </p>
           <p className="mt-2 text-sm text-slate-600">
             Wallet: {currency} {walletBalance.toFixed(2)}
@@ -146,7 +156,8 @@ export function DomainTransferCheckoutView({
                   autoComplete="off"
                   value={authCode}
                   onChange={(e) => setAuthCode(e.target.value)}
-                  className="w-full min-w-0 rounded-xl border border-slate-200 py-3 pr-12 pl-4 text-[14px] font-medium text-[#1a1035] outline-none focus:border-[#673de6] focus:ring-4 focus:ring-[#673de6]/10"
+                  translate="no"
+                  className="notranslate w-full min-w-0 rounded-xl border border-slate-200 py-3 pr-12 pl-4 text-[14px] font-medium text-[#1a1035] outline-none focus:border-[#673de6] focus:ring-4 focus:ring-[#673de6]/10"
                 />
                 <button
                   type="button"
@@ -171,7 +182,7 @@ export function DomainTransferCheckoutView({
                 />
                 <span>
                   I unlocked the domain at my current registrar and confirm the
-                  transfer fee of {formatPrice(transferPrice)}.
+                  transfer fee of <CatalogPrice usd={transferPrice} />.
                 </span>
               </label>
 

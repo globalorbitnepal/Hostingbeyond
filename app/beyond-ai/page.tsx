@@ -8,7 +8,7 @@ import {
 } from "@/lib/orbit/content";
 import {
   getLocalizedPublicChrome,
-  localizePublicContent,
+  localizeForPreferences,
 } from "@/lib/i18n/public-chrome";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +27,7 @@ export default async function BeyondAiPage() {
     getLocalizedPublicChrome(),
     getBeyondAiPageContent(),
   ]);
-  const pageContent = localizePublicContent(preferences.language, rawPage);
+  const pageContent = localizeForPreferences(preferences, rawPage);
 
   return (
     <div className="min-h-dvh overflow-x-hidden">

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 import { buildOrderSnapshot } from "./cart/snapshot";
 import type { HostingCartQuote } from "./cart/types";
+import { canTransitionHostingOrderStatus } from "./provisioning";
 
 const DRAFT_TTL_HOURS = 72;
 
@@ -77,6 +78,7 @@ export async function setHostingOrderStatus(
   });
   if (!order) return null;
   if (userId && order.userId && order.userId !== userId) return null;
+  if (!canTransitionHostingOrderStatus(order.status, status)) return null;
   return prisma.hostingOrder.update({
     where: { id: orderId },
     data: { status },

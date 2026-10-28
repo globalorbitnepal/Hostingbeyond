@@ -11,9 +11,7 @@ import { mainNavigation, type NavItem } from "@/config/navigation";
 import { routes } from "@/config/routes";
 import { DomainCartHeaderLink } from "@/components/layout/domain-cart-header-link";
 import { CountryLanguageSelector } from "@/components/locale/country-language-selector";
-import type { LanguageCode } from "@/config/geo";
-import { useLocale } from "@/components/locale/locale-provider";
-import { translatePhrase } from "@/lib/i18n/phrases";
+import { CurrencySelector } from "@/components/locale/currency-selector";
 import { CANONICAL_HEADER_LOGO_SRC, Logo } from "@/components/shared/logo";
 import { isHostingNavLabel } from "@/lib/navigation/hosting-nav";
 import { cn } from "@/lib/utils";
@@ -33,35 +31,6 @@ const HostingMegaMenu = dynamic(
     })),
   { loading: () => null },
 );
-
-function localizeNavLabel(
-  label: string,
-  nav: ReturnType<typeof useLocale>["t"]["nav"],
-  language: LanguageCode,
-) {
-  const map: Record<string, string> = {
-    Domains: nav.domains,
-    Hosting: nav.hosting ?? "Hosting",
-    "Web Hosting": nav.hosting ?? "Hosting",
-    "Business Email": nav.businessEmail,
-    Resources: nav.solutions,
-    Pricing: nav.pricing,
-    "Beyond AI": nav.beyondAi,
-    "Domain Name Search": nav.domainSearch,
-    "Bulk Domain Search": nav.bulkDomainSearch,
-    "Shared Hosting": nav.sharedHosting,
-    "WordPress Hosting": nav.wordpressHosting,
-    "Reseller Hosting": nav.resellerHosting,
-    "Cloud Hosting": nav.cloudHosting,
-    "VPS Hosting": nav.vpsHosting,
-    Blog: nav.blog,
-    "Expert Tips": nav.expertTips,
-    "Product Updates": nav.productUpdates,
-    "Our Story": nav.about,
-    Contact: nav.contact,
-  };
-  return map[label] ?? translatePhrase(language, label);
-}
 
 function BeyondAiNavLink({
   href,
@@ -281,7 +250,6 @@ export function SiteHeader({
   /** @deprecated Header always uses canonical logo for stability */
   logoPath?: string;
 } = {}) {
-  const { t, preferences } = useLocale();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [mobileSection, setMobileSection] = useState<string | null>(null);
@@ -313,14 +281,8 @@ export function SiteHeader({
     setMega(null);
   }, [pathname]);
 
-  const resolvedLogin =
-    preferences.language === "en"
-      ? loginLabel || "Login"
-      : translatePhrase(preferences.language, loginLabel || "Login");
-  const resolvedGetStarted =
-    preferences.language === "en"
-      ? getStartedLabel || "Get Started"
-      : translatePhrase(preferences.language, getStartedLabel || "Get Started");
+  const resolvedLogin = loginLabel || "Login";
+  const resolvedGetStarted = getStartedLabel || "Get Started";
 
   const filteredNav = (() => {
     const cleaned = navigation.filter(
@@ -392,11 +354,7 @@ export function SiteHeader({
                 <NavDropdown
                   key={item.label}
                   item={item}
-                  label={localizeNavLabel(
-                    item.label,
-                    t.nav,
-                    preferences.language,
-                  )}
+                  label={item.label}
                   megaOpen={
                     item.label === "Domains"
                       ? mega === "domains"
@@ -427,6 +385,7 @@ export function SiteHeader({
 
             <div className="hidden shrink-0 items-center justify-end gap-2 lg:flex xl:gap-2.5">
               <DomainCartHeaderLink />
+              <CurrencySelector tone="light" />
               <CountryLanguageSelector tone="light" />
               <span
                 aria-hidden
@@ -441,12 +400,11 @@ export function SiteHeader({
               </Link>
             </div>
 
-            <div className="flex shrink-0 items-center gap-1.5 sm:gap-2 lg:hidden">
+            <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-1.5 lg:hidden">
               <DomainCartHeaderLink compact />
-              <CountryLanguageSelector compact tone="light" />
               <button
                 type="button"
-                className="inline-flex size-9 touch-manipulation items-center justify-center rounded-full border border-slate-200 bg-white text-slate-800 shadow-sm"
+                className="inline-flex size-10 touch-manipulation items-center justify-center rounded-full border border-slate-200 bg-white text-slate-800 shadow-sm"
                 aria-expanded={open}
                 aria-controls="hb-mobile-nav"
                 aria-label={open ? "Close menu" : "Open menu"}
@@ -509,12 +467,12 @@ export function SiteHeader({
                 className="flex flex-col gap-0.5 p-4"
                 aria-label="Mobile navigation"
               >
+                <div className="mb-2 flex items-center justify-between gap-2 rounded-2xl border border-slate-100 bg-slate-50/80 px-2 py-2">
+                  <CountryLanguageSelector compact tone="light" />
+                  <CurrencySelector compact tone="light" />
+                </div>
                 {filteredNav.map((item) => {
-                  const label = localizeNavLabel(
-                    item.label,
-                    t.nav,
-                    preferences.language,
-                  );
+                  const label = item.label;
                   const hasChildren =
                     Boolean(item.children?.length) ||
                     item.label === "Domains" ||

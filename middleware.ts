@@ -72,5 +72,11 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/account/:path*", "/orbit/:path*", "/api/orbit/:path*"],
+  matcher: [
+    "/account",
+    "/account/:path*",
+    "/orbit",
+    "/orbit/:path*",
+    "/api/orbit/:path*",
+  ],
 };

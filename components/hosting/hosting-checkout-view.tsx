@@ -6,6 +6,8 @@ import { Check } from "lucide-react";
 import type { ResolvedHostingPurchaseContext } from "@/lib/hosting/resolve-purchase-context";
 import { routes } from "@/config/routes";
 import { serializeHostingPurchaseIntent } from "@/lib/hosting/purchase-intent";
+import { CatalogPrice } from "@/components/i18n/localized-text";
+import { useLocale } from "@/components/locale/locale-provider";
 
 export function HostingCheckoutView({
   context,
@@ -14,6 +16,7 @@ export function HostingCheckoutView({
   context: ResolvedHostingPurchaseContext;
   logoPath?: string;
 }) {
+  const { t } = useLocale();
   const logo = logoPath?.trim() || "/logo/hostingbeyond-logo-v6.png";
   const query = serializeHostingPurchaseIntent(context.intent);
 
@@ -44,9 +47,28 @@ export function HostingCheckoutView({
             {context.billingLabel}
           </p>
           <p className="mt-4 text-[2rem] font-extrabold text-[#673de6]">
-            {context.priceLabel}
+            {context.isUsdLedger ? (
+              <>
+                <CatalogPrice usd={context.displayAmount} />
+                /mo
+              </>
+            ) : (
+              context.priceLabel
+            )}
           </p>
-          <p className="text-[13px] text-slate-500">{context.billedLabel}</p>
+          <p className="text-[13px] text-slate-500">
+            {context.isUsdLedger ? (
+              <>
+                Billed <CatalogPrice usd={context.billedAmount} />
+                {context.billedPeriod === "year" ? "/yr" : "/mo"}
+              </>
+            ) : (
+              context.billedLabel
+            )}
+          </p>
+          <p className="mt-2 text-[12px] text-slate-500">
+            {t.common.billedInUsd}
+          </p>
 
           <ul className="mt-6 space-y-2 text-[14px] text-slate-700">
             <li className="flex items-start gap-2">

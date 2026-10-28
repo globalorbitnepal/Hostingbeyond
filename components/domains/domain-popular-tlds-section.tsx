@@ -8,7 +8,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { routes } from "@/config/routes";
 import type { DomainPopularPick } from "@/lib/domains/content";
 import type { PopularPickPricing } from "@/lib/domains/domain-search-page-data";
-import { formatPrice } from "@/lib/domains/tlds";
+import { CatalogPrice } from "@/components/i18n/localized-text";
 import { cn } from "@/lib/utils";
 
 const CARD_MIN_W = 272;
@@ -175,7 +175,7 @@ export function DomainPopularTldsSection({
                     {purchasable && row ? (
                       <>
                         <p className="text-[24px] font-extrabold tracking-tight text-white">
-                          {formatPrice(row.register!)}
+                          <CatalogPrice usd={row.register!} />
                           <span className="ml-1.5 text-[12px] font-semibold text-white/55">
                             {row.priceCaption}
                           </span>

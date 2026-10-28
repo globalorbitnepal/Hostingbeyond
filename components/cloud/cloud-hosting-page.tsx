@@ -18,6 +18,7 @@ import {
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 import { HostingPlansCream } from "@/components/hosting/hosting-plans-cream";
+import { schemaOrgOfferPriceUsd } from "@/lib/hosting/hosting-plan-catalog";
 import { applyProductPlansTrustChips } from "@/lib/hosting/product-plans-trust-chips";
 import type { CmsHostingPlansContent } from "@/lib/orbit/defaults";
 import type {
@@ -283,13 +284,21 @@ export function CloudHostingPageView({
                     "@type": "Product",
                     name: "HostingBeyond Cloud Hosting",
                     description: page.heroDescription,
-                    offers: visiblePlans.map((plan) => ({
-                      "@type": "Offer",
-                      name: plan.name,
-                      price:
-                        plan.priceAnnually.replace(/[^0-9.]/g, "") || "9.99",
-                      priceCurrency: "USD",
-                    })),
+                    offers: visiblePlans.map((plan) => {
+                      const price = schemaOrgOfferPriceUsd(
+                        plan,
+                        page.defaultBilling === "monthly"
+                          ? "monthly"
+                          : "annually",
+                      );
+                      return {
+                        "@type": "Offer",
+                        name: plan.name,
+                        ...(price
+                          ? { price, priceCurrency: "USD" }
+                          : { priceCurrency: "USD" }),
+                      };
+                    }),
                   },
                 ],
               }),

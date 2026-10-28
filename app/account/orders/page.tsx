@@ -42,7 +42,8 @@ export default async function AccountOrdersPage() {
           Domain orders
         </h1>
         <p className="mt-2 text-sm text-slate-500">
-          Registrations, renewals, and transfers charged from your wallet.
+          Registrations, renewals, and transfers charged from your wallet. Order
+          totals are in USD, the currency actually billed.
         </p>
         <p className="mt-2 text-xs text-slate-500">
           <Link

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ArrowRight, ChevronDown, Search } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 
+import { CatalogPrice } from "@/components/i18n/localized-text";
 import { heroTldOptions } from "@/config/domain-teasers";
 import { routes } from "@/config/routes";
 import { HeroFeatureBar } from "@/components/home/hero-feature-bar";
@@ -12,10 +13,10 @@ import { cn } from "@/lib/utils";
 import type { CmsHeroContent } from "@/lib/orbit/defaults";
 
 const FALLBACK_TEASERS = [
-  { tld: ".com", priceLabel: "$7.99/yr", visible: true },
-  { tld: ".net", priceLabel: "$6.99/yr", visible: true },
-  { tld: ".org", priceLabel: "$5.99/yr", visible: true },
-  { tld: ".dev", priceLabel: "$3.99/yr", visible: true },
+  { tld: ".com", priceLabel: "$7.99/yr", usd: 7.99, visible: true },
+  { tld: ".net", priceLabel: "$6.99/yr", usd: 6.99, visible: true },
+  { tld: ".org", priceLabel: "$5.99/yr", usd: 5.99, visible: true },
+  { tld: ".dev", priceLabel: "$3.99/yr", usd: 3.99, visible: true },
 ] as const;
 
 const SCENE_FALLBACK = "/images/hero-speaker-v6.webp";
@@ -236,7 +237,14 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
                       active ? "text-slate-700" : "text-white/80",
                     )}
                   >
-                    {item.priceLabel}
+                    {"usd" in item && typeof item.usd === "number" ? (
+                      <>
+                        <CatalogPrice usd={item.usd} />
+                        /yr
+                      </>
+                    ) : (
+                      item.priceLabel
+                    )}
                   </span>
                 </button>
               );

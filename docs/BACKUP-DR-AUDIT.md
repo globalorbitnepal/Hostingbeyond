@@ -2,6 +2,7 @@
 
 **Audit date:** 2026-10-19 (Day 2 refresh; repository + docs; **no production connection**).  
 **Prior audit:** 2026-10-16.  
+**Phase 4 re-check:** 2026-10-29 (read-only; production `.env` not opened; no dump/restore).  
 **Production paths below** are from code/deploy workflow unless marked **Verify on VPS**.
 
 ## Executive summary
@@ -85,3 +86,14 @@ Canonical list in `ops/backup/production/env-inventory.mjs` (derived from `.env.
 | `docs/DISASTER-RECOVERY-RUNBOOK.md`           | DR index + proposed RPO/RTO                     |
 | `docs/OWNER-OFFLINE-BACKUP-COPY.md`           | PC / HDD / offline copy procedure               |
 | `ops/backup/dr/RESTORE-DRILL-LAB.md`          | Isolated restore drill                          |
+
+## Phase 4 re-check (2026-10-29) — NOT a restore proof
+
+| Item                      | Finding                                                                                                                                                                                                                  | Status                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| Production `DATABASE_URL` | Production `.env` exists (mode `640`, not opened). Database name **not** verified.                                                                                                                                       | **BLOCKED / UNKNOWN**                                                      |
+| Local dump files          | `data/backups/integration-test/20261016T154024Z/database.dump` is PostgreSQL custom format v1.15 (~106 KB). A sibling dump at `...154008Z` is **empty** (0 bytes). Manifest names `hostingbeyond_integration_test` only. | **NOT** a production backup; **NOT VERIFIED** restorable                   |
+| Media                     | `/data/hostingbeyond/uploads` exists (mtime 2026-10-28). Dev `public/uploads` also exists. No `uploads.tar.gz` in `data/backups`.                                                                                        | Path **exists**; coverage **NOT VERIFIED**; off-host copy **NOT VERIFIED** |
+| Off-host copy             | `~/backup-export` for `hostingbeyond` not readable from this account / missing. Windows pull **PENDING** owner.                                                                                                          | **NOT VERIFIED**                                                           |
+| `hostingbeyond-backup.sh` | Refuses `/srv/apps/hostingbeyond/.env` and refuses database name `hostingbeyond_db`.                                                                                                                                     | Local/staging-only; cannot back up current **dev** DB name either          |
+| Production restore        | Not executed.                                                                                                                                                                                                            | **NOT VERIFIED**                                                           |

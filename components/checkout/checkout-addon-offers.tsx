@@ -10,7 +10,7 @@ import {
   EMAIL_BILLING_TERM_OPTIONS,
   type EmailBillingTerm,
 } from "@/lib/hosting/business-email-term-pricing";
-import { formatPrice } from "@/lib/domains/tlds";
+import { CatalogPrice } from "@/components/i18n/localized-text";
 import { cn } from "@/lib/utils";
 
 export function offerToSelection(
@@ -226,7 +226,7 @@ export function CheckoutAddonOfferList({
                   {offer.description}
                 </p>
                 <p className="mt-3 text-[16px] font-extrabold text-[var(--hb-co-text)]">
-                  {formatPrice(offer.amount)}
+                  <CatalogPrice usd={offer.amount} />
                   <span className="ml-1.5 text-[13px] font-semibold text-[var(--hb-co-text-muted)]">
                     {offer.periodLabel}
                   </span>
@@ -293,7 +293,7 @@ export function CheckoutAddonOfferList({
                 ) : null}
                 {activeOffer ? (
                   <p className="mt-3 text-[16px] font-extrabold text-[var(--hb-co-text)]">
-                    {formatPrice(activeOffer.amount)}
+                    <CatalogPrice usd={activeOffer.amount} />
                     <span className="ml-1.5 text-[13px] font-semibold text-[var(--hb-co-text-muted)]">
                       {activeOffer.periodLabel}
                     </span>
@@ -365,7 +365,7 @@ export function CheckoutAddonOfferList({
                 ) : null}
                 {activeOffer ? (
                   <p className="mt-3 text-[16px] font-extrabold text-[var(--hb-co-text)]">
-                    {formatPrice(activeOffer.amount)}
+                    <CatalogPrice usd={activeOffer.amount} />
                     <span className="ml-1.5 text-[13px] font-semibold text-[var(--hb-co-text-muted)]">
                       / mo
                     </span>

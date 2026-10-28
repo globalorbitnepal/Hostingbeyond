@@ -28,7 +28,7 @@ import type {
   DomainCheckoutServiceSelection,
 } from "@/lib/domains/domain-checkout-offers";
 import type { DomainCheckoutServiceOffer } from "@/lib/domains/domain-checkout-offers";
-import { formatPrice } from "@/lib/domains/tlds";
+import { useLocale } from "@/components/locale/locale-provider";
 import { cn } from "@/lib/utils";
 
 type CheckoutHints = {
@@ -107,6 +107,7 @@ export function PremiumCartJourney() {
   const reduceMotion = useReducedMotion();
   const { cart, removeDomain, checkoutHref, isAuthenticated, refreshCart } =
     useDomainCart();
+  const { formatCatalogUsd, t } = useLocale();
 
   const [hints, setHints] = useState<CheckoutHints | null>(null);
   const [hintsError, setHintsError] = useState(false);
@@ -182,10 +183,10 @@ export function PremiumCartJourney() {
       cart.items.map((line) => ({
         key: line.domain,
         label: line.domain,
-        detail: `Domain registration · ${line.periodYears ?? 1} year · Renews ${formatPrice(line.renew)}/yr`,
+        detail: `Domain registration · ${line.periodYears ?? 1} year · Renews ${formatCatalogUsd(line.renew)}/yr`,
         amount: line.register,
       })),
-    [cart.items],
+    [cart.items, formatCatalogUsd],
   );
 
   const serviceLines = useMemo(() => {
@@ -368,13 +369,13 @@ export function PremiumCartJourney() {
                               </p>
                               <p className="mt-1 text-[12.5px] text-[var(--hb-co-text-muted)]">
                                 {line.periodYears ?? 1} year ·{" "}
-                                {formatPrice(line.register)} first year · Renews{" "}
-                                {formatPrice(line.renew)}/year
+                                {formatCatalogUsd(line.register)} first year ·
+                                Renews {formatCatalogUsd(line.renew)}/year
                               </p>
                             </div>
                             <div className="flex items-center gap-4">
                               <p className="text-[18px] font-extrabold text-[var(--hb-co-primary)]">
-                                {formatPrice(line.register)}
+                                {formatCatalogUsd(line.register)}
                               </p>
                               <button
                                 type="button"
@@ -535,7 +536,10 @@ export function PremiumCartJourney() {
             )}
 
             {step === 4 && cart.count > 0 && (
-              <section className="hb-checkout-premium__card p-5 sm:p-6">
+              <section
+                className="hb-checkout-premium__card p-5 sm:p-6"
+                translate="no"
+              >
                 <h2 className="text-[15px] font-extrabold">Payment methods</h2>
                 <ul className="mt-4 space-y-2 text-[13px]">
                   <li className="rounded-[14px] border border-[var(--hb-co-border)] px-4 py-3 font-semibold">
@@ -604,7 +608,7 @@ export function PremiumCartJourney() {
                 onClick={() => setMobileSummaryOpen((o) => !o)}
                 className="flex min-h-12 w-full items-center justify-between rounded-[14px] border border-[var(--hb-co-border)] bg-white px-4 text-[13px] font-bold"
               >
-                <span>Estimated total · {formatPrice(total)}</span>
+                <span>Estimated total · {formatCatalogUsd(total)}</span>
                 <ChevronDown
                   className={cn(
                     "size-4 transition",
@@ -647,7 +651,12 @@ export function PremiumCartJourney() {
           style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
         >
           <div className="flex items-center justify-between gap-3">
-            <span className="text-[13px] font-bold">{formatPrice(total)}</span>
+            <span className="text-[13px] font-bold">
+              {formatCatalogUsd(total)}
+              <span className="mt-0.5 block text-[10px] font-medium text-[var(--hb-co-text-muted)]">
+                {t.common.billedInUsd}
+              </span>
+            </span>
             <button
               type="button"
               className="hb-checkout-premium__btn-primary min-h-11 px-6"

@@ -5,6 +5,10 @@ import {
   vpsPlans,
 } from "@/config/pricing-plans";
 import { routes } from "@/config/routes";
+import {
+  attachControlledCatalogUsd,
+  catalogUsdAfterCmsMerge,
+} from "@/lib/hosting/hosting-plan-catalog";
 
 import type { CmsFaqItem, CmsHostingPlan } from "./defaults";
 
@@ -778,7 +782,7 @@ function defaultCategories(): CmsPricingCategoryContent[] {
 
 /** Ecommerce tiers modeled on Hostinger ecommerce promos at ~5% lower list prices. */
 export function defaultEcommercePlans(): CmsHostingPlan[] {
-  return [
+  const plans: CmsHostingPlan[] = [
     {
       id: "commerce-essential",
       visible: true,
@@ -916,6 +920,7 @@ export function defaultEcommercePlans(): CmsHostingPlan[] {
       ctaHref: routes.getStarted,
     },
   ];
+  return plans.map(attachControlledCatalogUsd);
 }
 
 function catalogFromConfig(): {
@@ -946,30 +951,31 @@ function catalogFromConfig(): {
     },
     order: number,
     accent: CmsHostingPlan["accent"],
-  ): CmsHostingPlan => ({
-    id: plan.id,
-    visible: true,
-    order,
-    name: plan.name,
-    tagline: plan.tagline,
-    discountBadge: plan.discountBadge ?? "",
-    popular: plan.popular ?? false,
-    popularLabel: plan.popularLabel ?? "",
-    accent,
-    priceAnnually: plan.priceAnnually,
-    originalAnnually: plan.originalAnnually ?? "",
-    billedAnnually: plan.billedAnnually,
-    saveAnnually: plan.saveAnnually ?? "",
-    priceMonthly: plan.priceMonthly,
-    originalMonthly: "",
-    billedMonthly: plan.billedMonthly,
-    saveMonthly: "",
-    domainPerk: plan.domainPerk ?? "",
-    annualCredit: plan.annualCredit ?? "",
-    features: plan.features,
-    ctaLabel: plan.ctaLabel,
-    ctaHref: plan.ctaHref,
-  });
+  ): CmsHostingPlan =>
+    attachControlledCatalogUsd({
+      id: plan.id,
+      visible: true,
+      order,
+      name: plan.name,
+      tagline: plan.tagline,
+      discountBadge: plan.discountBadge ?? "",
+      popular: plan.popular ?? false,
+      popularLabel: plan.popularLabel ?? "",
+      accent,
+      priceAnnually: plan.priceAnnually,
+      originalAnnually: plan.originalAnnually ?? "",
+      billedAnnually: plan.billedAnnually,
+      saveAnnually: plan.saveAnnually ?? "",
+      priceMonthly: plan.priceMonthly,
+      originalMonthly: "",
+      billedMonthly: plan.billedMonthly,
+      saveMonthly: "",
+      domainPerk: plan.domainPerk ?? "",
+      annualCredit: plan.annualCredit ?? "",
+      features: plan.features,
+      ctaLabel: plan.ctaLabel,
+      ctaHref: plan.ctaHref,
+    });
 
   return {
     vps: vpsPlans.map((p, i) => toCms(p, i, p.popular ? "gradient" : "blue")),
@@ -1039,7 +1045,17 @@ function mergePlansById(
 ): CmsHostingPlan[] {
   if (!stored?.length) return defaults;
   const byId = new Map(stored.map((item) => [item.id, item]));
-  return defaults.map((item) => ({ ...item, ...byId.get(item.id) }));
+  return defaults.map((item) => {
+    const match = byId.get(item.id);
+    if (!match) return item;
+    return {
+      ...item,
+      ...match,
+      monthlyUsd: undefined,
+      yearlyUsd: undefined,
+      ...catalogUsdAfterCmsMerge(match, item),
+    };
+  });
 }
 
 export function mergePricingPageContent(
@@ -1066,9 +1082,10 @@ export function mergePricingPageContent(
       ? stored.trustPills
       : defaults.trustPills,
     categories,
-    ecommercePlans: stored.ecommercePlans?.length
-      ? stored.ecommercePlans
-      : defaults.ecommercePlans,
+    ecommercePlans: mergePlansById(
+      defaults.ecommercePlans,
+      stored.ecommercePlans,
+    ),
     vpsPlans: mergePlansById(defaults.vpsPlans, stored.vpsPlans),
     aiBuilderPlans: mergePlansById(
       defaults.aiBuilderPlans,

@@ -6,11 +6,8 @@ import { Search } from "lucide-react";
 
 import { routes } from "@/config/routes";
 import type { DomainTldRow } from "@/lib/domains/content";
-import {
-  TLD_CATEGORIES,
-  formatPrice,
-  type TldCategory,
-} from "@/lib/domains/tlds";
+import { CatalogPrice } from "@/components/i18n/localized-text";
+import { TLD_CATEGORIES, type TldCategory } from "@/lib/domains/tlds";
 import { cn } from "@/lib/utils";
 
 type Filter = TldCategory | "all";
@@ -99,10 +96,10 @@ export function DomainTransferPriceTable({
                   {row.tld}
                 </td>
                 <td className="py-3.5 pr-4 font-bold text-[#673de6]">
-                  {formatPrice(row.transfer)}
+                  <CatalogPrice usd={row.transfer} />
                 </td>
                 <td className="py-3.5 pr-4 text-slate-600">
-                  {formatPrice(row.renew)}
+                  <CatalogPrice usd={row.renew} />
                 </td>
                 <td className="py-3.5 text-right">
                   <Link

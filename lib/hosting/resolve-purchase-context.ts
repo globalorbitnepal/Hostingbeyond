@@ -1,4 +1,5 @@
 import { getHostingProductBySlug } from "./hosting-products";
+import { hostingPurchaseDisplay } from "./purchase-display";
 import type { HostingPurchaseIntent } from "./purchase-intent";
 import { validateHostingPurchaseIntent } from "./validate-purchase-intent";
 
@@ -9,16 +10,12 @@ export type ResolvedHostingPurchaseContext = {
   billingLabel: string;
   priceLabel: string;
   billedLabel: string;
+  /** Ledger amounts. Use CatalogPrice only when isUsdLedger is true. */
+  displayAmount: number;
+  billedAmount: number;
+  billedPeriod: "month" | "year";
+  isUsdLedger: boolean;
 };
-
-function money(value: number, currency = "USD") {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value);
-}
 
 export async function resolveHostingPurchaseContext(
   raw: HostingPurchaseIntent,
@@ -32,22 +29,24 @@ export async function resolveHostingPurchaseContext(
   const plan = product.plans.find((p) => p.active && p.planKey === intent.plan);
   if (!plan) return null;
 
-  const monthly = Number(plan.monthlyPrice);
-  const yearly = Number(plan.yearlyPrice);
+  const display = hostingPurchaseDisplay({
+    monthlyPrice: Number(plan.monthlyPrice),
+    yearlyPrice: Number(plan.yearlyPrice),
+    billing: intent.billing,
+    currency: plan.currency,
+  });
   const isAnnual = intent.billing === "annually";
-  const priceLabel = isAnnual
-    ? `${money(yearly / 12, plan.currency)}/mo`
-    : `${money(monthly, plan.currency)}/mo`;
-  const billedLabel = isAnnual
-    ? `Billed ${money(yearly, plan.currency)}/yr`
-    : `Billed ${money(monthly, plan.currency)}/mo`;
 
   return {
     intent,
     productName: product.name,
     planName: plan.planName,
     billingLabel: isAnnual ? "Annual billing" : "Monthly billing",
-    priceLabel,
-    billedLabel,
+    priceLabel: display.priceLabel,
+    billedLabel: display.billedLabel,
+    displayAmount: display.displayAmount,
+    billedAmount: display.billedAmount,
+    billedPeriod: display.billedPeriod,
+    isUsdLedger: display.isUsdLedger,
   };
 }

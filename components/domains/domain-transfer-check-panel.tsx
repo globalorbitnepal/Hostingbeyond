@@ -16,7 +16,8 @@ import {
 
 import { routes } from "@/config/routes";
 import type { TransferCheckResult } from "@/lib/domains/transfer";
-import { SUGGESTED_TLDS, formatPrice } from "@/lib/domains/tlds";
+import { CatalogPrice } from "@/components/i18n/localized-text";
+import { SUGGESTED_TLDS } from "@/lib/domains/tlds";
 import { cn } from "@/lib/utils";
 
 const MODE_TABS = [
@@ -288,10 +289,14 @@ export function DomainTransferCheckPanel({
               </p>
               {result.transferPrice != null && result.eligible ? (
                 <p className="mt-2 text-[13px] font-bold text-[#673de6]">
-                  Transfer {formatPrice(result.transferPrice)}
-                  {result.renewPrice != null
-                    ? ` · renews at ${formatPrice(result.renewPrice)}/yr`
-                    : null}
+                  Transfer <CatalogPrice usd={result.transferPrice} />
+                  {result.renewPrice != null ? (
+                    <>
+                      {" "}
+                      · renews at <CatalogPrice usd={result.renewPrice} />
+                      /yr
+                    </>
+                  ) : null}
                 </p>
               ) : null}
               {result.eligible && result.registryCheckOnly ? (

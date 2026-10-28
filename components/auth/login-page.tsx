@@ -22,6 +22,7 @@ import { BrandMark } from "@/components/auth/brand-mark";
 import { SocialAuthButtons } from "@/components/auth/social-auth-buttons";
 import { CountryLanguageSelector } from "@/components/locale/country-language-selector";
 import { cn } from "@/lib/utils";
+import { CatalogPrice } from "@/components/i18n/localized-text";
 import type { ResolvedHostingPurchaseContext } from "@/lib/hosting/resolve-purchase-context";
 import {
   preserveAuthSearchParams,
@@ -259,7 +260,14 @@ export function AuthPageView({
                   <p className="mt-1">
                     {purchaseContext.productName} ·{" "}
                     {purchaseContext.billingLabel} ·{" "}
-                    {purchaseContext.priceLabel}
+                    {purchaseContext.isUsdLedger ? (
+                      <>
+                        <CatalogPrice usd={purchaseContext.displayAmount} />
+                        /mo
+                      </>
+                    ) : (
+                      purchaseContext.priceLabel
+                    )}
                   </p>
                 </div>
               ) : null}
@@ -359,7 +367,8 @@ export function AuthPageView({
                           ? "At least 8 characters"
                           : content.passwordPlaceholder
                       }
-                      className={cn(fieldClass, "pr-12")}
+                      translate="no"
+                      className={cn(fieldClass, "notranslate pr-12")}
                       disabled={submitting}
                     />
                     <button
@@ -399,7 +408,8 @@ export function AuthPageView({
                           setConfirmPassword(event.target.value)
                         }
                         placeholder="Repeat your password"
-                        className={fieldClass}
+                        translate="no"
+                        className={cn(fieldClass, "notranslate")}
                         disabled={submitting}
                       />
                     </span>

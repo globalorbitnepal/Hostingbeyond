@@ -237,8 +237,14 @@ export const CHEAPEST_TLD = [...TLD_PRICES].sort(
   (a, b) => a.register - b.register,
 )[0];
 
+/**
+ * USD book/ledger formatter. Customer-facing catalogue UI must use
+ * `formatCatalogUsd` / `CatalogPrice` so INR/NPR display conversion applies.
+ * This helper never changes the billed currency — checkout remains USD.
+ */
 export function formatPrice(value: number) {
-  return `$${value.toFixed(2)}`;
+  const amount = Number.isFinite(value) ? value : 0;
+  return `$${amount.toFixed(2)}`;
 }
 
 /** Discount shown as a badge, e.g. 95 for "Save 95%". */

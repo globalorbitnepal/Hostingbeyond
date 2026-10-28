@@ -3,6 +3,11 @@ import { productOffers } from "@/config/products";
 import type { CurrencyCode } from "@/config/pricing";
 import { siteConfig } from "@/config/site";
 import { routes } from "@/config/routes";
+import {
+  attachControlledCatalogUsd,
+  catalogUsdAfterCmsMerge,
+  catalogUsdFromExplicit,
+} from "@/lib/hosting/hosting-plan-catalog";
 
 export type CmsSiteSettings = {
   name: string;
@@ -154,6 +159,12 @@ export type CmsHostingPlan = {
   features: string[];
   ctaLabel: string;
   ctaHref: string;
+  /**
+   * Ledger USD from catalog/DB. Present only when a numeric source exists.
+   * Display via CatalogPrice; never parse CMS `$` copy when these are set.
+   */
+  monthlyUsd?: number;
+  yearlyUsd?: number;
 };
 
 export type CmsHostingGuarantee = {
@@ -904,7 +915,7 @@ export function defaultSiteSettings(): CmsSiteSettings {
 }
 
 function defaultHostingPlans(): CmsHostingPlan[] {
-  return [
+  const plans: CmsHostingPlan[] = [
     {
       id: "essential",
       visible: true,
@@ -1047,6 +1058,7 @@ function defaultHostingPlans(): CmsHostingPlan[] {
       ctaHref: routes.getStarted,
     },
   ];
+  return plans.map(attachControlledCatalogUsd);
 }
 
 export function defaultHostingPlansSection(): CmsHostingPlansContent {
@@ -3845,6 +3857,7 @@ export function mergeHomeSections(
         order: typeof match.order === "number" ? match.order : fallback.order,
         accent: match.accent ?? fallback.accent,
         popular: Boolean(match.popular),
+        ...catalogUsdAfterCmsMerge(match, fallback),
       } satisfies CmsHostingPlan;
     })
     .sort((a, b) => a.order - b.order);
@@ -3869,6 +3882,9 @@ export function mergeHomeSections(
         features: Array.isArray(extra.features) ? extra.features : [],
         visible: extra.visible ?? true,
         order: typeof extra.order === "number" ? extra.order : plans.length,
+        monthlyUsd: undefined,
+        yearlyUsd: undefined,
+        ...catalogUsdFromExplicit(extra),
       });
     }
   }

@@ -20,11 +20,15 @@ import {
 import { motion, useReducedMotion } from "framer-motion";
 
 import { hostingCheckoutHref } from "@/lib/hosting/checkout";
+import { resolveCmsHostingCatalogUsd } from "@/lib/hosting/hosting-plan-catalog";
+import { hostingPurchaseDisplay } from "@/lib/hosting/purchase-display";
 import {
   AnnualPlanPerks,
   filterPlanFeatures,
   getAnnualPerkLines,
 } from "@/components/hosting/annual-plan-perks";
+import { CatalogPrice } from "@/components/i18n/localized-text";
+import { useLocale } from "@/components/locale/locale-provider";
 import { cn } from "@/lib/utils";
 import type {
   CmsHostingGuarantee,
@@ -78,8 +82,18 @@ export function PlanCard({
   productCheckoutSlug?: string;
 }) {
   const reduceMotion = useReducedMotion();
+  const { t } = useLocale();
   const popular = Boolean(plan.popular);
   const isAnnual = billing === "annually";
+  const catalogUsd = resolveCmsHostingCatalogUsd(plan);
+  const purchase = catalogUsd
+    ? hostingPurchaseDisplay({
+        monthlyPrice: catalogUsd.monthlyUsd,
+        yearlyPrice: catalogUsd.yearlyUsd,
+        billing,
+        currency: "USD",
+      })
+    : null;
   const price = isAnnual ? plan.priceAnnually : plan.priceMonthly;
   const original = isAnnual ? plan.originalAnnually : plan.originalMonthly;
   const billed = isAnnual ? plan.billedAnnually : plan.billedMonthly;
@@ -154,16 +168,28 @@ export function PlanCard({
               popular ? "text-[#1e1b4b]" : "text-[#673de6]",
             )}
           >
-            {price}
+            {purchase ? <CatalogPrice usd={purchase.displayAmount} /> : price}
           </span>
           <span className="pb-1 text-[13px] font-bold text-[#64748b]">/mo</span>
         </p>
         <div className="mt-2 flex min-h-[1.35rem] flex-wrap items-center gap-x-2 gap-y-1 text-[12px] font-semibold">
-          {billed ? <span className="text-[#475569]">{billed}</span> : null}
+          {purchase ? (
+            <span className="text-[#475569]">
+              Billed <CatalogPrice usd={purchase.billedAmount} />
+              {purchase.billedPeriod === "year" ? "/yr" : "/mo"}
+            </span>
+          ) : billed ? (
+            <span className="text-[#475569]">{billed}</span>
+          ) : null}
           {save ? (
             <span className="font-extrabold text-[#16a34a]">{save}</span>
           ) : null}
         </div>
+        {purchase ? (
+          <p className="mt-1 text-[11px] font-medium text-[#64748b]">
+            {t.common.billedInUsd}
+          </p>
+        ) : null}
       </div>
 
       <Link

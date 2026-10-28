@@ -1,4 +1,8 @@
 import { routes } from "@/config/routes";
+import {
+  attachControlledCatalogUsd,
+  catalogUsdAfterCmsMerge,
+} from "@/lib/hosting/hosting-plan-catalog";
 import type { CmsHostingPlan } from "@/lib/orbit/defaults";
 
 export type CmsCloudPageFeature = {
@@ -95,7 +99,7 @@ function mergeStoredList<T extends { id: string; visible?: boolean }>(
 }
 
 function defaultCloudPlans(): CmsHostingPlan[] {
-  return [
+  const plans: CmsHostingPlan[] = [
     {
       id: "cloud-starter",
       visible: true,
@@ -197,6 +201,7 @@ function defaultCloudPlans(): CmsHostingPlan[] {
       ctaHref: routes.getStarted,
     },
   ];
+  return plans.map(attachControlledCatalogUsd);
 }
 
 export function defaultCloudHostingPageContent(): CmsCloudHostingPageContent {
@@ -485,6 +490,9 @@ export function mergeCloudHostingPageContent(
       popular: item.popular ?? base.popular,
       popularLabel: text(item.popularLabel, base.popularLabel ?? ""),
       order: typeof item.order === "number" ? item.order : base.order,
+      monthlyUsd: undefined,
+      yearlyUsd: undefined,
+      ...catalogUsdAfterCmsMerge(item, base),
     })),
   };
 }

@@ -12,6 +12,7 @@ import {
 
 import { LocalizedText } from "@/components/i18n/localized-text";
 import { CountryLanguageSelector } from "@/components/locale/country-language-selector";
+import { CurrencySelector } from "@/components/locale/currency-selector";
 import { NewsletterForm } from "@/components/layout/newsletter-form";
 import { PaymentMark } from "@/components/layout/payment-marks";
 import { SocialMark } from "@/components/layout/social-marks";
@@ -256,6 +257,12 @@ export function SiteFooter({
 
         <div className="mt-5 flex flex-col gap-3 pb-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <CurrencySelector
+              compact
+              tone="light"
+              menuAlign="start"
+              menuSide="above"
+            />
             <CountryLanguageSelector
               compact
               variant="globe"

@@ -11,23 +11,16 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
 import { createPortal } from "react-dom";
-import { Check, ChevronDown, Search } from "lucide-react";
+import { ChevronDown, Search } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
+import { flagImgUrl, getCountry } from "@/config/geo";
 import {
-  flagImgUrl,
-  getCountry,
-  languages,
-  languagesForCountry,
-  searchCountries,
-  type CountryOption,
-  type LanguageCode,
-} from "@/config/geo";
+  getLocaleMarket,
+  searchLocaleMarkets,
+  type HostingerLocaleMarket,
+} from "@/lib/i18n/hostinger-locale-markets";
 import { useLocale } from "@/components/locale/locale-provider";
-import {
-  languageTriggerLabel,
-  LANGUAGE_MARKET_OPTIONS,
-} from "@/lib/i18n/language-markets";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -43,8 +36,7 @@ type Props = {
   className?: string;
 };
 
-const MENU_WIDTH = { compact: 320, default: 360 } as const;
-const LANG_MENU_WIDTH = { compact: 220, default: 248 } as const;
+const MENU_WIDTH = { compact: 328, default: 380 } as const;
 
 function computeMenuPosition(
   trigger: DOMRect,
@@ -62,7 +54,7 @@ function computeMenuPosition(
       left,
       bottom: window.innerHeight - trigger.top + margin,
       width,
-      maxHeight: "min(520px, 80dvh)",
+      maxHeight: "min(480px, 72dvh)",
       zIndex: 300,
     };
   }
@@ -175,73 +167,55 @@ export function CountryLanguageSelector({
   className,
 }: Props) {
   const light = tone === "light";
-  const { preferences, setCountry, setLanguage, t } = useLocale();
+  const { preferences, applyLocaleMarket, t } = useLocale();
   const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
-  const [langOpen, setLangOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [draftCountry, setDraftCountry] = useState(preferences.country);
-  const [draftLanguage, setDraftLanguage] = useState(preferences.language);
   const [activeIndex, setActiveIndex] = useState(0);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const countryBtnRef = useRef<HTMLButtonElement>(null);
-  const langBtnRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-  const langMenuRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const [menuPosition, setMenuPosition] = useState<CSSProperties | null>(null);
-  const [langMenuPosition, setLangMenuPosition] =
-    useState<CSSProperties | null>(null);
 
   const country = getCountry(preferences.country);
-  const results = useMemo(() => searchCountries(query), [query]);
+  const activeMarket = getLocaleMarket(preferences.localeMarketId);
+  const results = useMemo(() => searchLocaleMarkets(query), [query]);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   const openPanel = useCallback(() => {
-    setLangOpen(false);
-    setDraftCountry(preferences.country);
-    setDraftLanguage(preferences.language);
     setQuery("");
     setActiveIndex(0);
     setOpen(true);
     setTimeout(() => searchRef.current?.focus(), 50);
-  }, [preferences.country, preferences.language]);
+  }, []);
 
   const closePanel = useCallback(() => {
     setOpen(false);
     setQuery("");
   }, []);
 
-  const closeLangMenu = useCallback(() => {
-    setLangOpen(false);
-  }, []);
-
-  const toggleLangMenu = useCallback(() => {
-    setOpen(false);
-    setLangOpen((current) => !current);
-  }, []);
+  const togglePanel = useCallback(() => {
+    if (open) closePanel();
+    else openPanel();
+  }, [open, closePanel, openPanel]);
 
   // Close on outside click or Escape
   useEffect(() => {
-    if (!open && !langOpen) return;
+    if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        closePanel();
-        closeLangMenu();
-      }
+      if (e.key === "Escape") closePanel();
     };
     const onOutside = (e: MouseEvent) => {
       const target = e.target as Node;
       if (wrapperRef.current?.contains(target)) return;
       if (menuRef.current?.contains(target)) return;
-      if (langMenuRef.current?.contains(target)) return;
       closePanel();
-      closeLangMenu();
     };
     document.addEventListener("keydown", onKey);
     document.addEventListener("mousedown", onOutside);
@@ -249,15 +223,12 @@ export function CountryLanguageSelector({
       document.removeEventListener("keydown", onKey);
       document.removeEventListener("mousedown", onOutside);
     };
-  }, [open, langOpen, closePanel, closeLangMenu]);
+  }, [open, closePanel]);
 
   const menuWidth = compact ? MENU_WIDTH.compact : MENU_WIDTH.default;
-  const langMenuWidth = compact
-    ? LANG_MENU_WIDTH.compact
-    : LANG_MENU_WIDTH.default;
 
   const updateMenuPosition = useCallback(() => {
-    const el = countryBtnRef.current;
+    const el = triggerRef.current;
     if (!el) return;
     setMenuPosition(
       computeMenuPosition(
@@ -268,19 +239,6 @@ export function CountryLanguageSelector({
       ),
     );
   }, [menuAlign, menuSide, menuWidth]);
-
-  const updateLangMenuPosition = useCallback(() => {
-    const el = langBtnRef.current;
-    if (!el) return;
-    setLangMenuPosition(
-      computeMenuPosition(
-        el.getBoundingClientRect(),
-        menuAlign,
-        "below",
-        langMenuWidth,
-      ),
-    );
-  }, [menuAlign, langMenuWidth]);
 
   useLayoutEffect(() => {
     if (!open) {
@@ -296,20 +254,6 @@ export function CountryLanguageSelector({
     };
   }, [open, updateMenuPosition]);
 
-  useLayoutEffect(() => {
-    if (!langOpen) {
-      setLangMenuPosition(null);
-      return;
-    }
-    updateLangMenuPosition();
-    window.addEventListener("resize", updateLangMenuPosition);
-    window.addEventListener("scroll", updateLangMenuPosition, true);
-    return () => {
-      window.removeEventListener("resize", updateLangMenuPosition);
-      window.removeEventListener("scroll", updateLangMenuPosition, true);
-    };
-  }, [langOpen, updateLangMenuPosition]);
-
   useEffect(() => {
     setActiveIndex(0);
   }, [query]);
@@ -323,16 +267,8 @@ export function CountryLanguageSelector({
     el?.scrollIntoView({ block: "nearest" });
   }, [open, activeIndex]);
 
-  const selectAndApply = (option: CountryOption) => {
-    setCountry(option.code, { suggestLanguage: false });
-    closePanel();
-  };
-
-  const applyDraft = () => {
-    setCountry(draftCountry, { suggestLanguage: false });
-    if (draftLanguage !== preferences.language) {
-      setLanguage(draftLanguage);
-    }
+  const selectAndApply = (market: HostingerLocaleMarket) => {
+    applyLocaleMarket(market);
     closePanel();
   };
 
@@ -351,72 +287,6 @@ export function CountryLanguageSelector({
     }
   };
 
-  const draft = getCountry(draftCountry);
-  const languageChoices = useMemo(() => {
-    return languagesForCountry(draft);
-  }, [draft.languages]);
-
-  function renderLanguageOptions(options: {
-    selected: LanguageCode;
-    onPick: (code: LanguageCode) => void;
-  }) {
-    return (
-      <div
-        className="hb-locale-scroll flex max-h-[min(280px,50dvh)] flex-col gap-0.5 overflow-y-auto overscroll-contain p-1"
-        role="listbox"
-        aria-label={t.locale.language}
-      >
-        {LANGUAGE_MARKET_OPTIONS.map((market) => {
-          const sel = options.selected === market.code;
-          return (
-            <button
-              key={market.code}
-              type="button"
-              role="option"
-              aria-selected={sel}
-              onClick={() => options.onPick(market.code)}
-              className={cn(
-                "flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left transition-colors",
-                light
-                  ? sel
-                    ? "bg-indigo-50 text-indigo-950 ring-1 ring-indigo-200/80"
-                    : "text-slate-800 hover:bg-slate-50"
-                  : sel
-                    ? "bg-[rgba(37,99,235,0.18)] text-white ring-1 ring-[#2563eb]/40"
-                    : "text-white/85 hover:bg-white/[0.06]",
-              )}
-            >
-              <span className="min-w-0">
-                <span className="block text-[13px] leading-tight font-bold">
-                  {market.title}
-                </span>
-                <span
-                  className={cn(
-                    "mt-0.5 block text-[11px] font-medium",
-                    light ? "text-slate-500" : "text-white/50",
-                  )}
-                >
-                  {market.region}
-                </span>
-              </span>
-              {sel ? (
-                <Check
-                  className={cn(
-                    "size-3.5 shrink-0",
-                    light ? "text-indigo-600" : "text-[#4f8ef7]",
-                  )}
-                  aria-hidden
-                />
-              ) : (
-                <span className="size-3.5 shrink-0" />
-              )}
-            </button>
-          );
-        })}
-      </div>
-    );
-  }
-
   // SSR placeholder
   if (!mounted) {
     return (
@@ -426,32 +296,23 @@ export function CountryLanguageSelector({
           light
             ? "border-slate-200/90 bg-white/80"
             : "border-white/[0.10] bg-white/[0.05]",
-          compact ? "h-8 rounded-full px-1.5" : "h-[38px] rounded-full px-2",
+          compact ? "h-8 rounded-full px-2" : "h-[38px] rounded-full px-2.5",
           className,
         )}
       >
-        {variant === "globe" ? (
-          <span
-            className={cn(
-              "inline-block size-4 rounded-full",
-              light ? "bg-slate-200" : "bg-white/10",
-            )}
-          />
-        ) : (
-          <span
-            className={cn(
-              "inline-block size-5 rounded-full",
-              light ? "bg-slate-200" : "bg-white/10",
-            )}
-          />
-        )}
         <span
           className={cn(
-            "max-w-[9.5rem] truncate px-1 text-[11px] font-bold sm:max-w-none sm:text-[12px]",
+            "inline-block size-5 rounded-full",
+            light ? "bg-slate-200" : "bg-white/10",
+          )}
+        />
+        <span
+          className={cn(
+            "text-[11px] font-bold sm:text-[12px]",
             light ? "text-slate-900" : "text-white",
           )}
         >
-          English (US)
+          EN
         </span>
         <ChevronDown
           className={cn(
@@ -466,143 +327,65 @@ export function CountryLanguageSelector({
 
   return (
     <div ref={wrapperRef} className="relative">
-      <div
+      <button
+        ref={triggerRef}
+        type="button"
+        onClick={togglePanel}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={t.locale.selectLocation}
         className={cn(
-          "inline-flex items-center gap-1 border backdrop-blur-xl",
+          "inline-flex items-center gap-1.5 border backdrop-blur-xl transition-all duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563eb]",
           light
-            ? "border-slate-200/90 bg-white/85 text-slate-800 shadow-[0_4px_16px_rgba(15,23,42,0.06)]"
-            : "border-white/[0.12] bg-white/[0.06] text-white",
+            ? "border-slate-200/90 bg-white/85 text-slate-800 shadow-[0_4px_16px_rgba(15,23,42,0.06)] hover:bg-white"
+            : "border-white/[0.12] bg-white/[0.06] text-white hover:bg-white/[0.09]",
           compact
-            ? "h-8 rounded-full py-0 pr-1 pl-1"
-            : "h-[38px] rounded-full py-0 pr-1.5 pl-1.5",
+            ? "h-8 rounded-full py-0 pr-2 pl-1.5"
+            : "h-[38px] rounded-full py-0 pr-2.5 pl-2",
           className,
         )}
       >
-        <button
-          ref={countryBtnRef}
-          type="button"
-          onClick={() => (open ? closePanel() : openPanel())}
-          aria-haspopup="listbox"
-          aria-expanded={open}
-          aria-label={t.locale.selectLocation}
-          className={cn(
-            "inline-flex items-center gap-1 rounded-full px-1.5 transition-all duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563eb]",
-            light ? "hover:bg-slate-100" : "hover:bg-white/10",
-            compact ? "h-7" : "h-8",
-          )}
-        >
-          {variant === "globe" ? (
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              className={cn(
-                "size-4",
-                light ? "text-slate-500" : "text-white/75",
-              )}
-              aria-hidden
-            >
-              <circle cx="12" cy="12" r="9" />
-              <path d="M3 12h18M12 3c2.5 2.8 3.8 5.8 3.8 9s-1.3 6.2-3.8 9c-2.5-2.8-3.8-5.8-3.8-9S9.5 5.8 12 3z" />
-            </svg>
-          ) : (
-            <FlagImg
-              code={country.code}
-              size={compact ? 22 : 26}
-              priority
-              tone={tone}
-            />
-          )}
-          <ChevronDown
+        {variant === "globe" ? (
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
             className={cn(
-              "size-[10px] shrink-0 opacity-55 transition-transform duration-200",
-              open && "rotate-180",
-              light ? "text-slate-500" : "",
+              "size-4 shrink-0",
+              light ? "text-slate-500" : "text-white/75",
             )}
             aria-hidden
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M3 12h18M12 3c2.5 2.8 3.8 5.8 3.8 9s-1.3 6.2-3.8 9c-2.5-2.8-3.8-5.8-3.8-9S9.5 5.8 12 3z" />
+          </svg>
+        ) : (
+          <FlagImg
+            code={country.code}
+            size={compact ? 22 : 26}
+            priority
+            tone={tone}
           />
-        </button>
+        )}
         <span
           className={cn(
-            "h-5 w-px shrink-0",
-            light ? "bg-slate-200" : "bg-white/15",
+            "min-w-[1.75rem] text-center text-[11px] font-bold tracking-wide sm:text-[12px]",
+            light ? "text-slate-900" : "text-white",
+          )}
+        >
+          {activeMarket.triggerCode}
+        </span>
+        <ChevronDown
+          className={cn(
+            "size-[10px] shrink-0 opacity-55 transition-transform duration-200",
+            open && "rotate-180",
+            light ? "text-slate-500" : "text-white/55",
           )}
           aria-hidden
         />
-        <button
-          ref={langBtnRef}
-          type="button"
-          onClick={toggleLangMenu}
-          aria-haspopup="listbox"
-          aria-expanded={langOpen}
-          aria-label={t.locale.language}
-          className={cn(
-            "inline-flex items-center gap-1 rounded-full px-2 transition-all duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563eb]",
-            light ? "hover:bg-slate-100" : "hover:bg-white/10",
-            compact ? "h-7 text-[11px]" : "h-8 text-[12.5px]",
-          )}
-        >
-          <span
-            className={cn(
-              "max-w-[7.5rem] truncate font-bold tracking-tight sm:max-w-[10rem]",
-              light ? "text-slate-900" : "text-white",
-            )}
-          >
-            {languageTriggerLabel(preferences.language)}
-          </span>
-          <ChevronDown
-            className={cn(
-              "size-[10px] shrink-0 opacity-55 transition-transform duration-200",
-              langOpen && "rotate-180",
-              light ? "text-slate-500" : "",
-            )}
-            aria-hidden
-          />
-        </button>
-      </div>
+      </button>
 
-      {/* Language dropdown — opens below EN */}
-      <AnimatePresence>
-        {langOpen && langMenuPosition && typeof document !== "undefined"
-          ? createPortal(
-              <motion.div
-                ref={langMenuRef}
-                initial={{
-                  opacity: 0,
-                  y: menuSide === "above" ? -4 : 4,
-                  scale: 0.97,
-                }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{
-                  opacity: 0,
-                  y: menuSide === "above" ? -3 : 3,
-                  scale: 0.97,
-                }}
-                transition={{ duration: 0.15, ease: [0.22, 1, 0.36, 1] }}
-                className={cn(
-                  "overflow-hidden rounded-[16px] border shadow-[0_20px_50px_rgba(15,23,42,0.14)] backdrop-blur-2xl",
-                  light
-                    ? "border-slate-200/90 bg-white/98"
-                    : "border-white/[0.12] bg-[#0c1528] shadow-[0_20px_50px_rgba(0,0,0,0.55)]",
-                )}
-                style={langMenuPosition}
-              >
-                {renderLanguageOptions({
-                  selected: preferences.language,
-                  onPick: (code) => {
-                    setDraftLanguage(code);
-                    setLanguage(code);
-                    closeLangMenu();
-                  },
-                })}
-              </motion.div>,
-              document.body,
-            )
-          : null}
-      </AnimatePresence>
-
-      {/* ── Dropdown (portaled so footer/header overflow does not clip) ── */}
       <AnimatePresence>
         {open && menuPosition && typeof document !== "undefined"
           ? createPortal(
@@ -621,44 +404,29 @@ export function CountryLanguageSelector({
                 }}
                 transition={{ duration: 0.15, ease: [0.22, 1, 0.36, 1] }}
                 className={cn(
-                  "flex flex-col overflow-hidden rounded-[18px] border backdrop-blur-2xl",
+                  "flex flex-col overflow-hidden rounded-[16px] border backdrop-blur-2xl",
                   light
-                    ? "border-slate-200/80 bg-white/95 shadow-[0_20px_50px_rgba(15,23,42,0.14)]"
+                    ? "border-slate-200/90 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.14)]"
                     : "border-white/[0.12] bg-[#0c1528] shadow-[0_20px_60px_rgba(0,0,0,0.65)]",
                 )}
                 style={menuPosition}
               >
                 <div
                   className={cn(
-                    "shrink-0 border-b px-4 py-3",
+                    "shrink-0 border-b px-4 py-3.5",
                     light ? "border-slate-200/80" : "border-white/[0.07]",
                   )}
                 >
                   <p
                     className={cn(
-                      "text-[13.5px] font-bold",
+                      "text-[14px] leading-snug font-bold",
                       light ? "text-slate-900" : "text-white",
                     )}
                   >
                     {t.locale.selectLocation}
                   </p>
-                  <p
-                    className={cn(
-                      "mt-2 text-[10px] font-bold tracking-[0.12em] uppercase",
-                      light ? "text-slate-400" : "text-white/35",
-                    )}
-                  >
-                    {t.locale.language}
-                  </p>
-                  <div className="mt-1">
-                    {renderLanguageOptions({
-                      selected: draftLanguage,
-                      onPick: (code) => setDraftLanguage(code),
-                    })}
-                  </div>
                 </div>
 
-                {/* Search */}
                 <div
                   className={cn(
                     "shrink-0 border-b px-3 py-2.5",
@@ -681,7 +449,7 @@ export function CountryLanguageSelector({
                       onKeyDown={onSearchKeyDown}
                       placeholder={t.locale.searchPlaceholder}
                       className={cn(
-                        "h-[36px] w-full rounded-[9px] border pr-3 pl-9 text-[13px] outline-none",
+                        "h-[38px] w-full rounded-[10px] border pr-3 pl-9 text-[13px] outline-none",
                         light
                           ? "border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:border-[#6366f1]/50 focus:bg-white"
                           : "border-white/[0.10] bg-white/[0.05] text-white placeholder:text-white/30 focus:border-[#2563eb]/50",
@@ -691,10 +459,12 @@ export function CountryLanguageSelector({
                   </label>
                 </div>
 
-                {/* Country list */}
                 <div
                   ref={listRef}
-                  className="hb-locale-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain py-1"
+                  className={cn(
+                    "min-h-0 flex-1 overflow-y-auto overscroll-contain py-1",
+                    light ? "hb-locale-scroll-light" : "hb-locale-scroll",
+                  )}
                   role="listbox"
                 >
                   {results.length === 0 ? (
@@ -707,27 +477,24 @@ export function CountryLanguageSelector({
                       {t.locale.noResults}
                     </p>
                   ) : (
-                    results.map((option, index) => {
-                      const selected = option.code === draftCountry;
+                    results.map((market, index) => {
+                      const selected = market.id === preferences.localeMarketId;
                       const active = index === activeIndex;
-                      const primaryLang = languages[option.defaultLanguage];
-                      const currencyTag =
-                        option.currency !== "USD" ? option.currency : null;
 
                       return (
                         <button
-                          key={option.code}
+                          key={market.id}
                           type="button"
                           role="option"
                           aria-selected={selected}
                           data-active={String(active)}
                           onMouseEnter={() => setActiveIndex(index)}
-                          onClick={() => selectAndApply(option)}
+                          onClick={() => selectAndApply(market)}
                           className={cn(
-                            "flex w-full items-center gap-3 px-3 py-[9px] text-left transition-colors duration-100",
+                            "flex w-full items-center gap-3 px-3 py-[10px] text-left transition-colors duration-100",
                             light
                               ? selected
-                                ? "bg-indigo-50 text-slate-900"
+                                ? "bg-indigo-50/90 text-slate-900"
                                 : active
                                   ? "bg-slate-100 text-slate-900"
                                   : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
@@ -738,135 +505,28 @@ export function CountryLanguageSelector({
                                   : "text-white/80 hover:bg-white/[0.05] hover:text-white",
                           )}
                         >
-                          <FlagImg code={option.code} size={26} tone={tone} />
+                          <FlagImg
+                            code={market.countryCode}
+                            size={26}
+                            tone={tone}
+                          />
 
                           <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">
-                            {option.name}
+                            {market.countryName}
                           </span>
 
                           <span
                             className={cn(
-                              "shrink-0 text-[11.5px]",
+                              "shrink-0 text-[12px] font-normal",
                               light ? "text-slate-400" : "text-white/45",
                             )}
                           >
-                            {primaryLang?.nativeLabel ?? primaryLang?.label}
+                            {market.languageLabel}
                           </span>
-
-                          {currencyTag ? (
-                            <span
-                              className={cn(
-                                "shrink-0 rounded-[5px] border px-1.5 py-0.5 text-[10px] font-bold",
-                                light
-                                  ? "border-slate-200 bg-white text-slate-500"
-                                  : "border-white/[0.10] bg-white/[0.06] text-white/45",
-                              )}
-                            >
-                              {currencyTag}
-                            </span>
-                          ) : null}
-
-                          {selected ? (
-                            <Check
-                              className={cn(
-                                "size-3.5 shrink-0",
-                                light ? "text-indigo-600" : "text-[#4f8ef7]",
-                              )}
-                              aria-hidden
-                            />
-                          ) : (
-                            <span className="size-3.5 shrink-0" />
-                          )}
                         </button>
                       );
                     })
                   )}
-                </div>
-
-                {/* Language picker — only for multi-language countries */}
-                {languageChoices.length > 1 ? (
-                  <div
-                    className={cn(
-                      "shrink-0 border-t px-3 py-2.5",
-                      light ? "border-slate-200/80" : "border-white/[0.07]",
-                    )}
-                  >
-                    <p
-                      className={cn(
-                        "mb-2 text-[10px] font-bold tracking-[0.12em] uppercase",
-                        light ? "text-slate-400" : "text-white/35",
-                      )}
-                    >
-                      {t.locale.language}
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {languageChoices.map((code) => {
-                        const meta = languages[code];
-                        const sel = draftLanguage === code;
-                        return (
-                          <button
-                            key={code}
-                            type="button"
-                            onClick={() => setDraftLanguage(code)}
-                            className={cn(
-                              "rounded-[7px] border px-2.5 py-1 text-[12px] font-medium transition-colors",
-                              light
-                                ? sel
-                                  ? "border-indigo-300 bg-indigo-50 text-indigo-700"
-                                  : "border-slate-200 bg-white text-slate-600 hover:text-slate-900"
-                                : sel
-                                  ? "border-[#2563eb]/50 bg-[#2563eb]/20 text-white"
-                                  : "border-white/[0.10] bg-white/[0.04] text-white/55 hover:text-white",
-                            )}
-                          >
-                            {meta.nativeLabel}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ) : null}
-
-                {/* Footer: selected summary + Apply */}
-                <div
-                  className={cn(
-                    "flex shrink-0 items-center justify-between gap-3 border-t px-4 py-2.5",
-                    light
-                      ? "border-slate-200/80 bg-slate-50/90"
-                      : "border-white/[0.07] bg-[rgba(5,8,18,0.7)]",
-                  )}
-                >
-                  <div className="flex min-w-0 items-center gap-2.5">
-                    <FlagImg code={draft.code} size={22} tone={tone} />
-                    <div className="min-w-0">
-                      <p
-                        className={cn(
-                          "truncate text-[12px] font-semibold",
-                          light ? "text-slate-800" : "text-white/85",
-                        )}
-                      >
-                        {draft.name}
-                      </p>
-                      <p
-                        className={cn(
-                          "text-[10.5px]",
-                          light ? "text-slate-500" : "text-white/38",
-                        )}
-                      >
-                        {languages[draftLanguage]?.nativeLabel ??
-                          draftLanguage.toUpperCase()}
-                        {" · "}
-                        {draft.currency}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={applyDraft}
-                    className="inline-flex h-8 shrink-0 items-center rounded-[9px] bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-4 text-[12px] font-bold text-white shadow-[0_0_16px_rgba(37,99,235,0.28)] transition hover:brightness-110"
-                  >
-                    {t.locale.apply}
-                  </button>
                 </div>
               </motion.div>,
               document.body,

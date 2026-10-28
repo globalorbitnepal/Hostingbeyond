@@ -102,7 +102,10 @@ export function OrbitShell({
   }
 
   return (
-    <div className="min-h-dvh bg-[#e8eeff] text-slate-900">
+    <div
+      className="notranslate min-h-dvh bg-[#e8eeff] text-slate-900"
+      translate="no"
+    >
       <div className="mx-auto flex min-h-dvh max-w-[1600px]">
         <aside
           className={cn(
