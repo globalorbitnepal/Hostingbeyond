@@ -27,6 +27,10 @@ import {
   serializePreferences,
   type UserPreferences,
 } from "@/lib/i18n/preferences";
+import {
+  resolveUsdToLocalRate,
+  type DisplayCurrencyRateOverrides,
+} from "@/lib/pricing/display-rates";
 
 type LocaleContextValue = {
   preferences: UserPreferences;
@@ -61,14 +65,17 @@ function writePrefsCookie(prefs: UserPreferences) {
 export function LocaleProvider({
   children,
   initialPreferences,
+  initialDisplayCurrencyRates = {},
 }: {
   children: ReactNode;
   initialPreferences: UserPreferences;
+  initialDisplayCurrencyRates?: DisplayCurrencyRateOverrides;
 }) {
   const router = useRouter();
   const [preferences, setPreferences] = useState(() =>
     normalizePreferences(initialPreferences),
   );
+  const [displayCurrencyRates] = useState(initialDisplayCurrencyRates);
   const [isPending, startTransition] = useTransition();
 
   const dictionary = useMemo(
@@ -135,28 +142,34 @@ export function LocaleProvider({
 
   const formatPrice = useCallback(
     (productId: ProductPriceId) => {
-      const amount = getProductPrice(productId, preferences.currency);
+      const rate = resolveUsdToLocalRate(
+        preferences.currency as CurrencyCode,
+        displayCurrencyRates,
+      );
+      const amount = getProductPrice(
+        productId,
+        preferences.currency as CurrencyCode,
+        rate,
+      );
       const locale =
         languages[preferences.language]?.locale ?? languages.en.locale;
       return formatMoney(amount, preferences.currency as CurrencyCode, locale);
     },
-    [preferences.currency, preferences.language],
+    [displayCurrencyRates, preferences.currency, preferences.language],
   );
 
   const formatCatalogUsd = useCallback(
     (usdAmount: number) => {
       const locale =
         languages[preferences.language]?.locale ?? languages.en.locale;
-      if (preferences.currency === "USD") {
+      const currency = preferences.currency as CurrencyCode;
+      const rate = resolveUsdToLocalRate(currency, displayCurrencyRates);
+      if (currency === "USD") {
         return formatMoney(usdAmount, "USD", locale);
       }
-      return formatUsdAsLocal(
-        usdAmount,
-        preferences.currency as CurrencyCode,
-        locale,
-      );
+      return formatUsdAsLocal(usdAmount, currency, locale, rate);
     },
-    [preferences.currency, preferences.language],
+    [displayCurrencyRates, preferences.currency, preferences.language],
   );
 
   const value = useMemo<LocaleContextValue>(

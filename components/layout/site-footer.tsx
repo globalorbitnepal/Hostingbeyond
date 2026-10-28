@@ -273,7 +273,9 @@ export function SiteFooter({
               </Link>
             ))}
           </div>
-          <p className="text-[12.5px] text-slate-500">{data.copyright}</p>
+          <p className="text-[12.5px] text-slate-500">
+            <LocalizedText text={data.copyright} />
+          </p>
         </div>
       </div>
     </footer>

@@ -1,15 +1,12 @@
 import { SiteFooter, SiteHeader } from "@/components/layout";
-import { getHomeSections, getSiteSettings } from "@/lib/orbit/content";
+import { getLocalizedPublicChrome } from "@/lib/i18n/public-chrome";
 
 export async function BlogSiteShell({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [sections, settings] = await Promise.all([
-    getHomeSections(),
-    getSiteSettings(),
-  ]);
+  const { sections, settings } = await getLocalizedPublicChrome();
 
   return (
     <div className="hb-band-cream min-h-dvh overflow-x-hidden">

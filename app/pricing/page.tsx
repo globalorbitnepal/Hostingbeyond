@@ -4,10 +4,12 @@ import { PricingPageView } from "@/components/pricing/pricing-page-view";
 import { SiteFooter, SiteHeader } from "@/components/layout";
 import {
   buildPublicPageMetadata,
-  getHomeSections,
   getPricingPageContent,
-  getSiteSettings,
 } from "@/lib/orbit/content";
+import {
+  getLocalizedPublicChrome,
+  localizePublicContent,
+} from "@/lib/i18n/public-chrome";
 
 export const dynamic = "force-dynamic";
 
@@ -21,12 +23,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function PricingPage() {
-  const [sections, settings, pricing] = await Promise.all([
-    getHomeSections(),
-    getSiteSettings(),
+  const [{ sections, settings, preferences }, rawPricing] = await Promise.all([
+    getLocalizedPublicChrome(),
     getPricingPageContent(),
   ]);
-
+  const pricing = localizePublicContent(preferences.language, rawPricing);
   const hostingPlans = sections.hostingPlans;
 
   return (

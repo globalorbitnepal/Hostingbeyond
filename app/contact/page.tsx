@@ -19,7 +19,11 @@ import { routes } from "@/config/routes";
 import { siteConfig } from "@/config/site";
 import { breadcrumbJsonLd } from "@/lib/blog/seo";
 import { buildMetadata } from "@/lib/metadata";
-import { getContactPageContent, getSiteSettings } from "@/lib/orbit/content";
+import {
+  getLocalizedPublicChrome,
+  localizePublicContent,
+} from "@/lib/i18n/public-chrome";
+import { getContactPageContent } from "@/lib/orbit/content";
 
 export const dynamic = "force-dynamic";
 
@@ -33,10 +37,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ContactPage() {
-  const [content, settings] = await Promise.all([
+  const [rawContent, { preferences, settings }] = await Promise.all([
     getContactPageContent(),
-    getSiteSettings(),
+    getLocalizedPublicChrome(),
   ]);
+  const content = localizePublicContent(preferences.language, rawContent);
 
   const breadcrumbs = breadcrumbJsonLd([
     { name: "Home", path: "/" },

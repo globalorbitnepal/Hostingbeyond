@@ -11,6 +11,8 @@ import {
 import { buildDomainPageMetadata } from "@/lib/domains/page-metadata";
 import { parseBulkSearchHubParams } from "@/lib/domains/domain-purchase-intent";
 import { buildDomainSchema } from "@/lib/domains/seo";
+import { getRequestPreferences } from "@/lib/i18n/server-locale";
+import { localizeCopyTree } from "@/lib/i18n/localize-copy-tree";
 
 const PATH = routes.bulkDomainSearch;
 
@@ -24,9 +26,10 @@ export default async function BulkDomainSearchPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const [content, params] = await Promise.all([
+  const [content, params, preferences] = await Promise.all([
     getDomainContent(),
     searchParams,
+    getRequestPreferences(),
   ]);
   const { initialBulkText, bulkLimitMessage } =
     parseBulkSearchHubParams(params);
@@ -41,6 +44,9 @@ export default async function BulkDomainSearchPage({
     popularTlds,
     displayPricing,
   );
+
+  const localizedContent = localizeCopyTree(preferences.language, content);
+  const localizedPage = localizeCopyTree(preferences.language, page);
 
   const schema = buildDomainSchema({
     name: page.title,
@@ -61,8 +67,8 @@ export default async function BulkDomainSearchPage({
       />
       <DomainSearchView
         mode="bulk"
-        content={content}
-        page={page}
+        content={localizedContent}
+        page={localizedPage}
         crossLinkHref={routes.domainSearch}
         displayPricing={displayPricing}
         popularPricing={popularPricing}

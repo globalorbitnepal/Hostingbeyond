@@ -6,9 +6,11 @@ import { siteConfig } from "@/config/site";
 import {
   buildPublicPageMetadata,
   getBusinessEmailPageContent,
-  getHomeSections,
-  getSiteSettings,
 } from "@/lib/orbit/content";
+import {
+  getLocalizedPublicChrome,
+  localizePublicContent,
+} from "@/lib/i18n/public-chrome";
 
 export const dynamic = "force-dynamic";
 
@@ -24,11 +26,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function BusinessEmailPage() {
-  const [sections, settings, pageContent] = await Promise.all([
-    getHomeSections(),
-    getSiteSettings(),
+  const [{ sections, settings, preferences }, rawPage] = await Promise.all([
+    getLocalizedPublicChrome(),
     getBusinessEmailPageContent(),
   ]);
+  const pageContent = localizePublicContent(preferences.language, rawPage);
 
   const pageUrl = new URL(PAGE_PATH, siteConfig.url).toString();
 

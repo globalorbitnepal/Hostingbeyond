@@ -1,5 +1,6 @@
 import { mainNavigation } from "@/config/navigation";
 import { productOffers } from "@/config/products";
+import type { CurrencyCode } from "@/config/pricing";
 import { siteConfig } from "@/config/site";
 import { routes } from "@/config/routes";
 
@@ -29,6 +30,8 @@ export type CmsSiteSettings = {
   domainProtectionEnabled: boolean;
   domainProtectionPriceUsd: number;
   domainProtectionLabel: string;
+  /** Orbit overrides: local currency units per 1 USD (marketing display only). */
+  displayCurrencyRates: Partial<Record<CurrencyCode, number>>;
 };
 
 export type CmsDomainTld = {
@@ -896,6 +899,7 @@ export function defaultSiteSettings(): CmsSiteSettings {
     domainProtectionEnabled: true,
     domainProtectionPriceUsd: 9.99,
     domainProtectionLabel: "Domain Protection",
+    displayCurrencyRates: {},
   };
 }
 

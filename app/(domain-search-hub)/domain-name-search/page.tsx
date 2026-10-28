@@ -13,6 +13,8 @@ import {
   getPopularPickPricing,
   mergeRetailIntoPricingRows,
 } from "@/lib/domains/domain-search-page-data";
+import { getRequestPreferences } from "@/lib/i18n/server-locale";
+import { localizeCopyTree } from "@/lib/i18n/localize-copy-tree";
 
 function withSupportedExtensionCopy(
   text: string,
@@ -39,9 +41,10 @@ export default async function DomainNameSearchPage({
 }: {
   searchParams: Promise<{ q?: string | string[] }>;
 }) {
-  const [content, params] = await Promise.all([
+  const [content, params, preferences] = await Promise.all([
     getDomainContent(),
     searchParams,
+    getRequestPreferences(),
   ]);
 
   const rawQuery = Array.isArray(params.q) ? params.q[0] : params.q;
@@ -81,6 +84,9 @@ export default async function DomainNameSearchPage({
     displayPricing,
   );
 
+  const localizedContent = localizeCopyTree(preferences.language, content);
+  const localizedPage = localizeCopyTree(preferences.language, pageForView);
+
   const schema = buildDomainSchema({
     name: page.title,
     description: page.seoDescription,
@@ -102,8 +108,8 @@ export default async function DomainNameSearchPage({
       <DomainSearchView
         mode="single"
         initialQuery={initialQuery}
-        content={content}
-        page={pageForView}
+        content={localizedContent}
+        page={localizedPage}
         crossLinkHref={routes.bulkDomainSearch}
         chipRetailByTld={chipRetailByTld}
         displayPricing={displayPricing}

@@ -41,6 +41,7 @@ type Props = {
 };
 
 const MENU_WIDTH = { compact: 320, default: 360 } as const;
+const LANG_MENU_WIDTH = { compact: 188, default: 204 } as const;
 
 function computeMenuPosition(
   trigger: DOMRect,
@@ -174,16 +175,22 @@ export function CountryLanguageSelector({
   const { preferences, applySelection, setLanguage, t } = useLocale();
   const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [draftCountry, setDraftCountry] = useState(preferences.country);
   const [draftLanguage, setDraftLanguage] = useState(preferences.language);
   const [activeIndex, setActiveIndex] = useState(0);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const countryBtnRef = useRef<HTMLButtonElement>(null);
+  const langBtnRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const langMenuRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const [menuPosition, setMenuPosition] = useState<CSSProperties | null>(null);
+  const [langMenuPosition, setLangMenuPosition] =
+    useState<CSSProperties | null>(null);
 
   const country = getCountry(preferences.country);
   const results = useMemo(() => searchCountries(query), [query]);
@@ -193,6 +200,7 @@ export function CountryLanguageSelector({
   }, []);
 
   const openPanel = useCallback(() => {
+    setLangOpen(false);
     setDraftCountry(preferences.country);
     setDraftLanguage(preferences.language);
     setQuery("");
@@ -206,17 +214,31 @@ export function CountryLanguageSelector({
     setQuery("");
   }, []);
 
+  const closeLangMenu = useCallback(() => {
+    setLangOpen(false);
+  }, []);
+
+  const toggleLangMenu = useCallback(() => {
+    setOpen(false);
+    setLangOpen((current) => !current);
+  }, []);
+
   // Close on outside click or Escape
   useEffect(() => {
-    if (!open) return;
+    if (!open && !langOpen) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closePanel();
+      if (e.key === "Escape") {
+        closePanel();
+        closeLangMenu();
+      }
     };
     const onOutside = (e: MouseEvent) => {
       const target = e.target as Node;
       if (wrapperRef.current?.contains(target)) return;
       if (menuRef.current?.contains(target)) return;
+      if (langMenuRef.current?.contains(target)) return;
       closePanel();
+      closeLangMenu();
     };
     document.addEventListener("keydown", onKey);
     document.addEventListener("mousedown", onOutside);
@@ -224,12 +246,15 @@ export function CountryLanguageSelector({
       document.removeEventListener("keydown", onKey);
       document.removeEventListener("mousedown", onOutside);
     };
-  }, [open, closePanel]);
+  }, [open, langOpen, closePanel, closeLangMenu]);
 
   const menuWidth = compact ? MENU_WIDTH.compact : MENU_WIDTH.default;
+  const langMenuWidth = compact
+    ? LANG_MENU_WIDTH.compact
+    : LANG_MENU_WIDTH.default;
 
   const updateMenuPosition = useCallback(() => {
-    const el = wrapperRef.current;
+    const el = countryBtnRef.current;
     if (!el) return;
     setMenuPosition(
       computeMenuPosition(
@@ -240,6 +265,19 @@ export function CountryLanguageSelector({
       ),
     );
   }, [menuAlign, menuSide, menuWidth]);
+
+  const updateLangMenuPosition = useCallback(() => {
+    const el = langBtnRef.current;
+    if (!el) return;
+    setLangMenuPosition(
+      computeMenuPosition(
+        el.getBoundingClientRect(),
+        menuAlign,
+        menuSide,
+        langMenuWidth,
+      ),
+    );
+  }, [menuAlign, menuSide, langMenuWidth]);
 
   useLayoutEffect(() => {
     if (!open) {
@@ -254,6 +292,20 @@ export function CountryLanguageSelector({
       window.removeEventListener("scroll", updateMenuPosition, true);
     };
   }, [open, updateMenuPosition]);
+
+  useLayoutEffect(() => {
+    if (!langOpen) {
+      setLangMenuPosition(null);
+      return;
+    }
+    updateLangMenuPosition();
+    window.addEventListener("resize", updateLangMenuPosition);
+    window.addEventListener("scroll", updateLangMenuPosition, true);
+    return () => {
+      window.removeEventListener("resize", updateLangMenuPosition);
+      window.removeEventListener("scroll", updateLangMenuPosition, true);
+    };
+  }, [langOpen, updateLangMenuPosition]);
 
   useEffect(() => {
     setActiveIndex(0);
@@ -312,41 +364,56 @@ export function CountryLanguageSelector({
     return languages[code]?.nativeLabel ?? code.toUpperCase();
   }
 
-  const langPills = (
-    <div
-      className="flex items-center gap-0.5"
-      role="group"
-      aria-label={t.locale.language}
-    >
-      {ALWAYS_ON_LANGUAGES.map((code) => {
-        const selected = preferences.language === code;
-        return (
-          <button
-            key={code}
-            type="button"
-            onClick={() => {
-              setDraftLanguage(code);
-              setLanguage(code);
-            }}
-            aria-pressed={selected}
-            className={cn(
-              "rounded-full px-2 font-bold tracking-wide transition",
-              compact ? "h-6 text-[11px]" : "h-7 px-2.5 text-[12.5px]",
-              selected
-                ? light
-                  ? "bg-slate-900 text-white"
-                  : "bg-white text-slate-900"
-                : light
-                  ? "text-slate-500 hover:bg-slate-100 hover:text-slate-800"
-                  : "text-white/55 hover:bg-white/10 hover:text-white",
-            )}
-          >
-            {languageChipLabel(code)}
-          </button>
-        );
-      })}
-    </div>
-  );
+  function renderLanguageOptions(options: {
+    selected: LanguageCode;
+    onPick: (code: LanguageCode) => void;
+    draft?: boolean;
+  }) {
+    return (
+      <div
+        className="flex flex-col gap-0.5 py-1"
+        role="listbox"
+        aria-label={t.locale.language}
+      >
+        {ALWAYS_ON_LANGUAGES.map((code) => {
+          const meta = languages[code];
+          const sel = options.selected === code;
+          return (
+            <button
+              key={code}
+              type="button"
+              role="option"
+              aria-selected={sel}
+              onClick={() => options.onPick(code)}
+              className={cn(
+                "flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left text-[13px] font-semibold transition-colors",
+                light
+                  ? sel
+                    ? "bg-indigo-50 text-indigo-800"
+                    : "text-slate-700 hover:bg-slate-50"
+                  : sel
+                    ? "bg-[rgba(37,99,235,0.18)] text-white"
+                    : "text-white/80 hover:bg-white/[0.06]",
+              )}
+            >
+              <span>{meta?.nativeLabel ?? code}</span>
+              {sel ? (
+                <Check
+                  className={cn(
+                    "size-3.5 shrink-0",
+                    light ? "text-indigo-600" : "text-[#4f8ef7]",
+                  )}
+                  aria-hidden
+                />
+              ) : (
+                <span className="size-3.5 shrink-0" />
+              )}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
 
   // SSR placeholder
   if (!mounted) {
@@ -384,14 +451,13 @@ export function CountryLanguageSelector({
         >
           EN
         </span>
-        <span
+        <ChevronDown
           className={cn(
-            "px-2 text-[12.5px] font-bold",
+            "size-[10px] shrink-0 opacity-55",
             light ? "text-slate-500" : "text-white/55",
           )}
-        >
-          हिन्दी
-        </span>
+          aria-hidden
+        />
       </div>
     );
   }
@@ -411,6 +477,7 @@ export function CountryLanguageSelector({
         )}
       >
         <button
+          ref={countryBtnRef}
           type="button"
           onClick={() => (open ? closePanel() : openPanel())}
           aria-haspopup="listbox"
@@ -454,8 +521,84 @@ export function CountryLanguageSelector({
             aria-hidden
           />
         </button>
-        {langPills}
+        <span
+          className={cn(
+            "h-5 w-px shrink-0",
+            light ? "bg-slate-200" : "bg-white/15",
+          )}
+          aria-hidden
+        />
+        <button
+          ref={langBtnRef}
+          type="button"
+          onClick={toggleLangMenu}
+          aria-haspopup="listbox"
+          aria-expanded={langOpen}
+          aria-label={t.locale.language}
+          className={cn(
+            "inline-flex items-center gap-1 rounded-full px-2 transition-all duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563eb]",
+            light ? "hover:bg-slate-100" : "hover:bg-white/10",
+            compact ? "h-7 text-[11px]" : "h-8 text-[12.5px]",
+          )}
+        >
+          <span
+            className={cn(
+              "font-bold tracking-wide",
+              light ? "text-slate-900" : "text-white",
+            )}
+          >
+            {languageChipLabel(preferences.language)}
+          </span>
+          <ChevronDown
+            className={cn(
+              "size-[10px] shrink-0 opacity-55 transition-transform duration-200",
+              langOpen && "rotate-180",
+              light ? "text-slate-500" : "",
+            )}
+            aria-hidden
+          />
+        </button>
       </div>
+
+      {/* Language dropdown — opens below EN */}
+      <AnimatePresence>
+        {langOpen && langMenuPosition && typeof document !== "undefined"
+          ? createPortal(
+              <motion.div
+                ref={langMenuRef}
+                initial={{
+                  opacity: 0,
+                  y: menuSide === "above" ? -4 : 4,
+                  scale: 0.97,
+                }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{
+                  opacity: 0,
+                  y: menuSide === "above" ? -3 : 3,
+                  scale: 0.97,
+                }}
+                transition={{ duration: 0.15, ease: [0.22, 1, 0.36, 1] }}
+                className={cn(
+                  "overflow-hidden rounded-[14px] border backdrop-blur-2xl",
+                  light
+                    ? "border-slate-200/80 bg-white/95 shadow-[0_16px_40px_rgba(15,23,42,0.12)]"
+                    : "border-white/[0.12] bg-[#0c1528] shadow-[0_20px_50px_rgba(0,0,0,0.55)]",
+                )}
+                style={langMenuPosition}
+              >
+                {renderLanguageOptions({
+                  selected: preferences.language,
+                  onPick: (code) => {
+                    setDraftLanguage(code);
+                    setLanguage(code);
+                    closeLangMenu();
+                  },
+                })}
+              </motion.div>,
+              document.body,
+            )
+          : null}
+      </AnimatePresence>
 
       {/* ── Dropdown (portaled so footer/header overflow does not clip) ── */}
       <AnimatePresence>
@@ -505,32 +648,13 @@ export function CountryLanguageSelector({
                   >
                     {t.locale.language}
                   </p>
-                  <div className="mt-1.5 flex flex-wrap gap-1.5">
-                    {ALWAYS_ON_LANGUAGES.map((code) => {
-                      const meta = languages[code];
-                      const sel = draftLanguage === code;
-                      return (
-                        <button
-                          key={`panel-${code}`}
-                          type="button"
-                          onClick={() => {
-                            setDraftLanguage(code);
-                            setLanguage(code);
-                          }}
-                          className={cn(
-                            "rounded-[7px] border px-2.5 py-1 text-[12px] font-medium transition-colors",
-                            light
-                              ? sel
-                                ? "border-indigo-300 bg-indigo-50 text-indigo-700"
-                                : "border-slate-200 bg-white text-slate-600 hover:text-slate-900"
-                              : sel
-                                ? "border-[#2563eb]/50 bg-[#2563eb]/20 text-white"
-                                : "border-white/[0.10] bg-white/[0.04] text-white/55 hover:text-white",
-                          )}
-                        >
-                          {meta?.nativeLabel ?? code}
-                        </button>
-                      );
+                  <div className="mt-1">
+                    {renderLanguageOptions({
+                      selected: draftLanguage,
+                      onPick: (code) => {
+                        setDraftLanguage(code);
+                        setLanguage(code);
+                      },
                     })}
                   </div>
                 </div>

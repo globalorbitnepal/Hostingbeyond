@@ -11,7 +11,9 @@ import { mainNavigation, type NavItem } from "@/config/navigation";
 import { routes } from "@/config/routes";
 import { DomainCartHeaderLink } from "@/components/layout/domain-cart-header-link";
 import { CountryLanguageSelector } from "@/components/locale/country-language-selector";
+import type { LanguageCode } from "@/config/geo";
 import { useLocale } from "@/components/locale/locale-provider";
+import { translatePhrase } from "@/lib/i18n/phrases";
 import { CANONICAL_HEADER_LOGO_SRC, Logo } from "@/components/shared/logo";
 import { isHostingNavLabel } from "@/lib/navigation/hosting-nav";
 import { cn } from "@/lib/utils";
@@ -35,6 +37,7 @@ const HostingMegaMenu = dynamic(
 function localizeNavLabel(
   label: string,
   nav: ReturnType<typeof useLocale>["t"]["nav"],
+  language: LanguageCode,
 ) {
   const map: Record<string, string> = {
     Domains: nav.domains,
@@ -57,7 +60,7 @@ function localizeNavLabel(
     "Our Story": nav.about,
     Contact: nav.contact,
   };
-  return map[label] ?? label;
+  return map[label] ?? translatePhrase(language, label);
 }
 
 function BeyondAiNavLink({
@@ -311,11 +314,13 @@ export function SiteHeader({
   }, [pathname]);
 
   const resolvedLogin =
-    preferences.language === "en" ? loginLabel || "Login" : t.nav.login;
+    preferences.language === "en"
+      ? loginLabel || "Login"
+      : translatePhrase(preferences.language, loginLabel || "Login");
   const resolvedGetStarted =
     preferences.language === "en"
       ? getStartedLabel || "Get Started"
-      : t.nav.getStarted;
+      : translatePhrase(preferences.language, getStartedLabel || "Get Started");
 
   const filteredNav = (() => {
     const cleaned = navigation.filter(
@@ -387,7 +392,11 @@ export function SiteHeader({
                 <NavDropdown
                   key={item.label}
                   item={item}
-                  label={localizeNavLabel(item.label, t.nav)}
+                  label={localizeNavLabel(
+                    item.label,
+                    t.nav,
+                    preferences.language,
+                  )}
                   megaOpen={
                     item.label === "Domains"
                       ? mega === "domains"
@@ -501,7 +510,11 @@ export function SiteHeader({
                 aria-label="Mobile navigation"
               >
                 {filteredNav.map((item) => {
-                  const label = localizeNavLabel(item.label, t.nav);
+                  const label = localizeNavLabel(
+                    item.label,
+                    t.nav,
+                    preferences.language,
+                  );
                   const hasChildren =
                     Boolean(item.children?.length) ||
                     item.label === "Domains" ||

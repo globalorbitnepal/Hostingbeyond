@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 import { OrbitImageField } from "@/components/orbit/image-field";
 import type { CmsSiteSettings } from "@/lib/orbit/defaults";
@@ -55,6 +56,17 @@ export default function OrbitSettingsPage() {
         </button>
       </div>
       {status ? <p className="text-sm text-emerald-700">{status}</p> : null}
+
+      <div className="rounded-2xl border border-indigo-200 bg-indigo-50/80 p-4 text-sm text-indigo-950">
+        Display currency rates (INR, NPR, EUR, …) are managed under{" "}
+        <Link
+          href="/orbit/currency-rates"
+          className="font-semibold text-indigo-700 underline"
+        >
+          Currency &amp; FX
+        </Link>{" "}
+        in the left menu — including live market refresh.
+      </div>
 
       <div className="grid gap-4 rounded-2xl border border-slate-200 p-5 md:grid-cols-2">
         <OrbitImageField

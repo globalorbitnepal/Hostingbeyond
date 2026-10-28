@@ -13,6 +13,7 @@ import { LocaleProvider } from "@/components/locale/locale-provider";
 import { SiteNavigation } from "@/components/navigation/site-navigation";
 import { LOCALE_COOKIE, parsePreferencesCookie } from "@/lib/i18n/preferences";
 import { buildMetadata } from "@/lib/metadata";
+import { getSiteSettings } from "@/lib/orbit/content";
 
 import "./globals.css";
 
@@ -67,6 +68,7 @@ export default async function RootLayout({
   const initialPreferences = parsePreferencesCookie(
     cookieStore.get(LOCALE_COOKIE)?.value,
   );
+  const siteSettings = await getSiteSettings();
   const isRtl = initialPreferences.language === "ar";
 
   return (
@@ -82,7 +84,10 @@ export default async function RootLayout({
       <body
         className={`${manrope.variable} ${dmSans.variable} ${geistMono.variable} ${caveat.variable} ${notoDevanagari.variable} min-h-dvh bg-black font-sans text-white antialiased`}
       >
-        <LocaleProvider initialPreferences={initialPreferences}>
+        <LocaleProvider
+          initialPreferences={initialPreferences}
+          initialDisplayCurrencyRates={siteSettings.displayCurrencyRates ?? {}}
+        >
           <DomainCartShell>
             <SiteNavigation />
             {children}

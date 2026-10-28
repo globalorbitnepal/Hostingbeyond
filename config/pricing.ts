@@ -147,9 +147,13 @@ export function getPriceBook(currency: CurrencyCode): PriceBook {
 export function convertUsdToLocal(
   usdAmount: number,
   currency: CurrencyCode,
+  rateOverride?: number,
 ): number {
   if (!Number.isFinite(usdAmount)) return 0;
-  const rate = usdToLocalRate[currency] ?? 1;
+  const rate =
+    rateOverride != null && Number.isFinite(rateOverride) && rateOverride > 0
+      ? rateOverride
+      : (usdToLocalRate[currency] ?? 1);
   return roundCommercial(usdAmount * rate, currency);
 }
 
@@ -157,15 +161,25 @@ export function formatUsdAsLocal(
   usdAmount: number,
   currency: CurrencyCode,
   locale: string,
+  rateOverride?: number,
 ): string {
-  return formatMoney(convertUsdToLocal(usdAmount, currency), currency, locale);
+  return formatMoney(
+    convertUsdToLocal(usdAmount, currency, rateOverride),
+    currency,
+    locale,
+  );
 }
 
 export function getProductPrice(
   productId: ProductPriceId,
   currency: CurrencyCode,
+  rateOverride?: number,
 ): number {
-  return getPriceBook(currency)[productId];
+  const rate =
+    rateOverride != null && Number.isFinite(rateOverride) && rateOverride > 0
+      ? rateOverride
+      : (usdToLocalRate[currency] ?? 1);
+  return roundCommercial(basePriceBookUsd[productId] * rate, currency);
 }
 
 export function formatMoney(

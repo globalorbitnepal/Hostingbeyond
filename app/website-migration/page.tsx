@@ -6,10 +6,12 @@ import { routes } from "@/config/routes";
 import { defaultHostingPlansSection } from "@/lib/orbit/defaults";
 import {
   buildPublicPageMetadata,
-  getHomeSections,
-  getSiteSettings,
   getWebsiteMigrationPageContent,
 } from "@/lib/orbit/content";
+import {
+  getLocalizedPublicChrome,
+  localizePublicContent,
+} from "@/lib/i18n/public-chrome";
 
 export const dynamic = "force-dynamic";
 
@@ -23,11 +25,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function WebsiteMigrationPage() {
-  const [sections, settings, page] = await Promise.all([
-    getHomeSections(),
-    getSiteSettings(),
+  const [{ sections, settings, preferences }, rawPage] = await Promise.all([
+    getLocalizedPublicChrome(),
     getWebsiteMigrationPageContent(),
   ]);
+  const page = localizePublicContent(preferences.language, rawPage);
 
   const hostingPlans = sections.hostingPlans ?? defaultHostingPlansSection();
 

@@ -8,6 +8,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { routes } from "@/config/routes";
 import { useLocale } from "@/components/locale/locale-provider";
 import type { CmsHeroContent } from "@/lib/orbit/defaults";
+import { translatePhrase } from "@/lib/i18n/phrases";
 
 const trustIcons = {
   shield: ShieldCheck,
@@ -20,47 +21,58 @@ export function HeroContent({ content }: { content?: CmsHeroContent }) {
   const { t, preferences } = useLocale();
   const [domain, setDomain] = useState("");
 
-  const useCmsCopy = preferences.language === "en" && Boolean(content);
-  const eyebrow = useCmsCopy ? (content?.eyebrow ?? "") : "";
-  const headline = useCmsCopy
-    ? (content?.headline ?? t.hero.headline)
-    : t.hero.headline;
-  const accent = useCmsCopy
-    ? (content?.headlineAccent ?? t.hero.headlineAccent)
+  const lang = preferences.language;
+  const tx = (text: string) =>
+    lang === "en" ? text : translatePhrase(lang, text);
+
+  const eyebrow = content?.eyebrow
+    ? tx(content.eyebrow)
+    : lang === "en"
+      ? ""
+      : "";
+  const headline = content?.headline ? tx(content.headline) : t.hero.headline;
+  const accent = content?.headlineAccent
+    ? tx(content.headlineAccent)
     : t.hero.headlineAccent;
-  const description = useCmsCopy
-    ? (content?.description ?? t.hero.description)
+  const description = content?.description
+    ? tx(content.description)
     : t.hero.description;
-  const placeholder = useCmsCopy
-    ? (content?.searchPlaceholder ?? t.hero.searchPlaceholder)
+  const placeholder = content?.searchPlaceholder
+    ? tx(content.searchPlaceholder)
     : t.hero.searchPlaceholder;
-  const bulkLabel = useCmsCopy
-    ? (content?.bulkSearchLabel ?? t.hero.bulkSearch)
+  const bulkLabel = content?.bulkSearchLabel
+    ? tx(content.bulkSearchLabel)
     : t.hero.bulkSearch;
-  const searchLabel = useCmsCopy
-    ? (content?.searchButtonLabel ?? t.hero.search)
+  const searchLabel = content?.searchButtonLabel
+    ? tx(content.searchButtonLabel)
     : t.hero.search;
 
   const trustItems =
-    useCmsCopy && content?.trustItems
+    content?.trustItems && lang === "en"
       ? content.trustItems
-      : [
-          {
-            title: t.hero.trustUptime,
-            subtitle: t.hero.trustUptimeSub,
-            icon: "shield",
-          },
-          {
-            title: t.hero.trustSecure,
-            subtitle: t.hero.trustSecureSub,
-            icon: "lock",
-          },
-          {
-            title: t.hero.trustSupport,
-            subtitle: t.hero.trustSupportSub,
-            icon: "support",
-          },
-        ];
+      : content?.trustItems && lang !== "en"
+        ? content.trustItems.map((item) => ({
+            ...item,
+            title: tx(item.title),
+            subtitle: tx(item.subtitle),
+          }))
+        : [
+            {
+              title: t.hero.trustUptime,
+              subtitle: t.hero.trustUptimeSub,
+              icon: "shield",
+            },
+            {
+              title: t.hero.trustSecure,
+              subtitle: t.hero.trustSecureSub,
+              icon: "lock",
+            },
+            {
+              title: t.hero.trustSupport,
+              subtitle: t.hero.trustSupportSub,
+              icon: "support",
+            },
+          ];
 
   const onSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

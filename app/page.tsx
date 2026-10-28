@@ -17,11 +17,8 @@ import {
 import type { Metadata } from "next";
 
 import { HeroJourneySlider } from "@/components/home/hero-journey-slider";
-import {
-  buildPublicPageMetadata,
-  getHomeSections,
-  getSiteSettings,
-} from "@/lib/orbit/content";
+import { buildPublicPageMetadata } from "@/lib/orbit/content";
+import { getLocalizedPublicChrome } from "@/lib/i18n/public-chrome";
 
 export const dynamic = "force-dynamic";
 
@@ -35,10 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const [sections, settings] = await Promise.all([
-    getHomeSections(),
-    getSiteSettings(),
-  ]);
+  const { sections, settings } = await getLocalizedPublicChrome();
   const heroPhoto =
     sections.hero.speakerImage?.trim() ||
     sections.hero.backgroundImage?.trim() ||

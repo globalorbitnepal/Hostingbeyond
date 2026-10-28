@@ -3,11 +3,11 @@ import type { Metadata } from "next";
 import { DomainTransferView } from "@/components/domains/domain-transfer-view";
 import { SiteFooter, SiteHeader } from "@/components/layout";
 import { routes } from "@/config/routes";
+import { getDomainContent } from "@/lib/orbit/content";
 import {
-  getDomainContent,
-  getHomeSections,
-  getSiteSettings,
-} from "@/lib/orbit/content";
+  getLocalizedPublicChrome,
+  localizePublicContent,
+} from "@/lib/i18n/public-chrome";
 import { buildDomainPageMetadata } from "@/lib/domains/page-metadata";
 import { buildDomainSchema } from "@/lib/domains/seo";
 import { visiblePricing } from "@/lib/domains/content";
@@ -34,11 +34,11 @@ export default async function DomainTransferPage({ searchParams }: PageProps) {
   const raw = Array.isArray(params.domain) ? params.domain[0] : params.domain;
   const initialDomain = (raw ?? "").slice(0, 80);
 
-  const [sections, settings, content] = await Promise.all([
-    getHomeSections(),
-    getSiteSettings(),
+  const [{ sections, settings, preferences }, rawContent] = await Promise.all([
+    getLocalizedPublicChrome(),
     getDomainContent(),
   ]);
+  const content = localizePublicContent(preferences.language, rawContent);
 
   const page = content.transfer;
   const displayPricing = await mergeRetailIntoPricingRows(

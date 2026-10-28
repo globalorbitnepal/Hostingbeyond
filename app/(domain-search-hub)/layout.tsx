@@ -1,19 +1,15 @@
 import { DomainSearchHubBackdrop } from "@/components/domains/domain-search-hub-backdrop";
 import { SiteFooter, SiteHeader } from "@/components/layout";
-import {
-  getDomainContent,
-  getHomeSections,
-  getSiteSettings,
-} from "@/lib/orbit/content";
+import { getDomainContent } from "@/lib/orbit/content";
+import { getLocalizedPublicChrome } from "@/lib/i18n/public-chrome";
 
 export default async function DomainSearchHubLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [sections, settings, content] = await Promise.all([
-    getHomeSections(),
-    getSiteSettings(),
+  const [{ sections, settings }, content] = await Promise.all([
+    getLocalizedPublicChrome(),
     getDomainContent(),
   ]);
 

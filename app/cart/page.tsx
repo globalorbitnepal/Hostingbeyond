@@ -3,7 +3,7 @@ import { DomainCartPageView } from "@/components/domains/domain-cart-page-view";
 import { SiteFooter, SiteHeader } from "@/components/layout";
 import { routes } from "@/config/routes";
 import { buildMetadata } from "@/lib/metadata";
-import { getHomeSections, getSiteSettings } from "@/lib/orbit/content";
+import { getLocalizedPublicChrome } from "@/lib/i18n/public-chrome";
 
 export const dynamic = "force-dynamic";
 
@@ -16,10 +16,7 @@ export const metadata: Metadata = buildMetadata({
 });
 
 export default async function DomainCartPage() {
-  const [sections, settings] = await Promise.all([
-    getHomeSections(),
-    getSiteSettings(),
-  ]);
+  const { sections, settings } = await getLocalizedPublicChrome();
 
   return (
     <>
