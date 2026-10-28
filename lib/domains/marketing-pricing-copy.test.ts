@@ -4,6 +4,7 @@ import { describe, it } from "node:test";
 import {
   defaultDomainContent,
   mergeDomainContent,
+  priceByTld,
 } from "@/lib/domains/content";
 import { applyRetailOverlay } from "@/lib/domains/domain-search-page-data";
 import { stripBrandTitleSuffix } from "@/lib/domains/page-metadata";
@@ -87,6 +88,26 @@ describe("marketing pricing copy", () => {
     );
     assert.equal(overlay[0].renew, 17.99);
     assert.equal(overlay[0].transfer, 12.99);
+  });
+
+  it("priceByTld reads overlay rows not stale CMS", () => {
+    const overlay = applyRetailOverlay(
+      [
+        {
+          id: ".com",
+          visible: true,
+          order: 0,
+          tld: ".com",
+          register: 9.99,
+          renew: 19.99,
+          transfer: 9.99,
+          categories: ["popular" as const],
+          note: "",
+        },
+      ],
+      new Map([[".com", { register: 9.99, renew: 17.99, transfer: 12.99 }]]),
+    );
+    assert.equal(priceByTld(overlay, ".com")?.transfer, 12.99);
   });
 
   it("stripBrandTitleSuffix avoids HostingBeyond | HostingBeyond", () => {

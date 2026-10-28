@@ -60,7 +60,7 @@ export default async function DomainTransferPage({ searchParams }: PageProps) {
     faqs: page.faqs
       .filter((item) => item.visible !== false)
       .map((item) => ({ question: item.question, answer: item.answer })),
-    prices: content.shared.pricing,
+    prices: displayPricing,
   });
 
   return (
@@ -86,6 +86,7 @@ export default async function DomainTransferPage({ searchParams }: PageProps) {
           page={page}
           crossLinkHref={routes.domainSearch}
           popularTransferPricing={popularTransferPricing}
+          displayPricing={displayPricing}
         />
       </div>
 

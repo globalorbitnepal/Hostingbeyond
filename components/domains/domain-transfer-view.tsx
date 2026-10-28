@@ -51,15 +51,17 @@ export function DomainTransferView({
   page,
   crossLinkHref,
   popularTransferPricing,
+  displayPricing,
 }: {
   initialDomain?: string;
   content: DomainContent;
   page: DomainPageCopy;
   crossLinkHref: string;
   popularTransferPricing?: PopularPickPricing[];
+  displayPricing?: ReturnType<typeof visiblePricing>;
 }) {
   const { shared } = content;
-  const prices = visiblePricing(content);
+  const prices = displayPricing ?? visiblePricing(content);
   const chips = shared.heroChips
     .split(",")
     .map((chip) => chip.trim())
@@ -72,7 +74,7 @@ export function DomainTransferView({
   );
   const pillars = shared.guidePillars.filter((item) => item.visible !== false);
   const popular = shared.popularPicks.filter((item) => item.visible !== false);
-  const comTransfer = priceByTld(content, ".com")?.transfer;
+  const comTransfer = priceByTld(prices, ".com")?.transfer;
 
   return (
     <>
@@ -152,7 +154,7 @@ export function DomainTransferView({
             {chips.length > 0 ? (
               <ul className="mt-6 flex flex-wrap items-center justify-center gap-1.5">
                 {chips.map((tld) => {
-                  const price = priceByTld(content, tld);
+                  const price = priceByTld(prices, tld);
                   return (
                     <li
                       key={tld}

@@ -90,7 +90,7 @@ export function DomainSearchView({
   );
   const pillars = shared.guidePillars.filter((item) => item.visible !== false);
   const popular = shared.popularPicks.filter((item) => item.visible !== false);
-  const comTransfer = priceByTld(content, ".com")?.transfer;
+  const comTransfer = priceByTld(prices, ".com")?.transfer;
 
   return (
     <>

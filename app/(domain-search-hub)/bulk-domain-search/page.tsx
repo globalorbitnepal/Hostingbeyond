@@ -4,7 +4,10 @@ import { DomainSearchView } from "@/components/domains/domain-search-view";
 import { routes } from "@/config/routes";
 import { getDomainContent } from "@/lib/orbit/content";
 import { visiblePricing } from "@/lib/domains/content";
-import { mergeRetailIntoPricingRows } from "@/lib/domains/domain-search-page-data";
+import {
+  getPopularPickPricing,
+  mergeRetailIntoPricingRows,
+} from "@/lib/domains/domain-search-page-data";
 import { buildDomainPageMetadata } from "@/lib/domains/page-metadata";
 import { parseBulkSearchHubParams } from "@/lib/domains/domain-purchase-intent";
 import { buildDomainSchema } from "@/lib/domains/seo";
@@ -31,6 +34,13 @@ export default async function BulkDomainSearchPage({
   const displayPricing = await mergeRetailIntoPricingRows(
     visiblePricing(content),
   );
+  const popularTlds = content.shared.popularPicks
+    .filter((p) => p.visible !== false)
+    .map((p) => p.tld);
+  const popularPricing = await getPopularPickPricing(
+    popularTlds,
+    displayPricing,
+  );
 
   const schema = buildDomainSchema({
     name: page.title,
@@ -55,6 +65,7 @@ export default async function BulkDomainSearchPage({
         page={page}
         crossLinkHref={routes.domainSearch}
         displayPricing={displayPricing}
+        popularPricing={popularPricing}
         hubBackdrop
         initialBulkText={initialBulkText}
         bulkLimitMessage={bulkLimitMessage}

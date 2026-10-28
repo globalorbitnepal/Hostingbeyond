@@ -1228,8 +1228,13 @@ export function visiblePricing(content: DomainContent) {
     .sort((a, b) => a.order - b.order);
 }
 
-export function priceByTld(content: DomainContent, tld: string) {
-  return content.shared.pricing.find((row) => row.tld === tld);
+export function priceByTld(
+  source: DomainContent | DomainTldRow[],
+  tld: string,
+) {
+  const rows = Array.isArray(source) ? source : source.shared.pricing;
+  const key = tld.startsWith(".") ? tld.toLowerCase() : `.${tld.toLowerCase()}`;
+  return rows.find((row) => row.tld.toLowerCase() === key);
 }
 
 export function parseLines(value: string) {

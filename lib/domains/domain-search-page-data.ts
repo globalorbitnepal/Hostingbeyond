@@ -200,6 +200,23 @@ export async function getPopularPickPricing(
       const quote = buildStandardRegistrationQuote(ctx, termYears);
       if (!quote) {
         const min = Math.max(1, ctx.supplierMinRegistrationPeriod);
+        const fb = fallback.get(tld);
+        if (min === 1 && fb && fb.register > 0) {
+          return {
+            tld,
+            register: fb.register,
+            renew: fb.renew > 0 ? fb.renew : ctx.retailRenew,
+            termYears: 1,
+            purchasable: true,
+            priceCaption: "1st yr",
+            renewCaption:
+              fb.renew > 0
+                ? `Renews at $${fb.renew.toFixed(2)}/yr`
+                : ctx.retailRenew
+                  ? `Renews at $${ctx.retailRenew.toFixed(2)}/yr`
+                  : null,
+          };
+        }
         return {
           tld,
           register: null,
@@ -208,7 +225,7 @@ export async function getPopularPickPricing(
           purchasable: false,
           priceCaption:
             min > 1
-              ? `${min}-year registration — pricing not configured`
+              ? `Requires ${min}-year registration — check search`
               : "Check search for pricing",
           renewCaption: ctx.retailRenew
             ? `Renews at $${ctx.retailRenew.toFixed(2)}/yr`
