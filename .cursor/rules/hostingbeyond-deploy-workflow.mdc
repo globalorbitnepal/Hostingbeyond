@@ -1,0 +1,35 @@
+---
+description: HostingBeyond dev vs production paths and deploy workflow
+alwaysApply: true
+---
+
+# HostingBeyond — development and production
+
+## Paths (do not confuse)
+
+| Role | Path | Writable by Cursor (`sysadmin`) |
+|------|------|----------------------------------|
+| **Development checkout** | `/home/sysadmin/dev/Hostingbeyond` | Yes |
+| **Cursor workspace entry** | `/home/sysadmin/srv/apps/hostingbeyond` → dev checkout (symlink) | Yes |
+| **Production runtime checkout** | `/srv/apps/hostingbeyond` | No — owned by `hostingbeyond` |
+
+Never edit `/srv/apps/hostingbeyond` directly from Cursor. Do not use `/tmp/hostingbeyond-patch` as a second source of truth; use the dev checkout above.
+
+## Deploy pipeline
+
+1. Change code in the **dev checkout** only (`/home/sysadmin/dev/Hostingbeyond`).
+2. Commit and push to `globalorbitnepal/Hostingbeyond` on **`main` only** when the user approves.
+3. **GitHub Actions** (`Deploy HostingBeyond`) SSHs as **`hostingbeyond`**, runs `git reset --hard origin/main` in `/srv/apps/hostingbeyond`, builds, and restarts PM2 via `/usr/local/sbin/hostingbeyond-ctl`.
+
+There is no supported `cp` from Cursor into production. Production updates only via Git + Actions (or manual deploy as `hostingbeyond` on the server).
+
+**Branch policy:** Do not use `backend/phase2-*`, “Phase 1 / Phase 2” release branches, or a second clone (e.g. `Hostingbeyond-backend-phase2`) for deploy. All product changes land on **`main`**; one repo, one production line.
+
+## PM2 and Nginx
+
+- App listens on **127.0.0.1:3030**; Nginx proxies `hosting.theglobalorbit.com`.
+- PM2 runs as **`hostingbeyond`** (`PM2_HOME=/home/hostingbeyond/.pm2`).
+
+## Local verification
+
+From the dev checkout: `npm run build` (uses local `.env` if present; production `.env` stays on the server only).
