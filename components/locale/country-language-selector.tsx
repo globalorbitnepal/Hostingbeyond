@@ -15,6 +15,7 @@ import { Check, ChevronDown, Search } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import {
+  ALWAYS_ON_LANGUAGES,
   flagImgUrl,
   getCountry,
   languages,
@@ -170,7 +171,7 @@ export function CountryLanguageSelector({
   className,
 }: Props) {
   const light = tone === "light";
-  const { preferences, applySelection, t } = useLocale();
+  const { preferences, applySelection, setLanguage, t } = useLocale();
   const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -306,95 +307,122 @@ export function CountryLanguageSelector({
     return languagesForCountry(draft);
   }, [draft.languages]);
 
-  const triggerLangCode = preferences.language.toUpperCase();
+  function languageChipLabel(code: LanguageCode) {
+    if (code === "en") return "EN";
+    return languages[code]?.nativeLabel ?? code.toUpperCase();
+  }
+
+  const langPills = (
+    <div
+      className="flex items-center gap-0.5"
+      role="group"
+      aria-label={t.locale.language}
+    >
+      {ALWAYS_ON_LANGUAGES.map((code) => {
+        const selected = preferences.language === code;
+        return (
+          <button
+            key={code}
+            type="button"
+            onClick={() => {
+              setDraftLanguage(code);
+              setLanguage(code);
+            }}
+            aria-pressed={selected}
+            className={cn(
+              "rounded-full px-2 font-bold tracking-wide transition",
+              compact ? "h-6 text-[11px]" : "h-7 px-2.5 text-[12.5px]",
+              selected
+                ? light
+                  ? "bg-slate-900 text-white"
+                  : "bg-white text-slate-900"
+                : light
+                  ? "text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+                  : "text-white/55 hover:bg-white/10 hover:text-white",
+            )}
+          >
+            {languageChipLabel(code)}
+          </button>
+        );
+      })}
+    </div>
+  );
 
   // SSR placeholder
   if (!mounted) {
     return (
       <div
         className={cn(
-          "inline-flex items-center gap-2 border backdrop-blur-xl",
+          "inline-flex items-center gap-1.5 border backdrop-blur-xl",
           light
             ? "border-slate-200/90 bg-white/80"
             : "border-white/[0.10] bg-white/[0.05]",
-          compact ? "h-8 rounded-full px-2" : "h-[38px] rounded-full px-3",
+          compact ? "h-8 rounded-full px-1.5" : "h-[38px] rounded-full px-2",
           className,
         )}
       >
         {variant === "globe" ? (
-          <>
-            <span
-              className={cn(
-                "inline-block size-4 rounded-full",
-                light ? "bg-slate-200" : "bg-white/10",
-              )}
-            />
-            <span
-              className={cn(
-                "text-[12px] font-semibold",
-                light ? "text-slate-700" : "text-white/70",
-              )}
-            >
-              English (US)
-            </span>
-          </>
+          <span
+            className={cn(
+              "inline-block size-4 rounded-full",
+              light ? "bg-slate-200" : "bg-white/10",
+            )}
+          />
         ) : (
-          <>
-            <span
-              className={cn(
-                "inline-block size-5 rounded-full",
-                light ? "bg-slate-200" : "bg-white/10",
-              )}
-            />
-            <span
-              className={cn(
-                "text-[13px] font-bold",
-                light ? "text-slate-800" : "text-white/70",
-              )}
-            >
-              EN
-            </span>
-          </>
+          <span
+            className={cn(
+              "inline-block size-5 rounded-full",
+              light ? "bg-slate-200" : "bg-white/10",
+            )}
+          />
         )}
-        <ChevronDown
+        <span
           className={cn(
-            "size-[10px]",
-            light ? "text-slate-400" : "text-white/40",
+            "rounded-full px-2.5 py-1 text-[12.5px] font-bold",
+            light ? "bg-slate-900 text-white" : "bg-white text-slate-900",
           )}
-        />
+        >
+          EN
+        </span>
+        <span
+          className={cn(
+            "px-2 text-[12.5px] font-bold",
+            light ? "text-slate-500" : "text-white/55",
+          )}
+        >
+          हिन्दी
+        </span>
       </div>
     );
   }
 
-  const globeLabel =
-    preferences.language === "en"
-      ? "English (US)"
-      : (languages[preferences.language]?.nativeLabel ??
-        languages[preferences.language]?.label ??
-        "English");
-
   return (
     <div ref={wrapperRef} className="relative">
-      {/* ── Trigger: circular flag + lang code ── */}
-      <button
-        type="button"
-        onClick={() => (open ? closePanel() : openPanel())}
-        aria-haspopup="listbox"
-        aria-expanded={open}
+      <div
         className={cn(
-          "inline-flex items-center gap-2 border backdrop-blur-xl transition-all duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563eb]",
+          "inline-flex items-center gap-1 border backdrop-blur-xl",
           light
-            ? "border-slate-200/90 bg-white/85 text-slate-800 shadow-[0_4px_16px_rgba(15,23,42,0.06)] hover:border-slate-300 hover:bg-white"
-            : "border-white/[0.12] bg-white/[0.06] text-white hover:border-white/[0.25] hover:bg-white/[0.10]",
+            ? "border-slate-200/90 bg-white/85 text-slate-800 shadow-[0_4px_16px_rgba(15,23,42,0.06)]"
+            : "border-white/[0.12] bg-white/[0.06] text-white",
           compact
-            ? "h-8 rounded-full px-2 text-[12px] font-bold"
-            : "h-[38px] rounded-full px-3 text-[13.5px] font-bold",
-          variant === "globe" && "h-9 gap-2 px-3 text-[12px] font-semibold",
+            ? "h-8 rounded-full py-0 pr-1 pl-1"
+            : "h-[38px] rounded-full py-0 pr-1.5 pl-1.5",
           className,
         )}
       >
-        {variant === "globe" ? (
-          <>
+        <button
+          type="button"
+          onClick={() => (open ? closePanel() : openPanel())}
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          aria-label={t.locale.selectLocation}
+          className={cn(
+            "inline-flex items-center gap-1 rounded-full px-1.5 transition-all duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563eb]",
+            light ? "hover:bg-slate-100" : "hover:bg-white/10",
+            compact ? "h-7" : "h-8",
+          )}
+        >
+          {variant === "globe" ? (
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -409,30 +437,25 @@ export function CountryLanguageSelector({
               <circle cx="12" cy="12" r="9" />
               <path d="M3 12h18M12 3c2.5 2.8 3.8 5.8 3.8 9s-1.3 6.2-3.8 9c-2.5-2.8-3.8-5.8-3.8-9S9.5 5.8 12 3z" />
             </svg>
-            <span
-              className={cn(
-                "tracking-wide",
-                light ? "text-slate-800" : "text-white/90",
-              )}
-            >
-              {globeLabel}
-            </span>
-          </>
-        ) : (
-          <>
-            <FlagImg code={country.code} size={28} priority tone={tone} />
-            <span className="font-bold tracking-wide">{triggerLangCode}</span>
-          </>
-        )}
-        <ChevronDown
-          className={cn(
-            "size-[10px] shrink-0 opacity-55 transition-transform duration-200",
-            open && "rotate-180",
-            light ? "text-slate-500" : "",
+          ) : (
+            <FlagImg
+              code={country.code}
+              size={compact ? 22 : 26}
+              priority
+              tone={tone}
+            />
           )}
-          aria-hidden
-        />
-      </button>
+          <ChevronDown
+            className={cn(
+              "size-[10px] shrink-0 opacity-55 transition-transform duration-200",
+              open && "rotate-180",
+              light ? "text-slate-500" : "",
+            )}
+            aria-hidden
+          />
+        </button>
+        {langPills}
+      </div>
 
       {/* ── Dropdown (portaled so footer/header overflow does not clip) ── */}
       <AnimatePresence>
@@ -460,7 +483,6 @@ export function CountryLanguageSelector({
                 )}
                 style={menuPosition}
               >
-                {/* Title */}
                 <div
                   className={cn(
                     "shrink-0 border-b px-4 py-3",
@@ -475,6 +497,42 @@ export function CountryLanguageSelector({
                   >
                     {t.locale.selectLocation}
                   </p>
+                  <p
+                    className={cn(
+                      "mt-2 text-[10px] font-bold tracking-[0.12em] uppercase",
+                      light ? "text-slate-400" : "text-white/35",
+                    )}
+                  >
+                    {t.locale.language}
+                  </p>
+                  <div className="mt-1.5 flex flex-wrap gap-1.5">
+                    {ALWAYS_ON_LANGUAGES.map((code) => {
+                      const meta = languages[code];
+                      const sel = draftLanguage === code;
+                      return (
+                        <button
+                          key={`panel-${code}`}
+                          type="button"
+                          onClick={() => {
+                            setDraftLanguage(code);
+                            setLanguage(code);
+                          }}
+                          className={cn(
+                            "rounded-[7px] border px-2.5 py-1 text-[12px] font-medium transition-colors",
+                            light
+                              ? sel
+                                ? "border-indigo-300 bg-indigo-50 text-indigo-700"
+                                : "border-slate-200 bg-white text-slate-600 hover:text-slate-900"
+                              : sel
+                                ? "border-[#2563eb]/50 bg-[#2563eb]/20 text-white"
+                                : "border-white/[0.10] bg-white/[0.04] text-white/55 hover:text-white",
+                          )}
+                        >
+                          {meta?.nativeLabel ?? code}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 {/* Search */}
