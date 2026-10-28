@@ -15,7 +15,7 @@ import {
   normalizeCatalogueTld,
 } from "@/lib/domains/namesilo-supplier-sync";
 import { getLatestSupplierSyncMeta } from "@/lib/domains/supplier-catalogue-sync";
-import { invalidateTldCatalogueCache } from "@/lib/domains/tld-catalogue-cache";
+import { revalidateDomainRetailSurfaces } from "@/lib/orbit/revalidate-domain-pricing";
 import { bulkRetailPreviewRequiredResponse } from "@/lib/orbit/bulk-retail-policy";
 import {
   pickRetailUpdateData,
@@ -312,7 +312,7 @@ export async function PUT(request: Request) {
     where: { tld: key },
     data: toPrismaRetailUpdateData(updateData),
   });
-  invalidateTldCatalogueCache();
+  revalidateDomainRetailSurfaces();
 
   await prisma.domainAuditLog.create({
     data: {

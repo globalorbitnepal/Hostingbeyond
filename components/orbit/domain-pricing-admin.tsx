@@ -1,7 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Pencil, Search, X } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  Pencil,
+  Search,
+  ShieldCheck,
+  X,
+} from "lucide-react";
 
 import {
   PROPOSED_MARGIN_TARGETS,
@@ -64,6 +72,8 @@ type OperationGrossMetrics = {
   incomplete: boolean;
 };
 
+const PAGE_SIZE = 50;
+
 function formatGrossSummary(m: OperationGrossMetrics | undefined): string {
   if (!m || m.incomplete) return "N/A";
   const parts = [
@@ -74,6 +84,28 @@ function formatGrossSummary(m: OperationGrossMetrics | undefined): string {
     m.markupPercent != null ? `${m.markupPercent.toFixed(1)}% markup` : null,
   ].filter(Boolean);
   return parts.length ? parts.join(" · ") : "N/A";
+}
+
+function formatGrossCompact(m: OperationGrossMetrics | undefined): string {
+  if (!m || m.incomplete) return "N/A";
+  const gp = m.grossProfitUsd != null ? `$${m.grossProfitUsd.toFixed(2)}` : "—";
+  const mar =
+    m.grossMarginPercent != null ? `${m.grossMarginPercent.toFixed(0)}%` : "—";
+  return `${gp} · ${mar}`;
+}
+
+function namesiloStatusTone(status: string) {
+  const key = status.toLowerCase();
+  if (key === "verified") {
+    return "border-emerald-200 bg-emerald-50 text-emerald-800";
+  }
+  if (key === "partial" || key === "stale") {
+    return "border-amber-200 bg-amber-50 text-amber-900";
+  }
+  if (key === "missing" || key === "unverified") {
+    return "border-rose-200 bg-rose-50 text-rose-800";
+  }
+  return "border-slate-200 bg-slate-50 text-slate-600";
 }
 
 type NameSiloSyncMeta = {
@@ -158,6 +190,14 @@ export function OrbitDomainPricingAdmin() {
       warnings: string[];
     }>
   >([]);
+  const [page, setPage] = useState(1);
+  const [extras, setExtras] = useState({
+    privacyFree: true,
+    protectionEnabled: true,
+    protectionPriceUsd: "9.99",
+    protectionLabel: "Domain Protection",
+  });
+  const [extrasSaving, setExtrasSaving] = useState(false);
   const [tldQuery, setTldQuery] = useState("");
   const [supplierFilter, setSupplierFilter] = useState<
     | "all"
@@ -184,6 +224,30 @@ export function OrbitDomainPricingAdmin() {
     setNamesiloSync(json.namesiloSync ?? null);
     setNamesiloLive(json.namesiloLive ?? null);
     setTldCount(json.tldCount ?? json.rows?.length ?? 0);
+    const extrasRes = await fetch("/api/orbit/domain-extras", {
+      cache: "no-store",
+    });
+    if (extrasRes.ok) {
+      const extrasJson = (await extrasRes.json()) as {
+        extras?: {
+          privacyFree?: boolean;
+          protectionEnabled?: boolean;
+          protectionPriceUsd?: number;
+          protectionLabel?: string;
+        };
+      };
+      if (extrasJson.extras) {
+        setExtras({
+          privacyFree: extrasJson.extras.privacyFree !== false,
+          protectionEnabled: extrasJson.extras.protectionEnabled !== false,
+          protectionPriceUsd: String(
+            extrasJson.extras.protectionPriceUsd ?? 9.99,
+          ),
+          protectionLabel:
+            extrasJson.extras.protectionLabel?.trim() || "Domain Protection",
+        });
+      }
+    }
     setLoading(false);
   }
 
@@ -238,6 +302,17 @@ export function OrbitDomainPricingAdmin() {
       return true;
     });
   }, [rows, tldQuery, supplierFilter]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [tldQuery, supplierFilter]);
+
+  const pageCount = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
+  const safePage = Math.min(page, pageCount);
+  const pagedRows = filteredRows.slice(
+    (safePage - 1) * PAGE_SIZE,
+    safePage * PAGE_SIZE,
+  );
 
   function openEdit(row: TldRow) {
     setEditing(row);
@@ -483,6 +558,47 @@ export function OrbitDomainPricingAdmin() {
     return rec.ok ? rec : null;
   }
 
+  async function saveExtras() {
+    setExtrasSaving(true);
+    const res = await fetch("/api/orbit/domain-extras", {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        extras: {
+          protectionEnabled: extras.protectionEnabled,
+          protectionPriceUsd: Number(extras.protectionPriceUsd),
+          protectionLabel: extras.protectionLabel,
+        },
+      }),
+    });
+    const json = (await res.json().catch(() => ({}))) as {
+      error?: string;
+      extras?: {
+        protectionPriceUsd?: number;
+        protectionLabel?: string;
+        protectionEnabled?: boolean;
+        privacyFree?: boolean;
+      };
+    };
+    setExtrasSaving(false);
+    if (!res.ok) {
+      setMessage(json.error ?? "Could not save domain extras.");
+      return;
+    }
+    if (json.extras) {
+      setExtras({
+        privacyFree: json.extras.privacyFree !== false,
+        protectionEnabled: json.extras.protectionEnabled !== false,
+        protectionPriceUsd: String(json.extras.protectionPriceUsd ?? 9.99),
+        protectionLabel:
+          json.extras.protectionLabel?.trim() || "Domain Protection",
+      });
+    }
+    setMessage(
+      "Saved extras. WHOIS privacy stays free. Domain Protection is charged at checkout when the customer adds it.",
+    );
+  }
+
   function namesiloStatusLabel(row: TldRow): string {
     const kind = resolveSupplierCostForOperation(
       tldRowToCsvInput(row),
@@ -624,6 +740,68 @@ export function OrbitDomainPricingAdmin() {
         </p>
       </div>
 
+      <div className="rounded-2xl border border-[#e8e0ff] bg-white p-4 shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="inline-flex items-center gap-2 text-xs font-bold tracking-wide text-[#673de6] uppercase">
+              <ShieldCheck className="size-4" />
+              Checkout extras
+            </p>
+            <h2 className="mt-1 text-base font-extrabold text-[#2f1c6a]">
+              Privacy is free. Domain Protection is optional.
+            </h2>
+            <p className="mt-1 text-sm text-slate-600">
+              WHOIS privacy is included at no charge. Domain Protection is your
+              extra product and is charged at checkout when the customer adds it
+              — not NameSilo WHOIS.
+            </p>
+          </div>
+          <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800">
+            Privacy: {extras.privacyFree ? "Free" : "Review"}
+          </span>
+        </div>
+        <div className="mt-4 flex flex-wrap items-end gap-3">
+          <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+            <input
+              type="checkbox"
+              checked={extras.protectionEnabled}
+              onChange={(e) =>
+                setExtras({ ...extras, protectionEnabled: e.target.checked })
+              }
+            />
+            Offer Domain Protection
+          </label>
+          <label className="text-sm">
+            <span className="font-semibold text-slate-600">Price (USD)</span>
+            <input
+              className="mt-1 block w-28 rounded-lg border px-2 py-1"
+              value={extras.protectionPriceUsd}
+              onChange={(e) =>
+                setExtras({ ...extras, protectionPriceUsd: e.target.value })
+              }
+            />
+          </label>
+          <label className="min-w-[12rem] flex-1 text-sm">
+            <span className="font-semibold text-slate-600">Label</span>
+            <input
+              className="mt-1 block w-full rounded-lg border px-2 py-1"
+              value={extras.protectionLabel}
+              onChange={(e) =>
+                setExtras({ ...extras, protectionLabel: e.target.value })
+              }
+            />
+          </label>
+          <button
+            type="button"
+            disabled={extrasSaving}
+            onClick={() => void saveExtras()}
+            className="rounded-lg bg-[#673de6] px-4 py-2 text-sm font-bold text-white disabled:opacity-50"
+          >
+            {extrasSaving ? "Saving…" : "Save extras"}
+          </button>
+        </div>
+      </div>
+
       {bulkPreviewOpen ? (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
@@ -760,121 +938,132 @@ export function OrbitDomainPricingAdmin() {
               </select>
             </label>
             <p className="text-xs font-semibold text-slate-500 sm:ml-auto">
-              Showing {filteredRows.length} of {rows.length}
+              Showing {pagedRows.length ? (safePage - 1) * PAGE_SIZE + 1 : 0}–
+              {Math.min(safePage * PAGE_SIZE, filteredRows.length)} of{" "}
+              {filteredRows.length}
             </p>
           </div>
-          <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
-            <table className="min-w-full text-left text-sm">
-              <thead className="border-b bg-slate-50 text-[11px] font-bold text-slate-500 uppercase">
-                <tr>
-                  <th className="px-3 py-3">Sel.</th>
-                  <th className="px-3 py-3">TLD</th>
-                  <th className="px-3 py-3">NameSilo reg. cost</th>
-                  <th className="px-3 py-3">NameSilo renew cost</th>
-                  <th className="px-3 py-3">NameSilo transfer cost</th>
-                  <th className="px-3 py-3">Max years</th>
-                  <th className="px-3 py-3">NameSilo status</th>
-                  <th className="px-3 py-3">Last NameSilo sync</th>
-                  <th className="px-3 py-3">Retail reg.</th>
-                  <th className="px-3 py-3">Retail renew</th>
-                  <th className="px-3 py-3">Retail transfer</th>
-                  <th className="px-3 py-3">Reg. GP / margin / markup</th>
-                  <th className="px-3 py-3">Renew GP / margin / markup</th>
-                  <th className="px-3 py-3">Transfer GP / margin / markup</th>
-                  <th className="px-3 py-3">Retail lock</th>
-                  <th className="px-3 py-3">Registrar</th>
-                  <th className="px-3 py-3" />
-                </tr>
-              </thead>
-              <tbody>
-                {filteredRows.map((row) => (
-                  <tr key={row.id} className="border-b last:border-0">
-                    <td className="px-3 py-2">
-                      <input
-                        type="checkbox"
-                        checked={bulkSelected.has(row.tld)}
-                        disabled={row.liveOnly}
-                        onChange={() => toggleBulk(row.tld)}
-                        aria-label={`Select ${row.tld}`}
-                      />
-                    </td>
-                    <td className="px-3 py-2 font-bold">
-                      {row.tld}
-                      {row.liveOnly ? (
-                        <span className="ml-1 text-[10px] font-bold text-violet-700 uppercase">
-                          API list
-                        </span>
-                      ) : null}
-                    </td>
-                    <td className="px-3 py-2 text-slate-600">
-                      {money(row.namesiloRegister)}
-                      {row.namesiloPriceSource === "live_api" ? (
-                        <span className="ml-1 text-[10px] font-bold text-violet-700 uppercase">
-                          live
-                        </span>
-                      ) : null}
-                    </td>
-                    <td className="px-3 py-2 text-slate-600">
-                      {money(row.namesiloRenew)}
-                    </td>
-                    <td className="px-3 py-2 text-slate-600">
-                      {money(row.namesiloTransfer)}
-                    </td>
-                    <td className="px-3 py-2 text-slate-600">
-                      {row.supplierMaxRegisterYears ?? "—"}
-                    </td>
-                    <td className="px-3 py-2 text-xs font-semibold text-slate-500 uppercase">
-                      {namesiloStatusLabel(row)}
-                    </td>
-                    <td className="px-3 py-2 text-xs text-slate-500">
-                      {formatSyncTime(row.namesiloSyncedAt)}
-                    </td>
-                    <td className="px-3 py-2">{money(row.retailRegister)}</td>
-                    <td className="px-3 py-2">{money(row.retailRenew)}</td>
-                    <td className="px-3 py-2">{money(row.retailTransfer)}</td>
-                    <td className="px-3 py-2 text-xs text-slate-600">
-                      {row.metrics?.register.belowSupplierCost &&
-                      !row.metrics.register.incomplete
-                        ? `${formatGrossSummary(row.metrics.register)} ⚠`
-                        : formatGrossSummary(row.metrics?.register)}
-                    </td>
-                    <td className="px-3 py-2 text-xs text-slate-600">
-                      {row.metrics?.renew.belowSupplierCost &&
-                      !row.metrics.renew.incomplete
-                        ? `${formatGrossSummary(row.metrics.renew)} ⚠`
-                        : formatGrossSummary(row.metrics?.renew)}
-                    </td>
-                    <td className="px-3 py-2 text-xs text-slate-600">
-                      {row.metrics?.transfer.belowSupplierCost &&
-                      !row.metrics.transfer.incomplete
-                        ? `${formatGrossSummary(row.metrics.transfer)} ⚠`
-                        : formatGrossSummary(row.metrics?.transfer)}
-                    </td>
-                    <td className="px-3 py-2 text-xs text-slate-600">
-                      {row.retailPriceLocked ? "Locked" : "Unlocked"}
-                    </td>
-                    <td className="px-3 py-2 text-xs text-slate-600">
-                      {row.liveOnly
-                        ? "NameSilo (API list)"
-                        : row.lifecycleProvider === "domain-name-api"
-                          ? "Existing (do not migrate here)"
-                          : "NameSilo"}
-                    </td>
-                    <td className="px-3 py-2">
-                      <button
-                        type="button"
-                        className="inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-xs font-semibold disabled:opacity-50"
-                        disabled={row.liveOnly}
-                        onClick={() => openEdit(row)}
-                      >
-                        <Pencil className="size-3" />
-                        {row.liveOnly ? "Apply sync to persist" : "Edit"}
-                      </button>
-                    </td>
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[52rem] table-fixed text-left text-sm">
+                <thead className="border-b bg-slate-50 text-[11px] font-bold text-slate-500 uppercase">
+                  <tr>
+                    <th className="sticky left-0 z-10 w-10 bg-slate-50 px-3 py-3">
+                      <span className="sr-only">Select</span>
+                    </th>
+                    <th className="sticky left-10 z-10 w-32 bg-slate-50 px-3 py-3">
+                      TLD
+                    </th>
+                    <th className="w-32 px-3 py-3">NameSilo</th>
+                    <th className="px-3 py-3">Cost (reg · renew · xfer)</th>
+                    <th className="px-3 py-3">Retail (reg · renew · xfer)</th>
+                    <th className="w-36 px-3 py-3">Reg. GP</th>
+                    <th className="w-24 px-3 py-3">Lock</th>
+                    <th className="w-24 px-3 py-3" />
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {pagedRows.map((row) => {
+                    const status = namesiloStatusLabel(row);
+                    const belowCost =
+                      row.metrics?.register.belowSupplierCost &&
+                      !row.metrics.register.incomplete;
+                    return (
+                      <tr
+                        key={row.id}
+                        className="border-b last:border-0 hover:bg-slate-50/80"
+                      >
+                        <td className="sticky left-0 z-10 bg-white px-3 py-2.5">
+                          <input
+                            type="checkbox"
+                            checked={bulkSelected.has(row.tld)}
+                            disabled={row.liveOnly}
+                            onChange={() => toggleBulk(row.tld)}
+                            aria-label={`Select ${row.tld}`}
+                          />
+                        </td>
+                        <td className="sticky left-10 z-10 bg-white px-3 py-2.5 font-extrabold text-[#2f1c6a]">
+                          {row.tld}
+                          {row.liveOnly ? (
+                            <span className="ml-1 text-[10px] font-bold text-violet-700 uppercase">
+                              API
+                            </span>
+                          ) : null}
+                        </td>
+                        <td className="px-3 py-2.5">
+                          <span
+                            className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase ${namesiloStatusTone(status)}`}
+                            title={formatSyncTime(row.namesiloSyncedAt)}
+                          >
+                            {status}
+                          </span>
+                          {row.namesiloPriceSource === "live_api" ? (
+                            <span className="mt-1 block text-[10px] font-bold text-violet-700 uppercase">
+                              live
+                            </span>
+                          ) : null}
+                        </td>
+                        <td className="px-3 py-2.5 font-mono text-xs text-slate-600">
+                          {money(row.namesiloRegister)} ·{" "}
+                          {money(row.namesiloRenew)} ·{" "}
+                          {money(row.namesiloTransfer)}
+                        </td>
+                        <td className="px-3 py-2.5 font-mono text-xs font-semibold text-slate-800">
+                          {money(row.retailRegister)} · {money(row.retailRenew)}{" "}
+                          · {money(row.retailTransfer)}
+                        </td>
+                        <td
+                          className={`px-3 py-2.5 text-xs ${belowCost ? "font-bold text-rose-700" : "text-slate-600"}`}
+                          title={formatGrossSummary(row.metrics?.register)}
+                        >
+                          {formatGrossCompact(row.metrics?.register)}
+                          {belowCost ? " ⚠" : ""}
+                        </td>
+                        <td className="px-3 py-2.5 text-xs text-slate-500">
+                          {row.retailPriceLocked ? "Locked" : "Open"}
+                        </td>
+                        <td className="px-3 py-2.5">
+                          <button
+                            type="button"
+                            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-bold text-[#2f1c6a] hover:border-[#c7b8ff] disabled:opacity-50"
+                            disabled={row.liveOnly}
+                            onClick={() => openEdit(row)}
+                          >
+                            <Pencil className="size-3" />
+                            {row.liveOnly ? "Sync first" : "Edit"}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t bg-slate-50 px-4 py-3">
+              <p className="text-xs font-semibold text-slate-500">
+                Page {safePage} of {pageCount}
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={safePage <= 1}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  className="inline-flex items-center gap-1 rounded-lg border bg-white px-3 py-1.5 text-xs font-bold disabled:opacity-40"
+                >
+                  <ChevronLeft className="size-3.5" />
+                  Prev
+                </button>
+                <button
+                  type="button"
+                  disabled={safePage >= pageCount}
+                  onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+                  className="inline-flex items-center gap-1 rounded-lg border bg-white px-3 py-1.5 text-xs font-bold disabled:opacity-40"
+                >
+                  Next
+                  <ChevronRight className="size-3.5" />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

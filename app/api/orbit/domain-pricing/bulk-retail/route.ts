@@ -18,6 +18,7 @@ import {
   assertRetailUpdateAllowed,
   retailPriceFieldsInUpdate,
 } from "@/lib/orbit/retail-price-lock";
+import { revalidateDomainRetailSurfaces } from "@/lib/orbit/revalidate-domain-pricing";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -189,6 +190,10 @@ export async function POST(request: Request) {
         },
       },
     });
+  }
+
+  if (updated.length) {
+    revalidateDomainRetailSurfaces();
   }
 
   return NextResponse.json({ ok: true, updated });

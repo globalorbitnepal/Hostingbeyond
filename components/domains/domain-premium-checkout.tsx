@@ -145,8 +145,10 @@ export function DomainPremiumCheckout({
     for (const sel of saved) {
       if (sel.kind === "hosting") {
         keys.add(`hosting:${sel.productSlug}:${sel.planKey}:${sel.billing}`);
-      } else {
+      } else if (sel.kind === "business-email") {
         keys.add(`email:${sel.planId}:${sel.term}`);
+      } else if (sel.kind === "domain-protection") {
+        keys.add("domain-protection");
       }
     }
     return keys;
@@ -624,7 +626,11 @@ export function DomainPremiumCheckout({
                     {quote.paymentNote}
                   </p>
                 ) : null}
-                {selectedKeys.size > 0 && !allDone ? (
+                {offers.optional.some(
+                  (o) =>
+                    selectedKeys.has(offerKey(o)) &&
+                    o.kind !== "domain-protection",
+                ) && !allDone ? (
                   <div className="mt-4 rounded-2xl border border-slate-100 bg-slate-50/80 px-4 py-3 text-[13px] text-slate-700">
                     <p className="font-semibold text-[#1a1035]">
                       After registration
@@ -634,7 +640,11 @@ export function DomainPremiumCheckout({
                     </p>
                     <ul className="mt-2 space-y-1">
                       {offers.optional
-                        .filter((o) => selectedKeys.has(offerKey(o)))
+                        .filter(
+                          (o) =>
+                            selectedKeys.has(offerKey(o)) &&
+                            o.kind !== "domain-protection",
+                        )
                         .map((o) => {
                           if (o.kind === "hosting") {
                             return (

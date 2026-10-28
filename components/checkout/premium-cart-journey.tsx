@@ -63,13 +63,16 @@ function selectionsToKeys(
           o.billing === sel.billing,
       );
       if (match) keys.add(offerKey(match));
-    } else {
+    } else if (sel.kind === "business-email") {
       const match = optional.find(
         (o) =>
           o.kind === "business-email" &&
           o.planId === sel.planId &&
           o.term === sel.term,
       );
+      if (match) keys.add(offerKey(match));
+    } else if (sel.kind === "domain-protection") {
+      const match = optional.find((o) => o.kind === "domain-protection");
       if (match) keys.add(offerKey(match));
     }
   }
@@ -192,7 +195,10 @@ export function PremiumCartJourney() {
       .map((o) => ({
         key: offerKey(o),
         label: o.label,
-        detail: `${o.planName} · ${o.periodLabel}`,
+        detail:
+          o.kind === "domain-protection"
+            ? o.periodLabel
+            : `${o.planName} · ${o.periodLabel}`,
         amount: o.amount,
       }));
   }, [hints, selectedKeys]);

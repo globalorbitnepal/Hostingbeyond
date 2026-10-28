@@ -23,6 +23,12 @@ export type CmsSiteSettings = {
     linkedin: string;
     facebook: string;
   };
+  /** WHOIS privacy is always free for customers. */
+  domainPrivacyFree: boolean;
+  /** Paid Domain Protection add-on (not WHOIS privacy). */
+  domainProtectionEnabled: boolean;
+  domainProtectionPriceUsd: number;
+  domainProtectionLabel: string;
 };
 
 export type CmsDomainTld = {
@@ -886,6 +892,10 @@ export function defaultSiteSettings(): CmsSiteSettings {
       linkedin: "",
       facebook: "",
     },
+    domainPrivacyFree: true,
+    domainProtectionEnabled: true,
+    domainProtectionPriceUsd: 9.99,
+    domainProtectionLabel: "Domain Protection",
   };
 }
 

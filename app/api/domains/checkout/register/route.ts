@@ -9,7 +9,11 @@ import { customerMessageForOrderStatus } from "@/lib/domains/notifications";
 
 export const runtime = "nodejs";
 
-type Body = { domain?: string; idempotencyKey?: string };
+type Body = {
+  domain?: string;
+  idempotencyKey?: string;
+  addDomainProtection?: boolean;
+};
 
 export async function POST(request: Request) {
   const user = await requireCustomerSession();
@@ -28,7 +32,12 @@ export async function POST(request: Request) {
 
   if (body && typeof body === "object") {
     const o = body as Record<string, unknown>;
-    if ("register" in o || "total" in o || "price" in o) {
+    if (
+      "register" in o ||
+      "total" in o ||
+      "price" in o ||
+      "protectionPrice" in o
+    ) {
       return NextResponse.json(
         { error: "Pricing is calculated server-side." },
         { status: 400 },
@@ -44,6 +53,7 @@ export async function POST(request: Request) {
       userEmail: user.email,
       domainInput: domain,
       idempotencyKey,
+      addDomainProtection: body?.addDomainProtection === true,
     });
 
     if (!result.ok) {

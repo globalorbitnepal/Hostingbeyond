@@ -46,11 +46,15 @@ describe("premium-cart-intent", () => {
 
     writePremiumCartServices([
       { kind: "business-email", planId: "starter", term: "48" },
+      { kind: "domain-protection" },
     ]);
     assert.deepEqual(readPremiumCartServices()[0], {
       kind: "business-email",
       planId: "starter",
       term: "48",
+    });
+    assert.deepEqual(readPremiumCartServices()[1], {
+      kind: "domain-protection",
     });
   });
 

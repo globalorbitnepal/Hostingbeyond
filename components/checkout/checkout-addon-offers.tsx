@@ -1,6 +1,6 @@
 "use client";
 
-import { Mail, Server } from "lucide-react";
+import { Mail, Server, ShieldCheck } from "lucide-react";
 
 import type {
   DomainCheckoutServiceOffer,
@@ -24,6 +24,9 @@ export function offerToSelection(
       billing: offer.billing,
     };
   }
+  if (offer.kind === "domain-protection") {
+    return { kind: "domain-protection" };
+  }
   return {
     kind: "business-email",
     planId: offer.planId,
@@ -34,6 +37,9 @@ export function offerToSelection(
 export function offerKey(offer: DomainCheckoutServiceOffer): string {
   if (offer.kind === "hosting") {
     return `hosting:${offer.productSlug}:${offer.planKey}:${offer.billing}`;
+  }
+  if (offer.kind === "domain-protection") {
+    return "domain-protection";
   }
   return `email:${offer.planId}:${offer.term}`;
 }
@@ -74,9 +80,14 @@ export type EmailOfferGroup = {
 export function groupCheckoutOffers(optional: DomainCheckoutServiceOffer[]) {
   const hostingGroups = new Map<string, HostingOfferGroup>();
   const emailGroups = new Map<string, EmailOfferGroup>();
+  const protectionOffers: Array<
+    DomainCheckoutServiceOffer & { kind: "domain-protection" }
+  > = [];
 
   for (const offer of optional) {
-    if (offer.kind === "hosting") {
+    if (offer.kind === "domain-protection") {
+      protectionOffers.push(offer);
+    } else if (offer.kind === "hosting") {
       const gk = hostingGroupKey(offer);
       const existing = hostingGroups.get(gk) ?? {
         groupKey: gk,
@@ -106,6 +117,7 @@ export function groupCheckoutOffers(optional: DomainCheckoutServiceOffer[]) {
   return {
     hostingGroups: [...hostingGroups.values()],
     emailGroups: [...emailGroups.values()],
+    protectionOffers,
   };
 }
 
@@ -172,9 +184,14 @@ export function CheckoutAddonOfferList({
   exampleEmail = "info@yourdomain.com",
   className,
 }: AddonListProps) {
-  const { hostingGroups, emailGroups } = groupCheckoutOffers(optional);
+  const { hostingGroups, emailGroups, protectionOffers } =
+    groupCheckoutOffers(optional);
 
-  if (hostingGroups.length === 0 && emailGroups.length === 0) {
+  if (
+    hostingGroups.length === 0 &&
+    emailGroups.length === 0 &&
+    protectionOffers.length === 0
+  ) {
     return (
       <p className="text-[13px] text-[var(--hb-co-text-muted)]">
         No additional services are available for checkout right now.
@@ -184,6 +201,53 @@ export function CheckoutAddonOfferList({
 
   return (
     <ul className={cn("space-y-4", className)}>
+      {protectionOffers.map((offer) => {
+        const added = selectedKeys.has(offerKey(offer));
+        return (
+          <li
+            key={offerKey(offer)}
+            className="hb-checkout-premium__card overflow-hidden p-0"
+          >
+            <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start sm:gap-5">
+              <span
+                className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#ede9fe] to-[#dbeafe] text-[var(--hb-co-primary)]"
+                aria-hidden
+              >
+                <ShieldCheck className="size-6" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-bold tracking-[0.12em] text-[var(--hb-co-primary)] uppercase">
+                  Extra
+                </p>
+                <p className="mt-0.5 text-[18px] font-extrabold tracking-tight text-[var(--hb-co-text)]">
+                  {offer.label}
+                </p>
+                <p className="mt-1.5 text-[14px] leading-relaxed text-[var(--hb-co-text-muted)]">
+                  {offer.description}
+                </p>
+                <p className="mt-3 text-[16px] font-extrabold text-[var(--hb-co-text)]">
+                  {formatPrice(offer.amount)}
+                  <span className="ml-1.5 text-[13px] font-semibold text-[var(--hb-co-text-muted)]">
+                    {offer.periodLabel}
+                  </span>
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => onToggleOffer(offer)}
+                className={cn(
+                  "hb-checkout-premium__btn-primary min-h-11 shrink-0 px-6 sm:self-center",
+                  added &&
+                    "border-2 border-[var(--hb-co-success)] bg-[var(--hb-co-success)]",
+                )}
+                aria-pressed={added}
+              >
+                {added ? "Added" : "Add"}
+              </button>
+            </div>
+          </li>
+        );
+      })}
       {hostingGroups.map((group) => {
         const billing =
           hostingBilling[group.groupKey] ??

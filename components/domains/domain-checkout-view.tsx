@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useDomainCart } from "@/components/domains/domain-cart-provider";
 import { DomainPremiumCheckout } from "@/components/domains/domain-premium-checkout";
+import { readPremiumCartServices } from "@/lib/checkout/premium-cart-intent";
 import type { DomainCheckoutOffersPayload } from "@/lib/domains/domain-checkout-offers";
 import {
   guestCartSnapshot,
@@ -261,7 +262,12 @@ export function DomainCheckoutView({
             "content-type": "application/json",
             "idempotency-key": idempotencyKey,
           },
-          body: JSON.stringify({ domain: line.domain }),
+          body: JSON.stringify({
+            domain: line.domain,
+            addDomainProtection: readPremiumCartServices().some(
+              (sel) => sel.kind === "domain-protection",
+            ),
+          }),
         });
         const json = (await res.json()) as {
           ok?: boolean;

@@ -39,6 +39,8 @@ function parseSelections(raw: unknown): DomainCheckoutServiceSelection[] {
         planId,
         term: term as "monthly" | "12" | "24" | "36" | "48",
       });
+    } else if (kind === "domain-protection") {
+      out.push({ kind: "domain-protection" });
     }
   }
   return out;
@@ -62,11 +64,25 @@ export async function POST(request: Request) {
   const quoted = await quoteDomainCheckoutServices(selections);
 
   const domainsSubtotal = cart.total;
-  const servicesSubtotal = quoted.servicesTotal;
+  const domainCount = cart.items.length;
+  const serviceLines = quoted.lines.map((line) => {
+    if (line.key !== "domain-protection" || domainCount <= 1) return line;
+    return {
+      ...line,
+      amount: Math.round(line.amount * domainCount * 100) / 100,
+      detail: `${line.detail} · ${domainCount} domains`,
+    };
+  });
+  const servicesSubtotal =
+    Math.round(serviceLines.reduce((sum, line) => sum + line.amount, 0) * 100) /
+    100;
+  const protectionToday =
+    serviceLines.find((line) => line.key === "domain-protection")?.amount ?? 0;
   const taxes = 0;
   const total =
     Math.round((domainsSubtotal + servicesSubtotal + taxes) * 100) / 100;
-  const walletChargeToday = domainsSubtotal;
+  const walletChargeToday =
+    Math.round((domainsSubtotal + protectionToday) * 100) / 100;
 
   return NextResponse.json({
     currency: cart.currency,
@@ -78,13 +94,13 @@ export async function POST(request: Request) {
       currency: item.currency,
     })),
     domainsSubtotal,
-    serviceLines: quoted.lines,
+    serviceLines,
     servicesSubtotal,
     taxes,
     total,
     walletChargeToday,
     serviceErrors: quoted.errors,
     paymentNote:
-      "Today's wallet charge covers domain registration only. Selected hosting and email plans are activated on their own checkout after your domains are registered.",
+      "Today's wallet charge covers domain registration and Domain Protection if you add it. Hosting and email are billed on their own checkout after your domains are registered. WHOIS privacy is included free.",
   });
 }

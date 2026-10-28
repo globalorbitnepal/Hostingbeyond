@@ -28,6 +28,11 @@ import {
   reserveWalletFunds,
   rollbackReserve,
 } from "@/lib/domains/wallet";
+import {
+  extrasFromSiteSettings,
+  protectionChargeUsd,
+} from "@/lib/domains/domain-extras";
+import { getSiteSettings } from "@/lib/orbit/content";
 import { prisma } from "@/lib/prisma";
 
 export async function quoteRegistration(domainInput: string) {
@@ -59,6 +64,7 @@ export async function processDomainRegistrationCheckout(input: {
   userEmail: string;
   domainInput: string;
   idempotencyKey: string;
+  addDomainProtection?: boolean;
 }) {
   if (!resolveLifecycleProvider() && !process.env.NAMESILO_API_KEY?.trim()) {
     throw new Error("lookup_unconfigured");
@@ -136,6 +142,10 @@ export async function processDomainRegistrationCheckout(input: {
     return { ok: false as const, error: termCheck.message, status: 400 };
   }
   const registerPrice = availability.register;
+  const protectionUsd = input.addDomainProtection
+    ? protectionChargeUsd(extrasFromSiteSettings(await getSiteSettings()))
+    : 0;
+  const chargeTotal = Math.round((registerPrice + protectionUsd) * 100) / 100;
   await ensureCustomerWallet(input.userId);
 
   let order;
@@ -149,8 +159,10 @@ export async function processDomainRegistrationCheckout(input: {
         tld: quote.tld,
         status: "PROCESSING",
         retailPrice: registerPrice,
-        total: registerPrice,
+        total: chargeTotal,
         currency: quote.currency,
+        paymentReference:
+          protectionUsd > 0 ? `domain-protection:${protectionUsd}` : null,
         idempotencyKey: input.idempotencyKey,
       },
     });
@@ -172,7 +184,7 @@ export async function processDomainRegistrationCheckout(input: {
   try {
     const reserve = await reserveWalletFunds({
       userId: input.userId,
-      amount: registerPrice,
+      amount: chargeTotal,
       idempotencyKey: `register:${input.idempotencyKey}`,
       referenceType: "DomainOrder",
       referenceId: order.id,
@@ -191,7 +203,7 @@ export async function processDomainRegistrationCheckout(input: {
     if (!routed.provider) {
       await rollbackReserve({
         userId: input.userId,
-        amount: registerPrice,
+        amount: chargeTotal,
         reserveTransactionId: reserve.id,
         idempotencyKey: input.idempotencyKey,
       });
@@ -225,7 +237,7 @@ export async function processDomainRegistrationCheckout(input: {
     ) {
       await rollbackReserve({
         userId: input.userId,
-        amount: registerPrice,
+        amount: chargeTotal,
         reserveTransactionId: reserve.id,
         idempotencyKey: input.idempotencyKey,
       });
@@ -298,7 +310,7 @@ export async function processDomainRegistrationCheckout(input: {
     if (registerOutcome.outcome === "failed") {
       await rollbackReserve({
         userId: input.userId,
-        amount: registerPrice,
+        amount: chargeTotal,
         reserveTransactionId: reserve.id,
         idempotencyKey: input.idempotencyKey,
       });
@@ -327,7 +339,7 @@ export async function processDomainRegistrationCheckout(input: {
     if (registerOutcome.outcome !== "success") {
       await rollbackReserve({
         userId: input.userId,
-        amount: registerPrice,
+        amount: chargeTotal,
         reserveTransactionId: reserve.id,
         idempotencyKey: input.idempotencyKey,
       });
@@ -406,7 +418,7 @@ export async function processDomainRegistrationCheckout(input: {
     if (reserveTxId) {
       await rollbackReserve({
         userId: input.userId,
-        amount: registerPrice,
+        amount: chargeTotal,
         reserveTransactionId: reserveTxId,
         idempotencyKey: input.idempotencyKey,
       }).catch(() => undefined);

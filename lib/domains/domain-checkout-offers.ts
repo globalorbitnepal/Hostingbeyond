@@ -1,3 +1,8 @@
+import {
+  extrasFromSiteSettings,
+  protectionChargeUsd,
+} from "@/lib/domains/domain-extras";
+import { getSiteSettings } from "@/lib/orbit/content";
 import { getHostingProductBySlug } from "@/lib/hosting/hosting-products";
 import {
   availableEmailTermsForPlan,
@@ -34,6 +39,15 @@ export type DomainCheckoutServiceOffer =
       periodLabel: string;
       mailboxesLabel: string;
       storageLabel: string;
+    }
+  | {
+      kind: "domain-protection";
+      serviceId: "domain-protection";
+      amount: number;
+      currency: "USD";
+      label: string;
+      description: string;
+      periodLabel: string;
     };
 
 export type DomainCheckoutOffersPayload = {
@@ -60,11 +74,12 @@ function formatUsdPerMonth(amount: number) {
 
 /** Real upsell offers for domain checkout — no invented products or prices. */
 export async function getDomainCheckoutOffers(): Promise<DomainCheckoutOffersPayload> {
+  const extras = extrasFromSiteSettings(await getSiteSettings());
   const included = [
     {
       id: "whois-privacy",
-      label: "WHOIS privacy",
-      detail: "Included free on eligible domains",
+      label: extras.privacyLabel,
+      detail: extras.privacyDetail,
     },
     {
       id: "dns",
@@ -74,6 +89,18 @@ export async function getDomainCheckoutOffers(): Promise<DomainCheckoutOffersPay
   ];
 
   const optional: DomainCheckoutServiceOffer[] = [];
+  const protection = protectionChargeUsd(extras);
+  if (protection > 0) {
+    optional.push({
+      kind: "domain-protection",
+      serviceId: "domain-protection",
+      amount: protection,
+      currency: "USD",
+      label: extras.protectionLabel,
+      description: extras.protectionDetail,
+      periodLabel: "per year",
+    });
+  }
 
   const webHosting = await getHostingProductBySlug("web-hosting");
   const activePlans =
@@ -154,6 +181,9 @@ export type DomainCheckoutServiceSelection =
       kind: "business-email";
       planId: string;
       term: EmailBillingTerm;
+    }
+  | {
+      kind: "domain-protection";
     };
 
 export async function quoteDomainCheckoutServices(
@@ -206,7 +236,7 @@ export async function quoteDomainCheckoutServices(
         currency: match.currency,
         billingLabel: match.periodLabel,
       });
-    } else {
+    } else if (selection.kind === "business-email") {
       const key = `email:${selection.planId}:${selection.term}`;
       if (seen.has(key)) continue;
       seen.add(key);
@@ -227,6 +257,23 @@ export async function quoteDomainCheckoutServices(
         amount: match.amount,
         currency: match.currency,
         billingLabel: `${formatUsdPerMonth(match.amount)} / mo`,
+      });
+    } else if (selection.kind === "domain-protection") {
+      const key = "domain-protection";
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const match = offers.optional.find((o) => o.kind === "domain-protection");
+      if (!match || match.kind !== "domain-protection") {
+        errors.push("Domain Protection is not available.");
+        continue;
+      }
+      lines.push({
+        key,
+        label: match.label,
+        detail: match.periodLabel,
+        amount: match.amount,
+        currency: match.currency,
+        billingLabel: match.periodLabel,
       });
     }
   }
