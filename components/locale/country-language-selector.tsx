@@ -15,7 +15,6 @@ import { Check, ChevronDown, Search } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import {
-  ALWAYS_ON_LANGUAGES,
   flagImgUrl,
   getCountry,
   languages,
@@ -25,6 +24,10 @@ import {
   type LanguageCode,
 } from "@/config/geo";
 import { useLocale } from "@/components/locale/locale-provider";
+import {
+  languageTriggerLabel,
+  LANGUAGE_MARKET_OPTIONS,
+} from "@/lib/i18n/language-markets";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -41,7 +44,7 @@ type Props = {
 };
 
 const MENU_WIDTH = { compact: 320, default: 360 } as const;
-const LANG_MENU_WIDTH = { compact: 188, default: 204 } as const;
+const LANG_MENU_WIDTH = { compact: 220, default: 248 } as const;
 
 function computeMenuPosition(
   trigger: DOMRect,
@@ -60,7 +63,7 @@ function computeMenuPosition(
       bottom: window.innerHeight - trigger.top + margin,
       width,
       maxHeight: "min(520px, 80dvh)",
-      zIndex: 200,
+      zIndex: 300,
     };
   }
 
@@ -70,7 +73,7 @@ function computeMenuPosition(
     top: trigger.bottom + margin,
     width,
     maxHeight: "min(520px, 80dvh)",
-    zIndex: 200,
+    zIndex: 300,
   };
 }
 
@@ -172,7 +175,7 @@ export function CountryLanguageSelector({
   className,
 }: Props) {
   const light = tone === "light";
-  const { preferences, applySelection, setLanguage, t } = useLocale();
+  const { preferences, setCountry, setLanguage, t } = useLocale();
   const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
@@ -273,11 +276,11 @@ export function CountryLanguageSelector({
       computeMenuPosition(
         el.getBoundingClientRect(),
         menuAlign,
-        menuSide,
+        "below",
         langMenuWidth,
       ),
     );
-  }, [menuAlign, menuSide, langMenuWidth]);
+  }, [menuAlign, langMenuWidth]);
 
   useLayoutEffect(() => {
     if (!open) {
@@ -321,21 +324,15 @@ export function CountryLanguageSelector({
   }, [open, activeIndex]);
 
   const selectAndApply = (option: CountryOption) => {
-    const langs = languagesForCountry(option);
-    const lang = langs.includes(draftLanguage)
-      ? draftLanguage
-      : option.defaultLanguage;
-    applySelection({ country: option.code, language: lang });
+    setCountry(option.code, { suggestLanguage: false });
     closePanel();
   };
 
   const applyDraft = () => {
-    const draft = getCountry(draftCountry);
-    const langs = languagesForCountry(draft);
-    const lang = langs.includes(draftLanguage)
-      ? draftLanguage
-      : draft.defaultLanguage;
-    applySelection({ country: draftCountry, language: lang });
+    setCountry(draftCountry, { suggestLanguage: false });
+    if (draftLanguage !== preferences.language) {
+      setLanguage(draftLanguage);
+    }
     closePanel();
   };
 
@@ -359,44 +356,49 @@ export function CountryLanguageSelector({
     return languagesForCountry(draft);
   }, [draft.languages]);
 
-  function languageChipLabel(code: LanguageCode) {
-    if (code === "en") return languages.en.nativeLabel;
-    return languages[code]?.nativeLabel ?? code.toUpperCase();
-  }
-
   function renderLanguageOptions(options: {
     selected: LanguageCode;
     onPick: (code: LanguageCode) => void;
-    draft?: boolean;
   }) {
     return (
       <div
-        className="hb-locale-scroll flex max-h-[min(240px,50dvh)] flex-col gap-0.5 overflow-y-auto overscroll-contain py-1"
+        className="hb-locale-scroll flex max-h-[min(280px,50dvh)] flex-col gap-0.5 overflow-y-auto overscroll-contain p-1"
         role="listbox"
         aria-label={t.locale.language}
       >
-        {ALWAYS_ON_LANGUAGES.map((code) => {
-          const meta = languages[code];
-          const sel = options.selected === code;
+        {LANGUAGE_MARKET_OPTIONS.map((market) => {
+          const sel = options.selected === market.code;
           return (
             <button
-              key={code}
+              key={market.code}
               type="button"
               role="option"
               aria-selected={sel}
-              onClick={() => options.onPick(code)}
+              onClick={() => options.onPick(market.code)}
               className={cn(
-                "flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left text-[13px] font-semibold transition-colors",
+                "flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left transition-colors",
                 light
                   ? sel
-                    ? "bg-indigo-50 text-indigo-800"
-                    : "text-slate-700 hover:bg-slate-50"
+                    ? "bg-indigo-50 text-indigo-950 ring-1 ring-indigo-200/80"
+                    : "text-slate-800 hover:bg-slate-50"
                   : sel
-                    ? "bg-[rgba(37,99,235,0.18)] text-white"
-                    : "text-white/80 hover:bg-white/[0.06]",
+                    ? "bg-[rgba(37,99,235,0.18)] text-white ring-1 ring-[#2563eb]/40"
+                    : "text-white/85 hover:bg-white/[0.06]",
               )}
             >
-              <span>{meta?.nativeLabel ?? code}</span>
+              <span className="min-w-0">
+                <span className="block text-[13px] leading-tight font-bold">
+                  {market.title}
+                </span>
+                <span
+                  className={cn(
+                    "mt-0.5 block text-[11px] font-medium",
+                    light ? "text-slate-500" : "text-white/50",
+                  )}
+                >
+                  {market.region}
+                </span>
+              </span>
               {sel ? (
                 <Check
                   className={cn(
@@ -445,11 +447,11 @@ export function CountryLanguageSelector({
         )}
         <span
           className={cn(
-            "rounded-full px-2.5 py-1 text-[12.5px] font-bold",
-            light ? "bg-slate-900 text-white" : "bg-white text-slate-900",
+            "max-w-[9.5rem] truncate px-1 text-[11px] font-bold sm:max-w-none sm:text-[12px]",
+            light ? "text-slate-900" : "text-white",
           )}
         >
-          EN
+          English (US)
         </span>
         <ChevronDown
           className={cn(
@@ -543,11 +545,11 @@ export function CountryLanguageSelector({
         >
           <span
             className={cn(
-              "font-bold tracking-wide",
+              "max-w-[7.5rem] truncate font-bold tracking-tight sm:max-w-[10rem]",
               light ? "text-slate-900" : "text-white",
             )}
           >
-            {languageChipLabel(preferences.language)}
+            {languageTriggerLabel(preferences.language)}
           </span>
           <ChevronDown
             className={cn(
@@ -579,9 +581,9 @@ export function CountryLanguageSelector({
                 }}
                 transition={{ duration: 0.15, ease: [0.22, 1, 0.36, 1] }}
                 className={cn(
-                  "overflow-hidden rounded-[14px] border backdrop-blur-2xl",
+                  "overflow-hidden rounded-[16px] border shadow-[0_20px_50px_rgba(15,23,42,0.14)] backdrop-blur-2xl",
                   light
-                    ? "border-slate-200/80 bg-white/95 shadow-[0_16px_40px_rgba(15,23,42,0.12)]"
+                    ? "border-slate-200/90 bg-white/98"
                     : "border-white/[0.12] bg-[#0c1528] shadow-[0_20px_50px_rgba(0,0,0,0.55)]",
                 )}
                 style={langMenuPosition}
@@ -651,10 +653,7 @@ export function CountryLanguageSelector({
                   <div className="mt-1">
                     {renderLanguageOptions({
                       selected: draftLanguage,
-                      onPick: (code) => {
-                        setDraftLanguage(code);
-                        setLanguage(code);
-                      },
+                      onPick: (code) => setDraftLanguage(code),
                     })}
                   </div>
                 </div>

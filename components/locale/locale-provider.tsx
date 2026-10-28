@@ -108,7 +108,7 @@ export function LocaleProvider({
         country: country.code,
         currency: country.currency,
         language:
-          options?.suggestLanguage !== false && !preferences.languageLocked
+          options?.suggestLanguage === true && !preferences.languageLocked
             ? country.defaultLanguage
             : preferences.language,
       });

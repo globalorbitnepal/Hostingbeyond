@@ -15,6 +15,7 @@ import {
 
 import { cn } from "@/lib/utils";
 import type { CmsSolutionProduct } from "@/lib/orbit/defaults";
+import { useTranslate } from "@/lib/i18n/use-translate";
 import { SolutionImageCarousel } from "./solution-image-carousel";
 
 const ICONS = {
@@ -51,6 +52,7 @@ type Props = {
 };
 
 export function SolutionCard({ product, paused, priority }: Props) {
+  const tx = useTranslate();
   const Icon = ICONS[product.icon] ?? Server;
   const shots = (product.images ?? [])
     .filter((image) => image.visible !== false && image.url.trim())
@@ -72,26 +74,26 @@ export function SolutionCard({ product, paused, priority }: Props) {
               <span className="inline-flex size-8 items-center justify-center rounded-xl border border-white/80 bg-white/70 text-[#673de6]">
                 <Icon className="size-4" strokeWidth={1.8} />
               </span>
-              {product.category}
+              {tx(product.category)}
             </p>
             {product.badge.trim() ? (
               <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold tracking-wide text-emerald-700 uppercase">
                 <span className="size-1.5 rounded-full bg-emerald-500" />
-                {product.badge}
+                {tx(product.badge)}
               </span>
             ) : null}
           </div>
           <h3 className="font-heading mt-4 text-[1.55rem] leading-[1.08] font-semibold tracking-[-0.04em] text-[#2f1c6a] sm:text-[1.75rem]">
-            {product.name}
+            {tx(product.name)}
           </h3>
           <p className="mt-2 max-w-[34ch] text-[14.5px] leading-6 text-slate-600">
-            {product.description}
+            {tx(product.description)}
           </p>
           <Link
             href={product.ctaHref || "/"}
             className="mt-auto inline-flex min-h-10 items-center gap-2 pt-4 text-sm font-semibold text-[#673de6] transition hover:gap-2.5 hover:text-[#2563eb]"
           >
-            {product.ctaLabel}
+            {tx(product.ctaLabel)}
             <ArrowRight className="size-4" />
           </Link>
         </div>

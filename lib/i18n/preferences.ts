@@ -55,7 +55,7 @@ export function normalizePreferences(
   const languageLocked = Boolean(input?.languageLocked);
   const language = isLanguageCode(input?.language)
     ? input.language
-    : country.defaultLanguage;
+    : DEFAULT_LANGUAGE;
   const currency =
     typeof input?.currency === "string" && input.currency.length === 3
       ? (input.currency.toUpperCase() as CurrencyCode)

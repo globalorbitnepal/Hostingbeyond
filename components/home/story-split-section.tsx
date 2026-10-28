@@ -8,6 +8,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { hbCopy, hbSpring } from "@/lib/motion";
 import type { CmsStoryBandContent } from "@/lib/orbit/defaults";
+import { useTranslate } from "@/lib/i18n/use-translate";
 import {
   GlassChatChips,
   GlassDomainBar,
@@ -24,6 +25,7 @@ export function StorySplitSection({
   tone?: "mist" | "aurora" | "sheet";
 }) {
   const reduce = useReducedMotion();
+  const tx = useTranslate();
   const slides = useMemo(
     () =>
       content.slides
@@ -78,7 +80,7 @@ export function StorySplitSection({
                 cream ? "text-slate-500" : "text-white/60",
               )}
             >
-              {content.eyebrow}
+              {tx(content.eyebrow)}
             </p>
           ) : null}
           <h2
@@ -87,7 +89,7 @@ export function StorySplitSection({
               cream ? "text-[#2f1c6a]" : "text-white",
             )}
           >
-            {content.heading}
+            {tx(content.heading)}
           </h2>
 
           {slides.length > 1 ? (
@@ -108,7 +110,7 @@ export function StorySplitSection({
                         : "bg-white/12 text-white/90 ring-1 ring-white/20 hover:bg-white/20",
                   )}
                 >
-                  {slide.label}
+                  {tx(slide.label)}
                 </button>
               ))}
             </div>
@@ -131,7 +133,7 @@ export function StorySplitSection({
                     cream ? "text-[#2f1c6a]" : "text-white",
                   )}
                 >
-                  {active.title}
+                  {tx(active.title)}
                 </h3>
                 <p
                   className={cn(
@@ -139,7 +141,7 @@ export function StorySplitSection({
                     cream ? "text-slate-600" : "text-white/75",
                   )}
                 >
-                  {active.body}
+                  {tx(active.body)}
                 </p>
                 <Link
                   href={active.ctaHref}
@@ -150,7 +152,7 @@ export function StorySplitSection({
                       : "bg-white text-[#2f1c6a]",
                   )}
                 >
-                  {active.ctaLabel}
+                  {tx(active.ctaLabel)}
                   <ArrowRight className="size-4" />
                 </Link>
               </motion.div>
