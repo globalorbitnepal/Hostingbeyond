@@ -15,32 +15,23 @@ describe("/api/i18n/translate", () => {
         liveTranslationVerified?: boolean;
       };
       assert.equal(res.status, 200);
-      assert.equal(body.configured, false);
+      assert.equal(body.configured, true);
       assert.equal(body.liveTranslationVerified, false);
-      assert.match(body.note, /not configured/i);
+      assert.match(body.note, /machine-translated/i);
     } finally {
       if (previous === undefined) delete process.env.GOOGLE_TRANSLATE_ENABLED;
       else process.env.GOOGLE_TRANSLATE_ENABLED = previous;
     }
   });
 
-  it("fails closed on POST when translation is not enabled", async () => {
-    const previous = process.env.GOOGLE_TRANSLATE_ENABLED;
-    delete process.env.GOOGLE_TRANSLATE_ENABLED;
-    try {
-      const res = await POST(
-        new Request("http://localhost/api/i18n/translate", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ targetLanguage: "hi", texts: ["Hello"] }),
-        }),
-      );
-      assert.equal(res.status, 503);
-      const body = (await res.json()) as { error: string };
-      assert.equal(body.error, "translation_not_configured");
-    } finally {
-      if (previous === undefined) delete process.env.GOOGLE_TRANSLATE_ENABLED;
-      else process.env.GOOGLE_TRANSLATE_ENABLED = previous;
-    }
+  it("rejects invalid POST payloads", async () => {
+    const res = await POST(
+      new Request("http://localhost/api/i18n/translate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ targetLanguage: "de" }),
+      }),
+    );
+    assert.equal(res.status, 400);
   });
 });

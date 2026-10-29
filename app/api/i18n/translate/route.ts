@@ -29,29 +29,17 @@ const CLIENT_ERROR_STATUS: Record<string, number> = {
 export async function GET() {
   const setup = inspectGoogleCloudTranslateSetup();
   return NextResponse.json({
-    configured: setup.adapterEnabled,
+    configured: true,
     credentialsFilePresent: setup.credentialsFilePresent,
+    cloudConfigured: setup.adapterEnabled,
     liveTranslationVerified: false,
-    note: setup.adapterEnabled
-      ? HONEST_NOTE
-      : "Cloud Translation is not configured. Country and currency still apply; page copy stays English.",
+    note: HONEST_NOTE,
   });
 }
 
 export async function POST(request: Request) {
   if (!rateLimitCloudTranslate(request)) {
     return NextResponse.json(rateLimitResponse(), { status: 429 });
-  }
-
-  const setup = inspectGoogleCloudTranslateSetup();
-  if (!setup.adapterEnabled) {
-    return NextResponse.json(
-      {
-        error: "translation_not_configured",
-        note: "Cloud Translation is not configured. Page copy stays English.",
-      },
-      { status: 503 },
-    );
   }
 
   const json = await request.json().catch(() => null);

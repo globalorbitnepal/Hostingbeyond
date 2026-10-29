@@ -140,6 +140,7 @@ async function fetchBatches(
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ targetLanguage, texts: chunk }),
+      credentials: "same-origin",
       signal,
     });
     if (res.status === 503) {
@@ -215,7 +216,11 @@ export function CloudTranslateRuntime() {
         return;
       }
       setStatus("translating");
-      const probe = await fetch("/api/i18n/translate", { method: "GET" });
+      const probe = await fetch("/api/i18n/translate", {
+        method: "GET",
+        credentials: "same-origin",
+        cache: "no-store",
+      });
       const probeJson = (await probe.json().catch(() => null)) as {
         configured?: boolean;
       } | null;
@@ -303,27 +308,6 @@ export function CloudTranslateRuntime() {
     };
   }, [disabled, pathname, preferences.googleTargetLang, target]);
 
-  if (disabled || !isGoogleTranslationActive(target) || status === "idle") {
-    return null;
-  }
-
-  const copy =
-    status === "unavailable"
-      ? "Language is selected. Page copy stays English until Cloud Translation is configured and a real request succeeds."
-      : status === "translating"
-        ? "Translating visible copy…"
-        : status === "partial"
-          ? "Some visible copy is machine-translated. Prices, domains, and checkout stay original; other phrases may remain English."
-          : "Visible marketing copy is machine-translated. Prices, domains, and checkout stay original.";
-
-  return (
-    <p
-      className="notranslate pointer-events-none fixed bottom-3 left-3 z-[80] max-w-sm rounded-lg border border-slate-200/90 bg-white/95 px-3 py-2 text-[11px] leading-snug text-slate-600 shadow-sm"
-      translate="no"
-      data-hb-no-translate
-      role="status"
-    >
-      {copy}
-    </p>
-  );
+  void status;
+  return null;
 }

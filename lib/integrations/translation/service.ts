@@ -4,6 +4,7 @@ import {
   type CloudTranslateFn,
   type GoogleCloudTranslateErrorCode,
 } from "@/lib/integrations/translation/google-cloud";
+import { translateTextsWithGoogleGtx } from "@/lib/integrations/translation/google-gtx";
 
 export type PreparedTranslation = {
   original: string;
@@ -41,9 +42,15 @@ export async function prepareCloudTranslations(
     env,
     translateFn,
   );
-  if (!result.ok) return result;
+  const resolved =
+    result.ok || translateFn
+      ? result
+      : result.code === "translation_not_configured"
+        ? await translateTextsWithGoogleGtx(pendingTexts, targetLanguage)
+        : result;
+  if (!resolved.ok) return resolved;
   pendingIndexes.forEach((itemIndex, i) => {
-    const translated = result.translations[i] ?? items[itemIndex]!.original;
+    const translated = resolved.translations[i] ?? items[itemIndex]!.original;
     items[itemIndex] = {
       original: items[itemIndex]!.original,
       translated,

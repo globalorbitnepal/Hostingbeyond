@@ -220,6 +220,9 @@ export function LocaleProvider({
         country: country.code,
         currency: resolveCountryDisplayCurrency(country.code).currency,
         localeMarketId: market.id,
+        googleTargetLang: preferences.googleTargetLang,
+        language: preferences.language,
+        languageLocked: preferences.languageLocked,
       });
     },
     [commit, preferences],
