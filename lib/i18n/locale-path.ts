@@ -125,3 +125,15 @@ export function resolveLanguageForPublicRequest(
   if (isWebsiteLanguageCode(cookieLang)) return cookieLang;
   return DEFAULT_WEBSITE_LANGUAGE_CODE;
 }
+
+export const LOCALE_REWRITE_HEADER = "x-hb-locale-rewrite";
+
+/**
+ * Prefixed SEO URLs are rewritten to the English route.
+ * Do not 307 unprefixed URLs back to the prefix — that loops with the rewrite.
+ */
+export function localePrefixRewritePath(pathname: string): string | null {
+  const parsed = stripLocalePrefixFromPath(pathname);
+  if (!parsed.hadPrefix) return null;
+  return parsed.pathname;
+}

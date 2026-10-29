@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import {
+  localePrefixRewritePath,
   localizePublicPath,
   stripLocalePrefixFromPath,
   websiteLanguageFromUrlSegment,
@@ -37,6 +38,13 @@ describe("locale URL paths", () => {
     assert.equal(localizePublicPath("/contact", "de"), "/de/contact");
     assert.equal(localizePublicPath("/de/contact", "en"), "/contact");
     assert.equal(localizePublicPath("/", "fr"), "/fr");
+  });
+
+  it("rewrites prefixed SEO paths and never treats unprefixed as rewrite", () => {
+    assert.equal(localePrefixRewritePath("/bn"), "/");
+    assert.equal(localePrefixRewritePath("/de/pricing"), "/pricing");
+    assert.equal(localePrefixRewritePath("/pricing"), null);
+    assert.equal(localePrefixRewritePath("/"), null);
   });
 
   it("round-trips known segments", () => {

@@ -2,22 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { sanitizeCustomerRedirectPath } from "@/lib/customer/safe-redirect";
 import {
+  isLoopbackHost,
   requestSiteOrigin,
-  absoluteSiteUrl,
   internalAppRewriteUrl,
 } from "@/lib/customer/site-origin";
-import { routes } from "@/config/routes";
 import {
   CUSTOMER_SESSION_COOKIE,
   verifyCustomerJwt,
 } from "@/lib/customer/session";
 import {
-  localizePublicPath,
+  LOCALE_REWRITE_HEADER,
+  localePrefixRewritePath,
   shouldApplyLocaleRouting,
   stripLocalePrefixFromPath,
-  websiteLanguageToUrlSegment,
 } from "@/lib/i18n/locale-path";
-import { isGoogleTranslationActive } from "@/lib/i18n/google-translate-client";
 import {
   LOCALE_COOKIE,
   parsePreferencesCookie,
@@ -68,40 +66,30 @@ function mergeLocaleCookie(
   return response;
 }
 
+function isInternalLocaleRewriteRequest(request: NextRequest): boolean {
+  if (request.headers.get(LOCALE_REWRITE_HEADER) === "1") return true;
+  const host = request.headers.get("host") ?? "";
+  const forwarded = request.headers.get("x-forwarded-host")?.trim() ?? "";
+  return isLoopbackHost(host) && !forwarded;
+}
+
 function handlePublicLocaleRouting(request: NextRequest): NextResponse | null {
   if (PUBLIC_ENGLISH_ONLY) return null;
   const { pathname } = request.nextUrl;
   if (!shouldApplyLocaleRouting(pathname)) return null;
+  if (isInternalLocaleRewriteRequest(request)) return null;
+
+  const rewritePath = localePrefixRewritePath(pathname);
+  if (!rewritePath) return null;
 
   const parsed = stripLocalePrefixFromPath(pathname);
-  const cookiePrefs = parsePreferencesCookie(
-    request.cookies.get(LOCALE_COOKIE)?.value,
+  const headers = new Headers(request.headers);
+  headers.set(LOCALE_REWRITE_HEADER, "1");
+  const response = NextResponse.rewrite(
+    internalAppRewriteUrl(rewritePath, request.nextUrl.search),
+    { request: { headers } },
   );
-  const cookieLang = resolveWebsiteLanguageCode(cookiePrefs.googleTargetLang);
-
-  if (parsed.hadPrefix) {
-    const response = NextResponse.rewrite(
-      internalAppRewriteUrl(parsed.pathname, request.nextUrl.search),
-    );
-    return mergeLocaleCookie(request, response, parsed.language);
-  }
-
-  if (
-    isGoogleTranslationActive(cookieLang) &&
-    websiteLanguageToUrlSegment(cookieLang)
-  ) {
-    const localized = localizePublicPath(pathname, cookieLang);
-    if (localized !== pathname) {
-      const target = absoluteSiteUrl(
-        request,
-        `${localized}${request.nextUrl.search}`,
-        routes.account,
-      );
-      return NextResponse.redirect(target);
-    }
-  }
-
-  return null;
+  return mergeLocaleCookie(request, response, parsed.language);
 }
 
 export async function middleware(request: NextRequest) {
