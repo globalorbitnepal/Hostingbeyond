@@ -62,7 +62,9 @@ export function GoogleTranslateBridge() {
     return () => timers.forEach((id) => window.clearTimeout(id));
   }, [target, pathname, translateReady, disabled]);
 
-  if (disabled) {
+  /** Load the widget only when a non-English market is selected.
+   *  Injecting it on English breaks React portals (dropdown / footer). */
+  if (disabled || !isGoogleTranslationActive(target)) {
     return null;
   }
 
