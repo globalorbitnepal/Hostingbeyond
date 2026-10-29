@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Fragment,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -207,6 +206,9 @@ export function CountryLanguageSelector({
   const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [listSection, setListSection] = useState<"country" | "language">(
+    "country",
+  );
   const [activeIndex, setActiveIndex] = useState(0);
   const panelId = useId();
 
@@ -249,8 +251,9 @@ export function CountryLanguageSelector({
       englishName: row.englishName,
       nativeName: row.nativeName,
     }));
-    return [...countries, ...langs];
-  }, [enabled, query]);
+    if (listSection === "country") return countries;
+    return langs;
+  }, [enabled, listSection, query]);
   const menuWidth = compact ? MENU_WIDTH.compact : MENU_WIDTH.default;
   const localeInstance = menuSide === "above" ? "footer" : "header";
 
@@ -283,6 +286,7 @@ export function CountryLanguageSelector({
 
   const openPanel = useCallback(() => {
     setQuery("");
+    setListSection("country");
     const markets = searchCountryMarkets("");
     const selectedCountryIndex = indexOfSelectedCountryRow(
       preferences.country,
@@ -362,6 +366,24 @@ export function CountryLanguageSelector({
     if (row.kind === "lang") setWebsiteLanguage(row.code);
     else applyCountryMarket(row.market);
     closePanel();
+  };
+
+  const switchListSection = (section: "country" | "language") => {
+    setListSection(section);
+    setQuery("");
+    if (section === "country") {
+      const markets = searchCountryMarkets("");
+      const idx = indexOfSelectedCountryRow(preferences.country, markets);
+      setActiveIndex(idx >= 0 ? idx : 0);
+    } else {
+      const enabledLangs = WEBSITE_LANGUAGES.filter((row) =>
+        enabled.has(row.code),
+      );
+      const idx = enabledLangs.findIndex(
+        (row) => row.code === preferences.googleTargetLang,
+      );
+      setActiveIndex(idx >= 0 ? idx : 0);
+    }
   };
 
   const onSearchKeyDown = (e: ReactKeyboardEvent<HTMLInputElement>) => {
@@ -550,6 +572,42 @@ export function CountryLanguageSelector({
               </div>
 
               <div
+                className={cn(
+                  "flex shrink-0 gap-1 border-b px-3 py-2",
+                  light ? "border-slate-200/70" : "border-white/[0.06]",
+                )}
+                role="tablist"
+                aria-label={t.locale.selectLocation}
+              >
+                {(
+                  [
+                    ["country", "Country & currency"],
+                    ["language", "Language"],
+                  ] as const
+                ).map(([id, label]) => (
+                  <button
+                    key={id}
+                    type="button"
+                    role="tab"
+                    aria-selected={listSection === id}
+                    onClick={() => switchListSection(id)}
+                    className={cn(
+                      "flex-1 rounded-[10px] px-2 py-2 text-[11px] font-bold tracking-wide uppercase transition-colors",
+                      listSection === id
+                        ? light
+                          ? "bg-indigo-600 text-white shadow-sm"
+                          : "bg-[#2563eb] text-white"
+                        : light
+                          ? "text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+                          : "text-white/45 hover:bg-white/[0.06] hover:text-white/80",
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              <div
                 ref={listRef}
                 className={cn(
                   "min-h-0 flex-1 overflow-y-auto overscroll-contain py-1",
@@ -575,86 +633,72 @@ export function CountryLanguageSelector({
                     const keyboardFocus = index === activeIndex && !selected;
 
                     return (
-                      <Fragment key={row.id}>
-                        {!rows[index - 1] ||
-                        rows[index - 1]!.kind !== row.kind ? (
-                          <p
-                            className={cn(
-                              "px-4 pt-2.5 pb-1 text-[10px] font-bold tracking-[0.14em] uppercase",
-                              light ? "text-slate-400" : "text-white/35",
-                            )}
-                          >
-                            {row.kind === "lang"
-                              ? "Language"
-                              : "Country & currency"}
-                          </p>
-                        ) : null}
-                        <button
-                          type="button"
-                          role="option"
-                          aria-selected={selected}
-                          aria-label={
-                            row.kind === "lang"
-                              ? `${row.englishName} (${row.nativeName})`
-                              : `${row.market.countryName}, ${resolveCountryDisplayCurrency(row.market.countryCode).currency}`
-                          }
-                          data-keyboard-focus={String(keyboardFocus)}
-                          onClick={() => selectRow(row)}
-                          className={cn(
-                            "flex w-full items-center gap-3 px-3 py-[10px] text-left transition-colors duration-100",
-                            light
-                              ? selected
-                                ? "bg-indigo-50 text-slate-900 ring-1 ring-indigo-200/80 ring-inset"
-                                : keyboardFocus
-                                  ? "bg-slate-50 text-slate-900 ring-1 ring-slate-200 ring-inset"
-                                  : "text-slate-700 hover:bg-slate-50/90 hover:text-slate-900"
-                              : selected
-                                ? "bg-[rgba(37,99,235,0.22)] text-white ring-1 ring-[#2563eb]/40 ring-inset"
-                                : keyboardFocus
-                                  ? "bg-white/[0.08] text-white ring-1 ring-white/15 ring-inset"
-                                  : "text-white/80 hover:bg-white/[0.05] hover:text-white",
-                          )}
-                        >
-                          {row.kind === "country" ? (
-                            <FlagImg
-                              code={row.market.countryCode}
-                              size={26}
-                              tone={tone}
-                            />
-                          ) : (
-                            <span
-                              className={cn(
-                                "inline-flex size-[26px] shrink-0 items-center justify-center rounded-full text-[9px] font-bold",
-                                light
-                                  ? "border border-slate-200 bg-slate-100 text-slate-600"
-                                  : "bg-white/10 text-white/70",
-                              )}
-                              aria-hidden
-                            >
-                              {websiteLanguageByCode(row.code)?.triggerCode}
-                            </span>
-                          )}
-
-                          <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">
-                            {row.kind === "lang"
-                              ? row.englishName
-                              : row.market.countryName}
-                          </span>
-
+                      <button
+                        key={row.id}
+                        type="button"
+                        role="option"
+                        aria-selected={selected}
+                        aria-label={
+                          row.kind === "lang"
+                            ? `${row.englishName} (${row.nativeName})`
+                            : `${row.market.countryName}, ${resolveCountryDisplayCurrency(row.market.countryCode).currency}`
+                        }
+                        data-keyboard-focus={String(keyboardFocus)}
+                        onClick={() => selectRow(row)}
+                        className={cn(
+                          "flex w-full items-center gap-3 px-3 py-[10px] text-left transition-colors duration-100",
+                          light
+                            ? selected
+                              ? "bg-indigo-50 text-slate-900 ring-1 ring-indigo-200/80 ring-inset"
+                              : keyboardFocus
+                                ? "bg-slate-50 text-slate-900 ring-1 ring-slate-200 ring-inset"
+                                : "text-slate-700 hover:bg-slate-50/90 hover:text-slate-900"
+                            : selected
+                              ? "bg-[rgba(37,99,235,0.22)] text-white ring-1 ring-[#2563eb]/40 ring-inset"
+                              : keyboardFocus
+                                ? "bg-white/[0.08] text-white ring-1 ring-white/15 ring-inset"
+                                : "text-white/80 hover:bg-white/[0.05] hover:text-white",
+                        )}
+                      >
+                        {row.kind === "country" ? (
+                          <FlagImg
+                            code={row.market.countryCode}
+                            size={26}
+                            tone={tone}
+                          />
+                        ) : (
                           <span
                             className={cn(
-                              "shrink-0 text-[12px] font-normal tabular-nums",
-                              light ? "text-slate-400" : "text-white/45",
+                              "inline-flex size-[26px] shrink-0 items-center justify-center rounded-full text-[9px] font-bold",
+                              light
+                                ? "border border-slate-200 bg-slate-100 text-slate-600"
+                                : "bg-white/10 text-white/70",
                             )}
+                            aria-hidden
                           >
-                            {row.kind === "lang"
-                              ? row.nativeName
-                              : resolveCountryDisplayCurrency(
-                                  row.market.countryCode,
-                                ).currency}
+                            {websiteLanguageByCode(row.code)?.triggerCode}
                           </span>
-                        </button>
-                      </Fragment>
+                        )}
+
+                        <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">
+                          {row.kind === "lang"
+                            ? row.englishName
+                            : row.market.countryName}
+                        </span>
+
+                        <span
+                          className={cn(
+                            "shrink-0 text-[12px] font-normal tabular-nums",
+                            light ? "text-slate-400" : "text-white/45",
+                          )}
+                        >
+                          {row.kind === "lang"
+                            ? row.nativeName
+                            : resolveCountryDisplayCurrency(
+                                row.market.countryCode,
+                              ).currency}
+                        </span>
+                      </button>
                     );
                   })
                 )}

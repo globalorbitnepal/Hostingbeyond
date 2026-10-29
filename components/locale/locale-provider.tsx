@@ -12,6 +12,11 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 
+import {
+  localizePublicPath,
+  stripLocalePrefixFromPath,
+} from "@/lib/i18n/locale-path";
+
 import { getCountry, languages, type LanguageCode } from "@/config/geo";
 import {
   normalizePublicDisplayCurrency,
@@ -224,19 +229,27 @@ export function LocaleProvider({
 
   const setWebsiteLanguage = useCallback(
     (code: WebsiteLanguageCode) => {
+      const resolved = resolveWebsiteLanguageCode(code, enabledLanguageCodes);
       commit(
         {
           ...preferences,
-          googleTargetLang: resolveWebsiteLanguageCode(
-            code,
-            enabledLanguageCodes,
-          ),
+          googleTargetLang: resolved,
           languageLocked: true,
         },
         { refresh: false },
       );
+      if (typeof window === "undefined") return;
+      const { pathname: bare } = stripLocalePrefixFromPath(
+        window.location.pathname,
+      );
+      const nextPath = localizePublicPath(bare, resolved);
+      const search = window.location.search;
+      const current = `${window.location.pathname}${search}`;
+      const target = `${nextPath}${search}`;
+      if (current !== target) router.push(target);
+      else router.refresh();
     },
-    [commit, enabledLanguageCodes, preferences],
+    [commit, enabledLanguageCodes, preferences, router],
   );
 
   const applySelection = useCallback(
