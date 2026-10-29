@@ -25,6 +25,8 @@ export type WebsiteLanguage = {
   englishName: string;
   nativeName: string;
   triggerCode: string;
+  /** ISO country code for circular flag in the language picker (not storefront country). */
+  flagCountryCode: string;
   isDefault: boolean;
 };
 
@@ -38,6 +40,7 @@ export const WEBSITE_LANGUAGES: readonly WebsiteLanguage[] = [
     englishName: "English",
     nativeName: "English",
     triggerCode: "EN",
+    flagCountryCode: "US",
     isDefault: true,
   },
   {
@@ -45,6 +48,7 @@ export const WEBSITE_LANGUAGES: readonly WebsiteLanguage[] = [
     englishName: "Bengali",
     nativeName: "বাংলা",
     triggerCode: "BN",
+    flagCountryCode: "BD",
     isDefault: false,
   },
   {
@@ -52,6 +56,7 @@ export const WEBSITE_LANGUAGES: readonly WebsiteLanguage[] = [
     englishName: "Portuguese",
     nativeName: "Português",
     triggerCode: "PT",
+    flagCountryCode: "BR",
     isDefault: false,
   },
   {
@@ -59,6 +64,7 @@ export const WEBSITE_LANGUAGES: readonly WebsiteLanguage[] = [
     englishName: "French",
     nativeName: "Français",
     triggerCode: "FR",
+    flagCountryCode: "FR",
     isDefault: false,
   },
   {
@@ -66,6 +72,7 @@ export const WEBSITE_LANGUAGES: readonly WebsiteLanguage[] = [
     englishName: "Simplified Chinese",
     nativeName: "简体中文",
     triggerCode: "ZH",
+    flagCountryCode: "CN",
     isDefault: false,
   },
   {
@@ -73,6 +80,7 @@ export const WEBSITE_LANGUAGES: readonly WebsiteLanguage[] = [
     englishName: "German",
     nativeName: "Deutsch",
     triggerCode: "DE",
+    flagCountryCode: "DE",
     isDefault: false,
   },
   {
@@ -80,6 +88,7 @@ export const WEBSITE_LANGUAGES: readonly WebsiteLanguage[] = [
     englishName: "Hindi",
     nativeName: "हिन्दी",
     triggerCode: "HI",
+    flagCountryCode: "IN",
     isDefault: false,
   },
   {
@@ -87,6 +96,7 @@ export const WEBSITE_LANGUAGES: readonly WebsiteLanguage[] = [
     englishName: "Japanese",
     nativeName: "日本語",
     triggerCode: "JA",
+    flagCountryCode: "JP",
     isDefault: false,
   },
   {
@@ -94,6 +104,7 @@ export const WEBSITE_LANGUAGES: readonly WebsiteLanguage[] = [
     englishName: "Nepali",
     nativeName: "नेपाली",
     triggerCode: "NE",
+    flagCountryCode: "NP",
     isDefault: false,
   },
   {
@@ -101,6 +112,7 @@ export const WEBSITE_LANGUAGES: readonly WebsiteLanguage[] = [
     englishName: "Russian",
     nativeName: "Русский",
     triggerCode: "RU",
+    flagCountryCode: "RU",
     isDefault: false,
   },
   {
@@ -108,6 +120,7 @@ export const WEBSITE_LANGUAGES: readonly WebsiteLanguage[] = [
     englishName: "Spanish",
     nativeName: "Español",
     triggerCode: "ES",
+    flagCountryCode: "ES",
     isDefault: false,
   },
   {
@@ -115,6 +128,7 @@ export const WEBSITE_LANGUAGES: readonly WebsiteLanguage[] = [
     englishName: "Korean",
     nativeName: "한국어",
     triggerCode: "KO",
+    flagCountryCode: "KR",
     isDefault: false,
   },
   {
@@ -122,6 +136,7 @@ export const WEBSITE_LANGUAGES: readonly WebsiteLanguage[] = [
     englishName: "Indonesian",
     nativeName: "Bahasa Indonesia",
     triggerCode: "ID",
+    flagCountryCode: "ID",
     isDefault: false,
   },
 ];
@@ -141,6 +156,13 @@ export function websiteLanguageByCode(
 ): WebsiteLanguage | undefined {
   if (!code) return undefined;
   return byCode.get(code as WebsiteLanguageCode);
+}
+
+/** Circular flag for the language tab (English → US). */
+export function websiteLanguageFlagCountryCode(
+  code: string | null | undefined,
+): string {
+  return websiteLanguageByCode(code)?.flagCountryCode ?? "US";
 }
 
 export function translationTargetCodes(): WebsiteLanguageCode[] {

@@ -27,6 +27,7 @@ import {
 import {
   WEBSITE_LANGUAGES,
   websiteLanguageByCode,
+  websiteLanguageFlagCountryCode,
   type WebsiteLanguageCode,
 } from "@/lib/i18n/website-languages";
 import { useLocale } from "@/components/locale/locale-provider";
@@ -667,17 +668,11 @@ export function CountryLanguageSelector({
                             tone={tone}
                           />
                         ) : (
-                          <span
-                            className={cn(
-                              "inline-flex size-[26px] shrink-0 items-center justify-center rounded-full text-[9px] font-bold",
-                              light
-                                ? "border border-slate-200 bg-slate-100 text-slate-600"
-                                : "bg-white/10 text-white/70",
-                            )}
-                            aria-hidden
-                          >
-                            {websiteLanguageByCode(row.code)?.triggerCode}
-                          </span>
+                          <FlagImg
+                            code={websiteLanguageFlagCountryCode(row.code)}
+                            size={26}
+                            tone={tone}
+                          />
                         )}
 
                         <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">

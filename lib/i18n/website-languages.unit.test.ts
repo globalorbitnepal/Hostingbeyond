@@ -36,6 +36,16 @@ describe("website language registry", () => {
     assert.equal(DEFAULT_WEBSITE_LANGUAGE_CODE, "en");
   });
 
+  it("maps each language to a display flag (English defaults to US)", () => {
+    assert.equal(
+      WEBSITE_LANGUAGES.find((r) => r.code === "en")?.flagCountryCode,
+      "US",
+    );
+    for (const row of WEBSITE_LANGUAGES) {
+      assert.match(row.flagCountryCode, /^[A-Z]{2}$/);
+    }
+  });
+
   it("keeps English enabled and drops unknown codes", () => {
     assert.deepEqual(normalizeEnabledLanguageCodes(["hi", "xx", "ko"]), [
       "en",
