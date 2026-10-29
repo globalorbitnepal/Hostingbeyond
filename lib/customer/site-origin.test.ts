@@ -5,6 +5,7 @@ import {
   DEFAULT_PUBLIC_SITE_ORIGIN,
   configuredSiteOrigin,
   isLoopbackHost,
+  normalizeEnvSiteOrigin,
   resolveRequestSiteOrigin,
 } from "@/lib/customer/site-origin";
 
@@ -64,18 +65,17 @@ describe("site origin resolution", () => {
     }
   });
 
-  it("ignores loopback NEXT_PUBLIC_SITE_URL in production", () => {
-    const prevSite = process.env.NEXT_PUBLIC_SITE_URL;
-    const prevNode = process.env.NODE_ENV;
-    process.env.NODE_ENV = "production";
-    process.env.NEXT_PUBLIC_SITE_URL = "http://localhost:3030";
-    try {
-      assert.equal(configuredSiteOrigin(), DEFAULT_PUBLIC_SITE_ORIGIN);
-    } finally {
-      if (prevSite === undefined) delete process.env.NEXT_PUBLIC_SITE_URL;
-      else process.env.NEXT_PUBLIC_SITE_URL = prevSite;
-      process.env.NODE_ENV = prevNode;
-    }
+  it("ignores loopback NEXT_PUBLIC_SITE_URL in production mode", () => {
+    assert.equal(
+      normalizeEnvSiteOrigin("http://localhost:3030", { production: true }),
+      null,
+    );
+    assert.equal(
+      normalizeEnvSiteOrigin("https://hosting.theglobalorbit.com", {
+        production: true,
+      }),
+      "https://hosting.theglobalorbit.com",
+    );
   });
 
   it("allows local dev when ORBIT_ORIGIN is loopback and no public site URL", () => {

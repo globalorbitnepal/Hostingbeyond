@@ -10,6 +10,18 @@ function stripTrailingSlash(origin: string) {
   return origin.replace(/\/+$/, "");
 }
 
+/** Testable: drop loopback public URLs in production builds. */
+export function normalizeEnvSiteOrigin(
+  raw: string | undefined,
+  options: { production: boolean },
+): string | null {
+  const trimmed = raw?.trim();
+  if (!trimmed) return null;
+  const normalized = stripTrailingSlash(trimmed);
+  if (options.production && isLoopbackOrigin(normalized)) return null;
+  return normalized;
+}
+
 export function isLoopbackHost(host: string): boolean {
   const hostname = host.toLowerCase().split(":")[0]?.trim() ?? "";
   return (
@@ -33,23 +45,16 @@ export function isLoopbackOrigin(origin: string): boolean {
  * when reverse-proxy headers are missing or loopback.
  */
 export function configuredSiteOrigin(): string {
-  const site = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (site) {
-    const normalized = stripTrailingSlash(site);
-    if (process.env.NODE_ENV === "production" && isLoopbackOrigin(normalized)) {
-      return DEFAULT_PUBLIC_SITE_ORIGIN;
-    }
-    return normalized;
-  }
+  const production = process.env.NODE_ENV === "production";
+  const site = normalizeEnvSiteOrigin(process.env.NEXT_PUBLIC_SITE_URL, {
+    production,
+  });
+  if (site) return site;
 
-  const app = process.env.NEXT_PUBLIC_APP_URL?.trim();
-  if (app) {
-    const normalized = stripTrailingSlash(app);
-    if (process.env.NODE_ENV === "production" && isLoopbackOrigin(normalized)) {
-      return DEFAULT_PUBLIC_SITE_ORIGIN;
-    }
-    return normalized;
-  }
+  const app = normalizeEnvSiteOrigin(process.env.NEXT_PUBLIC_APP_URL, {
+    production,
+  });
+  if (app) return app;
 
   const orbit = process.env.ORBIT_ORIGIN?.trim();
   if (orbit && !isLoopbackOrigin(orbit)) {

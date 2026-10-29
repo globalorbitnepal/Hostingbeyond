@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { sanitizeCustomerRedirectPath } from "@/lib/customer/safe-redirect";
 import { requestSiteOrigin, absoluteSiteUrl } from "@/lib/customer/site-origin";
+import { routes } from "@/config/routes";
 import {
   CUSTOMER_SESSION_COOKIE,
   verifyCustomerJwt,
@@ -94,7 +95,7 @@ function handlePublicLocaleRouting(request: NextRequest): NextResponse | null {
       const target = absoluteSiteUrl(
         request,
         `${localized}${request.nextUrl.search}`,
-        localized,
+        routes.account,
       );
       return NextResponse.redirect(target);
     }
