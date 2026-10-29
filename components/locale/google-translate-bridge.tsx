@@ -8,6 +8,7 @@ import { useLocale } from "@/components/locale/locale-provider";
 import {
   GOOGLE_PAGE_LANGUAGE,
   clearGoogtransCookie,
+  installReactGoogleTranslateGuards,
   isGoogleTranslationActive,
   selectGoogleTranslateCombo,
   writeGoogtransCookie,
@@ -33,6 +34,7 @@ export function GoogleTranslateBridge() {
     pathname.startsWith("/api/orbit");
 
   useEffect(() => {
+    installReactGoogleTranslateGuards();
     const timer = window.setTimeout(() => setPageReady(true), 400);
     return () => window.clearTimeout(timer);
   }, []);

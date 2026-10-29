@@ -37,6 +37,39 @@ export function clearGoogtransCookie() {
   writeGoogtransCookie(GOOGLE_PAGE_LANGUAGE);
 }
 
+let googleTranslateGuardsInstalled = false;
+
+/**
+ * Google Translate rewrites the live DOM. React 19 then throws
+ * NotFoundError on removeChild/insertBefore. Guard those ops.
+ */
+export function installReactGoogleTranslateGuards() {
+  if (googleTranslateGuardsInstalled || typeof Node === "undefined") return;
+  googleTranslateGuardsInstalled = true;
+  const proto = Node.prototype;
+
+  const removeChild = proto.removeChild;
+  proto.removeChild = function <T extends Node>(child: T): T {
+    if (child.parentNode !== this) return child;
+    return removeChild.call(this, child) as T;
+  };
+
+  const insertBefore = proto.insertBefore;
+  proto.insertBefore = function <T extends Node>(
+    newNode: T,
+    referenceNode: Node | null,
+  ): T {
+    if (referenceNode && referenceNode.parentNode !== this) {
+      return newNode;
+    }
+    return insertBefore.call(this, newNode, referenceNode) as T;
+  };
+}
+
+if (typeof window !== "undefined") {
+  installReactGoogleTranslateGuards();
+}
+
 export function selectGoogleTranslateCombo(targetLang: string): boolean {
   if (typeof document === "undefined") return false;
   if (!isGoogleTranslationActive(targetLang)) return true;
