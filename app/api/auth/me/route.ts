@@ -13,6 +13,7 @@ export async function GET() {
       email: user.email,
       name: user.name,
       image: user.image,
+      hasPassword: Boolean(user.passwordHash),
     },
   });
 }

@@ -27,6 +27,7 @@ export const routes = {
   accountBilling: "/account/billing",
   accountInvoices: "/account/invoices",
   myDomains: "/account/my-domains",
+  accountSecurity: "/account/security",
   getStarted: "/signup",
   domainCheckout: "/get-started",
   domainCart: "/cart",

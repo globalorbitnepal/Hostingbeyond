@@ -27,6 +27,7 @@ export type CustomerSessionUser = {
   email: string;
   name: string | null;
   image: string | null;
+  hasPassword?: boolean;
 };
 
 const MENU_WIDTH = 280;
@@ -151,7 +152,7 @@ function AccountMenuLinks({
           My account
         </Link>
         <Link
-          href="/forgot-password"
+          href={routes.accountSecurity}
           className={linkClass}
           onClick={onNavigate}
         >
@@ -318,13 +319,18 @@ export function CustomerHeaderAccountMenu({
   }
 
   return (
-    <div ref={wrapperRef} className={cn("notranslate relative", className)}>
+    <div
+      ref={wrapperRef}
+      className={cn("notranslate relative", className)}
+      translate="no"
+    >
       <button
         ref={triggerRef}
         type="button"
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label="My account menu"
+        aria-label={`Account menu for ${displayName(user)}`}
+        title={`${displayName(user)} · ${user.email}`}
         onClick={() => {
           if (open) closeMenu();
           else {
@@ -332,15 +338,22 @@ export function CustomerHeaderAccountMenu({
             setOpen(true);
           }
         }}
-        className="inline-flex h-[38px] max-w-[min(100%,220px)] items-center gap-2 rounded-full border border-slate-200/90 bg-white py-0 pr-2 pl-1.5 text-[13px] font-semibold text-slate-800 shadow-[0_4px_14px_rgba(15,23,42,0.06)] transition hover:border-slate-300 hover:bg-slate-50"
+        className="inline-flex max-w-[min(100%,288px)] items-center gap-2.5 rounded-full border border-slate-200/90 bg-white py-1 pr-2 pl-1 text-left shadow-[0_4px_14px_rgba(15,23,42,0.06)] transition hover:border-slate-300 hover:bg-slate-50"
       >
-        <span className="inline-flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#673de6] to-[#2563eb]">
-          <AccountAvatar user={user} size={28} />
+        <span className="inline-flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#673de6] to-[#2563eb] ring-2 ring-white">
+          <AccountAvatar user={user} size={36} />
         </span>
-        <span className="max-w-[5.5rem] truncate">{displayName(user)}</span>
+        <span className="min-w-0 flex-1 leading-tight">
+          <span className="block truncate text-[13px] font-bold text-slate-900">
+            {displayName(user)}
+          </span>
+          <span className="block truncate text-[11px] font-medium text-slate-500">
+            {user.email}
+          </span>
+        </span>
         <ChevronDown
           className={cn(
-            "size-3.5 shrink-0 text-slate-500 transition-transform",
+            "size-4 shrink-0 text-slate-500 transition-transform",
             open && "rotate-180",
           )}
           aria-hidden
@@ -352,7 +365,8 @@ export function CustomerHeaderAccountMenu({
             <div
               ref={menuRef}
               role="menu"
-              className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.14)]"
+              className="notranslate overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.14)]"
+              translate="no"
               style={
                 menuPosition ?? {
                   position: "fixed",
