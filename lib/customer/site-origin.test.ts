@@ -64,6 +64,20 @@ describe("site origin resolution", () => {
     }
   });
 
+  it("ignores loopback NEXT_PUBLIC_SITE_URL in production", () => {
+    const prevSite = process.env.NEXT_PUBLIC_SITE_URL;
+    const prevNode = process.env.NODE_ENV;
+    process.env.NODE_ENV = "production";
+    process.env.NEXT_PUBLIC_SITE_URL = "http://localhost:3030";
+    try {
+      assert.equal(configuredSiteOrigin(), DEFAULT_PUBLIC_SITE_ORIGIN);
+    } finally {
+      if (prevSite === undefined) delete process.env.NEXT_PUBLIC_SITE_URL;
+      else process.env.NEXT_PUBLIC_SITE_URL = prevSite;
+      process.env.NODE_ENV = prevNode;
+    }
+  });
+
   it("allows local dev when ORBIT_ORIGIN is loopback and no public site URL", () => {
     const prevSite = process.env.NEXT_PUBLIC_SITE_URL;
     const prevApp = process.env.NEXT_PUBLIC_APP_URL;

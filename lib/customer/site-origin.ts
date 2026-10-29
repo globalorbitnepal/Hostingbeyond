@@ -34,10 +34,22 @@ export function isLoopbackOrigin(origin: string): boolean {
  */
 export function configuredSiteOrigin(): string {
   const site = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (site) return stripTrailingSlash(site);
+  if (site) {
+    const normalized = stripTrailingSlash(site);
+    if (process.env.NODE_ENV === "production" && isLoopbackOrigin(normalized)) {
+      return DEFAULT_PUBLIC_SITE_ORIGIN;
+    }
+    return normalized;
+  }
 
   const app = process.env.NEXT_PUBLIC_APP_URL?.trim();
-  if (app) return stripTrailingSlash(app);
+  if (app) {
+    const normalized = stripTrailingSlash(app);
+    if (process.env.NODE_ENV === "production" && isLoopbackOrigin(normalized)) {
+      return DEFAULT_PUBLIC_SITE_ORIGIN;
+    }
+    return normalized;
+  }
 
   const orbit = process.env.ORBIT_ORIGIN?.trim();
   if (orbit && !isLoopbackOrigin(orbit)) {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { sanitizeCustomerRedirectPath } from "@/lib/customer/safe-redirect";
-import { requestSiteOrigin } from "@/lib/customer/site-origin";
+import { requestSiteOrigin, absoluteSiteUrl } from "@/lib/customer/site-origin";
 import {
   CUSTOMER_SESSION_COOKIE,
   verifyCustomerJwt,
@@ -91,9 +91,12 @@ function handlePublicLocaleRouting(request: NextRequest): NextResponse | null {
   ) {
     const localized = localizePublicPath(pathname, cookieLang);
     if (localized !== pathname) {
-      const redirectUrl = request.nextUrl.clone();
-      redirectUrl.pathname = localized;
-      return NextResponse.redirect(redirectUrl);
+      const target = absoluteSiteUrl(
+        request,
+        `${localized}${request.nextUrl.search}`,
+        localized,
+      );
+      return NextResponse.redirect(target);
     }
   }
 
