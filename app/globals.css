@@ -257,6 +257,8 @@
   }
 
   .hb-band-cream {
+    color: #1a1035;
+    color-scheme: light;
     background:
       radial-gradient(
         ellipse at 8% 0%,
@@ -269,6 +271,27 @@
         transparent 50%
       ),
       linear-gradient(180deg, #cfe3fb 0%, #e8eeff 48%, #f4f7ff 100%);
+  }
+
+  /* Light pages sit on html.dark / body.text-white — typed input must stay dark. */
+  .hb-band-cream
+    input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+  .hb-band-cream textarea,
+  .hb-band-cream select {
+    background-color: #ffffff;
+    color: #1a1035;
+    caret-color: #1a1035;
+  }
+
+  .hb-band-cream :is(input, textarea)::placeholder {
+    color: #64748b;
+    opacity: 1;
+  }
+
+  .hb-band-cream :is(input, textarea):-webkit-autofill {
+    -webkit-text-fill-color: #1a1035;
+    caret-color: #1a1035;
+    box-shadow: 0 0 0 1000px #ffffff inset;
   }
 
   /* Business email impression: white center so hero artwork canvas blends in */

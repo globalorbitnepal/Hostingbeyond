@@ -9,7 +9,7 @@ export async function BlogSiteShell({
   const { sections, settings } = await getLocalizedPublicChrome();
 
   return (
-    <div className="hb-band-cream min-h-dvh overflow-x-hidden">
+    <div className="hb-band-cream min-h-dvh overflow-x-hidden text-[#1a1035]">
       <div className="hb-band-purple">
         <SiteHeader
           navigation={sections.navigation}

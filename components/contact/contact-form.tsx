@@ -4,6 +4,9 @@ import { useState } from "react";
 
 import { CONTACT_TOPICS } from "@/lib/orbit/contact-page-content";
 
+const fieldClass =
+  "mt-1 h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-[#1a1035] caret-[#1a1035] outline-none placeholder:text-slate-400 focus:border-[#673de6]/50 focus:ring-2 focus:ring-[#673de6]/25";
+
 export function ContactForm({
   formTitle,
   formDescription,
@@ -85,58 +88,82 @@ export function ContactForm({
       <p className="mt-2 text-sm text-slate-600">{formDescription}</p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
-        <label className="block text-sm">
+        <label className="block text-sm" htmlFor="contact-name">
           <span className="font-semibold text-slate-700">Name *</span>
           <input
+            id="contact-name"
+            name="name"
+            autoComplete="name"
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="mt-1 h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:ring-2 focus:ring-[#673de6]/30"
+            placeholder="Your name"
+            className={fieldClass}
           />
         </label>
-        <label className="block text-sm">
+        <label className="block text-sm" htmlFor="contact-email">
           <span className="font-semibold text-slate-700">Email *</span>
           <input
+            id="contact-email"
             type="email"
+            name="email"
+            autoComplete="email"
+            inputMode="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:ring-2 focus:ring-[#673de6]/30"
+            placeholder="you@example.com"
+            className={fieldClass}
           />
         </label>
-        <label className="block text-sm sm:col-span-2">
+        <label
+          className="block text-sm sm:col-span-2"
+          htmlFor="contact-company"
+        >
           <span className="font-semibold text-slate-700">
             Company (optional)
           </span>
           <input
+            id="contact-company"
+            name="company"
+            autoComplete="organization"
             value={company}
             onChange={(e) => setCompany(e.target.value)}
-            className="mt-1 h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:ring-2 focus:ring-[#673de6]/30"
+            placeholder="Company name"
+            className={fieldClass}
           />
         </label>
-        <label className="block text-sm sm:col-span-2">
+        <label className="block text-sm sm:col-span-2" htmlFor="contact-topic">
           <span className="font-semibold text-slate-700">Topic *</span>
           <select
+            id="contact-topic"
+            name="topic"
             required
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
-            className="mt-1 h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:ring-2 focus:ring-[#673de6]/30"
+            className={fieldClass}
           >
             {CONTACT_TOPICS.map((t) => (
-              <option key={t} value={t}>
+              <option key={t} value={t} className="bg-white text-[#1a1035]">
                 {t}
               </option>
             ))}
           </select>
         </label>
-        <label className="block text-sm sm:col-span-2">
+        <label
+          className="block text-sm sm:col-span-2"
+          htmlFor="contact-message"
+        >
           <span className="font-semibold text-slate-700">Message *</span>
           <textarea
+            id="contact-message"
+            name="message"
             required
             rows={6}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#673de6]/30"
+            placeholder="How can we help?"
+            className={`${fieldClass} h-auto min-h-[9rem] py-2.5`}
           />
         </label>
       </div>
