@@ -5,8 +5,12 @@ import {
   convertUsdToLocal,
   formatMoney,
   formatUsdAsLocal,
+  usdToLocalRate,
 } from "@/config/pricing";
-import { normalizePublicDisplayCurrency } from "@/lib/i18n/display-currencies";
+import {
+  PUBLIC_DISPLAY_CURRENCIES,
+  normalizePublicDisplayCurrency,
+} from "@/lib/i18n/display-currencies";
 import { resolveUsdToLocalRate } from "@/lib/pricing/display-rates";
 
 describe("display currency conversion", () => {
@@ -15,11 +19,15 @@ describe("display currency conversion", () => {
     assert.equal(resolveUsdToLocalRate("USD"), 1);
   });
 
-  it("converts INR and NPR from USD using configured rates", () => {
-    const inr = convertUsdToLocal(1, "INR");
-    const npr = convertUsdToLocal(1, "NPR");
-    assert.equal(inr, 95);
-    assert.equal(npr, 154);
+  it("converts configured currencies from the shared rate book", () => {
+    assert.equal(convertUsdToLocal(1, "INR"), 95);
+    assert.equal(convertUsdToLocal(1, "NPR"), 154);
+    /** Every offerable currency must come from the configured book. */
+    for (const code of PUBLIC_DISPLAY_CURRENCIES) {
+      const rate = usdToLocalRate[code];
+      assert.ok(Number.isFinite(rate) && rate > 0, `${code} needs a rate`);
+      assert.equal(resolveUsdToLocalRate(code), rate);
+    }
   });
 
   it("treats non-finite amounts as zero", () => {
@@ -39,8 +47,9 @@ describe("display currency conversion", () => {
     assert.ok(out.includes("10"));
   });
 
-  it("rejects unknown public display codes", () => {
-    assert.equal(normalizePublicDisplayCurrency("EUR"), "USD");
+  it("rejects unknown and unconfigured public display codes", () => {
+    assert.equal(normalizePublicDisplayCurrency("EUR"), "EUR");
+    assert.equal(normalizePublicDisplayCurrency("RUB"), "USD");
     assert.equal(normalizePublicDisplayCurrency(""), "USD");
     assert.equal(normalizePublicDisplayCurrency(undefined), "USD");
   });

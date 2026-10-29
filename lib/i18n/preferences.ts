@@ -10,7 +10,11 @@ import {
   DEFAULT_LOCALE_MARKET_ID,
   englishMarketFor,
 } from "@/lib/i18n/hostinger-locale-markets";
-import { normalizePublicDisplayCurrency } from "@/lib/i18n/display-currencies";
+import {
+  isConfiguredDisplayCurrency,
+  normalizePublicDisplayCurrency,
+} from "@/lib/i18n/display-currencies";
+import { resolveCountryDisplayCurrency } from "@/lib/i18n/country-currency";
 import { PUBLIC_ENGLISH_ONLY } from "@/lib/i18n/public-language";
 
 export const LOCALE_COOKIE = "hb_prefs";
@@ -26,15 +30,19 @@ export type UserPreferences = {
   googleTargetLang: string;
   /** True once the user explicitly picks a language (don't auto-overwrite). */
   languageLocked: boolean;
+  /** True once the user explicitly picks a currency (don't auto-overwrite). */
+  currencyLocked: boolean;
 };
 
 export const defaultPreferences: UserPreferences = {
   country: DEFAULT_COUNTRY,
   language: DEFAULT_LANGUAGE,
-  currency: DEFAULT_CURRENCY,
+  currency:
+    resolveCountryDisplayCurrency(DEFAULT_COUNTRY).currency ?? DEFAULT_CURRENCY,
   localeMarketId: "US-en",
   googleTargetLang: "en",
   languageLocked: false,
+  currencyLocked: false,
 };
 
 const languageCodes = new Set<string>([
@@ -86,10 +94,17 @@ export function normalizePreferences(
         input.googleTargetLang.length > 0
       ? input.googleTargetLang
       : market.googleTargetLang;
-  const currency = normalizePublicDisplayCurrency(
-    typeof input?.currency === "string" ? input.currency : undefined,
-    "USD",
-  );
+  /**
+   * Precedence: an explicit manual pick (currencyLocked) wins; otherwise the
+   * country's mapped currency is used, falling back to USD when that currency
+   * has no configured price — never an invented rate.
+   */
+  const countryCurrency = resolveCountryDisplayCurrency(country.code).currency;
+  const currencyLocked = Boolean(input?.currencyLocked);
+  const currency =
+    currencyLocked && isConfiguredDisplayCurrency(input?.currency)
+      ? normalizePublicDisplayCurrency(input?.currency, countryCurrency)
+      : countryCurrency;
 
   return {
     country: country.code,
@@ -98,6 +113,7 @@ export function normalizePreferences(
     localeMarketId: market.id,
     googleTargetLang,
     languageLocked,
+    currencyLocked,
   };
 }
 

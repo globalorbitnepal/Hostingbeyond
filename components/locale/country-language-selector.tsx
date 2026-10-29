@@ -16,7 +16,12 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import { flagImgUrl, getCountry } from "@/config/geo";
 import {
+  indexAfterQueryChange,
+  nextActiveIndex,
+} from "@/lib/i18n/locale-list-nav";
+import {
   getLocaleMarket,
+  isMarketLanguageEnabled,
   searchLocaleMarkets,
   type HostingerLocaleMarket,
 } from "@/lib/i18n/hostinger-locale-markets";
@@ -167,7 +172,7 @@ export function CountryLanguageSelector({
   className,
 }: Props) {
   const light = tone === "light";
-  const { preferences, applyLocaleMarket, t } = useLocale();
+  const { preferences, applyLocaleMarket, currencyNotice, t } = useLocale();
   const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -254,9 +259,14 @@ export function CountryLanguageSelector({
     };
   }, [open, updateMenuPosition]);
 
+  /** A changed query replaces the result set — keep the cursor in range. */
+  const prevResultCount = useRef(results.length);
   useEffect(() => {
-    setActiveIndex(0);
-  }, [query]);
+    setActiveIndex((current) =>
+      indexAfterQueryChange(prevResultCount.current, results.length, current),
+    );
+    prevResultCount.current = results.length;
+  }, [query, results.length]);
 
   // Scroll active item into view
   useEffect(() => {
@@ -274,13 +284,13 @@ export function CountryLanguageSelector({
 
   const onSearchKeyDown = (e: ReactKeyboardEvent<HTMLInputElement>) => {
     if (!results.length) return;
-    if (e.key === "ArrowDown") {
+    const next = nextActiveIndex(e.key, activeIndex, results.length);
+    if (next != null) {
       e.preventDefault();
-      setActiveIndex((i) => (i + 1) % results.length);
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setActiveIndex((i) => (i - 1 + results.length) % results.length);
-    } else if (e.key === "Enter") {
+      setActiveIndex(next);
+      return;
+    }
+    if (e.key === "Enter") {
       e.preventDefault();
       const opt = results[activeIndex];
       if (opt) selectAndApply(opt);
@@ -522,12 +532,34 @@ export function CountryLanguageSelector({
                             )}
                           >
                             {market.languageLabel}
+                            {isMarketLanguageEnabled(market) ? null : (
+                              <span
+                                className={cn(
+                                  "ml-1 text-[10px]",
+                                  light ? "text-slate-400" : "text-white/35",
+                                )}
+                                title="This language is not available yet — the site stays in English."
+                              >
+                                · EN
+                              </span>
+                            )}
                           </span>
                         </button>
                       );
                     })
                   )}
                 </div>
+
+                <p
+                  className={cn(
+                    "shrink-0 border-t px-4 py-2.5 text-[10px] leading-snug",
+                    light
+                      ? "border-slate-200/80 text-slate-500"
+                      : "border-white/[0.07] text-white/40",
+                  )}
+                >
+                  {currencyNotice}
+                </p>
               </motion.div>,
               document.body,
             )

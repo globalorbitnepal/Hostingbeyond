@@ -77,3 +77,17 @@ next-env.d.ts
 *.bak
 !/prisma/migrations/
 !/prisma/migrations/**
+
+# Local tooling binaries — never commit executables
+.local-stripe-cli
+
+# One-off audit / pricing artifacts (keep reports in docs/ instead)
+NAMESILO_*.md
+NAMESILO_*.csv
+NAMESILO_*.json
+DOMAIN_PLATFORM_IMPLEMENTATION_REPORT.md
+audit-*.json
+experiment-*.json
+
+# Preserved agent scratch output
+.cursor-preserve-untracked/

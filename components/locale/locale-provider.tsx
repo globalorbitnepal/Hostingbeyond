@@ -17,6 +17,10 @@ import {
   normalizePublicDisplayCurrency,
   type PublicDisplayCurrency,
 } from "@/lib/i18n/display-currencies";
+import {
+  currencyNoticeFor,
+  resolveCountryDisplayCurrency,
+} from "@/lib/i18n/country-currency";
 import { serverCopyLanguage } from "@/lib/i18n/server-copy-language";
 import {
   getLocaleMarket,
@@ -60,6 +64,10 @@ type LocaleContextValue = {
   applyLocaleMarket: (market: HostingerLocaleMarket) => void;
   setDisplayCurrency: (currency: PublicDisplayCurrency) => void;
   applySelection: (input: { country: string; language: LanguageCode }) => void;
+  /** Display currency the selected country maps to (after honest fallback). */
+  countryCurrency: ReturnType<typeof resolveCountryDisplayCurrency>;
+  /** Footer copy explaining display currency vs checkout currency. */
+  currencyNotice: string;
   formatPrice: (productId: ProductPriceId) => string;
   formatCatalogUsd: (usdAmount: number) => string;
   t: {
@@ -142,6 +150,13 @@ export function LocaleProvider({
       commit({
         ...preferences,
         country: country.code,
+        /**
+         * Country drives currency on the storefront. A currency the customer
+         * picked manually is only kept while it still belongs to this country's
+         * configured price list; otherwise the country mapping wins so prices
+         * stay consistent with the selected market.
+         */
+        currency: resolveCountryDisplayCurrency(country.code).currency,
         language:
           options?.suggestLanguage === true && !preferences.languageLocked
             ? country.defaultLanguage
@@ -167,6 +182,8 @@ export function LocaleProvider({
       commit({
         ...preferences,
         currency: normalizePublicDisplayCurrency(currency),
+        /** Manual choice must not be overwritten by the country default later. */
+        currencyLocked: true,
       });
     },
     [commit, preferences],
@@ -179,6 +196,8 @@ export function LocaleProvider({
       const next = normalizePreferences({
         ...preferences,
         country: country.code,
+        /** Selecting a market selects its configured display currency. */
+        currency: resolveCountryDisplayCurrency(country.code).currency,
         language: "en",
         localeMarketId: market.id,
         googleTargetLang: "en",
@@ -212,7 +231,6 @@ export function LocaleProvider({
     },
     [applyLocaleMarket, preferences.localeMarketId],
   );
-
   const formatPrice = useCallback(
     (productId: ProductPriceId) => {
       const rate = resolveUsdToLocalRate(
@@ -245,8 +263,9 @@ export function LocaleProvider({
     [displayCurrencyRates, preferences.currency, preferences.language],
   );
 
-  const value = useMemo<LocaleContextValue>(
-    () => ({
+  const value = useMemo<LocaleContextValue>(() => {
+    const countryCurrency = resolveCountryDisplayCurrency(preferences.country);
+    return {
       preferences,
       dictionary,
       isPending,
@@ -257,6 +276,10 @@ export function LocaleProvider({
       applySelection,
       formatPrice,
       formatCatalogUsd,
+      countryCurrency,
+      currencyNotice: currencyNoticeFor(countryCurrency, {
+        appliedCurrency: preferences.currency,
+      }),
       t: {
         nav: dictionary.nav,
         locale: dictionary.locale,
@@ -264,20 +287,19 @@ export function LocaleProvider({
         products: dictionary.products,
         common: dictionary.common,
       },
-    }),
-    [
-      preferences,
-      dictionary,
-      isPending,
-      setCountry,
-      setLanguage,
-      applyLocaleMarket,
-      setDisplayCurrency,
-      applySelection,
-      formatPrice,
-      formatCatalogUsd,
-    ],
-  );
+    };
+  }, [
+    preferences,
+    dictionary,
+    isPending,
+    setCountry,
+    setLanguage,
+    applyLocaleMarket,
+    setDisplayCurrency,
+    applySelection,
+    formatPrice,
+    formatCatalogUsd,
+  ]);
 
   return (
     <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>

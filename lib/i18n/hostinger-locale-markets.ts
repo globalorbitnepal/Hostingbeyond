@@ -57,11 +57,13 @@ export const HOSTINGER_LOCALE_MARKETS: HostingerLocaleMarket[] = [
   mk("NG-en", "NG", "Nigeria", "English", "en", "EN"),
   mk("NL-nl", "NL", "Nederland", "Nederlands", "nl", "NL"),
   mk("NO-no", "NO", "Norge", "Norsk", "no", "NO"),
+  mk("NP-en", "NP", "Nepal", "नेपाली", "en", "EN"),
   mk("PK-en", "PK", "Pakistan", "English", "en", "EN"),
   mk("PH-en", "PH", "Philippines", "English", "en", "EN"),
   mk("PL-pl", "PL", "Polska", "Polski", "pl", "PL"),
   mk("PT-pt", "PT", "Portugal", "Português", "pt", "PT"),
   mk("RO-ro", "RO", "România", "Română", "ro", "RO"),
+  mk("RU-ru", "RU", "Russia", "Русский", "en", "EN"),
   mk("SK-sk", "SK", "Slovensko", "Slovenčina", "sk", "SK"),
   mk("FI-fi", "FI", "Suomi", "Suomi", "fi", "FI"),
   mk("SE-sv", "SE", "Sverige", "Svenska", "sv", "SV"),
@@ -106,8 +108,10 @@ function mk(
   triggerCode: string,
 ): HostingerLocaleMarket {
   const appLanguage = appLanguageForGoogle(googleTargetLang);
+  /** Include the ISO English name so "Germany" finds "Deutschland". */
+  const englishName = getCountry(countryCode).name;
   const searchText =
-    `${countryName} ${languageLabel} ${countryCode} ${googleTargetLang} ${triggerCode}`.toLowerCase();
+    `${countryName} ${englishName} ${languageLabel} ${countryCode} ${googleTargetLang} ${triggerCode}`.toLowerCase();
   return {
     id,
     countryCode,
@@ -124,9 +128,40 @@ function isEnglishMarket(market: HostingerLocaleMarket): boolean {
   return market.googleTargetLang === "en" && market.appLanguage === "en";
 }
 
+/**
+ * Every market is country-selectable — country drives pricing, so hiding a
+ * country because its native language is unavailable would make regional
+ * pricing unreachable. Language availability is handled separately by
+ * {@link effectiveMarket}.
+ */
 export function publicLocaleMarkets(): HostingerLocaleMarket[] {
-  if (!PUBLIC_ENGLISH_ONLY) return HOSTINGER_LOCALE_MARKETS;
-  return HOSTINGER_LOCALE_MARKETS.filter(isEnglishMarket);
+  return HOSTINGER_LOCALE_MARKETS;
+}
+
+/**
+ * The market as actually applied to the page.
+ *
+ * When the English-only policy is active, a non-English market keeps its
+ * country and currency but is *applied* as English. This is deliberate: the
+ * selector must never imply the site is translated when it is not.
+ */
+export function effectiveMarket(
+  market: HostingerLocaleMarket,
+): HostingerLocaleMarket {
+  if (!PUBLIC_ENGLISH_ONLY || isEnglishMarket(market)) return market;
+  return {
+    ...market,
+    googleTargetLang: "en",
+    appLanguage: "en",
+    triggerCode: "EN",
+  };
+}
+
+/** True when this language may actually be applied to page copy today. */
+export function isMarketLanguageEnabled(
+  market: HostingerLocaleMarket,
+): boolean {
+  return !PUBLIC_ENGLISH_ONLY || isEnglishMarket(market);
 }
 
 export function englishMarketFor(
@@ -135,13 +170,12 @@ export function englishMarketFor(
 ): HostingerLocaleMarket {
   const requested =
     HOSTINGER_LOCALE_MARKETS.find((m) => m.id === id) ??
+    HOSTINGER_LOCALE_MARKETS.find(
+      (m) => m.countryCode === (countryCode ?? "").toUpperCase(),
+    ) ??
     HOSTINGER_LOCALE_MARKETS.find((m) => m.id === DEFAULT_LOCALE_MARKET_ID)!;
-  if (!PUBLIC_ENGLISH_ONLY || isEnglishMarket(requested)) return requested;
-  const country = (requested.countryCode || countryCode || "US").toUpperCase();
-  return (
-    publicLocaleMarkets().find((m) => m.countryCode === country) ??
-    publicLocaleMarkets().find((m) => m.id === DEFAULT_LOCALE_MARKET_ID)!
-  );
+  /** Preserve the country — only the language is neutralised. */
+  return effectiveMarket(requested);
 }
 
 export function getLocaleMarket(

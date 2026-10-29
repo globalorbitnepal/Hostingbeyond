@@ -46,6 +46,7 @@ function computeMenuPosition(
       left,
       bottom: window.innerHeight - trigger.top + margin,
       width,
+      maxHeight: "min(360px, 60dvh)",
       zIndex: 300,
     };
   }
@@ -55,6 +56,7 @@ function computeMenuPosition(
     left,
     top: trigger.bottom + margin,
     width,
+    maxHeight: "min(360px, 60dvh)",
     zIndex: 300,
   };
 }
@@ -184,7 +186,7 @@ export function CurrencySelector({
                 exit={{ opacity: 0, y: 3, scale: 0.97 }}
                 transition={{ duration: 0.15 }}
                 className={cn(
-                  "overflow-hidden rounded-[14px] border py-1 shadow-[0_16px_40px_rgba(15,23,42,0.12)]",
+                  "flex flex-col overflow-hidden rounded-[14px] border py-1 shadow-[0_16px_40px_rgba(15,23,42,0.12)]",
                   light
                     ? "border-slate-200/90 bg-white"
                     : "border-white/[0.12] bg-[#0c1528]",
@@ -193,47 +195,49 @@ export function CurrencySelector({
                 role="listbox"
                 aria-label="Select display currency"
               >
-                {PUBLIC_DISPLAY_CURRENCIES.map((code) => {
-                  const meta = PUBLIC_DISPLAY_CURRENCY_LABELS[code];
-                  const sel = preferences.currency === code;
-                  return (
-                    <button
-                      key={code}
-                      type="button"
-                      role="option"
-                      aria-selected={sel}
-                      onClick={() => {
-                        setDisplayCurrency(code);
-                        closePanel();
-                      }}
-                      className={cn(
-                        "flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left text-[13px]",
-                        light
-                          ? sel
-                            ? "bg-indigo-50 font-semibold text-slate-900"
-                            : "text-slate-700 hover:bg-slate-50"
-                          : sel
-                            ? "bg-[rgba(37,99,235,0.18)] font-semibold text-white"
-                            : "text-white/85 hover:bg-white/[0.06]",
-                      )}
-                    >
-                      <span>
-                        {meta.symbol} {meta.title}
-                      </span>
-                      <span
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+                  {PUBLIC_DISPLAY_CURRENCIES.map((code) => {
+                    const meta = PUBLIC_DISPLAY_CURRENCY_LABELS[code];
+                    const sel = preferences.currency === code;
+                    return (
+                      <button
+                        key={code}
+                        type="button"
+                        role="option"
+                        aria-selected={sel}
+                        onClick={() => {
+                          setDisplayCurrency(code);
+                          closePanel();
+                        }}
                         className={cn(
-                          "text-[11px] font-bold",
-                          light ? "text-slate-400" : "text-white/45",
+                          "flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left text-[13px]",
+                          light
+                            ? sel
+                              ? "bg-indigo-50 font-semibold text-slate-900"
+                              : "text-slate-700 hover:bg-slate-50"
+                            : sel
+                              ? "bg-[rgba(37,99,235,0.18)] font-semibold text-white"
+                              : "text-white/85 hover:bg-white/[0.06]",
                         )}
                       >
-                        {meta.code}
-                      </span>
-                    </button>
-                  );
-                })}
+                        <span>
+                          {meta.symbol} {meta.title}
+                        </span>
+                        <span
+                          className={cn(
+                            "text-[11px] font-bold",
+                            light ? "text-slate-400" : "text-white/45",
+                          )}
+                        >
+                          {meta.code}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
                 <p
                   className={cn(
-                    "border-t px-3 py-2 text-[10px] leading-snug",
+                    "shrink-0 border-t px-3 py-2 text-[10px] leading-snug",
                     light
                       ? "border-slate-100 text-slate-500"
                       : "border-white/[0.06] text-white/40",
