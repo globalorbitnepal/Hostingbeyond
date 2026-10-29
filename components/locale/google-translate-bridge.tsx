@@ -1,11 +1,11 @@
 "use client";
 
-import { CloudTranslateRuntime } from "@/components/locale/cloud-translate-runtime";
+import { GoogleWebsiteTranslateRuntime } from "@/components/locale/google-website-translate-runtime";
 
 /**
- * Storefront translation entry. The free website widget is not used:
- * it rewrote the DOM and crashed Next.js. Cloud Translation is server-only.
+ * Live storefront translation uses Google Website Translator so copy is
+ * translated in the browser. Cloud Translation remains available for Orbit.
  */
 export function GoogleTranslateBridge() {
-  return <CloudTranslateRuntime />;
+  return <GoogleWebsiteTranslateRuntime />;
 }

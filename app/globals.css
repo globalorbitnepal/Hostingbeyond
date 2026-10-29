@@ -772,7 +772,8 @@
     position: static !important;
   }
 
-  .goog-te-gadget {
+  .goog-te-gadget,
+  #google_translate_element {
     height: 0 !important;
     overflow: hidden !important;
     visibility: hidden !important;

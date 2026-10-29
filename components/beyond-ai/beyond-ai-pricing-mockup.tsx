@@ -28,6 +28,7 @@ import {
   PlanCornerCube,
   PlanCornerCrown,
 } from "@/components/beyond-ai/beyond-ai-pricing-art";
+import { CatalogPrice } from "@/components/i18n/localized-text";
 import {
   beyondAiCheckoutPath,
   beyondAiPlansConfig,
@@ -157,10 +158,6 @@ export function BeyondAiPricingMockup({
               const popular = plan.popular ?? config?.popular;
               const monthly =
                 Math.round(plan.priceMonthly * discount * 100) / 100;
-              const priceLabel =
-                plan.priceMonthly === 0
-                  ? "$0"
-                  : `$${monthly % 1 === 0 ? monthly : monthly.toFixed(0)}`;
               const corner = cornerByPlan[plan.id] ?? "cube";
               const coinVariant = plan.id === "pro" ? "gold" : "blue";
 
@@ -214,7 +211,11 @@ export function BeyondAiPricingMockup({
                         popular ? "text-white" : "text-[#0f172a]",
                       )}
                     >
-                      {priceLabel}
+                      {plan.priceMonthly === 0 ? (
+                        <CatalogPrice usd={0} />
+                      ) : (
+                        <CatalogPrice usd={monthly} />
+                      )}
                     </span>
                     <span
                       className={cn(

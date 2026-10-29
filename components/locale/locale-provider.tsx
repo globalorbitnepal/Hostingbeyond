@@ -39,6 +39,7 @@ import {
 import {
   clearGoogtransCookie,
   isGoogleTranslationActive,
+  writeGoogtransCookie,
 } from "@/lib/i18n/google-translate-client";
 import { PUBLIC_ENGLISH_ONLY } from "@/lib/i18n/public-language";
 import {
@@ -160,7 +161,11 @@ export function LocaleProvider({
           ? normalized.googleTargetLang
           : normalized.language;
         document.documentElement.dir = "ltr";
-        clearGoogtransCookie();
+        if (isGoogleTranslationActive(normalized.googleTargetLang)) {
+          writeGoogtransCookie(normalized.googleTargetLang);
+        } else {
+          clearGoogtransCookie();
+        }
       }
       if (options?.refresh !== false) router.refresh();
     },
@@ -203,12 +208,15 @@ export function LocaleProvider({
 
   const setDisplayCurrency = useCallback(
     (currency: PublicDisplayCurrency) => {
-      commit({
-        ...preferences,
-        currency: normalizePublicDisplayCurrency(currency),
-        /** Manual choice must not be overwritten by the country default later. */
-        currencyLocked: true,
-      });
+      commit(
+        {
+          ...preferences,
+          currency: normalizePublicDisplayCurrency(currency),
+          /** Manual choice must not be overwritten by the country default later. */
+          currencyLocked: true,
+        },
+        { refresh: false },
+      );
     },
     [commit, preferences],
   );
@@ -216,16 +224,19 @@ export function LocaleProvider({
   const applyCountryMarket = useCallback(
     (market: HostingerLocaleMarket) => {
       const country = getCountry(market.countryCode);
-      commit({
-        ...preferences,
-        country: country.code,
-        currency: resolveCountryDisplayCurrency(country.code).currency,
-        localeMarketId: market.id,
-        currencyLocked: false,
-        googleTargetLang: preferences.googleTargetLang,
-        language: preferences.language,
-        languageLocked: preferences.languageLocked,
-      });
+      commit(
+        {
+          ...preferences,
+          country: country.code,
+          currency: resolveCountryDisplayCurrency(country.code).currency,
+          localeMarketId: market.id,
+          currencyLocked: false,
+          googleTargetLang: preferences.googleTargetLang,
+          language: preferences.language,
+          languageLocked: preferences.languageLocked,
+        },
+        { refresh: false },
+      );
     },
     [commit, preferences],
   );

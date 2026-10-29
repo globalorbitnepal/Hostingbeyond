@@ -1,6 +1,24 @@
-/** Client-only helpers for the free Google Website Translator (not Cloud API). */
+/** Client-only helpers for the free Google Website Translator. */
+
+import { googleTranslateIncludedLanguages } from "@/lib/i18n/website-languages";
 
 export const GOOGTRANS_COOKIE = "googtrans";
+export const GOOGLE_TRANSLATE_ELEMENT_ID = "google_translate_element";
+export const GOOGLE_TRANSLATE_SCRIPT_ID = "hb-google-translate-script";
+
+declare global {
+  interface Window {
+    googleTranslateElementInit?: () => void;
+    google?: {
+      translate?: {
+        TranslateElement: new (
+          options: Record<string, unknown>,
+          elementId: string,
+        ) => unknown;
+      };
+    };
+  }
+}
 
 /** Page source language for HostingBeyond public copy. */
 export const GOOGLE_PAGE_LANGUAGE = "en";
@@ -80,4 +98,50 @@ export function selectGoogleTranslateCombo(targetLang: string): boolean {
   combo.value = lang;
   combo.dispatchEvent(new Event("change"));
   return true;
+}
+
+export function pageIsGoogleTranslated(): boolean {
+  if (typeof document === "undefined") return false;
+  const html = document.documentElement;
+  const body = document.body;
+  return (
+    html.classList.contains("translated-ltr") ||
+    html.classList.contains("translated-rtl") ||
+    body.classList.contains("translated-ltr") ||
+    body.classList.contains("translated-rtl")
+  );
+}
+
+export function googleTranslateElementOptions(): Record<string, unknown> {
+  return {
+    pageLanguage: GOOGLE_PAGE_LANGUAGE,
+    includedLanguages: googleTranslateIncludedLanguages(),
+    autoDisplay: false,
+    multilanguagePage: true,
+  };
+}
+
+export function bootGoogleWebsiteTranslator() {
+  if (typeof window === "undefined" || typeof document === "undefined") return;
+  installReactGoogleTranslateGuards();
+  window.googleTranslateElementInit = () => {
+    const TranslateElement = window.google?.translate?.TranslateElement;
+    const host = document.getElementById(GOOGLE_TRANSLATE_ELEMENT_ID);
+    if (!TranslateElement || !host) return;
+    host.replaceChildren();
+    new TranslateElement(
+      googleTranslateElementOptions(),
+      GOOGLE_TRANSLATE_ELEMENT_ID,
+    );
+  };
+  if (document.getElementById(GOOGLE_TRANSLATE_SCRIPT_ID)) {
+    window.googleTranslateElementInit();
+    return;
+  }
+  const script = document.createElement("script");
+  script.id = GOOGLE_TRANSLATE_SCRIPT_ID;
+  script.async = true;
+  script.src =
+    "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+  document.body.appendChild(script);
 }

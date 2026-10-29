@@ -50,11 +50,12 @@ export async function prepareCloudTranslations(
       targetLanguage,
     );
     if (memory.ok) resolved = memory;
-    else if (resolved.code === "translation_not_configured") {
-      resolved = await translateTextsWithGoogleGtx(
+    if (!resolved.ok) {
+      const gtx = await translateTextsWithGoogleGtx(
         pendingTexts,
         targetLanguage,
       );
+      if (gtx.ok) resolved = gtx;
     }
   }
   if (!resolved.ok) return resolved;

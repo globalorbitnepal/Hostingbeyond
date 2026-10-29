@@ -26,7 +26,6 @@ import {
 } from "@/lib/i18n/hostinger-locale-markets";
 import {
   WEBSITE_LANGUAGES,
-  isStorefrontWebsiteLanguage,
   websiteLanguageByCode,
   websiteLanguageFlagCountryCode,
   type WebsiteLanguageCode,
@@ -238,7 +237,6 @@ export function CountryLanguageSelector({
       market,
     }));
     const langs: MenuRow[] = WEBSITE_LANGUAGES.filter((row) => {
-      if (!isStorefrontWebsiteLanguage(row)) return false;
       if (!enabled.has(row.code)) return false;
       if (!q) return true;
       return (
@@ -379,8 +377,8 @@ export function CountryLanguageSelector({
       const idx = indexOfSelectedCountryRow(preferences.country, markets);
       setActiveIndex(idx >= 0 ? idx : 0);
     } else {
-      const enabledLangs = WEBSITE_LANGUAGES.filter(
-        (row) => isStorefrontWebsiteLanguage(row) && enabled.has(row.code),
+      const enabledLangs = WEBSITE_LANGUAGES.filter((row) =>
+        enabled.has(row.code),
       );
       const idx = enabledLangs.findIndex(
         (row) => row.code === preferences.googleTargetLang,
@@ -429,7 +427,7 @@ export function CountryLanguageSelector({
             light ? "text-slate-900" : "text-white",
           )}
         >
-          {activeLanguage.triggerCode}
+          {activeLanguage.triggerCode} · {preferences.currency}
         </span>
         <ChevronDown
           className={cn(
@@ -488,11 +486,13 @@ export function CountryLanguageSelector({
         )}
         <span
           className={cn(
-            "min-w-[1.75rem] text-center text-[11px] font-bold tracking-wide sm:text-[12px]",
+            "inline-flex min-w-[1.75rem] items-center gap-1 text-center text-[11px] font-bold tracking-wide sm:text-[12px]",
             light ? "text-slate-900" : "text-white",
           )}
         >
-          {activeLanguage.triggerCode}
+          <span>{activeLanguage.triggerCode}</span>
+          <span className={light ? "text-slate-400" : "text-white/40"}>·</span>
+          <span>{preferences.currency}</span>
         </span>
         <ChevronDown
           className={cn(

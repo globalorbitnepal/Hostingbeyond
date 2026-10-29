@@ -15,6 +15,7 @@ import {
   Zap,
 } from "lucide-react";
 
+import { CatalogPrice } from "@/components/i18n/localized-text";
 import { routes } from "@/config/routes";
 import type {
   CmsBusinessEmailPageContent,
@@ -277,7 +278,7 @@ export function BusinessEmailPricingSection({
                         popular ? "text-violet-200/65" : "text-slate-400",
                       )}
                     >
-                      {plan.original}
+                      <CatalogPrice usd={parseUsd(plan.original)} />
                     </span>
                   ) : null}
                   <p className="flex items-end gap-1">
@@ -287,7 +288,7 @@ export function BusinessEmailPricingSection({
                         popular ? "text-white" : "text-[#0f172a]",
                       )}
                     >
-                      {price}
+                      <CatalogPrice usd={parseUsd(price)} />
                     </span>
                     <span
                       className={cn(
