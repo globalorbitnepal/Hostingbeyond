@@ -27,9 +27,13 @@ import {
   type HostingerLocaleMarket,
 } from "@/lib/i18n/hostinger-locale-markets";
 import {
+  defaultEnabledLanguageCodes,
+  resolveWebsiteLanguageCode,
+  type WebsiteLanguageCode,
+} from "@/lib/i18n/website-languages";
+import {
   clearGoogtransCookie,
   isGoogleTranslationActive,
-  writeGoogtransCookie,
 } from "@/lib/i18n/google-translate-client";
 import { PUBLIC_ENGLISH_ONLY } from "@/lib/i18n/public-language";
 import {
@@ -61,7 +65,10 @@ type LocaleContextValue = {
     options?: { suggestLanguage?: boolean },
   ) => void;
   setLanguage: (language: LanguageCode) => void;
+  setWebsiteLanguage: (code: WebsiteLanguageCode) => void;
   applyLocaleMarket: (market: HostingerLocaleMarket) => void;
+  applyCountryMarket: (market: HostingerLocaleMarket) => void;
+  enabledLanguageCodes: WebsiteLanguageCode[];
   setDisplayCurrency: (currency: PublicDisplayCurrency) => void;
   applySelection: (input: { country: string; language: LanguageCode }) => void;
   /** Display currency the selected country maps to (after honest fallback). */
@@ -85,23 +92,34 @@ function writePrefsCookie(prefs: UserPreferences) {
   if (typeof document === "undefined") return;
   const opts = preferencesCookieOptions();
   const secure = opts.secure ? "; Secure" : "";
-  document.cookie = `${LOCALE_COOKIE}=${encodeURIComponent(serializePreferences(prefs))}; Path=${opts.path}; Max-Age=${opts.maxAge}; SameSite=${opts.sameSite}${secure}`;
+  const serialized = serializePreferences(prefs);
+  document.cookie = `${LOCALE_COOKIE}=${encodeURIComponent(serialized)}; Path=${opts.path}; Max-Age=${opts.maxAge}; SameSite=${opts.sameSite}${secure}`;
+  try {
+    localStorage.setItem(LOCALE_COOKIE, serialized);
+  } catch {
+    /* private mode / quota */
+  }
 }
 
 export function LocaleProvider({
   children,
   initialPreferences,
   initialDisplayCurrencyRates = {},
+  initialEnabledLanguageCodes,
 }: {
   children: ReactNode;
   initialPreferences: UserPreferences;
   initialDisplayCurrencyRates?: DisplayCurrencyRateOverrides;
+  initialEnabledLanguageCodes?: WebsiteLanguageCode[];
 }) {
   const router = useRouter();
   const [preferences, setPreferences] = useState(() =>
     normalizePreferences(initialPreferences),
   );
   const [displayCurrencyRates] = useState(initialDisplayCurrencyRates);
+  const [enabledLanguageCodes] = useState<WebsiteLanguageCode[]>(
+    () => initialEnabledLanguageCodes ?? defaultEnabledLanguageCodes(),
+  );
   const [isPending, startTransition] = useTransition();
 
   const dictionary = useMemo(
@@ -118,30 +136,30 @@ export function LocaleProvider({
   }, [preferences]);
 
   const commit = useCallback(
-    (next: UserPreferences) => {
-      const normalized = normalizePreferences(next);
+    (next: UserPreferences, options?: { refresh?: boolean }) => {
+      const normalized = normalizePreferences({
+        ...next,
+        googleTargetLang: resolveWebsiteLanguageCode(
+          next.googleTargetLang,
+          enabledLanguageCodes,
+        ),
+      });
       startTransition(() => {
         setPreferences(normalized);
       });
       writePrefsCookie(normalized);
       if (typeof document !== "undefined") {
-        const langAttr = isGoogleTranslationActive(normalized.googleTargetLang)
-          ? (normalized.googleTargetLang.split("-")[0] ?? normalized.language)
+        document.documentElement.lang = isGoogleTranslationActive(
+          normalized.googleTargetLang,
+        )
+          ? normalized.googleTargetLang
           : normalized.language;
-        document.documentElement.lang = langAttr;
-        document.documentElement.dir =
-          normalized.googleTargetLang === "ar" || normalized.language === "ar"
-            ? "rtl"
-            : "ltr";
-        if (isGoogleTranslationActive(normalized.googleTargetLang)) {
-          writeGoogtransCookie(normalized.googleTargetLang);
-        } else {
-          clearGoogtransCookie();
-        }
+        document.documentElement.dir = "ltr";
+        clearGoogtransCookie();
       }
-      router.refresh();
+      if (options?.refresh !== false) router.refresh();
     },
-    [router],
+    [enabledLanguageCodes, router],
   );
 
   const setCountry = useCallback(
@@ -189,26 +207,36 @@ export function LocaleProvider({
     [commit, preferences],
   );
 
-  const applyLocaleMarket = useCallback(
+  const applyCountryMarket = useCallback(
     (market: HostingerLocaleMarket) => {
       const country = getCountry(market.countryCode);
-      const prevGoogle = preferences.googleTargetLang;
-      const next = normalizePreferences({
+      commit({
         ...preferences,
         country: country.code,
-        /** Selecting a market selects its configured display currency. */
         currency: resolveCountryDisplayCurrency(country.code).currency,
-        language: "en",
         localeMarketId: market.id,
-        googleTargetLang: market.googleTargetLang,
-        languageLocked: true,
       });
-      commit(next);
-      if (prevGoogle !== next.googleTargetLang) {
-        window.location.reload();
-      }
     },
     [commit, preferences],
+  );
+
+  const applyLocaleMarket = applyCountryMarket;
+
+  const setWebsiteLanguage = useCallback(
+    (code: WebsiteLanguageCode) => {
+      commit(
+        {
+          ...preferences,
+          googleTargetLang: resolveWebsiteLanguageCode(
+            code,
+            enabledLanguageCodes,
+          ),
+          languageLocked: true,
+        },
+        { refresh: false },
+      );
+    },
+    [commit, enabledLanguageCodes, preferences],
   );
 
   const applySelection = useCallback(
@@ -271,7 +299,10 @@ export function LocaleProvider({
       isPending,
       setCountry,
       setLanguage,
+      setWebsiteLanguage,
       applyLocaleMarket,
+      applyCountryMarket,
+      enabledLanguageCodes,
       setDisplayCurrency,
       applySelection,
       formatPrice,
@@ -294,7 +325,10 @@ export function LocaleProvider({
     isPending,
     setCountry,
     setLanguage,
+    setWebsiteLanguage,
     applyLocaleMarket,
+    applyCountryMarket,
+    enabledLanguageCodes,
     setDisplayCurrency,
     applySelection,
     formatPrice,

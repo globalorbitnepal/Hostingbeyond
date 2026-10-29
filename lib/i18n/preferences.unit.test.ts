@@ -73,6 +73,19 @@ describe("locale preference parsing", () => {
     assert.equal(prefs.currency, "INR");
   });
 
+  it("keeps language independent of country and currency", () => {
+    const prefs = normalizePreferences({
+      country: "US",
+      localeMarketId: "US-en",
+      googleTargetLang: "ko",
+      currencyLocked: true,
+      currency: "USD",
+    });
+    assert.equal(prefs.country, "US");
+    assert.equal(prefs.currency, "USD");
+    assert.equal(prefs.googleTargetLang, "ko");
+  });
+
   it("rejects unconfigured display currencies without inventing a rate", () => {
     /** Unlocked currency is derived from the country, so US yields USD. */
     const eur = normalizePreferences({ currency: "EUR" as never });

@@ -1,108 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Script from "next/script";
-import { usePathname } from "next/navigation";
-
-import { useLocale } from "@/components/locale/locale-provider";
-import {
-  GOOGLE_PAGE_LANGUAGE,
-  clearGoogtransCookie,
-  installReactGoogleTranslateGuards,
-  isGoogleTranslationActive,
-  selectGoogleTranslateCombo,
-  writeGoogtransCookie,
-} from "@/lib/i18n/google-translate-client";
-import { googleTranslateIncludedLanguages } from "@/lib/i18n/hostinger-locale-markets";
-import { PUBLIC_ENGLISH_ONLY } from "@/lib/i18n/public-language";
-
-const RETRY_DELAYS_MS = [0, 350, 800, 1500, 2800];
+import { CloudTranslateRuntime } from "@/components/locale/cloud-translate-runtime";
 
 /**
- * Loads Google’s website translator (free embed), hides the default bar,
- * and syncs language with hb_prefs via googtrans cookie + combo select.
+ * Storefront translation entry. The free website widget is not used:
+ * it rewrote the DOM and crashed Next.js. Cloud Translation is server-only.
  */
 export function GoogleTranslateBridge() {
-  const { preferences } = useLocale();
-  const pathname = usePathname();
-  const [translateReady, setTranslateReady] = useState(false);
-  const [pageReady, setPageReady] = useState(false);
-  const target = preferences.googleTargetLang ?? GOOGLE_PAGE_LANGUAGE;
-  const disabled =
-    PUBLIC_ENGLISH_ONLY ||
-    pathname.startsWith("/orbit") ||
-    pathname.startsWith("/api/orbit");
-
-  useEffect(() => {
-    installReactGoogleTranslateGuards();
-    const timer = window.setTimeout(() => setPageReady(true), 400);
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    if (disabled) {
-      clearGoogtransCookie();
-      return;
-    }
-    if (!isGoogleTranslationActive(target)) {
-      writeGoogtransCookie(GOOGLE_PAGE_LANGUAGE);
-      return;
-    }
-    writeGoogtransCookie(target);
-  }, [target, disabled]);
-
-  useEffect(() => {
-    const onReady = () => setTranslateReady(true);
-    document.addEventListener("hb-google-translate-ready", onReady);
-    return () =>
-      document.removeEventListener("hb-google-translate-ready", onReady);
-  }, []);
-
-  useEffect(() => {
-    if (disabled || !translateReady) return;
-    if (!isGoogleTranslationActive(target)) return;
-
-    const run = () => selectGoogleTranslateCombo(target);
-    run();
-    const timers = RETRY_DELAYS_MS.slice(1).map((ms) =>
-      window.setTimeout(run, ms),
-    );
-    return () => timers.forEach((id) => window.clearTimeout(id));
-  }, [target, pathname, translateReady, disabled]);
-
-  /** Load only after React has hydrated and a non-English market is selected.
-   *  Injecting the widget too early rewrites the DOM and crashes Next.js. */
-  if (disabled || !pageReady || !isGoogleTranslationActive(target)) {
-    return null;
-  }
-
-  return (
-    <>
-      <div id="google_translate_element" className="sr-only" aria-hidden />
-      <Script
-        id="google-translate-init"
-        strategy="afterInteractive"
-        dangerouslySetInnerHTML={{
-          __html: `
-window.googleTranslateElementInit = function () {
-  if (!window.google || !window.google.translate) return;
-  new window.google.translate.TranslateElement(
-    {
-      pageLanguage: '${GOOGLE_PAGE_LANGUAGE}',
-      autoDisplay: false,
-      includedLanguages: '${googleTranslateIncludedLanguages()}',
-      layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
-    },
-    'google_translate_element',
-  );
-  document.dispatchEvent(new Event('hb-google-translate-ready'));
-};`,
-        }}
-      />
-      <Script
-        src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
-        strategy="afterInteractive"
-      />
-    </>
-  );
+  return <CloudTranslateRuntime />;
 }

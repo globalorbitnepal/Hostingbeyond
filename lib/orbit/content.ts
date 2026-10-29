@@ -168,6 +168,7 @@ export async function saveSiteSettings(data: CmsSiteSettings) {
   revalidatePath("/orbit/content");
   revalidatePath("/orbit/settings");
   revalidatePath("/orbit/currency-rates");
+  revalidatePath("/orbit/languages");
   return normalized;
 }
 

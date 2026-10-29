@@ -1,6 +1,7 @@
 import type { LanguageCode } from "@/config/geo";
 import { getCountry } from "@/config/geo";
 import { PUBLIC_ENGLISH_ONLY } from "@/lib/i18n/public-language";
+import { googleTranslateIncludedLanguages as registryTranslateLanguages } from "@/lib/i18n/website-languages";
 
 /** One row in the Hostinger-style “Select location & language” list. */
 export type HostingerLocaleMarket = {
@@ -97,11 +98,26 @@ function isEnglishMarket(market: HostingerLocaleMarket): boolean {
 }
 
 export function googleTranslateIncludedLanguages(): string {
-  const langs = new Set<string>(["en"]);
+  return registryTranslateLanguages();
+}
+
+/** One row per country for country/currency picking — language is separate. */
+export function uniqueCountryMarkets(): HostingerLocaleMarket[] {
+  const seen = new Set<string>();
+  const rows: HostingerLocaleMarket[] = [];
   for (const market of HOSTINGER_LOCALE_MARKETS) {
-    langs.add(market.googleTargetLang);
+    if (seen.has(market.countryCode)) continue;
+    seen.add(market.countryCode);
+    rows.push(market);
   }
-  return [...langs].join(",");
+  return rows;
+}
+
+export function searchCountryMarkets(query: string): HostingerLocaleMarket[] {
+  const markets = uniqueCountryMarkets();
+  const q = query.trim().toLowerCase();
+  if (!q) return markets;
+  return markets.filter((m) => m.searchText.includes(q));
 }
 
 /**

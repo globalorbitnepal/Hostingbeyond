@@ -9,6 +9,7 @@ import {
   isMarketLanguageEnabled,
   publicLocaleMarkets,
   searchLocaleMarkets,
+  uniqueCountryMarkets,
 } from "@/lib/i18n/hostinger-locale-markets";
 
 describe("public locale markets", () => {
@@ -123,5 +124,12 @@ describe("public locale markets", () => {
   it("has unique market ids (React keys / saved cookie ids)", () => {
     const ids = publicLocaleMarkets().map((m) => m.id);
     assert.equal(new Set(ids).size, ids.length);
+  });
+
+  it("lists each country once for country-only selection", () => {
+    const countries = uniqueCountryMarkets();
+    const codes = countries.map((m) => m.countryCode);
+    assert.equal(new Set(codes).size, codes.length);
+    assert.equal(countries.filter((m) => m.countryCode === "CA").length, 1);
   });
 });

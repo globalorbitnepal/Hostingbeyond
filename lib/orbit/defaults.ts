@@ -8,6 +8,7 @@ import {
   catalogUsdAfterCmsMerge,
   catalogUsdFromExplicit,
 } from "@/lib/hosting/hosting-plan-catalog";
+import { defaultEnabledLanguageCodes } from "@/lib/i18n/website-languages";
 
 export type CmsSiteSettings = {
   name: string;
@@ -37,6 +38,8 @@ export type CmsSiteSettings = {
   domainProtectionLabel: string;
   /** Orbit overrides: local currency units per 1 USD (marketing display only). */
   displayCurrencyRates: Partial<Record<CurrencyCode, number>>;
+  /** Enabled storefront languages (registry codes). English is always on. */
+  websiteLanguageEnabledCodes: string[];
 };
 
 export type CmsDomainTld = {
@@ -911,6 +914,7 @@ export function defaultSiteSettings(): CmsSiteSettings {
     domainProtectionPriceUsd: 9.99,
     domainProtectionLabel: "Domain Protection",
     displayCurrencyRates: {},
+    websiteLanguageEnabledCodes: defaultEnabledLanguageCodes(),
   };
 }
 

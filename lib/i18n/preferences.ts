@@ -17,6 +17,7 @@ import {
 import { resolveCountryDisplayCurrency } from "@/lib/i18n/country-currency";
 import { isGoogleTranslationActive } from "@/lib/i18n/google-translate-client";
 import { PUBLIC_ENGLISH_ONLY } from "@/lib/i18n/public-language";
+import { resolveWebsiteLanguageCode } from "@/lib/i18n/website-languages";
 
 export const LOCALE_COOKIE = "hb_prefs";
 export const LOCALE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
@@ -27,7 +28,7 @@ export type UserPreferences = {
   currency: CurrencyCode;
   /** Hostinger-style market row id (e.g. US-en, IN-hi). */
   localeMarketId: string;
-  /** Google Website Translator target (en = no translation). */
+  /** Cloud Translation target (en = no translation). */
   googleTargetLang: string;
   /** True once the user explicitly picks a language (don't auto-overwrite). */
   languageLocked: boolean;
@@ -83,15 +84,19 @@ export function normalizePreferences(
     localeMarketId,
     countryFromInput ?? undefined,
   );
-  /** Storefront HTML stays English; Google Translate handles the market language. */
+  const googleTargetLang = PUBLIC_ENGLISH_ONLY
+    ? "en"
+    : resolveWebsiteLanguageCode(
+        input?.googleTargetLang ?? market.googleTargetLang,
+      );
+  /** Storefront HTML stays English; Cloud Translation handles the selected language. */
   const language =
-    PUBLIC_ENGLISH_ONLY || isGoogleTranslationActive(market.googleTargetLang)
+    PUBLIC_ENGLISH_ONLY || isGoogleTranslationActive(googleTargetLang)
       ? DEFAULT_LANGUAGE
       : isLanguageCode(input?.language)
         ? input.language
         : DEFAULT_LANGUAGE;
   const country = getCountry(countryFromInput ?? market.countryCode);
-  const googleTargetLang = PUBLIC_ENGLISH_ONLY ? "en" : market.googleTargetLang;
   /**
    * Precedence: an explicit manual pick (currencyLocked) wins; otherwise the
    * country's mapped currency is used, falling back to USD when that currency

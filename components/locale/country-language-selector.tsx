@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Fragment,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -19,13 +20,26 @@ import {
   nextActiveIndex,
 } from "@/lib/i18n/locale-list-nav";
 import {
-  getLocaleMarket,
-  isMarketLanguageEnabled,
-  searchLocaleMarkets,
+  searchCountryMarkets,
   type HostingerLocaleMarket,
 } from "@/lib/i18n/hostinger-locale-markets";
+import {
+  WEBSITE_LANGUAGES,
+  websiteLanguageByCode,
+  type WebsiteLanguageCode,
+} from "@/lib/i18n/website-languages";
 import { useLocale } from "@/components/locale/locale-provider";
 import { cn } from "@/lib/utils";
+
+type MenuRow =
+  | {
+      kind: "lang";
+      id: string;
+      code: WebsiteLanguageCode;
+      englishName: string;
+      nativeName: string;
+    }
+  | { kind: "country"; id: string; market: HostingerLocaleMarket };
 
 type Props = {
   compact?: boolean;
@@ -189,7 +203,14 @@ export function CountryLanguageSelector({
   className,
 }: Props) {
   const light = tone === "light";
-  const { preferences, applyLocaleMarket, currencyNotice, t } = useLocale();
+  const {
+    preferences,
+    applyCountryMarket,
+    setWebsiteLanguage,
+    enabledLanguageCodes,
+    currencyNotice,
+    t,
+  } = useLocale();
   const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -203,8 +224,38 @@ export function CountryLanguageSelector({
   const [menuPosition, setMenuPosition] = useState<CSSProperties | null>(null);
 
   const country = getCountry(preferences.country);
-  const activeMarket = getLocaleMarket(preferences.localeMarketId);
-  const results = useMemo(() => searchLocaleMarkets(query), [query]);
+  const activeLanguage =
+    websiteLanguageByCode(preferences.googleTargetLang) ??
+    websiteLanguageByCode("en")!;
+  const enabled = useMemo(
+    () => new Set(enabledLanguageCodes),
+    [enabledLanguageCodes],
+  );
+  const rows = useMemo<MenuRow[]>(() => {
+    const q = query.trim().toLowerCase();
+    const langs: MenuRow[] = WEBSITE_LANGUAGES.filter((row) => {
+      if (!enabled.has(row.code)) return false;
+      if (!q) return true;
+      return (
+        row.englishName.toLowerCase().includes(q) ||
+        row.nativeName.toLowerCase().includes(q) ||
+        row.code.toLowerCase().includes(q) ||
+        row.triggerCode.toLowerCase().includes(q)
+      );
+    }).map((row) => ({
+      kind: "lang" as const,
+      id: `lang:${row.code}`,
+      code: row.code,
+      englishName: row.englishName,
+      nativeName: row.nativeName,
+    }));
+    const countries: MenuRow[] = searchCountryMarkets(query).map((market) => ({
+      kind: "country" as const,
+      id: `country:${market.countryCode}`,
+      market,
+    }));
+    return [...langs, ...countries];
+  }, [enabled, query]);
   const menuWidth = compact ? MENU_WIDTH.compact : MENU_WIDTH.default;
   const localeInstance = menuSide === "above" ? "footer" : "header";
 
@@ -281,13 +332,13 @@ export function CountryLanguageSelector({
   }, [open, updateMenuPosition]);
 
   /** A changed query replaces the result set — keep the cursor in range. */
-  const prevResultCount = useRef(results.length);
+  const prevResultCount = useRef(rows.length);
   useEffect(() => {
     setActiveIndex((current) =>
-      indexAfterQueryChange(prevResultCount.current, results.length, current),
+      indexAfterQueryChange(prevResultCount.current, rows.length, current),
     );
-    prevResultCount.current = results.length;
-  }, [query, results.length]);
+    prevResultCount.current = rows.length;
+  }, [query, rows.length]);
 
   // Scroll active item into view
   useEffect(() => {
@@ -298,14 +349,15 @@ export function CountryLanguageSelector({
     el?.scrollIntoView({ block: "nearest" });
   }, [open, activeIndex]);
 
-  const selectAndApply = (market: HostingerLocaleMarket) => {
-    applyLocaleMarket(market);
+  const selectRow = (row: MenuRow) => {
+    if (row.kind === "lang") setWebsiteLanguage(row.code);
+    else applyCountryMarket(row.market);
     closePanel();
   };
 
   const onSearchKeyDown = (e: ReactKeyboardEvent<HTMLInputElement>) => {
-    if (!results.length) return;
-    const next = nextActiveIndex(e.key, activeIndex, results.length);
+    if (!rows.length) return;
+    const next = nextActiveIndex(e.key, activeIndex, rows.length);
     if (next != null) {
       e.preventDefault();
       setActiveIndex(next);
@@ -313,8 +365,8 @@ export function CountryLanguageSelector({
     }
     if (e.key === "Enter") {
       e.preventDefault();
-      const opt = results[activeIndex];
-      if (opt) selectAndApply(opt);
+      const opt = rows[activeIndex];
+      if (opt) selectRow(opt);
     }
   };
 
@@ -343,7 +395,7 @@ export function CountryLanguageSelector({
             light ? "text-slate-900" : "text-white",
           )}
         >
-          EN
+          {activeLanguage.triggerCode}
         </span>
         <ChevronDown
           className={cn(
@@ -406,7 +458,7 @@ export function CountryLanguageSelector({
             light ? "text-slate-900" : "text-white",
           )}
         >
-          {activeMarket.triggerCode}
+          {activeLanguage.triggerCode}
         </span>
         <ChevronDown
           className={cn(
@@ -496,7 +548,7 @@ export function CountryLanguageSelector({
                 )}
                 role="listbox"
               >
-                {results.length === 0 ? (
+                {rows.length === 0 ? (
                   <p
                     className={cn(
                       "px-4 py-6 text-center text-[12px]",
@@ -506,64 +558,94 @@ export function CountryLanguageSelector({
                     {t.locale.noResults}
                   </p>
                 ) : (
-                  results.map((market, index) => {
-                    const selected = market.id === preferences.localeMarketId;
+                  rows.map((row, index) => {
+                    const selected =
+                      row.kind === "lang"
+                        ? row.code === preferences.googleTargetLang
+                        : row.market.countryCode === preferences.country;
                     const active = index === activeIndex;
+                    const prev = rows[index - 1];
+                    const showHeader = !prev || prev.kind !== row.kind;
 
                     return (
-                      <button
-                        key={market.id}
-                        type="button"
-                        role="option"
-                        aria-selected={selected}
-                        data-active={String(active)}
-                        onMouseEnter={() => setActiveIndex(index)}
-                        onClick={() => selectAndApply(market)}
-                        className={cn(
-                          "flex w-full items-center gap-3 px-3 py-[10px] text-left transition-colors duration-100",
-                          light
-                            ? selected
-                              ? "bg-indigo-50/90 text-slate-900"
-                              : active
-                                ? "bg-slate-100 text-slate-900"
-                                : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
-                            : selected
-                              ? "bg-[rgba(37,99,235,0.20)] text-white"
-                              : active
-                                ? "bg-white/[0.07] text-white"
-                                : "text-white/80 hover:bg-white/[0.05] hover:text-white",
-                        )}
-                      >
-                        <FlagImg
-                          code={market.countryCode}
-                          size={26}
-                          tone={tone}
-                        />
-
-                        <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">
-                          {market.countryName}
-                        </span>
-
-                        <span
+                      <Fragment key={row.id}>
+                        {showHeader ? (
+                          <p
+                            className={cn(
+                              "px-4 pt-2.5 pb-1 text-[10px] font-bold tracking-[0.14em] uppercase",
+                              light ? "text-slate-400" : "text-white/35",
+                            )}
+                          >
+                            {row.kind === "lang"
+                              ? "Language"
+                              : "Country & currency"}
+                          </p>
+                        ) : null}
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={selected}
+                          aria-label={
+                            row.kind === "lang"
+                              ? `${row.englishName} (${row.nativeName})`
+                              : `${row.market.countryName} currency`
+                          }
+                          data-active={String(active)}
+                          onMouseEnter={() => setActiveIndex(index)}
+                          onClick={() => selectRow(row)}
                           className={cn(
-                            "shrink-0 text-[12px] font-normal",
-                            light ? "text-slate-400" : "text-white/45",
+                            "flex w-full items-center gap-3 px-3 py-[10px] text-left transition-colors duration-100",
+                            light
+                              ? selected
+                                ? "bg-indigo-50/90 text-slate-900"
+                                : active
+                                  ? "bg-slate-100 text-slate-900"
+                                  : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+                              : selected
+                                ? "bg-[rgba(37,99,235,0.20)] text-white"
+                                : active
+                                  ? "bg-white/[0.07] text-white"
+                                  : "text-white/80 hover:bg-white/[0.05] hover:text-white",
                           )}
                         >
-                          {market.languageLabel}
-                          {isMarketLanguageEnabled(market) ? null : (
+                          {row.kind === "country" ? (
+                            <FlagImg
+                              code={row.market.countryCode}
+                              size={26}
+                              tone={tone}
+                            />
+                          ) : (
                             <span
                               className={cn(
-                                "ml-1 text-[10px]",
-                                light ? "text-slate-400" : "text-white/35",
+                                "inline-flex size-[26px] shrink-0 items-center justify-center rounded-full text-[9px] font-bold",
+                                light
+                                  ? "border border-slate-200 bg-slate-100 text-slate-600"
+                                  : "bg-white/10 text-white/70",
                               )}
-                              title="This language is not available yet — the site stays in English."
+                              aria-hidden
                             >
-                              · EN
+                              {websiteLanguageByCode(row.code)?.triggerCode}
                             </span>
                           )}
-                        </span>
-                      </button>
+
+                          <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">
+                            {row.kind === "lang"
+                              ? row.englishName
+                              : row.market.countryName}
+                          </span>
+
+                          <span
+                            className={cn(
+                              "shrink-0 text-[12px] font-normal",
+                              light ? "text-slate-400" : "text-white/45",
+                            )}
+                          >
+                            {row.kind === "lang"
+                              ? row.nativeName
+                              : getCountry(row.market.countryCode).currency}
+                          </span>
+                        </button>
+                      </Fragment>
                     );
                   })
                 )}

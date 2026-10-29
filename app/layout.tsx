@@ -13,6 +13,7 @@ import { GoogleTranslateBridge } from "@/components/locale/google-translate-brid
 import { LocaleProvider } from "@/components/locale/locale-provider";
 import { SiteNavigation } from "@/components/navigation/site-navigation";
 import { LOCALE_COOKIE, parsePreferencesCookie } from "@/lib/i18n/preferences";
+import { normalizeEnabledLanguageCodes } from "@/lib/i18n/website-languages";
 import { buildMetadata } from "@/lib/metadata";
 import { getSiteSettings } from "@/lib/orbit/content";
 
@@ -70,15 +71,13 @@ export default async function RootLayout({
     cookieStore.get(LOCALE_COOKIE)?.value,
   );
   const siteSettings = await getSiteSettings();
-  const isRtl = initialPreferences.language === "ar";
+  const enabledLanguageCodes = normalizeEnabledLanguageCodes(
+    siteSettings.websiteLanguageEnabledCodes,
+  );
+  const htmlLang = initialPreferences.googleTargetLang || "en";
 
   return (
-    <html
-      lang={initialPreferences.language}
-      dir={isRtl ? "rtl" : "ltr"}
-      className="dark"
-      suppressHydrationWarning
-    >
+    <html lang={htmlLang} dir="ltr" className="dark" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://flagcdn.com" crossOrigin="" />
       </head>
@@ -88,11 +87,14 @@ export default async function RootLayout({
         <LocaleProvider
           initialPreferences={initialPreferences}
           initialDisplayCurrencyRates={siteSettings.displayCurrencyRates ?? {}}
+          initialEnabledLanguageCodes={enabledLanguageCodes}
         >
           <GoogleTranslateBridge />
           <DomainCartShell>
-            <SiteNavigation />
-            {children}
+            <div id="hb-translate-root">
+              <SiteNavigation />
+              {children}
+            </div>
           </DomainCartShell>
         </LocaleProvider>
       </body>

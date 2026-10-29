@@ -31,6 +31,13 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# Google Cloud service-account JSON (never commit)
+/secrets/
+*.gcp-sa.json
+*service-account*.json
+google-*-key.json
+google-translate-sa.json
+
 # Env
 .env
 .env.*

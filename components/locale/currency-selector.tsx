@@ -148,7 +148,11 @@ export function CurrencySelector({
   }
 
   return (
-    <div ref={wrapperRef} className={cn("relative", className)}>
+    <div
+      ref={wrapperRef}
+      className={cn("notranslate relative", className)}
+      translate="no"
+    >
       <button
         ref={triggerRef}
         type="button"
