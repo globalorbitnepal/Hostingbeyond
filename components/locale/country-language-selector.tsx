@@ -12,7 +12,6 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { ChevronDown, Search } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
 
 import { flagImgUrl, getCountry } from "@/config/geo";
 import {
@@ -419,185 +418,171 @@ export function CountryLanguageSelector({
         />
       </button>
 
-      <AnimatePresence>
-        {open && typeof document !== "undefined"
-          ? createPortal(
-              <motion.div
-                ref={menuRef}
-                initial={{
-                  opacity: 0,
-                  y: menuSide === "above" ? -4 : 4,
-                  scale: 0.97,
-                }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{
-                  opacity: 0,
-                  y: menuSide === "above" ? -3 : 3,
-                  scale: 0.97,
-                }}
-                transition={{ duration: 0.15, ease: [0.22, 1, 0.36, 1] }}
-                className={cn(
-                  "notranslate flex flex-col overflow-hidden rounded-[16px] border backdrop-blur-2xl",
-                  light
-                    ? "border-slate-200/90 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.14)]"
-                    : "border-white/[0.12] bg-[#0c1528] shadow-[0_20px_60px_rgba(0,0,0,0.65)]",
-                )}
-                translate="no"
-                style={
-                  menuPosition ?? {
-                    position: "fixed",
-                    top: 80,
-                    right: 16,
-                    width: menuWidth,
-                    maxHeight: "min(520px, 80dvh)",
-                    zIndex: 4000,
-                  }
+      {open && typeof document !== "undefined"
+        ? createPortal(
+            <div
+              ref={menuRef}
+              className={cn(
+                "notranslate flex flex-col overflow-hidden rounded-[16px] border backdrop-blur-2xl",
+                light
+                  ? "border-slate-200/90 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.14)]"
+                  : "border-white/[0.12] bg-[#0c1528] shadow-[0_20px_60px_rgba(0,0,0,0.65)]",
+              )}
+              translate="no"
+              style={
+                menuPosition ?? {
+                  position: "fixed",
+                  top: 80,
+                  right: 16,
+                  width: menuWidth,
+                  maxHeight: "min(520px, 80dvh)",
+                  zIndex: 4000,
                 }
+              }
+            >
+              <div
+                className={cn(
+                  "shrink-0 border-b px-4 py-3.5",
+                  light ? "border-slate-200/80" : "border-white/[0.07]",
+                )}
               >
-                <div
-                  className={cn(
-                    "shrink-0 border-b px-4 py-3.5",
-                    light ? "border-slate-200/80" : "border-white/[0.07]",
-                  )}
-                >
-                  <p
-                    className={cn(
-                      "text-[14px] leading-snug font-bold",
-                      light ? "text-slate-900" : "text-white",
-                    )}
-                  >
-                    {t.locale.selectLocation}
-                  </p>
-                </div>
-
-                <div
-                  className={cn(
-                    "shrink-0 border-b px-3 py-2.5",
-                    light ? "border-slate-200/70" : "border-white/[0.06]",
-                  )}
-                >
-                  <label className="relative block">
-                    <Search
-                      className={cn(
-                        "pointer-events-none absolute top-1/2 left-3 size-[13px] -translate-y-1/2",
-                        light ? "text-slate-400" : "text-white/35",
-                      )}
-                      aria-hidden
-                    />
-                    <input
-                      ref={searchRef}
-                      type="search"
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                      onKeyDown={onSearchKeyDown}
-                      placeholder={t.locale.searchPlaceholder}
-                      className={cn(
-                        "h-[38px] w-full rounded-[10px] border pr-3 pl-9 text-[13px] outline-none",
-                        light
-                          ? "border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:border-[#6366f1]/50 focus:bg-white"
-                          : "border-white/[0.10] bg-white/[0.05] text-white placeholder:text-white/30 focus:border-[#2563eb]/50",
-                      )}
-                      autoComplete="off"
-                    />
-                  </label>
-                </div>
-
-                <div
-                  ref={listRef}
-                  className={cn(
-                    "min-h-0 flex-1 overflow-y-auto overscroll-contain py-1",
-                    light ? "hb-locale-scroll-light" : "hb-locale-scroll",
-                  )}
-                  role="listbox"
-                >
-                  {results.length === 0 ? (
-                    <p
-                      className={cn(
-                        "px-4 py-6 text-center text-[12px]",
-                        light ? "text-slate-400" : "text-white/40",
-                      )}
-                    >
-                      {t.locale.noResults}
-                    </p>
-                  ) : (
-                    results.map((market, index) => {
-                      const selected = market.id === preferences.localeMarketId;
-                      const active = index === activeIndex;
-
-                      return (
-                        <button
-                          key={market.id}
-                          type="button"
-                          role="option"
-                          aria-selected={selected}
-                          data-active={String(active)}
-                          onMouseEnter={() => setActiveIndex(index)}
-                          onClick={() => selectAndApply(market)}
-                          className={cn(
-                            "flex w-full items-center gap-3 px-3 py-[10px] text-left transition-colors duration-100",
-                            light
-                              ? selected
-                                ? "bg-indigo-50/90 text-slate-900"
-                                : active
-                                  ? "bg-slate-100 text-slate-900"
-                                  : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
-                              : selected
-                                ? "bg-[rgba(37,99,235,0.20)] text-white"
-                                : active
-                                  ? "bg-white/[0.07] text-white"
-                                  : "text-white/80 hover:bg-white/[0.05] hover:text-white",
-                          )}
-                        >
-                          <FlagImg
-                            code={market.countryCode}
-                            size={26}
-                            tone={tone}
-                          />
-
-                          <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">
-                            {market.countryName}
-                          </span>
-
-                          <span
-                            className={cn(
-                              "shrink-0 text-[12px] font-normal",
-                              light ? "text-slate-400" : "text-white/45",
-                            )}
-                          >
-                            {market.languageLabel}
-                            {isMarketLanguageEnabled(market) ? null : (
-                              <span
-                                className={cn(
-                                  "ml-1 text-[10px]",
-                                  light ? "text-slate-400" : "text-white/35",
-                                )}
-                                title="This language is not available yet — the site stays in English."
-                              >
-                                · EN
-                              </span>
-                            )}
-                          </span>
-                        </button>
-                      );
-                    })
-                  )}
-                </div>
-
                 <p
                   className={cn(
-                    "shrink-0 border-t px-4 py-2.5 text-[10px] leading-snug",
-                    light
-                      ? "border-slate-200/80 text-slate-500"
-                      : "border-white/[0.07] text-white/40",
+                    "text-[14px] leading-snug font-bold",
+                    light ? "text-slate-900" : "text-white",
                   )}
                 >
-                  {currencyNotice}
+                  {t.locale.selectLocation}
                 </p>
-              </motion.div>,
-              document.body,
-            )
-          : null}
-      </AnimatePresence>
+              </div>
+
+              <div
+                className={cn(
+                  "shrink-0 border-b px-3 py-2.5",
+                  light ? "border-slate-200/70" : "border-white/[0.06]",
+                )}
+              >
+                <label className="relative block">
+                  <Search
+                    className={cn(
+                      "pointer-events-none absolute top-1/2 left-3 size-[13px] -translate-y-1/2",
+                      light ? "text-slate-400" : "text-white/35",
+                    )}
+                    aria-hidden
+                  />
+                  <input
+                    ref={searchRef}
+                    type="search"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={onSearchKeyDown}
+                    placeholder={t.locale.searchPlaceholder}
+                    className={cn(
+                      "h-[38px] w-full rounded-[10px] border pr-3 pl-9 text-[13px] outline-none",
+                      light
+                        ? "border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:border-[#6366f1]/50 focus:bg-white"
+                        : "border-white/[0.10] bg-white/[0.05] text-white placeholder:text-white/30 focus:border-[#2563eb]/50",
+                    )}
+                    autoComplete="off"
+                  />
+                </label>
+              </div>
+
+              <div
+                ref={listRef}
+                className={cn(
+                  "min-h-0 flex-1 overflow-y-auto overscroll-contain py-1",
+                  light ? "hb-locale-scroll-light" : "hb-locale-scroll",
+                )}
+                role="listbox"
+              >
+                {results.length === 0 ? (
+                  <p
+                    className={cn(
+                      "px-4 py-6 text-center text-[12px]",
+                      light ? "text-slate-400" : "text-white/40",
+                    )}
+                  >
+                    {t.locale.noResults}
+                  </p>
+                ) : (
+                  results.map((market, index) => {
+                    const selected = market.id === preferences.localeMarketId;
+                    const active = index === activeIndex;
+
+                    return (
+                      <button
+                        key={market.id}
+                        type="button"
+                        role="option"
+                        aria-selected={selected}
+                        data-active={String(active)}
+                        onMouseEnter={() => setActiveIndex(index)}
+                        onClick={() => selectAndApply(market)}
+                        className={cn(
+                          "flex w-full items-center gap-3 px-3 py-[10px] text-left transition-colors duration-100",
+                          light
+                            ? selected
+                              ? "bg-indigo-50/90 text-slate-900"
+                              : active
+                                ? "bg-slate-100 text-slate-900"
+                                : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+                            : selected
+                              ? "bg-[rgba(37,99,235,0.20)] text-white"
+                              : active
+                                ? "bg-white/[0.07] text-white"
+                                : "text-white/80 hover:bg-white/[0.05] hover:text-white",
+                        )}
+                      >
+                        <FlagImg
+                          code={market.countryCode}
+                          size={26}
+                          tone={tone}
+                        />
+
+                        <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">
+                          {market.countryName}
+                        </span>
+
+                        <span
+                          className={cn(
+                            "shrink-0 text-[12px] font-normal",
+                            light ? "text-slate-400" : "text-white/45",
+                          )}
+                        >
+                          {market.languageLabel}
+                          {isMarketLanguageEnabled(market) ? null : (
+                            <span
+                              className={cn(
+                                "ml-1 text-[10px]",
+                                light ? "text-slate-400" : "text-white/35",
+                              )}
+                              title="This language is not available yet — the site stays in English."
+                            >
+                              · EN
+                            </span>
+                          )}
+                        </span>
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+
+              <p
+                className={cn(
+                  "shrink-0 border-t px-4 py-2.5 text-[10px] leading-snug",
+                  light
+                    ? "border-slate-200/80 text-slate-500"
+                    : "border-white/[0.07] text-white/40",
+                )}
+              >
+                {currencyNotice}
+              </p>
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
 }
