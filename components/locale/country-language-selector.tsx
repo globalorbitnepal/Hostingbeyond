@@ -206,6 +206,8 @@ export function CountryLanguageSelector({
   const country = getCountry(preferences.country);
   const activeMarket = getLocaleMarket(preferences.localeMarketId);
   const results = useMemo(() => searchLocaleMarkets(query), [query]);
+  const menuWidth = compact ? MENU_WIDTH.compact : MENU_WIDTH.default;
+  const localeInstance = menuSide === "above" ? "footer" : "header";
 
   useEffect(() => {
     setMounted(true);
@@ -214,9 +216,18 @@ export function CountryLanguageSelector({
   const openPanel = useCallback(() => {
     setQuery("");
     setActiveIndex(0);
+    const el = visibleTrigger(triggerRef.current, localeInstance);
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      if (rect.width >= 8 && rect.height >= 8) {
+        setMenuPosition(
+          computeMenuPosition(rect, menuAlign, menuSide, menuWidth),
+        );
+      }
+    }
     setOpen(true);
     setTimeout(() => searchRef.current?.focus(), 50);
-  }, []);
+  }, [localeInstance, menuAlign, menuSide, menuWidth]);
 
   const closePanel = useCallback(() => {
     setOpen(false);
@@ -247,9 +258,6 @@ export function CountryLanguageSelector({
       document.removeEventListener("mousedown", onOutside);
     };
   }, [open, closePanel]);
-
-  const menuWidth = compact ? MENU_WIDTH.compact : MENU_WIDTH.default;
-  const localeInstance = menuSide === "above" ? "footer" : "header";
 
   const updateMenuPosition = useCallback(() => {
     const el = visibleTrigger(triggerRef.current, localeInstance);
@@ -412,7 +420,7 @@ export function CountryLanguageSelector({
       </button>
 
       <AnimatePresence>
-        {open && menuPosition && typeof document !== "undefined"
+        {open && typeof document !== "undefined"
           ? createPortal(
               <motion.div
                 ref={menuRef}
@@ -435,7 +443,16 @@ export function CountryLanguageSelector({
                     : "border-white/[0.12] bg-[#0c1528] shadow-[0_20px_60px_rgba(0,0,0,0.65)]",
                 )}
                 translate="no"
-                style={menuPosition}
+                style={
+                  menuPosition ?? {
+                    position: "fixed",
+                    top: 80,
+                    right: 16,
+                    width: menuWidth,
+                    maxHeight: "min(520px, 80dvh)",
+                    zIndex: 4000,
+                  }
+                }
               >
                 <div
                   className={cn(
