@@ -115,7 +115,7 @@ const countryOverrides: Record<
   EG: { currency: "USD", defaultLanguage: "ar", languages: ["ar", "en"] },
   NG: { currency: "USD", defaultLanguage: "en" },
   KE: { currency: "USD", defaultLanguage: "en" },
-  RU: { currency: "RUB", defaultLanguage: "ru", languages: ["ru", "en"] },
+  RU: { currency: "RUB", defaultLanguage: "en" },
   UA: { currency: "EUR", defaultLanguage: "en" },
   IL: { currency: "USD", defaultLanguage: "en" },
   QA: { currency: "USD", defaultLanguage: "ar", languages: ["ar", "en"] },
