@@ -733,13 +733,18 @@
 
   /* Hide Google Translate top banner; keep HostingBeyond header */
   .goog-te-banner-frame,
-  .skiptranslate,
-  #goog-gt-tt {
+  iframe.skiptranslate,
+  body > .skiptranslate,
+  #goog-gt-tt,
+  .VIpgJd-ZVi9od-ORHb,
+  .VIpgJd-ZVi9od-ORHb-OEVmcd,
+  .VIpgJd-ZVi9od-aZ2wEe-wOHMyf {
     display: none !important;
   }
 
   body {
     top: 0 !important;
+    position: static !important;
   }
 
   .goog-te-gadget {

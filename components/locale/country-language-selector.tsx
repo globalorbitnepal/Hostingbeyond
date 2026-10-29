@@ -336,7 +336,7 @@ export function CountryLanguageSelector({
   }
 
   return (
-    <div ref={wrapperRef} className="relative">
+    <div ref={wrapperRef} className="notranslate relative" translate="no">
       <button
         ref={triggerRef}
         type="button"
@@ -414,7 +414,7 @@ export function CountryLanguageSelector({
                 }}
                 transition={{ duration: 0.15, ease: [0.22, 1, 0.36, 1] }}
                 className={cn(
-                  "flex flex-col overflow-hidden rounded-[16px] border backdrop-blur-2xl",
+                  "notranslate flex flex-col overflow-hidden rounded-[16px] border backdrop-blur-2xl",
                   light
                     ? "border-slate-200/90 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.14)]"
                     : "border-white/[0.12] bg-[#0c1528] shadow-[0_20px_60px_rgba(0,0,0,0.65)]",

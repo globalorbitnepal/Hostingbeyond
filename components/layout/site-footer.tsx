@@ -265,7 +265,7 @@ export function SiteFooter({
             />
             <CountryLanguageSelector
               compact
-              variant="globe"
+              variant="flag"
               tone="light"
               menuAlign="start"
               menuSide="above"

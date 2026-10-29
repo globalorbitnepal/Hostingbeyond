@@ -19,67 +19,35 @@ export type HostingerLocaleMarket = {
   searchText: string;
 };
 
-/** Same markets and order as hostinger.com header selector (2026). */
+/**
+ * Curated public markets (English country names + native language labels).
+ * Alphabetical like Hostinger; Canada has two language rows.
+ */
 export const HOSTINGER_LOCALE_MARKETS: HostingerLocaleMarket[] = [
-  mk("AR-es", "AR", "Argentina", "Español", "es", "ES"),
-  mk("AT-de", "AT", "Österreich", "Deutsch", "de", "DE"),
   mk("AU-en", "AU", "Australia", "English", "en", "EN"),
-  mk("BD-bn", "BD", "বাংলাদেশ", "বাংলা", "bn", "BN"),
-  mk("BE-nl", "BE", "België", "Nederlands", "nl", "NL"),
-  mk("BE-fr", "BE", "Belgique", "Français", "fr", "FR"),
-  mk("BR-pt", "BR", "Brasil", "Português", "pt", "PT"),
+  mk("BD-bn", "BD", "Bangladesh", "বাংলা", "bn", "BN"),
+  mk("BR-pt", "BR", "Brazil", "Português", "pt", "PT"),
   mk("CA-en", "CA", "Canada", "English", "en", "EN"),
   mk("CA-fr", "CA", "Canada", "Français", "fr", "FR"),
-  mk("CH-de", "CH", "Schweiz", "Deutsch", "de", "DE"),
-  mk("CH-fr", "CH", "Suisse", "Français", "fr", "FR"),
-  mk("CO-es", "CO", "Colombia", "Español", "es", "ES"),
-  mk("CZ-cs", "CZ", "Česko", "Čeština", "cs", "CS"),
-  mk("DK-da", "DK", "Danmark", "Dansk", "da", "DA"),
-  mk("DE-de", "DE", "Deutschland", "Deutsch", "de", "DE"),
-  mk("EE-et", "EE", "Eesti", "Eesti", "et", "ET"),
-  mk("EG-ar", "EG", "مصر", "العربية", "ar", "AR"),
-  mk("GR-el", "GR", "Ελλάδα", "Ελληνικά", "el", "EL"),
-  mk("ES-es", "ES", "España", "Español", "es", "ES"),
+  mk("CN-zh", "CN", "China", "中文", "zh-CN", "ZH"),
   mk("FR-fr", "FR", "France", "Français", "fr", "FR"),
-  mk("HR-hr", "HR", "Hrvatska", "Hrvatski", "hr", "HR"),
-  mk("IN-en", "IN", "India", "English", "en", "EN"),
-  mk("IN-hi", "IN", "भारत", "हिंदी", "hi", "HI"),
-  mk("ID-id", "ID", "Indonesia", "Bahasa Indonesia", "id", "ID"),
-  mk("IT-it", "IT", "Italia", "Italiano", "it", "IT"),
+  mk("DE-de", "DE", "Germany", "Deutsch", "de", "DE"),
+  mk("IN-hi", "IN", "India", "हिन्दी", "hi", "HI"),
   mk("JP-ja", "JP", "Japan", "日本語", "ja", "JA"),
-  mk("LV-lv", "LV", "Latvija", "Latviešu", "lv", "LV"),
-  mk("LT-lt", "LT", "Lietuva", "Lietuvių", "lt", "LT"),
-  mk("HU-hu", "HU", "Magyarország", "Magyar", "hu", "HU"),
-  mk("MA-ar", "MA", "المغرب", "العربية", "ar", "AR"),
-  mk("MA-fr", "MA", "Maroc", "Français", "fr", "FR"),
-  mk("MY-en", "MY", "Malaysia", "English", "en", "EN"),
-  mk("MX-es", "MX", "México", "Español", "es", "ES"),
-  mk("NG-en", "NG", "Nigeria", "English", "en", "EN"),
-  mk("NL-nl", "NL", "Nederland", "Nederlands", "nl", "NL"),
-  mk("NO-no", "NO", "Norge", "Norsk", "no", "NO"),
-  mk("NP-en", "NP", "Nepal", "नेपाली", "en", "EN"),
-  mk("PK-en", "PK", "Pakistan", "English", "en", "EN"),
-  mk("PH-en", "PH", "Philippines", "English", "en", "EN"),
-  mk("PL-pl", "PL", "Polska", "Polski", "pl", "PL"),
-  mk("PT-pt", "PT", "Portugal", "Português", "pt", "PT"),
-  mk("RO-ro", "RO", "România", "Română", "ro", "RO"),
-  mk("RU-ru", "RU", "Russia", "Русский", "en", "EN"),
-  mk("SK-sk", "SK", "Slovensko", "Slovenčina", "sk", "SK"),
-  mk("FI-fi", "FI", "Suomi", "Suomi", "fi", "FI"),
-  mk("SE-sv", "SE", "Sverige", "Svenska", "sv", "SV"),
-  mk("TR-tr", "TR", "Türkiye", "Türkçe", "tr", "TR"),
-  mk("UA-uk", "UA", "Україна", "Українська", "uk", "UK"),
+  mk("NP-ne", "NP", "Nepal", "नेपाली", "ne", "NE"),
+  mk("RU-ru", "RU", "Russia", "Русский", "ru", "RU"),
+  mk("ES-es", "ES", "Spain", "Español", "es", "ES"),
   mk("GB-en", "GB", "United Kingdom", "English", "en", "EN"),
   mk("US-en", "US", "United States", "English", "en", "EN"),
-  mk("VN-vi", "VN", "Việt Nam", "Tiếng Việt", "vi", "VI"),
-  mk("AE-en", "AE", "United Arab Emirates", "English", "en", "EN"),
-  mk("IL-he", "IL", "יִשְׂרָאֵל", "עברית", "he", "HE"),
-  mk("TH-th", "TH", "ประเทศไทย", "ไทย", "th", "TH"),
-  mk("KR-ko", "KR", "대한민국", "한국어", "ko", "KO"),
-  mk("CN-zh", "CN", "中国", "中文", "zh-CN", "ZH"),
 ];
 
 export const DEFAULT_LOCALE_MARKET_ID = "US-en";
+
+/** Older cookie ids → current market ids (no data loss). */
+const LEGACY_MARKET_IDS: Record<string, string> = {
+  "NP-en": "NP-ne",
+  "IN-en": "IN-hi",
+};
 
 function appLanguageForGoogle(code: string): LanguageCode {
   const base = code.split("-")[0] ?? "en";
@@ -128,6 +96,14 @@ function isEnglishMarket(market: HostingerLocaleMarket): boolean {
   return market.googleTargetLang === "en" && market.appLanguage === "en";
 }
 
+export function googleTranslateIncludedLanguages(): string {
+  const langs = new Set<string>(["en"]);
+  for (const market of HOSTINGER_LOCALE_MARKETS) {
+    langs.add(market.googleTargetLang);
+  }
+  return [...langs].join(",");
+}
+
 /**
  * Every market is country-selectable — country drives pricing, so hiding a
  * country because its native language is unavailable would make regional
@@ -168,13 +144,14 @@ export function englishMarketFor(
   id: string | undefined | null,
   countryCode?: string,
 ): HostingerLocaleMarket {
+  const requestedId = LEGACY_MARKET_IDS[id ?? ""] ?? id;
   const requested =
-    HOSTINGER_LOCALE_MARKETS.find((m) => m.id === id) ??
+    HOSTINGER_LOCALE_MARKETS.find((m) => m.id === requestedId) ??
     HOSTINGER_LOCALE_MARKETS.find(
       (m) => m.countryCode === (countryCode ?? "").toUpperCase(),
     ) ??
     HOSTINGER_LOCALE_MARKETS.find((m) => m.id === DEFAULT_LOCALE_MARKET_ID)!;
-  /** Preserve the country — only the language is neutralised. */
+  /** Preserve the country — only the language is neutralised when English-only. */
   return effectiveMarket(requested);
 }
 

@@ -2,56 +2,76 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import {
+  DEFAULT_LOCALE_MARKET_ID,
   effectiveMarket,
   getLocaleMarket,
+  googleTranslateIncludedLanguages,
   isMarketLanguageEnabled,
   publicLocaleMarkets,
   searchLocaleMarkets,
 } from "@/lib/i18n/hostinger-locale-markets";
 
 describe("public locale markets", () => {
-  it("offers every country named in the product brief", () => {
-    const codes = publicLocaleMarkets().map((m) => m.countryCode);
-    const required = [
-      "NP", // Nepal
-      "US", // United States
-      "GB", // United Kingdom
-      "IN", // India
-      "AU", // Australia
-      "CA", // Canada
-      "DE", // Germany
-      "FR", // France
-      "ES", // Spain
-      "RU", // Russia
-      "CN", // China
-      "JP", // Japan
-      "BD", // Bangladesh
-      "BR", // Brazil
-    ];
-    for (const code of required) {
-      assert.ok(codes.includes(code), `${code} must be selectable`);
-    }
+  it("offers exactly the curated countries with USA as default", () => {
+    const markets = publicLocaleMarkets();
+    const codes = [...new Set(markets.map((m) => m.countryCode))];
+    assert.deepEqual(codes.sort(), [
+      "AU",
+      "BD",
+      "BR",
+      "CA",
+      "CN",
+      "DE",
+      "ES",
+      "FR",
+      "GB",
+      "IN",
+      "JP",
+      "NP",
+      "RU",
+      "US",
+    ]);
+    assert.equal(DEFAULT_LOCALE_MARKET_ID, "US-en");
+    assert.equal(getLocaleMarket("US-en").triggerCode, "EN");
+    assert.equal(getLocaleMarket("US-en").googleTargetLang, "en");
   });
 
-  it("keeps country availability independent of language availability", () => {
-    /** A German market must exist even though public copy is English-only. */
-    const de = publicLocaleMarkets().filter((m) => m.countryCode === "DE");
-    assert.ok(de.length > 0);
-    assert.equal(de[0].languageLabel, "Deutsch");
+  it("uses English country names and native language labels", () => {
+    const byId = Object.fromEntries(
+      publicLocaleMarkets().map((m) => [m.id, m]),
+    );
+    assert.equal(byId["NP-ne"]?.countryName, "Nepal");
+    assert.equal(byId["NP-ne"]?.languageLabel, "नेपाली");
+    assert.equal(byId["NP-ne"]?.googleTargetLang, "ne");
+    assert.equal(byId["IN-hi"]?.countryName, "India");
+    assert.equal(byId["IN-hi"]?.languageLabel, "हिन्दी");
+    assert.equal(byId["DE-de"]?.countryName, "Germany");
+    assert.equal(byId["DE-de"]?.languageLabel, "Deutsch");
+    assert.equal(byId["CN-zh"]?.countryName, "China");
+    assert.equal(byId["RU-ru"]?.googleTargetLang, "ru");
+    assert.equal(byId["BD-bn"]?.googleTargetLang, "bn");
+  });
 
-    /** ...but its language is not applied while the policy is English-only. */
-    assert.equal(isMarketLanguageEnabled(de[0]), false);
+  it("applies non-English Google targets (not English-only)", () => {
+    const de = publicLocaleMarkets().filter((m) => m.countryCode === "DE");
+    assert.equal(de[0].languageLabel, "Deutsch");
+    assert.equal(isMarketLanguageEnabled(de[0]), true);
     const applied = effectiveMarket(de[0]);
     assert.equal(applied.countryCode, "DE");
-    assert.equal(applied.googleTargetLang, "en");
-    assert.equal(applied.triggerCode, "EN");
+    assert.equal(applied.googleTargetLang, "de");
+    assert.equal(applied.triggerCode, "DE");
   });
 
   it("preserves the country when resolving a non-English market", () => {
     const market = getLocaleMarket("FR-fr");
     assert.equal(market.countryCode, "FR");
     assert.equal(market.id, "FR-fr");
-    assert.equal(market.googleTargetLang, "en");
+    assert.equal(market.googleTargetLang, "fr");
+  });
+
+  it("maps legacy Nepal/India cookie ids without dropping the country", () => {
+    assert.equal(getLocaleMarket("NP-en").id, "NP-ne");
+    assert.equal(getLocaleMarket("IN-en").id, "IN-hi");
   });
 
   it("offers both Canadian language markets", () => {
@@ -59,6 +79,16 @@ describe("public locale markets", () => {
     const labels = canada.map((m) => m.languageLabel);
     assert.ok(labels.includes("English"));
     assert.ok(labels.includes("Français"));
+  });
+
+  it("includes every Google target in the translator language list", () => {
+    const included = googleTranslateIncludedLanguages();
+    for (const market of publicLocaleMarkets()) {
+      assert.ok(
+        included.split(",").includes(market.googleTargetLang),
+        `${market.id} → ${market.googleTargetLang}`,
+      );
+    }
   });
 
   it("finds countries by native language name", () => {

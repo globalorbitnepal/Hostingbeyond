@@ -1,5 +1,5 @@
 /**
  * Public storefront language policy.
- * Keep English-only until translation is re-enabled and verified.
+ * English HTML + Google Website Translator for selected markets.
  */
-export const PUBLIC_ENGLISH_ONLY = true;
+export const PUBLIC_ENGLISH_ONLY = false;

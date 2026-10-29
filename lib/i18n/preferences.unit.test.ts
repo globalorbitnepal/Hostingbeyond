@@ -18,7 +18,7 @@ describe("locale preference parsing", () => {
   });
 
   it("derives the display currency from the selected country", () => {
-    const np = normalizePreferences({ country: "NP", localeMarketId: "NP-en" });
+    const np = normalizePreferences({ country: "NP", localeMarketId: "NP-ne" });
     assert.equal(np.country, "NP");
     assert.equal(np.currency, "NPR");
 
@@ -27,7 +27,7 @@ describe("locale preference parsing", () => {
 
     const inr = normalizePreferences({
       country: "IN",
-      localeMarketId: "IN-en",
+      localeMarketId: "IN-hi",
     });
     assert.equal(inr.currency, "INR");
   });
@@ -41,7 +41,7 @@ describe("locale preference parsing", () => {
   it("keeps an explicit manual currency choice when locked", () => {
     const prefs = normalizePreferences({
       country: "NP",
-      localeMarketId: "NP-en",
+      localeMarketId: "NP-ne",
       currency: "USD",
       currencyLocked: true,
     });
@@ -53,14 +53,14 @@ describe("locale preference parsing", () => {
   it("re-derives currency from country when the choice is not locked", () => {
     const prefs = normalizePreferences({
       country: "NP",
-      localeMarketId: "NP-en",
+      localeMarketId: "NP-ne",
       currency: "USD",
       currencyLocked: false,
     });
     assert.equal(prefs.currency, "NPR");
   });
 
-  it("maps leftover Hindi prefs to English copy but keeps the country", () => {
+  it("keeps Hindi Google Translate for India while HTML copy stays English", () => {
     const prefs = normalizePreferences({
       localeMarketId: "IN-hi",
       language: "hi",
@@ -68,7 +68,7 @@ describe("locale preference parsing", () => {
       currency: "INR",
     });
     assert.equal(prefs.language, "en");
-    assert.equal(prefs.googleTargetLang, "en");
+    assert.equal(prefs.googleTargetLang, "hi");
     assert.equal(prefs.country, "IN");
     assert.equal(prefs.currency, "INR");
   });
@@ -105,7 +105,7 @@ describe("locale preference parsing", () => {
   it("round-trips through the cookie serializer", () => {
     const prefs = normalizePreferences({
       country: "NP",
-      localeMarketId: "NP-en",
+      localeMarketId: "NP-ne",
       currencyLocked: true,
       currency: "USD",
     });

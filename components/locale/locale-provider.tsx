@@ -200,11 +200,11 @@ export function LocaleProvider({
         currency: resolveCountryDisplayCurrency(country.code).currency,
         language: "en",
         localeMarketId: market.id,
-        googleTargetLang: "en",
+        googleTargetLang: market.googleTargetLang,
         languageLocked: true,
       });
       commit(next);
-      if (prevGoogle !== market.googleTargetLang) {
+      if (prevGoogle !== next.googleTargetLang) {
         window.location.reload();
       }
     },
@@ -218,7 +218,7 @@ export function LocaleProvider({
         input.country === "US"
           ? "US-en"
           : input.country === "IN"
-            ? "IN-en"
+            ? "IN-hi"
             : preferences.localeMarketId;
       const market = getLocaleMarket(marketId);
       applyLocaleMarket({

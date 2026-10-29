@@ -12,6 +12,7 @@ import {
   selectGoogleTranslateCombo,
   writeGoogtransCookie,
 } from "@/lib/i18n/google-translate-client";
+import { googleTranslateIncludedLanguages } from "@/lib/i18n/hostinger-locale-markets";
 import { PUBLIC_ENGLISH_ONLY } from "@/lib/i18n/public-language";
 
 const RETRY_DELAYS_MS = [0, 350, 800, 1500, 2800];
@@ -79,7 +80,7 @@ window.googleTranslateElementInit = function () {
     {
       pageLanguage: '${GOOGLE_PAGE_LANGUAGE}',
       autoDisplay: false,
-      includedLanguages: 'en,hi,es,de,fr,pt,it,ja,ko,zh-CN,ar,nl,pl,tr,vi,th,id,uk,ro,hu,cs,sk,hr,el,he,bn,da,sv,no,fi,et,lv,lt',
+      includedLanguages: '${googleTranslateIncludedLanguages()}',
       layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
     },
     'google_translate_element',

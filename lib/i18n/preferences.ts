@@ -15,6 +15,7 @@ import {
   normalizePublicDisplayCurrency,
 } from "@/lib/i18n/display-currencies";
 import { resolveCountryDisplayCurrency } from "@/lib/i18n/country-currency";
+import { isGoogleTranslationActive } from "@/lib/i18n/google-translate-client";
 import { PUBLIC_ENGLISH_ONLY } from "@/lib/i18n/public-language";
 
 export const LOCALE_COOKIE = "hb_prefs";
@@ -74,11 +75,6 @@ export function normalizePreferences(
   const languageLocked = PUBLIC_ENGLISH_ONLY
     ? true
     : Boolean(input?.languageLocked);
-  const language = PUBLIC_ENGLISH_ONLY
-    ? DEFAULT_LANGUAGE
-    : isLanguageCode(input?.language)
-      ? input.language
-      : DEFAULT_LANGUAGE;
   const localeMarketId =
     typeof input?.localeMarketId === "string" && input.localeMarketId.length > 0
       ? input.localeMarketId
@@ -87,13 +83,15 @@ export function normalizePreferences(
     localeMarketId,
     countryFromInput ?? undefined,
   );
+  /** Storefront HTML stays English; Google Translate handles the market language. */
+  const language =
+    PUBLIC_ENGLISH_ONLY || isGoogleTranslationActive(market.googleTargetLang)
+      ? DEFAULT_LANGUAGE
+      : isLanguageCode(input?.language)
+        ? input.language
+        : DEFAULT_LANGUAGE;
   const country = getCountry(countryFromInput ?? market.countryCode);
-  const googleTargetLang = PUBLIC_ENGLISH_ONLY
-    ? "en"
-    : typeof input?.googleTargetLang === "string" &&
-        input.googleTargetLang.length > 0
-      ? input.googleTargetLang
-      : market.googleTargetLang;
+  const googleTargetLang = PUBLIC_ENGLISH_ONLY ? "en" : market.googleTargetLang;
   /**
    * Precedence: an explicit manual pick (currencyLocked) wins; otherwise the
    * country's mapped currency is used, falling back to USD when that currency
