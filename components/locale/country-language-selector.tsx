@@ -8,6 +8,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useId,
   type CSSProperties,
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
@@ -15,6 +16,7 @@ import { createPortal } from "react-dom";
 import { ChevronDown, Search } from "lucide-react";
 
 import { flagImgUrl, getCountry } from "@/config/geo";
+import { resolveCountryDisplayCurrency } from "@/lib/i18n/country-currency";
 import {
   indexAfterQueryChange,
   nextActiveIndex,
@@ -55,23 +57,14 @@ type Props = {
 };
 
 const MENU_WIDTH = { compact: 328, default: 380 } as const;
+const LOCALE_PANEL_OPEN = "hb-locale-panel-open";
 
-function visibleTrigger(preferred: HTMLElement | null, instance: string) {
-  const seen = new Set<HTMLElement>();
-  const candidates: HTMLElement[] = [];
-  if (preferred) candidates.push(preferred);
-  for (const node of document.querySelectorAll<HTMLElement>(
-    `[data-hb-locale-trigger="${instance}"]`,
-  )) {
-    candidates.push(node);
-  }
-  for (const el of candidates) {
-    if (seen.has(el)) continue;
-    seen.add(el);
-    const rect = el.getBoundingClientRect();
-    if (rect.width >= 8 && rect.height >= 8) return el;
-  }
-  return preferred;
+function indexOfSelectedCountryRow(
+  countryCode: string,
+  markets: HostingerLocaleMarket[],
+): number {
+  const code = countryCode.trim().toUpperCase();
+  return markets.findIndex((market) => market.countryCode === code);
 }
 
 function computeMenuPosition(
@@ -215,6 +208,7 @@ export function CountryLanguageSelector({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
+  const panelId = useId();
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -233,6 +227,12 @@ export function CountryLanguageSelector({
   );
   const rows = useMemo<MenuRow[]>(() => {
     const q = query.trim().toLowerCase();
+    const countryMarkets = searchCountryMarkets(query);
+    const countries: MenuRow[] = countryMarkets.map((market) => ({
+      kind: "country" as const,
+      id: `country:${market.countryCode}`,
+      market,
+    }));
     const langs: MenuRow[] = WEBSITE_LANGUAGES.filter((row) => {
       if (!enabled.has(row.code)) return false;
       if (!q) return true;
@@ -249,11 +249,6 @@ export function CountryLanguageSelector({
       englishName: row.englishName,
       nativeName: row.nativeName,
     }));
-    const countries: MenuRow[] = searchCountryMarkets(query).map((market) => ({
-      kind: "country" as const,
-      id: `country:${market.countryCode}`,
-      market,
-    }));
     return [...countries, ...langs];
   }, [enabled, query]);
   const menuWidth = compact ? MENU_WIDTH.compact : MENU_WIDTH.default;
@@ -263,26 +258,44 @@ export function CountryLanguageSelector({
     setMounted(true);
   }, []);
 
-  const openPanel = useCallback(() => {
-    setQuery("");
-    setActiveIndex(0);
-    const el = visibleTrigger(triggerRef.current, localeInstance);
-    if (el) {
-      const rect = el.getBoundingClientRect();
-      if (rect.width >= 8 && rect.height >= 8) {
-        setMenuPosition(
-          computeMenuPosition(rect, menuAlign, menuSide, menuWidth),
-        );
-      }
-    }
-    setOpen(true);
-    setTimeout(() => searchRef.current?.focus(), 50);
-  }, [localeInstance, menuAlign, menuSide, menuWidth]);
-
   const closePanel = useCallback(() => {
     setOpen(false);
     setQuery("");
   }, []);
+
+  useEffect(() => {
+    const onOtherPanelOpen = (event: Event) => {
+      const openedId = (event as CustomEvent<string>).detail;
+      if (openedId !== panelId) closePanel();
+    };
+    window.addEventListener(LOCALE_PANEL_OPEN, onOtherPanelOpen);
+    return () =>
+      window.removeEventListener(LOCALE_PANEL_OPEN, onOtherPanelOpen);
+  }, [panelId, closePanel]);
+
+  const positionMenuFromTrigger = useCallback(() => {
+    const el = triggerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    if (rect.width < 8 || rect.height < 8) return;
+    setMenuPosition(computeMenuPosition(rect, menuAlign, menuSide, menuWidth));
+  }, [menuAlign, menuSide, menuWidth]);
+
+  const openPanel = useCallback(() => {
+    setQuery("");
+    const markets = searchCountryMarkets("");
+    const selectedCountryIndex = indexOfSelectedCountryRow(
+      preferences.country,
+      markets,
+    );
+    setActiveIndex(selectedCountryIndex >= 0 ? selectedCountryIndex : 0);
+    positionMenuFromTrigger();
+    window.dispatchEvent(
+      new CustomEvent(LOCALE_PANEL_OPEN, { detail: panelId }),
+    );
+    setOpen(true);
+    setTimeout(() => searchRef.current?.focus(), 50);
+  }, [panelId, positionMenuFromTrigger, preferences.country]);
 
   const togglePanel = useCallback(() => {
     if (open) closePanel();
@@ -310,12 +323,8 @@ export function CountryLanguageSelector({
   }, [open, closePanel]);
 
   const updateMenuPosition = useCallback(() => {
-    const el = visibleTrigger(triggerRef.current, localeInstance);
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    if (rect.width < 8 || rect.height < 8) return;
-    setMenuPosition(computeMenuPosition(rect, menuAlign, menuSide, menuWidth));
-  }, [localeInstance, menuAlign, menuSide, menuWidth]);
+    positionMenuFromTrigger();
+  }, [positionMenuFromTrigger]);
 
   useLayoutEffect(() => {
     if (!open) {
@@ -340,11 +349,11 @@ export function CountryLanguageSelector({
     prevResultCount.current = rows.length;
   }, [query, rows.length]);
 
-  // Scroll active item into view
+  // Scroll keyboard focus into view (selected country uses aria-selected styling only)
   useEffect(() => {
     if (!open || !listRef.current) return;
     const el = listRef.current.querySelector<HTMLElement>(
-      '[data-active="true"]',
+      '[data-keyboard-focus="true"]',
     );
     el?.scrollIntoView({ block: "nearest" });
   }, [open, activeIndex]);
@@ -414,7 +423,7 @@ export function CountryLanguageSelector({
         ref={triggerRef}
         type="button"
         onClick={togglePanel}
-        data-hb-locale-trigger={localeInstance}
+        data-hb-locale-trigger={`${localeInstance}-${panelId}`}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={t.locale.selectLocation}
@@ -563,13 +572,12 @@ export function CountryLanguageSelector({
                       row.kind === "lang"
                         ? row.code === preferences.googleTargetLang
                         : row.market.countryCode === preferences.country;
-                    const active = index === activeIndex;
-                    const prev = rows[index - 1];
-                    const showHeader = !prev || prev.kind !== row.kind;
+                    const keyboardFocus = index === activeIndex && !selected;
 
                     return (
                       <Fragment key={row.id}>
-                        {showHeader ? (
+                        {!rows[index - 1] ||
+                        rows[index - 1]!.kind !== row.kind ? (
                           <p
                             className={cn(
                               "px-4 pt-2.5 pb-1 text-[10px] font-bold tracking-[0.14em] uppercase",
@@ -588,23 +596,22 @@ export function CountryLanguageSelector({
                           aria-label={
                             row.kind === "lang"
                               ? `${row.englishName} (${row.nativeName})`
-                              : `${row.market.countryName} currency`
+                              : `${row.market.countryName}, ${resolveCountryDisplayCurrency(row.market.countryCode).currency}`
                           }
-                          data-active={String(active)}
-                          onMouseEnter={() => setActiveIndex(index)}
+                          data-keyboard-focus={String(keyboardFocus)}
                           onClick={() => selectRow(row)}
                           className={cn(
                             "flex w-full items-center gap-3 px-3 py-[10px] text-left transition-colors duration-100",
                             light
                               ? selected
-                                ? "bg-indigo-50/90 text-slate-900"
-                                : active
-                                  ? "bg-slate-100 text-slate-900"
-                                  : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+                                ? "bg-indigo-50 text-slate-900 ring-1 ring-indigo-200/80 ring-inset"
+                                : keyboardFocus
+                                  ? "bg-slate-50 text-slate-900 ring-1 ring-slate-200 ring-inset"
+                                  : "text-slate-700 hover:bg-slate-50/90 hover:text-slate-900"
                               : selected
-                                ? "bg-[rgba(37,99,235,0.20)] text-white"
-                                : active
-                                  ? "bg-white/[0.07] text-white"
+                                ? "bg-[rgba(37,99,235,0.22)] text-white ring-1 ring-[#2563eb]/40 ring-inset"
+                                : keyboardFocus
+                                  ? "bg-white/[0.08] text-white ring-1 ring-white/15 ring-inset"
                                   : "text-white/80 hover:bg-white/[0.05] hover:text-white",
                           )}
                         >
@@ -636,13 +643,15 @@ export function CountryLanguageSelector({
 
                           <span
                             className={cn(
-                              "shrink-0 text-[12px] font-normal",
+                              "shrink-0 text-[12px] font-normal tabular-nums",
                               light ? "text-slate-400" : "text-white/45",
                             )}
                           >
                             {row.kind === "lang"
                               ? row.nativeName
-                              : getCountry(row.market.countryCode).currency}
+                              : resolveCountryDisplayCurrency(
+                                  row.market.countryCode,
+                                ).currency}
                           </span>
                         </button>
                       </Fragment>

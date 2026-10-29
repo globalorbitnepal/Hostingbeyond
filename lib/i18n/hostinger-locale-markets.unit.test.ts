@@ -10,6 +10,7 @@ import {
   publicLocaleMarkets,
   searchLocaleMarkets,
   uniqueCountryMarkets,
+  searchCountryMarkets,
 } from "@/lib/i18n/hostinger-locale-markets";
 
 describe("public locale markets", () => {
@@ -135,6 +136,17 @@ describe("public locale markets", () => {
     assert.equal(
       countries.some((m) => m.countryName === "Argentina"),
       false,
+    );
+  });
+
+  it("returns exactly one row per storefront country in the selector search", () => {
+    const empty = searchCountryMarkets("");
+    assert.equal(empty.length, 14);
+    const codes = empty.map((m) => m.countryCode);
+    assert.equal(new Set(codes).size, 14);
+    assert.deepEqual(
+      codes,
+      uniqueCountryMarkets().map((m) => m.countryCode),
     );
   });
 });
