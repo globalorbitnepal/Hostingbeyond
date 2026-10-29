@@ -4,11 +4,12 @@ import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, Menu, Sparkles, User, X } from "lucide-react";
+import { ChevronDown, Menu, Sparkles, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { mainNavigation, type NavItem } from "@/config/navigation";
 import { routes } from "@/config/routes";
+import { CustomerHeaderAccountMenu } from "@/components/auth/customer-header-account-menu";
 import { DomainCartHeaderLink } from "@/components/layout/domain-cart-header-link";
 import { CountryLanguageSelector } from "@/components/locale/country-language-selector";
 import { CurrencySelector } from "@/components/locale/currency-selector";
@@ -391,13 +392,10 @@ export function SiteHeader({
                 aria-hidden
                 className="mx-0.5 hidden h-6 w-px bg-slate-200 xl:block"
               />
-              <Link
-                href={loginHref}
-                className="inline-flex h-[38px] items-center gap-2 rounded-full border border-slate-200/90 bg-white px-3.5 text-[13px] font-semibold text-slate-800 shadow-[0_4px_14px_rgba(15,23,42,0.06)] transition hover:border-slate-300 hover:bg-slate-50"
-              >
-                <User className="size-4 text-slate-600" aria-hidden />
-                {resolvedLogin}
-              </Link>
+              <CustomerHeaderAccountMenu
+                loginHref={loginHref}
+                loginLabel={resolvedLogin}
+              />
             </div>
 
             <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-1.5 lg:hidden">
@@ -558,14 +556,12 @@ export function SiteHeader({
                   );
                 })}
                 <div className="mt-3 flex flex-col gap-2 border-t border-slate-100 pt-3">
-                  <Link
-                    href={loginHref}
-                    className="flex items-center justify-center gap-2 rounded-full border border-slate-200 px-3 py-2.5 text-[14px] font-semibold text-slate-800"
-                    onClick={() => setOpen(false)}
-                  >
-                    <User className="size-4" aria-hidden />
-                    {resolvedLogin}
-                  </Link>
+                  <CustomerHeaderAccountMenu
+                    variant="mobile"
+                    loginHref={loginHref}
+                    loginLabel={resolvedLogin}
+                    onNavigate={() => setOpen(false)}
+                  />
                   <Link
                     href={getStartedHref}
                     className="flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#7c3aed] to-[#2563eb] px-3 py-2.5 text-[14px] font-semibold text-white shadow-[0_8px_24px_rgba(124,58,237,0.28)]"
