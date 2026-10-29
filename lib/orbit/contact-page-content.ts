@@ -14,6 +14,9 @@ export const CONTACT_TOPICS = [
   "Press & media",
 ] as const;
 
+const PHONE_SUPPORT_ANSWER =
+  "We currently help customers through the contact form and email rather than a published phone line. For urgent outages, include your account email, domain, and when the issue started so we can prioritize.";
+
 export type CmsContactChannel = {
   id: string;
   title: string;
@@ -184,8 +187,8 @@ export function defaultContactPageContent(): CmsContactPageContent {
       {
         id: "o1",
         city: "United States",
-        country: "USA",
-        addressLine1: "Edit your office address in Orbit → Contact page",
+        country: "",
+        addressLine1: "",
         addressLine2: "",
       },
     ],
@@ -202,8 +205,7 @@ export function defaultContactPageContent(): CmsContactPageContent {
       {
         id: "f2",
         question: "Do you offer phone support?",
-        answer:
-          "Edit this answer in Orbit with your published phone hours and number if applicable.",
+        answer: PHONE_SUPPORT_ANSWER,
       },
       {
         id: "f3",
@@ -222,19 +224,44 @@ export function defaultContactPageContent(): CmsContactPageContent {
   };
 }
 
+function isOrbitEditorHint(value: string | undefined): boolean {
+  return Boolean(value && /in orbit/i.test(value) && /edit /i.test(value));
+}
+
+function publishableContactContent(
+  content: CmsContactPageContent,
+): CmsContactPageContent {
+  return {
+    ...content,
+    offices: content.offices.map((office) => ({
+      ...office,
+      addressLine1: isOrbitEditorHint(office.addressLine1)
+        ? ""
+        : office.addressLine1,
+      addressLine2: isOrbitEditorHint(office.addressLine2)
+        ? ""
+        : office.addressLine2,
+    })),
+    faqs: content.faqs.map((faq) => ({
+      ...faq,
+      answer: isOrbitEditorHint(faq.answer) ? PHONE_SUPPORT_ANSWER : faq.answer,
+    })),
+  };
+}
+
 export function mergeContactPageContent(
   stored?: Partial<CmsContactPageContent> | null,
 ): CmsContactPageContent {
   const d = defaultContactPageContent();
-  if (!stored) return d;
-  return {
+  if (!stored) return publishableContactContent(d);
+  return publishableContactContent({
     ...d,
     ...stored,
     channels: stored.channels?.length ? stored.channels : d.channels,
     helpLinks: stored.helpLinks?.length ? stored.helpLinks : d.helpLinks,
     offices: stored.offices?.length ? stored.offices : d.offices,
     faqs: stored.faqs?.length ? stored.faqs : d.faqs,
-  };
+  });
 }
 
 export function newContactOffice(): CmsContactOffice {

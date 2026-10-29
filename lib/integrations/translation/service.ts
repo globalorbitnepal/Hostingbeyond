@@ -2,6 +2,7 @@ import { shouldSkipCloudTranslation } from "@/lib/integrations/translation/skip-
 import {
   translateTextsWithGoogleCloud,
   type CloudTranslateFn,
+  type GoogleCloudTranslateErrorCode,
 } from "@/lib/integrations/translation/google-cloud";
 
 export type PreparedTranslation = {
@@ -19,10 +20,7 @@ export async function prepareCloudTranslations(
   | { ok: true; items: PreparedTranslation[] }
   | {
       ok: false;
-      code:
-        | "translation_not_configured"
-        | "translation_failed"
-        | "translation_length_mismatch";
+      code: GoogleCloudTranslateErrorCode;
     }
 > {
   const items: PreparedTranslation[] = texts.map((original) => ({

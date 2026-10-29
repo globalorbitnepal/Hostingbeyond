@@ -195,9 +195,15 @@ export function ContactOffices({
             <MapPin className="size-5 text-[#673de6]" aria-hidden />
             <p className="mt-3 text-lg font-bold text-[#1a1035]">
               {office.city}
-              {office.country ? `, ${office.country}` : ""}
+              {office.country && office.country !== office.city
+                ? `, ${office.country}`
+                : ""}
             </p>
-            <p className="mt-2 text-sm text-slate-600">{office.addressLine1}</p>
+            {office.addressLine1 ? (
+              <p className="mt-2 text-sm text-slate-600">
+                {office.addressLine1}
+              </p>
+            ) : null}
             {office.addressLine2 ? (
               <p className="text-sm text-slate-600">{office.addressLine2}</p>
             ) : null}

@@ -36,7 +36,7 @@ describe("storefront country registry", () => {
   });
 
   it("does not include obsolete or language-only countries", () => {
-    const codes = STOREFRONT_COUNTRIES.map((c) => c.code);
+    const codes: readonly string[] = STOREFRONT_COUNTRIES.map((c) => c.code);
     assertNoObsoleteStorefrontCountries(codes);
     assert.equal(codes.includes("KR"), false);
     assert.equal(codes.includes("ID"), false);
