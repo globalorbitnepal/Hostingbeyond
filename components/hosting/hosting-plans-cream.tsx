@@ -22,6 +22,7 @@ import type {
   PlansTrustChipSlot,
 } from "@/lib/hosting/product-plans-trust-chips";
 import type { CmsHostingPlansContent } from "@/lib/orbit/defaults";
+import { annualSaveBadgeLabel } from "@/lib/hosting/annual-save-badge";
 import { cn } from "@/lib/utils";
 
 type Billing = "annually" | "monthly";
@@ -132,6 +133,8 @@ export function HostingPlansCream({
           },
         };
 
+  const saveBadgeLabel = annualSaveBadgeLabel(billing, data.saveBadge);
+
   return (
     <section
       id="plans"
@@ -235,16 +238,9 @@ export function HostingPlansCream({
               {data.annualToggleLabel || "Annually"}
             </button>
           </div>
-          {data.saveBadge ? (
-            <span
-              className={cn(
-                "inline-flex min-h-11 items-center rounded-full px-4 py-2 text-[13px] font-extrabold transition-opacity duration-200",
-                billing === "annually"
-                  ? "bg-emerald-100 text-emerald-800 ring-1 ring-emerald-200/80"
-                  : "bg-slate-100 text-slate-500 opacity-70",
-              )}
-            >
-              {data.saveBadge}
+          {saveBadgeLabel ? (
+            <span className="inline-flex min-h-11 items-center rounded-full bg-emerald-100 px-4 py-2 text-[13px] font-extrabold text-emerald-800 ring-1 ring-emerald-200/80">
+              {saveBadgeLabel}
             </span>
           ) : null}
         </motion.div>

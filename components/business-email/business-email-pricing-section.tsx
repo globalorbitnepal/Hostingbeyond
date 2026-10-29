@@ -190,16 +190,11 @@ export function BusinessEmailPricingSection({
                 </button>
               ))}
             </div>
-            <span
-              className={cn(
-                "inline-flex min-h-9 items-center rounded-full px-4 py-1.5 text-[12px] font-extrabold sm:text-[13px]",
-                showSave
-                  ? "bg-emerald-500/15 text-emerald-100 ring-1 ring-emerald-400/35"
-                  : "text-white/45",
-              )}
-            >
-              {showSave ? saveBadge : "Flexible monthly billing"}
-            </span>
+            {showSave ? (
+              <span className="inline-flex min-h-9 items-center rounded-full bg-emerald-500/15 px-4 py-1.5 text-[12px] font-extrabold text-emerald-100 ring-1 ring-emerald-400/35 sm:text-[13px]">
+                {saveBadge}
+              </span>
+            ) : null}
           </div>
         </div>
 

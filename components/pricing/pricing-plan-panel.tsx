@@ -9,6 +9,7 @@ import type {
   CmsHostingPlan,
   CmsHostingPlansContent,
 } from "@/lib/orbit/defaults";
+import { annualSaveBadgeLabel } from "@/lib/hosting/annual-save-badge";
 import { cn } from "@/lib/utils";
 
 type Billing = "annually" | "monthly";
@@ -47,7 +48,10 @@ export function PricingPlanPanel({
 
   const monthlyLabel = hostingContent?.monthlyToggleLabel || "Monthly";
   const annualLabel = hostingContent?.annualToggleLabel || "Annually";
-  const badge = saveBadge ?? hostingContent?.saveBadge;
+  const saveBadgeLabel = annualSaveBadgeLabel(
+    billing,
+    saveBadge ?? hostingContent?.saveBadge,
+  );
 
   if (!cmsPlans.length) return null;
 
@@ -86,9 +90,9 @@ export function PricingPlanPanel({
               {annualLabel}
             </button>
           </div>
-          {badge ? (
+          {saveBadgeLabel ? (
             <span className="rounded-full bg-emerald-100 px-3 py-1.5 text-[12px] font-extrabold text-emerald-800">
-              {badge}
+              {saveBadgeLabel}
             </span>
           ) : null}
         </div>

@@ -92,7 +92,7 @@ export function PricingEcommercePanel({
               )}
             >
               <div className="flex flex-wrap items-center gap-2">
-                {plan.discountBadge ? (
+                {plan.discountBadge && isAnnual ? (
                   <span className="rounded-full bg-[#673de6] px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-white uppercase">
                     {plan.discountBadge}
                   </span>
@@ -127,7 +127,7 @@ export function PricingEcommercePanel({
               </p>
               <p className="mt-1 text-[12px] font-semibold text-[#475569]">
                 {billed}
-                {save ? (
+                {save && isAnnual ? (
                   <span className="ml-2 font-extrabold text-emerald-600">
                     {save}
                   </span>

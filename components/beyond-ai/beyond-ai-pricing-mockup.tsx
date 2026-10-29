@@ -142,9 +142,11 @@ export function BeyondAiPricingMockup({
               Yearly
             </button>
           </div>
-          <span className="rounded-full bg-[#fce7f3] px-3 py-1.5 text-[12px] font-extrabold text-[#db2777]">
-            {content.saveBadge}
-          </span>
+          {yearly && content.saveBadge?.trim() ? (
+            <span className="rounded-full bg-[#fce7f3] px-3 py-1.5 text-[12px] font-extrabold text-[#db2777]">
+              {content.saveBadge.trim()}
+            </span>
+          ) : null}
         </div>
 
         <div className="mt-10 grid auto-rows-fr grid-cols-1 items-stretch gap-6 sm:grid-cols-2 xl:grid-cols-4">

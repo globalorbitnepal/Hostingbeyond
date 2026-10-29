@@ -29,6 +29,7 @@ import {
 } from "@/components/hosting/annual-plan-perks";
 import { CatalogPrice } from "@/components/i18n/localized-text";
 import { useLocale } from "@/components/locale/locale-provider";
+import { annualSaveBadgeLabel } from "@/lib/hosting/annual-save-badge";
 import { cn } from "@/lib/utils";
 import type {
   CmsHostingGuarantee,
@@ -181,7 +182,7 @@ export function PlanCard({
           ) : billed ? (
             <span className="text-[#475569]">{billed}</span>
           ) : null}
-          {save ? (
+          {save && isAnnual ? (
             <span className="font-extrabold text-[#16a34a]">{save}</span>
           ) : null}
         </div>
@@ -239,6 +240,7 @@ export function HostingPlansSection({
   const plans = [...(data.plans ?? [])]
     .filter((p) => p.visible !== false)
     .sort((a, b) => a.order - b.order);
+  const saveBadgeLabel = annualSaveBadgeLabel(billing, data.saveBadge);
 
   const chips = [
     data.supportLabel
@@ -360,9 +362,9 @@ export function HostingPlansSection({
                 {data.annualToggleLabel || "Annually"}
               </button>
             </div>
-            {data.saveBadge ? (
+            {saveBadgeLabel ? (
               <span className="rounded-full bg-emerald-400 px-3 py-1.5 text-[12px] font-extrabold text-emerald-950">
-                {data.saveBadge}
+                {saveBadgeLabel}
               </span>
             ) : null}
           </div>
