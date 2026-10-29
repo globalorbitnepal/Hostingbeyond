@@ -10,7 +10,7 @@ import {
  *
  * This is a *request*, not a promise: a currency is only shown when
  * `config/pricing.ts` already holds a configured price for it. Codes absent from
- * that book (e.g. RUB, CNY today) deliberately fall back instead of receiving an
+ * that book (a currency without a rate) deliberately fall back instead of receiving an
  * invented exchange rate.
  *
  * These are storefront display mappings only — they say nothing about which

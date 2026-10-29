@@ -31,14 +31,14 @@ describe("display-currencies", () => {
     }
   });
 
-  it("does NOT invent RUB or CNY without a configured rate", () => {
-    assert.equal(isConfiguredDisplayCurrency("RUB"), false);
-    assert.equal(isConfiguredDisplayCurrency("CNY"), false);
+  it("offers CNY and RUB once those rates are in the book", () => {
+    assert.equal(isConfiguredDisplayCurrency("RUB"), true);
+    assert.equal(isConfiguredDisplayCurrency("CNY"), true);
   });
 
   it("falls back unknown or unconfigured codes to USD", () => {
     assert.equal(normalizePublicDisplayCurrency("EUR"), "EUR");
-    assert.equal(normalizePublicDisplayCurrency("RUB"), "USD");
+    assert.equal(normalizePublicDisplayCurrency("RUB"), "RUB");
     assert.equal(normalizePublicDisplayCurrency("XYZ"), "USD");
     assert.equal(normalizePublicDisplayCurrency("inr"), "INR");
     assert.equal(normalizePublicDisplayCurrency(""), "USD");

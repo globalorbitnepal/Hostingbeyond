@@ -48,9 +48,16 @@ export async function translateTextsWithGoogleGtx(
 ): Promise<GoogleCloudTranslateResult> {
   if (texts.length === 0) return { ok: true, translations: [] };
   try {
-    const translations: string[] = [];
-    for (const text of texts) {
-      translations.push(await translateOne(text, targetLanguage, fetchFn));
+    const translations = new Array<string>(texts.length);
+    const concurrency = 6;
+    for (let start = 0; start < texts.length; start += concurrency) {
+      const slice = texts.slice(start, start + concurrency);
+      const part = await Promise.all(
+        slice.map((text) => translateOne(text, targetLanguage, fetchFn)),
+      );
+      for (let i = 0; i < part.length; i += 1) {
+        translations[start + i] = part[i]!;
+      }
     }
     if (translations.length !== texts.length) {
       return { ok: false, code: "translation_length_mismatch" };

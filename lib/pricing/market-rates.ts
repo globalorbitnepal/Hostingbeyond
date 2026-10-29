@@ -9,6 +9,7 @@ export const COMMERCIAL_FX_PINS: Partial<Record<CurrencyCode, number>> = {
 type ErApiLatest = {
   result?: string;
   conversion_rates?: Record<string, number>;
+  rates?: Record<string, number>;
 };
 
 /** Fetch mid-market USD base rates and map to our supported currency book. */
@@ -22,14 +23,15 @@ export async function fetchMarketDisplayRates(): Promise<
     throw new Error(`Market FX request failed (${res.status})`);
   }
   const json = (await res.json()) as ErApiLatest;
-  if (json.result !== "success" || !json.conversion_rates) {
+  const table = json.rates ?? json.conversion_rates;
+  if (json.result !== "success" || !table) {
     throw new Error("Market FX response invalid");
   }
 
   const out: Partial<Record<CurrencyCode, number>> = { USD: 1 };
   for (const code of Object.keys(usdToLocalRate) as CurrencyCode[]) {
     if (code === "USD") continue;
-    const rate = json.conversion_rates[code];
+    const rate = table[code];
     if (rate != null && Number.isFinite(rate) && rate > 0) {
       out[code] = rate;
     } else {

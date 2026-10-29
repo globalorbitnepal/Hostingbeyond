@@ -73,6 +73,7 @@ describe("storefront country registry", () => {
     for (const country of STOREFRONT_COUNTRIES) {
       const resolved = resolveCountryDisplayCurrency(country.code);
       assert.ok(resolved.currency, country.code);
+      assert.equal(resolved.exact, true, country.code);
     }
   });
 });

@@ -23,6 +23,8 @@ describe("country → display currency", () => {
       ["JP", "JPY"],
       ["BD", "BDT"],
       ["BR", "BRL"],
+      ["CN", "CNY"],
+      ["RU", "RUB"],
     ];
     for (const [country, currency] of cases) {
       assert.equal(
@@ -46,12 +48,15 @@ describe("country → display currency", () => {
     }
   });
 
-  it("falls back honestly for RUB/CNY instead of inventing a rate", () => {
-    for (const country of ["RU", "CN"]) {
+  it("resolves CNY and RUB when those rates are in the price book", () => {
+    for (const [country, currency] of [
+      ["CN", "CNY"],
+      ["RU", "RUB"],
+    ] as const) {
       const resolved = resolveCountryDisplayCurrency(country);
-      assert.equal(resolved.exact, false);
-      assert.equal(resolved.currency, "USD");
-      assert.ok(!isConfiguredDisplayCurrency(resolved.requestedCurrency));
+      assert.equal(resolved.exact, true, country);
+      assert.equal(resolved.currency, currency);
+      assert.ok(isConfiguredDisplayCurrency(resolved.currency));
     }
   });
 
@@ -76,10 +81,9 @@ describe("country → display currency", () => {
     assert.match(exact, /NPR/);
     assert.match(exact, /USD/);
 
-    const fallback = currencyNoticeFor(resolveCountryDisplayCurrency("RU"));
-    assert.match(fallback, /RUB/);
-    assert.match(fallback, /not|No/);
-    assert.match(fallback, /USD/);
+    const ru = currencyNoticeFor(resolveCountryDisplayCurrency("RU"));
+    assert.match(ru, /RUB/);
+    assert.match(ru, /Checkout is charged in USD/);
   });
 
   it("mentions a manual override instead of claiming the country default", () => {

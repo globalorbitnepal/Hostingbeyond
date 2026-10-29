@@ -32,10 +32,12 @@ describe("locale preference parsing", () => {
     assert.equal(inr.currency, "INR");
   });
 
-  it("falls back to USD for a country without a configured price list", () => {
+  it("uses CNY for China and RUB for Russia", () => {
+    const cn = normalizePreferences({ country: "CN", localeMarketId: "CN-zh" });
+    assert.equal(cn.currency, "CNY");
     const ru = normalizePreferences({ country: "RU", localeMarketId: "RU-ru" });
     assert.equal(ru.country, "RU");
-    assert.equal(ru.currency, "USD");
+    assert.equal(ru.currency, "RUB");
   });
 
   it("keeps an explicit manual currency choice when locked", () => {
@@ -107,7 +109,7 @@ describe("locale preference parsing", () => {
       currency: "RUB" as never,
       currencyLocked: true,
     });
-    assert.equal(lockedRub.currency, "USD");
+    assert.equal(lockedRub.currency, "RUB");
   });
 
   it("returns defaults for malformed cookies", () => {

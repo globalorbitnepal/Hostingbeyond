@@ -35,7 +35,9 @@ export type CurrencyCode =
   | "PKR"
   | "BDT"
   | "LKR"
-  | "VND";
+  | "VND"
+  | "CNY"
+  | "RUB";
 
 export type ProductPriceId =
   "domain_yearly" | "email_monthly" | "hosting_monthly";
@@ -86,6 +88,8 @@ export const usdToLocalRate: Record<CurrencyCode, number> = {
   BDT: 123.208033,
   LKR: 328.294208,
   VND: 26056.967123,
+  CNY: 6.680538,
+  RUB: 80.531694,
 };
 
 const ZERO_DECIMAL: ReadonlySet<CurrencyCode> = new Set([

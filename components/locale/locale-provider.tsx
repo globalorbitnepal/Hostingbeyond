@@ -180,6 +180,7 @@ export function LocaleProvider({
          * stay consistent with the selected market.
          */
         currency: resolveCountryDisplayCurrency(country.code).currency,
+        currencyLocked: false,
         language:
           options?.suggestLanguage === true && !preferences.languageLocked
             ? country.defaultLanguage
@@ -220,6 +221,7 @@ export function LocaleProvider({
         country: country.code,
         currency: resolveCountryDisplayCurrency(country.code).currency,
         localeMarketId: market.id,
+        currencyLocked: false,
         googleTargetLang: preferences.googleTargetLang,
         language: preferences.language,
         languageLocked: preferences.languageLocked,
