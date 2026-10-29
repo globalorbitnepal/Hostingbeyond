@@ -43,6 +43,24 @@ type Props = {
 
 const MENU_WIDTH = { compact: 328, default: 380 } as const;
 
+function visibleTrigger(preferred: HTMLElement | null, instance: string) {
+  const seen = new Set<HTMLElement>();
+  const candidates: HTMLElement[] = [];
+  if (preferred) candidates.push(preferred);
+  for (const node of document.querySelectorAll<HTMLElement>(
+    `[data-hb-locale-trigger="${instance}"]`,
+  )) {
+    candidates.push(node);
+  }
+  for (const el of candidates) {
+    if (seen.has(el)) continue;
+    seen.add(el);
+    const rect = el.getBoundingClientRect();
+    if (rect.width >= 8 && rect.height >= 8) return el;
+  }
+  return preferred;
+}
+
 function computeMenuPosition(
   trigger: DOMRect,
   align: "start" | "end",
@@ -60,7 +78,7 @@ function computeMenuPosition(
       bottom: window.innerHeight - trigger.top + margin,
       width,
       maxHeight: "min(480px, 72dvh)",
-      zIndex: 300,
+      zIndex: 4000,
     };
   }
 
@@ -70,7 +88,7 @@ function computeMenuPosition(
     top: trigger.bottom + margin,
     width,
     maxHeight: "min(520px, 80dvh)",
-    zIndex: 300,
+    zIndex: 4000,
   };
 }
 
@@ -231,19 +249,15 @@ export function CountryLanguageSelector({
   }, [open, closePanel]);
 
   const menuWidth = compact ? MENU_WIDTH.compact : MENU_WIDTH.default;
+  const localeInstance = menuSide === "above" ? "footer" : "header";
 
   const updateMenuPosition = useCallback(() => {
-    const el = triggerRef.current;
+    const el = visibleTrigger(triggerRef.current, localeInstance);
     if (!el) return;
-    setMenuPosition(
-      computeMenuPosition(
-        el.getBoundingClientRect(),
-        menuAlign,
-        menuSide,
-        menuWidth,
-      ),
-    );
-  }, [menuAlign, menuSide, menuWidth]);
+    const rect = el.getBoundingClientRect();
+    if (rect.width < 8 || rect.height < 8) return;
+    setMenuPosition(computeMenuPosition(rect, menuAlign, menuSide, menuWidth));
+  }, [localeInstance, menuAlign, menuSide, menuWidth]);
 
   useLayoutEffect(() => {
     if (!open) {
@@ -341,6 +355,7 @@ export function CountryLanguageSelector({
         ref={triggerRef}
         type="button"
         onClick={togglePanel}
+        data-hb-locale-trigger={localeInstance}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={t.locale.selectLocation}
@@ -419,6 +434,7 @@ export function CountryLanguageSelector({
                     ? "border-slate-200/90 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.14)]"
                     : "border-white/[0.12] bg-[#0c1528] shadow-[0_20px_60px_rgba(0,0,0,0.65)]",
                 )}
+                translate="no"
                 style={menuPosition}
               >
                 <div

@@ -69,7 +69,10 @@ export function SiteFooter({
     .sort((a, b) => a.order - b.order);
 
   return (
-    <footer className="hb-band-cream relative isolate overflow-visible pt-5 pb-7 text-slate-700">
+    <footer
+      className="hb-band-cream notranslate relative isolate overflow-visible pt-5 pb-7 text-slate-700"
+      translate="no"
+    >
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 overflow-hidden"

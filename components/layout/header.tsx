@@ -334,7 +334,10 @@ export function SiteHeader({
   }, [open]);
 
   return (
-    <header className="relative z-50 w-full shrink-0 bg-transparent pt-2.5 pb-1 sm:pt-4">
+    <header
+      className="notranslate relative z-50 w-full shrink-0 bg-transparent pt-2.5 pb-1 sm:pt-4"
+      translate="no"
+    >
       <div className="hb-shell">
         <div className="relative">
           <div className="mx-auto flex h-[56px] w-full items-center gap-2 rounded-full border border-white/90 bg-white/[0.92] px-3 shadow-[0_12px_40px_rgba(15,23,42,0.14),inset_0_1px_0_rgba(255,255,255,1)] backdrop-blur-md backdrop-saturate-150 sm:h-[70px] sm:gap-3 sm:px-5 sm:backdrop-blur-2xl lg:px-6">
