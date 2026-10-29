@@ -772,11 +772,18 @@
     position: static !important;
   }
 
-  .goog-te-gadget,
-  #google_translate_element {
+  .goog-te-gadget {
     height: 0 !important;
     overflow: hidden !important;
     visibility: hidden !important;
+  }
+
+  #google_translate_element {
+    position: absolute !important;
+    left: -9999px !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: hidden !important;
   }
 
   @keyframes hb-hero-gradient-shift {

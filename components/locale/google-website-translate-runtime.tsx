@@ -45,7 +45,7 @@ export function GoogleWebsiteTranslateRuntime() {
     let tries = 0;
     const timer = window.setInterval(() => {
       tries += 1;
-      if (selectGoogleTranslateCombo(target) || tries > 48) {
+      if (selectGoogleTranslateCombo(target) || tries > 24) {
         window.clearInterval(timer);
       }
     }, 250);

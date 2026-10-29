@@ -246,26 +246,31 @@ export function LocaleProvider({
   const setWebsiteLanguage = useCallback(
     (code: WebsiteLanguageCode) => {
       const resolved = resolveWebsiteLanguageCode(code, enabledLanguageCodes);
-      commit(
-        {
-          ...preferences,
-          googleTargetLang: resolved,
-          languageLocked: true,
-        },
-        { refresh: false },
-      );
+      const normalized = normalizePreferences({
+        ...preferences,
+        googleTargetLang: resolved,
+        languageLocked: true,
+      });
+      writePrefsCookie(normalized);
+      if (typeof document !== "undefined") {
+        document.documentElement.lang = isGoogleTranslationActive(resolved)
+          ? resolved
+          : normalized.language;
+        document.documentElement.dir = "ltr";
+        if (isGoogleTranslationActive(resolved)) {
+          writeGoogtransCookie(resolved);
+        } else {
+          clearGoogtransCookie();
+        }
+      }
       if (typeof window === "undefined") return;
       const { pathname: bare } = stripLocalePrefixFromPath(
         window.location.pathname,
       );
       const nextPath = localizePublicPath(bare, resolved);
-      const search = window.location.search;
-      const current = `${window.location.pathname}${search}`;
-      const target = `${nextPath}${search}`;
-      if (current !== target) router.push(target);
-      else router.refresh();
+      window.location.assign(`${nextPath}${window.location.search}`);
     },
-    [commit, enabledLanguageCodes, preferences, router],
+    [enabledLanguageCodes, preferences],
   );
 
   const applySelection = useCallback(

@@ -128,13 +128,14 @@ export function bootGoogleWebsiteTranslator() {
     const TranslateElement = window.google?.translate?.TranslateElement;
     const host = document.getElementById(GOOGLE_TRANSLATE_ELEMENT_ID);
     if (!TranslateElement || !host) return;
-    host.replaceChildren();
+    if (host.childElementCount > 0) return;
     new TranslateElement(
       googleTranslateElementOptions(),
       GOOGLE_TRANSLATE_ELEMENT_ID,
     );
   };
-  if (document.getElementById(GOOGLE_TRANSLATE_SCRIPT_ID)) {
+  const existing = document.getElementById(GOOGLE_TRANSLATE_SCRIPT_ID);
+  if (existing) {
     window.googleTranslateElementInit();
     return;
   }
