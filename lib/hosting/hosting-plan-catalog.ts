@@ -37,7 +37,44 @@ export function attachControlledCatalogUsd(
   return { ...plan, monthlyUsd, yearlyUsd };
 }
 
-/** Keep DB/CMS numeric amounts, or reuse fallback numbers when price copy is unchanged. */
+/** Parse operator-edited CMS price strings into ledger USD (supports "$4.99" and "19.99$"). */
+export function catalogUsdFromCmsPriceCopy(
+  stored: Partial<CmsHostingPlan>,
+): Partial<CmsHostingCatalogUsd> {
+  const monthlyUsd = parseUsdPrice(stored.priceMonthly ?? "");
+  const yearlyFromBilled = parseUsdPrice(stored.billedAnnually ?? "");
+  const annualPerMonth = parseUsdPrice(stored.priceAnnually ?? "");
+  let yearlyUsd = yearlyFromBilled;
+  if (!(yearlyUsd > 0) && annualPerMonth > 0) {
+    yearlyUsd = Math.round(annualPerMonth * 12 * 100) / 100;
+  }
+  if (monthlyUsd > 0 && yearlyUsd > 0) {
+    return { monthlyUsd, yearlyUsd };
+  }
+  if (monthlyUsd > 0) {
+    return { monthlyUsd, yearlyUsd: monthlyUsd * 12 };
+  }
+  if (yearlyUsd > 0) {
+    return { monthlyUsd: yearlyUsd / 12, yearlyUsd };
+  }
+  return {};
+}
+
+function cmsPublicPriceCopyMatches(
+  stored: Partial<CmsHostingPlan> | undefined,
+  fallback: CmsHostingPlan,
+): boolean {
+  const priceAnnually = stored?.priceAnnually ?? fallback.priceAnnually;
+  const priceMonthly = stored?.priceMonthly ?? fallback.priceMonthly;
+  const billedAnnually = stored?.billedAnnually ?? fallback.billedAnnually;
+  return (
+    priceAnnually === fallback.priceAnnually &&
+    priceMonthly === fallback.priceMonthly &&
+    billedAnnually === fallback.billedAnnually
+  );
+}
+
+/** Keep DB/CMS numeric amounts, or derive USD from edited Orbit price copy. */
 export function catalogUsdAfterCmsMerge(
   stored: Partial<CmsHostingPlan> | undefined,
   fallback: CmsHostingPlan,
@@ -48,15 +85,10 @@ export function catalogUsdAfterCmsMerge(
   });
   if (explicit) return explicit;
 
-  const priceMonthly = stored?.priceMonthly ?? fallback.priceMonthly;
-  const billedAnnually = stored?.billedAnnually ?? fallback.billedAnnually;
-  if (
-    priceMonthly === fallback.priceMonthly &&
-    billedAnnually === fallback.billedAnnually
-  ) {
+  if (cmsPublicPriceCopyMatches(stored, fallback)) {
     return resolveCmsHostingCatalogUsd(fallback) ?? {};
   }
-  return {};
+  return catalogUsdFromCmsPriceCopy(stored ?? {});
 }
 
 export function catalogUsdFromExplicit(

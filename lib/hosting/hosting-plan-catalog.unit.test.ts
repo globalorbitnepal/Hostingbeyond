@@ -58,13 +58,22 @@ describe("hosting plan catalog USD", () => {
     assert.deepEqual(merged, { monthlyUsd: 7.99, yearlyUsd: 28.8 });
   });
 
-  it("drops fallback numbers when CMS price copy changed", () => {
+  it("derives catalog USD when only annual per-month copy changed in Orbit", () => {
+    const fallback = attachControlledCatalogUsd(plan());
+    const merged = catalogUsdAfterCmsMerge(
+      { priceAnnually: "$19.99", priceMonthly: "$7.99" },
+      fallback,
+    );
+    assert.deepEqual(merged, { monthlyUsd: 7.99, yearlyUsd: 239.88 });
+  });
+
+  it("derives catalog USD when monthly copy changed", () => {
     const fallback = attachControlledCatalogUsd(plan());
     const merged = catalogUsdAfterCmsMerge(
       { priceMonthly: "$9.99", billedAnnually: "Billed $28.80 annually" },
       fallback,
     );
-    assert.deepEqual(merged, {});
+    assert.deepEqual(merged, { monthlyUsd: 9.99, yearlyUsd: 28.8 });
   });
 
   it("prefers explicit stored numeric amounts", () => {
