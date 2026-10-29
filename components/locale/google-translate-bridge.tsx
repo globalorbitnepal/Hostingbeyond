@@ -25,11 +25,17 @@ export function GoogleTranslateBridge() {
   const { preferences } = useLocale();
   const pathname = usePathname();
   const [translateReady, setTranslateReady] = useState(false);
+  const [pageReady, setPageReady] = useState(false);
   const target = preferences.googleTargetLang ?? GOOGLE_PAGE_LANGUAGE;
   const disabled =
     PUBLIC_ENGLISH_ONLY ||
     pathname.startsWith("/orbit") ||
     pathname.startsWith("/api/orbit");
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setPageReady(true), 400);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (disabled) {
@@ -62,9 +68,9 @@ export function GoogleTranslateBridge() {
     return () => timers.forEach((id) => window.clearTimeout(id));
   }, [target, pathname, translateReady, disabled]);
 
-  /** Load the widget only when a non-English market is selected.
-   *  Injecting it on English breaks React portals (dropdown / footer). */
-  if (disabled || !isGoogleTranslationActive(target)) {
+  /** Load only after React has hydrated and a non-English market is selected.
+   *  Injecting the widget too early rewrites the DOM and crashes Next.js. */
+  if (disabled || !pageReady || !isGoogleTranslationActive(target)) {
     return null;
   }
 
