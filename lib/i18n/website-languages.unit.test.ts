@@ -5,6 +5,7 @@ import {
   DEFAULT_WEBSITE_LANGUAGE_CODE,
   WEBSITE_LANGUAGES,
   googleTranslateIncludedLanguages,
+  isStorefrontWebsiteLanguage,
   isTranslationTargetAllowed,
   normalizeEnabledLanguageCodes,
   resolveWebsiteLanguageCode,
@@ -34,6 +35,13 @@ describe("website language registry", () => {
     ]);
     assert.equal(WEBSITE_LANGUAGES[0]?.isDefault, true);
     assert.equal(DEFAULT_WEBSITE_LANGUAGE_CODE, "en");
+  });
+
+  it("keeps storefront language flags inside the 14-country list", () => {
+    assert.equal(isStorefrontWebsiteLanguage({ flagCountryCode: "US" }), true);
+    assert.equal(isStorefrontWebsiteLanguage({ flagCountryCode: "IN" }), true);
+    assert.equal(isStorefrontWebsiteLanguage({ flagCountryCode: "KR" }), false);
+    assert.equal(isStorefrontWebsiteLanguage({ flagCountryCode: "ID" }), false);
   });
 
   it("maps each language to a display flag (English defaults to US)", () => {

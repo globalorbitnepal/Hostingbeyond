@@ -26,6 +26,7 @@ import {
 } from "@/lib/i18n/hostinger-locale-markets";
 import {
   WEBSITE_LANGUAGES,
+  isStorefrontWebsiteLanguage,
   websiteLanguageByCode,
   websiteLanguageFlagCountryCode,
   type WebsiteLanguageCode,
@@ -237,6 +238,7 @@ export function CountryLanguageSelector({
       market,
     }));
     const langs: MenuRow[] = WEBSITE_LANGUAGES.filter((row) => {
+      if (!isStorefrontWebsiteLanguage(row)) return false;
       if (!enabled.has(row.code)) return false;
       if (!q) return true;
       return (
@@ -377,8 +379,8 @@ export function CountryLanguageSelector({
       const idx = indexOfSelectedCountryRow(preferences.country, markets);
       setActiveIndex(idx >= 0 ? idx : 0);
     } else {
-      const enabledLangs = WEBSITE_LANGUAGES.filter((row) =>
-        enabled.has(row.code),
+      const enabledLangs = WEBSITE_LANGUAGES.filter(
+        (row) => isStorefrontWebsiteLanguage(row) && enabled.has(row.code),
       );
       const idx = enabledLangs.findIndex(
         (row) => row.code === preferences.googleTargetLang,

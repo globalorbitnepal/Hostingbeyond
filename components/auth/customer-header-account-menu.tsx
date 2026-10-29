@@ -11,13 +11,7 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
-import {
-  ChevronDown,
-  KeyRound,
-  LayoutDashboard,
-  LogOut,
-  User,
-} from "lucide-react";
+import { KeyRound, LayoutDashboard, LogOut, User } from "lucide-react";
 
 import { routes } from "@/config/routes";
 import { cn } from "@/lib/utils";
@@ -269,7 +263,7 @@ export function CustomerHeaderAccountMenu({
     return (
       <span
         className={cn(
-          variant === "mobile" ? "block h-11" : "inline-flex h-[38px] w-[88px]",
+          variant === "mobile" ? "block h-11" : "inline-flex size-10",
           "animate-pulse rounded-full bg-slate-100",
           className,
         )}
@@ -338,26 +332,12 @@ export function CustomerHeaderAccountMenu({
             setOpen(true);
           }
         }}
-        className="inline-flex max-w-[min(100%,288px)] items-center gap-2.5 rounded-full border border-slate-200/90 bg-white py-1 pr-2 pl-1 text-left shadow-[0_4px_14px_rgba(15,23,42,0.06)] transition hover:border-slate-300 hover:bg-slate-50"
+        className={cn(
+          "inline-flex size-10 items-center justify-center overflow-hidden rounded-full border border-slate-200/90 bg-gradient-to-br from-[#673de6] to-[#2563eb] shadow-[0_4px_14px_rgba(15,23,42,0.06)] transition hover:border-slate-300 hover:ring-2 hover:ring-[#673de6]/25",
+          open && "ring-2 ring-[#673de6]/30",
+        )}
       >
-        <span className="inline-flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#673de6] to-[#2563eb] ring-2 ring-white">
-          <AccountAvatar user={user} size={36} />
-        </span>
-        <span className="min-w-0 flex-1 leading-tight">
-          <span className="block truncate text-[13px] font-bold text-slate-900">
-            {displayName(user)}
-          </span>
-          <span className="block truncate text-[11px] font-medium text-slate-500">
-            {user.email}
-          </span>
-        </span>
-        <ChevronDown
-          className={cn(
-            "size-4 shrink-0 text-slate-500 transition-transform",
-            open && "rotate-180",
-          )}
-          aria-hidden
-        />
+        <AccountAvatar user={user} size={40} />
       </button>
 
       {open && mounted && typeof document !== "undefined"

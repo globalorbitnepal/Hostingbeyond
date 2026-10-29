@@ -1,7 +1,10 @@
+import { isStorefrontCountryCode } from "@/lib/i18n/storefront-countries";
+
 /**
  * Single storefront language registry. Country/currency markets are separate.
  * Codes match Cloud Translation v3 (ko, id, zh-CN).
  */
+
 export const WEBSITE_LANGUAGE_CODES = [
   "en",
   "bn",
@@ -163,6 +166,13 @@ export function websiteLanguageFlagCountryCode(
   code: string | null | undefined,
 ): string {
   return websiteLanguageByCode(code)?.flagCountryCode ?? "US";
+}
+
+/** Languages whose flag is one of the 14 storefront countries (no Korea/Indonesia extras). */
+export function isStorefrontWebsiteLanguage(
+  row: Pick<WebsiteLanguage, "flagCountryCode">,
+): boolean {
+  return isStorefrontCountryCode(row.flagCountryCode);
 }
 
 export function translationTargetCodes(): WebsiteLanguageCode[] {
