@@ -131,5 +131,10 @@ describe("public locale markets", () => {
     const codes = countries.map((m) => m.countryCode);
     assert.equal(new Set(codes).size, codes.length);
     assert.equal(countries.filter((m) => m.countryCode === "CA").length, 1);
+    assert.equal(countries.length, 14);
+    assert.equal(
+      countries.some((m) => m.countryName === "Argentina"),
+      false,
+    );
   });
 });

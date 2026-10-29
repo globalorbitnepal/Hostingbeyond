@@ -2,6 +2,10 @@ import type { LanguageCode } from "@/config/geo";
 import { getCountry } from "@/config/geo";
 import { PUBLIC_ENGLISH_ONLY } from "@/lib/i18n/public-language";
 import { googleTranslateIncludedLanguages as registryTranslateLanguages } from "@/lib/i18n/website-languages";
+import {
+  STOREFRONT_COUNTRIES,
+  searchStorefrontCountries,
+} from "@/lib/i18n/storefront-countries";
 
 /** One row in the Hostinger-style “Select location & language” list. */
 export type HostingerLocaleMarket = {
@@ -21,8 +25,8 @@ export type HostingerLocaleMarket = {
 };
 
 /**
- * Curated public markets (English country names + native language labels).
- * Alphabetical like Hostinger; Canada has two language rows.
+ * Cookie/market rows. Public country membership is `STOREFRONT_COUNTRIES`.
+ * Canada still has two language rows here for legacy cookies only.
  */
 export const HOSTINGER_LOCALE_MARKETS: HostingerLocaleMarket[] = [
   mk("AU-en", "AU", "Australia", "English", "en", "EN"),
@@ -101,23 +105,30 @@ export function googleTranslateIncludedLanguages(): string {
   return registryTranslateLanguages();
 }
 
-/** One row per country for country/currency picking — language is separate. */
+/** One row per storefront country — order and membership come from STOREFRONT_COUNTRIES. */
 export function uniqueCountryMarkets(): HostingerLocaleMarket[] {
-  const seen = new Set<string>();
-  const rows: HostingerLocaleMarket[] = [];
+  const byCode = new Map<string, HostingerLocaleMarket>();
   for (const market of HOSTINGER_LOCALE_MARKETS) {
-    if (seen.has(market.countryCode)) continue;
-    seen.add(market.countryCode);
-    rows.push(market);
+    if (!byCode.has(market.countryCode)) byCode.set(market.countryCode, market);
   }
-  return rows;
+  return STOREFRONT_COUNTRIES.map((country) => {
+    const market = byCode.get(country.code);
+    if (!market) {
+      throw new Error(
+        `missing locale market for storefront country ${country.code}`,
+      );
+    }
+    return { ...market, countryName: country.name };
+  });
 }
 
 export function searchCountryMarkets(query: string): HostingerLocaleMarket[] {
-  const markets = uniqueCountryMarkets();
-  const q = query.trim().toLowerCase();
-  if (!q) return markets;
-  return markets.filter((m) => m.searchText.includes(q));
+  const allowed = new Map(
+    uniqueCountryMarkets().map((market) => [market.countryCode, market]),
+  );
+  return searchStorefrontCountries(query)
+    .map((country) => allowed.get(country.code))
+    .filter((market): market is HostingerLocaleMarket => market != null);
 }
 
 /**

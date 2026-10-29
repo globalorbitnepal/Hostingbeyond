@@ -254,7 +254,7 @@ export function CountryLanguageSelector({
       id: `country:${market.countryCode}`,
       market,
     }));
-    return [...langs, ...countries];
+    return [...countries, ...langs];
   }, [enabled, query]);
   const menuWidth = compact ? MENU_WIDTH.compact : MENU_WIDTH.default;
   const localeInstance = menuSide === "above" ? "footer" : "header";
