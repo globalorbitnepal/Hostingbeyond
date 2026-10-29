@@ -6,6 +6,7 @@ import {
   configuredSiteOrigin,
   isLoopbackHost,
   normalizeEnvSiteOrigin,
+  internalAppRewriteUrl,
   resolveRequestSiteOrigin,
 } from "@/lib/customer/site-origin";
 
@@ -40,6 +41,14 @@ describe("site origin resolution", () => {
       if (prev === undefined) delete process.env.NEXT_PUBLIC_SITE_URL;
       else process.env.NEXT_PUBLIC_SITE_URL = prev;
     }
+  });
+
+  it("builds internal rewrite targets on loopback HTTP", () => {
+    assert.equal(internalAppRewriteUrl("/", "").href, "http://127.0.0.1:3030/");
+    assert.equal(
+      internalAppRewriteUrl("/pricing", "?q=1").href,
+      "http://127.0.0.1:3030/pricing?q=1",
+    );
   });
 
   it("default public origin is not loopback", () => {

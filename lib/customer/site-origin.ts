@@ -92,6 +92,18 @@ export function resolveRequestSiteOrigin(input: RequestOriginInput): string {
   return configuredSiteOrigin();
 }
 
+/** Loopback origin for middleware rewrites (must match `next start -H 127.0.0.1 -p 3030`). */
+export const INTERNAL_APP_SERVER_ORIGIN =
+  process.env.HOSTINGBEYOND_INTERNAL_ORIGIN?.trim() || "http://127.0.0.1:3030";
+
+/** Target URL for Next.js middleware rewrite to an app route (not the public site URL). */
+export function internalAppRewriteUrl(pathname: string, search = ""): URL {
+  const path = pathname.startsWith("/") ? pathname : `/${pathname}`;
+  const target = new URL(path, `${INTERNAL_APP_SERVER_ORIGIN}/`);
+  if (search) target.search = search.startsWith("?") ? search.slice(1) : search;
+  return target;
+}
+
 export function requestSiteOrigin(request: NextRequest): string {
   return resolveRequestSiteOrigin({
     forwardedHost: request.headers.get("x-forwarded-host"),

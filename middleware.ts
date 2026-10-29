@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { sanitizeCustomerRedirectPath } from "@/lib/customer/safe-redirect";
-import { requestSiteOrigin, absoluteSiteUrl } from "@/lib/customer/site-origin";
+import {
+  requestSiteOrigin,
+  absoluteSiteUrl,
+  internalAppRewriteUrl,
+} from "@/lib/customer/site-origin";
 import { routes } from "@/config/routes";
 import {
   CUSTOMER_SESSION_COOKIE,
@@ -55,16 +59,12 @@ function mergeLocaleCookie(
     languageLocked: true,
   };
   const opts = preferencesCookieOptions();
-  response.cookies.set(
-    LOCALE_COOKIE,
-    encodeURIComponent(serializePreferences(next)),
-    {
-      path: opts.path,
-      maxAge: opts.maxAge,
-      sameSite: opts.sameSite,
-      secure: opts.secure,
-    },
-  );
+  response.cookies.set(LOCALE_COOKIE, serializePreferences(next), {
+    path: opts.path,
+    maxAge: opts.maxAge,
+    sameSite: opts.sameSite,
+    secure: opts.secure,
+  });
   return response;
 }
 
@@ -80,9 +80,9 @@ function handlePublicLocaleRouting(request: NextRequest): NextResponse | null {
   const cookieLang = resolveWebsiteLanguageCode(cookiePrefs.googleTargetLang);
 
   if (parsed.hadPrefix) {
-    const rewriteUrl = request.nextUrl.clone();
-    rewriteUrl.pathname = parsed.pathname;
-    const response = NextResponse.rewrite(rewriteUrl);
+    const response = NextResponse.rewrite(
+      internalAppRewriteUrl(parsed.pathname, request.nextUrl.search),
+    );
     return mergeLocaleCookie(request, response, parsed.language);
   }
 
