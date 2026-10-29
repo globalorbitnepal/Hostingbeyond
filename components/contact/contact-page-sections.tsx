@@ -10,9 +10,31 @@ import {
   Shield,
 } from "lucide-react";
 
-import type { CmsContactPageContent } from "@/lib/orbit/contact-page-content";
+import {
+  isOrbitEditorHint,
+  type CmsContactPageContent,
+} from "@/lib/orbit/contact-page-content";
 
 const CHANNEL_ICONS = [Headphones, Mail, Shield, Megaphone];
+
+function visibleAddress(value: string | undefined): string {
+  const line = value?.trim() ?? "";
+  if (!line || isOrbitEditorHint(line)) return "";
+  return line;
+}
+
+function officeLocationLabel(city: string, country: string): string {
+  const cityLabel = city.trim();
+  const countryLabel = country.trim();
+  if (!countryLabel || countryLabel === cityLabel) return cityLabel;
+  if (
+    /^(usa|us|united states)$/i.test(countryLabel) &&
+    /united states/i.test(cityLabel)
+  ) {
+    return cityLabel;
+  }
+  return `${cityLabel}, ${countryLabel}`;
+}
 
 export function ContactPremiumHero({
   content,
@@ -187,28 +209,25 @@ export function ContactOffices({
         {content.officesIntro}
       </p>
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {offices.map((office) => (
-          <address
-            key={office.id}
-            className="rounded-2xl border border-violet-100 bg-white p-6 not-italic shadow-sm"
-          >
-            <MapPin className="size-5 text-[#673de6]" aria-hidden />
-            <p className="mt-3 text-lg font-bold text-[#1a1035]">
-              {office.city}
-              {office.country && office.country !== office.city
-                ? `, ${office.country}`
-                : ""}
-            </p>
-            {office.addressLine1 ? (
-              <p className="mt-2 text-sm text-slate-600">
-                {office.addressLine1}
+        {offices.map((office) => {
+          const line1 = visibleAddress(office.addressLine1);
+          const line2 = visibleAddress(office.addressLine2);
+          return (
+            <address
+              key={office.id}
+              className="rounded-2xl border border-violet-100 bg-white p-6 not-italic shadow-sm"
+            >
+              <MapPin className="size-5 text-[#673de6]" aria-hidden />
+              <p className="mt-3 text-lg font-bold text-[#1a1035]">
+                {officeLocationLabel(office.city, office.country)}
               </p>
-            ) : null}
-            {office.addressLine2 ? (
-              <p className="text-sm text-slate-600">{office.addressLine2}</p>
-            ) : null}
-          </address>
-        ))}
+              {line1 ? (
+                <p className="mt-2 text-sm text-slate-600">{line1}</p>
+              ) : null}
+              {line2 ? <p className="text-sm text-slate-600">{line2}</p> : null}
+            </address>
+          );
+        })}
       </div>
     </section>
   );
@@ -249,7 +268,9 @@ export function ContactFaq({ content }: { content: CmsContactPageContent }) {
                 />
               </summary>
               <p className="mt-3 text-sm leading-relaxed text-slate-600">
-                {faq.answer}
+                {isOrbitEditorHint(faq.answer)
+                  ? "We currently help customers through the contact form and email rather than a published phone line. For urgent outages, include your account email, domain, and when the issue started so we can prioritize."
+                  : faq.answer}
               </p>
             </details>
           </li>

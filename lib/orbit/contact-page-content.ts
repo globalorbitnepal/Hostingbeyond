@@ -224,8 +224,9 @@ export function defaultContactPageContent(): CmsContactPageContent {
   };
 }
 
-function isOrbitEditorHint(value: string | undefined): boolean {
-  return Boolean(value && /in orbit/i.test(value) && /edit /i.test(value));
+export function isOrbitEditorHint(value: string | undefined): boolean {
+  if (!value) return false;
+  return /orbit/i.test(value) && /edit/i.test(value);
 }
 
 function publishableContactContent(

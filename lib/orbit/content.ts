@@ -455,7 +455,7 @@ const readContactPageContent = nextCache(
       page.sections as Partial<CmsContactPageContent>,
     );
   },
-  ["orbit-contact-page-content"],
+  ["orbit-contact-page-content-v2"],
   { tags: [CMS_TAG], revalidate: CMS_REVALIDATE },
 );
 
