@@ -1,9 +1,18 @@
 import assert from "node:assert/strict";
-import { describe, it } from "node:test";
+import { afterEach, beforeEach, describe, it } from "node:test";
 
 import { POST } from "@/app/api/auth/change-password/route";
+import { setCustomerSessionTestOverride } from "@/lib/test/customer-session-test-control";
 
 describe("POST /api/auth/change-password validation", () => {
+  beforeEach(() => {
+    setCustomerSessionTestOverride(async () => null);
+  });
+
+  afterEach(() => {
+    setCustomerSessionTestOverride(null);
+  });
+
   it("rejects unauthenticated requests", async () => {
     const res = await POST(
       new Request("http://localhost/api/auth/change-password", {
@@ -18,7 +27,7 @@ describe("POST /api/auth/change-password validation", () => {
     assert.equal(res.status, 401);
   });
 
-  it("rejects short passwords", async () => {
+  it("rejects short passwords before auth", async () => {
     const res = await POST(
       new Request("http://localhost/api/auth/change-password", {
         method: "POST",
@@ -29,6 +38,6 @@ describe("POST /api/auth/change-password validation", () => {
         }),
       }),
     );
-    assert.ok(res.status === 400 || res.status === 401);
+    assert.equal(res.status, 400);
   });
 });

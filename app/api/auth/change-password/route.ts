@@ -23,11 +23,6 @@ export async function POST(request: Request) {
     return NextResponse.json(rateLimitResponse(), { status: 429 });
   }
 
-  const sessionUser = await requireCustomerSession();
-  if (!sessionUser) {
-    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
-  }
-
   let body: unknown;
   try {
     body = await request.json();
@@ -41,6 +36,11 @@ export async function POST(request: Request) {
       { error: "Enter a new password of at least 8 characters." },
       { status: 400 },
     );
+  }
+
+  const sessionUser = await requireCustomerSession();
+  if (!sessionUser) {
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
   const user = await prisma.customerUser.findUnique({
