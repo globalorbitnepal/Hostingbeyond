@@ -29,5 +29,5 @@ export function rateLimitMigrationRequest(request: Request): boolean {
 /** Cloud Translation batches — per-process window. */
 export function rateLimitCloudTranslate(request: Request): boolean {
   const key = `gct:${clientKeyFromRequest(request)}`;
-  return consumeRateLimit(key, 20, WINDOW_MS);
+  return consumeRateLimit(key, 60, WINDOW_MS);
 }

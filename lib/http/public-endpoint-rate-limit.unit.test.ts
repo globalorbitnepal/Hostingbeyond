@@ -10,11 +10,11 @@ describe("rateLimitCloudTranslate", () => {
     });
     let allowed = 0;
     let blocked = 0;
-    for (let i = 0; i < 22; i += 1) {
+    for (let i = 0; i < 62; i += 1) {
       if (rateLimitCloudTranslate(req)) allowed += 1;
       else blocked += 1;
     }
-    assert.equal(allowed, 20);
+    assert.equal(allowed, 60);
     assert.equal(blocked, 2);
   });
 });

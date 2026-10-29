@@ -5,6 +5,7 @@ import {
   type GoogleCloudTranslateErrorCode,
 } from "@/lib/integrations/translation/google-cloud";
 import { translateTextsWithGoogleGtx } from "@/lib/integrations/translation/google-gtx";
+import { translateTextsWithMyMemory } from "@/lib/integrations/translation/google-mymemory";
 
 export type PreparedTranslation = {
   original: string;
@@ -42,12 +43,20 @@ export async function prepareCloudTranslations(
     env,
     translateFn,
   );
-  const resolved =
-    result.ok || translateFn
-      ? result
-      : result.code === "translation_not_configured"
-        ? await translateTextsWithGoogleGtx(pendingTexts, targetLanguage)
-        : result;
+  let resolved = result;
+  if (!resolved.ok && !translateFn) {
+    const memory = await translateTextsWithMyMemory(
+      pendingTexts,
+      targetLanguage,
+    );
+    if (memory.ok) resolved = memory;
+    else if (resolved.code === "translation_not_configured") {
+      resolved = await translateTextsWithGoogleGtx(
+        pendingTexts,
+        targetLanguage,
+      );
+    }
+  }
   if (!resolved.ok) return resolved;
   pendingIndexes.forEach((itemIndex, i) => {
     const translated = resolved.translations[i] ?? items[itemIndex]!.original;

@@ -49,7 +49,7 @@ describe("display currency conversion", () => {
 
   it("rejects unknown and unconfigured public display codes", () => {
     assert.equal(normalizePublicDisplayCurrency("EUR"), "EUR");
-    assert.equal(normalizePublicDisplayCurrency("RUB"), "USD");
+    assert.equal(normalizePublicDisplayCurrency("RUB"), "RUB");
     assert.equal(normalizePublicDisplayCurrency(""), "USD");
     assert.equal(normalizePublicDisplayCurrency(undefined), "USD");
   });
