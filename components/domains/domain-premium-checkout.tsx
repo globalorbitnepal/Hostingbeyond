@@ -400,6 +400,11 @@ export function DomainPremiumCheckout({
   ]);
 
   const stepCopy = STEP_COPY[step];
+  const canRemoveDomain = !submitting && results.length === 0 && !allDone;
+
+  useEffect(() => {
+    if (lines.length === 0 && step !== "domains") setStep("domains");
+  }, [lines.length, step]);
 
   return (
     <div className="hb-checkout-premium relative min-h-dvh pb-28 lg:pb-10">
@@ -788,37 +793,33 @@ export function DomainPremiumCheckout({
                 Order summary
               </h2>
               <ul className="mt-4 space-y-3 border-b border-slate-100 pb-4">
-                {step === "domains" ? (
-                  <li className="text-[13px] text-[var(--hb-co-text-muted)]">
-                    <span className="font-bold text-[var(--hb-co-text)]">
-                      {lines.length}
-                    </span>{" "}
-                    domain{lines.length === 1 ? "" : "s"} in cart — see table
-                    for line items
-                  </li>
-                ) : (
-                  lines.map((line) => (
-                    <li
-                      key={line.domain}
-                      className="flex justify-between gap-2"
-                    >
-                      <div className="min-w-0">
-                        <p
-                          className="text-[13px] font-bold break-words text-slate-800"
-                          style={{ overflowWrap: "anywhere" }}
+                {lines.map((line) => (
+                  <li key={line.domain} className="flex justify-between gap-2">
+                    <div className="min-w-0">
+                      <p
+                        className="text-[13px] font-bold break-words text-slate-800"
+                        style={{ overflowWrap: "anywhere" }}
+                      >
+                        {line.domain}
+                      </p>
+                      <p className="text-[11px] text-slate-500">
+                        Domain registration · 1 year
+                      </p>
+                      {canRemoveDomain ? (
+                        <button
+                          type="button"
+                          className="mt-1 min-h-8 text-[12px] font-bold text-slate-500 hover:text-[var(--hb-co-error)]"
+                          onClick={() => void onRemoveLine(line.domain)}
                         >
-                          {line.domain}
-                        </p>
-                        <p className="text-[11px] text-slate-500">
-                          Domain registration · 1 year
-                        </p>
-                      </div>
-                      <span className="shrink-0 text-[13px] font-bold text-slate-900">
-                        {formatCatalogUsd(line.register)}
-                      </span>
-                    </li>
-                  ))
-                )}
+                          Remove
+                        </button>
+                      ) : null}
+                    </div>
+                    <span className="shrink-0 text-[13px] font-bold text-slate-900">
+                      {formatCatalogUsd(line.register)}
+                    </span>
+                  </li>
+                ))}
                 {summaryServiceLines.map((line) => (
                   <li key={line.key} className="flex justify-between gap-2">
                     <div className="min-w-0">
