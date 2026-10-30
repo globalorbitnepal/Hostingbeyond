@@ -5,7 +5,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useDomainCart } from "@/components/domains/domain-cart-provider";
 import { DomainPremiumCheckout } from "@/components/domains/domain-premium-checkout";
-import { readPremiumCartServices } from "@/lib/checkout/premium-cart-intent";
+import {
+  hostingContinueHrefAfterDomain,
+  readPremiumCartServices,
+} from "@/lib/checkout/premium-cart-intent";
 import type { DomainCheckoutOffersPayload } from "@/lib/domains/domain-checkout-offers";
 import {
   guestCartSnapshot,
@@ -337,6 +340,18 @@ export function DomainCheckoutView({
       }
     }
     await refreshWallet();
+
+    const allRegistered =
+      outcomes.length === checkoutLines.length &&
+      outcomes.every((item) => item.state === "success");
+    if (allRegistered && succeeded[0]) {
+      const nextHref = hostingContinueHrefAfterDomain({
+        domain: succeeded[0],
+      });
+      if (nextHref) {
+        window.location.assign(nextHref);
+      }
+    }
   }
 
   useEffect(() => {

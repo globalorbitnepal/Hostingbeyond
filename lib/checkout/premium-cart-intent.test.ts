@@ -1,11 +1,14 @@
 import assert from "node:assert/strict";
 import { beforeEach, describe, it } from "node:test";
 
+import { HOSTING_CART_STORAGE_KEY } from "@/lib/hosting/cart/types";
+
 import {
   PREMIUM_CART_SERVICES_KEY,
   readPremiumCartServices,
   writePremiumCartServices,
   clearPremiumCartServices,
+  hostingContinueHrefAfterDomain,
 } from "./premium-cart-intent";
 
 function installSessionStorage() {
@@ -61,5 +64,45 @@ describe("premium-cart-intent", () => {
   it("returns empty array for invalid JSON", () => {
     sessionStorage.setItem(PREMIUM_CART_SERVICES_KEY, "not-json");
     assert.deepEqual(readPremiumCartServices(), []);
+  });
+
+  it("builds hosting checkout continue URL and prefills cart storage", () => {
+    writePremiumCartServices([
+      {
+        kind: "hosting",
+        productSlug: "web-hosting",
+        planKey: "essential",
+        billing: "monthly",
+      },
+      { kind: "business-email", planId: "starter", term: "monthly" },
+    ]);
+    const href = hostingContinueHrefAfterDomain({
+      domain: "xtendreviews.com",
+    });
+    assert.equal(
+      href,
+      "/checkout/hosting?product=web-hosting&plan=essential&billing=monthly&step=review",
+    );
+    const stored = JSON.parse(
+      sessionStorage.getItem(HOSTING_CART_STORAGE_KEY) ?? "{}",
+    ) as {
+      domainName?: string;
+      domainChoice?: string;
+      addons?: Array<{ addonSlug: string; optionId: string }>;
+    };
+    assert.equal(stored.domainName, "xtendreviews.com");
+    assert.equal(stored.domainChoice, "existing");
+    assert.equal(stored.addons?.[0]?.addonSlug, "business-email");
+    assert.equal(stored.addons?.[0]?.optionId, "starter");
+  });
+
+  it("returns null when no hosting add-on is selected", () => {
+    writePremiumCartServices([
+      { kind: "business-email", planId: "starter", term: "monthly" },
+    ]);
+    assert.equal(
+      hostingContinueHrefAfterDomain({ domain: "xtendreviews.com" }),
+      null,
+    );
   });
 });

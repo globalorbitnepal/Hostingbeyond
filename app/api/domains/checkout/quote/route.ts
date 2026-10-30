@@ -101,6 +101,6 @@ export async function POST(request: Request) {
     walletChargeToday,
     serviceErrors: quoted.errors,
     paymentNote:
-      "Today's wallet charge covers domain registration and Domain Protection if you add it. Hosting and email are billed on their own checkout after your domains are registered. WHOIS privacy is included free.",
+      "The order total on this page matches the pay button. Domain registration (and Domain Protection, if added) is charged from your wallet now. Hosting and email continue on the next checkout with your new domain. WHOIS privacy is included free.",
   });
 }

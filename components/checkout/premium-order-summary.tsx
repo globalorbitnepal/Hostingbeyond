@@ -100,13 +100,13 @@ export function PremiumOrderSummary({
           </div>
         )}
         <div className="flex justify-between pt-2 text-[17px] font-extrabold text-[var(--hb-co-text)]">
-          <span>Estimated total</span>
+          <span>Total</span>
           <span>{fmt(total)}</span>
         </div>
       </div>
       <p className="mt-3 text-[11px] leading-snug text-[var(--hb-co-text-muted)]">
-        Domain registration is charged from your HostingBeyond wallet today (
-        {currency}). Add-on plans follow their own checkout when applicable.{" "}
+        This total is shown on the checkout button. Domains are charged from
+        your wallet ({currency}); hosting and email continue immediately after.{" "}
         {t.common.billedInUsd}
       </p>
     </aside>

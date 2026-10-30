@@ -736,15 +736,15 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
               {loading ? (
                 <Loader2 className="size-5 animate-spin" />
               ) : step === "configure" ? (
-                "Continue"
+                `Continue · ${formatQuoteAmount(quote.total)}`
               ) : props.isLoggedIn ? (
                 props.hostingCheckoutPaymentAvailable ? (
-                  "Pay securely"
+                  `Pay securely · ${formatQuoteAmount(quote.total)}`
                 ) : (
                   "Payment unavailable"
                 )
               ) : (
-                "Continue to sign up"
+                `Continue to sign up · ${formatQuoteAmount(quote.total)}`
               )}
             </button>
             <p className="mt-4 text-center text-[12px] text-slate-500">
@@ -764,7 +764,9 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
           onClick={() => void handleContinue()}
           className={`flex h-12 w-full items-center justify-center rounded-xl text-[15px] font-bold text-white shadow-[0_10px_24px_-14px_rgba(103,61,230,0.5)] disabled:opacity-60 ${ctaGradient}`}
         >
-          {step === "configure" ? "Continue" : "Next step"}
+          {step === "configure"
+            ? `Continue · ${formatQuoteAmount(quote.total)}`
+            : `Pay securely · ${formatQuoteAmount(quote.total)}`}
         </button>
       </div>
     </div>

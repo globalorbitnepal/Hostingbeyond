@@ -207,7 +207,10 @@ export function DomainTransferCheckoutView({
                 {submitting ? (
                   <Loader2 className="size-4 animate-spin" />
                 ) : (
-                  "Confirm and start transfer"
+                  <>
+                    Confirm and start transfer ·{" "}
+                    <CatalogPrice usd={transferPrice} />
+                  </>
                 )}
               </button>
             </>

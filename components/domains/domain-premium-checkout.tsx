@@ -218,6 +218,9 @@ export function DomainPremiumCheckout({
   const servicesTotal = quote?.servicesSubtotal ?? 0;
   const displayTotal = quote?.total ?? domainsTotal + servicesTotal;
   const walletDue = quote?.walletChargeToday ?? domainsTotal;
+  const walletShort =
+    !allDone &&
+    ((isAuthenticated && walletBalance + 1e-9 < walletDue) || insufficient);
 
   function toggleOffer(offer: DomainCheckoutServiceOffer) {
     const key = offerKey(offer);
@@ -305,12 +308,17 @@ export function DomainPremiumCheckout({
           disabled: lines.length === 0,
         };
       }
+      const itemLabel =
+        servicesTotal > 0
+          ? "Complete order"
+          : `Register ${lines.length === 1 ? "domain" : `${lines.length} domains`}`;
       return {
-        label: `Register ${lines.length === 1 ? "domain" : `${lines.length} domains`} · ${walletCurrency} ${walletDue.toFixed(2)}`,
+        label: `${itemLabel} · ${formatCatalogUsd(displayTotal)}`,
         action: () => void onCompleteCheckout(),
         disabled:
           submitting ||
-          insufficient ||
+          quoteLoading ||
+          walletShort ||
           lines.length === 0 ||
           !priceConfirmed ||
           allDone,
@@ -334,10 +342,12 @@ export function DomainPremiumCheckout({
   }, [
     step,
     lines.length,
-    walletCurrency,
-    walletDue,
+    displayTotal,
+    servicesTotal,
+    formatCatalogUsd,
     submitting,
-    insufficient,
+    quoteLoading,
+    walletShort,
     priceConfirmed,
     allDone,
     onCompleteCheckout,
@@ -604,10 +614,14 @@ export function DomainPremiumCheckout({
                     googleOAuth={googleOAuth}
                   />
                 ) : null}
-                {insufficient ? (
+                {walletShort ? (
                   <p className="mt-3 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                    Your wallet balance is too low for domain registration (
-                    {walletCurrency} {walletDue.toFixed(2)} required).{" "}
+                    Your wallet balance is too low for this order (
+                    {formatCatalogUsd(displayTotal)} total
+                    {walletDue + 1e-9 < displayTotal
+                      ? `, ${formatCatalogUsd(walletDue)} due from wallet now`
+                      : ""}
+                    ).{" "}
                     <Link
                       href={routes.accountWallet}
                       className="font-semibold text-[#673de6] underline"
@@ -634,10 +648,11 @@ export function DomainPremiumCheckout({
                 ) && !allDone ? (
                   <div className="mt-4 rounded-2xl border border-slate-100 bg-slate-50/80 px-4 py-3 text-[13px] text-slate-700">
                     <p className="font-semibold text-[#1a1035]">
-                      After registration
+                      Included in this order
                     </p>
                     <p className="mt-1">
-                      Complete hosting or email setup with your new domain:
+                      After domain payment, checkout continues automatically for
+                      hosting and email on your new domain.
                     </p>
                     <ul className="mt-2 space-y-1">
                       {offers.optional
@@ -798,8 +813,10 @@ export function DomainPremiumCheckout({
                   </span>
                 </div>
                 <p className="pt-1 text-[11px] text-slate-500">
-                  Due today from wallet: {walletCurrency} {walletDue.toFixed(2)}{" "}
-                  (domains)
+                  Due today: {formatCatalogUsd(displayTotal)}
+                  {walletDue + 1e-9 < displayTotal
+                    ? ` · wallet ${formatCatalogUsd(walletDue)} for domains, then hosting & email`
+                    : " from wallet"}
                 </p>
                 <p className="text-[11px] font-semibold text-slate-500">
                   {t.common.billedInUsd}

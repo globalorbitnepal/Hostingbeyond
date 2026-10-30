@@ -543,7 +543,8 @@ export function PremiumCartJourney() {
                 <h2 className="text-[15px] font-extrabold">Payment methods</h2>
                 <ul className="mt-4 space-y-2 text-[13px]">
                   <li className="rounded-[14px] border border-[var(--hb-co-border)] px-4 py-3 font-semibold">
-                    HostingBeyond wallet — used for domain registration today
+                    HostingBeyond wallet — used for domain registration; add-ons
+                    continue on the next checkout
                   </li>
                   {hints?.payment.stripeWalletTopUp ? (
                     <li className="rounded-[14px] border border-[var(--hb-co-border)] px-4 py-3 text-[var(--hb-co-text-muted)]">
@@ -564,8 +565,9 @@ export function PremiumCartJourney() {
                 </ul>
                 {serviceLines.length > 0 ? (
                   <p className="mt-4 text-[13px] leading-snug text-[var(--hb-co-text-muted)]">
-                    Hosting and business email selections are completed on their
-                    dedicated checkout after your domain is registered.
+                    The pay button uses this order total. After domain
+                    registration, hosting and email checkout continue with your
+                    new domain already selected.
                   </p>
                 ) : null}
                 {!isAuthenticated ? (
@@ -590,7 +592,7 @@ export function PremiumCartJourney() {
                     onClick={goToSecureCheckout}
                     className="hb-checkout-premium__btn-primary"
                   >
-                    Complete secure checkout
+                    Complete secure checkout · {formatCatalogUsd(total)}
                   </button>
                 </div>
                 <p className="mt-4 text-[11px] text-[var(--hb-co-text-muted)]">
