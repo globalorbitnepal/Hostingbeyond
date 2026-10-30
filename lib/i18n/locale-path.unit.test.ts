@@ -47,6 +47,17 @@ describe("locale URL paths", () => {
     assert.equal(localePrefixRewritePath("/"), null);
   });
 
+  it("rewrites /en to the unprefixed English storefront", () => {
+    assert.equal(websiteLanguageFromUrlSegment("en"), "en");
+    assert.deepEqual(stripLocalePrefixFromPath("/en"), {
+      language: "en",
+      pathname: "/",
+      hadPrefix: true,
+    });
+    assert.equal(localePrefixRewritePath("/en"), "/");
+    assert.equal(localePrefixRewritePath("/en/pricing"), "/pricing");
+  });
+
   it("round-trips known segments", () => {
     for (const segment of ["de", "fr", "hi", "zh"] as const) {
       const lang = websiteLanguageFromUrlSegment(segment);

@@ -20,6 +20,7 @@ const FALLBACK_TEASERS = [
 ] as const;
 
 function usdFromPriceLabel(label: string): number | undefined {
+  if (!/\$|USD/i.test(label)) return undefined;
   const match = label.replace(/,/g, "").match(/(\d+(?:\.\d+)?)/);
   if (!match) return undefined;
   const amount = Number(match[1]);
@@ -242,6 +243,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
                       "font-extrabold",
                       active ? "text-[#673de6]" : "text-white",
                     )}
+                    translate="no"
                   >
                     {value}
                   </span>
@@ -250,6 +252,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
                       "font-bold",
                       active ? "text-slate-700" : "text-white/80",
                     )}
+                    translate="no"
                   >
                     {"usd" in item && typeof item.usd === "number" ? (
                       <>

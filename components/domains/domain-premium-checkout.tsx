@@ -215,14 +215,54 @@ export function DomainPremiumCheckout({
 
   const domainsTotal =
     quote?.domainsSubtotal ?? lines.reduce((s, l) => s + l.register, 0);
-  const clientServicesTotal = useMemo(() => {
+  const clientServiceLines = useMemo(() => {
+    const domainCount = Math.max(1, lines.length);
     return offers.optional
       .filter((offer) => selectedKeys.has(offerKey(offer)))
-      .reduce((sum, offer) => sum + offer.amount, 0);
-  }, [offers.optional, selectedKeys]);
-  const servicesTotal = quote?.servicesSubtotal ?? clientServicesTotal;
-  const displayTotal = quote?.total ?? domainsTotal + servicesTotal;
-  const walletDue = quote?.walletChargeToday ?? domainsTotal;
+      .map((offer) => {
+        const amount =
+          offer.kind === "domain-protection"
+            ? Math.round(offer.amount * domainCount * 100) / 100
+            : offer.amount;
+        const detail =
+          offer.kind === "domain-protection" && domainCount > 1
+            ? `${offer.periodLabel} · ${domainCount} domains`
+            : offer.kind === "hosting" || offer.kind === "business-email"
+              ? `${offer.planName} · ${offer.periodLabel}`
+              : offer.periodLabel;
+        return {
+          key: offerKey(offer),
+          label: offer.label,
+          detail,
+          amount,
+        };
+      });
+  }, [offers.optional, selectedKeys, lines.length]);
+  const clientServicesTotal = useMemo(
+    () =>
+      Math.round(
+        clientServiceLines.reduce((sum, line) => sum + line.amount, 0) * 100,
+      ) / 100,
+    [clientServiceLines],
+  );
+  const useServerQuote = Boolean(quote) && !quoteLoading;
+  const summaryServiceLines = useServerQuote
+    ? quote!.serviceLines
+    : clientServiceLines;
+  const servicesTotal = useServerQuote
+    ? quote!.servicesSubtotal
+    : clientServicesTotal;
+  const displayTotal = useServerQuote
+    ? quote!.total
+    : Math.round((domainsTotal + servicesTotal) * 100) / 100;
+  const clientWalletDue =
+    Math.round(
+      (domainsTotal +
+        (clientServiceLines.find((line) => line.key === "domain-protection")
+          ?.amount ?? 0)) *
+        100,
+    ) / 100;
+  const walletDue = useServerQuote ? quote!.walletChargeToday : clientWalletDue;
   const walletShort =
     !allDone &&
     ((isAuthenticated && walletBalance + 1e-9 < walletDue) || insufficient);
@@ -355,6 +395,7 @@ export function DomainPremiumCheckout({
     walletShort,
     priceConfirmed,
     allDone,
+    isAuthenticated,
     onCompleteCheckout,
   ]);
 
@@ -778,7 +819,7 @@ export function DomainPremiumCheckout({
                     </li>
                   ))
                 )}
-                {quote?.serviceLines?.map((line) => (
+                {summaryServiceLines.map((line) => (
                   <li key={line.key} className="flex justify-between gap-2">
                     <div className="min-w-0">
                       <p className="text-[13px] font-bold text-slate-800">
@@ -833,6 +874,7 @@ export function DomainPremiumCheckout({
                   disabled={primaryCta.disabled}
                   onClick={primaryCta.action}
                   className="hb-checkout-premium__btn-primary mt-5 w-full"
+                  translate="no"
                 >
                   {submitting ? (
                     <Loader2 className="size-4 animate-spin" />
@@ -857,6 +899,7 @@ export function DomainPremiumCheckout({
             disabled={primaryCta.disabled}
             onClick={primaryCta.action}
             className="hb-checkout-premium__btn-primary w-full"
+            translate="no"
           >
             {primaryCta.label}
           </button>

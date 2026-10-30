@@ -64,6 +64,7 @@ export function websiteLanguageFromUrlSegment(
   segment: string,
 ): WebsiteLanguageCode | null {
   const normalized = segment.trim().toLowerCase();
+  if (normalized === "en") return DEFAULT_WEBSITE_LANGUAGE_CODE;
   const code = LANGUAGE_BY_URL_SEGMENT.get(normalized);
   return code ?? null;
 }

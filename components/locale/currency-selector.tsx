@@ -47,7 +47,7 @@ function computeMenuPosition(
       bottom: window.innerHeight - trigger.top + margin,
       width,
       maxHeight: "min(360px, 60dvh)",
-      zIndex: 300,
+      zIndex: 4000,
     };
   }
 
@@ -57,7 +57,7 @@ function computeMenuPosition(
     top: trigger.bottom + margin,
     width,
     maxHeight: "min(360px, 60dvh)",
-    zIndex: 300,
+    zIndex: 4000,
   };
 }
 
@@ -181,7 +181,7 @@ export function CurrencySelector({
       </button>
 
       <AnimatePresence>
-        {open && menuPosition
+        {open
           ? createPortal(
               <motion.div
                 ref={menuRef}
@@ -190,12 +190,22 @@ export function CurrencySelector({
                 exit={{ opacity: 0, y: 3, scale: 0.97 }}
                 transition={{ duration: 0.15 }}
                 className={cn(
-                  "flex flex-col overflow-hidden rounded-[14px] border py-1 shadow-[0_16px_40px_rgba(15,23,42,0.12)]",
+                  "notranslate flex flex-col overflow-hidden rounded-[14px] border py-1 shadow-[0_16px_40px_rgba(15,23,42,0.12)]",
                   light
                     ? "border-slate-200/90 bg-white"
                     : "border-white/[0.12] bg-[#0c1528]",
                 )}
-                style={menuPosition}
+                translate="no"
+                style={
+                  menuPosition ?? {
+                    position: "fixed",
+                    top: 72,
+                    right: 16,
+                    width: menuWidth,
+                    maxHeight: "min(360px, 60dvh)",
+                    zIndex: 4000,
+                  }
+                }
                 role="listbox"
                 aria-label="Select display currency"
               >
