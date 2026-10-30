@@ -218,7 +218,9 @@ jobs:
             -e data/hostingbeyond \
             -e node_modules \
             -e .deploy-package-lock-sha \
-            -e .next/cache
+            -e .next \
+            -e .next-incoming \
+            -e .next-prev
 
           if [ ! -f .env ]; then
             echo "ENV_MISSING: /srv/apps/hostingbeyond/.env is required on the server"
@@ -303,12 +305,16 @@ jobs:
           export CI=true
           export NODE_OPTIONS="${NODE_OPTIONS:-"--max-old-space-size=4096"}"
 
-          echo "==> Building production bundle (reuse .next/cache when present)"
-          rm -rf .next/server .next/static .next/types 2>/dev/null || true
+          echo "==> Building production bundle off to the side (live .next stays served)"
+          rm -rf .next-incoming
+          mkdir -p .next-incoming
+          if [ -d .next/cache ]; then
+            cp -a .next/cache .next-incoming/cache
+          fi
           BUILD_OK=0
           for attempt in 1 2 3; do
             echo "Build attempt ${attempt}/3"
-            if npm run build </dev/null; then
+            if NEXT_DIST_DIR=.next-incoming npm run build </dev/null; then
               BUILD_OK=1
               break
             fi
@@ -317,17 +323,27 @@ jobs:
           done
           if [ "$BUILD_OK" != "1" ]; then
             echo "BUILD_FAIL: npm run build failed after 3 attempts"
+            echo "LIVE_SITE_UNCHANGED: the running .next bundle was not replaced"
             echo "NO_SCHEMA_ROLLBACK: a successful migrate in this run is not reverted when build fails; PM2 was not restarted"
             exit 1
           fi
+          test -d .next-incoming/server
+          test -d .next-incoming/static
+
+          echo "==> Swapping the new bundle into place (old inodes stay open until reload)"
+          rm -rf .next-prev
+          if [ -d .next ]; then
+            mv .next .next-prev
+          fi
+          mv .next-incoming .next
 
           echo "==> Allowing the runtime user to write the Next cache"
           mkdir -p .next/cache/images .next/cache/fetch-cache
-          # Only the top level dirs; entries inside belong to the runtime user.
           chmod 0777 .next/cache .next/cache/images .next/cache/fetch-cache 2>/dev/null || true
 
-          echo "==> Restarting ONLY existing HostingBeyond PM2 process"
+          echo "==> Reloading HostingBeyond after the new bundle is in place"
           /usr/local/sbin/hostingbeyond-ctl restart
+          rm -rf .next-prev .next-incoming
 
           echo "==> Verifying process owner hostingbeyond"
           PROCESS_OK=0

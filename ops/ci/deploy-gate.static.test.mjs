@@ -113,6 +113,13 @@ test("workflow: build and verification failures are explicit", () => {
   assert.match(workflowYaml, /VERIFY_FAIL/);
 });
 
+test("workflow: live .next stays up while the new bundle builds", () => {
+  assert.match(workflowYaml, /-e \.next(?:-incoming|-prev)?\s/);
+  assert.match(workflowYaml, /NEXT_DIST_DIR=\.next-incoming/);
+  assert.match(workflowYaml, /LIVE_SITE_UNCHANGED/);
+  assert.doesNotMatch(workflowYaml, /rm -rf \.next\/server/);
+});
+
 test("workflow: repair workflows untouched (no deploy approval secret)", () => {
   const repairPath = join(ROOT, ".github/workflows/repair-vps-database.yml");
   const repair = readFileSync(repairPath, "utf8");

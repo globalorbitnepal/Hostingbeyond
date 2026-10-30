@@ -3,6 +3,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  /** Deploy builds into `.next-incoming` then swaps so the live `.next` stays up. */
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   images: {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2560, 3840],
     formats: ["image/avif", "image/webp"],
