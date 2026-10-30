@@ -152,6 +152,12 @@ export const HI_PHRASES: Record<string, string> = {
   "Temporarily unavailable": "अस्थायी रूप से अनुपलब्ध",
   "Not valid": "मान्य नहीं",
   "This domain is already registered.": "यह डोमेन पहले से पंजीकृत है।",
+  WHOIS: "WHOIS",
+  "WHOIS lookup": "WHOIS लुकअप",
+  "Open whois.com": "whois.com खोलें",
+  Close: "बंद करें",
+  "If the record does not load here, open whois.com in a new tab. Some browsers block embedded WHOIS pages.":
+    "अगर रिकॉर्ड यहाँ नहीं खुले, whois.com नए टैब में खोलें। कुछ ब्राउज़र एम्बेडेड WHOIS पेज रोकते हैं।",
   "Type a domain — e.g. yourbrand.com": "डोमेन लिखें — जैसे yourbrand.com",
   "Search domain": "डोमेन खोजें",
   "Searching…": "खोज हो रही है…",

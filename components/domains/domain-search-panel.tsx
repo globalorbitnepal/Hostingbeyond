@@ -27,6 +27,7 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
+import { WhoisLookupDialog } from "@/components/domains/whois-lookup-dialog";
 import { useDomainCart } from "@/components/domains/domain-cart-provider";
 import { routes } from "@/config/routes";
 import { loginPathForDomainCheckout } from "@/lib/domains/domain-purchase-intent";
@@ -228,6 +229,7 @@ const ResultRow = memo(function ResultRow({
 }) {
   const tx = useTranslate();
   const { formatCatalogUsd } = useLocale();
+  const [whoisOpen, setWhoisOpen] = useState(false);
   const buyable = isRegisterableRecommendation(result);
   const meta =
     featured && result.status === "taken"
@@ -311,6 +313,15 @@ const ResultRow = memo(function ResultRow({
               </p>
             </div>
           ) : null}
+          {result.status === "taken" ? (
+            <button
+              type="button"
+              onClick={() => setWhoisOpen(true)}
+              className="inline-flex h-11 min-h-[44px] w-full shrink-0 items-center justify-center gap-1.5 rounded-full border-2 border-[#673de6] bg-white px-5 text-[13.5px] font-bold whitespace-nowrap text-[#673de6] transition hover:bg-[#f7f4ff] sm:w-auto"
+            >
+              {tx("WHOIS")}
+            </button>
+          ) : null}
           {buyable ? (
             cartButtonState === "in-cart" ? (
               <button
@@ -352,6 +363,12 @@ const ResultRow = memo(function ResultRow({
           ) : null}
         </div>
       </div>
+      {whoisOpen ? (
+        <WhoisLookupDialog
+          domain={result.domain}
+          onClose={() => setWhoisOpen(false)}
+        />
+      ) : null}
     </div>
   );
 });
