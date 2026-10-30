@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { parseRdapDomain } from "@/lib/domains/public-whois";
+import { parseRdapDomain, rdapLookupUrls } from "@/lib/domains/public-whois";
 
 const SAMPLE = {
   ldhName: "XTREND.COM",
@@ -49,5 +49,13 @@ describe("parseRdapDomain", () => {
     assert.ok(record.statuses.includes("client delete prohibited"));
     assert.equal(JSON.stringify(record).includes("http"), false);
     assert.equal(JSON.stringify(record).includes("godaddy.com/"), false);
+  });
+
+  it("prefers the registry RDAP URL over rdap.org for .com", () => {
+    const urls = rdapLookupUrls("xtalk.com", {
+      services: [[["com", "net"], ["https://rdap.verisign.com/com/v1/"]]],
+    });
+    assert.equal(urls[0], "https://rdap.verisign.com/com/v1/domain/xtalk.com");
+    assert.equal(urls.at(-1), "https://rdap.org/domain/xtalk.com");
   });
 });

@@ -140,6 +140,136 @@ export function parseRdapDomain(
   };
 }
 
+const RDAP_HEADERS = {
+  Accept: "application/rdap+json, application/json",
+  "User-Agent":
+    "Mozilla/5.0 (compatible; HostingBeyond/1.0; +https://hosting.theglobalorbit.com)",
+} as const;
+
+const TLD_RDAP_FALLBACK: Record<string, string[]> = {
+  com: ["https://rdap.verisign.com/com/v1/"],
+  net: ["https://rdap.verisign.com/net/v1/"],
+  org: ["https://rdap.publicinterestregistry.org/rdap/"],
+  info: ["https://rdap.identitydigital.services/rdap/"],
+  io: ["https://rdap.nic.io/"],
+  ai: ["https://rdap.identitydigital.services/rdap/"],
+  co: ["https://rdap.nic.co/"],
+  app: ["https://pubapi.registry.google/rdap/"],
+  dev: ["https://pubapi.registry.google/rdap/"],
+  xyz: ["https://rdap.centralnic.com/xyz/"],
+};
+
+type IanaRdapBootstrap = {
+  services?: Array<[string[], string[]]>;
+};
+
+let bootstrapCache: { at: number; data: IanaRdapBootstrap | null } = {
+  at: 0,
+  data: null,
+};
+
+function tldOf(domain: string): string {
+  const parts = domain.split(".").filter(Boolean);
+  return (parts[parts.length - 1] ?? "").toLowerCase();
+}
+
+function joinRdapUrl(base: string, domain: string): string {
+  const trimmed = base.trim();
+  const withSlash = trimmed.endsWith("/") ? trimmed : `${trimmed}/`;
+  return `${withSlash}domain/${encodeURIComponent(domain)}`;
+}
+
+export function rdapLookupUrls(
+  domain: string,
+  bootstrap: IanaRdapBootstrap | null,
+): string[] {
+  const tld = tldOf(domain);
+  const urls: string[] = [];
+  const seen = new Set<string>();
+  const push = (url: string) => {
+    if (!url || seen.has(url)) return;
+    seen.add(url);
+    urls.push(url);
+  };
+
+  const services = bootstrap?.services;
+  if (Array.isArray(services)) {
+    for (const entry of services) {
+      if (!Array.isArray(entry) || entry.length < 2) continue;
+      const tlds = entry[0];
+      const bases = entry[1];
+      if (!Array.isArray(tlds) || !tlds.includes(tld)) continue;
+      if (!Array.isArray(bases)) continue;
+      for (const base of bases) {
+        if (typeof base === "string") push(joinRdapUrl(base, domain));
+      }
+    }
+  }
+
+  for (const base of TLD_RDAP_FALLBACK[tld] ?? []) {
+    push(joinRdapUrl(base, domain));
+  }
+  push(`https://rdap.org/domain/${encodeURIComponent(domain)}`);
+  return urls;
+}
+
+async function loadIanaBootstrap(): Promise<IanaRdapBootstrap | null> {
+  const now = Date.now();
+  if (bootstrapCache.data && now - bootstrapCache.at < 24 * 60 * 60 * 1000) {
+    return bootstrapCache.data;
+  }
+  try {
+    const res = await fetch("https://data.iana.org/rdap/dns.json", {
+      headers: RDAP_HEADERS,
+      cache: "force-cache",
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return bootstrapCache.data;
+    const data = (await res.json()) as IanaRdapBootstrap;
+    bootstrapCache = { at: now, data };
+    return data;
+  } catch {
+    return bootstrapCache.data;
+  }
+}
+
+function isRdapDomainDocument(payload: unknown): boolean {
+  const row = asRecord(payload);
+  if (!row) return false;
+  if (row.errorCode != null) return false;
+  return Boolean(
+    asString(row.ldhName) ||
+    asString(row.unicodeName) ||
+    row.objectClassName === "domain",
+  );
+}
+
+async function fetchRdapJson(url: string): Promise<unknown | null> {
+  try {
+    const res = await fetch(url, {
+      headers: RDAP_HEADERS,
+      redirect: "follow",
+      cache: "no-store",
+      signal: AbortSignal.timeout(10000),
+    });
+    if (res.status === 404) return { errorCode: 404 };
+    if (!res.ok) return null;
+    const type = res.headers.get("content-type") ?? "";
+    if (!/json|rdap/i.test(type) && !type.includes("javascript")) {
+      const text = await res.text();
+      if (text.trimStart().startsWith("<")) return null;
+      try {
+        return JSON.parse(text) as unknown;
+      } catch {
+        return null;
+      }
+    }
+    return (await res.json()) as unknown;
+  } catch {
+    return null;
+  }
+}
+
 export async function lookupPublicWhois(
   domainRaw: string,
 ): Promise<PublicWhoisRecord | { error: string }> {
@@ -150,25 +280,24 @@ export async function lookupPublicWhois(
     };
   }
   const domain = parsed.query.toLowerCase();
-  const url = `https://rdap.org/domain/${encodeURIComponent(domain)}`;
-  try {
-    const res = await fetch(url, {
-      headers: {
-        Accept: "application/rdap+json, application/json",
-      },
-      redirect: "follow",
-      cache: "no-store",
-      signal: AbortSignal.timeout(8000),
-    });
-    if (res.status === 404) {
-      return { error: "No public WHOIS record was found for this domain." };
+  const bootstrap = await loadIanaBootstrap();
+  const urls = rdapLookupUrls(domain, bootstrap);
+  let notFound = false;
+
+  for (const url of urls.slice(0, 4)) {
+    const json = await fetchRdapJson(url);
+    if (!json) continue;
+    const row = asRecord(json);
+    if (row?.errorCode === 404 || row?.errorCode === "404") {
+      notFound = true;
+      continue;
     }
-    if (!res.ok) {
-      return { error: "WHOIS details are unavailable right now." };
-    }
-    const json: unknown = await res.json();
+    if (!isRdapDomainDocument(json)) continue;
     return parseRdapDomain(json, domain);
-  } catch {
-    return { error: "WHOIS details are unavailable right now." };
   }
+
+  if (notFound) {
+    return { error: "No public WHOIS record was found for this domain." };
+  }
+  return { error: "WHOIS details are unavailable right now." };
 }
