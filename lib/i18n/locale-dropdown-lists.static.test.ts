@@ -4,6 +4,7 @@ import { describe, it } from "node:test";
 import { usdToLocalRate } from "@/config/pricing";
 import {
   FEATURED_DISPLAY_CURRENCIES,
+  isPublicDisplayCurrency,
   orderedPublicDisplayCurrencies,
   PUBLIC_DISPLAY_CURRENCY_LABELS,
 } from "@/lib/i18n/display-currencies";
@@ -62,10 +63,10 @@ describe("display currency list", () => {
     const ordered = orderedPublicDisplayCurrencies();
     assert.equal(new Set(ordered).size, ordered.length);
     for (const [code, rate] of Object.entries(usdToLocalRate)) {
-      if (Number.isFinite(rate) && rate > 0) {
-        assert.ok(ordered.includes(code as (typeof ordered)[number]), code);
-        assert.equal(PUBLIC_DISPLAY_CURRENCY_LABELS[code as never].code, code);
-      }
+      if (!Number.isFinite(rate) || rate <= 0) continue;
+      assert.ok(isPublicDisplayCurrency(code), code);
+      assert.ok(ordered.includes(code), code);
+      assert.equal(PUBLIC_DISPLAY_CURRENCY_LABELS[code].code, code);
     }
   });
 
