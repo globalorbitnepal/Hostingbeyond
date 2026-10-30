@@ -72,7 +72,7 @@ function computeMenuPosition(
       bottom: window.innerHeight - trigger.top + margin,
       width,
       maxHeight: "min(480px, 72dvh)",
-      zIndex: 4000,
+      zIndex: 10050,
     };
   }
 
@@ -82,7 +82,7 @@ function computeMenuPosition(
     top: trigger.bottom + margin,
     width,
     maxHeight: "min(520px, 80dvh)",
-    zIndex: 4000,
+    zIndex: 10050,
   };
 }
 
@@ -288,17 +288,22 @@ export function CountryLanguageSelector({
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") closePanel();
     };
-    const onOutside = (e: MouseEvent) => {
-      const target = e.target as Node;
+    const onOutside = (e: Event) => {
+      const target = e.target as Node | null;
+      if (!target) return;
       if (wrapperRef.current?.contains(target)) return;
       if (menuRef.current?.contains(target)) return;
+      if (triggerRef.current?.contains(target)) return;
       closePanel();
     };
     document.addEventListener("keydown", onKey);
-    document.addEventListener("mousedown", onOutside);
+    const timer = window.setTimeout(() => {
+      document.addEventListener("pointerdown", onOutside, true);
+    }, 50);
     return () => {
+      window.clearTimeout(timer);
       document.removeEventListener("keydown", onKey);
-      document.removeEventListener("mousedown", onOutside);
+      document.removeEventListener("pointerdown", onOutside, true);
     };
   }, [open, closePanel]);
 
@@ -476,7 +481,7 @@ export function CountryLanguageSelector({
                   right: 16,
                   width: menuWidth,
                   maxHeight: "min(520px, 80dvh)",
-                  zIndex: 4000,
+                  zIndex: 10050,
                 }
               }
             >
@@ -531,7 +536,7 @@ export function CountryLanguageSelector({
               <div
                 ref={listRef}
                 className={cn(
-                  "min-h-0 flex-1 overflow-y-auto overscroll-contain py-1",
+                  "max-h-[min(360px,55dvh)] overflow-y-auto overscroll-contain py-1",
                   light ? "hb-locale-scroll-light" : "hb-locale-scroll",
                 )}
                 role="listbox"

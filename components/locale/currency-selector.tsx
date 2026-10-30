@@ -62,7 +62,7 @@ function computeMenuPosition(
       bottom: window.innerHeight - trigger.top + margin,
       width: widthClamped,
       maxHeight,
-      zIndex: 5000,
+      zIndex: 10050,
     };
   }
 
@@ -72,7 +72,7 @@ function computeMenuPosition(
     top: trigger.bottom + margin,
     width: widthClamped,
     maxHeight,
-    zIndex: 5000,
+    zIndex: 10050,
   };
 }
 
@@ -123,6 +123,16 @@ export function CurrencySelector({
     setOpen(true);
   }, [updateMenuPosition]);
 
+  const togglePanel = useCallback(
+    (event: { stopPropagation: () => void; preventDefault: () => void }) => {
+      event.stopPropagation();
+      event.preventDefault();
+      if (open) closePanel();
+      else openPanel();
+    },
+    [open, closePanel, openPanel],
+  );
+
   useEffect(() => {
     const onOther = (event: Event) => {
       const openedId = (event as CustomEvent<string>).detail;
@@ -137,17 +147,22 @@ export function CurrencySelector({
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") closePanel();
     };
-    const onOutside = (e: MouseEvent) => {
-      const target = e.target as Node;
+    const onOutside = (e: Event) => {
+      const target = e.target as Node | null;
+      if (!target) return;
       if (wrapperRef.current?.contains(target)) return;
       if (menuRef.current?.contains(target)) return;
+      if (triggerRef.current?.contains(target)) return;
       closePanel();
     };
     document.addEventListener("keydown", onKey);
-    document.addEventListener("mousedown", onOutside);
+    const timer = window.setTimeout(() => {
+      document.addEventListener("pointerdown", onOutside, true);
+    }, 50);
     return () => {
+      window.clearTimeout(timer);
       document.removeEventListener("keydown", onKey);
-      document.removeEventListener("mousedown", onOutside);
+      document.removeEventListener("pointerdown", onOutside, true);
     };
   }, [open, closePanel]);
 
@@ -166,7 +181,7 @@ export function CurrencySelector({
   }, [open, updateMenuPosition]);
 
   const chipClass = cn(
-    "inline-flex shrink-0 items-center gap-0.5 border font-bold tracking-[0.06em] tabular-nums backdrop-blur-xl transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563eb]",
+    "inline-flex shrink-0 touch-manipulation items-center gap-0.5 border font-bold tracking-[0.06em] tabular-nums backdrop-blur-xl transition-colors duration-150 select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563eb]",
     light
       ? "border-slate-200/90 bg-white/85 text-slate-800 shadow-[0_4px_16px_rgba(15,23,42,0.06)] hover:bg-white"
       : "border-white/[0.12] bg-white/[0.06] text-white hover:bg-white/[0.09]",
@@ -248,13 +263,15 @@ export function CurrencySelector({
       <button
         ref={triggerRef}
         type="button"
-        onClick={() => (open ? closePanel() : openPanel())}
+        onPointerDown={togglePanel}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={`Display currency: ${selected}`}
-        className={chipClass}
+        className={cn(chipClass, "relative z-[2]")}
       >
-        <span className="leading-none">{selected}</span>
+        <span className="leading-none" translate="no">
+          {selected}
+        </span>
         <ChevronDown
           className={cn(
             "size-[10px] shrink-0 opacity-50 transition-transform duration-200",
@@ -269,7 +286,7 @@ export function CurrencySelector({
             <div
               ref={menuRef}
               className={cn(
-                "skiptranslate notranslate flex flex-col overflow-hidden rounded-[16px] border",
+                "skiptranslate notranslate overflow-y-auto overscroll-contain rounded-[16px] border",
                 light
                   ? "border-slate-200/90 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.16)]"
                   : "border-white/[0.12] bg-[#0c1528] shadow-[0_20px_60px_rgba(0,0,0,0.65)]",
@@ -277,26 +294,29 @@ export function CurrencySelector({
               translate="no"
               role="listbox"
               aria-label="Select display currency"
+              onPointerDown={(event) => event.stopPropagation()}
               style={
                 menuPosition ?? {
                   position: "fixed",
                   top: 72,
                   right: 12,
-                  width: Math.min(MENU_WIDTH, 280),
+                  width: Math.min(MENU_WIDTH, window.innerWidth - 24),
                   maxHeight: "min(420px, 62dvh)",
-                  zIndex: 5000,
+                  zIndex: 10050,
                 }
               }
             >
               <p
                 className={cn(
-                  "shrink-0 px-3 pt-2.5 pb-1.5 text-[11px] font-extrabold tracking-wide uppercase",
-                  light ? "text-slate-400" : "text-white/40",
+                  "sticky top-0 z-[1] px-3 pt-2.5 pb-1.5 text-[11px] font-extrabold tracking-wide uppercase",
+                  light
+                    ? "bg-white text-slate-400"
+                    : "bg-[#0c1528] text-white/40",
                 )}
               >
                 Currency
               </p>
-              <div className="min-h-0 overflow-y-auto overscroll-contain pb-1">
+              <div className="pb-1">
                 {featured.map(renderOption)}
                 {rest.length > 0 ? (
                   <>

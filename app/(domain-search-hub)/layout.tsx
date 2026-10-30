@@ -14,7 +14,7 @@ export default async function DomainSearchHubLayout({
   ]);
 
   return (
-    <div className="hb-band-cream min-h-dvh overflow-x-clip">
+    <div className="hb-band-cream min-h-dvh overflow-x-hidden">
       <div className="hb-band-purple relative">
         <DomainSearchHubBackdrop heroImage={content.shared.heroImage} />
         <SiteHeader
