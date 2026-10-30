@@ -224,16 +224,16 @@ export function CurrencySelector({
                               : "text-white/85 hover:bg-white/[0.06]",
                         )}
                       >
-                        <span>
-                          {meta.symbol} {meta.title}
+                        <span className="font-bold tracking-wide">
+                          {meta.code}
                         </span>
                         <span
                           className={cn(
-                            "text-[11px] font-bold",
+                            "truncate text-[12px]",
                             light ? "text-slate-400" : "text-white/45",
                           )}
                         >
-                          {meta.code}
+                          {meta.symbol} {meta.title}
                         </span>
                       </button>
                     );

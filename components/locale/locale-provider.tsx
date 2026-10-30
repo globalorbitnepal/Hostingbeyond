@@ -31,6 +31,7 @@ import {
   getLocaleMarket,
   type HostingerLocaleMarket,
 } from "@/lib/i18n/hostinger-locale-markets";
+import { storefrontFromWebsiteLanguage } from "@/lib/i18n/language-market";
 import {
   defaultEnabledLanguageCodes,
   resolveWebsiteLanguageCode,
@@ -246,9 +247,14 @@ export function LocaleProvider({
   const setWebsiteLanguage = useCallback(
     (code: WebsiteLanguageCode) => {
       const resolved = resolveWebsiteLanguageCode(code, enabledLanguageCodes);
+      const market = storefrontFromWebsiteLanguage(resolved);
       const normalized = normalizePreferences({
         ...preferences,
         googleTargetLang: resolved,
+        country: market.country,
+        localeMarketId: market.localeMarketId,
+        currency: market.currency,
+        currencyLocked: false,
         languageLocked: true,
       });
       writePrefsCookie(normalized);

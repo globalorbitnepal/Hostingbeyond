@@ -14,16 +14,11 @@ import {
 import { createPortal } from "react-dom";
 import { ChevronDown, Search } from "lucide-react";
 
-import { flagImgUrl, getCountry } from "@/config/geo";
-import { resolveCountryDisplayCurrency } from "@/lib/i18n/country-currency";
+import { flagImgUrl } from "@/config/geo";
 import {
   indexAfterQueryChange,
   nextActiveIndex,
 } from "@/lib/i18n/locale-list-nav";
-import {
-  searchCountryMarkets,
-  type HostingerLocaleMarket,
-} from "@/lib/i18n/hostinger-locale-markets";
 import {
   WEBSITE_LANGUAGES,
   websiteLanguageByCode,
@@ -33,15 +28,12 @@ import {
 import { useLocale } from "@/components/locale/locale-provider";
 import { cn } from "@/lib/utils";
 
-type MenuRow =
-  | {
-      kind: "lang";
-      id: string;
-      code: WebsiteLanguageCode;
-      englishName: string;
-      nativeName: string;
-    }
-  | { kind: "country"; id: string; market: HostingerLocaleMarket };
+type MenuRow = {
+  id: string;
+  code: WebsiteLanguageCode;
+  englishName: string;
+  nativeName: string;
+};
 
 type Props = {
   compact?: boolean;
@@ -56,15 +48,11 @@ type Props = {
   className?: string;
 };
 
-const MENU_WIDTH = { compact: 328, default: 380 } as const;
+const MENU_WIDTH = { compact: 300, default: 340 } as const;
 const LOCALE_PANEL_OPEN = "hb-locale-panel-open";
 
-function indexOfSelectedCountryRow(
-  countryCode: string,
-  markets: HostingerLocaleMarket[],
-): number {
-  const code = countryCode.trim().toUpperCase();
-  return markets.findIndex((market) => market.countryCode === code);
+function indexOfSelectedLanguage(code: string, rows: MenuRow[]): number {
+  return rows.findIndex((row) => row.code === code);
 }
 
 function computeMenuPosition(
@@ -196,20 +184,11 @@ export function CountryLanguageSelector({
   className,
 }: Props) {
   const light = tone === "light";
-  const {
-    preferences,
-    applyCountryMarket,
-    setWebsiteLanguage,
-    enabledLanguageCodes,
-    currencyNotice,
-    t,
-  } = useLocale();
+  const { preferences, setWebsiteLanguage, enabledLanguageCodes, t } =
+    useLocale();
   const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [listSection, setListSection] = useState<"country" | "language">(
-    "country",
-  );
   const [activeIndex, setActiveIndex] = useState(0);
   const panelId = useId();
 
@@ -220,7 +199,6 @@ export function CountryLanguageSelector({
   const searchRef = useRef<HTMLInputElement>(null);
   const [menuPosition, setMenuPosition] = useState<CSSProperties | null>(null);
 
-  const country = getCountry(preferences.country);
   const activeLanguage =
     websiteLanguageByCode(preferences.googleTargetLang) ??
     websiteLanguageByCode("en")!;
@@ -230,13 +208,7 @@ export function CountryLanguageSelector({
   );
   const rows = useMemo<MenuRow[]>(() => {
     const q = query.trim().toLowerCase();
-    const countryMarkets = searchCountryMarkets(query);
-    const countries: MenuRow[] = countryMarkets.map((market) => ({
-      kind: "country" as const,
-      id: `country:${market.countryCode}`,
-      market,
-    }));
-    const langs: MenuRow[] = WEBSITE_LANGUAGES.filter((row) => {
+    return WEBSITE_LANGUAGES.filter((row) => {
       if (!enabled.has(row.code)) return false;
       if (!q) return true;
       return (
@@ -246,15 +218,12 @@ export function CountryLanguageSelector({
         row.triggerCode.toLowerCase().includes(q)
       );
     }).map((row) => ({
-      kind: "lang" as const,
       id: `lang:${row.code}`,
       code: row.code,
       englishName: row.englishName,
       nativeName: row.nativeName,
     }));
-    if (listSection === "country") return countries;
-    return langs;
-  }, [enabled, listSection, query]);
+  }, [enabled, query]);
   const menuWidth = compact ? MENU_WIDTH.compact : MENU_WIDTH.default;
   const localeInstance = menuSide === "above" ? "footer" : "header";
 
@@ -287,20 +256,26 @@ export function CountryLanguageSelector({
 
   const openPanel = useCallback(() => {
     setQuery("");
-    setListSection("country");
-    const markets = searchCountryMarkets("");
-    const selectedCountryIndex = indexOfSelectedCountryRow(
-      preferences.country,
-      markets,
+    const langs: MenuRow[] = WEBSITE_LANGUAGES.filter((row) =>
+      enabled.has(row.code),
+    ).map((row) => ({
+      id: `lang:${row.code}`,
+      code: row.code,
+      englishName: row.englishName,
+      nativeName: row.nativeName,
+    }));
+    const selectedIndex = indexOfSelectedLanguage(
+      preferences.googleTargetLang,
+      langs,
     );
-    setActiveIndex(selectedCountryIndex >= 0 ? selectedCountryIndex : 0);
+    setActiveIndex(selectedIndex >= 0 ? selectedIndex : 0);
     positionMenuFromTrigger();
     window.dispatchEvent(
       new CustomEvent(LOCALE_PANEL_OPEN, { detail: panelId }),
     );
     setOpen(true);
     setTimeout(() => searchRef.current?.focus(), 50);
-  }, [panelId, positionMenuFromTrigger, preferences.country]);
+  }, [enabled, panelId, positionMenuFromTrigger, preferences.googleTargetLang]);
 
   const togglePanel = useCallback(() => {
     if (open) closePanel();
@@ -364,27 +339,8 @@ export function CountryLanguageSelector({
   }, [open, activeIndex]);
 
   const selectRow = (row: MenuRow) => {
-    if (row.kind === "lang") setWebsiteLanguage(row.code);
-    else applyCountryMarket(row.market);
+    setWebsiteLanguage(row.code);
     closePanel();
-  };
-
-  const switchListSection = (section: "country" | "language") => {
-    setListSection(section);
-    setQuery("");
-    if (section === "country") {
-      const markets = searchCountryMarkets("");
-      const idx = indexOfSelectedCountryRow(preferences.country, markets);
-      setActiveIndex(idx >= 0 ? idx : 0);
-    } else {
-      const enabledLangs = WEBSITE_LANGUAGES.filter((row) =>
-        enabled.has(row.code),
-      );
-      const idx = enabledLangs.findIndex(
-        (row) => row.code === preferences.googleTargetLang,
-      );
-      setActiveIndex(idx >= 0 ? idx : 0);
-    }
   };
 
   const onSearchKeyDown = (e: ReactKeyboardEvent<HTMLInputElement>) => {
@@ -427,7 +383,7 @@ export function CountryLanguageSelector({
             light ? "text-slate-900" : "text-white",
           )}
         >
-          {activeLanguage.triggerCode} · {preferences.currency}
+          {activeLanguage.triggerCode}
         </span>
         <ChevronDown
           className={cn(
@@ -478,7 +434,7 @@ export function CountryLanguageSelector({
           </svg>
         ) : (
           <FlagImg
-            code={country.code}
+            code={websiteLanguageFlagCountryCode(activeLanguage.code)}
             size={compact ? 22 : 26}
             priority
             tone={tone}
@@ -486,13 +442,11 @@ export function CountryLanguageSelector({
         )}
         <span
           className={cn(
-            "inline-flex min-w-[1.75rem] items-center gap-1 text-center text-[11px] font-bold tracking-wide sm:text-[12px]",
+            "inline-flex min-w-[1.5rem] items-center text-center text-[11px] font-bold tracking-wide sm:text-[12px]",
             light ? "text-slate-900" : "text-white",
           )}
         >
-          <span>{activeLanguage.triggerCode}</span>
-          <span className={light ? "text-slate-400" : "text-white/40"}>·</span>
-          <span>{preferences.currency}</span>
+          {activeLanguage.triggerCode}
         </span>
         <ChevronDown
           className={cn(
@@ -575,42 +529,6 @@ export function CountryLanguageSelector({
               </div>
 
               <div
-                className={cn(
-                  "flex shrink-0 gap-1 border-b px-3 py-2",
-                  light ? "border-slate-200/70" : "border-white/[0.06]",
-                )}
-                role="tablist"
-                aria-label={t.locale.selectLocation}
-              >
-                {(
-                  [
-                    ["country", "Country & currency"],
-                    ["language", "Language"],
-                  ] as const
-                ).map(([id, label]) => (
-                  <button
-                    key={id}
-                    type="button"
-                    role="tab"
-                    aria-selected={listSection === id}
-                    onClick={() => switchListSection(id)}
-                    className={cn(
-                      "flex-1 rounded-[10px] px-2 py-2 text-[11px] font-bold tracking-wide uppercase transition-colors",
-                      listSection === id
-                        ? light
-                          ? "bg-indigo-600 text-white shadow-sm"
-                          : "bg-[#2563eb] text-white"
-                        : light
-                          ? "text-slate-500 hover:bg-slate-100 hover:text-slate-800"
-                          : "text-white/45 hover:bg-white/[0.06] hover:text-white/80",
-                    )}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-
-              <div
                 ref={listRef}
                 className={cn(
                   "min-h-0 flex-1 overflow-y-auto overscroll-contain py-1",
@@ -629,10 +547,7 @@ export function CountryLanguageSelector({
                   </p>
                 ) : (
                   rows.map((row, index) => {
-                    const selected =
-                      row.kind === "lang"
-                        ? row.code === preferences.googleTargetLang
-                        : row.market.countryCode === preferences.country;
+                    const selected = row.code === preferences.googleTargetLang;
                     const keyboardFocus = index === activeIndex && !selected;
 
                     return (
@@ -641,11 +556,7 @@ export function CountryLanguageSelector({
                         type="button"
                         role="option"
                         aria-selected={selected}
-                        aria-label={
-                          row.kind === "lang"
-                            ? `${row.englishName} (${row.nativeName})`
-                            : `${row.market.countryName}, ${resolveCountryDisplayCurrency(row.market.countryCode).currency}`
-                        }
+                        aria-label={`${row.englishName} (${row.nativeName})`}
                         data-keyboard-focus={String(keyboardFocus)}
                         onClick={() => selectRow(row)}
                         className={cn(
@@ -663,37 +574,23 @@ export function CountryLanguageSelector({
                                 : "text-white/80 hover:bg-white/[0.05] hover:text-white",
                         )}
                       >
-                        {row.kind === "country" ? (
-                          <FlagImg
-                            code={row.market.countryCode}
-                            size={26}
-                            tone={tone}
-                          />
-                        ) : (
-                          <FlagImg
-                            code={websiteLanguageFlagCountryCode(row.code)}
-                            size={26}
-                            tone={tone}
-                          />
-                        )}
+                        <FlagImg
+                          code={websiteLanguageFlagCountryCode(row.code)}
+                          size={26}
+                          tone={tone}
+                        />
 
                         <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">
-                          {row.kind === "lang"
-                            ? row.englishName
-                            : row.market.countryName}
+                          {row.englishName}
                         </span>
 
                         <span
                           className={cn(
-                            "shrink-0 text-[12px] font-normal tabular-nums",
+                            "shrink-0 text-[12px] font-normal",
                             light ? "text-slate-400" : "text-white/45",
                           )}
                         >
-                          {row.kind === "lang"
-                            ? row.nativeName
-                            : resolveCountryDisplayCurrency(
-                                row.market.countryCode,
-                              ).currency}
+                          {row.nativeName}
                         </span>
                       </button>
                     );
@@ -709,7 +606,8 @@ export function CountryLanguageSelector({
                     : "border-white/[0.07] text-white/40",
                 )}
               >
-                {currencyNotice}
+                Matching prices follow this language. Change USD, INR, NPR in
+                the currency menu.
               </p>
             </div>,
             document.body,
