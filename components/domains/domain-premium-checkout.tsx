@@ -215,7 +215,12 @@ export function DomainPremiumCheckout({
 
   const domainsTotal =
     quote?.domainsSubtotal ?? lines.reduce((s, l) => s + l.register, 0);
-  const servicesTotal = quote?.servicesSubtotal ?? 0;
+  const clientServicesTotal = useMemo(() => {
+    return offers.optional
+      .filter((offer) => selectedKeys.has(offerKey(offer)))
+      .reduce((sum, offer) => sum + offer.amount, 0);
+  }, [offers.optional, selectedKeys]);
+  const servicesTotal = quote?.servicesSubtotal ?? clientServicesTotal;
   const displayTotal = quote?.total ?? domainsTotal + servicesTotal;
   const walletDue = quote?.walletChargeToday ?? domainsTotal;
   const walletShort =
