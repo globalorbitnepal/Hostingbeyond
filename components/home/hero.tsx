@@ -19,6 +19,13 @@ const FALLBACK_TEASERS = [
   { tld: ".dev", priceLabel: "$3.99/yr", usd: 3.99, visible: true },
 ] as const;
 
+function usdFromPriceLabel(label: string): number | undefined {
+  const match = label.replace(/,/g, "").match(/(\d+(?:\.\d+)?)/);
+  if (!match) return undefined;
+  const amount = Number(match[1]);
+  return Number.isFinite(amount) ? amount : undefined;
+}
+
 const SCENE_FALLBACK = "/images/hero-speaker-v6.webp";
 const TYPING_COPY = "Find the perfect domain for your brand";
 
@@ -80,10 +87,17 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
       (item) => item.visible !== false && item.tld.trim(),
     );
     if (fromCms.length) {
-      return fromCms.map((item) => ({
-        ...item,
-        tld: item.tld.startsWith(".") ? item.tld : `.${item.tld}`,
-      }));
+      return fromCms.map((item) => {
+        const tld = item.tld.startsWith(".") ? item.tld : `.${item.tld}`;
+        const fallbackUsd = FALLBACK_TEASERS.find(
+          (row) => row.tld === tld,
+        )?.usd;
+        return {
+          ...item,
+          tld,
+          usd: usdFromPriceLabel(item.priceLabel) ?? fallbackUsd,
+        };
+      });
     }
     return [...FALLBACK_TEASERS];
   }, [content?.domainPricing]);
