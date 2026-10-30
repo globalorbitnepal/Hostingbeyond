@@ -338,12 +338,12 @@ export function SiteHeader({
     <header className="relative z-50 w-full shrink-0 bg-transparent pt-2.5 pb-1 sm:pt-4">
       <div className="hb-shell">
         <div className="relative">
-          <div className="mx-auto flex h-[56px] w-full items-center gap-2 rounded-full border border-white/90 bg-white/[0.92] px-3 shadow-[0_12px_40px_rgba(15,23,42,0.14),inset_0_1px_0_rgba(255,255,255,1)] backdrop-blur-md backdrop-saturate-150 sm:h-[70px] sm:gap-3 sm:px-5 sm:backdrop-blur-2xl lg:px-6">
-            <div className="min-w-0 flex-1 lg:min-w-[210px] lg:flex-none xl:min-w-[270px]">
+          <div className="mx-auto flex h-[56px] w-full min-w-0 items-center gap-1.5 overflow-visible rounded-full border border-white/90 bg-white/[0.92] px-2.5 shadow-[0_12px_40px_rgba(15,23,42,0.14),inset_0_1px_0_rgba(255,255,255,1)] backdrop-blur-md backdrop-saturate-150 sm:h-[70px] sm:gap-3 sm:px-5 sm:backdrop-blur-2xl lg:px-6">
+            <div className="min-w-0 flex-1 lg:min-w-[180px] lg:flex-none xl:min-w-[270px]">
               <Logo
                 src={CANONICAL_HEADER_LOGO_SRC}
                 variant="image"
-                className="max-w-[min(100%,150px)] sm:max-w-[240px] lg:max-w-[260px] xl:max-w-[300px]"
+                className="max-w-[min(42vw,150px)] sm:max-w-[240px] lg:max-w-[260px] xl:max-w-[300px]"
               />
             </div>
 
@@ -384,10 +384,10 @@ export function SiteHeader({
               ))}
             </nav>
 
-            <div className="hidden shrink-0 items-center justify-end gap-2 lg:flex xl:gap-2.5">
+            <div className="hidden shrink-0 items-center justify-end gap-1.5 lg:flex xl:gap-2.5">
               <DomainCartHeaderLink />
               <CurrencySelector tone="light" />
-              <CountryLanguageSelector tone="light" />
+              <CountryLanguageSelector tone="light" className="shrink-0" />
               <span
                 aria-hidden
                 className="mx-0.5 hidden h-6 w-px bg-slate-200 xl:block"
@@ -399,10 +399,11 @@ export function SiteHeader({
             </div>
 
             <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-1.5 lg:hidden">
+              <CurrencySelector compact tone="light" />
               <DomainCartHeaderLink compact />
               <button
                 type="button"
-                className="inline-flex size-10 touch-manipulation items-center justify-center rounded-full border border-slate-200 bg-white text-slate-800 shadow-sm"
+                className="inline-flex size-9 touch-manipulation items-center justify-center rounded-full border border-slate-200 bg-white text-slate-800 shadow-sm sm:size-10"
                 aria-expanded={open}
                 aria-controls="hb-mobile-nav"
                 aria-label={open ? "Close menu" : "Open menu"}
@@ -465,9 +466,13 @@ export function SiteHeader({
                 className="flex flex-col gap-0.5 p-4"
                 aria-label="Mobile navigation"
               >
-                <div className="mb-2 flex items-center justify-between gap-2 rounded-2xl border border-slate-100 bg-slate-50/80 px-2 py-2">
-                  <CountryLanguageSelector compact tone="light" />
-                  <CurrencySelector compact tone="light" />
+                <div className="mb-3 grid grid-cols-2 gap-2 rounded-2xl border border-slate-100 bg-slate-50/80 p-2">
+                  <CountryLanguageSelector
+                    compact
+                    tone="light"
+                    className="w-full max-w-full justify-between"
+                  />
+                  <CurrencySelector compact fill tone="light" />
                 </div>
                 {filteredNav.map((item) => {
                   const label = item.label;
