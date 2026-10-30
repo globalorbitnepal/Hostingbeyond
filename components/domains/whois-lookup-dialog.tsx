@@ -1,11 +1,22 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { ExternalLink, X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 
-import { whoisComLookupUrl } from "@/lib/domains/whois-com";
+import type { PublicWhoisRecord } from "@/lib/domains/public-whois";
 import { useTranslate } from "@/lib/i18n/use-translate";
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="grid grid-cols-[minmax(7.5rem,34%)_minmax(0,1fr)] gap-3 border-b border-slate-100 py-2.5 last:border-0">
+      <dt className="text-[12.5px] font-bold text-slate-500">{label}</dt>
+      <dd className="min-w-0 text-[13.5px] leading-snug font-semibold break-words whitespace-pre-line text-[#1a1035]">
+        {value}
+      </dd>
+    </div>
+  );
+}
 
 export function WhoisLookupDialog({
   domain,
@@ -15,7 +26,9 @@ export function WhoisLookupDialog({
   onClose: () => void;
 }) {
   const tx = useTranslate();
-  const href = whoisComLookupUrl(domain);
+  const [record, setRecord] = useState<PublicWhoisRecord | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -30,7 +43,46 @@ export function WhoisLookupDialog({
     };
   }, [onClose]);
 
-  if (!href || typeof document === "undefined") return null;
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    setRecord(null);
+    void fetch(`/api/domains/whois?domain=${encodeURIComponent(domain)}`, {
+      cache: "no-store",
+    })
+      .then(async (res) => {
+        const json = (await res.json()) as PublicWhoisRecord & {
+          error?: string;
+        };
+        if (cancelled) return;
+        if (!res.ok || json.error) {
+          setError(
+            json.error || tx("WHOIS details are unavailable right now."),
+          );
+          return;
+        }
+        setRecord(json);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setError(tx("WHOIS details are unavailable right now."));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [domain, tx]);
+
+  if (typeof document === "undefined") return null;
+
+  const statuses = record?.statuses.length ? record.statuses.join("\n") : null;
+  const nameservers = record?.nameServers.length
+    ? record.nameServers.join("\n")
+    : null;
 
   return createPortal(
     <div
@@ -42,13 +94,13 @@ export function WhoisLookupDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="hb-whois-title"
-        className="flex h-[min(92dvh,720px)] w-full max-w-3xl flex-col overflow-hidden rounded-t-[22px] bg-white shadow-[0_28px_80px_-24px_rgba(26,16,53,0.55)] sm:h-[min(86dvh,760px)] sm:rounded-[22px]"
+        className="flex max-h-[min(92dvh,640px)] w-full max-w-lg flex-col overflow-hidden rounded-t-[22px] bg-white shadow-[0_28px_80px_-24px_rgba(26,16,53,0.55)] sm:rounded-[22px]"
         onClick={(event) => event.stopPropagation()}
       >
         <header className="flex shrink-0 items-start justify-between gap-3 border-b border-slate-100 px-4 py-3 sm:px-5">
           <div className="min-w-0">
             <p className="text-[11px] font-extrabold tracking-wide text-[#673de6] uppercase">
-              whois.com
+              {tx("Domain details")}
             </p>
             <h2
               id="hb-whois-title"
@@ -57,37 +109,73 @@ export function WhoisLookupDialog({
               {tx("WHOIS lookup")} · {domain}
             </h2>
           </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <a
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex h-10 items-center gap-1.5 rounded-full border border-slate-200 px-3 text-[12.5px] font-bold text-[#4c1d95] hover:bg-[#f7f4ff]"
-            >
-              {tx("Open whois.com")}
-              <ExternalLink className="size-3.5" aria-hidden />
-            </a>
-            <button
-              type="button"
-              onClick={onClose}
-              className="inline-flex size-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:bg-slate-50"
-              aria-label={tx("Close")}
-            >
-              <X className="size-4" />
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:bg-slate-50"
+            aria-label={tx("Close")}
+          >
+            <X className="size-4" />
+          </button>
         </header>
-        <iframe
-          title={`WHOIS for ${domain} on whois.com`}
-          src={href}
-          className="min-h-0 w-full flex-1 border-0 bg-slate-50"
-          referrerPolicy="no-referrer-when-downgrade"
-        />
-        <p className="shrink-0 border-t border-slate-100 px-4 py-2.5 text-[11.5px] leading-snug text-slate-500 sm:px-5">
-          {tx(
-            "If the record does not load here, open whois.com in a new tab. Some browsers block embedded WHOIS pages.",
-          )}
-        </p>
+
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5">
+          {loading ? (
+            <p className="flex items-center gap-2 text-[13.5px] font-semibold text-slate-500">
+              <Loader2 className="size-4 animate-spin" aria-hidden />
+              {tx("Loading WHOIS details…")}
+            </p>
+          ) : error ? (
+            <p className="text-[13.5px] font-semibold text-slate-600">
+              {error}
+            </p>
+          ) : record ? (
+            <div className="space-y-5">
+              <section>
+                <h3 className="mb-1 text-[12px] font-extrabold tracking-wide text-slate-400 uppercase">
+                  {tx("Domain information")}
+                </h3>
+                <dl>
+                  <Row label={tx("Domain")} value={record.domain} />
+                  {record.registeredOn ? (
+                    <Row
+                      label={tx("Registered on")}
+                      value={record.registeredOn}
+                    />
+                  ) : null}
+                  {record.expiresOn ? (
+                    <Row label={tx("Expires on")} value={record.expiresOn} />
+                  ) : null}
+                  {record.updatedOn ? (
+                    <Row label={tx("Updated on")} value={record.updatedOn} />
+                  ) : null}
+                  {statuses ? (
+                    <Row label={tx("Status")} value={statuses} />
+                  ) : null}
+                  {nameservers ? (
+                    <Row label={tx("Name servers")} value={nameservers} />
+                  ) : null}
+                </dl>
+              </section>
+              {record.registrar ? (
+                <section>
+                  <h3 className="mb-1 text-[12px] font-extrabold tracking-wide text-slate-400 uppercase">
+                    {tx("Registrar information")}
+                  </h3>
+                  <dl>
+                    <Row label={tx("Registrar")} value={record.registrar} />
+                    {record.registrarIanaId ? (
+                      <Row
+                        label={tx("IANA ID")}
+                        value={record.registrarIanaId}
+                      />
+                    ) : null}
+                  </dl>
+                </section>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
       </div>
     </div>,
     document.body,
