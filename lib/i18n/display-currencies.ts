@@ -96,11 +96,13 @@ export function publicCurrencyTriggerLabel(currency: CurrencyCode): string {
 export const FEATURED_DISPLAY_CURRENCIES = ["USD", "INR", "NPR"] as const;
 
 export function orderedPublicDisplayCurrencies(): PublicDisplayCurrency[] {
-  const featured = FEATURED_DISPLAY_CURRENCIES.filter((code) =>
-    isConfiguredDisplayCurrency(code),
-  );
+  const featured: PublicDisplayCurrency[] = [];
+  for (const code of FEATURED_DISPLAY_CURRENCIES) {
+    if (isConfiguredDisplayCurrency(code)) featured.push(code);
+  }
+  const featuredSet = new Set<string>(featured);
   const rest = PUBLIC_DISPLAY_CURRENCIES.filter(
-    (code) => !featured.includes(code),
+    (code) => !featuredSet.has(code),
   );
   return [...featured, ...rest];
 }
