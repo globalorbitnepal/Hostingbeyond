@@ -75,6 +75,20 @@ describe("locale preference parsing", () => {
     assert.equal(prefs.currency, "INR");
   });
 
+  it("keeps Hindi translation when the visitor switches display currency to NPR", () => {
+    const prefs = normalizePreferences({
+      country: "IN",
+      localeMarketId: "IN-hi",
+      googleTargetLang: "hi",
+      languageLocked: true,
+      currency: "NPR",
+      currencyLocked: true,
+    });
+    assert.equal(prefs.googleTargetLang, "hi");
+    assert.equal(prefs.currency, "NPR");
+    assert.equal(prefs.language, "en");
+  });
+
   it("keeps language independent of country and currency", () => {
     const prefs = normalizePreferences({
       country: "US",

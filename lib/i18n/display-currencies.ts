@@ -91,3 +91,16 @@ export function publicCurrencyTriggerLabel(currency: CurrencyCode): string {
   const key = normalizePublicDisplayCurrency(currency);
   return PUBLIC_DISPLAY_CURRENCY_LABELS[key].code;
 }
+
+/** Codes shown first in the header currency chip (prices only, not language). */
+export const FEATURED_DISPLAY_CURRENCIES = ["USD", "INR", "NPR"] as const;
+
+export function orderedPublicDisplayCurrencies(): PublicDisplayCurrency[] {
+  const featured = FEATURED_DISPLAY_CURRENCIES.filter((code) =>
+    isConfiguredDisplayCurrency(code),
+  );
+  const rest = PUBLIC_DISPLAY_CURRENCIES.filter(
+    (code) => !featured.includes(code),
+  );
+  return [...featured, ...rest];
+}

@@ -209,17 +209,18 @@ export function LocaleProvider({
 
   const setDisplayCurrency = useCallback(
     (currency: PublicDisplayCurrency) => {
-      commit(
-        {
-          ...preferences,
-          currency: normalizePublicDisplayCurrency(currency),
-          /** Manual choice must not be overwritten by the country default later. */
-          currencyLocked: true,
-        },
-        { refresh: false },
-      );
+      const normalized = normalizePreferences({
+        ...preferences,
+        currency: normalizePublicDisplayCurrency(currency),
+        currencyLocked: true,
+        googleTargetLang: preferences.googleTargetLang,
+        language: preferences.language,
+        languageLocked: preferences.languageLocked,
+      });
+      setPreferences(normalized);
+      writePrefsCookie(normalized);
     },
-    [commit, preferences],
+    [preferences],
   );
 
   const applyCountryMarket = useCallback(

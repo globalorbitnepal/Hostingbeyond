@@ -5,6 +5,7 @@ import { usdToLocalRate } from "@/config/pricing";
 import {
   isConfiguredDisplayCurrency,
   normalizePublicDisplayCurrency,
+  orderedPublicDisplayCurrencies,
   PUBLIC_DISPLAY_CURRENCIES,
   PUBLIC_DISPLAY_CURRENCY_LABELS,
 } from "@/lib/i18n/display-currencies";
@@ -20,6 +21,12 @@ describe("display-currencies", () => {
 
   it("keeps USD first as the checkout currency", () => {
     assert.equal(PUBLIC_DISPLAY_CURRENCIES[0], "USD");
+  });
+
+  it("lists USD, INR, NPR first in the header currency dropdown", () => {
+    const ordered = orderedPublicDisplayCurrencies();
+    assert.deepEqual(ordered.slice(0, 3), ["USD", "INR", "NPR"]);
+    assert.equal(ordered.length, PUBLIC_DISPLAY_CURRENCIES.length);
   });
 
   it("includes the currencies the brief asks for where a price exists", () => {
