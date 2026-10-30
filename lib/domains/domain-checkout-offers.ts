@@ -6,6 +6,8 @@ import { getSiteSettings } from "@/lib/orbit/content";
 import { getHostingProductBySlug } from "@/lib/hosting/hosting-products";
 import {
   availableEmailTermsForPlan,
+  emailDueTodayForTerm,
+  emailPrepaidMonths,
   emailPricePerMonthForTerm,
   emailTermCheckoutLabel,
   type EmailBillingTerm,
@@ -32,7 +34,10 @@ export type DomainCheckoutServiceOffer =
       planId: string;
       planName: string;
       term: EmailBillingTerm;
+      /** Prepaid amount due for the selected term (not one month). */
       amount: number;
+      ratePerMonth: number;
+      prepaidMonths: number;
       currency: string;
       label: string;
       description: string;
@@ -61,15 +66,6 @@ export type DomainCheckoutOffersPayload = {
 
 function roundMoney(n: number) {
   return Math.round(n * 100) / 100;
-}
-
-function formatUsdPerMonth(amount: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount);
 }
 
 /** Real upsell offers for domain checkout — no invented products or prices. */
@@ -150,13 +146,16 @@ export async function getDomainCheckoutOffers(): Promise<DomainCheckoutOffersPay
   if (emailEntry) {
     for (const term of availableEmailTermsForPlan(emailEntry)) {
       const perMonth = emailPricePerMonthForTerm(emailEntry, term);
+      const months = emailPrepaidMonths(term);
       optional.push({
         kind: "business-email",
         serviceId: "business-email",
         planId: emailEntry.id,
         planName: emailEntry.name,
         term,
-        amount: roundMoney(perMonth),
+        amount: emailDueTodayForTerm(emailEntry, term),
+        ratePerMonth: roundMoney(perMonth),
+        prepaidMonths: months,
         currency: "USD",
         label: "Business Email",
         description: "Professional mailboxes on your domain.",
@@ -250,13 +249,17 @@ export async function quoteDomainCheckoutServices(
         errors.push("Selected business email plan is no longer available.");
         continue;
       }
+      const billingLabel =
+        match.prepaidMonths <= 1
+          ? "per month"
+          : `for ${match.prepaidMonths} months`;
       lines.push({
         key,
         label: match.label,
         detail: `${match.planName} · ${match.periodLabel} · ${match.mailboxesLabel}`,
         amount: match.amount,
         currency: match.currency,
-        billingLabel: `${formatUsdPerMonth(match.amount)} / mo`,
+        billingLabel,
       });
     } else if (selection.kind === "domain-protection") {
       const key = "domain-protection";

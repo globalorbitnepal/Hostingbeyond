@@ -3,6 +3,8 @@ import { describe, it } from "node:test";
 
 import {
   emailPricePerMonthForTerm,
+  emailPrepaidMonths,
+  emailDueTodayForTerm,
   availableEmailTermsForPlan,
 } from "@/lib/hosting/business-email-term-pricing";
 import type { CmsBusinessEmailPlan } from "@/lib/orbit/business-email-page-content";
@@ -34,5 +36,15 @@ describe("business-email-term-pricing", () => {
     const terms = availableEmailTermsForPlan(samplePlan);
     assert.ok(terms.includes("monthly"));
     assert.ok(terms.includes("48"));
+  });
+
+  it("charges the full prepaid term, not one month, when 12–48 months is selected", () => {
+    assert.equal(emailPrepaidMonths("monthly"), 1);
+    assert.equal(emailPrepaidMonths("12"), 12);
+    assert.equal(emailPrepaidMonths("24"), 24);
+    assert.equal(emailDueTodayForTerm(samplePlan, "monthly"), 4.99);
+    assert.equal(emailDueTodayForTerm(samplePlan, "12"), 35.88);
+    assert.equal(emailDueTodayForTerm(samplePlan, "24"), 28.8);
+    assert.equal(emailDueTodayForTerm(samplePlan, "48"), 17.76);
   });
 });

@@ -28,6 +28,8 @@ export type AddonPriceOption = {
   id: string;
   label: string;
   unitMonthlyPrice: number;
+  /** 12-month term monthly rate; used when hosting is billed annually. */
+  annualMonthlyPrice?: number;
   description?: string;
 };
 

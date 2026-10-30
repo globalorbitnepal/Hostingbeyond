@@ -21,6 +21,7 @@ export async function resolveAddonPriceOptions(
       id: p.id,
       label: p.name,
       unitMonthlyPrice: p.monthlyPrice,
+      annualMonthlyPrice: p.annualMonthlyPrice,
       description: `${p.mailboxesLabel} · ${p.storageLabel}`,
     }));
   }
@@ -78,7 +79,11 @@ export async function quoteAddonSelections(
 
     const qty = Math.min(50, Math.max(1, selection.quantity || 1));
     const { mult, label } = periodMultiplier(addon.billingMode, hostingBilling);
-    const amount = roundMoney(option.unitMonthlyPrice * qty * mult);
+    const monthlyRate =
+      hostingBilling === "annually" && option.annualMonthlyPrice
+        ? option.annualMonthlyPrice
+        : option.unitMonthlyPrice;
+    const amount = roundMoney(monthlyRate * qty * mult);
     total = roundMoney(total + amount);
 
     lines.push({

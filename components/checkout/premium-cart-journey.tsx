@@ -191,18 +191,28 @@ export function PremiumCartJourney() {
 
   const serviceLines = useMemo(() => {
     if (!hints) return [];
+    const domainCount = Math.max(1, cart.items.length);
     return hints.offers.optional
       .filter((o) => selectedKeys.has(offerKey(o)))
-      .map((o) => ({
-        key: offerKey(o),
-        label: o.label,
-        detail:
+      .map((o) => {
+        const amount =
           o.kind === "domain-protection"
-            ? o.periodLabel
-            : `${o.planName} · ${o.periodLabel}`,
-        amount: o.amount,
-      }));
-  }, [hints, selectedKeys]);
+            ? Math.round(o.amount * domainCount * 100) / 100
+            : o.amount;
+        const detail =
+          o.kind === "domain-protection" && domainCount > 1
+            ? `${o.periodLabel} · ${domainCount} domains`
+            : o.kind === "hosting" || o.kind === "business-email"
+              ? `${o.planName} · ${o.periodLabel}`
+              : o.periodLabel;
+        return {
+          key: offerKey(o),
+          label: o.label,
+          detail,
+          amount,
+        };
+      });
+  }, [hints, selectedKeys, cart.items.length]);
 
   const servicesSubtotal = serviceLines.reduce((s, l) => s + l.amount, 0);
   const total = cart.total + servicesSubtotal;

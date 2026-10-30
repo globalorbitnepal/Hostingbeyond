@@ -367,10 +367,19 @@ export function CheckoutAddonOfferList({
                   <p className="mt-3 text-[16px] font-extrabold text-[var(--hb-co-text)]">
                     <CatalogPrice usd={activeOffer.amount} />
                     <span className="ml-1.5 text-[13px] font-semibold text-[var(--hb-co-text-muted)]">
-                      / mo
+                      {activeOffer.prepaidMonths <= 1
+                        ? "/ mo"
+                        : `for ${activeOffer.prepaidMonths} months`}
                     </span>
                     <span className="mt-0.5 block text-[12px] font-medium text-[var(--hb-co-text-muted)]">
-                      {activeOffer.periodLabel}
+                      {activeOffer.prepaidMonths > 1 ? (
+                        <>
+                          <CatalogPrice usd={activeOffer.ratePerMonth} /> / mo ·{" "}
+                          {activeOffer.periodLabel}
+                        </>
+                      ) : (
+                        activeOffer.periodLabel
+                      )}
                     </span>
                   </p>
                 ) : null}
