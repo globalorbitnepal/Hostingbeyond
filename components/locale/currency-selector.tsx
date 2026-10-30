@@ -123,15 +123,10 @@ export function CurrencySelector({
     setOpen(true);
   }, [updateMenuPosition]);
 
-  const togglePanel = useCallback(
-    (event: { stopPropagation: () => void; preventDefault: () => void }) => {
-      event.stopPropagation();
-      event.preventDefault();
-      if (open) closePanel();
-      else openPanel();
-    },
-    [open, closePanel, openPanel],
-  );
+  const togglePanel = useCallback(() => {
+    if (open) closePanel();
+    else openPanel();
+  }, [open, closePanel, openPanel]);
 
   useEffect(() => {
     const onOther = (event: Event) => {
@@ -254,7 +249,7 @@ export function CurrencySelector({
     <div
       ref={wrapperRef}
       className={cn(
-        "skiptranslate notranslate relative shrink-0",
+        "notranslate relative shrink-0",
         fill && "w-full min-w-0",
         className,
       )}
@@ -263,7 +258,7 @@ export function CurrencySelector({
       <button
         ref={triggerRef}
         type="button"
-        onPointerDown={togglePanel}
+        onClick={togglePanel}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={`Display currency: ${selected}`}
@@ -285,8 +280,9 @@ export function CurrencySelector({
         ? createPortal(
             <div
               ref={menuRef}
+              data-hb-ui="currency-menu"
               className={cn(
-                "skiptranslate notranslate overflow-y-auto overscroll-contain rounded-[16px] border",
+                "notranslate overflow-y-auto overscroll-contain rounded-[16px] border",
                 light
                   ? "border-slate-200/90 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.16)]"
                   : "border-white/[0.12] bg-[#0c1528] shadow-[0_20px_60px_rgba(0,0,0,0.65)]",

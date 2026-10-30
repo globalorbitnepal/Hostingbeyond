@@ -467,6 +467,7 @@ export function CountryLanguageSelector({
         ? createPortal(
             <div
               ref={menuRef}
+              data-hb-ui="language-menu"
               className={cn(
                 "notranslate flex flex-col overflow-hidden rounded-[16px] border backdrop-blur-2xl",
                 light

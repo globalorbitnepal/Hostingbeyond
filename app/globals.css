@@ -754,10 +754,12 @@
     background-clip: padding-box;
   }
 
-  /* Hide Google Translate chrome; keep HostingBeyond header/footer */
+  /* Hide Google Translate chrome only. GT injects `body > .skiptranslate`.
+     HostingBeyond dropdowns that portal to body MUST use data-hb-ui so this
+     rule cannot display:none the currency/language menus. */
   .goog-te-banner-frame,
   iframe.skiptranslate,
-  body > .skiptranslate,
+  body > .skiptranslate:not([data-hb-ui]),
   #goog-gt-tt,
   .VIpgJd-ZVi9od-ORHb,
   .VIpgJd-ZVi9od-ORHb-OEVmcd,
