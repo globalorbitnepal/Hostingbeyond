@@ -17,8 +17,8 @@ export type LanguageStorefront = {
 };
 
 /**
- * Flag-country metadata for a language chip. Not used to change prices —
- * Portuguese is Portugal, not Brazilian Real.
+ * Language → flag country → display currency.
+ * Portuguese is Portugal / EUR, never Brazil / BRL.
  */
 export function storefrontFromWebsiteLanguage(
   code: WebsiteLanguageCode,
@@ -46,25 +46,19 @@ export function storefrontFromWebsiteLanguage(
   };
 }
 
-/** Apply a website language without touching country or display currency. */
-export function preferencesKeepingCurrencyForLanguage(
+/** Language pick applies matching prices and does not keep a leftover AUD/BRL. */
+export function preferencesFromWebsiteLanguage(
   prefs: UserPreferences,
   code: WebsiteLanguageCode,
-): Pick<
-  UserPreferences,
-  | "googleTargetLang"
-  | "languageLocked"
-  | "country"
-  | "localeMarketId"
-  | "currency"
-  | "currencyLocked"
-> {
+): UserPreferences {
+  const market = storefrontFromWebsiteLanguage(code);
   return {
-    googleTargetLang: code,
+    ...prefs,
+    googleTargetLang: market.googleTargetLang,
+    country: market.country,
+    localeMarketId: market.localeMarketId,
+    currency: market.currency,
+    currencyLocked: false,
     languageLocked: true,
-    country: prefs.country,
-    localeMarketId: prefs.localeMarketId,
-    currency: prefs.currency,
-    currencyLocked: prefs.currencyLocked,
   };
 }

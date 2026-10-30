@@ -31,7 +31,7 @@ import {
   getLocaleMarket,
   type HostingerLocaleMarket,
 } from "@/lib/i18n/hostinger-locale-markets";
-import { preferencesKeepingCurrencyForLanguage } from "@/lib/i18n/language-market";
+import { preferencesFromWebsiteLanguage } from "@/lib/i18n/language-market";
 import {
   defaultEnabledLanguageCodes,
   resolveWebsiteLanguageCode,
@@ -248,10 +248,9 @@ export function LocaleProvider({
   const setWebsiteLanguage = useCallback(
     (code: WebsiteLanguageCode) => {
       const resolved = resolveWebsiteLanguageCode(code, enabledLanguageCodes);
-      const normalized = normalizePreferences({
-        ...preferences,
-        ...preferencesKeepingCurrencyForLanguage(preferences, resolved),
-      });
+      const normalized = normalizePreferences(
+        preferencesFromWebsiteLanguage(preferences, resolved),
+      );
       writePrefsCookie(normalized);
       if (typeof document !== "undefined") {
         document.documentElement.lang = isGoogleTranslationActive(resolved)

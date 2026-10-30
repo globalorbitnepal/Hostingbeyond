@@ -2,36 +2,74 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import {
-  preferencesKeepingCurrencyForLanguage,
+  preferencesFromWebsiteLanguage,
   storefrontFromWebsiteLanguage,
 } from "@/lib/i18n/language-market";
 import { normalizePreferences } from "@/lib/i18n/preferences";
+import { WEBSITE_LANGUAGES } from "@/lib/i18n/website-languages";
+
+const LANGUAGE_CURRENCY: Record<string, { country: string; currency: string }> =
+  {
+    en: { country: "US", currency: "USD" },
+    hi: { country: "IN", currency: "INR" },
+    ne: { country: "NP", currency: "NPR" },
+    bn: { country: "BD", currency: "BDT" },
+    fr: { country: "FR", currency: "EUR" },
+    de: { country: "DE", currency: "EUR" },
+    id: { country: "ID", currency: "IDR" },
+    it: { country: "IT", currency: "EUR" },
+    ja: { country: "JP", currency: "JPY" },
+    ko: { country: "KR", currency: "KRW" },
+    pt: { country: "PT", currency: "EUR" },
+    ru: { country: "RU", currency: "RUB" },
+    "zh-CN": { country: "CN", currency: "CNY" },
+    es: { country: "ES", currency: "EUR" },
+  };
 
 describe("storefrontFromWebsiteLanguage", () => {
-  it("maps Hindi chip metadata to India (does not apply prices on language pick)", () => {
-    const hi = storefrontFromWebsiteLanguage("hi");
-    assert.equal(hi.country, "IN");
-    assert.equal(hi.googleTargetLang, "hi");
-    assert.equal(hi.triggerCode, "HI");
+  it("maps every website language to the correct country and currency", () => {
+    assert.equal(
+      Object.keys(LANGUAGE_CURRENCY).length,
+      WEBSITE_LANGUAGES.length,
+    );
+    for (const row of WEBSITE_LANGUAGES) {
+      const expected = LANGUAGE_CURRENCY[row.code];
+      const got = storefrontFromWebsiteLanguage(row.code);
+      assert.equal(got.country, expected.country, row.code);
+      assert.equal(got.currency, expected.currency, row.code);
+      assert.equal(got.googleTargetLang, row.code);
+    }
   });
 
-  it("maps Portuguese to Portugal, never Brazil / BRL", () => {
+  it("maps Portuguese to Portugal / EUR, never Brazil / BRL", () => {
     const pt = storefrontFromWebsiteLanguage("pt");
     assert.equal(pt.country, "PT");
+    assert.equal(pt.currency, "EUR");
     assert.notEqual(pt.currency, "BRL");
-    assert.equal(pt.googleTargetLang, "pt");
-    assert.equal(pt.triggerCode, "PT");
-  });
-
-  it("maps English chip metadata to United States", () => {
-    const en = storefrontFromWebsiteLanguage("en");
-    assert.equal(en.country, "US");
-    assert.equal(en.googleTargetLang, "en");
+    assert.notEqual(pt.currency, "AUD");
   });
 });
 
-describe("preferencesKeepingCurrencyForLanguage", () => {
-  it("keeps USD when the visitor switches to Portuguese", () => {
+describe("preferencesFromWebsiteLanguage", () => {
+  it("replaces leftover AUD with EUR when switching to Portuguese", () => {
+    const before = normalizePreferences({
+      country: "AU",
+      localeMarketId: "AU-en",
+      currency: "AUD",
+      currencyLocked: true,
+      googleTargetLang: "en",
+    });
+    const next = normalizePreferences(
+      preferencesFromWebsiteLanguage(before, "pt"),
+    );
+    assert.equal(next.googleTargetLang, "pt");
+    assert.equal(next.country, "PT");
+    assert.equal(next.currency, "EUR");
+    assert.notEqual(next.currency, "AUD");
+    assert.notEqual(next.currency, "BRL");
+  });
+
+  it("maps Hindi to INR even if the previous currency was locked", () => {
     const before = normalizePreferences({
       country: "US",
       localeMarketId: "US-en",
@@ -39,29 +77,10 @@ describe("preferencesKeepingCurrencyForLanguage", () => {
       currencyLocked: true,
       googleTargetLang: "en",
     });
-    const next = normalizePreferences({
-      ...before,
-      ...preferencesKeepingCurrencyForLanguage(before, "pt"),
-    });
-    assert.equal(next.googleTargetLang, "pt");
-    assert.equal(next.currency, "USD");
-    assert.equal(next.country, "US");
-  });
-
-  it("keeps INR when the visitor switches to Portuguese", () => {
-    const before = normalizePreferences({
-      country: "IN",
-      localeMarketId: "IN-hi",
-      currency: "INR",
-      currencyLocked: true,
-      googleTargetLang: "hi",
-    });
-    const next = normalizePreferences({
-      ...before,
-      ...preferencesKeepingCurrencyForLanguage(before, "pt"),
-    });
-    assert.equal(next.googleTargetLang, "pt");
+    const next = normalizePreferences(
+      preferencesFromWebsiteLanguage(before, "hi"),
+    );
+    assert.equal(next.googleTargetLang, "hi");
     assert.equal(next.currency, "INR");
-    assert.notEqual(next.currency, "BRL");
   });
 });
