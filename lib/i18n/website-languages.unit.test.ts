@@ -14,25 +14,16 @@ import {
 } from "@/lib/i18n/website-languages";
 
 describe("website language registry", () => {
-  it("registers exactly the 13 required languages once", () => {
+  it("registers each language once with English first and Portuguese as Portugal", () => {
     const codes = WEBSITE_LANGUAGES.map((row) => row.code);
-    assert.equal(codes.length, 13);
-    assert.equal(new Set(codes).size, 13);
-    assert.deepEqual(codes, [
-      "en",
-      "bn",
-      "pt",
-      "fr",
-      "zh-CN",
-      "de",
-      "hi",
-      "ja",
-      "ne",
-      "ru",
-      "es",
-      "ko",
-      "id",
-    ]);
+    assert.equal(new Set(codes).size, codes.length);
+    assert.deepEqual(codes.slice(0, 3), ["en", "hi", "ne"]);
+    assert.ok(codes.includes("it"));
+    assert.ok(codes.includes("pt"));
+    assert.equal(
+      WEBSITE_LANGUAGES.find((row) => row.code === "pt")?.flagCountryCode,
+      "PT",
+    );
     assert.equal(WEBSITE_LANGUAGES[0]?.isDefault, true);
     assert.equal(DEFAULT_WEBSITE_LANGUAGE_CODE, "en");
   });
@@ -60,7 +51,27 @@ describe("website language registry", () => {
       "hi",
       "ko",
     ]);
-    assert.equal(normalizeEnabledLanguageCodes(undefined).length, 13);
+    assert.equal(
+      normalizeEnabledLanguageCodes(undefined).length,
+      WEBSITE_LANGUAGES.length,
+    );
+    assert.ok(
+      normalizeEnabledLanguageCodes([
+        "en",
+        "bn",
+        "pt",
+        "fr",
+        "zh-CN",
+        "de",
+        "hi",
+        "ja",
+        "ne",
+        "ru",
+        "es",
+        "ko",
+        "id",
+      ]).includes("it"),
+    );
   });
 
   it("falls back to English for disabled or invalid targets", () => {

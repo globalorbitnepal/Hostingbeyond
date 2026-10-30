@@ -3,22 +3,25 @@ import { isStorefrontCountryCode } from "@/lib/i18n/storefront-countries";
 /**
  * Single storefront language registry. Country/currency markets are separate.
  * Codes match Cloud Translation v3 (ko, id, zh-CN).
+ *
+ * Flags name the language (Portuguese → Portugal), never a billing currency.
  */
 
 export const WEBSITE_LANGUAGE_CODES = [
   "en",
-  "bn",
-  "pt",
-  "fr",
-  "zh-CN",
-  "de",
   "hi",
-  "ja",
   "ne",
-  "ru",
-  "es",
-  "ko",
+  "bn",
+  "fr",
+  "de",
   "id",
+  "it",
+  "ja",
+  "ko",
+  "pt",
+  "ru",
+  "zh-CN",
+  "es",
 ] as const;
 
 export type WebsiteLanguageCode = (typeof WEBSITE_LANGUAGE_CODES)[number];
@@ -37,6 +40,23 @@ export type WebsiteLanguageStatus = WebsiteLanguage & { enabled: boolean };
 
 export const DEFAULT_WEBSITE_LANGUAGE_CODE: WebsiteLanguageCode = "en";
 
+/** Frozen public set before Italian was added — used to auto-enable new languages. */
+const LEGACY_FULL_PUBLIC_CODES = [
+  "en",
+  "bn",
+  "pt",
+  "fr",
+  "zh-CN",
+  "de",
+  "hi",
+  "ja",
+  "ne",
+  "ru",
+  "es",
+  "ko",
+  "id",
+] as const;
+
 export const WEBSITE_LANGUAGES: readonly WebsiteLanguage[] = [
   {
     code: "en",
@@ -47,59 +67,11 @@ export const WEBSITE_LANGUAGES: readonly WebsiteLanguage[] = [
     isDefault: true,
   },
   {
-    code: "bn",
-    englishName: "Bengali",
-    nativeName: "বাংলা",
-    triggerCode: "BN",
-    flagCountryCode: "BD",
-    isDefault: false,
-  },
-  {
-    code: "pt",
-    englishName: "Portuguese",
-    nativeName: "Português",
-    triggerCode: "PT",
-    flagCountryCode: "BR",
-    isDefault: false,
-  },
-  {
-    code: "fr",
-    englishName: "French",
-    nativeName: "Français",
-    triggerCode: "FR",
-    flagCountryCode: "FR",
-    isDefault: false,
-  },
-  {
-    code: "zh-CN",
-    englishName: "Simplified Chinese",
-    nativeName: "简体中文",
-    triggerCode: "ZH",
-    flagCountryCode: "CN",
-    isDefault: false,
-  },
-  {
-    code: "de",
-    englishName: "German",
-    nativeName: "Deutsch",
-    triggerCode: "DE",
-    flagCountryCode: "DE",
-    isDefault: false,
-  },
-  {
     code: "hi",
     englishName: "Hindi",
     nativeName: "हिन्दी",
     triggerCode: "HI",
     flagCountryCode: "IN",
-    isDefault: false,
-  },
-  {
-    code: "ja",
-    englishName: "Japanese",
-    nativeName: "日本語",
-    triggerCode: "JA",
-    flagCountryCode: "JP",
     isDefault: false,
   },
   {
@@ -111,19 +83,51 @@ export const WEBSITE_LANGUAGES: readonly WebsiteLanguage[] = [
     isDefault: false,
   },
   {
-    code: "ru",
-    englishName: "Russian",
-    nativeName: "Русский",
-    triggerCode: "RU",
-    flagCountryCode: "RU",
+    code: "bn",
+    englishName: "Bengali",
+    nativeName: "বাংলা",
+    triggerCode: "BN",
+    flagCountryCode: "BD",
     isDefault: false,
   },
   {
-    code: "es",
-    englishName: "Spanish",
-    nativeName: "Español",
-    triggerCode: "ES",
-    flagCountryCode: "ES",
+    code: "fr",
+    englishName: "French",
+    nativeName: "Français",
+    triggerCode: "FR",
+    flagCountryCode: "FR",
+    isDefault: false,
+  },
+  {
+    code: "de",
+    englishName: "German",
+    nativeName: "Deutsch",
+    triggerCode: "DE",
+    flagCountryCode: "DE",
+    isDefault: false,
+  },
+  {
+    code: "id",
+    englishName: "Indonesian",
+    nativeName: "Bahasa Indonesia",
+    triggerCode: "ID",
+    flagCountryCode: "ID",
+    isDefault: false,
+  },
+  {
+    code: "it",
+    englishName: "Italian",
+    nativeName: "Italiano",
+    triggerCode: "IT",
+    flagCountryCode: "IT",
+    isDefault: false,
+  },
+  {
+    code: "ja",
+    englishName: "Japanese",
+    nativeName: "日本語",
+    triggerCode: "JA",
+    flagCountryCode: "JP",
     isDefault: false,
   },
   {
@@ -135,11 +139,35 @@ export const WEBSITE_LANGUAGES: readonly WebsiteLanguage[] = [
     isDefault: false,
   },
   {
-    code: "id",
-    englishName: "Indonesian",
-    nativeName: "Bahasa Indonesia",
-    triggerCode: "ID",
-    flagCountryCode: "ID",
+    code: "pt",
+    englishName: "Portuguese",
+    nativeName: "Português",
+    triggerCode: "PT",
+    flagCountryCode: "PT",
+    isDefault: false,
+  },
+  {
+    code: "ru",
+    englishName: "Russian",
+    nativeName: "Русский",
+    triggerCode: "RU",
+    flagCountryCode: "RU",
+    isDefault: false,
+  },
+  {
+    code: "zh-CN",
+    englishName: "Simplified Chinese",
+    nativeName: "简体中文",
+    triggerCode: "ZH",
+    flagCountryCode: "CN",
+    isDefault: false,
+  },
+  {
+    code: "es",
+    englishName: "Spanish",
+    nativeName: "Español",
+    triggerCode: "ES",
+    flagCountryCode: "ES",
     isDefault: false,
   },
 ];
@@ -161,7 +189,7 @@ export function websiteLanguageByCode(
   return byCode.get(code as WebsiteLanguageCode);
 }
 
-/** Circular flag for the language tab (English → US). */
+/** Circular flag for the language tab (English → US, Portuguese → Portugal). */
 export function websiteLanguageFlagCountryCode(
   code: string | null | undefined,
 ): string {
@@ -185,6 +213,11 @@ export function defaultEnabledLanguageCodes(): WebsiteLanguageCode[] {
   return WEBSITE_LANGUAGES.map((row) => row.code);
 }
 
+function isLegacyFullPublicSet(codes: ReadonlySet<string>): boolean {
+  if (codes.size !== LEGACY_FULL_PUBLIC_CODES.length) return false;
+  return LEGACY_FULL_PUBLIC_CODES.every((code) => codes.has(code));
+}
+
 /** English is always enabled. Unknown codes are dropped. Registry order is kept. */
 export function normalizeEnabledLanguageCodes(
   input: unknown,
@@ -196,6 +229,9 @@ export function normalizeEnabledLanguageCodes(
       if (typeof raw === "string" && allowed.has(raw as WebsiteLanguageCode)) {
         picked.add(raw as WebsiteLanguageCode);
       }
+    }
+    if (isLegacyFullPublicSet(picked)) {
+      return defaultEnabledLanguageCodes();
     }
   } else {
     return defaultEnabledLanguageCodes();

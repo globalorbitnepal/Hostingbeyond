@@ -48,7 +48,7 @@ export const languages: Record<
     code: "pt",
     label: "Portuguese",
     nativeLabel: "Português",
-    locale: "pt-BR",
+    locale: "pt-PT",
   },
   ja: { code: "ja", label: "Japanese", nativeLabel: "日本語", locale: "ja-JP" },
   ko: { code: "ko", label: "Korean", nativeLabel: "한국어", locale: "ko-KR" },

@@ -93,7 +93,12 @@ export function publicCurrencyTriggerLabel(currency: CurrencyCode): string {
 }
 
 /** Codes shown first in the header currency chip (prices only, not language). */
-export const FEATURED_DISPLAY_CURRENCIES = ["USD", "INR", "NPR"] as const;
+export const FEATURED_DISPLAY_CURRENCIES = [
+  "USD",
+  "INR",
+  "NPR",
+  "EUR",
+] as const;
 
 export function orderedPublicDisplayCurrencies(): PublicDisplayCurrency[] {
   const featured: PublicDisplayCurrency[] = [];

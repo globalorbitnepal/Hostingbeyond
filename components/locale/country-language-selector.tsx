@@ -612,8 +612,8 @@ export function CountryLanguageSelector({
                     : "border-white/[0.07] text-white/40",
                 )}
               >
-                Matching prices follow this language. Change USD, INR, NPR in
-                the currency menu.
+                Language only — prices stay in the currency you already chose.
+                Change USD, INR, NPR, EUR and others in the currency menu.
               </p>
             </div>,
             document.body,

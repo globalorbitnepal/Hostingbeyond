@@ -1,3 +1,4 @@
+import type { UserPreferences } from "@/lib/i18n/preferences";
 import { resolveCountryDisplayCurrency } from "@/lib/i18n/country-currency";
 import type { PublicDisplayCurrency } from "@/lib/i18n/display-currencies";
 import { HOSTINGER_LOCALE_MARKETS } from "@/lib/i18n/hostinger-locale-markets";
@@ -16,8 +17,8 @@ export type LanguageStorefront = {
 };
 
 /**
- * Language drives country + display currency.
- * Hindi → India / INR, Nepali → Nepal / NPR, English → United States / USD.
+ * Flag-country metadata for a language chip. Not used to change prices —
+ * Portuguese is Portugal, not Brazilian Real.
  */
 export function storefrontFromWebsiteLanguage(
   code: WebsiteLanguageCode,
@@ -42,5 +43,28 @@ export function storefrontFromWebsiteLanguage(
       market?.id ?? `${country}-${lang.triggerCode.toLowerCase()}`,
     googleTargetLang: lang.code,
     triggerCode: lang.triggerCode,
+  };
+}
+
+/** Apply a website language without touching country or display currency. */
+export function preferencesKeepingCurrencyForLanguage(
+  prefs: UserPreferences,
+  code: WebsiteLanguageCode,
+): Pick<
+  UserPreferences,
+  | "googleTargetLang"
+  | "languageLocked"
+  | "country"
+  | "localeMarketId"
+  | "currency"
+  | "currencyLocked"
+> {
+  return {
+    googleTargetLang: code,
+    languageLocked: true,
+    country: prefs.country,
+    localeMarketId: prefs.localeMarketId,
+    currency: prefs.currency,
+    currencyLocked: prefs.currencyLocked,
   };
 }

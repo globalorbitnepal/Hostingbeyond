@@ -9,18 +9,19 @@ export const LOCALE_URL_SEGMENT_BY_LANGUAGE: Record<
   Exclude<WebsiteLanguageCode, "en">,
   string
 > = {
-  bn: "bn",
-  pt: "pt",
-  fr: "fr",
-  "zh-CN": "zh",
-  de: "de",
   hi: "hi",
-  ja: "ja",
   ne: "ne",
-  ru: "ru",
-  es: "es",
-  ko: "ko",
+  bn: "bn",
+  fr: "fr",
+  de: "de",
   id: "id",
+  it: "it",
+  ja: "ja",
+  ko: "ko",
+  pt: "pt",
+  ru: "ru",
+  "zh-CN": "zh",
+  es: "es",
 };
 
 const LANGUAGE_BY_URL_SEGMENT = new Map<string, WebsiteLanguageCode>(
