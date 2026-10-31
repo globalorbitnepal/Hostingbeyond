@@ -10,6 +10,7 @@ import { fileURLToPath } from "node:url";
 
 import {
   integrationModeFromEnv,
+  mergeTapSummaries,
   parseTapSummary,
   resolveExitCode,
   shouldFailWhenIntegrationBlocked,
@@ -35,10 +36,14 @@ const UNIT_GLOBS = [
   "lib/blog/**/*.test.ts",
   "lib/http/**/*.test.ts",
   "lib/hosting/**/*.test.ts",
+  "lib/beyond-ai/**/*.test.ts",
   "lib/support/**/*.test.ts",
   "lib/i18n/**/*.test.ts",
   "lib/currency/**/*.test.ts",
   "lib/migration/**/*.test.ts",
+  "lib/readiness/**/*.test.ts",
+  "lib/integrations/**/*.test.ts",
+  "lib/config/**/*.test.ts",
   "lib/test/**/*.test.ts",
   "app/api/**/*.test.ts",
   "ops/backup/**/*.test.mjs",
@@ -63,10 +68,7 @@ function collectTestFiles(patterns, { integrationOnly = false } = {}) {
     for (const file of globSync(pattern, { cwd: ROOT })) {
       if (integrationOnly) {
         if (file.endsWith(".integration.test.ts")) files.add(file);
-      } else if (
-        file.endsWith(".test.ts") ||
-        file.endsWith(".test.mjs")
-      ) {
+      } else if (file.endsWith(".test.ts") || file.endsWith(".test.mjs")) {
         if (!file.endsWith(".integration.test.ts")) files.add(file);
       }
     }
@@ -74,10 +76,21 @@ function collectTestFiles(patterns, { integrationOnly = false } = {}) {
   return [...files].sort();
 }
 
+function chunk(files, size) {
+  const batches = [];
+  for (let i = 0; i < files.length; i += size) {
+    batches.push(files.slice(i, i + size));
+  }
+  return batches;
+}
+
 function runNodeTest(label, files) {
   if (files.length === 0) {
     console.log(`TEST_RUNNER_SUMMARY [${label}]: no test files (skipped)`);
-    return { exitCode: 0, summary: { fail: 0, cancelled: 0, pass: 0, skipped: 0, tests: 0 } };
+    return {
+      exitCode: 0,
+      summary: { fail: 0, cancelled: 0, pass: 0, skipped: 0, tests: 0 },
+    };
   }
   const args = [...NODE_TEST_BASE, ...files];
   const result = spawnSync(args[0], args.slice(1), {
@@ -104,6 +117,29 @@ function runNodeTest(label, files) {
   return { exitCode, summary };
 }
 
+/** Avoid one giant node --test argv (CI aborts mid-suite without TAP footer). */
+function runNodeTestBatched(label, files, batchSize = 40) {
+  if (files.length === 0) {
+    return runNodeTest(label, files);
+  }
+  const batches = chunk(files, batchSize);
+  if (batches.length === 1) {
+    return runNodeTest(label, files);
+  }
+  let exitCode = 0;
+  const summaries = [];
+  batches.forEach((batch, index) => {
+    const part = runNodeTest(`${label}:${index + 1}/${batches.length}`, batch);
+    summaries.push(part.summary);
+    if (part.exitCode !== 0) exitCode = 1;
+  });
+  const summary = mergeTapSummaries(...summaries);
+  console.log(
+    `TEST_RUNNER_SUMMARY [${label}]: pass=${summary.pass} fail=${summary.fail} cancelled=${summary.cancelled} skipped=${summary.skipped} tests=${summary.tests} exit=${exitCode}`,
+  );
+  return { exitCode, summary };
+}
+
 function integrationDbReady() {
   const probe = spawnSync("node", ["scripts/integration-database-ready.mjs"], {
     cwd: ROOT,
@@ -123,7 +159,7 @@ let finalExit = 0;
 
 if (!integrationOnly) {
   const unitFiles = collectTestFiles(UNIT_GLOBS, { integrationOnly: false });
-  const unit = runNodeTest("unit", unitFiles);
+  const unit = runNodeTestBatched("unit", unitFiles);
   if (unit.exitCode !== 0) finalExit = 1;
 }
 
@@ -146,7 +182,7 @@ if (!unitOnly) {
       const integFiles = collectTestFiles(INTEGRATION_GLOBS, {
         integrationOnly: true,
       });
-      const integ = runNodeTest("integration", integFiles);
+      const integ = runNodeTestBatched("integration", integFiles, 8);
       if (integ.exitCode !== 0) finalExit = 1;
     }
   }

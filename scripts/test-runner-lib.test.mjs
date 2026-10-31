@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 
 import {
   integrationModeFromEnv,
+  mergeTapSummaries,
   parseTapSummary,
   resolveExitCode,
   shouldFailWhenIntegrationBlocked,
@@ -24,6 +25,17 @@ describe("test-runner-lib", () => {
     assert.equal(summary.tests, 3);
     assert.equal(summary.fail, 0);
     assert.equal(summary.cancelled, 1);
+  });
+
+  it("mergeTapSummaries sums TAP counters across batches", () => {
+    const merged = mergeTapSummaries(
+      { pass: 10, fail: 0, cancelled: 0, skipped: 1, tests: 11 },
+      { pass: 5, fail: 1, cancelled: 0, skipped: 0, tests: 6 },
+    );
+    assert.equal(merged.pass, 15);
+    assert.equal(merged.fail, 1);
+    assert.equal(merged.tests, 17);
+    assert.equal(merged.skipped, 1);
   });
 
   it("resolveExitCode forces 1 when cancelled > 0 even if child status is 0", () => {

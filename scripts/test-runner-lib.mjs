@@ -18,6 +18,19 @@ export function parseTapSummary(output) {
   };
 }
 
+export function mergeTapSummaries(...summaries) {
+  return summaries.reduce(
+    (acc, s) => ({
+      pass: acc.pass + (s.pass ?? 0),
+      fail: acc.fail + (s.fail ?? 0),
+      cancelled: acc.cancelled + (s.cancelled ?? 0),
+      skipped: acc.skipped + (s.skipped ?? 0),
+      tests: acc.tests + (s.tests ?? 0),
+    }),
+    { pass: 0, fail: 0, cancelled: 0, skipped: 0, tests: 0 },
+  );
+}
+
 export function resolveExitCode(childStatus, summary, rawOutput = "") {
   let exitCode = childStatus ?? 1;
   if (summary.fail > 0 || summary.cancelled > 0) {
