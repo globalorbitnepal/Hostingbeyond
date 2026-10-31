@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
   Upload Desktop public pairing material to GitHub Actions secrets (repo admin + gh auth).
-  Public keys only — safe for GitHub Secrets storage.
+  Public keys only  - safe for GitHub Secrets storage.
 #>
 param(
   [string]$BackupRoot = (Join-Path $env:USERPROFILE "Desktop\hostingbeyond"),
@@ -23,7 +23,7 @@ function Strip-ForcedPrefix([string]$Line) {
 
 $steps = Join-Path $BackupRoot "VPS-OWNER-STEPS.txt"
 if (-not (Test-Path -LiteralPath $steps)) {
-  throw "Missing $steps — run Install-DailyDesktopBackup.ps1 first"
+  throw "Missing $steps  - run Install-DailyDesktopBackup.ps1 first"
 }
 
 $create = $null

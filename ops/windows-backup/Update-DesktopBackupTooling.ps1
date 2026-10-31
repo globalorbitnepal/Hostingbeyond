@@ -46,5 +46,5 @@ if (Test-Path -LiteralPath $configPath) {
   & (Join-Path $winBackup "Register-ScheduledTask.ps1") -ConfigPath $configPath
 }
 else {
-  Write-Host "WARN: config.json missing — run Install-DailyDesktopBackup first"
+  Write-Host "WARN: config.json missing  - run Install-DailyDesktopBackup first"
 }

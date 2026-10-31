@@ -165,7 +165,7 @@ if (Test-Path -LiteralPath $simpleHindi) {
 }
 
 $vpsSteps = @"
-HostingBeyond — one-time VPS steps (owner or sysadmin on 51.15.21.166)
+HostingBeyond  - one-time VPS steps (owner or sysadmin on 51.15.21.166)
 
 1) As user hostingbeyond, install age PUBLIC recipient only:
    mkdir -p ~/.config/hostingbeyond-backup

@@ -58,7 +58,7 @@ $manual = Join-Path $reports "VPS-PAIR-GITHUB-ACTION.txt"
 ) | Set-Content -LiteralPath $manual -Encoding UTF8
 
 if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
-  Write-Host "gh CLI not installed — wrote $manual"
+  Write-Host "gh CLI not installed  - wrote $manual"
   Write-Host "NEXT: On any machine with gh auth login, run:"
   Write-Host "  gh workflow run pair-desktop-backup-vps.yml --repo $Repo -f enable_export=true -f create_pub=<line> -f fetch_pub=<line>"
   exit 2
@@ -67,7 +67,7 @@ if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
 $token = $null
 try { $token = (gh auth token 2>$null).Trim() } catch { }
 if (-not $token) {
-  Write-Host "gh not logged in — run: gh auth login"
+  Write-Host "gh not logged in  - run: gh auth login"
   Write-Host "Pairing values saved in: $manual"
   exit 2
 }

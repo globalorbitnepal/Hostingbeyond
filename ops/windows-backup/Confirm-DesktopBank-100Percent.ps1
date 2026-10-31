@@ -81,15 +81,15 @@ Write-Host "Folder upload = live site (always false): $($a.liveSiteOnNewServerWi
 Write-Host ""
 
 @(
-  "HostingBeyond Desktop bank — status"
+  "HostingBeyond Desktop bank  - status"
   "Updated: $((Get-Date).ToString('yyyy-MM-dd HH:mm'))"
   ""
   "Roz 11 PM Nepal (PC ON): $($a.nightlyAutoUpdateReady)"
   "Encrypted poori site DATA copy: $($a.encryptedSiteDataOnPcReady)"
   "Naye server restore path ready: $($a.zeroLossRecoveryPathReady)"
   ""
-  "Google Sign / NameSilo / Translate: production .env se (password manager) — backup mein values nahi."
-  "Live site: naya Linux VPS + Git code + README-RECOVERY.md — folder seedha upload NAHI."
+  "Google Sign / NameSilo / Translate: production .env se (password manager)  - backup mein values nahi."
+  "Live site: naya Linux VPS + Git code + README-RECOVERY.md  - folder seedha upload NAHI."
   ""
   "Padhein: APKA-ZERO-LOSS-HINDI.md"
 ) | Set-Content -LiteralPath (Join-Path $BackupRoot "APKA-STATUS-HINDI.txt") -Encoding ascii
@@ -100,5 +100,5 @@ if (-not $a.nightlyAutoUpdateReady -or -not $a.encryptedSiteDataOnPcReady) {
 }
 
 Write-Host "OK: Desktop bank ready for nightly auto-update + zero-loss DATA on PC."
-Write-Host "NOTE: APIs (Google/NameSilo/Translate) naye server par .env se — README-RECOVERY.md follow karein."
+Write-Host "NOTE: APIs (Google/NameSilo/Translate) naye server par .env se  - README-RECOVERY.md follow karein."
 exit 0

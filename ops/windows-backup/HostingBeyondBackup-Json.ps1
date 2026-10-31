@@ -1,6 +1,6 @@
 #Requires -Version 5.1
 <#
-  UTF-8 JSON without BOM — Node dr scripts reject BOM-prefixed verify reports.
+  UTF-8 JSON without BOM  - Node dr scripts reject BOM-prefixed verify reports.
 #>
 function Write-JsonFileNoBom {
   param(
