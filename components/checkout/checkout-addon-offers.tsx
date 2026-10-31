@@ -1,7 +1,5 @@
 "use client";
 
-import { Check, Mail, Server, ShieldCheck } from "lucide-react";
-
 import type {
   DomainCheckoutServiceOffer,
   DomainCheckoutServiceSelection,
@@ -136,6 +134,27 @@ type AddonListProps = {
   className?: string;
 };
 
+function AddonSwitch({
+  checked,
+  label,
+  onClick,
+}: {
+  checked: boolean;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      className="hb-checkout-premium__switch mt-1"
+      onClick={onClick}
+    />
+  );
+}
+
 function TermPillGroup<T extends string>({
   options,
   value,
@@ -208,13 +227,12 @@ export function CheckoutAddonOfferList({
             key={offerKey(offer)}
             className="hb-checkout-premium__card overflow-hidden p-0"
           >
-            <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:gap-5">
-              <span
-                className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#ede9fe] to-[#dbeafe] text-[var(--hb-co-primary)]"
-                aria-hidden
-              >
-                <ShieldCheck className="size-6" />
-              </span>
+            <div className="flex items-start gap-4 p-5">
+              <AddonSwitch
+                checked={added}
+                label={offer.label}
+                onClick={() => onToggleOffer(offer)}
+              />
               <div className="min-w-0 flex-1">
                 <p className="text-[17px] font-extrabold tracking-tight text-[var(--hb-co-text)]">
                   {offer.label}
@@ -223,29 +241,12 @@ export function CheckoutAddonOfferList({
                   {offer.description}
                 </p>
               </div>
-              <div className="flex shrink-0 items-center justify-between gap-4 sm:flex-col sm:items-end">
-                <p className="text-right text-[15px] font-extrabold text-[var(--hb-co-text)]">
-                  <CatalogPrice usd={offer.amount} />
-                  <span className="mt-0.5 block text-[12px] font-semibold text-[var(--hb-co-text-muted)]">
-                    {offer.periodLabel}
-                  </span>
-                </p>
-                <button
-                  type="button"
-                  onClick={() => onToggleOffer(offer)}
-                  className="hb-checkout-premium__addon-add"
-                  aria-pressed={added}
-                >
-                  {added ? (
-                    <>
-                      <Check className="mr-1 inline size-4" aria-hidden />
-                      Added
-                    </>
-                  ) : (
-                    "Add"
-                  )}
-                </button>
-              </div>
+              <p className="shrink-0 text-right text-[15px] font-extrabold text-[var(--hb-co-text)]">
+                <CatalogPrice usd={offer.amount} />
+                <span className="mt-0.5 block text-[12px] font-semibold text-[var(--hb-co-text-muted)]">
+                  {offer.periodLabel}
+                </span>
+              </p>
             </div>
           </li>
         );
@@ -265,15 +266,19 @@ export function CheckoutAddonOfferList({
             key={group.groupKey}
             className="hb-checkout-premium__card overflow-hidden p-0"
           >
-            <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:gap-5">
-              <span
-                className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#ede9fe] to-[#dbeafe] text-[var(--hb-co-primary)]"
-                aria-hidden
-              >
-                <Server className="size-6" />
-              </span>
+            <div className="flex items-start gap-4 p-5">
+              {activeOffer ? (
+                <AddonSwitch
+                  checked={added}
+                  label={group.planName}
+                  onClick={() => onToggleOffer(activeOffer)}
+                />
+              ) : null}
               <div className="min-w-0 flex-1">
                 <p className="text-[17px] font-extrabold tracking-tight text-[var(--hb-co-text)]">
+                  Web Hosting
+                </p>
+                <p className="text-[13px] font-semibold text-[var(--hb-co-primary)]">
                   {group.planName}
                 </p>
                 <p className="mt-1 text-[14px] leading-relaxed text-[var(--hb-co-text-muted)]">
@@ -292,29 +297,12 @@ export function CheckoutAddonOfferList({
                 ) : null}
               </div>
               {activeOffer ? (
-                <div className="flex shrink-0 items-center justify-between gap-4 sm:flex-col sm:items-end">
-                  <p className="text-right text-[15px] font-extrabold text-[var(--hb-co-text)]">
-                    <CatalogPrice usd={activeOffer.amount} />
-                    <span className="mt-0.5 block text-[12px] font-semibold text-[var(--hb-co-text-muted)]">
-                      {activeOffer.periodLabel}
-                    </span>
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => onToggleOffer(activeOffer)}
-                    className="hb-checkout-premium__addon-add"
-                    aria-pressed={added}
-                  >
-                    {added ? (
-                      <>
-                        <Check className="mr-1 inline size-4" aria-hidden />
-                        Added
-                      </>
-                    ) : (
-                      "Add"
-                    )}
-                  </button>
-                </div>
+                <p className="shrink-0 text-right text-[15px] font-extrabold text-[var(--hb-co-text)]">
+                  <CatalogPrice usd={activeOffer.amount} />
+                  <span className="mt-0.5 block text-[12px] font-semibold text-[var(--hb-co-text-muted)]">
+                    {activeOffer.periodLabel}
+                  </span>
+                </p>
               ) : null}
             </div>
           </li>
@@ -337,16 +325,20 @@ export function CheckoutAddonOfferList({
             key={group.groupKey}
             className="hb-checkout-premium__card overflow-hidden p-0"
           >
-            <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:gap-5">
-              <span
-                className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#ede9fe] to-[#dbeafe] text-[var(--hb-co-primary)]"
-                aria-hidden
-              >
-                <Mail className="size-6" />
-              </span>
+            <div className="flex items-start gap-4 p-5">
+              {activeOffer ? (
+                <AddonSwitch
+                  checked={added}
+                  label="Professional Email"
+                  onClick={() => onToggleOffer(activeOffer)}
+                />
+              ) : null}
               <div className="min-w-0 flex-1">
                 <p className="text-[17px] font-extrabold tracking-tight">
                   Professional Email
+                  <span className="ml-2 inline-flex rounded-full border border-[var(--hb-co-border)] px-2 py-0.5 align-middle text-[11px] font-bold text-[var(--hb-co-text-muted)]">
+                    Recommended
+                  </span>
                 </p>
                 <p className="mt-1 text-[13px] font-semibold text-[var(--hb-co-primary)]">
                   {exampleEmail}
@@ -364,46 +356,30 @@ export function CheckoutAddonOfferList({
                 ) : null}
               </div>
               {activeOffer ? (
-                <div className="flex shrink-0 items-center justify-between gap-4 sm:flex-col sm:items-end">
-                  <p className="text-right text-[15px] font-extrabold text-[var(--hb-co-text)]">
-                    {activeOffer.firstMonthFree ? (
-                      <>
-                        <span className="hb-checkout-premium__badge-free">
-                          1 Month Free
-                        </span>
-                        <span className="mt-1 block text-[12px] font-semibold text-[var(--hb-co-text-muted)]">
-                          Renews at{" "}
-                          <CatalogPrice usd={activeOffer.renewalPerMonth} /> /
-                          mo
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <CatalogPrice usd={activeOffer.amount} />
-                        <span className="mt-0.5 block text-[12px] font-semibold text-[var(--hb-co-text-muted)]">
-                          {activeOffer.prepaidMonths > 1
-                            ? `${activeOffer.prepaidMonths} months prepaid`
-                            : "/ mo"}
-                        </span>
-                      </>
-                    )}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => onToggleOffer(activeOffer)}
-                    className="hb-checkout-premium__addon-add"
-                    aria-pressed={added}
-                  >
-                    {added ? (
-                      <>
-                        <Check className="mr-1 inline size-4" aria-hidden />
-                        Added
-                      </>
-                    ) : (
-                      "Add"
-                    )}
-                  </button>
-                </div>
+                <p className="shrink-0 text-right text-[15px] font-extrabold text-[var(--hb-co-text)]">
+                  {activeOffer.firstMonthFree ? (
+                    <>
+                      <CatalogPrice usd={0} />
+                      <span className="mt-1 block text-[12px] font-semibold text-[var(--hb-co-text-muted)]">
+                        Renews at{" "}
+                        <CatalogPrice usd={activeOffer.renewalPerMonth} />
+                        /mo
+                      </span>
+                      <span className="mt-2 inline-flex rounded-md bg-[#f5c518] px-2 py-0.5 text-[11px] font-extrabold text-[#1a1035]">
+                        1 Month Free
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <CatalogPrice usd={activeOffer.amount} />
+                      <span className="mt-0.5 block text-[12px] font-semibold text-[var(--hb-co-text-muted)]">
+                        {activeOffer.prepaidMonths > 1
+                          ? `${activeOffer.prepaidMonths} months prepaid`
+                          : "/ mo"}
+                      </span>
+                    </>
+                  )}
+                </p>
               ) : null}
             </div>
           </li>

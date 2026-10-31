@@ -3,16 +3,9 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Check,
-  Globe2,
-  Loader2,
-  Lock,
-  Mail,
-  Search,
-  ShieldCheck,
-} from "lucide-react";
+import { Check, Globe2, Loader2, Search, ShieldCheck } from "lucide-react";
 
+import { SiteHeader } from "@/components/layout/header";
 import { CheckoutStepNav } from "@/components/checkout/checkout-step-nav";
 import {
   formatAddonsReviewSummary,
@@ -110,7 +103,6 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
     null,
   );
 
-  const logo = props.logoPath?.trim() || "/logo/hostingbeyond-logo-v6.png";
   const intentQuery = serializeHostingPurchaseIntent(props.intent);
   const isAnnual = quote.configuration.billingPeriod === "annually";
   const domainChoice = quote.configuration.domainChoice ?? "search";
@@ -183,7 +175,7 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
     router.replace(`/checkout/hosting?${params.toString()}`);
     void refreshQuote({
       billingPeriod: billing,
-      freeEmailMonth: billing === "monthly",
+      freeEmailMonth: true,
       domainRegisterUsd:
         billing === "annually" ? null : quote.configuration.domainRegisterUsd,
     });
@@ -192,6 +184,7 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
   const domainReady = hostingDomainStepComplete({
     domainChoice,
     domainName: quote.configuration.domainName,
+    requireNewRegistration: freeDomainYear,
   });
 
   const domainSummary = useMemo(() => {
@@ -274,21 +267,9 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
   return (
     <div className="hb-checkout-premium hb-checkout-premium--hosting hb-hosting-booking relative">
       <div className="hb-checkout-premium__ambient" aria-hidden />
-      <header className="relative z-10 border-b border-[var(--hb-co-border)] bg-white/90 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-[1180px] min-w-0 items-center justify-between gap-3 px-4 py-4 sm:px-6">
-          <Link href="/" className="inline-flex min-w-0 items-center gap-2">
-            <img
-              src={logo}
-              alt="HostingBeyond"
-              className="h-8 w-auto max-w-[180px]"
-            />
-          </Link>
-          <p className="inline-flex shrink-0 items-center gap-1.5 text-[12px] font-semibold text-[var(--hb-co-royal)] sm:text-[13px]">
-            <Lock className="size-3.5" aria-hidden />
-            Secure booking
-          </p>
-        </div>
-      </header>
+      <div className="relative z-20">
+        <SiteHeader />
+      </div>
 
       <div className="relative z-10 mx-auto w-full max-w-[1180px] min-w-0 px-4 pt-6 sm:px-6">
         <CheckoutStepNav
@@ -409,7 +390,9 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
                 {(
                   [
                     ["search", "Register a new domain"],
-                    ["existing", "I already own a domain"],
+                    ...(freeDomainYear
+                      ? []
+                      : ([["existing", "I already own a domain"]] as const)),
                   ] as const
                 ).map(([value, label]) => (
                   <button
@@ -525,12 +508,57 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
                       })}
                     </ul>
                   ) : null}
-                  {quote.configuration.domainName &&
-                  domainChoice === "search" ? (
+                  {domainChoice === "search" &&
+                  quote.configuration.domainName ? (
                     <p className="mt-3 text-[14px] font-semibold text-[var(--hb-co-success)]">
                       Selected {quote.configuration.domainName}
                       {freeDomainYear ? " · complimentary first year" : ""}
                     </p>
+                  ) : null}
+                  {domainChoice === "search" ? (
+                    <ul className="mt-4 space-y-3">
+                      <li className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--hb-co-border)] px-4 py-3">
+                        <div>
+                          <p className="text-[15px] font-extrabold">
+                            Domain privacy
+                          </p>
+                          <p className="text-[12px] text-[var(--hb-co-text-muted)]">
+                            FREE · included with this registration
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked
+                          disabled
+                          className="hb-checkout-premium__switch"
+                          aria-label="Domain privacy on"
+                        />
+                      </li>
+                      <li className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--hb-co-border)] px-4 py-3">
+                        <div>
+                          <p className="text-[15px] font-extrabold">
+                            Domain protection
+                          </p>
+                          <p className="text-[12px] text-[var(--hb-co-text-muted)]">
+                            {formatQuoteAmount(9.99)} / year
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={quote.configuration.domainProtection}
+                          className="hb-checkout-premium__switch"
+                          aria-label="Domain protection"
+                          onClick={() =>
+                            void refreshQuote({
+                              domainProtection:
+                                !quote.configuration.domainProtection,
+                            })
+                          }
+                        />
+                      </li>
+                    </ul>
                   ) : null}
                 </div>
               ) : (
@@ -562,58 +590,45 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
 
           {step === "addons" ? (
             <>
-              {!isAnnual ? (
-                <section className="hb-checkout-premium__card p-5 sm:p-7">
-                  <div className="flex items-start gap-3">
-                    <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--hb-co-surface)] text-[var(--hb-co-primary)]">
-                      <Mail className="size-5" aria-hidden />
+              <section className="hb-checkout-premium__card p-5 sm:p-6">
+                <div className="flex items-start gap-4">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={quote.configuration.freeEmailMonth}
+                    aria-label="Professional Email"
+                    className="hb-checkout-premium__switch mt-1"
+                    onClick={() =>
+                      void refreshQuote({
+                        freeEmailMonth: !quote.configuration.freeEmailMonth,
+                        addons: quote.configuration.addons.map((addon) =>
+                          addon.addonSlug === "business-email"
+                            ? { ...addon, enabled: false }
+                            : addon,
+                        ),
+                      })
+                    }
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[16px] font-extrabold text-[var(--hb-co-royal)]">
+                      Professional Email
+                    </p>
+                    <p className="mt-1 text-[13px] text-[var(--hb-co-text-muted)]">
+                      {emailRenewal
+                        ? `Renews at ${formatQuoteAmount(emailRenewal)}/mo`
+                        : "Renews next month at the mailbox rate"}
+                    </p>
+                    <span className="mt-2 inline-flex rounded-md bg-[#f5c518] px-2 py-0.5 text-[11px] font-extrabold text-[#1a1035]">
+                      1 Month Free
                     </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[10px] font-bold tracking-[0.16em] text-[var(--hb-co-primary)] uppercase">
-                        Included this month
-                      </p>
-                      <h1 className="font-heading text-xl font-extrabold text-[var(--hb-co-royal)]">
-                        Business Email — 1 month free
-                      </h1>
-                      <p className="mt-2 text-[14px] leading-relaxed text-[var(--hb-co-text-muted)]">
-                        {emailRenewal
-                          ? `Due today $0.00. Next month renews at ${formatQuoteAmount(emailRenewal)}/mo unless you cancel.`
-                          : "Due today $0.00. Renews next month at the listed mailbox rate unless you cancel."}
-                      </p>
-                    </div>
                   </div>
-                  <div className="mt-5 flex flex-wrap gap-2">
-                    {quote.configuration.freeEmailMonth ? (
-                      <button
-                        type="button"
-                        className="inline-flex min-h-11 items-center rounded-full border border-[var(--hb-co-border)] px-5 text-[14px] font-bold text-[var(--hb-co-royal)]"
-                        onClick={() =>
-                          void refreshQuote({ freeEmailMonth: false })
-                        }
-                      >
-                        Remove
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        className="hb-checkout-premium__btn-primary min-h-11 px-5 text-[14px]"
-                        onClick={() =>
-                          void refreshQuote({
-                            freeEmailMonth: true,
-                            addons: quote.configuration.addons.map((addon) =>
-                              addon.addonSlug === "business-email"
-                                ? { ...addon, enabled: false }
-                                : addon,
-                            ),
-                          })
-                        }
-                      >
-                        Add 1 month free
-                      </button>
-                    )}
-                  </div>
-                </section>
-              ) : null}
+                  <p className="shrink-0 text-right text-[15px] font-extrabold text-[var(--hb-co-royal)]">
+                    {quote.configuration.freeEmailMonth
+                      ? formatQuoteAmount(0)
+                      : "Off"}
+                  </p>
+                </div>
+              </section>
               <HostingCartAddonCards
                 cartAddons={props.cartAddons}
                 configuration={quote.configuration}
@@ -652,12 +667,39 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
                     Secure payment
                   </h1>
                   <p className="mt-2 text-[14px] leading-relaxed text-[var(--hb-co-text-muted)]">
-                    Confirm this booking. Cards are processed by Stripe when
-                    billing is enabled; today you can hold the configuration.
+                    Confirm who this booking is for. Card fields are Stripe
+                    sandbox only — nothing is charged until live mode is turned
+                    on.
                   </p>
+                  <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                    <label className="text-[13px] font-semibold">
+                      Full name
+                      <input
+                        required
+                        className="mt-1 h-12 w-full rounded-xl border border-[var(--hb-co-border)] px-3"
+                        autoComplete="name"
+                      />
+                    </label>
+                    <label className="text-[13px] font-semibold">
+                      Email
+                      <input
+                        required
+                        type="email"
+                        className="mt-1 h-12 w-full rounded-xl border border-[var(--hb-co-border)] px-3"
+                        autoComplete="email"
+                      />
+                    </label>
+                    <label className="text-[13px] font-semibold sm:col-span-2">
+                      Address
+                      <input
+                        className="mt-1 h-12 w-full rounded-xl border border-[var(--hb-co-border)] px-3"
+                        autoComplete="street-address"
+                      />
+                    </label>
+                  </div>
                   <div className="hb-checkout-premium__stripe mt-5">
                     <p className="text-[12px] font-bold tracking-wide text-[var(--hb-co-text-muted)] uppercase">
-                      Card (Stripe)
+                      Card · Stripe sandbox
                     </p>
                     <div className="hb-checkout-premium__stripe-row mt-3">
                       <input

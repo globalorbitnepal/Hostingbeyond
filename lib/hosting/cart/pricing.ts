@@ -1,3 +1,4 @@
+import { DEFAULT_DOMAIN_PROTECTION_USD } from "@/lib/domains/domain-extras";
 import { getEligibleAddonsForCheckout } from "@/lib/hosting/addons/for-cart";
 import { quoteAddonSelections } from "@/lib/hosting/addons/pricing";
 import type { CartAddonSelection } from "@/lib/hosting/addons/types";
@@ -102,9 +103,8 @@ export function normalizeCartConfiguration(
   const requestedFree =
     typeof rawInput.freeEmailMonth === "boolean"
       ? rawInput.freeEmailMonth
-      : billing === "monthly";
-  const freeEmailMonth =
-    billing === "monthly" && !paidEmail && requestedFree !== false;
+      : true;
+  const freeEmailMonth = !paidEmail && requestedFree !== false;
 
   const registerRaw = rawInput.domainRegisterUsd;
   const domainRegisterUsd =
@@ -123,6 +123,10 @@ export function normalizeCartConfiguration(
           ? "search"
           : (input.domainChoice ?? "search");
 
+  const registering = domainChoice === "search";
+  const domainPrivacy = registering && rawInput.domainPrivacy !== false;
+  const domainProtection = registering && rawInput.domainProtection === true;
+
   return {
     productSlug: input.productSlug.trim(),
     planKey: input.planKey.trim(),
@@ -134,6 +138,8 @@ export function normalizeCartConfiguration(
         : null,
     domainRegisterUsd,
     freeEmailMonth,
+    domainPrivacy,
+    domainProtection,
     addons,
   };
 }
@@ -258,6 +264,27 @@ export async function quoteHostingCart(
   });
   if (domainLine) lines.push(domainLine);
 
+  if (configuration.domainChoice === "search" && configuration.domainName) {
+    if (configuration.domainPrivacy) {
+      lines.push({
+        id: "domain-privacy",
+        label: "Domain privacy",
+        amount: 0,
+        kind: "addon",
+        note: "FREE · included",
+      });
+    }
+    if (configuration.domainProtection) {
+      lines.push({
+        id: "domain-protection",
+        label: "Domain protection",
+        amount: DEFAULT_DOMAIN_PROTECTION_USD,
+        kind: "addon",
+        note: "per year",
+      });
+    }
+  }
+
   const emailTrialLine = hostingEmailTrialQuoteLine({
     billing: intent.billing,
     freeEmailMonth: configuration.freeEmailMonth,
@@ -377,6 +404,10 @@ export function parseCartBody(
           : undefined,
     freeEmailMonth:
       typeof o.freeEmailMonth === "boolean" ? o.freeEmailMonth : undefined,
+    domainPrivacy:
+      typeof o.domainPrivacy === "boolean" ? o.domainPrivacy : undefined,
+    domainProtection:
+      typeof o.domainProtection === "boolean" ? o.domainProtection : undefined,
     addons: addons.length ? addons : legacy.length ? legacy : undefined,
   };
 }

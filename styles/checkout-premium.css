@@ -246,10 +246,41 @@
   color: var(--hb-co-royal);
 }
 
-.hb-checkout-premium__addon-add[aria-pressed="true"] {
-  border-color: var(--hb-co-success);
-  background: #ecfdf5;
-  color: #047857;
+.hb-checkout-premium__switch {
+  position: relative;
+  height: 2rem;
+  width: 3.4rem;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  border: 0;
+  background: #d6d3e0;
+  cursor: pointer;
+}
+
+.hb-checkout-premium__switch::after {
+  content: "";
+  position: absolute;
+  top: 0.18rem;
+  left: 0.18rem;
+  height: 1.64rem;
+  width: 1.64rem;
+  border-radius: 9999px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(26 16 53 / 18%);
+  transition: transform 0.15s ease;
+}
+
+.hb-checkout-premium__switch[aria-checked="true"] {
+  background: linear-gradient(180deg, #7d5cff, #4f46e5);
+}
+
+.hb-checkout-premium__switch[aria-checked="true"]::after {
+  transform: translateX(1.4rem);
+}
+
+.hb-checkout-premium__switch:disabled {
+  cursor: default;
+  opacity: 1;
 }
 
 .hb-hosting-booking {

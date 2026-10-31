@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
-import { BrandMark } from "@/components/auth/brand-mark";
+import { SiteHeader } from "@/components/layout/header";
 import { routes } from "@/config/routes";
 import { CatalogPrice } from "@/components/i18n/localized-text";
 import { useLocale } from "@/components/locale/locale-provider";
@@ -110,11 +110,12 @@ export function DomainTransferCheckoutView({
   const insufficient = walletBalance < transferPrice;
 
   return (
-    <div className="hb-band-cream min-h-dvh overflow-x-hidden px-4 py-8 sm:px-8">
-      <div className="mx-auto max-w-xl min-w-0">
-        <Link href="/">
-          <BrandMark />
-        </Link>
+    <div className="hb-checkout-premium hb-checkout-premium--domain min-h-dvh overflow-x-hidden">
+      <div className="hb-checkout-premium__ambient" aria-hidden />
+      <div className="relative z-10">
+        <SiteHeader />
+      </div>
+      <div className="relative z-10 mx-auto max-w-xl min-w-0 px-4 py-8 sm:px-8">
         <div className="mt-8 rounded-[28px] border border-white bg-white p-5 shadow-[0_24px_60px_-32px_rgba(15,23,42,0.35)] sm:p-6">
           <h1 className="text-2xl font-semibold text-slate-950">
             Transfer {domain}

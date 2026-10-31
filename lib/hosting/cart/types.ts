@@ -12,8 +12,12 @@ export type HostingCartConfiguration = {
   domainName: string | null;
   /** First-year registration USD when buying a domain with monthly hosting. */
   domainRegisterUsd: number | null;
-  /** Complimentary first month of business email on monthly hosting. */
+  /** Complimentary first month of business email (any billing). */
   freeEmailMonth: boolean;
+  /** WHOIS privacy included free when registering a new domain. */
+  domainPrivacy: boolean;
+  /** Optional domain protection at the company rate. */
+  domainProtection: boolean;
   /** Generic add-on selections (authoritative). */
   addons: CartAddonSelection[];
 };

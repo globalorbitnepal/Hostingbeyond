@@ -2,16 +2,9 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  ChevronLeft,
-  Globe2,
-  Loader2,
-  Lock,
-  ShieldCheck,
-  Wallet,
-} from "lucide-react";
+import { ChevronLeft, Globe2, Loader2, Lock, Wallet } from "lucide-react";
 
-import { BrandMark } from "@/components/auth/brand-mark";
+import { SiteHeader } from "@/components/layout/header";
 import {
   CheckoutAddonOfferList,
   groupCheckoutOffers,
@@ -142,16 +135,22 @@ export function DomainPremiumCheckout({
   const [step, setStep] = useState<StepId>("domains");
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(() => {
     const saved = readPremiumCartServices();
-    if (!saved.length) return new Set();
     const keys = new Set<string>();
-    for (const sel of saved) {
-      if (sel.kind === "hosting") {
-        keys.add(`hosting:${sel.productSlug}:${sel.planKey}:${sel.billing}`);
-      } else if (sel.kind === "business-email") {
-        keys.add(`email:${sel.planId}:${sel.term}`);
-      } else if (sel.kind === "domain-protection") {
-        keys.add("domain-protection");
+    if (saved.length) {
+      for (const sel of saved) {
+        if (sel.kind === "hosting") {
+          keys.add(`hosting:${sel.productSlug}:${sel.planKey}:${sel.billing}`);
+        } else if (sel.kind === "business-email") {
+          keys.add(`email:${sel.planId}:${sel.term}`);
+        } else if (sel.kind === "domain-protection") {
+          keys.add("domain-protection");
+        }
       }
+      return keys;
+    }
+    for (const group of groupCheckoutOffers(offers.optional).emailGroups) {
+      const monthly = group.byTerm.monthly;
+      if (monthly?.firstMonthFree) keys.add(offerKey(monthly));
     }
     return keys;
   });
@@ -411,15 +410,7 @@ export function DomainPremiumCheckout({
     <div className="hb-checkout-premium hb-checkout-premium--domain relative min-h-dvh pb-28 lg:pb-10">
       <div className="hb-checkout-premium__ambient" aria-hidden />
       <div className="relative z-10 mx-auto w-full max-w-[77.5rem] px-4 py-6 sm:px-6 sm:py-8">
-        <header className="flex flex-wrap items-center justify-between gap-4">
-          <Link href={routes.home} className="shrink-0">
-            <BrandMark />
-          </Link>
-          <p className="inline-flex items-center gap-2 text-[13px] font-semibold text-[var(--hb-co-text-muted)]">
-            <Lock className="size-4 text-[var(--hb-co-primary)]" aria-hidden />
-            Secure checkout
-          </p>
-        </header>
+        <SiteHeader />
 
         <div className="mt-6 lg:mt-8">
           <h1 className="font-heading text-[clamp(1.5rem,3vw,2.1rem)] font-extrabold tracking-tight text-[var(--hb-co-text)]">
@@ -538,27 +529,55 @@ export function DomainPremiumCheckout({
                     </tbody>
                   </table>
                 </div>
-                <div className="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50/60 px-4 py-3">
-                  <p className="text-[13px] font-bold text-emerald-900">
-                    Protect your domain
-                  </p>
-                  <ul className="mt-2 space-y-1.5">
-                    {offers.included.map((item) => (
-                      <li
-                        key={item.id}
-                        className="flex gap-2 text-[12.5px] text-emerald-950"
-                      >
-                        <ShieldCheck
-                          className="mt-0.5 size-4 shrink-0 text-emerald-600"
-                          aria-hidden
-                        />
-                        <span>
-                          <strong>{item.label}</strong> — {item.detail}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                <ul className="mt-4 space-y-3">
+                  <li className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--hb-co-border)] bg-white px-4 py-3">
+                    <div>
+                      <p className="text-[15px] font-extrabold text-[var(--hb-co-text)]">
+                        Domain privacy
+                      </p>
+                      <p className="text-[12px] text-[var(--hb-co-text-muted)]">
+                        FREE · stays on with this registration
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked
+                      disabled
+                      className="hb-checkout-premium__switch"
+                      aria-label="Domain privacy on"
+                    />
+                  </li>
+                  {offers.optional
+                    .filter((offer) => offer.kind === "domain-protection")
+                    .map((offer) => {
+                      const on = selectedKeys.has(offerKey(offer));
+                      return (
+                        <li
+                          key={offerKey(offer)}
+                          className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--hb-co-border)] bg-white px-4 py-3"
+                        >
+                          <div>
+                            <p className="text-[15px] font-extrabold text-[var(--hb-co-text)]">
+                              {offer.label}
+                            </p>
+                            <p className="text-[12px] text-[var(--hb-co-text-muted)]">
+                              {formatCatalogUsd(offer.amount)} / year · turn off
+                              anytime before payment
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            role="switch"
+                            aria-checked={on}
+                            className="hb-checkout-premium__switch"
+                            aria-label={offer.label}
+                            onClick={() => toggleOffer(offer)}
+                          />
+                        </li>
+                      );
+                    })}
+                </ul>
               </section>
             ) : null}
 

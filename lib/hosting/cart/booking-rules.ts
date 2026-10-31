@@ -88,7 +88,8 @@ export function hostingEmailTrialQuoteLine(input: {
   freeEmailMonth: boolean;
   renewalPerMonthUsd: number;
 }): HostingCartQuoteLine | null {
-  if (input.billing !== "monthly" || !input.freeEmailMonth) return null;
+  void input.billing;
+  if (!input.freeEmailMonth) return null;
   const renew = roundMoney(Math.max(0, input.renewalPerMonthUsd));
   return {
     id: "email-trial",
@@ -105,8 +106,13 @@ export function hostingEmailTrialQuoteLine(input: {
 export function hostingDomainStepComplete(input: {
   domainChoice: DomainChoice;
   domainName: string | null;
+  /** Annual complimentary domain must be registered now — no skip / existing-only. */
+  requireNewRegistration?: boolean;
 }): boolean {
   const name = input.domainName?.trim() || "";
+  if (input.requireNewRegistration) {
+    return input.domainChoice === "search" && name.length > 0;
+  }
   return (
     (input.domainChoice === "search" || input.domainChoice === "existing") &&
     name.length > 0

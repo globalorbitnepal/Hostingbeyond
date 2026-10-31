@@ -72,8 +72,8 @@ describe("hosting booking rules", () => {
         billing: "annually",
         freeEmailMonth: true,
         renewalPerMonthUsd: 4.99,
-      }),
-      null,
+      })?.amount,
+      0,
     );
   });
 
