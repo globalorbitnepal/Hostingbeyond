@@ -118,7 +118,23 @@ try {
   }
 
   Write-Log $backupRoot "INFO" "Remote bundle create (forced command; no client remote command)"
-  $createOut = & ssh @(Ssh-Opts $createKey) 2>&1
+  $createArgs = @(Ssh-Opts $createKey)
+  $createOutFile = Join-Path $staging "create-bundle.out"
+  $createErrFile = Join-Path $staging "create-bundle.stderr"
+  $createProc = Start-Process -FilePath "ssh" -ArgumentList $createArgs `
+    -RedirectStandardOutput $createOutFile -RedirectStandardError $createErrFile `
+    -NoNewWindow -Wait -PassThru
+  if ($createProc.ExitCode -ne 0) {
+    $errTail = @()
+    if (Test-Path -LiteralPath $createErrFile) {
+      $errTail = Get-Content -LiteralPath $createErrFile -Tail 8 -ErrorAction SilentlyContinue
+    }
+    throw ("Remote create SSH failed (exit $($createProc.ExitCode)): " + ($errTail -join " "))
+  }
+  $createOut = @()
+  if (Test-Path -LiteralPath $createOutFile) {
+    $createOut = Get-Content -LiteralPath $createOutFile -ErrorAction SilentlyContinue
+  }
   $artifactPath = $createOut | Select-Object -Last 1
   if (-not $artifactPath -or -not ($artifactPath -match "\.tar\.age$")) {
     throw "Remote create did not return ciphertext artifact path"

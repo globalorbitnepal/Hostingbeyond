@@ -59,19 +59,30 @@ if (-not (Test-Path -LiteralPath "$fetchKey")) {
 
 if (-not (Test-Path -LiteralPath $knownHosts)) {
   $scanLines = @()
-  try {
-    $raw = ssh-keyscan -p 22 -H $SshHost 2>&1
-    foreach ($line in $raw) {
-      if ($line -match "^\S+\s+ssh-") {
-        $scanLines += [string]$line
+  function Add-ScanLines([string]$Scanner) {
+    try {
+      $raw = & $Scanner -p 22 -H $SshHost 2>&1
+      foreach ($line in $raw) {
+        if ($line -match "^\S+\s+ssh-") {
+          $script:scanLines += [string]$line
+        }
       }
     }
+    catch {
+      Write-Host "WARN: $Scanner failed: $($_.Exception.Message)"
+    }
   }
-  catch {
-    Write-Host "WARN: ssh-keyscan failed: $($_.Exception.Message)"
+  if (Get-Command ssh-keyscan -ErrorAction SilentlyContinue) {
+    Add-ScanLines "ssh-keyscan"
   }
   if ($scanLines.Count -eq 0) {
-    throw ('Could not build known_hosts for ' + $SshHost + ' - check DNS or network')
+    $gitScan = Join-Path ${env:ProgramFiles} "Git\usr\bin\ssh-keyscan.exe"
+    if (Test-Path -LiteralPath $gitScan) {
+      Add-ScanLines $gitScan
+    }
+  }
+  if ($scanLines.Count -eq 0) {
+    throw ('Could not build known_hosts for ' + $SshHost + ' - install Git for Windows or update OpenSSH client')
   }
   $scanLines | Out-File -FilePath $knownHosts -Encoding ascii
 }
