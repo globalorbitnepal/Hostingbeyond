@@ -78,18 +78,21 @@ if (-not (Test-Path -LiteralPath $knownHosts)) {
 
 $ageIdentity = Join-Path $keys "backup-age-identity.txt"
 $ageRecipient = Join-Path $keys "backup-recipient.txt"
-if ((Get-Command age-keygen -ErrorAction SilentlyContinue) -and -not (Test-Path -LiteralPath $ageRecipient)) {
-  $prevEa = $ErrorActionPreference
-  $ErrorActionPreference = "Continue"
-  age-keygen -o $ageIdentity 2>&1 | Out-Null
-  $ErrorActionPreference = $prevEa
-  if (Test-Path -LiteralPath $ageIdentity) {
-    icacls $ageIdentity /inheritance:r /grant:r "${env:USERNAME}:(R,W)" 2>$null | Out-Null
+if (Get-Command age-keygen -ErrorAction SilentlyContinue) {
+  if (-not (Test-Path -LiteralPath $ageIdentity)) {
+    $prevEa = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    age-keygen -o $ageIdentity 2>&1 | Out-Null
+    $ErrorActionPreference = $prevEa
+    if (Test-Path -LiteralPath $ageIdentity) {
+      icacls $ageIdentity /inheritance:r /grant:r "${env:USERNAME}:(R,W)" 2>$null | Out-Null
+    }
   }
-  Get-Content $ageIdentity | Select-String "^# public key:" -Context 0,1 | Out-Null
-  $pubLine = (Get-Content $ageIdentity | Where-Object { $_ -match "^age1" } | Select-Object -First 1)
-  if ($pubLine) {
-    $pubLine | Set-Content -LiteralPath $ageRecipient -Encoding ascii
+  if (-not (Test-Path -LiteralPath $ageRecipient) -and (Test-Path -LiteralPath $ageIdentity)) {
+    $pubLine = (Get-Content $ageIdentity | Where-Object { $_ -match "^age1" } | Select-Object -First 1)
+    if ($pubLine) {
+      $pubLine | Set-Content -LiteralPath $ageRecipient -Encoding ascii
+    }
   }
 }
 
