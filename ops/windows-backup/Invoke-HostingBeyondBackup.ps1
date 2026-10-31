@@ -205,6 +205,26 @@ try {
   & node (Join-Path $dr "retention.mjs") $backupRoot --apply
   if ($LASTEXITCODE -ne 0) { throw "Retention apply failed" }
 
+  $mirrorEnabled = $true
+  $mirrorFolder = $null
+  if ($config.mirror -and $config.mirror.enabled -eq $false) {
+    $mirrorEnabled = $false
+  }
+  if ($mirrorEnabled) {
+    $mirrorFolder = "current"
+    if ($config.mirror -and $config.mirror.folderName) {
+      $mirrorFolder = [string]$config.mirror.folderName
+    }
+    Write-Log $backupRoot "INFO" "Mirroring newest verified set to $mirrorFolder/"
+    & node (Join-Path $dr "mirror-current.mjs") $backupRoot --folder $mirrorFolder
+    if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne 12) {
+      throw "Mirror to $mirrorFolder failed"
+    }
+    if ($LASTEXITCODE -eq 12) {
+      Write-Log $backupRoot "WARN" "Mirror skipped (no verified set yet)"
+    }
+  }
+
   $report = @{
     status = "SUCCESS"
     completedSet = (Split-Path $completed -Leaf)
@@ -212,6 +232,7 @@ try {
     decryptTestOnPull = ($RunDecryptTest -or $config.restoreTest.runDecryptTestOnPull -eq $true)
     verifyReportWritten = $true
     retentionApplied = $true
+    mirrorFolder = $(if ($mirrorEnabled) { $mirrorFolder } else { $null })
     at = (Get-Date).ToUniversalTime().ToString("o")
   } | ConvertTo-Json
   Set-Content -LiteralPath (Join-Path $backupRoot "reports\last-run.json") -Value $report

@@ -103,4 +103,16 @@ describe("Invoke-HostingBeyondBackup.ps1 ordering", () => {
     );
     assert.ok(retentionIdx < lastRunIdx);
   });
+
+  it("mirrors to current/ after retention and before last-run SUCCESS", () => {
+    const text = fs.readFileSync(PS1, "utf8");
+    const retentionIdx = indexOfLine(text, /retention\.mjs.*--apply/);
+    const mirrorIdx = indexOfLine(text, /mirror-current\.mjs/);
+    const lastRunIdx = indexOfLine(
+      text,
+      /Set-Content -LiteralPath \(Join-Path \$backupRoot "reports\\last-run\.json"\)/,
+    );
+    assert.ok(mirrorIdx > retentionIdx);
+    assert.ok(lastRunIdx > mirrorIdx);
+  });
 });

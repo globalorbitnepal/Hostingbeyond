@@ -72,5 +72,7 @@ Achieve targets only after measured restore drills and documented backup schedul
 | Day 2 checklist          | `docs/DAY2-PRODUCTION-PREFLIGHT-CHECKLIST.md` |
 | VPS bundle export        | `ops/backup/production/create-pull-bundle.sh` |
 | Windows pull             | `ops/windows-backup/`                         |
+| Desktop daily backup     | `docs/DESKTOP-DAILY-BACKUP-OWNER.md`          |
+| VPS bootstrap (DR)       | `ops/restore/bootstrap-vps.sh`                |
 | Lab restore drill        | `ops/backup/dr/RESTORE-DRILL-LAB.md`          |
 | Staging/local scripts    | `ops/backup/README.md`                        |

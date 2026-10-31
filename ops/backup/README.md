@@ -44,6 +44,8 @@ For **production → Windows desktop** disaster recovery, use:
 | --------------------------- | ------------------------------------------------------------------------------------- |
 | VPS bundle export           | `ops/backup/production/create-pull-bundle.sh`                                         |
 | Windows pull + schedule     | `ops/windows-backup/`                                                                 |
+| Desktop daily 11 PM Nepal   | `docs/DESKTOP-DAILY-BACKUP-OWNER.md`                                                  |
+| New VPS bootstrap script    | `ops/restore/bootstrap-vps.sh`                                                        |
 | Audit matrix                | `docs/BACKUP-DR-AUDIT.md`                                                             |
 | DR runbook index            | `docs/DISASTER-RECOVERY-RUNBOOK.md`                                                   |
 | Owner PC/HDD copy           | `docs/OWNER-OFFLINE-BACKUP-COPY.md`                                                   |

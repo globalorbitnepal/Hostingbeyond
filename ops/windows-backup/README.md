@@ -4,25 +4,28 @@ The Windows PC **initiates SSH** to production and pulls a backup bundle created
 
 ## Status
 
-| Step                                 | Status                       |
-| ------------------------------------ | ---------------------------- |
-| Scripts in repository                | **PASS** (dev checkout)      |
-| `D:\` path accessible from Linux dev | **PENDING** (not mounted)    |
-| Task Scheduler registered            | **PENDING** (run on Windows) |
-| Production backup executed           | **PENDING** (owner approval) |
-| Isolated restore test                | **PENDING**                  |
+| Step                                   | Status                                              |
+| -------------------------------------- | --------------------------------------------------- |
+| Scripts in repository                  | **PASS** (dev checkout)                             |
+| Desktop `hostingbeyond\current` mirror | **PASS** (see `docs/DESKTOP-DAILY-BACKUP-OWNER.md`) |
+| Task Scheduler registered              | **PENDING** (run on Windows)                        |
+| Production backup executed             | **PENDING** (owner approval)                        |
+| Isolated restore test                  | **PENDING**                                         |
 
 ## One-time setup (owner)
+
+**Quick path (Desktop folder, daily 11 PM Nepal):** `docs/DESKTOP-DAILY-BACKUP-OWNER.md`
 
 1. Create directory layout on **your Windows PC** (mandatory final destination):
 
    ```
-   %USERPROFILE%\HostingBeyond-Backups\
-     backups\  logs\  reports\  restore-tests\  keys\
+   %USERPROFILE%\Desktop\hostingbeyond\
+     backups\  current\  logs\  reports\  restore-tests\  keys\
    ```
 
-   Resolve the real path in PowerShell: `Join-Path $env:USERPROFILE 'HostingBeyond-Backups'`.  
-   Full procedure: **`docs/WINDOWS-PC-BACKUP.md`**.
+   Or run: `Setup-DesktopBackupLayout.ps1` in this folder.
+
+   Resolve the real path in PowerShell: `Join-Path $env:USERPROFILE 'Desktop\hostingbeyond'`.
 
 2. Copy `config.example.json` → `config.json`; set `backupRoot` and `ssh.host` (no secrets in Git).
 

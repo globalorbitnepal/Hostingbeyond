@@ -1,17 +1,23 @@
 {
-  "_comment_backupRoot": "Resolve on Windows: Join-Path $env:USERPROFILE 'HostingBeyond-Backups' — use that full path below (JSON escaped backslashes).",
-  "backupRoot": "C:\\Users\\REPLACE_WITH_YOUR_WINDOWS_USER\\HostingBeyond-Backups",
+  "_comment_backupRoot": "Desktop folder (one fixed name). Run Setup-DesktopBackupLayout.ps1 once.",
+  "backupRoot": "C:\\Users\\REPLACE_WITH_YOUR_WINDOWS_USER\\Desktop\\hostingbeyond",
   "ssh": {
     "host": "PRODUCTION_HOST_IPV4_OR_DNS",
     "user": "hostingbeyond",
     "port": 22,
-    "createIdentityFile": "C:\\Users\\REPLACE_WITH_YOUR_WINDOWS_USER\\HostingBeyond-Backups\\keys\\hostingbeyond-backup-create_ed25519",
-    "fetchIdentityFile": "C:\\Users\\REPLACE_WITH_YOUR_WINDOWS_USER\\HostingBeyond-Backups\\keys\\hostingbeyond-backup-fetch_ed25519",
-    "knownHostsFile": "C:\\Users\\REPLACE_WITH_YOUR_WINDOWS_USER\\HostingBeyond-Backups\\keys\\known_hosts"
+    "createIdentityFile": "C:\\Users\\REPLACE_WITH_YOUR_WINDOWS_USER\\Desktop\\hostingbeyond\\keys\\hostingbeyond-backup-create_ed25519",
+    "fetchIdentityFile": "C:\\Users\\REPLACE_WITH_YOUR_WINDOWS_USER\\Desktop\\hostingbeyond\\keys\\hostingbeyond-backup-fetch_ed25519",
+    "knownHostsFile": "C:\\Users\\REPLACE_WITH_YOUR_WINDOWS_USER\\Desktop\\hostingbeyond\\keys\\known_hosts"
   },
   "schedule": {
-    "dayOfWeek": "Sunday",
-    "timeLocal": "02:00"
+    "mode": "daily",
+    "timeLocal": "23:00",
+    "timeZoneNote": "Set Windows Settings > Time & language > Time zone to (UTC+05:45) Kathmandu for Nepal 11 PM",
+    "dayOfWeek": "Sunday"
+  },
+  "mirror": {
+    "enabled": true,
+    "folderName": "current"
   },
   "retention": {
     "weeklyKeep": 8,
@@ -22,9 +28,9 @@
     "required": true
   },
   "restoreTest": {
-    "identityFile": "C:\\Users\\REPLACE_WITH_YOUR_WINDOWS_USER\\HostingBeyond-Backups\\keys\\backup-age-identity.txt",
+    "identityFile": "C:\\Users\\REPLACE_WITH_YOUR_WINDOWS_USER\\Desktop\\hostingbeyond\\keys\\backup-age-identity.txt",
     "runDecryptTestOnPull": false,
-    "comment": "Keep identity off backup-only disk when possible; enable decrypt test after first manual success"
+    "comment": "Keep age identity in password manager; optional -RunDecryptTest on first manual pull"
   },
   "testMode": {
     "syntheticOnly": false
