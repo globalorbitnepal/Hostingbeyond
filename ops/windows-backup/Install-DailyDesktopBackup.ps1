@@ -71,7 +71,7 @@ if (-not (Test-Path -LiteralPath $knownHosts)) {
     Write-Host "WARN: ssh-keyscan failed: $($_.Exception.Message)"
   }
   if ($scanLines.Count -eq 0) {
-    throw "Could not build known_hosts for $SshHost - check DNS or network"
+    throw ('Could not build known_hosts for ' + $SshHost + ' - check DNS or network')
   }
   $scanLines | Out-File -FilePath $knownHosts -Encoding ascii
 }
@@ -79,7 +79,13 @@ if (-not (Test-Path -LiteralPath $knownHosts)) {
 $ageIdentity = Join-Path $keys "backup-age-identity.txt"
 $ageRecipient = Join-Path $keys "backup-recipient.txt"
 if ((Get-Command age-keygen -ErrorAction SilentlyContinue) -and -not (Test-Path -LiteralPath $ageRecipient)) {
+  $prevEa = $ErrorActionPreference
+  $ErrorActionPreference = "Continue"
   age-keygen -o $ageIdentity 2>&1 | Out-Null
+  $ErrorActionPreference = $prevEa
+  if (Test-Path -LiteralPath $ageIdentity) {
+    icacls $ageIdentity /inheritance:r /grant:r "${env:USERNAME}:(R,W)" 2>$null | Out-Null
+  }
   Get-Content $ageIdentity | Select-String "^# public key:" -Context 0,1 | Out-Null
   $pubLine = (Get-Content $ageIdentity | Where-Object { $_ -match "^age1" } | Select-Object -First 1)
   if ($pubLine) {
