@@ -94,7 +94,7 @@ export function PricingMotionStage({
                 ))}
               </div>
               <Link
-                href={routes.getStarted}
+                href={`${routes.hosting}#plans`}
                 className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-white text-[13px] font-extrabold text-[#2f1c6a] transition hover:bg-[#f4f0ff]"
               >
                 Get started

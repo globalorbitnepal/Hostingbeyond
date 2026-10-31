@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 
 import { CatalogPrice } from "@/components/i18n/localized-text";
-import { routes } from "@/config/routes";
+import { businessEmailBookingHref } from "@/lib/domains/domain-purchase-intent";
 import type {
   CmsBusinessEmailPageContent,
   CmsBusinessEmailPlan,
@@ -337,7 +337,7 @@ export function BusinessEmailPricingSection({
                 </ul>
 
                 <Link
-                  href={routes.signup}
+                  href={businessEmailBookingHref(plan.id, term)}
                   className={cn(
                     "mt-5 inline-flex min-h-11 touch-manipulation items-center justify-center gap-2 rounded-full text-[14px] font-extrabold transition-colors duration-200",
                     popular

@@ -91,7 +91,7 @@ export function defaultEcommerceHostingPageContent(): CmsHostingPageContent {
       "Mailboxes for order and support email",
     ],
     wordpressCtaLabel: "Start your online store",
-    wordpressCtaHref: routes.getStarted,
+    wordpressCtaHref: "#plans",
     wordpressImage: "",
 
     compareHeading: "Why HostingBeyond for ecommerce?",
@@ -149,7 +149,7 @@ export function defaultEcommerceHostingPageContent(): CmsHostingPageContent {
     closingDescription:
       "Pick a commerce plan, connect your domain, and launch WooCommerce with SSL and support included.",
     closingCtaLabel: "Get ecommerce hosting",
-    closingCtaHref: routes.getStarted,
+    closingCtaHref: "#plans",
   };
 }
 

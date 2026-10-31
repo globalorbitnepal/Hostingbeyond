@@ -45,6 +45,24 @@ export function parseDomainListFromSearchParams(
   return unique;
 }
 
+/** Register from the TLD price table — start domain search, not account signup. */
+export function domainTldSearchHref(tld: string): string {
+  const ext = tld.trim().toLowerCase();
+  const dotted = ext.startsWith(".") ? ext : `.${ext}`;
+  return `${routes.domainSearch}?q=${encodeURIComponent(`yourname${dotted}`)}`;
+}
+
+export function businessEmailBookingHref(
+  planId: string,
+  term = "monthly",
+): string {
+  const params = new URLSearchParams({
+    email: planId.trim() || "starter",
+    term,
+  });
+  return `${routes.domainSearch}?${params.toString()}`;
+}
+
 export function domainCheckoutPath(domains: string[]): string {
   if (domains.length === 1) {
     return `${routes.domainCheckout}?domain=${encodeURIComponent(domains[0]!)}`;

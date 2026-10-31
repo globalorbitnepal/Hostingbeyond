@@ -5,6 +5,7 @@ import {
   vpsPlans,
 } from "@/config/pricing-plans";
 import { routes } from "@/config/routes";
+import { hostingCheckoutHref } from "@/lib/hosting/checkout";
 import {
   attachControlledCatalogUsd,
   catalogUsdAfterCmsMerge,
@@ -815,7 +816,11 @@ export function defaultEcommercePlans(): CmsHostingPlan[] {
         "24/7 support",
       ],
       ctaLabel: "Start store",
-      ctaHref: routes.getStarted,
+      ctaHref: hostingCheckoutHref(
+        "ecommerce-hosting",
+        "essential",
+        "annually",
+      ),
     },
     {
       id: "commerce-plus",
@@ -849,7 +854,7 @@ export function defaultEcommercePlans(): CmsHostingPlan[] {
         "24/7 support",
       ],
       ctaLabel: "Start store",
-      ctaHref: routes.getStarted,
+      ctaHref: hostingCheckoutHref("ecommerce-hosting", "plus", "annually"),
     },
     {
       id: "commerce-cloud",
@@ -883,7 +888,7 @@ export function defaultEcommercePlans(): CmsHostingPlan[] {
         "PHP, Python & Node.js",
       ],
       ctaLabel: "Start store",
-      ctaHref: routes.getStarted,
+      ctaHref: hostingCheckoutHref("ecommerce-hosting", "pro", "annually"),
     },
     {
       id: "commerce-enterprise",
@@ -917,7 +922,7 @@ export function defaultEcommercePlans(): CmsHostingPlan[] {
         "Priority support",
       ],
       ctaLabel: "Start store",
-      ctaHref: routes.getStarted,
+      ctaHref: hostingCheckoutHref("ecommerce-hosting", "ultimate", "annually"),
     },
   ];
   return plans.map(attachControlledCatalogUsd);
@@ -1024,7 +1029,7 @@ export function defaultPricingPageContent(): CmsPricingPageContent {
     bottomBody:
       "Tell us about your project — migration, domains, WooCommerce, or AI — and our team will recommend a plan in minutes.",
     bottomPrimaryLabel: "Get started",
-    bottomPrimaryHref: routes.getStarted,
+    bottomPrimaryHref: `${routes.hosting}#plans`,
     bottomSecondaryLabel: "Contact sales",
     bottomSecondaryHref: routes.contact,
   };

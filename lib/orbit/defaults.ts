@@ -3,6 +3,7 @@ import { productOffers } from "@/config/products";
 import type { CurrencyCode } from "@/config/pricing";
 import { siteConfig } from "@/config/site";
 import { routes } from "@/config/routes";
+import { hostingCheckoutHref } from "@/lib/hosting/checkout";
 import {
   attachControlledCatalogUsd,
   catalogUsdAfterCmsMerge,
@@ -952,7 +953,7 @@ function defaultHostingPlans(): CmsHostingPlan[] {
         "24/7 Expert Support",
       ],
       ctaLabel: "Get Started",
-      ctaHref: routes.getStarted,
+      ctaHref: hostingCheckoutHref("web-hosting", "essential", "annually"),
     },
     {
       id: "plus",
@@ -987,7 +988,7 @@ function defaultHostingPlans(): CmsHostingPlan[] {
         "24/7 Expert Support",
       ],
       ctaLabel: "Get Started",
-      ctaHref: routes.getStarted,
+      ctaHref: hostingCheckoutHref("web-hosting", "plus", "annually"),
     },
     {
       id: "pro",
@@ -1023,7 +1024,7 @@ function defaultHostingPlans(): CmsHostingPlan[] {
         "PHP, Python & Node.js Support",
       ],
       ctaLabel: "Get Started",
-      ctaHref: routes.getStarted,
+      ctaHref: hostingCheckoutHref("web-hosting", "pro", "annually"),
     },
     {
       id: "ultimate",
@@ -1059,7 +1060,7 @@ function defaultHostingPlans(): CmsHostingPlan[] {
         "PHP, Python & Node.js Support",
       ],
       ctaLabel: "Get Started",
-      ctaHref: routes.getStarted,
+      ctaHref: hostingCheckoutHref("web-hosting", "ultimate", "annually"),
     },
   ];
   return plans.map(attachControlledCatalogUsd);

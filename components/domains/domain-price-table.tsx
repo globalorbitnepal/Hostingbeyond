@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Search } from "lucide-react";
 
 import { useLocale } from "@/components/locale/locale-provider";
-import { routes } from "@/config/routes";
+import { domainTldSearchHref } from "@/lib/domains/domain-purchase-intent";
 import { translatePhrase } from "@/lib/i18n/phrases";
 import type { DomainTldRow } from "@/lib/domains/content";
 import {
@@ -149,7 +149,7 @@ export function DomainPriceTable({
 
               <div className="flex justify-end">
                 <Link
-                  href={`${routes.getStarted}?tld=${encodeURIComponent(row.tld)}`}
+                  href={domainTldSearchHref(row.tld)}
                   className="inline-flex h-10 items-center rounded-full border border-[#c7b8ff] bg-white px-4 text-[13px] font-bold text-[#4c1d95] transition hover:bg-[#f7f4ff]"
                 >
                   Register

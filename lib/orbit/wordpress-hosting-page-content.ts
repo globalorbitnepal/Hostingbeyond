@@ -91,7 +91,7 @@ export function defaultWordPressHostingPageContent(): CmsHostingPageContent {
       "Daily backups on higher tiers",
     ],
     wordpressCtaLabel: "Start your WordPress site",
-    wordpressCtaHref: routes.getStarted,
+    wordpressCtaHref: "#plans",
     wordpressImage: "",
 
     compareHeading: "Why HostingBeyond for WordPress?",
@@ -149,7 +149,7 @@ export function defaultWordPressHostingPageContent(): CmsHostingPageContent {
     closingDescription:
       "Pick a plan, install WordPress in one click, and go live with SSL and support included.",
     closingCtaLabel: "Get WordPress hosting",
-    closingCtaHref: routes.getStarted,
+    closingCtaHref: "#plans",
   };
 }
 

@@ -236,7 +236,7 @@ export function defaultHostingPageContent(): CmsHostingPageContent {
     closingDescription:
       "Pick a plan, register or connect your domain, and publish in minutes — with SSL and support included.",
     closingCtaLabel: "Get started",
-    closingCtaHref: routes.getStarted,
+    closingCtaHref: "#plans",
   };
 }
 

@@ -17,6 +17,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 import { MigrationRequestForm } from "@/components/migration/migration-request-form";
 import { HostingPlansCream } from "@/components/hosting/hosting-plans-cream";
+import { rewriteDeadBookingCta } from "@/lib/hosting/checkout";
 import type { CmsHostingPlansContent } from "@/lib/orbit/defaults";
 import type {
   CmsMigrationFeature,
@@ -225,6 +226,7 @@ export function WebsiteMigrationPageView({
         titleAccent={page.pricingTitleAccent}
         description={page.pricingDescription}
         footnote={page.pricingNote}
+        productCheckoutSlug="web-hosting"
       />
 
       <section className="relative overflow-hidden py-16 sm:py-20 lg:py-24">
@@ -345,7 +347,7 @@ export function WebsiteMigrationPageView({
             {page.closingDescription}
           </p>
           <Link
-            href={page.closingCtaHref}
+            href={rewriteDeadBookingCta(page.closingCtaHref, "#plans")}
             className={cn(
               "mt-8 inline-flex h-12 items-center rounded-xl bg-white px-8 text-[15px] font-extrabold text-[#2f1c6a]",
             )}

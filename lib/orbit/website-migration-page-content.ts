@@ -285,7 +285,7 @@ export function defaultWebsiteMigrationPageContent(): CmsWebsiteMigrationPageCon
     closingDescription:
       "Choose a plan with free migration, submit your link, and let HostingBeyond handle the switch.",
     closingCtaLabel: "Get started",
-    closingCtaHref: routes.getStarted,
+    closingCtaHref: "#plans",
   };
 }
 

@@ -1,4 +1,5 @@
 import { routes } from "@/config/routes";
+import { hostingCheckoutHref } from "@/lib/hosting/checkout";
 import {
   attachControlledCatalogUsd,
   catalogUsdAfterCmsMerge,
@@ -131,7 +132,11 @@ function defaultCloudPlans(): CmsHostingPlan[] {
         "24/7 Expert Support",
       ],
       ctaLabel: "Get Cloud Starter",
-      ctaHref: routes.getStarted,
+      ctaHref: hostingCheckoutHref(
+        "business-hosting",
+        "cloud-starter",
+        "annually",
+      ),
     },
     {
       id: "cloud-business",
@@ -164,7 +169,11 @@ function defaultCloudPlans(): CmsHostingPlan[] {
         "Priority Support",
       ],
       ctaLabel: "Get Cloud Business",
-      ctaHref: routes.getStarted,
+      ctaHref: hostingCheckoutHref(
+        "business-hosting",
+        "cloud-business",
+        "annually",
+      ),
     },
     {
       id: "cloud-pro",
@@ -198,7 +207,7 @@ function defaultCloudPlans(): CmsHostingPlan[] {
         "PHP, Python & Node.js",
       ],
       ctaLabel: "Get Cloud Pro",
-      ctaHref: routes.getStarted,
+      ctaHref: hostingCheckoutHref("business-hosting", "cloud-pro", "annually"),
     },
   ];
   return plans.map(attachControlledCatalogUsd);
@@ -359,7 +368,7 @@ export function defaultCloudHostingPageContent(): CmsCloudHostingPageContent {
     closingDescription:
       "Launch on cloud hosting with SSL, backups, and expert support included from day one.",
     closingCtaLabel: "Get started",
-    closingCtaHref: routes.getStarted,
+    closingCtaHref: "#plans",
   };
 }
 

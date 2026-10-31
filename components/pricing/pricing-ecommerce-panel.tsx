@@ -9,6 +9,7 @@ import {
   filterPlanFeatures,
   getAnnualPerkLines,
 } from "@/components/hosting/annual-plan-perks";
+import { planBookingHref } from "@/lib/hosting/checkout";
 import type { CmsHostingPlan } from "@/lib/orbit/defaults";
 import { cn } from "@/lib/utils";
 
@@ -18,10 +19,12 @@ export function PricingEcommercePanel({
   plans,
   billing,
   onBillingChange,
+  productCheckoutSlug = "ecommerce-hosting",
 }: {
   plans: CmsHostingPlan[];
   billing: Billing;
   onBillingChange: (b: Billing) => void;
+  productCheckoutSlug?: string;
 }) {
   const reduceMotion = useReducedMotion();
   const visible = [...plans]
@@ -135,7 +138,12 @@ export function PricingEcommercePanel({
               </p>
 
               <Link
-                href={plan.ctaHref}
+                href={planBookingHref({
+                  planId: plan.id,
+                  billing,
+                  productSlug: productCheckoutSlug,
+                  ctaHref: plan.ctaHref,
+                })}
                 className={cn(
                   "mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full text-[13px] font-bold",
                   popular

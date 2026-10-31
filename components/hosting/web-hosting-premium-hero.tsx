@@ -13,7 +13,6 @@ import {
 import { motion, useReducedMotion } from "framer-motion";
 
 import { WebHostingHeroVisual } from "@/components/hosting/web-hosting-hero-visual";
-import { routes } from "@/config/routes";
 
 const FEATURES = [
   {
@@ -178,7 +177,7 @@ export function WebHostingPremiumHero() {
               <ArrowRight className="size-4" />
             </Link>
             <Link
-              href={routes.getStarted}
+              href="#plans"
               className="inline-flex h-12 items-center justify-center gap-2 rounded-full border-2 border-white/70 bg-transparent px-7 text-[15px] font-bold text-white transition hover:bg-white/10"
             >
               Get Started

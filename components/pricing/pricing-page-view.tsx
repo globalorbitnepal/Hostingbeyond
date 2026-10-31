@@ -30,6 +30,7 @@ import { PricingFaqsSection } from "@/components/pricing/pricing-faqs-section";
 import { PricingHighlights } from "@/components/pricing/pricing-highlights";
 import { PricingMotionStage } from "@/components/pricing/pricing-motion-stage";
 import { PricingPlanPanel } from "@/components/pricing/pricing-plan-panel";
+import { rewriteDeadBookingCta } from "@/lib/hosting/checkout";
 import { useLocale } from "@/components/locale/locale-provider";
 import { routes } from "@/config/routes";
 import { domainHighlights } from "@/config/pricing-plans";
@@ -237,6 +238,7 @@ export function PricingPageView({
     showBilling: boolean;
     saveBadge?: string;
     ecommerce?: boolean;
+    productCheckoutSlug?: string;
   } => {
     switch (active) {
       case "websites":
@@ -246,6 +248,7 @@ export function PricingPageView({
           columns: 4,
           showBilling: true,
           saveBadge: hostingPlans.saveBadge,
+          productCheckoutSlug: "web-hosting",
         };
       case "ecommerce":
         return {
@@ -254,6 +257,7 @@ export function PricingPageView({
           showBilling: false,
           saveBadge: activeMeta.saveBadge,
           ecommerce: true,
+          productCheckoutSlug: "ecommerce-hosting",
         };
       case "vps":
         return {
@@ -261,6 +265,7 @@ export function PricingPageView({
           columns: 4,
           showBilling: true,
           saveBadge: activeMeta.saveBadge,
+          productCheckoutSlug: "kvm-vps",
         };
       case "ai-builder":
         return {
@@ -393,6 +398,7 @@ export function PricingPageView({
                 plans={panel.plans ?? []}
                 billing={billing}
                 onBillingChange={setBilling}
+                productCheckoutSlug={panel.productCheckoutSlug}
               />
             ) : (
               <PricingPlanPanel
@@ -401,6 +407,7 @@ export function PricingPageView({
                 columns={panel.columns}
                 showBillingToggle={panel.showBilling}
                 saveBadge={panel.saveBadge}
+                productCheckoutSlug={panel.productCheckoutSlug}
               />
             )}
           </div>
@@ -448,7 +455,10 @@ export function PricingPageView({
               </div>
               <div className="flex flex-wrap gap-3">
                 <Link
-                  href={pricing.bottomPrimaryHref}
+                  href={rewriteDeadBookingCta(
+                    pricing.bottomPrimaryHref,
+                    `${routes.hosting}#plans`,
+                  )}
                   className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-white px-6 text-[14px] font-bold text-[#2f1c6a] shadow-lg"
                 >
                   {pricing.bottomPrimaryLabel}

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { PersistEmailBookingIntent } from "@/components/checkout/persist-email-booking-intent";
 import { DomainSearchView } from "@/components/domains/domain-search-view";
 import { routes } from "@/config/routes";
 import { getDomainContent } from "@/lib/orbit/content";
@@ -39,7 +40,11 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function DomainNameSearchPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string | string[] }>;
+  searchParams: Promise<{
+    q?: string | string[];
+    email?: string | string[];
+    term?: string | string[];
+  }>;
 }) {
   const [content, params, preferences] = await Promise.all([
     getDomainContent(),
@@ -49,6 +54,10 @@ export default async function DomainNameSearchPage({
 
   const rawQuery = Array.isArray(params.q) ? params.q[0] : params.q;
   const initialQuery = (rawQuery ?? "").slice(0, 80);
+  const emailPlanId = Array.isArray(params.email)
+    ? params.email[0]
+    : params.email;
+  const emailTerm = Array.isArray(params.term) ? params.term[0] : params.term;
   const page = content.single;
   const metrics = await loadDomainSearchPageMetrics();
   const supportedTldCount = metrics.searchableCount || null;
@@ -101,6 +110,7 @@ export default async function DomainNameSearchPage({
 
   return (
     <>
+      <PersistEmailBookingIntent planId={emailPlanId} term={emailTerm} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}

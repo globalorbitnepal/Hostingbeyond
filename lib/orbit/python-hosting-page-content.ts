@@ -90,7 +90,7 @@ export function defaultPythonHostingPageContent(): CmsHostingPageContent {
       "Daily backups on eligible plans",
     ],
     wordpressCtaLabel: "Deploy Python hosting",
-    wordpressCtaHref: routes.getStarted,
+    wordpressCtaHref: "#plans",
     wordpressImage: "",
 
     compareHeading: "Python hosting vs DIY VPS",
@@ -148,7 +148,7 @@ export function defaultPythonHostingPageContent(): CmsHostingPageContent {
     closingDescription:
       "Choose a Python-ready plan, point your domain, and go live with SSL and support included.",
     closingCtaLabel: "Get started",
-    closingCtaHref: routes.getStarted,
+    closingCtaHref: "#plans",
   };
 }
 

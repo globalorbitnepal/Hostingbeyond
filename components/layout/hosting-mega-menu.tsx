@@ -391,7 +391,7 @@ function BottomActions({
       iconTone: "bg-[#dbeafe] text-[#2563eb]",
     },
     {
-      href: routes.getStarted,
+      href: `${routes.hosting}#plans`,
       title: "Not sure which plan?",
       description: "Find the right hosting",
       icon: HelpCircle,

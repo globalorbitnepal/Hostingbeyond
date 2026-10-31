@@ -4,6 +4,8 @@ import { describe, it } from "node:test";
 import {
   buildBulkSearchOverLimitRedirect,
   bulkSearchLimitRedirectMessage,
+  businessEmailBookingHref,
+  domainTldSearchHref,
   parseBulkSearchHubParams,
   parseDomainListFromSearchParams,
   shouldRedirectCheckoutDomainsToBulkSearch,
@@ -65,6 +67,17 @@ describe("domain purchase intent URL helpers", () => {
     assert.match(
       bulkSearchLimitRedirectMessage(),
       new RegExp(String(MAX_BULK_DOMAIN_SEARCH)),
+    );
+  });
+
+  it("sends TLD register and email plans into domain search, not signup", () => {
+    assert.equal(
+      domainTldSearchHref(".com"),
+      "/domain-name-search?q=yourname.com",
+    );
+    assert.equal(
+      businessEmailBookingHref("premium", "12"),
+      "/domain-name-search?email=premium&term=12",
     );
   });
 });

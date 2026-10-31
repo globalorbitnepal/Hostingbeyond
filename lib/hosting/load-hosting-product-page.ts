@@ -1,3 +1,4 @@
+import { routes } from "@/config/routes";
 import {
   getCloudHostingPageContent,
   getEcommerceHostingPageContent,
@@ -9,6 +10,7 @@ import {
 import type { CmsCloudHostingPageContent } from "@/lib/orbit/cloud-hosting-page-content";
 import type { CmsHostingPageContent } from "@/lib/orbit/hosting-page-content";
 import { defaultHostingPlansSection } from "@/lib/orbit/defaults";
+import { rewriteDeadBookingCta } from "@/lib/hosting/checkout";
 import type { CmsHostingPlansContent } from "@/lib/orbit/defaults";
 
 import { getHostingProductBySlug } from "./hosting-products";
@@ -26,6 +28,35 @@ import {
   polishWebHostingPageContent,
   polishWebHostingPlans,
 } from "./web-hosting-page-polish";
+
+function polishProductPageCtas(
+  page: CmsHostingPageContent,
+): CmsHostingPageContent {
+  return {
+    ...page,
+    heroPrimaryHref: rewriteDeadBookingCta(page.heroPrimaryHref, "#plans"),
+    heroSecondaryHref: rewriteDeadBookingCta(
+      page.heroSecondaryHref,
+      routes.contact,
+    ),
+    wordpressCtaHref: rewriteDeadBookingCta(page.wordpressCtaHref, "#plans"),
+    closingCtaHref: rewriteDeadBookingCta(page.closingCtaHref, "#plans"),
+  };
+}
+
+function polishCloudPageCtas(
+  page: CmsCloudHostingPageContent,
+): CmsCloudHostingPageContent {
+  return {
+    ...page,
+    heroPrimaryHref: rewriteDeadBookingCta(page.heroPrimaryHref, "#plans"),
+    heroSecondaryHref: rewriteDeadBookingCta(
+      page.heroSecondaryHref,
+      routes.contact,
+    ),
+    closingCtaHref: rewriteDeadBookingCta(page.closingCtaHref, "#plans"),
+  };
+}
 
 export type ResolvedHostingProductPage = {
   slug: string;
@@ -135,7 +166,13 @@ export async function loadHostingProductPage(
         hostingPlans: polishWebHostingPlans(base.hostingPlans),
       };
     }
-    return base;
+    return {
+      ...base,
+      page: polishProductPageCtas(base.page),
+      cloudPage: base.cloudPage
+        ? polishCloudPageCtas(base.cloudPage)
+        : undefined,
+    };
   }
 
   const page = legacy.standard
@@ -167,5 +204,11 @@ export async function loadHostingProductPage(
     };
   }
 
-  return resolved;
+  return {
+    ...resolved,
+    page: polishProductPageCtas(resolved.page),
+    cloudPage: resolved.cloudPage
+      ? polishCloudPageCtas(resolved.cloudPage)
+      : undefined,
+  };
 }

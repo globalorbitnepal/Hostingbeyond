@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 
-import { hostingCheckoutHref } from "@/lib/hosting/checkout";
+import { planBookingHref } from "@/lib/hosting/checkout";
 import { resolveCmsHostingCatalogUsd } from "@/lib/hosting/hosting-plan-catalog";
 import { hostingPurchaseDisplay } from "@/lib/hosting/purchase-display";
 import {
@@ -101,9 +101,12 @@ export function PlanCard({
   const save = isAnnual ? plan.saveAnnually : plan.saveMonthly;
   const annualPerks = getAnnualPerkLines(plan, isAnnual);
   const features = filterPlanFeatures(plan.features, annualPerks);
-  const checkoutHref = productCheckoutSlug
-    ? hostingCheckoutHref(productCheckoutSlug, plan.id, billing)
-    : plan.ctaHref || "/get-started";
+  const checkoutHref = planBookingHref({
+    planId: plan.id,
+    billing,
+    productSlug: productCheckoutSlug,
+    ctaHref: plan.ctaHref,
+  });
 
   return (
     <motion.article
@@ -227,8 +230,10 @@ export function PlanCard({
 
 export function HostingPlansSection({
   content,
+  productCheckoutSlug = "web-hosting",
 }: {
   content?: CmsHostingPlansContent;
+  productCheckoutSlug?: string;
 }) {
   const data = content;
   const [billing, setBilling] = useState<Billing>(
@@ -377,6 +382,7 @@ export function HostingPlansSection({
               plan={plan}
               billing={billing}
               delay={0.05 * index}
+              productCheckoutSlug={productCheckoutSlug}
             />
           ))}
         </div>

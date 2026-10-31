@@ -21,6 +21,7 @@ export function PricingPlanPanel({
   showBillingToggle = true,
   defaultBilling = "annually",
   saveBadge,
+  productCheckoutSlug,
 }: {
   hostingContent?: CmsHostingPlansContent;
   plans?: CmsHostingPlan[] | CatalogPlan[];
@@ -28,6 +29,7 @@ export function PricingPlanPanel({
   showBillingToggle?: boolean;
   defaultBilling?: Billing;
   saveBadge?: string;
+  productCheckoutSlug?: string;
 }) {
   const [billing, setBilling] = useState<Billing>(defaultBilling);
 
@@ -105,6 +107,7 @@ export function PricingPlanPanel({
             plan={plan}
             billing={billing}
             delay={0.04 * index}
+            productCheckoutSlug={productCheckoutSlug}
           />
         ))}
       </div>

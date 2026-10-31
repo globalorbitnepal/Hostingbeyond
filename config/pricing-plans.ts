@@ -4,6 +4,8 @@
  */
 
 import { routes } from "@/config/routes";
+import { beyondAiCheckoutPath } from "@/config/beyond-ai-product";
+import { hostingCheckoutHref } from "@/lib/hosting/checkout";
 
 export type PricingCategoryId =
   | "websites"
@@ -164,7 +166,7 @@ export const vpsPlans: CatalogPlan[] = [
       "24/7 expert support",
     ],
     ctaLabel: "Get VPS 1",
-    ctaHref: routes.getStarted,
+    ctaHref: hostingCheckoutHref("kvm-vps", "vps-1", "annually"),
   },
   {
     id: "vps-2",
@@ -190,7 +192,7 @@ export const vpsPlans: CatalogPlan[] = [
       "24/7 expert support",
     ],
     ctaLabel: "Get VPS 2",
-    ctaHref: routes.getStarted,
+    ctaHref: hostingCheckoutHref("kvm-vps", "vps-2", "annually"),
   },
   {
     id: "vps-3",
@@ -214,7 +216,7 @@ export const vpsPlans: CatalogPlan[] = [
       "Priority support",
     ],
     ctaLabel: "Get VPS 3",
-    ctaHref: routes.getStarted,
+    ctaHref: hostingCheckoutHref("kvm-vps", "vps-3", "annually"),
   },
   {
     id: "vps-4",
@@ -238,7 +240,7 @@ export const vpsPlans: CatalogPlan[] = [
       "Priority support",
     ],
     ctaLabel: "Get VPS 4",
-    ctaHref: routes.getStarted,
+    ctaHref: hostingCheckoutHref("kvm-vps", "vps-4", "annually"),
   },
 ];
 
@@ -348,7 +350,7 @@ export const aiAgentPlans: CatalogPlan[] = [
       "Usage dashboard",
     ],
     ctaLabel: "Get started",
-    ctaHref: routes.getStarted,
+    ctaHref: beyondAiCheckoutPath("free"),
   },
   {
     id: "agents-pro",
@@ -372,7 +374,7 @@ export const aiAgentPlans: CatalogPlan[] = [
       "Priority support",
     ],
     ctaLabel: "Get started",
-    ctaHref: routes.getStarted,
+    ctaHref: beyondAiCheckoutPath("pro"),
   },
   {
     id: "agents-business",
@@ -394,7 +396,7 @@ export const aiAgentPlans: CatalogPlan[] = [
       "24/7 priority support",
     ],
     ctaLabel: "Get started",
-    ctaHref: routes.getStarted,
+    ctaHref: beyondAiCheckoutPath("ultra"),
   },
 ];
 

@@ -2,7 +2,7 @@ import { routes } from "@/config/routes";
 import type { CmsHostingPlansContent } from "@/lib/orbit/defaults";
 import type { CmsHostingPageContent } from "@/lib/orbit/hosting-page-content";
 
-import { hostingCheckoutHref } from "./checkout";
+import { hostingCheckoutHref, rewriteDeadBookingCta } from "./checkout";
 
 function polishFeatureLine(line: string): string {
   return line
@@ -37,8 +37,16 @@ export function polishWebHostingPageContent(
   const wordpressPath = `${routes.hosting}/wordpress`;
   return {
     ...page,
-    wordpressCtaHref: page.wordpressCtaHref?.trim() || wordpressPath,
-    closingCtaHref: page.closingCtaHref?.trim() || routes.getStarted,
+    wordpressCtaHref: rewriteDeadBookingCta(
+      page.wordpressCtaHref?.trim() || wordpressPath,
+      wordpressPath,
+    ),
+    closingCtaHref: rewriteDeadBookingCta(page.closingCtaHref, "#plans"),
+    heroPrimaryHref: rewriteDeadBookingCta(page.heroPrimaryHref, "#plans"),
+    heroSecondaryHref: rewriteDeadBookingCta(
+      page.heroSecondaryHref,
+      routes.contact,
+    ),
     features: page.features.map((f) => {
       if (f.id !== "domain") return f;
       return {

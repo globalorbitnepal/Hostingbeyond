@@ -55,10 +55,15 @@ export function CheckoutStepNav({
                   {step.label}
                 </span>
               </div>
-              {index < STEPS.length - 1 ? (
+              {index < steps.length - 1 ? (
                 <span
                   aria-hidden
-                  className="hidden h-px flex-1 bg-[var(--hb-co-border)] sm:block"
+                  className={cn(
+                    "hidden h-0.5 flex-1 sm:block",
+                    done
+                      ? "bg-[var(--hb-co-primary)]"
+                      : "bg-[var(--hb-co-border)]",
+                  )}
                 />
               ) : null}
             </li>
