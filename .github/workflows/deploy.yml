@@ -345,17 +345,27 @@ jobs:
           /usr/local/sbin/hostingbeyond-ctl restart
           rm -rf .next-prev .next-incoming
 
-          echo "==> Verifying process owner hostingbeyond"
+          echo "==> Verifying PM2 app hostingbeyond is online"
+          export PM2_HOME=/home/hostingbeyond/.pm2
           PROCESS_OK=0
-          for _i in $(seq 1 20); do
-            if pgrep -u hostingbeyond -a node >/dev/null 2>&1; then
+          for _i in $(seq 1 45); do
+            if /usr/bin/pm2 jlist 2>/dev/null | python3 -c 'import json,sys; apps=json.load(sys.stdin); sys.exit(0 if any(p.get("name")=="hostingbeyond" and p.get("pm2_env",{}).get("status")=="online" for p in apps) else 1)'; then
+              PROCESS_OK=1
+              break
+            fi
+            # Next 15 names the worker next-server, not a bare "node" PID.
+            if pgrep -u hostingbeyond -a node >/dev/null 2>&1 \
+              || pgrep -u hostingbeyond -a next-server >/dev/null 2>&1 \
+              || pgrep -u hostingbeyond -af 'next start' >/dev/null 2>&1; then
               PROCESS_OK=1
               break
             fi
             sleep 1
           done
           if [ "$PROCESS_OK" != "1" ]; then
-            echo "PROCESS_USER_FAIL: no node process owned by hostingbeyond after wait"
+            echo "PROCESS_USER_FAIL: PM2 app hostingbeyond not online after wait"
+            /usr/local/sbin/hostingbeyond-ctl list || true
+            /usr/local/sbin/hostingbeyond-ctl logs || true
             exit 1
           fi
 
