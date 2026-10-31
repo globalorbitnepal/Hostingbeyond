@@ -30,6 +30,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     routes.businessEmail,
     routes.domains,
     "/resources/case-studies",
+    "/resources/growth",
     "/resources/updates",
     "/resources/tips",
   ];

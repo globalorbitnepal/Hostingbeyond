@@ -69,6 +69,12 @@ export default function OrbitBlogDashboardPage() {
             Edit case studies
           </Link>
           <Link
+            href="/orbit/blog/growth-hub"
+            className="rounded-xl border border-violet-200 bg-violet-50 px-4 py-2.5 text-sm font-semibold text-[#673de6]"
+          >
+            Edit growth hub
+          </Link>
+          <Link
             href="/orbit/blog/new"
             className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800"
           >

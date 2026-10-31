@@ -322,6 +322,23 @@ export const PUBLIC_PAGE_SEO_REGISTRY: PublicPageSeoEntry[] = [
     },
   },
   {
+    slug: "growth-hub",
+    label: "Growth hub",
+    path: "/resources/growth",
+    editorHref: "/orbit/blog/growth-hub",
+    defaultSeo: {
+      metaTitle:
+        "HostingBeyond Growth Hub | Scale Your Website, Brand & Revenue Online",
+      metaDescription:
+        "Growth playbooks for launch, performance, email trust, agency scale and cloud upgrades on HostingBeyond hosting, domains and business email.",
+      keywords:
+        "website growth, online business scale, hosting growth playbook, domain email launch, SEO foundations",
+      ogTitle: "HostingBeyond Growth Hub",
+      ogDescription:
+        "Premium playbooks to grow online on one hosting platform — no fluff.",
+    },
+  },
+  {
     slug: "updates-hub",
     label: "Product updates",
     path: "/resources/updates",

@@ -80,6 +80,12 @@ import {
   type CmsUpdatesHubPageContent,
 } from "@/lib/orbit/updates-hub-page-content";
 import {
+  GROWTH_HUB_REVISION,
+  defaultGrowthHubPageContent,
+  mergeGrowthHubPageContent,
+  type CmsGrowthHubPageContent,
+} from "@/lib/orbit/growth-hub-page-content";
+import {
   CASE_STUDIES_HUB_REVISION,
   defaultCaseStudiesHubPageContent,
   mergeCaseStudiesHubPageContent,
@@ -124,6 +130,7 @@ const DOMAIN_TRANSFER_PAGE_SLUG = "domain-transfer-product";
 const TIPS_HUB_PAGE_SLUG = "tips-hub";
 const UPDATES_HUB_PAGE_SLUG = "updates-hub";
 const CASE_STUDIES_HUB_PAGE_SLUG = "case-studies-hub";
+const GROWTH_HUB_PAGE_SLUG = "growth-hub";
 const ABOUT_PAGE_SLUG = "about-page";
 const CONTACT_PAGE_SLUG = "contact-page";
 /** Safety net so a bad cache entry can never outlive a few minutes. */
@@ -468,6 +475,48 @@ export const getCaseStudiesHubPageContent = cache(
       return await readCaseStudiesHubPageContent();
     } catch {
       return defaultCaseStudiesHubPageContent();
+    }
+  },
+);
+
+export async function syncGrowthHubFromDefaultsIfNeeded() {
+  try {
+    const page = await prisma.pageContent.findUnique({
+      where: { slug: GROWTH_HUB_PAGE_SLUG },
+    });
+    if (!page) {
+      await saveGrowthHubPageContent(defaultGrowthHubPageContent());
+      return;
+    }
+    const stored = page.sections as Partial<CmsGrowthHubPageContent>;
+    if ((stored.hubRevision ?? 0) >= GROWTH_HUB_REVISION) return;
+    await saveGrowthHubPageContent(defaultGrowthHubPageContent());
+  } catch {
+    /* DB may be unavailable during local UI work */
+  }
+}
+
+const readGrowthHubPageContent = nextCache(
+  async (): Promise<CmsGrowthHubPageContent> => {
+    await syncGrowthHubFromDefaultsIfNeeded();
+    const page = await prisma.pageContent.findUnique({
+      where: { slug: GROWTH_HUB_PAGE_SLUG },
+    });
+    if (!page) return defaultGrowthHubPageContent();
+    return mergeGrowthHubPageContent(
+      page.sections as Partial<CmsGrowthHubPageContent>,
+    );
+  },
+  ["orbit-growth-hub-page-content"],
+  { tags: [CMS_TAG], revalidate: CMS_REVALIDATE },
+);
+
+export const getGrowthHubPageContent = cache(
+  async (): Promise<CmsGrowthHubPageContent> => {
+    try {
+      return await readGrowthHubPageContent();
+    } catch {
+      return defaultGrowthHubPageContent();
     }
   },
 );
@@ -875,6 +924,39 @@ export async function saveCaseStudiesHubPageContent(
   return normalized;
 }
 
+export async function saveGrowthHubPageContent(
+  content: CmsGrowthHubPageContent,
+) {
+  const normalized = mergeGrowthHubPageContent(content);
+  await prisma.pageContent.upsert({
+    where: { slug: GROWTH_HUB_PAGE_SLUG },
+    create: {
+      slug: GROWTH_HUB_PAGE_SLUG,
+      title: "Growth Hub",
+      isPublished: true,
+      isVisible: true,
+      sections: normalized,
+      seo: {
+        title: normalized.seoTitle,
+        description: normalized.seoDescription,
+        keywords:
+          "website growth, scale online business, hosting growth playbook, domain email launch, HostingBeyond growth hub",
+      },
+    },
+    update: {
+      sections: normalized,
+      seo: {
+        title: normalized.seoTitle,
+        description: normalized.seoDescription,
+      },
+    },
+  });
+  revalidateContent();
+  revalidatePath("/resources/growth");
+  revalidatePath("/orbit/blog/growth-hub");
+  return normalized;
+}
+
 export async function saveTipsHubPageContent(content: CmsTipsHubPageContent) {
   const normalized = mergeTipsHubPageContent(content);
   await prisma.pageContent.upsert({
@@ -1177,6 +1259,14 @@ export async function ensureHomeSeeded() {
       await saveCaseStudiesHubPageContent(defaultCaseStudiesHubPageContent());
     } else {
       await syncCaseStudiesHubFromDefaultsIfNeeded();
+    }
+    const growthHub = await prisma.pageContent.findUnique({
+      where: { slug: GROWTH_HUB_PAGE_SLUG },
+    });
+    if (!growthHub) {
+      await saveGrowthHubPageContent(defaultGrowthHubPageContent());
+    } else {
+      await syncGrowthHubFromDefaultsIfNeeded();
     }
     const aboutPage = await prisma.pageContent.findUnique({
       where: { slug: ABOUT_PAGE_SLUG },
