@@ -53,6 +53,10 @@ const CMS_SLUG_LINKS: Record<string, OrbitPageLink> = {
     editor: "/orbit/blog/growth-hub",
     preview: "/resources/growth",
   },
+  "docs-hub": {
+    editor: "/orbit/blog/docs-hub",
+    preview: "/resources/docs",
+  },
   "about-page": { editor: "/orbit/about", preview: "/about" },
   "contact-page": { editor: "/orbit/contact", preview: "/contact" },
 };

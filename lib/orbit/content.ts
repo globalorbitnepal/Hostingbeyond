@@ -80,6 +80,12 @@ import {
   type CmsUpdatesHubPageContent,
 } from "@/lib/orbit/updates-hub-page-content";
 import {
+  DOCS_HUB_REVISION,
+  defaultDocsHubPageContent,
+  mergeDocsHubPageContent,
+  type CmsDocsHubPageContent,
+} from "@/lib/orbit/docs-hub-page-content";
+import {
   GROWTH_HUB_REVISION,
   defaultGrowthHubPageContent,
   mergeGrowthHubPageContent,
@@ -131,6 +137,7 @@ const TIPS_HUB_PAGE_SLUG = "tips-hub";
 const UPDATES_HUB_PAGE_SLUG = "updates-hub";
 const CASE_STUDIES_HUB_PAGE_SLUG = "case-studies-hub";
 const GROWTH_HUB_PAGE_SLUG = "growth-hub";
+const DOCS_HUB_PAGE_SLUG = "docs-hub";
 const ABOUT_PAGE_SLUG = "about-page";
 const CONTACT_PAGE_SLUG = "contact-page";
 /** Safety net so a bad cache entry can never outlive a few minutes. */
@@ -517,6 +524,48 @@ export const getGrowthHubPageContent = cache(
       return await readGrowthHubPageContent();
     } catch {
       return defaultGrowthHubPageContent();
+    }
+  },
+);
+
+export async function syncDocsHubFromDefaultsIfNeeded() {
+  try {
+    const page = await prisma.pageContent.findUnique({
+      where: { slug: DOCS_HUB_PAGE_SLUG },
+    });
+    if (!page) {
+      await saveDocsHubPageContent(defaultDocsHubPageContent());
+      return;
+    }
+    const stored = page.sections as Partial<CmsDocsHubPageContent>;
+    if ((stored.hubRevision ?? 0) >= DOCS_HUB_REVISION) return;
+    await saveDocsHubPageContent(defaultDocsHubPageContent());
+  } catch {
+    /* DB may be unavailable during local UI work */
+  }
+}
+
+const readDocsHubPageContent = nextCache(
+  async (): Promise<CmsDocsHubPageContent> => {
+    await syncDocsHubFromDefaultsIfNeeded();
+    const page = await prisma.pageContent.findUnique({
+      where: { slug: DOCS_HUB_PAGE_SLUG },
+    });
+    if (!page) return defaultDocsHubPageContent();
+    return mergeDocsHubPageContent(
+      page.sections as Partial<CmsDocsHubPageContent>,
+    );
+  },
+  ["orbit-docs-hub-page-content"],
+  { tags: [CMS_TAG], revalidate: CMS_REVALIDATE },
+);
+
+export const getDocsHubPageContent = cache(
+  async (): Promise<CmsDocsHubPageContent> => {
+    try {
+      return await readDocsHubPageContent();
+    } catch {
+      return defaultDocsHubPageContent();
     }
   },
 );
@@ -957,6 +1006,37 @@ export async function saveGrowthHubPageContent(
   return normalized;
 }
 
+export async function saveDocsHubPageContent(content: CmsDocsHubPageContent) {
+  const normalized = mergeDocsHubPageContent(content);
+  await prisma.pageContent.upsert({
+    where: { slug: DOCS_HUB_PAGE_SLUG },
+    create: {
+      slug: DOCS_HUB_PAGE_SLUG,
+      title: "Documentation Hub",
+      isPublished: true,
+      isVisible: true,
+      sections: normalized,
+      seo: {
+        title: normalized.seoTitle,
+        description: normalized.seoDescription,
+        keywords:
+          "HostingBeyond documentation, platform guide, domains hosting email account Orbit CMS",
+      },
+    },
+    update: {
+      sections: normalized,
+      seo: {
+        title: normalized.seoTitle,
+        description: normalized.seoDescription,
+      },
+    },
+  });
+  revalidateContent();
+  revalidatePath("/resources/docs");
+  revalidatePath("/orbit/blog/docs-hub");
+  return normalized;
+}
+
 export async function saveTipsHubPageContent(content: CmsTipsHubPageContent) {
   const normalized = mergeTipsHubPageContent(content);
   await prisma.pageContent.upsert({
@@ -1267,6 +1347,14 @@ export async function ensureHomeSeeded() {
       await saveGrowthHubPageContent(defaultGrowthHubPageContent());
     } else {
       await syncGrowthHubFromDefaultsIfNeeded();
+    }
+    const docsHub = await prisma.pageContent.findUnique({
+      where: { slug: DOCS_HUB_PAGE_SLUG },
+    });
+    if (!docsHub) {
+      await saveDocsHubPageContent(defaultDocsHubPageContent());
+    } else {
+      await syncDocsHubFromDefaultsIfNeeded();
     }
     const aboutPage = await prisma.pageContent.findUnique({
       where: { slug: ABOUT_PAGE_SLUG },

@@ -322,6 +322,23 @@ export const PUBLIC_PAGE_SEO_REGISTRY: PublicPageSeoEntry[] = [
     },
   },
   {
+    slug: "docs-hub",
+    label: "Documentation",
+    path: "/resources/docs",
+    editorHref: "/orbit/blog/docs-hub",
+    defaultSeo: {
+      metaTitle:
+        "HostingBeyond Documentation | Platform, Domains, Hosting & Account Guide",
+      metaDescription:
+        "Official product documentation for HostingBeyond — domains, hosting, business email, checkout, customer account and Orbit CMS.",
+      keywords:
+        "HostingBeyond documentation, platform guide, web hosting help, domain DNS account",
+      ogTitle: "HostingBeyond Documentation",
+      ogDescription:
+        "Professional reference for the HostingBeyond platform and customer journeys.",
+    },
+  },
+  {
     slug: "growth-hub",
     label: "Growth hub",
     path: "/resources/growth",

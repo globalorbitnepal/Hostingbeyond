@@ -5,6 +5,7 @@ import { BlogSiteShell } from "@/components/blog/blog-shell";
 import { buildMetadata } from "@/lib/metadata";
 import { BLOG_BASE, TIPS_BASE } from "@/lib/blog/paths";
 import { CASE_STUDIES_BASE } from "@/lib/case-studies/paths";
+import { DOCS_BASE } from "@/lib/docs/paths";
 import { GROWTH_BASE } from "@/lib/growth/paths";
 import { UPDATES_BASE } from "@/lib/updates/paths";
 
@@ -69,6 +70,15 @@ export default function ResourcesIndexPage() {
             <h2 className="text-lg font-bold text-[#1a1035]">Growth</h2>
             <p className="mt-2 text-sm text-slate-600">
               Playbooks to launch, convert and scale on HostingBeyond.
+            </p>
+          </Link>
+          <Link
+            href={DOCS_BASE}
+            className="rounded-2xl border border-violet-100 bg-white p-6 shadow-sm hover:border-violet-200"
+          >
+            <h2 className="text-lg font-bold text-[#1a1035]">Documentation</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Platform reference: domains, hosting, account and Orbit.
             </p>
           </Link>
           <Link
