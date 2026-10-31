@@ -47,6 +47,13 @@ if ((Test-Path $ageId) -and -not (Test-Path $ageRec) -and (Get-Command age-keyge
 
 & (Join-Path $t "ops\windows-backup\Audit-DesktopBackupFolder.ps1") -BackupRoot $BackupRoot
 
+try {
+  & (Join-Path $t "ops\windows-backup\Invoke-DesktopVpsPairing.ps1") -BackupRoot $BackupRoot
+}
+catch {
+  Write-Host "WARN: VPS pairing via GitHub skipped: $($_.Exception.Message)"
+}
+
 $auditPath = Join-Path $BackupRoot "reports\desktop-audit.json"
 $daily = "unknown"
 $full = "unknown"
