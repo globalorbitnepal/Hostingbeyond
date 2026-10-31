@@ -52,21 +52,22 @@ type StepId = (typeof STEPS)[number]["id"];
 
 const STEP_COPY: Record<StepId, { title: string; subtitle: string }> = {
   domains: {
-    title: "Your Cart",
-    subtitle: "Review your products and choose the services you need.",
+    title: "Your domains",
+    subtitle: "Review registration, duration, and renewals before add-ons.",
   },
   services: {
-    title: "Complete Your Hosting Setup",
+    title: "Do more with your domains",
     subtitle:
-      "Add the services you need. Every price is shown before you confirm.",
+      "Add security, hosting, and professional email. Prices and renewals are shown before you continue.",
   },
   details: {
-    title: "Your Account & Billing Details",
-    subtitle: "Sign in or confirm your account to continue.",
+    title: "Account details",
+    subtitle: "Sign in or create an account to save this order.",
   },
   payment: {
-    title: "Secure Checkout",
-    subtitle: "Pay from your wallet with server-verified totals.",
+    title: "Secure payment",
+    subtitle:
+      "Wallet checkout with Stripe-backed card top-up when you need funds.",
   },
 };
 
@@ -407,7 +408,7 @@ export function DomainPremiumCheckout({
   }, [lines.length, step]);
 
   return (
-    <div className="hb-checkout-premium relative min-h-dvh pb-28 lg:pb-10">
+    <div className="hb-checkout-premium hb-checkout-premium--domain relative min-h-dvh pb-28 lg:pb-10">
       <div className="hb-checkout-premium__ambient" aria-hidden />
       <div className="relative z-10 mx-auto w-full max-w-[77.5rem] px-4 py-6 sm:px-6 sm:py-8">
         <header className="flex flex-wrap items-center justify-between gap-4">
@@ -661,9 +662,33 @@ export function DomainPremiumCheckout({
                   </div>
                   <p className="mt-2 inline-flex items-center gap-2 text-[12px] font-medium text-slate-500">
                     <Lock className="size-3.5 text-[#673de6]" aria-hidden />
-                    Cards accepted via Stripe — add funds securely from your
-                    wallet page.
+                    Domain registration is charged from wallet. Cards are
+                    processed by Stripe when you add funds.
                   </p>
+                </div>
+                <div className="hb-checkout-premium__stripe mt-4">
+                  <p className="text-[12px] font-bold tracking-wide text-[var(--hb-co-text-muted)] uppercase">
+                    Card (Stripe)
+                  </p>
+                  <p className="mt-1 text-[13px] text-[var(--hb-co-text-muted)]">
+                    Card numbers are never stored on this page. Add funds, then
+                    complete this order from wallet.
+                  </p>
+                  <div className="hb-checkout-premium__stripe-row mt-3">
+                    <input
+                      readOnly
+                      aria-label="Card number"
+                      placeholder="Card number"
+                    />
+                    <input readOnly aria-label="Expiry" placeholder="MM / YY" />
+                    <input readOnly aria-label="CVC" placeholder="CVC" />
+                  </div>
+                  <Link
+                    href={routes.accountWallet}
+                    className="mt-3 inline-flex min-h-11 items-center text-[13px] font-bold text-[#673de6]"
+                  >
+                    Add funds with Stripe
+                  </Link>
                 </div>
                 {!isAuthenticated ? (
                   <CheckoutAuthPanel
@@ -881,7 +906,7 @@ export function DomainPremiumCheckout({
                   type="button"
                   disabled={primaryCta.disabled}
                   onClick={primaryCta.action}
-                  className="hb-checkout-premium__btn-primary mt-5 w-full"
+                  className="hb-checkout-premium__cta mt-5 w-full disabled:opacity-50"
                   translate="no"
                 >
                   {submitting ? (
@@ -906,7 +931,7 @@ export function DomainPremiumCheckout({
             type="button"
             disabled={primaryCta.disabled}
             onClick={primaryCta.action}
-            className="hb-checkout-premium__btn-primary w-full"
+            className="hb-checkout-premium__cta w-full disabled:opacity-50"
             translate="no"
           >
             {primaryCta.label}

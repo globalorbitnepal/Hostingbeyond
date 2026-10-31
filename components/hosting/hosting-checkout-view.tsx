@@ -21,7 +21,8 @@ export function HostingCheckoutView({
   const query = serializeHostingPurchaseIntent(context.intent);
 
   return (
-    <div className="hb-band-cream min-h-dvh py-10 sm:py-14">
+    <div className="hb-checkout-premium hb-checkout-premium--hosting min-h-dvh py-10 sm:py-14">
+      <div className="hb-checkout-premium__ambient" aria-hidden />
       <div className="hb-shell mx-auto max-w-lg">
         <Link href="/" className="inline-flex items-center gap-2">
           <img src={logo} alt="HostingBeyond" className="h-9 w-auto" />

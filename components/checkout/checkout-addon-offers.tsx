@@ -208,7 +208,7 @@ export function CheckoutAddonOfferList({
             key={offerKey(offer)}
             className="hb-checkout-premium__card overflow-hidden p-0"
           >
-            <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start sm:gap-5">
+            <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:gap-5">
               <span
                 className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#ede9fe] to-[#dbeafe] text-[var(--hb-co-primary)]"
                 aria-hidden
@@ -216,41 +216,36 @@ export function CheckoutAddonOfferList({
                 <ShieldCheck className="size-6" />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-bold tracking-[0.12em] text-[var(--hb-co-primary)] uppercase">
-                  Extra
-                </p>
-                <p className="mt-0.5 text-[18px] font-extrabold tracking-tight text-[var(--hb-co-text)]">
+                <p className="text-[17px] font-extrabold tracking-tight text-[var(--hb-co-text)]">
                   {offer.label}
                 </p>
-                <p className="mt-1.5 text-[14px] leading-relaxed text-[var(--hb-co-text-muted)]">
+                <p className="mt-1 text-[14px] leading-relaxed text-[var(--hb-co-text-muted)]">
                   {offer.description}
                 </p>
-                <p className="mt-3 text-[16px] font-extrabold text-[var(--hb-co-text)]">
+              </div>
+              <div className="flex shrink-0 items-center justify-between gap-4 sm:flex-col sm:items-end">
+                <p className="text-right text-[15px] font-extrabold text-[var(--hb-co-text)]">
                   <CatalogPrice usd={offer.amount} />
-                  <span className="ml-1.5 text-[13px] font-semibold text-[var(--hb-co-text-muted)]">
+                  <span className="mt-0.5 block text-[12px] font-semibold text-[var(--hb-co-text-muted)]">
                     {offer.periodLabel}
                   </span>
                 </p>
+                <button
+                  type="button"
+                  onClick={() => onToggleOffer(offer)}
+                  className="hb-checkout-premium__addon-add"
+                  aria-pressed={added}
+                >
+                  {added ? (
+                    <>
+                      <Check className="mr-1 inline size-4" aria-hidden />
+                      Added
+                    </>
+                  ) : (
+                    "Add"
+                  )}
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => onToggleOffer(offer)}
-                className={cn(
-                  "hb-checkout-premium__btn-primary min-h-11 shrink-0 px-6 sm:self-center",
-                  added &&
-                    "border-2 border-[var(--hb-co-success)] bg-[var(--hb-co-success)]",
-                )}
-                aria-pressed={added}
-              >
-                {added ? (
-                  <>
-                    <Check className="size-4" aria-hidden />
-                    Added
-                  </>
-                ) : (
-                  "Add"
-                )}
-              </button>
             </div>
           </li>
         );
@@ -270,7 +265,7 @@ export function CheckoutAddonOfferList({
             key={group.groupKey}
             className="hb-checkout-premium__card overflow-hidden p-0"
           >
-            <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start sm:gap-5">
+            <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:gap-5">
               <span
                 className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#ede9fe] to-[#dbeafe] text-[var(--hb-co-primary)]"
                 aria-hidden
@@ -278,13 +273,10 @@ export function CheckoutAddonOfferList({
                 <Server className="size-6" />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-bold tracking-[0.12em] text-[var(--hb-co-primary)] uppercase">
-                  Web hosting
-                </p>
-                <p className="mt-0.5 text-[18px] font-extrabold tracking-tight text-[var(--hb-co-text)]">
+                <p className="text-[17px] font-extrabold tracking-tight text-[var(--hb-co-text)]">
                   {group.planName}
                 </p>
-                <p className="mt-1.5 text-[14px] leading-relaxed text-[var(--hb-co-text-muted)]">
+                <p className="mt-1 text-[14px] leading-relaxed text-[var(--hb-co-text-muted)]">
                   {group.description}
                 </p>
                 {group.monthly && group.annually ? (
@@ -298,35 +290,31 @@ export function CheckoutAddonOfferList({
                     onChange={(v) => onHostingBillingChange(group.groupKey, v)}
                   />
                 ) : null}
-                {activeOffer ? (
-                  <p className="mt-3 text-[16px] font-extrabold text-[var(--hb-co-text)]">
+              </div>
+              {activeOffer ? (
+                <div className="flex shrink-0 items-center justify-between gap-4 sm:flex-col sm:items-end">
+                  <p className="text-right text-[15px] font-extrabold text-[var(--hb-co-text)]">
                     <CatalogPrice usd={activeOffer.amount} />
-                    <span className="ml-1.5 text-[13px] font-semibold text-[var(--hb-co-text-muted)]">
+                    <span className="mt-0.5 block text-[12px] font-semibold text-[var(--hb-co-text-muted)]">
                       {activeOffer.periodLabel}
                     </span>
                   </p>
-                ) : null}
-              </div>
-              {activeOffer ? (
-                <button
-                  type="button"
-                  onClick={() => onToggleOffer(activeOffer)}
-                  className={cn(
-                    "hb-checkout-premium__btn-primary min-h-11 shrink-0 px-6 sm:self-center",
-                    added &&
-                      "border-2 border-[var(--hb-co-success)] bg-[var(--hb-co-success)]",
-                  )}
-                  aria-pressed={added}
-                >
-                  {added ? (
-                    <>
-                      <Check className="size-4" aria-hidden />
-                      Added
-                    </>
-                  ) : (
-                    "Add"
-                  )}
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => onToggleOffer(activeOffer)}
+                    className="hb-checkout-premium__addon-add"
+                    aria-pressed={added}
+                  >
+                    {added ? (
+                      <>
+                        <Check className="mr-1 inline size-4" aria-hidden />
+                        Added
+                      </>
+                    ) : (
+                      "Add"
+                    )}
+                  </button>
+                </div>
               ) : null}
             </div>
           </li>
@@ -349,7 +337,7 @@ export function CheckoutAddonOfferList({
             key={group.groupKey}
             className="hb-checkout-premium__card overflow-hidden p-0"
           >
-            <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start sm:gap-5">
+            <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:gap-5">
               <span
                 className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#ede9fe] to-[#dbeafe] text-[var(--hb-co-primary)]"
                 aria-hidden
@@ -357,16 +345,13 @@ export function CheckoutAddonOfferList({
                 <Mail className="size-6" />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-bold tracking-[0.12em] text-[var(--hb-co-primary)] uppercase">
-                  Business email
-                </p>
-                <p className="mt-0.5 text-[18px] font-extrabold tracking-tight">
-                  {group.planName}
+                <p className="text-[17px] font-extrabold tracking-tight">
+                  Professional Email
                 </p>
                 <p className="mt-1 text-[13px] font-semibold text-[var(--hb-co-primary)]">
                   {exampleEmail}
                 </p>
-                <p className="mt-1.5 text-[14px] text-[var(--hb-co-text-muted)]">
+                <p className="mt-1 text-[14px] text-[var(--hb-co-text-muted)]">
                   {group.mailboxesLabel} · {group.storageLabel}
                 </p>
                 {availableTerms.length > 0 ? (
@@ -377,62 +362,48 @@ export function CheckoutAddonOfferList({
                     onChange={(v) => onEmailBillingChange(group.groupKey, v)}
                   />
                 ) : null}
-                {activeOffer ? (
-                  <p className="mt-3 text-[16px] font-extrabold text-[var(--hb-co-text)]">
+              </div>
+              {activeOffer ? (
+                <div className="flex shrink-0 items-center justify-between gap-4 sm:flex-col sm:items-end">
+                  <p className="text-right text-[15px] font-extrabold text-[var(--hb-co-text)]">
                     {activeOffer.firstMonthFree ? (
                       <>
                         <span className="hb-checkout-premium__badge-free">
-                          FREE for 1st month
+                          1 Month Free
                         </span>
-                        <span className="mt-1 block text-[13px] font-semibold text-[var(--hb-co-text-muted)]">
-                          Then renews at{" "}
+                        <span className="mt-1 block text-[12px] font-semibold text-[var(--hb-co-text-muted)]">
+                          Renews at{" "}
                           <CatalogPrice usd={activeOffer.renewalPerMonth} /> /
-                          mo · cancel anytime
+                          mo
                         </span>
                       </>
                     ) : (
                       <>
                         <CatalogPrice usd={activeOffer.amount} />
-                        <span className="ml-1.5 text-[13px] font-semibold text-[var(--hb-co-text-muted)]">
-                          {activeOffer.prepaidMonths <= 1
-                            ? "/ mo"
-                            : `for ${activeOffer.prepaidMonths} months`}
-                        </span>
-                        <span className="mt-0.5 block text-[12px] font-medium text-[var(--hb-co-text-muted)]">
-                          {activeOffer.prepaidMonths > 1 ? (
-                            <>
-                              <CatalogPrice usd={activeOffer.ratePerMonth} /> /
-                              mo · {activeOffer.periodLabel}
-                            </>
-                          ) : (
-                            activeOffer.periodLabel
-                          )}
+                        <span className="mt-0.5 block text-[12px] font-semibold text-[var(--hb-co-text-muted)]">
+                          {activeOffer.prepaidMonths > 1
+                            ? `${activeOffer.prepaidMonths} months prepaid`
+                            : "/ mo"}
                         </span>
                       </>
                     )}
                   </p>
-                ) : null}
-              </div>
-              {activeOffer ? (
-                <button
-                  type="button"
-                  onClick={() => onToggleOffer(activeOffer)}
-                  className={cn(
-                    "hb-checkout-premium__btn-primary min-h-11 shrink-0 px-6 sm:self-center",
-                    added &&
-                      "border-2 border-[var(--hb-co-success)] bg-[var(--hb-co-success)]",
-                  )}
-                  aria-pressed={added}
-                >
-                  {added ? (
-                    <>
-                      <Check className="size-4" aria-hidden />
-                      Added
-                    </>
-                  ) : (
-                    "Add"
-                  )}
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => onToggleOffer(activeOffer)}
+                    className="hb-checkout-premium__addon-add"
+                    aria-pressed={added}
+                  >
+                    {added ? (
+                      <>
+                        <Check className="mr-1 inline size-4" aria-hidden />
+                        Added
+                      </>
+                    ) : (
+                      "Add"
+                    )}
+                  </button>
+                </div>
               ) : null}
             </div>
           </li>

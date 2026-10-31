@@ -43,7 +43,7 @@ const BOOKING_NAV = [
   { id: 1, label: "Plan" },
   { id: 2, label: "Domain" },
   { id: 3, label: "Add-ons" },
-  { id: 4, label: "Review" },
+  { id: 4, label: "Payment" },
 ] as const;
 
 function money(value: number, currency = "USD") {
@@ -272,7 +272,7 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
             : "Hold this booking";
 
   return (
-    <div className="hb-checkout-premium hb-hosting-booking relative">
+    <div className="hb-checkout-premium hb-checkout-premium--hosting hb-hosting-booking relative">
       <div className="hb-checkout-premium__ambient" aria-hidden />
       <header className="relative z-10 border-b border-[var(--hb-co-border)] bg-white/90 backdrop-blur-sm">
         <div className="mx-auto flex max-w-[1180px] min-w-0 items-center justify-between gap-3 px-4 py-4 sm:px-6">
@@ -649,12 +649,30 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
                 </span>
                 <div className="min-w-0">
                   <h1 className="font-heading text-[1.55rem] font-extrabold text-[var(--hb-co-royal)] sm:text-3xl">
-                    Review your booking
+                    Secure payment
                   </h1>
                   <p className="mt-2 text-[14px] leading-relaxed text-[var(--hb-co-text-muted)]">
-                    Payment is not collected yet. Hold this configuration — card
-                    checkout will be added next.
+                    Confirm this booking. Cards are processed by Stripe when
+                    billing is enabled; today you can hold the configuration.
                   </p>
+                  <div className="hb-checkout-premium__stripe mt-5">
+                    <p className="text-[12px] font-bold tracking-wide text-[var(--hb-co-text-muted)] uppercase">
+                      Card (Stripe)
+                    </p>
+                    <div className="hb-checkout-premium__stripe-row mt-3">
+                      <input
+                        readOnly
+                        aria-label="Card number"
+                        placeholder="Card number"
+                      />
+                      <input
+                        readOnly
+                        aria-label="Expiry"
+                        placeholder="MM / YY"
+                      />
+                      <input readOnly aria-label="CVC" placeholder="CVC" />
+                    </div>
+                  </div>
                 </div>
               </div>
               <dl className="mt-6 space-y-4 text-[15px]">
@@ -770,7 +788,7 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
               type="button"
               disabled={loading || quote.errors.length > 0 || held}
               onClick={() => handleContinue()}
-              className="hb-checkout-premium__btn-primary mt-5 hidden w-full lg:inline-flex"
+              className="hb-checkout-premium__cta mt-5 hidden w-full disabled:opacity-50 lg:inline-flex"
             >
               {loading ? (
                 <Loader2 className="size-5 animate-spin" />
@@ -822,7 +840,7 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
             type="button"
             disabled={loading || quote.errors.length > 0 || held}
             onClick={() => handleContinue()}
-            className="hb-checkout-premium__btn-primary min-w-0 flex-1"
+            className="hb-checkout-premium__cta min-w-0 flex-1 disabled:opacity-50"
           >
             {loading ? (
               <Loader2 className="size-5 animate-spin" />

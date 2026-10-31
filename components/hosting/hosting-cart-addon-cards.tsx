@@ -87,7 +87,19 @@ export function HostingCartAddonCards({
                 <p className="mt-1 text-[14px] leading-relaxed text-[var(--hb-co-text-muted)]">
                   {addon.description}
                 </p>
-                {first ? (
+                {addon.slug === "business-email" ? (
+                  <p className="mt-2">
+                    <span className="hb-checkout-premium__badge-free">
+                      1 Month Free
+                    </span>
+                    <span className="mt-1 block text-[13px] font-semibold text-[var(--hb-co-text-muted)]">
+                      Then renews at{" "}
+                      {first
+                        ? `${money(first.unitMonthlyPrice)}/mo`
+                        : "list rate"}
+                    </span>
+                  </p>
+                ) : first ? (
                   <p className="mt-2 text-[13px] font-semibold text-[var(--hb-co-text)]">
                     From {money(first.unitMonthlyPrice)}/mo
                   </p>

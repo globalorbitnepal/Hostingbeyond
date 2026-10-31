@@ -122,6 +122,136 @@
   overflow-x: clip;
 }
 
+/* Domain checkout: globe-like rings (no photos) */
+.hb-checkout-premium--domain .hb-checkout-premium__ambient {
+  background:
+    radial-gradient(
+      circle at 82% 8%,
+      rgb(103 61 230 / 22%) 0%,
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 82% 8%,
+      transparent 33%,
+      rgb(59 47 212 / 10%) 34%,
+      transparent 48%
+    ),
+    radial-gradient(circle at 12% 88%, rgb(156 122 232 / 16%), transparent 42%),
+    linear-gradient(168deg, #f1ebff 0%, #eceafe 36%, #eef1ff 70%, #fff 100%);
+}
+
+/* Hosting checkout: server-grid geometry (no photos) */
+.hb-checkout-premium--hosting .hb-checkout-premium__ambient {
+  background:
+    linear-gradient(rgb(103 61 230 / 5%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(59 47 212 / 5%) 1px, transparent 1px),
+    radial-gradient(
+      ellipse 70% 50% at 90% 0%,
+      rgb(59 47 212 / 16%),
+      transparent 55%
+    ),
+    linear-gradient(165deg, #ebe8ff 0%, #eef1ff 45%, #fff 85%);
+  background-size:
+    28px 28px,
+    28px 28px,
+    auto,
+    auto;
+}
+
+/* Email add-on emphasis (geometric envelope planes) */
+.hb-checkout-premium--email .hb-checkout-premium__ambient,
+.hb-checkout-premium--hosting.hb-checkout-premium--email
+  .hb-checkout-premium__ambient {
+  background:
+    linear-gradient(
+      135deg,
+      rgb(103 61 230 / 8%) 25%,
+      transparent 25%,
+      transparent 50%,
+      rgb(103 61 230 / 8%) 50%,
+      rgb(103 61 230 / 8%) 75%,
+      transparent 75%
+    ),
+    radial-gradient(
+      ellipse 60% 40% at 0% 0%,
+      rgb(156 122 232 / 18%),
+      transparent 50%
+    ),
+    linear-gradient(168deg, #f4f0ff 0%, #eef2ff 55%, #fff 100%);
+  background-size:
+    72px 72px,
+    auto,
+    auto;
+}
+
+.hb-checkout-premium__cta {
+  display: inline-flex;
+  width: 100%;
+  min-height: 3.15rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: #fff;
+  background: linear-gradient(180deg, #7d5cff 0%, #673de6 55%, #4f2ad4 100%);
+  box-shadow: 0 16px 32px -16px rgb(103 61 230 / 70%);
+}
+
+.hb-checkout-premium__cta:hover:not(:disabled) {
+  filter: brightness(1.04);
+}
+
+.hb-checkout-premium__stripe {
+  border-radius: 16px;
+  border: 1px solid rgb(103 61 230 / 14%);
+  background: linear-gradient(180deg, #fff 0%, #f7f5ff 100%);
+  padding: 1rem 1.1rem;
+}
+
+.hb-checkout-premium__stripe-row {
+  display: grid;
+  gap: 0.65rem;
+}
+
+@media (min-width: 640px) {
+  .hb-checkout-premium__stripe-row {
+    grid-template-columns: 1.4fr 0.7fr 0.55fr;
+  }
+}
+
+.hb-checkout-premium__stripe input {
+  min-height: 2.85rem;
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgb(103 61 230 / 16%);
+  background: #fff;
+  padding: 0 0.85rem;
+  font-size: 0.9rem;
+  color: var(--hb-co-text);
+}
+
+.hb-checkout-premium__addon-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  min-width: 5.5rem;
+  border-radius: 12px;
+  border: 1px solid rgb(103 61 230 / 22%);
+  background: #fff;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--hb-co-royal);
+}
+
+.hb-checkout-premium__addon-add[aria-pressed="true"] {
+  border-color: var(--hb-co-success);
+  background: #ecfdf5;
+  color: #047857;
+}
+
 .hb-hosting-booking {
   min-height: 100dvh;
   padding-bottom: max(5.5rem, env(safe-area-inset-bottom));
