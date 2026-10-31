@@ -41,14 +41,26 @@ describe("hosting booking rules", () => {
     });
     assert.ok(line);
     assert.equal(line.amount, 0);
-    assert.match(line.note ?? "", /free for 1 year/i);
+    assert.match(line.note ?? "", /free .com/i);
+    const paidNet = hostingDomainQuoteLine({
+      billing: "annually",
+      freeDomainEligible: true,
+      domainChoice: "search",
+      domainName: "brand.net",
+      domainRegisterUsd: 10.99,
+    });
+    assert.ok(paidNet);
+    assert.equal(paidNet.amount, 10.99);
   });
 
-  it("requires a domain name before leaving the domain step", () => {
+  it("allows skipping the domain step", () => {
     assert.equal(
       hostingDomainStepComplete({ domainChoice: "later", domainName: null }),
-      false,
+      true,
     );
+  });
+
+  it("requires a domain name when domain is included", () => {
     assert.equal(
       hostingDomainStepComplete({
         domainChoice: "search",

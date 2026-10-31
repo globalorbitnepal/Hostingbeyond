@@ -37,6 +37,17 @@ export function hostingIncludesFreeDomainYear(
   return billing === "annually" && productAllowsFreeDomain;
 }
 
+export function isAnnualFreeComDomain(
+  domainName: string | null,
+  billing: HostingBillingCycle,
+  freeDomainEligible: boolean,
+): boolean {
+  if (billing !== "annually" || !freeDomainEligible) return false;
+  const name = domainName?.trim().toLowerCase() ?? "";
+  if (!name || !name.includes(".")) return false;
+  return name.endsWith(".com");
+}
+
 export function hostingDomainQuoteLine(input: {
   billing: HostingBillingCycle;
   freeDomainEligible: boolean;
@@ -45,7 +56,10 @@ export function hostingDomainQuoteLine(input: {
   domainRegisterUsd: number | null;
 }): HostingCartQuoteLine | null {
   const name = input.domainName?.trim().toLowerCase() || null;
-  const isAnnual = input.billing === "annually";
+
+  if (input.domainChoice === "later") {
+    return null;
+  }
 
   if (input.domainChoice === "existing" && name) {
     return {
@@ -58,13 +72,18 @@ export function hostingDomainQuoteLine(input: {
   }
 
   if (input.domainChoice === "search" && name) {
-    if (isAnnual && input.freeDomainEligible) {
+    const complimentary = isAnnualFreeComDomain(
+      name,
+      input.billing,
+      input.freeDomainEligible,
+    );
+    if (complimentary) {
       return {
         id: "domain",
         label: "Domain",
         amount: 0,
         kind: "domain",
-        note: `${name} · free for 1 year with annual hosting`,
+        note: `${name} · free .com for 1 year with annual hosting`,
       };
     }
     const paid = roundMoney(Math.max(0, Number(input.domainRegisterUsd) || 0));
@@ -106,13 +125,14 @@ export function hostingEmailTrialQuoteLine(input: {
 export function hostingDomainStepComplete(input: {
   domainChoice: DomainChoice;
   domainName: string | null;
-  /** Annual complimentary domain must be registered now — no skip / existing-only. */
+  /** @deprecated Annual domain is optional; kept for callers that still pass it. */
   requireNewRegistration?: boolean;
 }): boolean {
-  const name = input.domainName?.trim() || "";
-  if (input.requireNewRegistration) {
-    return input.domainChoice === "search" && name.length > 0;
+  void input.requireNewRegistration;
+  if (input.domainChoice === "later" || input.domainChoice === null) {
+    return true;
   }
+  const name = input.domainName?.trim() || "";
   return (
     (input.domainChoice === "search" || input.domainChoice === "existing") &&
     name.length > 0

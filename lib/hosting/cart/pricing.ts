@@ -117,15 +117,24 @@ export function normalizeCartConfiguration(
   const domainChoice =
     input.domainChoice === "existing"
       ? "existing"
-      : input.domainChoice === "search"
-        ? "search"
-        : input.domainChoice === "later"
+      : input.domainChoice === "later"
+        ? "later"
+        : input.domainChoice === "search"
           ? "search"
-          : (input.domainChoice ?? "search");
+          : "later";
 
-  const registering = domainChoice === "search";
-  const domainPrivacy = registering && rawInput.domainPrivacy !== false;
-  const domainProtection = registering && rawInput.domainProtection === true;
+  const registering =
+    domainChoice === "search" &&
+    typeof input.domainName === "string" &&
+    input.domainName.trim().length > 0;
+  const domainPrivacy =
+    registering &&
+    domainChoice === "search" &&
+    rawInput.domainPrivacy !== false;
+  const domainProtection =
+    registering &&
+    domainChoice === "search" &&
+    rawInput.domainProtection === true;
 
   return {
     productSlug: input.productSlug.trim(),

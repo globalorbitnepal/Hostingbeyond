@@ -16,6 +16,7 @@ import { routes } from "@/config/routes";
 import type { CartAddonUiModel } from "@/lib/hosting/addons/load-cart-ui";
 import {
   hostingDomainStepComplete,
+  isAnnualFreeComDomain,
   parseListedUsdPrice,
   type HostingBookingStep,
 } from "@/lib/hosting/cart/booking-rules";
@@ -68,6 +69,56 @@ function stepIndex(step: HostingBookingStep) {
   return 1;
 }
 
+function CheckoutOfferRow({
+  checked,
+  label,
+  title,
+  description,
+  badge,
+  priceLabel,
+  onToggle,
+  disabled,
+}: {
+  checked: boolean;
+  label: string;
+  title: string;
+  description: string;
+  badge?: string;
+  priceLabel: string;
+  onToggle: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="hb-checkout-premium__offer-row">
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        aria-label={label}
+        disabled={disabled}
+        className="hb-checkout-premium__switch mt-0.5 shrink-0"
+        onClick={onToggle}
+      />
+      <div className="min-w-0 flex-1">
+        <p className="text-[16px] font-extrabold tracking-tight text-[var(--hb-co-royal)]">
+          {title}
+        </p>
+        <p className="mt-1 text-[13px] leading-relaxed text-[var(--hb-co-text-muted)]">
+          {description}
+        </p>
+        {badge ? (
+          <span className="mt-2 inline-flex rounded-md bg-[#f5c518] px-2 py-0.5 text-[11px] font-extrabold text-[#1a1035]">
+            {badge}
+          </span>
+        ) : null}
+      </div>
+      <p className="shrink-0 text-right text-[15px] font-extrabold text-[var(--hb-co-royal)]">
+        {priceLabel}
+      </p>
+    </div>
+  );
+}
+
 export type HostingCartCheckoutProps = {
   intent: HostingPurchaseIntent;
   initialQuote: HostingCartQuote;
@@ -105,7 +156,8 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
 
   const intentQuery = serializeHostingPurchaseIntent(props.intent);
   const isAnnual = quote.configuration.billingPeriod === "annually";
-  const domainChoice = quote.configuration.domainChoice ?? "search";
+  const domainChoice = quote.configuration.domainChoice ?? "later";
+  const domainIncluded = domainChoice !== "later";
   const freeDomainYear = isAnnual && quote.freeDomainEligible;
   const emailRenewal = quote.emailTrialRenewalUsd;
   const emailAddon = props.cartAddons.find((a) => a.slug === "business-email");
@@ -184,19 +236,59 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
   const domainReady = hostingDomainStepComplete({
     domainChoice,
     domainName: quote.configuration.domainName,
-    requireNewRegistration: freeDomainYear,
   });
+
+  const toggleFreeEmail = () => {
+    void refreshQuote({
+      freeEmailMonth: !quote.configuration.freeEmailMonth,
+      addons: quote.configuration.addons.map((addon) =>
+        addon.addonSlug === "business-email"
+          ? { ...addon, enabled: false }
+          : addon,
+      ),
+    });
+  };
+
+  const emailOfferRow = (
+    <CheckoutOfferRow
+      checked={quote.configuration.freeEmailMonth}
+      label="Business Email"
+      title="Professional Email"
+      description={
+        emailRenewal
+          ? `1 month free · renews at ${formatQuoteAmount(emailRenewal)}/mo next month`
+          : "1 month free · renews next month at the mailbox rate"
+      }
+      badge="1 Month Free"
+      priceLabel={
+        quote.configuration.freeEmailMonth ? formatQuoteAmount(0) : "Off"
+      }
+      onToggle={toggleFreeEmail}
+    />
+  );
 
   const domainSummary = useMemo(() => {
     const name = quote.configuration.domainName;
+    if (domainChoice === "later") {
+      return "Add a domain later from your dashboard";
+    }
     if (domainChoice === "existing" && name) return `Connect ${name}`;
     if (domainChoice === "search" && name) {
-      return freeDomainYear
-        ? `${name} · free for 1 year`
+      return isAnnualFreeComDomain(
+        name,
+        quote.configuration.billingPeriod,
+        quote.freeDomainEligible,
+      )
+        ? `${name} · free .com for 1 year`
         : `${name} · first-year registration`;
     }
-    return "Choose a domain in this order";
-  }, [domainChoice, freeDomainYear, quote.configuration.domainName]);
+    return "Optional — turn on domain below or skip";
+  }, [
+    domainChoice,
+    quote.configuration.billingPeriod,
+    quote.configuration.domainName,
+    quote.freeDomainEligible,
+  ]);
 
   const addonsSummary = useMemo(
     () => formatAddonsReviewSummary(quote.configuration, props.cartAddons),
@@ -240,7 +332,9 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
     }
     if (step === "domain") {
       if (!domainReady) {
-        setStepHint("Select a new domain or enter a domain you already own.");
+        setStepHint(
+          "Turn off domain to skip, or select a domain / enter one you own.",
+        );
         return;
       }
       goStep("addons");
@@ -336,7 +430,7 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
                     </span>
                     <p className="mt-1 text-[13px] text-[var(--hb-co-text-muted)]">
                       {quote.freeDomainEligible
-                        ? "Includes 1 year free domain in this checkout."
+                        ? "Optional: register a .com free for 1 year (.net, .org, etc. are billed). Skip and add from your dashboard anytime."
                         : quote.discount > 0
                           ? `Save ${formatQuoteAmount(quote.discount)} vs monthly`
                           : "Best value when available"}
@@ -370,263 +464,292 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
           ) : null}
 
           {step === "domain" ? (
-            <section className="hb-checkout-premium__card p-5 sm:p-7">
-              <div className="flex items-start gap-3">
-                <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--hb-co-surface)] text-[var(--hb-co-primary)]">
-                  <Globe2 className="size-5" aria-hidden />
-                </span>
-                <div className="min-w-0">
-                  <h1 className="font-heading text-[1.55rem] font-extrabold text-[var(--hb-co-royal)] sm:text-3xl">
-                    Domain for this order
-                  </h1>
-                  <p className="mt-2 text-[14px] leading-relaxed text-[var(--hb-co-text-muted)]">
-                    {freeDomainYear
-                      ? "Annual hosting includes one year of a new domain — pick it here, in this checkout."
-                      : "Monthly hosting does not include a free domain. Register one now or connect a domain you already own."}
-                  </p>
-                </div>
-              </div>
-              <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                {(
-                  [
-                    ["search", "Register a new domain"],
-                    ...(freeDomainYear
-                      ? []
-                      : ([["existing", "I already own a domain"]] as const)),
-                  ] as const
-                ).map(([value, label]) => (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() =>
-                      void refreshQuote({
-                        domainChoice: value,
-                        domainName:
-                          value === domainChoice
-                            ? quote.configuration.domainName
-                            : null,
-                        domainRegisterUsd:
-                          value === "search"
-                            ? quote.configuration.domainRegisterUsd
-                            : null,
-                      })
-                    }
-                    className={`min-h-14 rounded-2xl border px-4 py-3 text-left text-[14px] font-bold ${
-                      domainChoice === value
-                        ? "border-[var(--hb-co-primary)] bg-[var(--hb-co-surface)] text-[var(--hb-co-royal)]"
-                        : "border-[var(--hb-co-border)] bg-white text-[var(--hb-co-text)]"
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-              {domainChoice === "search" ? (
-                <div className="mt-5">
-                  <label className="text-[13px] font-semibold text-[var(--hb-co-text)]">
-                    Search a domain
-                  </label>
-                  <div className="mt-2 flex min-w-0 flex-col gap-2 sm:flex-row">
-                    <input
-                      type="text"
-                      value={domainQuery}
-                      onChange={(e) => setDomainQuery(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") void runDomainSearch();
-                      }}
-                      placeholder="yourbrand.com"
-                      className="h-12 min-w-0 flex-1 rounded-xl border border-[var(--hb-co-border)] px-3 text-[15px]"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => void runDomainSearch()}
-                      disabled={domainSearching}
-                      className="hb-checkout-premium__btn-primary h-12 shrink-0 px-5"
-                    >
-                      {domainSearching ? (
-                        <Loader2 className="size-4 animate-spin" />
-                      ) : (
-                        <Search className="size-4" />
-                      )}
-                      Search
-                    </button>
+            <>
+              <section className="hb-checkout-premium__card p-5 sm:p-7">
+                <div className="flex items-start gap-3">
+                  <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#ede9fe] to-[#dbeafe] text-[var(--hb-co-primary)]">
+                    <Globe2 className="size-5" aria-hidden />
+                  </span>
+                  <div className="min-w-0">
+                    <h1 className="font-heading text-[1.55rem] font-extrabold text-[var(--hb-co-royal)] sm:text-3xl">
+                      Domain for this order
+                    </h1>
+                    <p className="mt-2 text-[14px] leading-relaxed text-[var(--hb-co-text-muted)]">
+                      {freeDomainYear
+                        ? "Optional. Annual plans include one year of a new .com only — other extensions are charged at our price."
+                        : "Optional. Monthly hosting does not include a free domain. Turn off to skip and add a domain later from your dashboard."}
+                    </p>
                   </div>
-                  {domainSource ? (
-                    <p className="mt-2 text-[12px] text-[var(--hb-co-text-muted)]">
-                      Availability via{" "}
-                      {domainSource === "registrar"
-                        ? "connected registrar"
-                        : "HostingBeyond lookup"}
-                    </p>
-                  ) : null}
-                  {domainSearchError ? (
-                    <p className="mt-2 text-[13px] text-[var(--hb-co-error)]">
-                      {domainSearchError}
-                    </p>
-                  ) : null}
-                  {domainResults.length > 0 ? (
-                    <ul className="mt-3 max-h-64 space-y-2 overflow-y-auto">
-                      {domainResults.map((r) => {
-                        const listed = parseListedUsdPrice(r.priceFirstYear);
-                        const selected =
-                          quote.configuration.domainName === r.domain;
-                        return (
-                          <li key={r.domain}>
-                            <button
-                              type="button"
-                              disabled={r.status !== "available"}
-                              onClick={() =>
-                                void refreshQuote({
-                                  domainName: r.domain,
-                                  domainChoice: "search",
-                                  domainRegisterUsd: freeDomainYear
-                                    ? 0
-                                    : listed,
-                                })
-                              }
-                              className={`flex w-full min-w-0 items-center justify-between gap-3 rounded-xl border px-3 py-3 text-left text-[14px] disabled:cursor-not-allowed disabled:opacity-50 ${
-                                selected
-                                  ? "border-[var(--hb-co-primary)] bg-[var(--hb-co-surface)]"
-                                  : "border-[var(--hb-co-border)] bg-white"
-                              }`}
-                            >
-                              <span className="min-w-0 font-semibold break-all">
-                                {r.domain}
-                              </span>
-                              <span className="shrink-0 text-[13px] text-[var(--hb-co-text-muted)]">
-                                {r.status !== "available"
-                                  ? r.status
-                                  : freeDomainYear
-                                    ? "Free year"
-                                    : listed
-                                      ? formatQuoteAmount(listed)
-                                      : "Select"}
-                              </span>
-                            </button>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  ) : null}
-                  {domainChoice === "search" &&
-                  quote.configuration.domainName ? (
-                    <p className="mt-3 text-[14px] font-semibold text-[var(--hb-co-success)]">
-                      Selected {quote.configuration.domainName}
-                      {freeDomainYear ? " · complimentary first year" : ""}
-                    </p>
-                  ) : null}
-                  {domainChoice === "search" ? (
-                    <ul className="mt-4 space-y-3">
-                      <li className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--hb-co-border)] px-4 py-3">
-                        <div>
-                          <p className="text-[15px] font-extrabold">
-                            Domain privacy
-                          </p>
-                          <p className="text-[12px] text-[var(--hb-co-text-muted)]">
-                            FREE · included with this registration
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          role="switch"
-                          aria-checked
-                          disabled
-                          className="hb-checkout-premium__switch"
-                          aria-label="Domain privacy on"
-                        />
-                      </li>
-                      <li className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--hb-co-border)] px-4 py-3">
-                        <div>
-                          <p className="text-[15px] font-extrabold">
-                            Domain protection
-                          </p>
-                          <p className="text-[12px] text-[var(--hb-co-text-muted)]">
-                            {formatQuoteAmount(9.99)} / year
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          role="switch"
-                          aria-checked={quote.configuration.domainProtection}
-                          className="hb-checkout-premium__switch"
-                          aria-label="Domain protection"
-                          onClick={() =>
-                            void refreshQuote({
-                              domainProtection:
-                                !quote.configuration.domainProtection,
-                            })
-                          }
-                        />
-                      </li>
-                    </ul>
-                  ) : null}
                 </div>
-              ) : (
-                <div className="mt-5">
-                  <label
-                    htmlFor="existing-domain"
-                    className="text-[13px] font-semibold text-[var(--hb-co-text)]"
-                  >
-                    Domain you already own
-                  </label>
-                  <input
-                    id="existing-domain"
-                    type="text"
-                    defaultValue={quote.configuration.domainName ?? ""}
-                    className="mt-2 h-12 w-full min-w-0 rounded-xl border border-[var(--hb-co-border)] px-3 text-[15px]"
-                    placeholder="example.com"
-                    onBlur={(e) =>
-                      void refreshQuote({
-                        domainName: e.target.value,
-                        domainChoice: "existing",
-                        domainRegisterUsd: null,
-                      })
+
+                <div className="mt-6 rounded-2xl border border-[var(--hb-co-border)] bg-[var(--hb-co-bg-subtle)] p-4 sm:p-5">
+                  <CheckoutOfferRow
+                    checked={domainIncluded}
+                    label="Add domain to this order"
+                    title="Register or connect a domain"
+                    description={
+                      domainIncluded
+                        ? "Search and register, or connect a domain you already own."
+                        : "Off — you can add a domain later from your customer dashboard."
+                    }
+                    priceLabel={domainIncluded ? "On" : "Off"}
+                    onToggle={() =>
+                      void refreshQuote(
+                        domainIncluded
+                          ? {
+                              domainChoice: "later",
+                              domainName: null,
+                              domainRegisterUsd: null,
+                              domainProtection: false,
+                            }
+                          : {
+                              domainChoice: "search",
+                              domainName: null,
+                              domainRegisterUsd: null,
+                            },
+                      )
                     }
                   />
                 </div>
-              )}
-            </section>
+
+                {domainIncluded ? (
+                  <>
+                    <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                      {(
+                        [
+                          ["search", "Register a new domain"],
+                          ["existing", "I already own a domain"],
+                        ] as const
+                      ).map(([value, label]) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() =>
+                            void refreshQuote({
+                              domainChoice: value,
+                              domainName:
+                                value === domainChoice
+                                  ? quote.configuration.domainName
+                                  : null,
+                              domainRegisterUsd:
+                                value === "search"
+                                  ? quote.configuration.domainRegisterUsd
+                                  : null,
+                            })
+                          }
+                          className={`min-h-14 rounded-2xl border px-4 py-3 text-left text-[14px] font-bold transition ${
+                            domainChoice === value
+                              ? "border-[var(--hb-co-primary)] bg-[var(--hb-co-surface)] text-[var(--hb-co-royal)] shadow-sm"
+                              : "border-[var(--hb-co-border)] bg-white text-[var(--hb-co-text)]"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                    {domainChoice === "search" ? (
+                      <div className="mt-5">
+                        {freeDomainYear ? (
+                          <p className="mb-3 text-[12px] font-semibold text-[var(--hb-co-primary)]">
+                            Free year applies to .com only when you select an
+                            available .com below.
+                          </p>
+                        ) : null}
+                        <label className="text-[13px] font-semibold text-[var(--hb-co-text)]">
+                          Search a domain
+                        </label>
+                        <div className="mt-2 flex min-w-0 flex-col gap-2 sm:flex-row">
+                          <input
+                            type="text"
+                            value={domainQuery}
+                            onChange={(e) => setDomainQuery(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") void runDomainSearch();
+                            }}
+                            placeholder="yourbrand.com"
+                            className="h-12 min-w-0 flex-1 rounded-xl border border-[var(--hb-co-border)] bg-white px-3 text-[15px] shadow-sm"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => void runDomainSearch()}
+                            disabled={domainSearching}
+                            className="hb-checkout-premium__btn-primary h-12 shrink-0 px-5"
+                          >
+                            {domainSearching ? (
+                              <Loader2 className="size-4 animate-spin" />
+                            ) : (
+                              <Search className="size-4" />
+                            )}
+                            Search
+                          </button>
+                        </div>
+                        {domainSource ? (
+                          <p className="mt-2 text-[12px] text-[var(--hb-co-text-muted)]">
+                            Availability via{" "}
+                            {domainSource === "registrar"
+                              ? "connected registrar"
+                              : "HostingBeyond lookup"}
+                          </p>
+                        ) : null}
+                        {domainSearchError ? (
+                          <p className="mt-2 text-[13px] text-[var(--hb-co-error)]">
+                            {domainSearchError}
+                          </p>
+                        ) : null}
+                        {domainResults.length > 0 ? (
+                          <ul className="mt-3 max-h-64 space-y-2 overflow-y-auto rounded-xl border border-[var(--hb-co-border)] bg-white p-2">
+                            {domainResults.map((r) => {
+                              const listed = parseListedUsdPrice(
+                                r.priceFirstYear,
+                              );
+                              const complimentary =
+                                freeDomainYear &&
+                                isAnnualFreeComDomain(
+                                  r.domain,
+                                  quote.configuration.billingPeriod,
+                                  quote.freeDomainEligible,
+                                );
+                              const selected =
+                                quote.configuration.domainName === r.domain;
+                              return (
+                                <li key={r.domain}>
+                                  <button
+                                    type="button"
+                                    disabled={r.status !== "available"}
+                                    onClick={() =>
+                                      void refreshQuote({
+                                        domainName: r.domain,
+                                        domainChoice: "search",
+                                        domainRegisterUsd: complimentary
+                                          ? 0
+                                          : listed,
+                                      })
+                                    }
+                                    className={`flex w-full min-w-0 items-center justify-between gap-3 rounded-xl border px-3 py-3 text-left text-[14px] disabled:cursor-not-allowed disabled:opacity-50 ${
+                                      selected
+                                        ? "border-[var(--hb-co-primary)] bg-[var(--hb-co-surface)]"
+                                        : "border-transparent hover:border-[var(--hb-co-border)]"
+                                    }`}
+                                  >
+                                    <span className="min-w-0 font-semibold break-all">
+                                      {r.domain}
+                                    </span>
+                                    <span className="shrink-0 text-[13px] text-[var(--hb-co-text-muted)]">
+                                      {r.status !== "available"
+                                        ? r.status
+                                        : complimentary
+                                          ? "Free .com year"
+                                          : listed
+                                            ? formatQuoteAmount(listed)
+                                            : "Select"}
+                                    </span>
+                                  </button>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        ) : null}
+                        {quote.configuration.domainName ? (
+                          <p className="mt-3 text-[14px] font-semibold text-[var(--hb-co-success)]">
+                            Selected {quote.configuration.domainName}
+                            {isAnnualFreeComDomain(
+                              quote.configuration.domainName,
+                              quote.configuration.billingPeriod,
+                              quote.freeDomainEligible,
+                            )
+                              ? " · free .com for 1 year"
+                              : ""}
+                          </p>
+                        ) : null}
+                        <div className="mt-4 space-y-3">
+                          <div className="hb-checkout-premium__offer-row hb-checkout-premium__offer-row--nested">
+                            <button
+                              type="button"
+                              role="switch"
+                              aria-checked
+                              disabled
+                              className="hb-checkout-premium__switch shrink-0"
+                              aria-label="Domain privacy on"
+                            />
+                            <div className="min-w-0 flex-1">
+                              <p className="text-[15px] font-extrabold text-[var(--hb-co-royal)]">
+                                Domain privacy
+                              </p>
+                              <p className="text-[12px] text-[var(--hb-co-text-muted)]">
+                                FREE · stays on with registration
+                              </p>
+                            </div>
+                            <p className="shrink-0 text-[14px] font-extrabold text-[var(--hb-co-success)]">
+                              FREE
+                            </p>
+                          </div>
+                          <CheckoutOfferRow
+                            checked={quote.configuration.domainProtection}
+                            label="Domain protection"
+                            title="Domain protection"
+                            description={`${formatQuoteAmount(9.99)} / year · registry lock & theft protection`}
+                            priceLabel={
+                              quote.configuration.domainProtection
+                                ? formatQuoteAmount(9.99)
+                                : "Off"
+                            }
+                            onToggle={() =>
+                              void refreshQuote({
+                                domainProtection:
+                                  !quote.configuration.domainProtection,
+                              })
+                            }
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-5">
+                        <label
+                          htmlFor="existing-domain"
+                          className="text-[13px] font-semibold text-[var(--hb-co-text)]"
+                        >
+                          Domain you already own
+                        </label>
+                        <input
+                          id="existing-domain"
+                          type="text"
+                          defaultValue={quote.configuration.domainName ?? ""}
+                          className="mt-2 h-12 w-full min-w-0 rounded-xl border border-[var(--hb-co-border)] bg-white px-3 text-[15px] shadow-sm"
+                          placeholder="example.com"
+                          onBlur={(e) =>
+                            void refreshQuote({
+                              domainName: e.target.value,
+                              domainChoice: "existing",
+                              domainRegisterUsd: null,
+                            })
+                          }
+                        />
+                      </div>
+                    )}
+                  </>
+                ) : null}
+              </section>
+
+              <section className="hb-checkout-premium__card p-5 sm:p-6">
+                <p className="text-[11px] font-bold tracking-[0.16em] text-[var(--hb-co-primary)] uppercase">
+                  Included with hosting
+                </p>
+                {emailOfferRow}
+              </section>
+            </>
           ) : null}
 
           {step === "addons" ? (
             <>
               <section className="hb-checkout-premium__card p-5 sm:p-6">
-                <div className="flex items-start gap-4">
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={quote.configuration.freeEmailMonth}
-                    aria-label="Professional Email"
-                    className="hb-checkout-premium__switch mt-1"
-                    onClick={() =>
-                      void refreshQuote({
-                        freeEmailMonth: !quote.configuration.freeEmailMonth,
-                        addons: quote.configuration.addons.map((addon) =>
-                          addon.addonSlug === "business-email"
-                            ? { ...addon, enabled: false }
-                            : addon,
-                        ),
-                      })
-                    }
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[16px] font-extrabold text-[var(--hb-co-royal)]">
-                      Professional Email
-                    </p>
-                    <p className="mt-1 text-[13px] text-[var(--hb-co-text-muted)]">
-                      {emailRenewal
-                        ? `Renews at ${formatQuoteAmount(emailRenewal)}/mo`
-                        : "Renews next month at the mailbox rate"}
-                    </p>
-                    <span className="mt-2 inline-flex rounded-md bg-[#f5c518] px-2 py-0.5 text-[11px] font-extrabold text-[#1a1035]">
-                      1 Month Free
-                    </span>
-                  </div>
-                  <p className="shrink-0 text-right text-[15px] font-extrabold text-[var(--hb-co-royal)]">
-                    {quote.configuration.freeEmailMonth
-                      ? formatQuoteAmount(0)
-                      : "Off"}
-                  </p>
+                <p className="text-[11px] font-bold tracking-[0.16em] text-[var(--hb-co-primary)] uppercase">
+                  Add-ons for this order
+                </p>
+                <p className="mt-1 text-[13px] text-[var(--hb-co-text-muted)]">
+                  Turn options on or off — prices update in your summary.
+                </p>
+                <div className="mt-4 border-t border-[var(--hb-co-border)] pt-4">
+                  {emailOfferRow}
                 </div>
               </section>
               <HostingCartAddonCards

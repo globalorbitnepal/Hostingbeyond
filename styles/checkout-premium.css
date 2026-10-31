@@ -246,6 +246,28 @@
   color: var(--hb-co-royal);
 }
 
+.hb-checkout-premium__offer-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.85rem 0;
+}
+
+.hb-checkout-premium__offer-row--nested {
+  padding: 0.85rem 1rem;
+  border-radius: 1rem;
+  border: 1px solid var(--hb-co-border);
+  background: #fff;
+}
+
+.hb-checkout-premium__offer-row + .hb-checkout-premium__offer-row {
+  border-top: 1px solid var(--hb-co-border);
+}
+
+.hb-checkout-premium__offer-row--nested + .hb-checkout-premium__offer-row {
+  border-top: 0;
+}
+
 .hb-checkout-premium__switch {
   position: relative;
   height: 2rem;
