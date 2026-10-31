@@ -71,7 +71,7 @@ if (-not (Test-Path -LiteralPath $knownHosts)) {
     Write-Host "WARN: ssh-keyscan failed: $($_.Exception.Message)"
   }
   if ($scanLines.Count -eq 0) {
-    throw "Could not build known_hosts for $SshHost — check DNS/network"
+    throw "Could not build known_hosts for $SshHost - check DNS or network"
   }
   $scanLines | Out-File -FilePath $knownHosts -Encoding ascii
 }
