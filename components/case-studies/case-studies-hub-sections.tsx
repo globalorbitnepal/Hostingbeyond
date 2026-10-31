@@ -1,13 +1,11 @@
 import Link from "next/link";
-import Image from "next/image";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowRight, ChevronDown, Sparkles } from "lucide-react";
 
 import type {
   CmsCaseStudiesHubPageContent,
   CmsCaseStudyEntry,
 } from "@/lib/orbit/case-studies-hub-page-content";
 import { caseStudiesHubPath } from "@/lib/case-studies/paths";
-import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
 
 export function CaseStudiesStatsBand({
   content,
@@ -116,38 +114,6 @@ function ServiceTags({ services }: { services: string[] }) {
   );
 }
 
-function CaseStudyImage({
-  study,
-  featured,
-}: {
-  study: CmsCaseStudyEntry;
-  featured?: boolean;
-}) {
-  if (!study.image?.trim()) return null;
-  return (
-    <div
-      className={`relative overflow-hidden bg-gradient-to-br from-[#ede9fe] to-[#dbeafe] ${
-        featured
-          ? "min-h-[220px] lg:min-h-[320px]"
-          : "min-h-[200px] md:h-full md:min-h-0"
-      }`}
-    >
-      <Image
-        src={study.image}
-        alt={study.imageAlt || study.clientName || study.title}
-        fill
-        unoptimized={isRuntimeMediaSrc(study.image)}
-        className="object-cover object-center"
-        sizes={
-          featured
-            ? "(max-width: 1024px) 100vw, 320px"
-            : "(max-width: 768px) 100vw, 280px"
-        }
-      />
-    </div>
-  );
-}
-
 export function CaseStudyArticle({
   study,
   featured = false,
@@ -156,99 +122,96 @@ export function CaseStudyArticle({
   featured?: boolean;
 }) {
   const headingId = `case-study-${study.id}`;
-  const hasImage = Boolean(study.image?.trim());
   return (
     <article
       id={headingId}
-      className={`overflow-hidden rounded-[24px] border border-violet-100/90 bg-white shadow-[0_20px_50px_-36px_rgba(47,28,106,0.35)] ${
-        hasImage
-          ? featured
-            ? "lg:grid lg:grid-cols-[minmax(0,1fr)_min(38%,320px)]"
-            : "md:grid md:grid-cols-[minmax(0,1fr)_min(36%,280px)]"
-          : ""
+      className={`group relative overflow-hidden rounded-[24px] border bg-white p-6 sm:p-8 ${
+        featured
+          ? "border-violet-200 shadow-[0_24px_60px_-40px_rgba(103,61,230,0.45)] ring-1 ring-violet-100"
+          : "border-violet-100/90 shadow-[0_12px_40px_-28px_rgba(47,28,106,0.2)]"
       }`}
     >
-      {hasImage && !featured ? (
-        <div className="md:order-2">
-          <CaseStudyImage study={study} featured={featured} />
-        </div>
-      ) : null}
-      <div className="p-6 sm:p-8">
-        <p className="text-xs font-bold tracking-[0.16em] text-[#673de6] uppercase">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#673de6] via-[#7c3aed] to-[#2563eb]"
+      />
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="rounded-full bg-violet-50 px-2.5 py-0.5 text-[10px] font-bold text-[#673de6] uppercase">
           {study.industry}
           {study.location ? ` · ${study.location}` : ""}
-        </p>
-        <h2 className="font-heading mt-2 text-xl font-extrabold tracking-tight text-[#1a1035] sm:text-2xl">
-          {study.title}
-        </h2>
-        <p className="mt-1 text-sm font-semibold text-slate-500">
-          {study.clientName}
-        </p>
-        <p className="mt-4 text-[15px] leading-relaxed text-slate-600">
-          {study.summary}
-        </p>
-        <ServiceTags services={study.services} />
-        <div className="mt-6 grid gap-6 sm:grid-cols-2">
-          <div>
-            <h3 className="text-sm font-extrabold text-[#1a1035]">Challenge</h3>
-            <p className="mt-2 text-sm leading-relaxed text-slate-600">
-              {study.challenge}
-            </p>
-          </div>
-          <div>
-            <h3 className="text-sm font-extrabold text-[#1a1035]">Solution</h3>
-            <p className="mt-2 text-sm leading-relaxed text-slate-600">
-              {study.solution}
-            </p>
-          </div>
-        </div>
-        {study.results.length > 0 ? (
-          <dl className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {study.results.map((r) => (
-              <div
-                key={r.id}
-                className="rounded-xl border border-violet-50 bg-[#f8f7fd] px-4 py-3"
-              >
-                <dt className="text-[11px] font-bold tracking-wide text-slate-500 uppercase">
-                  {r.label}
-                </dt>
-                <dd className="mt-1 text-lg font-extrabold text-[#673de6]">
-                  {r.value}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        ) : null}
-        {study.quote ? (
-          <blockquote className="mt-6 border-l-4 border-[#673de6] pl-4">
-            <p className="text-[15px] leading-relaxed text-slate-700 italic">
-              “{study.quote}”
-            </p>
-            <footer className="mt-2 text-sm font-semibold text-[#1a1035]">
-              {study.quoteAuthor}
-              {study.quoteRole ? (
-                <span className="font-normal text-slate-500">
-                  {" "}
-                  — {study.quoteRole}
-                </span>
-              ) : null}
-            </footer>
-          </blockquote>
-        ) : null}
-        {study.href ? (
-          <Link
-            href={study.href}
-            className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#673de6] hover:underline"
-          >
-            Explore related services
-            <ArrowRight className="size-4" />
-          </Link>
+        </span>
+        {featured ? (
+          <span className="inline-flex items-center gap-1 rounded-full bg-[#673de6]/10 px-2.5 py-0.5 text-[10px] font-bold text-[#673de6] uppercase">
+            <Sparkles className="size-3" aria-hidden />
+            Featured
+          </span>
         ) : null}
       </div>
-      {hasImage && featured ? (
-        <div className="order-first lg:order-none">
-          <CaseStudyImage study={study} featured />
+      <h2 className="font-heading mt-4 text-xl font-extrabold tracking-tight text-[#1a1035] sm:text-2xl">
+        {study.title}
+      </h2>
+      <p className="mt-1 text-sm font-semibold text-slate-500">
+        {study.clientName}
+      </p>
+      <p className="mt-4 text-[15px] leading-relaxed text-slate-600">
+        {study.summary}
+      </p>
+      <ServiceTags services={study.services} />
+      <div className="mt-6 grid gap-6 sm:grid-cols-2">
+        <div className="rounded-xl border border-violet-50 bg-[#faf9ff]/80 p-4">
+          <h3 className="text-sm font-extrabold text-[#1a1035]">Challenge</h3>
+          <p className="mt-2 text-sm leading-relaxed text-slate-600">
+            {study.challenge}
+          </p>
         </div>
+        <div className="rounded-xl border border-violet-50 bg-[#faf9ff]/80 p-4">
+          <h3 className="text-sm font-extrabold text-[#1a1035]">Solution</h3>
+          <p className="mt-2 text-sm leading-relaxed text-slate-600">
+            {study.solution}
+          </p>
+        </div>
+      </div>
+      {study.results.length > 0 ? (
+        <dl className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {study.results.map((r) => (
+            <div
+              key={r.id}
+              className="rounded-xl border border-violet-50 bg-[#f8f7fd] px-4 py-3"
+            >
+              <dt className="text-[11px] font-bold tracking-wide text-slate-500 uppercase">
+                {r.label}
+              </dt>
+              <dd className="mt-1 text-lg font-extrabold text-[#673de6]">
+                {r.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      ) : null}
+      {study.quote ? (
+        <blockquote className="mt-6 rounded-xl border border-violet-100 bg-gradient-to-br from-white to-violet-50/40 p-5">
+          <p className="text-[15px] leading-relaxed text-slate-700 italic">
+            “{study.quote}”
+          </p>
+          <footer className="mt-2 text-sm font-semibold text-[#1a1035]">
+            {study.quoteAuthor}
+            {study.quoteRole ? (
+              <span className="font-normal text-slate-500">
+                {" "}
+                — {study.quoteRole}
+              </span>
+            ) : null}
+          </footer>
+        </blockquote>
+      ) : null}
+      {study.href ? (
+        <Link
+          href={study.href}
+          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#673de6]/10 px-4 py-2.5 text-sm font-bold text-[#673de6] transition group-hover:bg-[#673de6] group-hover:text-white"
+        >
+          Explore related services
+          <ArrowRight className="size-4" />
+        </Link>
       ) : null}
     </article>
   );
@@ -275,7 +238,7 @@ export function CaseStudiesLibrary({
         <CaseStudyArticle key={s.id} study={s} featured />
       ))}
       {rest.length > 0 ? (
-        <div className="grid gap-8">
+        <div className="grid gap-6 lg:grid-cols-2">
           {rest.map((s) => (
             <CaseStudyArticle key={s.id} study={s} />
           ))}

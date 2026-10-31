@@ -59,7 +59,8 @@ export default function OrbitCaseStudiesHubPage() {
           <a href={CASE_STUDIES_BASE} className="font-semibold text-[#673de6]">
             {CASE_STUDIES_BASE}
           </a>
-          — SEO, hero, intro, every case study, FAQ and CTA.
+          — SEO, hero, intro, every case study, FAQ and CTA. Premium layout with
+          no photos.
         </p>
         {status ? (
           <p className="mt-2 text-sm text-slate-600">{status}</p>

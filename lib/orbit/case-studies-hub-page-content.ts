@@ -3,8 +3,8 @@ import { TIPS_BASE } from "@/lib/blog/paths";
 
 export const CASE_STUDIES_BASE = "/resources/case-studies";
 
-/** Bump when default hub content (copy, images, FAQs) should replace stale CMS rows. */
-export const CASE_STUDIES_HUB_REVISION = 2;
+/** Bump when default hub content (copy, layout, FAQs) should replace stale CMS rows. */
+export const CASE_STUDIES_HUB_REVISION = 3;
 
 export type CmsCaseStudyMetric = {
   id: string;
@@ -28,8 +28,6 @@ export type CmsCaseStudyEntry = {
   quote: string;
   quoteAuthor: string;
   quoteRole: string;
-  image: string;
-  imageAlt: string;
   href: string;
 };
 
@@ -103,7 +101,7 @@ export function defaultCaseStudiesHubPageContent(): CmsCaseStudiesHubPageContent
     heroTitle: "Case studies &",
     heroTitleAccent: "proven results",
     heroDescription:
-      "See how founders, agencies and growing teams use HostingBeyond hosting, domains, business email and migration services to launch faster, stay online and look professional at every touchpoint.",
+      "See how founders, agencies and growing teams use HostingBeyond hosting, domains, business email and migration services to launch faster, stay online and look professional at every touchpoint — premium stories told with metrics and quotes, not stock photography.",
     heroPrimaryLabel: "Browse case studies",
     heroPrimaryHref: `${CASE_STUDIES_BASE}#case-studies-library`,
     heroSecondaryLabel: "Explore hosting plans",
@@ -150,8 +148,6 @@ export function defaultCaseStudiesHubPageContent(): CmsCaseStudiesHubPageContent
           "We stopped firefighting plugins and started shipping campaigns. HostingBeyond gave us one dashboard for the store, the domain and the inbox.",
         quoteAuthor: "Jordan Ellis",
         quoteRole: "Co-founder, Northline Goods",
-        image: "/images/hosting/ecommerce.jpg",
-        imageAlt: "E-commerce storefront and online retail workspace",
         href: routes.hosting,
       },
       {
@@ -179,8 +175,6 @@ export function defaultCaseStudiesHubPageContent(): CmsCaseStudiesHubPageContent
           "One login for domains, hosting and mail means our producers spend time on design, not credentials.",
         quoteAuthor: "Priya Nair",
         quoteRole: "Operations lead, Studio Meridian",
-        image: "/images/hosting/wordpress.jpg",
-        imageAlt: "WordPress and agency web design workflow",
         href: `${routes.hosting}/wordpress`,
       },
       {
@@ -208,8 +202,6 @@ export function defaultCaseStudiesHubPageContent(): CmsCaseStudiesHubPageContent
           "Patients notice when email comes from our domain. Setup was faster than our old IT retainer quoted.",
         quoteAuthor: "Dr. Elena Morales",
         quoteRole: "Medical director",
-        image: "/images/home/solutions/business-email.png",
-        imageAlt: "Professional business email on a custom domain",
         href: routes.businessEmail,
       },
       {
@@ -242,8 +234,6 @@ export function defaultCaseStudiesHubPageContent(): CmsCaseStudiesHubPageContent
           "Investors see a polished domain and inbox — the infrastructure story matches the product story.",
         quoteAuthor: "Tomás Ferreira",
         quoteRole: "CEO, Pulseboard",
-        image: "/images/home/solutions/cloud-hosting.png",
-        imageAlt: "Cloud hosting and scalable infrastructure",
         href: routes.cloud,
       },
     ],
@@ -301,9 +291,9 @@ export function defaultCaseStudiesHubPageContent(): CmsCaseStudiesHubPageContent
       },
       {
         id: "f5",
-        question: "Can I change case studies and images in Orbit?",
+        question: "Can I change case studies in Orbit?",
         answer:
-          "Yes. Open Orbit → Blog → Case studies hub to edit every story, metric, FAQ, hero image URL and visibility. Save to publish on this page instantly.",
+          "Yes. Open Orbit → Blog → Case studies hub to edit every story, metric, FAQ and visibility. This page uses a premium text-and-metrics layout with no photos.",
       },
     ],
     ctaEyebrow: "Write your success story",
@@ -322,13 +312,23 @@ export function mergeCaseStudiesHubPageContent(
 ): CmsCaseStudiesHubPageContent {
   const d = defaultCaseStudiesHubPageContent();
   if (!stored) return d;
+  const rawStudies = stored.caseStudies?.length
+    ? stored.caseStudies
+    : d.caseStudies;
+  const caseStudies = rawStudies.map((study) => {
+    const copy = { ...study } as CmsCaseStudyEntry & {
+      image?: string;
+      imageAlt?: string;
+    };
+    delete copy.image;
+    delete copy.imageAlt;
+    return copy as CmsCaseStudyEntry;
+  });
   return {
     ...d,
     ...stored,
     stats: stored.stats?.length ? stored.stats : d.stats,
-    caseStudies: stored.caseStudies?.length
-      ? stored.caseStudies
-      : d.caseStudies,
+    caseStudies,
     pillars: stored.pillars?.length ? stored.pillars : d.pillars,
     faqs: stored.faqs?.length ? stored.faqs : d.faqs,
   };
@@ -351,8 +351,6 @@ export function newCaseStudyEntry(): CmsCaseStudyEntry {
     quote: "",
     quoteAuthor: "",
     quoteRole: "",
-    image: "",
-    imageAlt: "",
     href: routes.hosting,
   };
 }

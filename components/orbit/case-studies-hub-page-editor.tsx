@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 
-import { OrbitImageField } from "@/components/orbit/image-field";
 import type { CmsCaseStudiesHubPageContent } from "@/lib/orbit/case-studies-hub-page-content";
 import {
   newCaseStudiesFaq,
@@ -547,29 +546,6 @@ export function CaseStudiesHubPageEditor({
                   />
                 </Field>
               </div>
-              <OrbitImageField
-                label="Hero / featured image"
-                value={study.image}
-                onChange={(image) => {
-                  const caseStudies = [...value.caseStudies];
-                  caseStudies[index] = { ...study, image };
-                  onChange({ ...value, caseStudies });
-                }}
-              />
-              <Field label="Image alt text">
-                <input
-                  className={inputClass}
-                  value={study.imageAlt}
-                  onChange={(e) => {
-                    const caseStudies = [...value.caseStudies];
-                    caseStudies[index] = {
-                      ...study,
-                      imageAlt: e.target.value,
-                    };
-                    onChange({ ...value, caseStudies });
-                  }}
-                />
-              </Field>
               <Field label="Related service link (CTA URL)">
                 <input
                   className={inputClass}
