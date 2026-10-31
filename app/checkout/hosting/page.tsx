@@ -17,9 +17,9 @@ import { isHostingCheckoutPaymentAvailable } from "@/lib/hosting/hosting-order-s
 import { getSiteSettings } from "@/lib/orbit/content";
 
 export const metadata: Metadata = {
-  title: "Configure hosting — HostingBeyond",
+  title: "Book hosting — HostingBeyond",
   description:
-    "Configure your HostingBeyond web hosting plan, billing, and add-ons.",
+    "Four-step HostingBeyond booking: plan, domain, add-ons, and review.",
   robots: { index: false, follow: true },
 };
 

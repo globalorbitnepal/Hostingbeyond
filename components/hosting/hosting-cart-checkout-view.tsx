@@ -5,36 +5,46 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Check,
-  ChevronRight,
   Globe2,
   Loader2,
   Lock,
+  Mail,
   Search,
+  ShieldCheck,
 } from "lucide-react";
 
+import { CheckoutStepNav } from "@/components/checkout/checkout-step-nav";
 import {
   formatAddonsReviewSummary,
   HostingCartAddonCards,
 } from "@/components/hosting/hosting-cart-addon-cards";
+import { useLocale } from "@/components/locale/locale-provider";
 import { routes } from "@/config/routes";
 import type { CartAddonUiModel } from "@/lib/hosting/addons/load-cart-ui";
 import {
-  loginPathForCheckout,
-  signupPathForCheckout,
-} from "@/lib/hosting/checkout-intent";
+  hostingDomainStepComplete,
+  parseListedUsdPrice,
+  type HostingBookingStep,
+} from "@/lib/hosting/cart/booking-rules";
 import type { HostingCartQuote } from "@/lib/hosting/cart/types";
 import { HOSTING_CART_STORAGE_KEY } from "@/lib/hosting/cart/types";
 import {
   serializeHostingPurchaseIntent,
   type HostingPurchaseIntent,
 } from "@/lib/hosting/purchase-intent";
-import { useLocale } from "@/components/locale/locale-provider";
 
 type DomainSearchResult = {
   domain: string;
   status: string;
   priceFirstYear?: string;
 };
+
+const BOOKING_NAV = [
+  { id: 1, label: "Plan" },
+  { id: 2, label: "Domain" },
+  { id: 3, label: "Add-ons" },
+  { id: 4, label: "Review" },
+] as const;
 
 function money(value: number, currency = "USD") {
   return new Intl.NumberFormat("en-US", {
@@ -45,21 +55,25 @@ function money(value: number, currency = "USD") {
   }).format(value);
 }
 
-/** Visual-only checkout surface tokens (layout/logic unchanged). */
-const checkoutCard =
-  "relative overflow-hidden rounded-[20px] border border-violet-200/50 bg-white/95 p-6 shadow-[0_16px_44px_-28px_rgba(47,28,106,0.34)] backdrop-blur-[2px]";
-const checkoutCardAccent =
-  "pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-[#673de6]/45 to-[#2563eb]/40";
-const billingTileBase =
-  "relative rounded-[18px] border px-4 py-4 text-left transition duration-200";
-const billingTileIdle =
-  "border-slate-200/90 bg-white shadow-[0_8px_22px_-18px_rgba(15,23,42,0.18)] hover:border-violet-200/70 hover:shadow-[0_12px_28px_-20px_rgba(103,61,230,0.2)]";
-const billingTileActive =
-  "border-violet-300/60 bg-gradient-to-br from-[#f6f2ff] via-white to-[#eef5ff] shadow-[0_14px_32px_-20px_rgba(103,61,230,0.38)] ring-1 ring-inset ring-[#673de6]/20";
-const summaryCard =
-  "relative overflow-hidden rounded-[20px] border border-violet-200/55 bg-white/90 p-6 shadow-[0_22px_52px_-30px_rgba(47,28,106,0.42)] backdrop-blur-md ring-1 ring-violet-100/70";
-const ctaGradient =
-  "bg-gradient-to-r from-[#673de6] to-[#2563eb] transition hover:from-[#5b32d6] hover:to-[#1d4ed8]";
+function parseBookingStep(raw: string | null): HostingBookingStep {
+  if (
+    raw === "domain" ||
+    raw === "addons" ||
+    raw === "review" ||
+    raw === "plan"
+  ) {
+    return raw;
+  }
+  if (raw === "configure") return "plan";
+  return "plan";
+}
+
+function stepIndex(step: HostingBookingStep) {
+  if (step === "domain") return 2;
+  if (step === "addons") return 3;
+  if (step === "review") return 4;
+  return 1;
+}
 
 export type HostingCartCheckoutProps = {
   intent: HostingPurchaseIntent;
@@ -76,7 +90,7 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { formatCatalogUsd, t } = useLocale();
-  const step = searchParams.get("step") === "review" ? "review" : "configure";
+  const step = parseBookingStep(searchParams.get("step"));
 
   const [quote, setQuote] = useState(props.initialQuote);
   const formatQuoteAmount = (value: number) =>
@@ -84,7 +98,8 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
       ? formatCatalogUsd(value)
       : money(value, quote.currency);
   const [loading, setLoading] = useState(false);
-  const [orderError, setOrderError] = useState<string | null>(null);
+  const [held, setHeld] = useState(false);
+  const [stepHint, setStepHint] = useState<string | null>(null);
   const [domainQuery, setDomainQuery] = useState(
     props.initialQuote.configuration.domainName ?? "",
   );
@@ -97,6 +112,11 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
 
   const logo = props.logoPath?.trim() || "/logo/hostingbeyond-logo-v6.png";
   const intentQuery = serializeHostingPurchaseIntent(props.intent);
+  const isAnnual = quote.configuration.billingPeriod === "annually";
+  const domainChoice = quote.configuration.domainChoice ?? "search";
+  const freeDomainYear = isAnnual && quote.freeDomainEligible;
+  const emailRenewal = quote.emailTrialRenewalUsd;
+  const emailAddon = props.cartAddons.find((a) => a.slug === "business-email");
 
   const persistExtras = useCallback((q: HostingCartQuote) => {
     try {
@@ -112,7 +132,7 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
   const refreshQuote = useCallback(
     async (patch: Partial<HostingCartQuote["configuration"]>) => {
       setLoading(true);
-      setOrderError(null);
+      setStepHint(null);
       const nextConfig = { ...quote.configuration, ...patch };
       try {
         const res = await fetch("/api/hosting/cart/quote", {
@@ -149,31 +169,41 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- hydrate once
   }, []);
 
+  const goStep = (next: HostingBookingStep) => {
+    const params = new URLSearchParams(intentQuery);
+    params.set("billing", quote.configuration.billingPeriod);
+    params.set("step", next);
+    router.replace(`/checkout/hosting?${params.toString()}`);
+  };
+
   const setBilling = (billing: "monthly" | "annually") => {
     const params = new URLSearchParams(intentQuery);
     params.set("billing", billing);
+    params.set("step", "plan");
     router.replace(`/checkout/hosting?${params.toString()}`);
-    void refreshQuote({ billingPeriod: billing });
+    void refreshQuote({
+      billingPeriod: billing,
+      freeEmailMonth: billing === "monthly",
+      domainRegisterUsd:
+        billing === "annually" ? null : quote.configuration.domainRegisterUsd,
+    });
   };
 
-  const domainChoice = quote.configuration.domainChoice;
-  const isAnnual = quote.configuration.billingPeriod === "annually";
+  const domainReady = hostingDomainStepComplete({
+    domainChoice,
+    domainName: quote.configuration.domainName,
+  });
 
   const domainSummary = useMemo(() => {
-    if (!isAnnual || !quote.freeDomainEligible) {
-      return "Add a domain separately";
+    const name = quote.configuration.domainName;
+    if (domainChoice === "existing" && name) return `Connect ${name}`;
+    if (domainChoice === "search" && name) {
+      return freeDomainYear
+        ? `${name} · free for 1 year`
+        : `${name} · first-year registration`;
     }
-    if (domainChoice === "later") return "Decide later";
-    if (domainChoice === "existing") {
-      return quote.configuration.domainName
-        ? `Existing: ${quote.configuration.domainName}`
-        : "I already own a domain";
-    }
-    if (domainChoice === "search" && quote.configuration.domainName) {
-      return quote.configuration.domainName;
-    }
-    return "Choose a domain option";
-  }, [domainChoice, isAnnual, quote]);
+    return "Choose a domain in this order";
+  }, [domainChoice, freeDomainYear, quote.configuration.domainName]);
 
   const addonsSummary = useMemo(
     () => formatAddonsReviewSummary(quote.configuration, props.cartAddons),
@@ -210,564 +240,597 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
     }
   }
 
-  async function handleContinue() {
-    if (step === "configure") {
-      router.push(`/checkout/hosting?${intentQuery}&step=review`);
+  function handleContinue() {
+    if (step === "plan") {
+      goStep("domain");
       return;
     }
-    if (!props.isLoggedIn) {
-      router.push(signupPathForCheckout({ purchase: props.intent }));
+    if (step === "domain") {
+      if (!domainReady) {
+        setStepHint("Select a new domain or enter a domain you already own.");
+        return;
+      }
+      goStep("addons");
       return;
     }
-    if (!props.hostingCheckoutPaymentAvailable) {
-      setOrderError(
-        "Online payment for hosting is not available yet. We are not accepting payable hosting orders until billing is enabled. Contact support or check back later.",
-      );
+    if (step === "addons") {
+      goStep("review");
       return;
     }
-    setLoading(true);
-    setOrderError(null);
-    const idempotencyKey =
-      typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `checkout-${Date.now()}`;
-    try {
-      const res = await fetch("/api/hosting/orders", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(quote.configuration),
-      });
-      const json = (await res.json()) as { error?: string; orderId?: string };
-      if (!res.ok) {
-        setOrderError(json.error ?? "Could not save your order.");
-        return;
-      }
-      const orderId = json.orderId;
-      if (!orderId) {
-        setOrderError("Could not save your order.");
-        return;
-      }
-      const payRes = await fetch(`/api/hosting/orders/${orderId}/checkout`, {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          "idempotency-key": idempotencyKey,
-        },
-      });
-      const payJson = (await payRes.json()) as {
-        error?: string;
-        checkoutUrl?: string;
-      };
-      if (!payRes.ok) {
-        setOrderError(payJson.error ?? "Could not start payment.");
-        return;
-      }
-      if (!payJson.checkoutUrl) {
-        setOrderError("Could not start payment.");
-        return;
-      }
-      window.location.href = payJson.checkoutUrl;
-    } finally {
-      setLoading(false);
-    }
+    setHeld(true);
   }
 
+  const continueLabel =
+    step === "plan"
+      ? "Continue to domain"
+      : step === "domain"
+        ? "Continue to add-ons"
+        : step === "addons"
+          ? "Continue to review"
+          : held
+            ? "Booking saved"
+            : "Hold this booking";
+
   return (
-    <div className="min-h-dvh [scroll-padding-bottom:7rem] bg-[#f6f4fc] lg:[scroll-padding-bottom:0]">
-      <header className="border-b border-slate-200/80 bg-white/90 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-[1240px] items-center justify-between gap-4 px-4 py-4 sm:px-6">
-          <Link href="/" className="inline-flex items-center gap-2">
-            <img src={logo} alt="HostingBeyond" className="h-8 w-auto" />
+    <div className="hb-checkout-premium hb-hosting-booking relative">
+      <div className="hb-checkout-premium__ambient" aria-hidden />
+      <header className="relative z-10 border-b border-[var(--hb-co-border)] bg-white/90 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-[1180px] min-w-0 items-center justify-between gap-3 px-4 py-4 sm:px-6">
+          <Link href="/" className="inline-flex min-w-0 items-center gap-2">
+            <img
+              src={logo}
+              alt="HostingBeyond"
+              className="h-8 w-auto max-w-[180px]"
+            />
           </Link>
-          <div className="flex items-center gap-2 text-[13px] text-slate-600">
-            <Lock className="size-3.5 text-[#673de6]" aria-hidden />
-            <span className="font-semibold text-[#2f1c6a]">
-              Secure checkout
-            </span>
-            <span className="hidden text-slate-400 sm:inline">·</span>
-            <span className="hidden sm:inline">Configure your hosting</span>
-          </div>
+          <p className="inline-flex shrink-0 items-center gap-1.5 text-[12px] font-semibold text-[var(--hb-co-royal)] sm:text-[13px]">
+            <Lock className="size-3.5" aria-hidden />
+            Secure booking
+          </p>
         </div>
       </header>
 
-      <nav
-        className="mx-auto max-w-[1240px] px-4 pt-6 text-[13px] text-slate-500 sm:px-6"
-        aria-label="Checkout progress"
-      >
-        <ol className="flex flex-wrap items-center gap-1">
-          <li>
-            <Link
-              href={routes.hosting}
-              className="font-medium hover:text-[#673de6]"
-            >
-              Web Hosting
-            </Link>
-          </li>
-          <ChevronRight className="size-3.5 opacity-50" aria-hidden />
-          <li>
-            <Link
-              href={`${routes.hosting}#plans`}
-              className="font-medium hover:text-[#673de6]"
-            >
-              Plan
-            </Link>
-          </li>
-          <ChevronRight className="size-3.5 opacity-50" aria-hidden />
-          <li className="font-semibold text-[#2f1c6a]">
-            {step === "review" ? "Review" : "Configure"}
-          </li>
-        </ol>
-      </nav>
+      <div className="relative z-10 mx-auto w-full max-w-[1180px] min-w-0 px-4 pt-6 sm:px-6">
+        <CheckoutStepNav
+          current={stepIndex(step)}
+          steps={BOOKING_NAV}
+          className="mb-6"
+        />
+      </div>
 
-      <div className="mx-auto grid max-w-[1240px] gap-8 px-4 py-8 pb-28 sm:px-6 lg:grid-cols-[1fr_360px] lg:items-start lg:pb-12">
-        <div className="space-y-6">
-          {step === "review" ? (
-            <section className={checkoutCard}>
-              <span className={checkoutCardAccent} aria-hidden />
-              <h1 className="font-heading text-2xl font-extrabold text-[#2f1c6a]">
-                Order review
-              </h1>
-              <p className="mt-2 text-[15px] text-slate-600">
-                Confirm details before you continue. Payment is collected when
-                billing checkout is enabled — we do not process payment on this
-                preview.
+      <div className="relative z-10 mx-auto grid w-full max-w-[1180px] min-w-0 gap-6 px-4 pb-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+        <div className="min-w-0 space-y-5">
+          {step === "plan" ? (
+            <section className="hb-checkout-premium__card p-5 sm:p-7">
+              <p className="text-[11px] font-bold tracking-[0.18em] text-[var(--hb-co-primary)] uppercase">
+                {quote.productName || "Web Hosting"}
               </p>
+              <h1 className="font-heading mt-1 text-[1.7rem] font-extrabold tracking-tight text-[var(--hb-co-royal)] sm:text-4xl">
+                {quote.planName}
+              </h1>
+              {quote.monthlyEquivalent != null ? (
+                <p className="mt-4 text-[1.65rem] font-extrabold text-[var(--hb-co-primary)]">
+                  {formatQuoteAmount(quote.monthlyEquivalent)}
+                  <span className="ml-1 text-[15px] font-semibold text-[var(--hb-co-text-muted)]">
+                    /mo
+                  </span>
+                </p>
+              ) : null}
+              <p className="text-[14px] text-[var(--hb-co-text-muted)]">
+                Due today {formatQuoteAmount(quote.total)} · billed{" "}
+                {formatQuoteAmount(quote.billedAmount)}
+                {isAnnual ? "/year" : "/month"}
+              </p>
+              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                {props.billingMonthlyEnabled ? (
+                  <button
+                    type="button"
+                    onClick={() => setBilling("monthly")}
+                    className={`min-h-[5.5rem] rounded-2xl border px-4 py-4 text-left ${
+                      !isAnnual
+                        ? "border-[var(--hb-co-primary)] bg-[var(--hb-co-surface)] ring-2 ring-[var(--hb-co-lavender)]/40"
+                        : "border-[var(--hb-co-border)] bg-white"
+                    }`}
+                  >
+                    <span className="text-[15px] font-bold text-[var(--hb-co-royal)]">
+                      Monthly
+                    </span>
+                    <p className="mt-1 text-[13px] text-[var(--hb-co-text-muted)]">
+                      No free domain. Buy a domain and email with this order.
+                    </p>
+                  </button>
+                ) : null}
+                {props.billingYearlyEnabled ? (
+                  <button
+                    type="button"
+                    onClick={() => setBilling("annually")}
+                    className={`min-h-[5.5rem] rounded-2xl border px-4 py-4 text-left ${
+                      isAnnual
+                        ? "border-[var(--hb-co-primary)] bg-[var(--hb-co-surface)] ring-2 ring-[var(--hb-co-lavender)]/40"
+                        : "border-[var(--hb-co-border)] bg-white"
+                    }`}
+                  >
+                    <span className="text-[15px] font-bold text-[var(--hb-co-royal)]">
+                      Annually
+                    </span>
+                    <p className="mt-1 text-[13px] text-[var(--hb-co-text-muted)]">
+                      {quote.freeDomainEligible
+                        ? "Includes 1 year free domain in this checkout."
+                        : quote.discount > 0
+                          ? `Save ${formatQuoteAmount(quote.discount)} vs monthly`
+                          : "Best value when available"}
+                    </p>
+                  </button>
+                ) : null}
+              </div>
+              {quote.features.length > 0 ? (
+                <ul className="mt-6 grid gap-2 sm:grid-cols-2">
+                  {quote.features.slice(0, 8).map((f) => (
+                    <li
+                      key={f}
+                      className="flex min-w-0 items-start gap-2 rounded-xl bg-[var(--hb-co-bg-subtle)] px-3 py-2 text-[14px] text-[var(--hb-co-text)]"
+                    >
+                      <Check
+                        className="mt-0.5 size-4 shrink-0 text-[var(--hb-co-success)]"
+                        aria-hidden
+                      />
+                      <span className="min-w-0 break-words">{f}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+              <Link
+                href={`${routes.hosting}#plans`}
+                className="mt-5 inline-flex min-h-11 items-center text-[14px] font-semibold text-[var(--hb-co-primary)]"
+              >
+                Change plan
+              </Link>
+            </section>
+          ) : null}
+
+          {step === "domain" ? (
+            <section className="hb-checkout-premium__card p-5 sm:p-7">
+              <div className="flex items-start gap-3">
+                <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--hb-co-surface)] text-[var(--hb-co-primary)]">
+                  <Globe2 className="size-5" aria-hidden />
+                </span>
+                <div className="min-w-0">
+                  <h1 className="font-heading text-[1.55rem] font-extrabold text-[var(--hb-co-royal)] sm:text-3xl">
+                    Domain for this order
+                  </h1>
+                  <p className="mt-2 text-[14px] leading-relaxed text-[var(--hb-co-text-muted)]">
+                    {freeDomainYear
+                      ? "Annual hosting includes one year of a new domain — pick it here, in this checkout."
+                      : "Monthly hosting does not include a free domain. Register one now or connect a domain you already own."}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                {(
+                  [
+                    ["search", "Register a new domain"],
+                    ["existing", "I already own a domain"],
+                  ] as const
+                ).map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() =>
+                      void refreshQuote({
+                        domainChoice: value,
+                        domainName:
+                          value === domainChoice
+                            ? quote.configuration.domainName
+                            : null,
+                        domainRegisterUsd:
+                          value === "search"
+                            ? quote.configuration.domainRegisterUsd
+                            : null,
+                      })
+                    }
+                    className={`min-h-14 rounded-2xl border px-4 py-3 text-left text-[14px] font-bold ${
+                      domainChoice === value
+                        ? "border-[var(--hb-co-primary)] bg-[var(--hb-co-surface)] text-[var(--hb-co-royal)]"
+                        : "border-[var(--hb-co-border)] bg-white text-[var(--hb-co-text)]"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              {domainChoice === "search" ? (
+                <div className="mt-5">
+                  <label className="text-[13px] font-semibold text-[var(--hb-co-text)]">
+                    Search a domain
+                  </label>
+                  <div className="mt-2 flex min-w-0 flex-col gap-2 sm:flex-row">
+                    <input
+                      type="text"
+                      value={domainQuery}
+                      onChange={(e) => setDomainQuery(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") void runDomainSearch();
+                      }}
+                      placeholder="yourbrand.com"
+                      className="h-12 min-w-0 flex-1 rounded-xl border border-[var(--hb-co-border)] px-3 text-[15px]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => void runDomainSearch()}
+                      disabled={domainSearching}
+                      className="hb-checkout-premium__btn-primary h-12 shrink-0 px-5"
+                    >
+                      {domainSearching ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <Search className="size-4" />
+                      )}
+                      Search
+                    </button>
+                  </div>
+                  {domainSource ? (
+                    <p className="mt-2 text-[12px] text-[var(--hb-co-text-muted)]">
+                      Availability via{" "}
+                      {domainSource === "registrar"
+                        ? "connected registrar"
+                        : "HostingBeyond lookup"}
+                    </p>
+                  ) : null}
+                  {domainSearchError ? (
+                    <p className="mt-2 text-[13px] text-[var(--hb-co-error)]">
+                      {domainSearchError}
+                    </p>
+                  ) : null}
+                  {domainResults.length > 0 ? (
+                    <ul className="mt-3 max-h-64 space-y-2 overflow-y-auto">
+                      {domainResults.map((r) => {
+                        const listed = parseListedUsdPrice(r.priceFirstYear);
+                        const selected =
+                          quote.configuration.domainName === r.domain;
+                        return (
+                          <li key={r.domain}>
+                            <button
+                              type="button"
+                              disabled={r.status !== "available"}
+                              onClick={() =>
+                                void refreshQuote({
+                                  domainName: r.domain,
+                                  domainChoice: "search",
+                                  domainRegisterUsd: freeDomainYear
+                                    ? 0
+                                    : listed,
+                                })
+                              }
+                              className={`flex w-full min-w-0 items-center justify-between gap-3 rounded-xl border px-3 py-3 text-left text-[14px] disabled:cursor-not-allowed disabled:opacity-50 ${
+                                selected
+                                  ? "border-[var(--hb-co-primary)] bg-[var(--hb-co-surface)]"
+                                  : "border-[var(--hb-co-border)] bg-white"
+                              }`}
+                            >
+                              <span className="min-w-0 font-semibold break-all">
+                                {r.domain}
+                              </span>
+                              <span className="shrink-0 text-[13px] text-[var(--hb-co-text-muted)]">
+                                {r.status !== "available"
+                                  ? r.status
+                                  : freeDomainYear
+                                    ? "Free year"
+                                    : listed
+                                      ? formatQuoteAmount(listed)
+                                      : "Select"}
+                              </span>
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  ) : null}
+                  {quote.configuration.domainName &&
+                  domainChoice === "search" ? (
+                    <p className="mt-3 text-[14px] font-semibold text-[var(--hb-co-success)]">
+                      Selected {quote.configuration.domainName}
+                      {freeDomainYear ? " · complimentary first year" : ""}
+                    </p>
+                  ) : null}
+                </div>
+              ) : (
+                <div className="mt-5">
+                  <label
+                    htmlFor="existing-domain"
+                    className="text-[13px] font-semibold text-[var(--hb-co-text)]"
+                  >
+                    Domain you already own
+                  </label>
+                  <input
+                    id="existing-domain"
+                    type="text"
+                    defaultValue={quote.configuration.domainName ?? ""}
+                    className="mt-2 h-12 w-full min-w-0 rounded-xl border border-[var(--hb-co-border)] px-3 text-[15px]"
+                    placeholder="example.com"
+                    onBlur={(e) =>
+                      void refreshQuote({
+                        domainName: e.target.value,
+                        domainChoice: "existing",
+                        domainRegisterUsd: null,
+                      })
+                    }
+                  />
+                </div>
+              )}
+            </section>
+          ) : null}
+
+          {step === "addons" ? (
+            <>
+              {!isAnnual ? (
+                <section className="hb-checkout-premium__card p-5 sm:p-7">
+                  <div className="flex items-start gap-3">
+                    <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--hb-co-surface)] text-[var(--hb-co-primary)]">
+                      <Mail className="size-5" aria-hidden />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] font-bold tracking-[0.16em] text-[var(--hb-co-primary)] uppercase">
+                        Included this month
+                      </p>
+                      <h1 className="font-heading text-xl font-extrabold text-[var(--hb-co-royal)]">
+                        Business Email — 1 month free
+                      </h1>
+                      <p className="mt-2 text-[14px] leading-relaxed text-[var(--hb-co-text-muted)]">
+                        {emailRenewal
+                          ? `Due today $0.00. Next month renews at ${formatQuoteAmount(emailRenewal)}/mo unless you cancel.`
+                          : "Due today $0.00. Renews next month at the listed mailbox rate unless you cancel."}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    {quote.configuration.freeEmailMonth ? (
+                      <button
+                        type="button"
+                        className="inline-flex min-h-11 items-center rounded-full border border-[var(--hb-co-border)] px-5 text-[14px] font-bold text-[var(--hb-co-royal)]"
+                        onClick={() =>
+                          void refreshQuote({ freeEmailMonth: false })
+                        }
+                      >
+                        Remove
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="hb-checkout-premium__btn-primary min-h-11 px-5 text-[14px]"
+                        onClick={() =>
+                          void refreshQuote({
+                            freeEmailMonth: true,
+                            addons: quote.configuration.addons.map((addon) =>
+                              addon.addonSlug === "business-email"
+                                ? { ...addon, enabled: false }
+                                : addon,
+                            ),
+                          })
+                        }
+                      >
+                        Add 1 month free
+                      </button>
+                    )}
+                  </div>
+                </section>
+              ) : null}
+              <HostingCartAddonCards
+                cartAddons={props.cartAddons}
+                configuration={quote.configuration}
+                hideBusinessEmail={quote.configuration.freeEmailMonth}
+                onChange={(addons) => {
+                  const paidEmail = addons.some(
+                    (addon) =>
+                      addon.addonSlug === "business-email" && addon.enabled,
+                  );
+                  void refreshQuote({
+                    addons,
+                    freeEmailMonth: paidEmail
+                      ? false
+                      : quote.configuration.freeEmailMonth,
+                  });
+                }}
+              />
+              {!emailAddon && isAnnual ? (
+                <section className="hb-checkout-premium__card p-5">
+                  <p className="text-[14px] text-[var(--hb-co-text-muted)]">
+                    No extra add-ons for this plan. Continue to review.
+                  </p>
+                </section>
+              ) : null}
+            </>
+          ) : null}
+
+          {step === "review" ? (
+            <section className="hb-checkout-premium__card p-5 sm:p-7">
+              <div className="flex items-start gap-3">
+                <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--hb-co-surface)] text-[var(--hb-co-primary)]">
+                  <ShieldCheck className="size-5" aria-hidden />
+                </span>
+                <div className="min-w-0">
+                  <h1 className="font-heading text-[1.55rem] font-extrabold text-[var(--hb-co-royal)] sm:text-3xl">
+                    Review your booking
+                  </h1>
+                  <p className="mt-2 text-[14px] leading-relaxed text-[var(--hb-co-text-muted)]">
+                    Payment is not collected yet. Hold this configuration — card
+                    checkout will be added next.
+                  </p>
+                </div>
+              </div>
               <dl className="mt-6 space-y-4 text-[15px]">
-                <div className="flex justify-between gap-4 border-b border-slate-100 pb-3">
-                  <dt className="text-slate-500">Hosting</dt>
-                  <dd className="text-right font-semibold text-[#2f1c6a]">
-                    {quote.planName}
+                <div className="flex justify-between gap-4 border-b border-[var(--hb-co-border)] pb-3">
+                  <dt className="text-[var(--hb-co-text-muted)]">Hosting</dt>
+                  <dd className="text-right font-semibold text-[var(--hb-co-royal)]">
+                    {quote.planName} · {isAnnual ? "Annual" : "Monthly"}
                   </dd>
                 </div>
-                <div className="flex justify-between gap-4 border-b border-slate-100 pb-3">
-                  <dt className="text-slate-500">Billing</dt>
-                  <dd className="font-semibold text-[#2f1c6a]">
-                    {isAnnual ? "Annual" : "Monthly"}
-                  </dd>
-                </div>
-                <div className="flex justify-between gap-4 border-b border-slate-100 pb-3">
-                  <dt className="text-slate-500">Domain</dt>
-                  <dd className="text-right font-semibold text-[#2f1c6a]">
+                <div className="flex justify-between gap-4 border-b border-[var(--hb-co-border)] pb-3">
+                  <dt className="text-[var(--hb-co-text-muted)]">Domain</dt>
+                  <dd className="text-right font-semibold text-[var(--hb-co-royal)]">
                     {domainSummary}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-4">
-                  <dt className="text-slate-500">Add-ons</dt>
-                  <dd className="text-right font-semibold text-[#2f1c6a]">
+                  <dt className="text-[var(--hb-co-text-muted)]">Add-ons</dt>
+                  <dd className="text-right font-semibold text-[var(--hb-co-royal)]">
                     {addonsSummary}
                   </dd>
                 </div>
               </dl>
-              <button
-                type="button"
-                className="mt-6 text-[14px] font-semibold text-[#673de6] hover:underline"
-                onClick={() => router.push(`/checkout/hosting?${intentQuery}`)}
-              >
-                Edit configuration
-              </button>
+              {held ? (
+                <p
+                  className="mt-5 rounded-xl bg-[var(--hb-co-surface)] px-4 py-3 text-[14px] font-semibold text-[var(--hb-co-royal)]"
+                  role="status"
+                >
+                  Booking held. No charge today. Payment will be enabled in a
+                  later update.
+                </p>
+              ) : null}
+              <div className="mt-5 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  className="text-[14px] font-semibold text-[var(--hb-co-primary)]"
+                  onClick={() => goStep("plan")}
+                >
+                  Edit plan
+                </button>
+                <button
+                  type="button"
+                  className="text-[14px] font-semibold text-[var(--hb-co-primary)]"
+                  onClick={() => goStep("domain")}
+                >
+                  Edit domain
+                </button>
+                <button
+                  type="button"
+                  className="text-[14px] font-semibold text-[var(--hb-co-primary)]"
+                  onClick={() => goStep("addons")}
+                >
+                  Edit add-ons
+                </button>
+              </div>
             </section>
-          ) : (
-            <>
-              <section className={checkoutCard}>
-                <span className={checkoutCardAccent} aria-hidden />
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div>
-                    <p className="text-[11px] font-bold tracking-[0.18em] text-slate-500 uppercase">
-                      {quote.productName || "Web Hosting"}
-                    </p>
-                    <h1 className="font-heading mt-1 text-[1.75rem] font-extrabold text-[#2f1c6a]">
-                      {quote.planName}
-                    </h1>
-                    <p className="mt-1 text-[14px] text-slate-600">
-                      Selected billing:{" "}
-                      <span className="font-semibold text-[#2f1c6a]">
-                        {isAnnual ? "Annual" : "Monthly"}
-                      </span>
-                    </p>
-                    {quote.monthlyEquivalent != null ? (
-                      <p className="mt-3 text-[1.5rem] font-extrabold text-[#673de6]">
-                        {formatQuoteAmount(quote.monthlyEquivalent)}/mo
-                        {isAnnual ? (
-                          <span className="ml-2 text-[14px] font-medium text-slate-500">
-                            promotional equivalent
-                          </span>
-                        ) : null}
-                      </p>
-                    ) : null}
-                    <p className="text-[13px] text-slate-500">
-                      Billed {formatQuoteAmount(quote.billedAmount)}
-                      {isAnnual ? "/year" : "/month"}
-                    </p>
-                    {quote.renewalPrice != null ? (
-                      <p className="mt-1 text-[13px] text-slate-500">
-                        Renewal: {formatQuoteAmount(quote.renewalPrice)}
-                      </p>
-                    ) : null}
-                  </div>
-                  <Link
-                    href={`${routes.hosting}#plans`}
-                    className="inline-flex h-10 items-center justify-center rounded-xl border border-slate-200 px-4 text-[14px] font-semibold text-slate-700 hover:bg-slate-50"
-                  >
-                    Change plan
-                  </Link>
-                </div>
-                {quote.features.length > 0 ? (
-                  <ul className="mt-6 grid gap-2.5 sm:grid-cols-2">
-                    {quote.features.slice(0, 6).map((f) => (
-                      <li
-                        key={f}
-                        className="flex items-start gap-2 rounded-xl border border-slate-100/80 bg-slate-50/40 px-3 py-2 text-[14px] text-slate-700"
-                      >
-                        <Check
-                          className="mt-0.5 size-4 shrink-0 text-emerald-600"
-                          aria-hidden
-                        />
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-              </section>
+          ) : null}
 
-              <section className={checkoutCard}>
-                <span className={checkoutCardAccent} aria-hidden />
-                <h2 className="font-heading text-lg font-extrabold text-[#2f1c6a]">
-                  Billing period
-                </h2>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  {props.billingMonthlyEnabled ? (
-                    <button
-                      type="button"
-                      onClick={() => setBilling("monthly")}
-                      className={`${billingTileBase} ${
-                        !isAnnual ? billingTileActive : billingTileIdle
-                      }`}
-                    >
-                      {!isAnnual ? (
-                        <span
-                          className="absolute top-3 right-3 inline-flex size-5 items-center justify-center rounded-full bg-[#673de6]/10 text-[#673de6]"
-                          aria-hidden
-                        >
-                          <Check className="size-3" strokeWidth={3} />
-                        </span>
-                      ) : null}
-                      <span className="text-[15px] font-bold text-[#2f1c6a]">
-                        Monthly
-                      </span>
-                      <p className="mt-1 text-[13px] text-slate-600">
-                        Pay month to month
-                      </p>
-                    </button>
-                  ) : null}
-                  {props.billingYearlyEnabled ? (
-                    <button
-                      type="button"
-                      onClick={() => setBilling("annually")}
-                      className={`${billingTileBase} ${
-                        isAnnual ? billingTileActive : billingTileIdle
-                      }`}
-                    >
-                      {isAnnual ? (
-                        <span
-                          className="absolute top-3 right-3 inline-flex size-5 items-center justify-center rounded-full bg-[#673de6]/10 text-[#673de6]"
-                          aria-hidden
-                        >
-                          <Check className="size-3" strokeWidth={3} />
-                        </span>
-                      ) : null}
-                      <span className="text-[15px] font-bold text-[#2f1c6a]">
-                        Annual
-                      </span>
-                      <p className="mt-1 text-[13px] text-slate-600">
-                        {quote.discount > 0
-                          ? `Save ${formatQuoteAmount(quote.discount)} vs monthly`
-                          : "Best value when available"}
-                      </p>
-                    </button>
-                  ) : null}
-                </div>
-              </section>
-
-              <section className={checkoutCard}>
-                <span className={checkoutCardAccent} aria-hidden />
-                <div className="flex items-start gap-3">
-                  <span
-                    className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#f3eeff] to-[#eef4ff] text-[#673de6] ring-1 ring-violet-200/60"
-                    aria-hidden
-                  >
-                    <Globe2 className="size-5" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <h2 className="font-heading text-lg font-extrabold text-[#2f1c6a]">
-                      Domain
-                    </h2>
-                    {isAnnual && quote.freeDomainEligible ? (
-                      <>
-                        <p className="mt-1 text-[14px] text-slate-600">
-                          Free domain for 1 year — eligible annual plans only
-                        </p>
-                        <div className="mt-4 flex flex-wrap gap-2">
-                          {(
-                            [
-                              ["search", "Search new domain"],
-                              ["existing", "I already own a domain"],
-                              ["later", "Decide later"],
-                            ] as const
-                          ).map(([value, label]) => (
-                            <button
-                              key={value}
-                              type="button"
-                              onClick={() =>
-                                void refreshQuote({ domainChoice: value })
-                              }
-                              className={`rounded-full px-4 py-2 text-[13px] font-semibold ${
-                                domainChoice === value
-                                  ? "bg-[#673de6] text-white"
-                                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                              }`}
-                            >
-                              {label}
-                            </button>
-                          ))}
-                        </div>
-                        {domainChoice === "search" ? (
-                          <div className="mt-4">
-                            <label className="text-[13px] font-semibold text-slate-700">
-                              Search a domain name
-                            </label>
-                            <div className="mt-2 flex gap-2">
-                              <input
-                                type="text"
-                                value={domainQuery}
-                                onChange={(e) => setDomainQuery(e.target.value)}
-                                placeholder="yourbrand"
-                                className="h-11 flex-1 rounded-xl border border-slate-200 px-3 text-[15px]"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => void runDomainSearch()}
-                                disabled={domainSearching}
-                                className="inline-flex h-11 items-center gap-2 rounded-xl bg-[#2f1c6a] px-4 text-[14px] font-bold text-white disabled:opacity-60"
-                              >
-                                {domainSearching ? (
-                                  <Loader2 className="size-4 animate-spin" />
-                                ) : (
-                                  <Search className="size-4" />
-                                )}
-                                Search
-                              </button>
-                            </div>
-                            {domainSource ? (
-                              <p className="mt-2 text-[12px] text-slate-500">
-                                Lookup via{" "}
-                                {domainSource === "registrar"
-                                  ? "connected registrar API"
-                                  : "HostingBeyond availability service"}
-                                {domainSource !== "registrar"
-                                  ? " — set DOMAIN_LOOKUP_URL for live registrar checks"
-                                  : ""}
-                              </p>
-                            ) : null}
-                            {domainSearchError ? (
-                              <p className="mt-2 text-[13px] text-red-600">
-                                {domainSearchError}
-                              </p>
-                            ) : null}
-                            {domainResults.length > 0 ? (
-                              <ul className="mt-3 max-h-48 space-y-2 overflow-y-auto">
-                                {domainResults.map((r) => (
-                                  <li key={r.domain}>
-                                    <button
-                                      type="button"
-                                      disabled={r.status !== "available"}
-                                      onClick={() =>
-                                        void refreshQuote({
-                                          domainName: r.domain,
-                                          domainChoice: "search",
-                                        })
-                                      }
-                                      className="flex w-full items-center justify-between rounded-xl border border-slate-200 px-3 py-2 text-left text-[14px] hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-                                    >
-                                      <span className="font-medium">
-                                        {r.domain}
-                                      </span>
-                                      <span className="text-slate-500 capitalize">
-                                        {r.status}
-                                      </span>
-                                    </button>
-                                  </li>
-                                ))}
-                              </ul>
-                            ) : null}
-                          </div>
-                        ) : null}
-                        {domainChoice === "existing" ? (
-                          <div className="mt-4">
-                            <label
-                              htmlFor="existing-domain"
-                              className="text-[13px] font-semibold text-slate-700"
-                            >
-                              Your domain name
-                            </label>
-                            <input
-                              id="existing-domain"
-                              type="text"
-                              className="mt-2 h-11 w-full rounded-xl border border-slate-200 px-3 text-[15px]"
-                              placeholder="example.com"
-                              onBlur={(e) =>
-                                void refreshQuote({
-                                  domainName: e.target.value,
-                                  domainChoice: "existing",
-                                })
-                              }
-                            />
-                          </div>
-                        ) : null}
-                      </>
-                    ) : (
-                      <div className="mt-2 rounded-xl border border-slate-200/80 bg-slate-50/50 px-4 py-3">
-                        <p className="text-[14px] font-semibold text-[#2f1c6a]">
-                          Add a domain separately
-                        </p>
-                        <p className="mt-1 text-[13px] leading-relaxed text-slate-600">
-                          Free domain for the first year is available only on
-                          eligible annual plans — not included on monthly
-                          billing.
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </section>
-
-              <HostingCartAddonCards
-                cartAddons={props.cartAddons}
-                configuration={quote.configuration}
-                onChange={(addons) => void refreshQuote({ addons })}
-              />
-            </>
-          )}
-
-          {!props.isLoggedIn && step === "review" ? (
-            <p className="text-[14px] text-slate-600">
-              <Link
-                href={loginPathForCheckout({ purchase: props.intent })}
-                className="font-semibold text-[#673de6] hover:underline"
-              >
-                Sign in
-              </Link>{" "}
-              or create an account to save this order. Your plan selection stays
-              in the link.
+          {stepHint ? (
+            <p className="text-[14px] text-[var(--hb-co-error)]" role="alert">
+              {stepHint}
             </p>
           ) : null}
-          {orderError ? (
-            <p className="text-[14px] text-red-600" role="alert">
-              {orderError}
+          {quote.errors.length > 0 ? (
+            <p className="text-[14px] text-[var(--hb-co-error)]" role="alert">
+              {quote.errors[0]}
             </p>
           ) : null}
         </div>
 
-        <aside className="lg:sticky lg:top-6 lg:max-h-[calc(100dvh-2rem)] lg:overflow-y-auto">
-          <div className={summaryCard}>
-            <span className={checkoutCardAccent} aria-hidden />
-            <h2 className="font-heading text-lg font-extrabold text-[#2f1c6a]">
+        <aside className="min-w-0 lg:sticky lg:top-6">
+          <div className="hb-checkout-premium__card p-5">
+            <h2 className="font-heading text-lg font-extrabold text-[var(--hb-co-royal)]">
               Order summary
             </h2>
-            <p className="mt-1 text-[13px] text-slate-500">
-              {quote.planName} ·{" "}
-              {isAnnual ? "Annual billing" : "Monthly billing"}
+            <p className="mt-1 text-[13px] text-[var(--hb-co-text-muted)]">
+              {quote.planName} · {isAnnual ? "Annual" : "Monthly"}
             </p>
-            <ul className="mt-5 space-y-2 text-[14px]">
+            <ul className="mt-5 space-y-3 text-[14px]">
               {quote.lines.map((line) => (
-                <li key={line.id} className="flex justify-between gap-3">
-                  <span className="text-slate-600">
+                <li
+                  key={line.id}
+                  className="flex min-w-0 justify-between gap-3"
+                >
+                  <span className="min-w-0 text-[var(--hb-co-text-muted)]">
                     {line.label}
                     {line.note ? (
-                      <span className="block text-[12px] text-slate-400">
+                      <span className="mt-0.5 block text-[12px] break-words">
                         {line.note}
                       </span>
                     ) : null}
                   </span>
-                  <span className="shrink-0 font-semibold text-[#2f1c6a]">
-                    {line.kind === "domain" && line.amount === 0
-                      ? line.note?.toLowerCase().includes("separately")
-                        ? "—"
-                        : "FREE"
+                  <span className="shrink-0 font-semibold text-[var(--hb-co-royal)]">
+                    {line.amount === 0 &&
+                    (line.kind === "domain" || line.id === "email-trial")
+                      ? "FREE"
                       : formatQuoteAmount(line.amount)}
                   </span>
                 </li>
               ))}
             </ul>
-            <div className="mt-4 space-y-2 border-t border-slate-200 pt-4 text-[14px]">
-              <div className="flex justify-between">
-                <span className="text-slate-600">Subtotal</span>
-                <span className="font-semibold">
-                  {formatQuoteAmount(quote.subtotal)}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-600">Tax</span>
-                <span className="text-slate-500">Calculated later</span>
-              </div>
-            </div>
-            <div className="mt-4 flex justify-between rounded-xl border border-violet-100/80 bg-gradient-to-r from-[#faf8ff] to-[#f0f6ff] px-3 py-3">
-              <span className="text-[15px] font-bold text-[#2f1c6a]">
-                Total
+            <div className="mt-4 flex justify-between rounded-xl bg-[var(--hb-co-surface)] px-3 py-3">
+              <span className="text-[15px] font-bold text-[var(--hb-co-royal)]">
+                Total due today
               </span>
-              <span className="bg-gradient-to-r from-[#673de6] to-[#2563eb] bg-clip-text text-[1.25rem] font-extrabold text-transparent">
+              <span className="text-[1.2rem] font-extrabold text-[var(--hb-co-primary)]">
                 {formatQuoteAmount(quote.total)}
               </span>
             </div>
-            <p className="mt-2 text-[12px] text-slate-500">
+            <p className="mt-2 text-[12px] text-[var(--hb-co-text-muted)]">
               {t.common.billedInUsd}
             </p>
             <button
               type="button"
-              disabled={
-                loading ||
-                quote.errors.length > 0 ||
-                (step === "review" &&
-                  props.isLoggedIn &&
-                  !props.hostingCheckoutPaymentAvailable)
-              }
-              onClick={() => void handleContinue()}
-              className={`mt-6 flex h-12 w-full items-center justify-center rounded-xl text-[15px] font-bold text-white shadow-[0_12px_28px_-14px_rgba(103,61,230,0.55)] disabled:opacity-60 ${ctaGradient}`}
+              disabled={loading || quote.errors.length > 0 || held}
+              onClick={() => handleContinue()}
+              className="hb-checkout-premium__btn-primary mt-5 hidden w-full lg:inline-flex"
             >
               {loading ? (
                 <Loader2 className="size-5 animate-spin" />
-              ) : step === "configure" ? (
-                `Continue · ${formatQuoteAmount(quote.total)}`
-              ) : props.isLoggedIn ? (
-                props.hostingCheckoutPaymentAvailable ? (
-                  `Pay securely · ${formatQuoteAmount(quote.total)}`
-                ) : (
-                  "Payment unavailable"
-                )
               ) : (
-                `Continue to sign up · ${formatQuoteAmount(quote.total)}`
+                continueLabel
               )}
             </button>
-            <p className="mt-4 text-center text-[12px] text-slate-500">
-              Secure checkout · Clear billing · No hidden add-ons
-            </p>
+            {step !== "plan" ? (
+              <button
+                type="button"
+                className="mt-3 hidden w-full text-center text-[13px] font-semibold text-[var(--hb-co-primary)] lg:block"
+                onClick={() =>
+                  goStep(
+                    step === "review"
+                      ? "addons"
+                      : step === "addons"
+                        ? "domain"
+                        : "plan",
+                  )
+                }
+              >
+                Back
+              </button>
+            ) : null}
           </div>
         </aside>
       </div>
 
-      <div
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur lg:hidden"
-        aria-hidden={false}
-      >
-        <button
-          type="button"
-          disabled={loading || quote.errors.length > 0}
-          onClick={() => void handleContinue()}
-          className={`flex h-12 w-full items-center justify-center rounded-xl text-[15px] font-bold text-white shadow-[0_10px_24px_-14px_rgba(103,61,230,0.5)] disabled:opacity-60 ${ctaGradient}`}
-        >
-          {step === "configure"
-            ? `Continue · ${formatQuoteAmount(quote.total)}`
-            : `Pay securely · ${formatQuoteAmount(quote.total)}`}
-        </button>
+      <div className="hb-hosting-booking__dock">
+        <div className="mx-auto flex max-w-[1180px] min-w-0 items-center gap-3">
+          {step !== "plan" ? (
+            <button
+              type="button"
+              className="inline-flex h-12 shrink-0 items-center rounded-full border border-[var(--hb-co-border)] px-4 text-[14px] font-bold text-[var(--hb-co-royal)]"
+              onClick={() =>
+                goStep(
+                  step === "review"
+                    ? "addons"
+                    : step === "addons"
+                      ? "domain"
+                      : "plan",
+                )
+              }
+            >
+              Back
+            </button>
+          ) : null}
+          <button
+            type="button"
+            disabled={loading || quote.errors.length > 0 || held}
+            onClick={() => handleContinue()}
+            className="hb-checkout-premium__btn-primary min-w-0 flex-1"
+          >
+            {loading ? (
+              <Loader2 className="size-5 animate-spin" />
+            ) : (
+              continueLabel
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

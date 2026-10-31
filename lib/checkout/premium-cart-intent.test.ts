@@ -81,7 +81,7 @@ describe("premium-cart-intent", () => {
     });
     assert.equal(
       href,
-      "/checkout/hosting?product=web-hosting&plan=essential&billing=monthly&step=review",
+      "/checkout/hosting?product=web-hosting&plan=essential&billing=monthly&step=addons",
     );
     const stored = JSON.parse(
       sessionStorage.getItem(HOSTING_CART_STORAGE_KEY) ?? "{}",

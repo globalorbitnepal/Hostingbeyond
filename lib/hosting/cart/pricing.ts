@@ -1,9 +1,16 @@
 import { getEligibleAddonsForCheckout } from "@/lib/hosting/addons/for-cart";
 import { quoteAddonSelections } from "@/lib/hosting/addons/pricing";
 import type { CartAddonSelection } from "@/lib/hosting/addons/types";
+import { getBusinessEmailAddonPlans } from "@/lib/hosting/business-email-addon";
 import { getHostingProductBySlug } from "@/lib/hosting/hosting-products";
 import { parseHostingBilling } from "@/lib/hosting/purchase-intent";
 import { validateHostingPurchaseIntent } from "@/lib/hosting/validate-purchase-intent";
+
+import {
+  hostingDomainQuoteLine,
+  hostingEmailTrialQuoteLine,
+  hostingIncludesFreeDomainYear,
+} from "./booking-rules";
 
 import type {
   HostingCartConfiguration,
@@ -89,15 +96,44 @@ export function normalizeCartConfiguration(
       enabled: Boolean(a.enabled),
     }));
 
+  const paidEmail = addons.some(
+    (addon) => addon.addonSlug === "business-email" && addon.enabled,
+  );
+  const requestedFree =
+    typeof rawInput.freeEmailMonth === "boolean"
+      ? rawInput.freeEmailMonth
+      : billing === "monthly";
+  const freeEmailMonth =
+    billing === "monthly" && !paidEmail && requestedFree !== false;
+
+  const registerRaw = rawInput.domainRegisterUsd;
+  const domainRegisterUsd =
+    registerRaw == null || registerRaw === ""
+      ? null
+      : Number.isFinite(Number(registerRaw)) && Number(registerRaw) >= 0
+        ? roundMoney(Number(registerRaw))
+        : null;
+
+  const domainChoice =
+    input.domainChoice === "existing"
+      ? "existing"
+      : input.domainChoice === "search"
+        ? "search"
+        : input.domainChoice === "later"
+          ? "search"
+          : (input.domainChoice ?? "search");
+
   return {
     productSlug: input.productSlug.trim(),
     planKey: input.planKey.trim(),
     billingPeriod: billing,
-    domainChoice: input.domainChoice ?? null,
+    domainChoice,
     domainName:
       typeof input.domainName === "string" && input.domainName.trim()
         ? input.domainName.trim().toLowerCase()
         : null,
+    domainRegisterUsd,
+    freeEmailMonth,
     addons,
   };
 }
@@ -187,8 +223,13 @@ export async function quoteHostingCart(
   const hostingCharge = roundMoney(isAnnual ? yearly : monthly);
   const discount = roundMoney(Math.max(0, hostingList - hostingCharge));
 
-  const freeDomainEligible =
-    isAnnual && Boolean(product.freeDomainAnnualEnabled);
+  const freeDomainEligible = hostingIncludesFreeDomainYear(
+    intent.billing,
+    Boolean(product.freeDomainAnnualEnabled),
+  );
+
+  const emailPlans = await getBusinessEmailAddonPlans();
+  const emailTrialRenewalUsd = emailPlans[0]?.monthlyPrice ?? null;
 
   const lines: HostingCartQuoteLine[] = [
     {
@@ -208,27 +249,33 @@ export async function quoteHostingCart(
     });
   }
 
-  if (isAnnual && freeDomainEligible) {
-    lines.push({
-      id: "domain",
-      label: "Domain",
-      amount: 0,
-      kind: "domain",
-      note: "Free domain for 1 year (eligible annual plans)",
-    });
-  } else if (!isAnnual) {
-    lines.push({
-      id: "domain-separate",
-      label: "Domain",
-      amount: 0,
-      kind: "domain",
-      note: "Add a domain separately",
-    });
-  }
+  const domainLine = hostingDomainQuoteLine({
+    billing: intent.billing,
+    freeDomainEligible,
+    domainChoice: configuration.domainChoice,
+    domainName: configuration.domainName,
+    domainRegisterUsd: configuration.domainRegisterUsd,
+  });
+  if (domainLine) lines.push(domainLine);
+
+  const emailTrialLine = hostingEmailTrialQuoteLine({
+    billing: intent.billing,
+    freeEmailMonth: configuration.freeEmailMonth,
+    renewalPerMonthUsd: emailTrialRenewalUsd ?? 0,
+  });
+  if (emailTrialLine) lines.push(emailTrialLine);
+
+  const addonsForQuote = configuration.freeEmailMonth
+    ? configuration.addons.map((addon) =>
+        addon.addonSlug === "business-email"
+          ? { ...addon, enabled: false }
+          : addon,
+      )
+    : configuration.addons;
 
   const addonQuote = await quoteAddonSelections(
     eligibleAddons,
-    configuration.addons,
+    addonsForQuote,
     configuration.billingPeriod,
   );
   errors.push(...addonQuote.errors);
@@ -243,7 +290,8 @@ export async function quoteHostingCart(
     });
   }
 
-  const subtotal = roundMoney(hostingCharge + addonQuote.total);
+  const domainAmount = domainLine?.amount ?? 0;
+  const subtotal = roundMoney(hostingCharge + addonQuote.total + domainAmount);
   const total = subtotal;
   const monthlyEquivalent = isAnnual ? roundMoney(yearly / 12) : monthly;
 
@@ -264,6 +312,7 @@ export async function quoteHostingCart(
     features: planFeatures(plan),
     errors,
     eligibleAddonSlugs: eligibleSlugs,
+    emailTrialRenewalUsd,
   };
 }
 
@@ -289,6 +338,7 @@ function emptyQuote(
     features: [],
     errors,
     eligibleAddonSlugs,
+    emailTrialRenewalUsd: null,
   };
 }
 
@@ -319,6 +369,14 @@ export function parseCartBody(
         ? o.domainChoice
         : undefined,
     domainName: typeof o.domainName === "string" ? o.domainName : undefined,
+    domainRegisterUsd:
+      typeof o.domainRegisterUsd === "number"
+        ? o.domainRegisterUsd
+        : typeof o.domainRegisterUsd === "string"
+          ? Number(o.domainRegisterUsd)
+          : undefined,
+    freeEmailMonth:
+      typeof o.freeEmailMonth === "boolean" ? o.freeEmailMonth : undefined,
     addons: addons.length ? addons : legacy.length ? legacy : undefined,
   };
 }

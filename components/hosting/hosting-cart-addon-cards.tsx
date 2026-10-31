@@ -43,83 +43,102 @@ export function HostingCartAddonCards({
   cartAddons,
   configuration,
   onChange,
+  hideBusinessEmail = false,
 }: {
   cartAddons: CartAddonUiModel[];
   configuration: HostingCartConfiguration;
   onChange: (addons: HostingCartConfiguration["addons"]) => void;
+  hideBusinessEmail?: boolean;
 }) {
-  if (cartAddons.length === 0) return null;
+  const visible = cartAddons.filter((addon) =>
+    hideBusinessEmail ? addon.slug !== "business-email" : true,
+  );
+  if (visible.length === 0) return null;
 
   return (
     <>
-      {cartAddons.map((addon) => {
+      {visible.map((addon) => {
         const sel = selectionFor(configuration, addon.slug);
         const qtyLabel =
           addon.slug === "business-email" ? "Mailboxes" : "Quantity";
 
         const AddonIcon = addon.slug === "business-email" ? Mail : Sparkles;
+        const first = addon.options[0];
 
         return (
           <section
             key={addon.slug}
-            className="relative overflow-hidden rounded-[20px] border border-violet-200/50 bg-white/95 p-6 shadow-[0_16px_44px_-28px_rgba(47,28,106,0.34)] backdrop-blur-[2px]"
+            className="hb-checkout-premium__card relative min-w-0 overflow-hidden p-5 sm:p-6"
           >
-            <span
-              className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-[#673de6]/40 to-[#2563eb]/35"
-              aria-hidden
-            />
             <div className="flex items-start gap-3">
               <span
-                className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#f3eeff] to-[#eef4ff] text-[#673de6] ring-1 ring-violet-200/60"
+                className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--hb-co-surface)] text-[var(--hb-co-primary)] ring-1 ring-[var(--hb-co-border)]"
                 aria-hidden
               >
                 <AddonIcon className="size-5" />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-bold tracking-[0.16em] text-[#673de6]/80 uppercase">
-                  Optional upgrade
+                <p className="text-[10px] font-bold tracking-[0.16em] text-[var(--hb-co-primary)] uppercase">
+                  Optional add-on
                 </p>
-                <h2 className="font-heading text-lg font-extrabold text-[#2f1c6a]">
+                <h2 className="font-heading text-lg font-extrabold text-[var(--hb-co-royal)]">
                   {addon.name}
                 </h2>
-                <p className="mt-1 text-[14px] text-slate-600">
+                <p className="mt-1 text-[14px] leading-relaxed text-[var(--hb-co-text-muted)]">
                   {addon.description}
                 </p>
+                {first ? (
+                  <p className="mt-2 text-[13px] font-semibold text-[var(--hb-co-text)]">
+                    From {money(first.unitMonthlyPrice)}/mo
+                  </p>
+                ) : null}
               </div>
             </div>
-            <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200/70 bg-slate-50/30 px-3 py-3 transition hover:border-violet-200/60 hover:bg-violet-50/20">
-              <input
-                type="checkbox"
-                className="mt-1 size-4 rounded border-slate-300 accent-[#673de6]"
-                checked={sel.enabled}
-                onChange={(e) => {
-                  const enabled = e.target.checked;
-                  onChange(
-                    mergeAddon(configuration, addon.slug, {
-                      enabled,
-                      optionId: enabled
-                        ? (sel.optionId ?? addon.options[0]?.id ?? null)
-                        : null,
-                    }),
-                  );
-                }}
-              />
-              <span className="text-[15px] font-semibold text-[#2f1c6a]">
-                Add {addon.name}
-              </span>
-            </label>
+            <div className="mt-5 flex flex-wrap gap-2">
+              {sel.enabled ? (
+                <button
+                  type="button"
+                  className="inline-flex min-h-11 items-center rounded-full border border-[var(--hb-co-border)] px-5 text-[14px] font-bold text-[var(--hb-co-royal)]"
+                  onClick={() =>
+                    onChange(
+                      mergeAddon(configuration, addon.slug, {
+                        enabled: false,
+                        optionId: null,
+                      }),
+                    )
+                  }
+                >
+                  Remove
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="hb-checkout-premium__btn-primary min-h-11 px-5 text-[14px]"
+                  onClick={() =>
+                    onChange(
+                      mergeAddon(configuration, addon.slug, {
+                        enabled: true,
+                        optionId: sel.optionId ?? addon.options[0]?.id ?? null,
+                      }),
+                    )
+                  }
+                >
+                  Add to order
+                </button>
+              )}
+            </div>
             {sel.enabled ? (
-              <div className="mt-4 space-y-4 border-t border-violet-100/80 pt-4">
+              <div className="mt-4 space-y-4 border-t border-[var(--hb-co-border)] pt-4">
                 <div>
                   <label
                     htmlFor={`addon-plan-${addon.slug}`}
-                    className="text-[13px] font-semibold text-slate-700"
+                    className="text-[13px] font-semibold text-[var(--hb-co-text)]"
                   >
                     Plan
                   </label>
                   <select
                     id={`addon-plan-${addon.slug}`}
-                    className="mt-2 h-11 w-full rounded-xl border border-slate-200 px-3 text-[15px]"
+                    className="mt-2 h-12 w-full min-w-0 rounded-xl border border-[var(--hb-co-border)] bg-white px-3 text-[15px]"
                     value={sel.optionId ?? ""}
                     onChange={(e) =>
                       onChange(
@@ -139,7 +158,7 @@ export function HostingCartAddonCards({
                 <div>
                   <label
                     htmlFor={`addon-qty-${addon.slug}`}
-                    className="text-[13px] font-semibold text-slate-700"
+                    className="text-[13px] font-semibold text-[var(--hb-co-text)]"
                   >
                     {qtyLabel}
                   </label>
@@ -148,7 +167,7 @@ export function HostingCartAddonCards({
                     type="number"
                     min={1}
                     max={50}
-                    className="mt-2 h-11 w-32 rounded-xl border border-slate-200 px-3 text-[15px]"
+                    className="mt-2 h-12 w-full max-w-40 rounded-xl border border-[var(--hb-co-border)] px-3 text-[15px]"
                     value={sel.quantity}
                     onChange={(e) =>
                       onChange(
@@ -172,15 +191,20 @@ export function formatAddonsReviewSummary(
   configuration: HostingCartConfiguration,
   cartAddons: CartAddonUiModel[],
 ): string {
+  const parts: string[] = [];
+  if (configuration.freeEmailMonth) {
+    parts.push("Business Email (1 month free)");
+  }
   const enabled = configuration.addons.filter((a) => a.enabled);
-  if (enabled.length === 0) return "None";
-  return enabled
-    .map((sel) => {
-      const meta = cartAddons.find((a) => a.slug === sel.addonSlug);
-      const opt = meta?.options.find((o) => o.id === sel.optionId);
-      const name = meta?.name ?? sel.addonSlug;
-      const plan = opt?.label ?? "—";
-      return `${name} (${plan}, ${sel.quantity}×)`;
-    })
-    .join("; ");
+  for (const sel of enabled) {
+    if (configuration.freeEmailMonth && sel.addonSlug === "business-email") {
+      continue;
+    }
+    const meta = cartAddons.find((a) => a.slug === sel.addonSlug);
+    const opt = meta?.options.find((o) => o.id === sel.optionId);
+    const name = meta?.name ?? sel.addonSlug;
+    const plan = opt?.label ?? "—";
+    parts.push(`${name} (${plan}, ${sel.quantity}×)`);
+  }
+  return parts.length ? parts.join("; ") : "None";
 }

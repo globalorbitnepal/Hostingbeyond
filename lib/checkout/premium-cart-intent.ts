@@ -44,6 +44,10 @@ export function hostingContinueHrefAfterDomain(input: {
     billingPeriod: hosting.billing,
     domainChoice: "existing",
     domainName: domain,
+    domainRegisterUsd: null,
+    freeEmailMonth:
+      hosting.billing === "monthly" &&
+      !(email && email.kind === "business-email"),
     addons:
       email && email.kind === "business-email"
         ? [
@@ -64,5 +68,5 @@ export function hostingContinueHrefAfterDomain(input: {
     product: hosting.productSlug,
     plan: hosting.planKey,
     billing: hosting.billing,
-  })}&step=review`;
+  })}&step=addons`;
 }

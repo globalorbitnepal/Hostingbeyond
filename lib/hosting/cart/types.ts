@@ -10,6 +10,10 @@ export type HostingCartConfiguration = {
   billingPeriod: HostingBillingCycle;
   domainChoice: DomainChoice;
   domainName: string | null;
+  /** First-year registration USD when buying a domain with monthly hosting. */
+  domainRegisterUsd: number | null;
+  /** Complimentary first month of business email on monthly hosting. */
+  freeEmailMonth: boolean;
   /** Generic add-on selections (authoritative). */
   addons: CartAddonSelection[];
 };
@@ -39,6 +43,7 @@ export type HostingCartQuote = {
   features: string[];
   errors: string[];
   eligibleAddonSlugs: string[];
+  emailTrialRenewalUsd: number | null;
 };
 
 export const HOSTING_CART_STORAGE_KEY = "hb_hosting_cart_v2";

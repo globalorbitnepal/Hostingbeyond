@@ -12,14 +12,16 @@ const STEPS = [
 export function CheckoutStepNav({
   current,
   className,
+  steps = STEPS,
 }: {
   current: number;
   className?: string;
+  steps?: readonly { id: number; label: string }[];
 }) {
   return (
     <nav aria-label="Checkout progress" className={cn("w-full", className)}>
-      <ol className="flex flex-wrap items-center justify-between gap-2 sm:justify-center sm:gap-0">
-        {STEPS.map((step, index) => {
+      <ol className="flex w-full min-w-0 flex-wrap items-center justify-between gap-2 sm:flex-nowrap sm:justify-center sm:gap-0">
+        {steps.map((step, index) => {
           const done = current > step.id;
           const active = current === step.id;
           return (
