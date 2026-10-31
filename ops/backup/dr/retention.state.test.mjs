@@ -45,6 +45,25 @@ describe("retention readVerifyStatus (M2)", () => {
     assert.equal(readVerifyStatus(setDir, tmp), true);
     fs.rmSync(tmp, { recursive: true, force: true });
   });
+
+  it("accepts verify report with UTF-8 BOM (Windows PowerShell legacy)", () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "hb-ret-bom-"));
+    const name = "2026-03-01_12-00-00";
+    const setDir = path.join(tmp, "backups", name);
+    fs.mkdirSync(setDir, { recursive: true });
+    fs.mkdirSync(path.join(tmp, "reports"), { recursive: true });
+    const body = JSON.stringify({
+      status: "PASS",
+      backupSetFinalized: true,
+      backupSetFolder: name,
+    });
+    fs.writeFileSync(
+      path.join(tmp, "reports", `verify-${name}.json`),
+      `\uFEFF${body}`,
+    );
+    assert.equal(readVerifyStatus(setDir, tmp), true);
+    fs.rmSync(tmp, { recursive: true, force: true });
+  });
 });
 
 describe("retention root guards", () => {

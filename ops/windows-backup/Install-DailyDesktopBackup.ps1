@@ -192,16 +192,33 @@ Keep $ageIdentity OFF backup-only disk copies; store copy in password manager.
 "@
 $vpsSteps | Set-Content -LiteralPath (Join-Path $BackupRoot "VPS-OWNER-STEPS.txt") -Encoding UTF8
 
-$action = New-ScheduledTaskAction -Execute "powershell.exe" `
-  -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$invokeScript`" -ConfigPath `"$configPath`""
-$trigger = New-ScheduledTaskTrigger -Daily -At "23:00"
-$settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -MultipleInstances IgnoreNew `
-  -ExecutionTimeLimit (New-TimeSpan -Hours 8)
-Register-ScheduledTask -TaskName "HostingBeyond-DailyBackup" -Action $action -Trigger $trigger `
-  -Settings $settings -Description "HostingBeyond daily pull to $BackupRoot" -Force
+$vaultReminder = Join-Path $keys "PRODUCTION-ENV-VAULT-REMINDER.txt"
+@(
+  "Production .env secrets are NOT inside encrypted backup (by design)."
+  "Keep a copy in your password manager for disaster recovery on a NEW Linux VPS."
+  ""
+  "Needed for 100% live behavior after restore (README-RECOVERY.md):"
+  "- DATABASE_URL / Postgres credentials"
+  "- NEXTAUTH_SECRET and auth-related secrets"
+  "- GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET (Google Sign-in)"
+  "- NAMESILO_API_KEY and NAMESILO_* (domain search/register API)"
+  "- GOOGLE_TRANSLATE_* and service account file path (Translate API)"
+  "- STRIPE_* keys and webhook secret"
+  "- ORBIT_UPLOAD_DIR (must match restored upload paths)"
+  ""
+  "After decrypt, use metadata/env-inventory.json in the backup set for variable NAMES only."
+) | Set-Content -LiteralPath $vaultReminder -Encoding ascii
+
+$knownHosts = Join-Path $keys "known_hosts"
+if (-not (Test-Path -LiteralPath $knownHosts) -or ((Get-Item $knownHosts).Length -lt 32)) {
+  & (Join-Path $winBackup "Write-KnownHosts-HostingBeyond.ps1") -BackupRoot $BackupRoot -SshHost $SshHost
+}
+
+& (Join-Path $winBackup "Update-DesktopBackupTooling.ps1") -BackupRoot $BackupRoot
 
 Write-Host ""
 Write-Host "Desktop backup folder ready: $BackupRoot"
 Write-Host "Scheduled: HostingBeyond-DailyBackup daily 23:00 local time."
 Write-Host "Complete VPS steps in: $(Join-Path $BackupRoot 'VPS-OWNER-STEPS.txt')"
 Write-Host "Set Windows timezone to Kathmandu for Nepal 11 PM."
+Write-Host "Run once for 100% bank: Confirm-DesktopBank-100Percent.ps1"

@@ -13,6 +13,7 @@ $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
 . (Join-Path $PSScriptRoot "HostingBeyondBackup-Lock.ps1")
+. (Join-Path $PSScriptRoot "HostingBeyondBackup-Json.ps1")
 
 function Read-JsonFile([string]$Path) {
   if (-not (Test-Path -LiteralPath $Path)) { throw "Missing config: $Path" }
@@ -28,11 +29,7 @@ function Write-Log([string]$Root, [string]$Level, [string]$Message) {
 }
 
 function Write-BackupVerifyReport([string]$ReportPath, [hashtable]$Report) {
-  $dir = Split-Path -Parent $ReportPath
-  if (-not (Test-Path -LiteralPath $dir)) {
-    New-Item -ItemType Directory -Force -Path $dir | Out-Null
-  }
-  $Report | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $ReportPath -Encoding UTF8
+  Write-JsonFileNoBom -Path $ReportPath -Object $Report
 }
 
 function Write-LastRunFail([string]$BackupRoot, [string]$ErrorMessage) {
@@ -46,8 +43,8 @@ function Write-LastRunFail([string]$BackupRoot, [string]$ErrorMessage) {
       status = "FAIL"
       error = $ErrorMessage
       at = (Get-Date).ToUniversalTime().ToString("o")
-    } | ConvertTo-Json
-    Set-Content -LiteralPath (Join-Path $reportsDir "last-run.json") -Value $fail -Encoding UTF8
+    }
+    Write-JsonFileNoBom -Path (Join-Path $reportsDir "last-run.json") -Object $fail
   }
   catch {
     Write-Host "WARN: could not write last-run.json: $($_.Exception.Message)"
@@ -250,8 +247,8 @@ try {
     retentionApplied = $true
     mirrorFolder = $(if ($mirrorEnabled) { $mirrorFolder } else { $null })
     at = (Get-Date).ToUniversalTime().ToString("o")
-  } | ConvertTo-Json
-  Set-Content -LiteralPath (Join-Path $backupRoot "reports\last-run.json") -Value $report
+  }
+  Write-JsonFileNoBom -Path (Join-Path $backupRoot "reports\last-run.json") -Object $report
 
   Write-Log $backupRoot "INFO" "Backup completed (ciphertext stored): $completed"
 }

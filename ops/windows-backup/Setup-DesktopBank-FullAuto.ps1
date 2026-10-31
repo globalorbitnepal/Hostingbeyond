@@ -45,6 +45,13 @@ if ((Test-Path $ageId) -and -not (Test-Path $ageRec) -and (Get-Command age-keyge
   $ErrorActionPreference = $prev
 }
 
+& (Join-Path $t "ops\windows-backup\Update-DesktopBackupTooling.ps1") -BackupRoot $BackupRoot
+
+$zeroLoss = Join-Path $t "docs\APKA-ZERO-LOSS-HINDI.md"
+if (Test-Path -LiteralPath $zeroLoss) {
+  Copy-Item -LiteralPath $zeroLoss -Destination (Join-Path $BackupRoot "APKA-ZERO-LOSS-HINDI.md") -Force
+}
+
 & (Join-Path $t "ops\windows-backup\Audit-DesktopBackupFolder.ps1") -BackupRoot $BackupRoot
 
 try {

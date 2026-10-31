@@ -14,6 +14,10 @@ $report = @{
   missing = @()
   readyForDailyPull = $false
   readyForFullSiteRestore = $false
+  nightlyAutoUpdateReady = $false
+  encryptedSiteDataOnPcReady = $false
+  zeroLossRecoveryPathReady = $false
+  liveSiteOnNewServerWithoutRestoreSteps = $false
 }
 
 function Set-Check([string]$Name, [bool]$Ok, [string]$Detail = "") {
@@ -41,6 +45,15 @@ Set-Check "readme_recovery" (Test-Path (Join-Path $BackupRoot "README-RECOVERY.m
 
 $currentCipher = Join-Path $BackupRoot "current\ciphertext.bundle.tar.age"
 Set-Check "current_ciphertext" (Test-Path -LiteralPath $currentCipher) "daily mirror bundle"
+if (Test-Path -LiteralPath $currentCipher) {
+  $sz = (Get-Item -LiteralPath $currentCipher).Length
+  Set-Check "current_ciphertext_size" ($sz -gt 1000000) ("bytes=$sz")
+}
+
+$toolingInvoke = Join-Path $BackupRoot "_tooling\Hostingbeyond\ops\windows-backup\Invoke-HostingBeyondBackup.ps1"
+Set-Check "tooling_clone" (Test-Path -LiteralPath $toolingInvoke) "_tooling from Git main"
+
+Set-Check "env_vault_reminder" (Test-Path (Join-Path $BackupRoot "keys\PRODUCTION-ENV-VAULT-REMINDER.txt")) "API secrets checklist"
 
 $task = Get-ScheduledTask -TaskName "HostingBeyond-DailyBackup" -ErrorAction SilentlyContinue
 Set-Check "scheduled_task" ($null -ne $task) "HostingBeyond-DailyBackup"
@@ -88,6 +101,15 @@ $report.readyForFullSiteRestore = (
   $report.checks.readme_recovery.ok
 )
 
+$report.nightlyAutoUpdateReady = $report.readyForDailyPull
+$report.encryptedSiteDataOnPcReady = $report.readyForFullSiteRestore
+$report.zeroLossRecoveryPathReady = (
+  $report.encryptedSiteDataOnPcReady -and
+  $report.checks.tooling_clone.ok -and
+  $report.checks.env_vault_reminder.ok
+)
+$report.liveSiteOnNewServerWithoutRestoreSteps = $false
+
 $outJson = Join-Path $BackupRoot "reports\desktop-audit.json"
 New-Item -ItemType Directory -Force -Path (Join-Path $BackupRoot "reports") | Out-Null
 $report | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $outJson -Encoding UTF8
@@ -97,6 +119,10 @@ Write-Host "=== HostingBeyond Desktop Backup Audit ==="
 Write-Host "Root: $BackupRoot"
 Write-Host "Daily pull ready: $($report.readyForDailyPull)"
 Write-Host "Full DR copy ready (needs successful VPS pull): $($report.readyForFullSiteRestore)"
+Write-Host "Nightly 11 PM auto-update ready: $($report.nightlyAutoUpdateReady)"
+Write-Host "Encrypted site DATA on PC: $($report.encryptedSiteDataOnPcReady)"
+Write-Host "Zero-loss recovery PATH ready: $($report.zeroLossRecoveryPathReady)"
+Write-Host "Upload folder = live site (always false): $($report.liveSiteOnNewServerWithoutRestoreSteps)"
 if ($report.missing.Count -gt 0) {
   Write-Host "Missing/failed checks: $($report.missing -join ', ')"
 }
@@ -104,5 +130,6 @@ Write-Host "Report: $outJson"
 Write-Host ""
 
 if (-not $report.readyForDailyPull) { exit 2 }
-if (-not $report.readyForFullSiteRestore) { exit 3 }
+if (-not $report.encryptedSiteDataOnPcReady) { exit 3 }
+if (-not $report.zeroLossRecoveryPathReady) { exit 4 }
 exit 0

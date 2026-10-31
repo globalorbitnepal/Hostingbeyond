@@ -60,7 +60,11 @@ export function readVerifyStatus(setDir, root) {
     return false;
   }
   try {
-    const j = JSON.parse(fs.readFileSync(reportPath, "utf8"));
+    let text = fs.readFileSync(reportPath, "utf8");
+    if (text.charCodeAt(0) === 0xfeff) {
+      text = text.slice(1);
+    }
+    const j = JSON.parse(text);
     if (j.status !== "PASS") return false;
     if (j.backupSetFinalized !== true) return false;
     if (
