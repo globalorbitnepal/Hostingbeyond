@@ -11,6 +11,18 @@ param(
 
 $ErrorActionPreference = "Stop"
 $configPath = Join-Path $BackupRoot "config.json"
+$keys = Join-Path $BackupRoot "keys"
+$vaultReminder = Join-Path $keys "PRODUCTION-ENV-VAULT-REMINDER.txt"
+if (-not (Test-Path -LiteralPath $vaultReminder)) {
+  New-Item -ItemType Directory -Force -Path $keys | Out-Null
+  @(
+    "Production .env secrets are NOT inside encrypted backup (by design)."
+    "Keep a copy in your password manager for disaster recovery on a NEW Linux VPS."
+    ""
+    "Needed for live site after restore: DATABASE_URL, NEXTAUTH, GOOGLE OAuth, NAMESILO_*, GOOGLE_TRANSLATE_*, STRIPE_*, ORBIT_UPLOAD_DIR."
+    "See metadata/env-inventory.json in backup for variable names."
+  ) | Set-Content -LiteralPath $vaultReminder -Encoding ascii
+}
 
 if (-not (Test-Path -LiteralPath $configPath)) {
   $fin = Join-Path $env:TEMP "hb-confirm-fin"
