@@ -45,6 +45,8 @@ export function hostingContinueHrefAfterDomain(input: {
     domainChoice: "existing",
     domainName: domain,
     domainRegisterUsd: null,
+    domainPrivacy: false,
+    domainProtection: false,
     freeEmailMonth:
       hosting.billing === "monthly" &&
       !(email && email.kind === "business-email"),
