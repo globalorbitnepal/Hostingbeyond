@@ -79,4 +79,17 @@ jobs:
       - name: Production build
         env:
           CI: "true"
-        run: npm run build
+        run: |
+          set -euo pipefail
+          # next/font/google can flake in CI (null CSS parse while fetching
+          # Manrope / Noto Sans Devanagari). Retry the build only; do not skip it.
+          attempt=1
+          until npm run build; do
+            if [ "${attempt}" -ge 3 ]; then
+              echo "Production build failed after ${attempt} attempts."
+              exit 1
+            fi
+            attempt=$((attempt + 1))
+            echo "Retrying production build (attempt ${attempt}/3) after Google font fetch failure..."
+            sleep 20
+          done
