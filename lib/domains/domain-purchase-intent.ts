@@ -52,16 +52,7 @@ export function domainTldSearchHref(tld: string): string {
   return `${routes.domainSearch}?q=${encodeURIComponent(`yourname${dotted}`)}`;
 }
 
-export function businessEmailBookingHref(
-  planId: string,
-  term = "monthly",
-): string {
-  const params = new URLSearchParams({
-    email: planId.trim() || "starter",
-    term,
-  });
-  return `${routes.domainSearch}?${params.toString()}`;
-}
+export { businessEmailBookingHref } from "@/lib/business-email/purchase-intent";
 
 export function domainCheckoutPath(domains: string[]): string {
   if (domains.length === 1) {

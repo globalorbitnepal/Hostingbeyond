@@ -13,6 +13,7 @@ const SITEMAP_EXCLUDE = new Set([
   routes.signup,
   routes.account,
   "/checkout/hosting",
+  "/checkout/business-email",
 ]);
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
-import { PersistEmailBookingIntent } from "@/components/checkout/persist-email-booking-intent";
 import { DomainSearchView } from "@/components/domains/domain-search-view";
 import { routes } from "@/config/routes";
+import { businessEmailBookingHref } from "@/lib/business-email/purchase-intent";
 import { getDomainContent } from "@/lib/orbit/content";
 import { buildDomainPageMetadata } from "@/lib/domains/page-metadata";
 import { buildDomainSchema } from "@/lib/domains/seo";
@@ -58,6 +59,9 @@ export default async function DomainNameSearchPage({
     ? params.email[0]
     : params.email;
   const emailTerm = Array.isArray(params.term) ? params.term[0] : params.term;
+  if (emailPlanId?.trim()) {
+    redirect(businessEmailBookingHref(emailPlanId, emailTerm ?? "monthly"));
+  }
   const page = content.single;
   const metrics = await loadDomainSearchPageMetrics();
   const supportedTldCount = metrics.searchableCount || null;
@@ -110,7 +114,6 @@ export default async function DomainNameSearchPage({
 
   return (
     <>
-      <PersistEmailBookingIntent planId={emailPlanId} term={emailTerm} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}

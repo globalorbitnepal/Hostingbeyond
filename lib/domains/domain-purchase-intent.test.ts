@@ -70,14 +70,14 @@ describe("domain purchase intent URL helpers", () => {
     );
   });
 
-  it("sends TLD register and email plans into domain search, not signup", () => {
+  it("sends TLD register into domain search; email plans into business email checkout", () => {
     assert.equal(
       domainTldSearchHref(".com"),
       "/domain-name-search?q=yourname.com",
     );
     assert.equal(
       businessEmailBookingHref("premium", "12"),
-      "/domain-name-search?email=premium&term=12",
+      "/checkout/business-email?plan=premium&term=12&step=plan",
     );
   });
 });

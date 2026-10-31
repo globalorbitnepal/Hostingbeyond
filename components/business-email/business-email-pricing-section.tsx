@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 
 import { CatalogPrice } from "@/components/i18n/localized-text";
-import { businessEmailBookingHref } from "@/lib/domains/domain-purchase-intent";
+import { businessEmailBookingHref } from "@/lib/business-email/purchase-intent";
 import type {
   CmsBusinessEmailPageContent,
   CmsBusinessEmailPlan,

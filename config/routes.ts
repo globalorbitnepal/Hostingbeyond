@@ -9,6 +9,7 @@ export const routes = {
   bulkDomainSearch: "/bulk-domain-search",
   domainTransfer: "/domain-transfer",
   businessEmail: "/business-email",
+  businessEmailCheckout: "/checkout/business-email",
   websiteMigration: "/website-migration",
   hosting: "/web-hosting",
   vps: "/vps",

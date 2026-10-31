@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Check, Globe2, Loader2, Search, ShieldCheck } from "lucide-react";
 
 import { SiteHeader } from "@/components/layout/header";
+import { CheckoutCouponField } from "@/components/checkout/checkout-coupon-field";
 import { CheckoutStepNav } from "@/components/checkout/checkout-step-nav";
 import {
   formatAddonsReviewSummary,
@@ -946,6 +947,7 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
                 {formatQuoteAmount(quote.total)}
               </span>
             </div>
+            <CheckoutCouponField className="mt-4" />
             <p className="mt-2 text-[12px] text-[var(--hb-co-text-muted)]">
               {t.common.billedInUsd}
             </p>
