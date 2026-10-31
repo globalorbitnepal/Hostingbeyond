@@ -12,6 +12,15 @@ param(
 $ErrorActionPreference = "Stop"
 $configPath = Join-Path $BackupRoot "config.json"
 $keys = Join-Path $BackupRoot "keys"
+
+foreach ($tzId in @("Nepal Standard Time", "Asia/Kathmandu")) {
+  try {
+    Set-TimeZone -Id $tzId -ErrorAction Stop
+    Write-Host "OK: timezone $tzId (Nepal 11 PM = 23:00 local task)"
+    break
+  }
+  catch { }
+}
 $vaultReminder = Join-Path $keys "PRODUCTION-ENV-VAULT-REMINDER.txt"
 if (-not (Test-Path -LiteralPath $vaultReminder)) {
   New-Item -ItemType Directory -Force -Path $keys | Out-Null
