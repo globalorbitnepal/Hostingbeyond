@@ -409,10 +409,11 @@ export function DomainPremiumCheckout({
   return (
     <div className="hb-checkout-premium hb-checkout-premium--domain relative min-h-dvh pb-28 lg:pb-10">
       <div className="hb-checkout-premium__ambient" aria-hidden />
+      <div className="relative z-20 shrink-0">
+        <SiteHeader layout="checkout" />
+      </div>
       <div className="relative z-10 mx-auto w-full max-w-[77.5rem] px-4 py-6 sm:px-6 sm:py-8">
-        <SiteHeader />
-
-        <div className="mt-6 lg:mt-8">
+        <div className="lg:mt-2">
           <h1 className="font-heading text-[clamp(1.5rem,3vw,2.1rem)] font-extrabold tracking-tight text-[var(--hb-co-text)]">
             {stepCopy.title}
           </h1>

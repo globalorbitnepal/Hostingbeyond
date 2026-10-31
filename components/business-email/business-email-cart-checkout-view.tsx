@@ -360,7 +360,7 @@ export function BusinessEmailCartCheckoutView(
     <div className="hb-checkout-premium hb-checkout-premium--email hb-checkout-premium--hosting hb-hosting-booking relative">
       <div className="hb-checkout-premium__ambient" aria-hidden />
       <div className="relative z-20">
-        <SiteHeader />
+        <SiteHeader layout="checkout" />
       </div>
 
       <div className="relative z-10 mx-auto w-full max-w-[1180px] min-w-0 px-4 pt-6 sm:px-6">

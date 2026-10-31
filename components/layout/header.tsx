@@ -114,7 +114,7 @@ function NavDropdown({
         <button
           type="button"
           className={cn(
-            "inline-flex items-center gap-1 text-[15px] font-bold tracking-[-0.015em] whitespace-nowrap transition-all duration-200 xl:text-[16px]",
+            "inline-flex max-w-full items-center gap-1 text-[14px] font-bold tracking-[-0.015em] whitespace-nowrap transition-all duration-200 xl:text-[15px] 2xl:text-[16px]",
             hostingActive
               ? "rounded-full bg-gradient-to-r from-[#7c3aed] to-[#4f46e5] px-3.5 py-1.5 text-white shadow-[0_8px_22px_rgba(124,58,237,0.32)]"
               : megaOpen
@@ -242,6 +242,7 @@ export function SiteHeader({
   loginHref = routes.login,
   getStartedLabel,
   getStartedHref = routes.getStarted,
+  layout = "default",
 }: {
   navigation?: NavItem[];
   loginLabel?: string;
@@ -250,7 +251,10 @@ export function SiteHeader({
   getStartedHref?: string;
   /** @deprecated Header always uses canonical logo for stability */
   logoPath?: string;
+  /** Full-width bar with tighter nav — use on checkout flows */
+  layout?: "default" | "checkout";
 } = {}) {
+  const checkoutBar = layout === "checkout";
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [mobileSection, setMobileSection] = useState<string | null>(null);
@@ -338,18 +342,33 @@ export function SiteHeader({
     <header className="relative z-50 w-full shrink-0 bg-transparent pt-2.5 pb-1 sm:pt-4">
       <div className="hb-shell">
         <div className="relative">
-          <div className="mx-auto flex h-[56px] w-full min-w-0 items-center gap-1.5 overflow-visible rounded-full border border-white/90 bg-white/[0.92] px-2.5 shadow-[0_12px_40px_rgba(15,23,42,0.14),inset_0_1px_0_rgba(255,255,255,1)] backdrop-blur-md backdrop-saturate-150 sm:h-[70px] sm:gap-3 sm:px-5 sm:backdrop-blur-2xl lg:px-6">
-            <div className="min-w-0 flex-1 lg:min-w-[180px] lg:flex-none xl:min-w-[270px]">
+          <div
+            className={cn(
+              "mx-auto flex h-[56px] w-full min-w-0 items-center gap-1.5 rounded-full border border-white/90 bg-white/[0.92] px-2.5 shadow-[0_12px_40px_rgba(15,23,42,0.14),inset_0_1px_0_rgba(255,255,255,1)] backdrop-blur-md backdrop-saturate-150 sm:h-[70px] sm:gap-3 sm:px-5 sm:backdrop-blur-2xl lg:grid lg:grid-cols-[minmax(0,auto)_minmax(0,1fr)_auto] lg:items-center lg:gap-3 lg:px-6 xl:gap-4",
+              checkoutBar && "lg:gap-2 xl:gap-3",
+            )}
+          >
+            <div
+              className={cn(
+                "relative z-10 max-w-[46%] min-w-0 shrink-0 sm:max-w-none lg:max-w-[min(240px,30vw)] xl:max-w-[min(280px,32vw)]",
+                !checkoutBar && "flex-1 lg:flex-none",
+              )}
+            >
               <Logo
                 src={CANONICAL_HEADER_LOGO_SRC}
                 variant="image"
-                className="max-w-[min(42vw,150px)] sm:max-w-[240px] lg:max-w-[260px] xl:max-w-[300px]"
+                className="max-w-[min(42vw,150px)] sm:max-w-[220px] lg:max-w-full xl:max-w-[280px]"
               />
             </div>
 
             <nav
               aria-label="Primary navigation"
-              className="hidden min-w-0 flex-1 items-center justify-center gap-4 lg:flex xl:gap-7 2xl:gap-8"
+              className={cn(
+                "hidden min-w-0 items-center justify-center lg:flex",
+                checkoutBar
+                  ? "gap-1.5 xl:gap-4 2xl:gap-5"
+                  : "gap-2 xl:gap-6 2xl:gap-8",
+              )}
             >
               {filteredNav.map((item) => (
                 <NavDropdown
@@ -384,7 +403,7 @@ export function SiteHeader({
               ))}
             </nav>
 
-            <div className="hidden shrink-0 items-center justify-end gap-1.5 lg:flex xl:gap-2.5">
+            <div className="relative z-10 hidden shrink-0 items-center justify-end gap-1 lg:flex xl:gap-2">
               <DomainCartHeaderLink />
               <CurrencySelector tone="light" />
               <CountryLanguageSelector tone="light" className="shrink-0" />

@@ -7,7 +7,7 @@ export function BusinessEmailCheckoutInvalid() {
   return (
     <div className="hb-checkout-premium hb-checkout-premium--email relative min-h-dvh">
       <div className="hb-checkout-premium__ambient" aria-hidden />
-      <SiteHeader />
+      <SiteHeader layout="checkout" />
       <div className="relative z-10 mx-auto max-w-lg px-4 py-16 text-center">
         <h1 className="font-heading text-2xl font-extrabold text-[var(--hb-co-royal)]">
           Business email checkout unavailable

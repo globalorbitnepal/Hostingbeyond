@@ -113,7 +113,7 @@ export function DomainTransferCheckoutView({
     <div className="hb-checkout-premium hb-checkout-premium--domain min-h-dvh overflow-x-hidden">
       <div className="hb-checkout-premium__ambient" aria-hidden />
       <div className="relative z-10">
-        <SiteHeader />
+        <SiteHeader layout="checkout" />
       </div>
       <div className="relative z-10 mx-auto max-w-xl min-w-0 px-4 py-8 sm:px-8">
         <div className="mt-8 rounded-[28px] border border-white bg-white p-5 shadow-[0_24px_60px_-32px_rgba(15,23,42,0.35)] sm:p-6">
