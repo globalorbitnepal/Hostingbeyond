@@ -41,7 +41,7 @@ if (Test-Path -LiteralPath $cipher) {
     Copy-Item -Destination $enc -Force -ErrorAction SilentlyContinue
 }
 else {
-  Write-Host "WARN: No ciphertext yet — run Desktop bank Confirm first."
+  Write-Host "WARN: No ciphertext yet - run Desktop bank Confirm first."
 }
 $lr = Join-Path $bank "reports\last-run.json"
 if (Test-Path -LiteralPath $lr) {
@@ -52,7 +52,7 @@ $latestBackup = Get-ChildItem -LiteralPath (Join-Path $bank "backups") -Director
 if ($latestBackup) {
   $destSnap = Join-Path $enc ("backup_snapshot_" + $latestBackup.Name)
   New-Item -ItemType Directory -Force -Path $destSnap | Out-Null
-  Copy-Item -LiteralPath (Join-Path $latestBackup.FullName "*") -Destination $destSnap -Recurse -Force -ErrorAction SilentlyContinue
+  Copy-Item -Path (Join-Path $latestBackup.FullName "*") -Destination $destSnap -Recurse -Force -ErrorAction SilentlyContinue
 }
 
 Write-Host "3/4 ENV folder (.env example + try server copy)..."
@@ -87,7 +87,7 @@ if (-not $gotEnv) {
     "    Remote: /srv/apps/hostingbeyond/.env"
     "    Save as: isi folder mein production.env.from-server.txt"
     ""
-    "  Ya KeePassXC mein rakho — is folder mein plain file mat chhodo agar PC shared hai."
+    "  Ya KeePassXC mein rakho - is folder mein plain file mat chhodo agar PC shared hai."
     ""
     "Server: $SshUser@$SshHost"
   ) | Set-Content -LiteralPath $prodEnv -Encoding UTF8
@@ -95,22 +95,22 @@ if (-not $gotEnv) {
 
 Write-Host "4/4 Hindi guide..."
 @(
-  "HostingBeyond — ek folder mein sab (simple)"
+  "HostingBeyond - ek folder mein sab (simple)"
   ""
   "website-code\"
   "  Poori site ki coding: design, pages, /orbit UI, payment code (GitHub jaisa live)."
   ""
   "_database_orbit_ENCRYPTED\"
-  "  Customers + database + Orbit photos/videos — ENCRYPTED box (.age)."
+  "  Customers + database + Orbit photos/videos - ENCRYPTED box (.age)."
   "  Khulne ke liye: Desktop\hostingbeyond\keys\ (age identity) + README-RECOVERY."
-  "  Ye plain photos nahi — restore par server par nikalte hain."
+  "  Ye plain photos nahi - restore par server par nikalte hain."
   ""
   "_env_passwords\"
-  "  Google, Stripe, NameSilo, DB password — production.env.from-server.txt"
+  "  Google, Stripe, NameSilo, DB password - production.env.from-server.txt"
   "  + .env.example (sirf naam, secrets nahi)."
   "  Best: KeePassXC mein bhi copy rakho; is PC par kisi ko mat dikhao."
   ""
-  "Roz auto update: Desktop\hostingbeyond (11 PM) — is pack ko dubara chalao script se refresh."
+  "Roz auto update: Desktop\hostingbeyond (11 PM) - is pack ko dubara chalao script se refresh."
   ""
   "Script dubara:"
   "  ops\windows-backup\Install-DesktopSourceCodeFolder.ps1 (repo se)"
