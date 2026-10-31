@@ -649,14 +649,21 @@ export function DomainPremiumCheckout({
                 >
                   Payment
                 </h2>
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-violet-100 bg-violet-50/60 px-4 py-3">
-                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">
-                    <Wallet className="size-4 text-[#673de6]" />
-                    Wallet balance
-                  </span>
-                  <span className="text-sm font-bold text-slate-900">
-                    {walletCurrency} {walletBalance.toFixed(2)}
-                  </span>
+                <div className="mt-4 rounded-2xl border border-[var(--hb-co-border)] bg-gradient-to-br from-[#f6f2ff] to-[#eef1ff] p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">
+                      <Wallet className="size-4 text-[#673de6]" />
+                      HostingBeyond Wallet
+                    </span>
+                    <span className="text-sm font-bold text-slate-900">
+                      {walletCurrency} {walletBalance.toFixed(2)}
+                    </span>
+                  </div>
+                  <p className="mt-2 inline-flex items-center gap-2 text-[12px] font-medium text-slate-500">
+                    <Lock className="size-3.5 text-[#673de6]" aria-hidden />
+                    Cards accepted via Stripe — add funds securely from your
+                    wallet page.
+                  </p>
                 </div>
                 {!isAuthenticated ? (
                   <CheckoutAuthPanel

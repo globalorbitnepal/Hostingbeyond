@@ -32,10 +32,11 @@ export function CheckoutStepNav({
               <div className="flex w-full flex-col items-center gap-1.5 px-1">
                 <span
                   className={cn(
-                    "flex size-8 items-center justify-center rounded-full text-[12px] font-extrabold transition-colors",
-                    done && "bg-[var(--hb-co-primary)] text-white",
+                    "flex size-8 items-center justify-center rounded-full text-[12px] font-extrabold transition-all",
+                    done &&
+                      "bg-gradient-to-br from-[var(--hb-co-primary)] to-[var(--hb-co-blue)] text-white shadow-[0_6px_14px_-6px_rgb(103_61_230/60%)]",
                     active &&
-                      "bg-[var(--hb-co-royal)] text-white ring-4 ring-[var(--hb-co-lavender)]/35",
+                      "bg-gradient-to-br from-[var(--hb-co-royal)] via-[var(--hb-co-primary)] to-[var(--hb-co-blue)] text-white shadow-[0_8px_18px_-8px_rgb(43_10_102/60%)] ring-4 ring-[var(--hb-co-lavender)]/40",
                     !done &&
                       !active &&
                       "border border-[var(--hb-co-border)] bg-white text-[var(--hb-co-text-muted)]",

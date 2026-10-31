@@ -38,6 +38,10 @@ export type DomainCheckoutServiceOffer =
       amount: number;
       ratePerMonth: number;
       prepaidMonths: number;
+      /** Monthly term promo: nothing charged today, renews next month. */
+      firstMonthFree: boolean;
+      /** Per-month price charged after any free/trial period ends. */
+      renewalPerMonth: number;
       currency: string;
       label: string;
       description: string;
@@ -147,15 +151,18 @@ export async function getDomainCheckoutOffers(): Promise<DomainCheckoutOffersPay
     for (const term of availableEmailTermsForPlan(emailEntry)) {
       const perMonth = emailPricePerMonthForTerm(emailEntry, term);
       const months = emailPrepaidMonths(term);
+      const firstMonthFree = term === "monthly";
       optional.push({
         kind: "business-email",
         serviceId: "business-email",
         planId: emailEntry.id,
         planName: emailEntry.name,
         term,
-        amount: emailDueTodayForTerm(emailEntry, term),
+        amount: firstMonthFree ? 0 : emailDueTodayForTerm(emailEntry, term),
         ratePerMonth: roundMoney(perMonth),
         prepaidMonths: months,
+        firstMonthFree,
+        renewalPerMonth: roundMoney(perMonth),
         currency: "USD",
         label: "Business Email",
         description: "Professional mailboxes on your domain.",
@@ -253,10 +260,13 @@ export async function quoteDomainCheckoutServices(
         match.prepaidMonths <= 1
           ? "per month"
           : `for ${match.prepaidMonths} months`;
+      const renewalNote = match.firstMonthFree
+        ? ` · 1st month free, renews at $${match.renewalPerMonth.toFixed(2)}/mo`
+        : "";
       lines.push({
         key,
         label: match.label,
-        detail: `${match.planName} · ${match.periodLabel} · ${match.mailboxesLabel}`,
+        detail: `${match.planName} · ${match.periodLabel} · ${match.mailboxesLabel}${renewalNote}`,
         amount: match.amount,
         currency: match.currency,
         billingLabel,

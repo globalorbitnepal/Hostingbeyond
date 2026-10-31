@@ -1,6 +1,6 @@
 "use client";
 
-import { Mail, Server, ShieldCheck } from "lucide-react";
+import { Check, Mail, Server, ShieldCheck } from "lucide-react";
 
 import type {
   DomainCheckoutServiceOffer,
@@ -242,7 +242,14 @@ export function CheckoutAddonOfferList({
                 )}
                 aria-pressed={added}
               >
-                {added ? "Added" : "Add"}
+                {added ? (
+                  <>
+                    <Check className="size-4" aria-hidden />
+                    Added
+                  </>
+                ) : (
+                  "Add"
+                )}
               </button>
             </div>
           </li>
@@ -311,7 +318,14 @@ export function CheckoutAddonOfferList({
                   )}
                   aria-pressed={added}
                 >
-                  {added ? "Added" : "Add"}
+                  {added ? (
+                    <>
+                      <Check className="size-4" aria-hidden />
+                      Added
+                    </>
+                  ) : (
+                    "Add"
+                  )}
                 </button>
               ) : null}
             </div>
@@ -365,22 +379,37 @@ export function CheckoutAddonOfferList({
                 ) : null}
                 {activeOffer ? (
                   <p className="mt-3 text-[16px] font-extrabold text-[var(--hb-co-text)]">
-                    <CatalogPrice usd={activeOffer.amount} />
-                    <span className="ml-1.5 text-[13px] font-semibold text-[var(--hb-co-text-muted)]">
-                      {activeOffer.prepaidMonths <= 1
-                        ? "/ mo"
-                        : `for ${activeOffer.prepaidMonths} months`}
-                    </span>
-                    <span className="mt-0.5 block text-[12px] font-medium text-[var(--hb-co-text-muted)]">
-                      {activeOffer.prepaidMonths > 1 ? (
-                        <>
-                          <CatalogPrice usd={activeOffer.ratePerMonth} /> / mo ·{" "}
-                          {activeOffer.periodLabel}
-                        </>
-                      ) : (
-                        activeOffer.periodLabel
-                      )}
-                    </span>
+                    {activeOffer.firstMonthFree ? (
+                      <>
+                        <span className="hb-checkout-premium__badge-free">
+                          FREE for 1st month
+                        </span>
+                        <span className="mt-1 block text-[13px] font-semibold text-[var(--hb-co-text-muted)]">
+                          Then renews at{" "}
+                          <CatalogPrice usd={activeOffer.renewalPerMonth} /> /
+                          mo · cancel anytime
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <CatalogPrice usd={activeOffer.amount} />
+                        <span className="ml-1.5 text-[13px] font-semibold text-[var(--hb-co-text-muted)]">
+                          {activeOffer.prepaidMonths <= 1
+                            ? "/ mo"
+                            : `for ${activeOffer.prepaidMonths} months`}
+                        </span>
+                        <span className="mt-0.5 block text-[12px] font-medium text-[var(--hb-co-text-muted)]">
+                          {activeOffer.prepaidMonths > 1 ? (
+                            <>
+                              <CatalogPrice usd={activeOffer.ratePerMonth} /> /
+                              mo · {activeOffer.periodLabel}
+                            </>
+                          ) : (
+                            activeOffer.periodLabel
+                          )}
+                        </span>
+                      </>
+                    )}
                   </p>
                 ) : null}
               </div>
@@ -395,7 +424,14 @@ export function CheckoutAddonOfferList({
                   )}
                   aria-pressed={added}
                 >
-                  {added ? "Added" : "Add"}
+                  {added ? (
+                    <>
+                      <Check className="size-4" aria-hidden />
+                      Added
+                    </>
+                  ) : (
+                    "Add"
+                  )}
                 </button>
               ) : null}
             </div>
