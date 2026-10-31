@@ -137,7 +137,10 @@ export function UpdatesTimeline({ entries }: { entries: CmsUpdateEntry[] }) {
             className="absolute top-1.5 -left-[calc(2rem+5px)] size-3 rounded-full bg-[#673de6] ring-4 ring-violet-100 sm:-left-[calc(2.5rem+5px)]"
             aria-hidden
           />
-          <div className="rounded-2xl border border-violet-100/90 bg-white p-5 shadow-sm sm:p-6">
+          <div
+            id={`update-${entry.id}`}
+            className="rounded-2xl border border-violet-100/90 bg-white p-5 shadow-sm sm:p-6"
+          >
             <div className="flex flex-wrap items-center gap-2">
               <time
                 dateTime={entry.date}
@@ -245,7 +248,10 @@ export function UpdatesFaqSection({
   const faqs = content.faqs.filter((f) => f.visible !== false);
   if (!faqs.length) return null;
   return (
-    <section className="rounded-3xl border border-violet-100 bg-white p-6 sm:p-8">
+    <section
+      id="faq"
+      className="rounded-3xl border border-violet-100 bg-white p-6 sm:p-8"
+    >
       <h2 className="text-2xl font-extrabold text-[#1a1035]">FAQ</h2>
       <ul className="mt-6 divide-y divide-violet-100">
         {faqs.map((faq) => (

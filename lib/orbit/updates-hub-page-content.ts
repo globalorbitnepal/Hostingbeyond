@@ -97,7 +97,7 @@ export function defaultUpdatesHubPageContent(): CmsUpdatesHubPageContent {
     introBody:
       "The HostingBeyond Updates hub is your official source for product changes. We document meaningful improvements to web hosting, domain services, business email, checkout, Orbit CMS, performance and security so you always know what shipped and why it matters for your websites and workflows.",
     introBodySecondary:
-      "Major launches and deep tutorials may also appear on the HostingBeyond blog or Tips hub. This page focuses on concise, factual product updates you can scan in minutes — ideal for agencies, IT teams and founders who want confidence without noise.",
+      "Major launches and deep tutorials may also appear on the HostingBeyond blog or Tips hub. This page focuses on concise, factual product updates you can scan in minutes — ideal for agencies, IT teams and founders who want confidence without noise. Each entry is tagged by area (hosting, domains, email, platform, security) so you can filter what matters to your stack. Highlighted releases also surface in the hero for a quick snapshot of recent shipping velocity.",
     stats: [
       { id: "u1", label: "Coverage", value: "Platform-wide" },
       { id: "u2", label: "Focus", value: "Shipped changes" },
@@ -112,7 +112,80 @@ export function defaultUpdatesHubPageContent(): CmsUpdatesHubPageContent {
       { id: "c5", label: "Security", slug: "security" },
       { id: "c6", label: "Email", slug: "email" },
     ],
-    updates: [],
+    updates: [
+      {
+        id: "up-cs-hub",
+        date: "2026-10-30",
+        title: "Case studies hub with Orbit CMS editing",
+        excerpt:
+          "New SEO-friendly customer success library at /resources/case-studies with industry filters, structured data and full page control in Orbit.",
+        body: "Publish proof points without developer help: add metrics, quotes, services and visibility per story. The hub links from Resources and ships with default stories you can replace with verified customer outcomes.",
+        category: "platform",
+        kind: "NEW",
+        href: "/resources/case-studies",
+        featured: true,
+        visible: true,
+      },
+      {
+        id: "up-email-checkout",
+        date: "2026-10-28",
+        title: "Business Email premium checkout flow",
+        excerpt:
+          "Four-step checkout for HostingBeyond Mail — plan term, domain, add-ons and payment — with coupon field UI and corrected Choose Plan routing.",
+        body: "Choose Plan on business email marketing pages now lands on /checkout/business-email instead of domain search. Legacy email= query parameters redirect to the new flow.",
+        category: "email",
+        kind: "NEW",
+        href: "/checkout/business-email",
+        featured: true,
+        visible: true,
+      },
+      {
+        id: "up-checkout-header",
+        date: "2026-10-27",
+        title: "Checkout header layout fix",
+        excerpt:
+          "Site header no longer overlaps logo and navigation on domain and hosting booking pages.",
+        category: "platform",
+        kind: "FIX",
+        featured: false,
+        visible: true,
+      },
+      {
+        id: "up-orbit-reviews",
+        date: "2026-10-26",
+        title: "Business Email reviews in Orbit",
+        excerpt:
+          "Edit customer review blocks from /orbit/business-email with deep links to the reviews tab and save action.",
+        category: "platform",
+        kind: "IMPROVEMENT",
+        href: "/orbit/business-email?tab=reviews",
+        featured: true,
+        visible: true,
+      },
+      {
+        id: "up-domain-checkout",
+        date: "2026-10-20",
+        title: "Premium domain registration checkout",
+        excerpt:
+          "Domain search and transfer paths use a consistent premium checkout shell aligned with HostingBeyond brand purple bands.",
+        category: "domains",
+        kind: "IMPROVEMENT",
+        href: "/get-started",
+        featured: false,
+        visible: true,
+      },
+      {
+        id: "up-security-hardening",
+        date: "2026-10-15",
+        title: "Platform security and auth hardening",
+        excerpt:
+          "Ongoing improvements to session handling, webhook idempotency patterns and safe API error surfaces across billing and domains.",
+        category: "security",
+        kind: "IMPROVEMENT",
+        featured: false,
+        visible: true,
+      },
+    ],
     pillars: [
       {
         id: "p1",
@@ -159,6 +232,12 @@ export function defaultUpdatesHubPageContent(): CmsUpdatesHubPageContent {
         answer:
           "Check the Tips & Guides hub for tutorials, or contact support for account-specific questions.",
       },
+      {
+        id: "f4",
+        question: "Can I subscribe to updates?",
+        answer:
+          "Use the newsletter at the bottom of this page for product highlights. This hub remains the canonical changelog for shipped work.",
+      },
     ],
     ctaEyebrow: "Stay ahead",
     ctaTitle: "Build on a platform that keeps improving",
@@ -181,7 +260,7 @@ export function mergeUpdatesHubPageContent(
     ...stored,
     stats: stored.stats?.length ? stored.stats : d.stats,
     categories: stored.categories?.length ? stored.categories : d.categories,
-    updates: stored.updates ?? d.updates,
+    updates: stored.updates?.length ? stored.updates : d.updates,
     pillars: stored.pillars?.length ? stored.pillars : d.pillars,
     faqs: stored.faqs?.length ? stored.faqs : d.faqs,
   };
@@ -204,6 +283,18 @@ export function newUpdateEntry(): CmsUpdateEntry {
 
 export function newUpdatesFaq(): CmsUpdatesHubFaq {
   return { id: nid(), question: "", answer: "" };
+}
+
+export function newUpdatesCategory(): CmsUpdatesCategory {
+  return { id: nid(), label: "Category", slug: "category" };
+}
+
+export function newUpdatesStat(): CmsUpdatesHubStat {
+  return { id: nid(), label: "Label", value: "Value" };
+}
+
+export function newUpdatesPillar(): CmsUpdatesHubPillar {
+  return { id: nid(), title: "", description: "" };
 }
 
 export function updateKindLabel(kind: CmsUpdateKind) {

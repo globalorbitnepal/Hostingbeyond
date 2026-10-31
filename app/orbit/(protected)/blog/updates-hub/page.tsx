@@ -53,12 +53,14 @@ export default function OrbitUpdatesHubPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-4">
       <div>
-        <h1 className="text-2xl font-bold">Product updates page</h1>
+        <h1 className="text-2xl font-bold">Product updates hub</h1>
         <p className="mt-1 text-sm text-slate-500">
-          Public URL:{" "}
+          Full page editor for{" "}
           <a href={UPDATES_BASE} className="font-semibold text-[#673de6]">
             {UPDATES_BASE}
           </a>
+          — SEO, hero, intro, categories, every release note, pillars, roadmap,
+          FAQ and CTA.
         </p>
         {status ? (
           <p className="mt-2 text-sm text-slate-600">{status}</p>

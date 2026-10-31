@@ -322,6 +322,23 @@ export const PUBLIC_PAGE_SEO_REGISTRY: PublicPageSeoEntry[] = [
     },
   },
   {
+    slug: "updates-hub",
+    label: "Product updates",
+    path: "/resources/updates",
+    editorHref: "/orbit/blog/updates-hub",
+    defaultSeo: {
+      metaTitle:
+        "HostingBeyond Product Updates | Platform, Hosting & Domain News",
+      metaDescription:
+        "Official HostingBeyond release notes: hosting improvements, domain tools, business email, checkout, Orbit CMS and security updates.",
+      keywords:
+        "HostingBeyond updates, release notes, product changelog, hosting news, platform updates",
+      ogTitle: "HostingBeyond Product Updates",
+      ogDescription:
+        "Transparent release notes for hosting, domains, email and the HostingBeyond platform.",
+    },
+  },
+  {
     slug: "case-studies-hub",
     label: "Case studies",
     path: "/resources/case-studies",

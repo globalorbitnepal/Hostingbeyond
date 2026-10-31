@@ -94,11 +94,35 @@ export default async function UpdatesHubPage({
 
   const webPageJsonLd = {
     "@context": "https://schema.org",
-    "@type": "WebPage",
+    "@type": "CollectionPage",
     name: hub.seoTitle,
     description: hub.seoDescription,
     url: new URL(UPDATES_BASE, siteConfig.url).toString(),
+    isPartOf: {
+      "@type": "WebSite",
+      name: "HostingBeyond",
+      url: siteConfig.url,
+    },
   };
+
+  const itemListJsonLd =
+    timeline.length > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          name: "HostingBeyond product updates",
+          itemListElement: timeline.map((entry, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            name: entry.title,
+            description: entry.excerpt,
+            url: new URL(
+              `${UPDATES_BASE}#update-${entry.id}`,
+              siteConfig.url,
+            ).toString(),
+          })),
+        }
+      : null;
 
   return (
     <BlogSiteShell>
@@ -112,6 +136,13 @@ export default async function UpdatesHubPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageJsonLd) }}
       />
+      {itemListJsonLd ? (
+        <Script
+          id="updates-itemlist-jsonld"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+        />
+      ) : null}
       {faqJsonLd ? (
         <Script
           id="updates-faq-jsonld"
