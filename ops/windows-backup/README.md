@@ -16,6 +16,8 @@ The Windows PC **initiates SSH** to production and pulls a backup bundle created
 
 **Quick path (Desktop folder, daily 11 PM Nepal):** `docs/DESKTOP-DAILY-BACKUP-OWNER.md`
 
+**One click on Windows:** copy `Setup-DesktopBackup-ONE-CLICK.bat` to Desktop, double-click (needs Git for Windows). Or run `Install-DailyDesktopBackup.ps1` from a repo clone.
+
 1. Create directory layout on **your Windows PC** (mandatory final destination):
 
    ```
