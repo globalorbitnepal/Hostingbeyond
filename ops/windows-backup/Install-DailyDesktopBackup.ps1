@@ -90,6 +90,12 @@ if (Get-Command age-keygen -ErrorAction SilentlyContinue) {
   }
   if (-not (Test-Path -LiteralPath $ageRecipient) -and (Test-Path -LiteralPath $ageIdentity)) {
     $pubLine = (Get-Content $ageIdentity | Where-Object { $_ -match "^age1" } | Select-Object -First 1)
+    if (-not $pubLine -and (Get-Command age-keygen -ErrorAction SilentlyContinue)) {
+      $prevEa = $ErrorActionPreference
+      $ErrorActionPreference = "Continue"
+      $pubLine = (age-keygen -y $ageIdentity 2>$null | Select-Object -First 1)
+      $ErrorActionPreference = $prevEa
+    }
     if ($pubLine) {
       $pubLine | Set-Content -LiteralPath $ageRecipient -Encoding ascii
     }
@@ -142,6 +148,10 @@ $registerScript = Join-Path $winBackup "Register-ScheduledTask.ps1"
 $invokeScript = Join-Path $winBackup "Invoke-HostingBeyondBackup.ps1"
 Copy-Item -LiteralPath (Join-Path $winBackup "templates\README-RECOVERY.md") `
   -Destination (Join-Path $BackupRoot "README-RECOVERY.md") -Force -ErrorAction SilentlyContinue
+$simpleHindi = Join-Path $tooling "docs\APKA-BACKUP-BANK-HINDI.md"
+if (Test-Path -LiteralPath $simpleHindi) {
+  Copy-Item -LiteralPath $simpleHindi -Destination (Join-Path $BackupRoot "APKA-BACKUP-BANK-HINDI.md") -Force
+}
 
 $vpsSteps = @"
 HostingBeyond — one-time VPS steps (owner or sysadmin on 51.15.21.166)

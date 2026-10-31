@@ -1,0 +1,111 @@
+name: Pair desktop backup (VPS one-time)
+
+on:
+  workflow_dispatch:
+    inputs:
+      create_pub:
+        description: "One line ssh-ed25519 ... hostingbeyond-backup-create (from Desktop VPS-OWNER-STEPS.txt)"
+        required: true
+        type: string
+      fetch_pub:
+        description: "One line ssh-ed25519 ... hostingbeyond-backup-fetch"
+        required: true
+        type: string
+      age_recipient:
+        description: "One line age1... from Desktop keys\\backup-recipient.txt"
+        required: false
+        type: string
+      enable_export:
+        description: "Set HOSTINGBEYOND_PRODUCTION_BACKUP_EXPORT_APPROVED=true on VPS"
+        required: false
+        type: boolean
+        default: true
+
+concurrency:
+  group: pair-desktop-backup-vps
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  pair:
+    name: Install desktop backup SSH + age on VPS
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Confirm SSH secrets exist
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          for v in VPS_HOST VPS_USER VPS_SSH_KEY; do
+            if [ -z "${!v:-}" ]; then echo "Missing GitHub secret: $v"; exit 1; fi
+          done
+          test "${VPS_HOST}" = "51.15.21.166"
+          test "${VPS_USER}" = "hostingbeyond"
+
+      - name: Pair VPS for Windows desktop pull
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          CREATE_PUB: ${{ inputs.create_pub }}
+          FETCH_PUB: ${{ inputs.fetch_pub }}
+          AGE_PUB: ${{ inputs.age_recipient }}
+          ENABLE_EXPORT: ${{ inputs.enable_export }}
+        run: |
+          set -euo pipefail
+          export KEY_FILE="${RUNNER_TEMP}/hb_gha_ssh_key"
+          trap 'rm -f -- "$KEY_FILE"' EXIT
+          python3 - <<'PY'
+          import os, pathlib, re
+          key = os.environ["VPS_SSH_KEY"]
+          raw = key.replace("\r\n", "\n").replace("\r", "\n").strip()
+          if raw.count("\n") < 2 and "\\n" in raw:
+              raw = raw.replace("\\n", "\n")
+          if not raw.endswith("\n"):
+              raw += "\n"
+          path = pathlib.Path(os.environ["KEY_FILE"])
+          path.write_text(raw)
+          path.chmod(0o600)
+          PY
+          mkdir -p "${HOME}/.ssh"
+          ssh-keyscan -4 -p "${VPS_PORT:-22}" -T 10 "${VPS_HOST}" >> "${HOME}/.ssh/known_hosts"
+          SSH=(ssh -4 -i "${KEY_FILE}" -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes -p "${VPS_PORT:-22}" "${VPS_USER}@${VPS_HOST}")
+
+          printf '%s\n' "${CREATE_PUB}" > /tmp/hb-create.pub
+          printf '%s\n' "${FETCH_PUB}" > /tmp/hb-fetch.pub
+          [ -n "${AGE_PUB:-}" ] && printf '%s\n' "${AGE_PUB}" > /tmp/hb-age.txt || true
+
+          "${SSH[@]}" "cat > /tmp/hb-create.pub" < /tmp/hb-create.pub
+          "${SSH[@]}" "cat > /tmp/hb-fetch.pub" < /tmp/hb-fetch.pub
+          if [ -f /tmp/hb-age.txt ]; then
+            "${SSH[@]}" "cat > /tmp/hb-age.txt" < /tmp/hb-age.txt
+          fi
+
+          "${SSH[@]}" "bash -s" <<'REMOTE'
+          set -euo pipefail
+          cd /srv/apps/hostingbeyond
+          git fetch origin main
+          git checkout main
+          git reset --hard origin/main
+          CREATE="$(tr -d '\r' < /tmp/hb-create.pub)"
+          FETCH="$(tr -d '\r' < /tmp/hb-fetch.pub)"
+          AGE=""
+          if [ -f /tmp/hb-age.txt ]; then AGE="$(grep -E '^age1' /tmp/hb-age.txt | head -1 || true)"; fi
+          bash ops/backup/production/install-desktop-backup-access.sh "$CREATE" "$FETCH" "$AGE"
+          rm -f /tmp/hb-create.pub /tmp/hb-fetch.pub /tmp/hb-age.txt
+          REMOTE
+
+          if [ "${ENABLE_EXPORT}" = "true" ]; then
+            "${SSH[@]}" "bash /srv/apps/hostingbeyond/ops/backup/production/enable-backup-export.sh"
+          fi
+
+          echo "OK: VPS paired for desktop backup pull"

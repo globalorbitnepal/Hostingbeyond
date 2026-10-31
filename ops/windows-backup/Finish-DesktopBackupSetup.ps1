@@ -8,8 +8,16 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$t = Join-Path $env:TEMP "Hostingbeyond-install"
-if (-not (Test-Path (Join-Path $t "ops\windows-backup\Install-DailyDesktopBackup.ps1"))) {
+$repoFromScript = $null
+try {
+  $repoFromScript = (Resolve-Path (Join-Path $PSScriptRoot "..\..") -ErrorAction Stop).Path
+} catch {
+  $repoFromScript = $null
+}
+if ($repoFromScript -and (Test-Path (Join-Path $repoFromScript "ops\windows-backup\Install-DailyDesktopBackup.ps1"))) {
+  $t = $repoFromScript
+} else {
+  $t = Join-Path $env:TEMP "Hostingbeyond-install"
   if (Test-Path $t) { Remove-Item $t -Recurse -Force }
   git clone --depth 1 https://github.com/globalorbitnepal/Hostingbeyond.git $t
 }
