@@ -99,7 +99,7 @@ describe("Invoke-HostingBeyondBackup.ps1 ordering", () => {
     const retentionIdx = indexOfLine(text, /Retention apply failed/);
     const lastRunIdx = indexOfLine(
       text,
-      /Set-Content -LiteralPath \(Join-Path \$backupRoot "reports\\last-run\.json"\)/,
+      /Write-JsonFileNoBom -Path \(Join-Path \$backupRoot "reports\\last-run\.json"\)/,
     );
     assert.ok(retentionIdx < lastRunIdx);
   });
@@ -110,7 +110,7 @@ describe("Invoke-HostingBeyondBackup.ps1 ordering", () => {
     const mirrorIdx = indexOfLine(text, /mirror-current\.mjs/);
     const lastRunIdx = indexOfLine(
       text,
-      /Set-Content -LiteralPath \(Join-Path \$backupRoot "reports\\last-run\.json"\)/,
+      /Write-JsonFileNoBom -Path \(Join-Path \$backupRoot "reports\\last-run\.json"\)/,
     );
     assert.ok(mirrorIdx > retentionIdx);
     assert.ok(lastRunIdx > mirrorIdx);
