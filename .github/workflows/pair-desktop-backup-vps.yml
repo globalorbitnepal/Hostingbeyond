@@ -4,22 +4,27 @@ on:
   workflow_dispatch:
     inputs:
       create_pub:
-        description: "One line ssh-ed25519 ... hostingbeyond-backup-create (from Desktop VPS-OWNER-STEPS.txt)"
-        required: true
+        description: "ssh-ed25519 ... hostingbeyond-backup-create (or leave empty if GitHub secret set)"
+        required: false
         type: string
       fetch_pub:
-        description: "One line ssh-ed25519 ... hostingbeyond-backup-fetch"
-        required: true
+        description: "ssh-ed25519 ... hostingbeyond-backup-fetch"
+        required: false
         type: string
       age_recipient:
-        description: "One line age1... from Desktop keys\\backup-recipient.txt"
+        description: "age1... (optional if secret set)"
         required: false
         type: string
       enable_export:
-        description: "Set HOSTINGBEYOND_PRODUCTION_BACKUP_EXPORT_APPROVED=true on VPS"
+        description: "Set HOSTINGBEYOND_PRODUCTION_BACKUP_EXPORT_APPROVED=true"
         required: false
         type: boolean
         default: true
+      run_test_pull:
+        description: "After pair, run one Windows-less server-side bundle create check only"
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: pair-desktop-backup-vps
@@ -50,15 +55,51 @@ jobs:
           test "${VPS_HOST}" = "51.15.21.166"
           test "${VPS_USER}" = "hostingbeyond"
 
+      - name: Resolve pairing inputs
+        id: pair
+        env:
+          IN_CREATE: ${{ inputs.create_pub }}
+          IN_FETCH: ${{ inputs.fetch_pub }}
+          IN_AGE: ${{ inputs.age_recipient }}
+          SEC_CREATE: ${{ secrets.DESKTOP_BACKUP_SSH_CREATE_PUB }}
+          SEC_FETCH: ${{ secrets.DESKTOP_BACKUP_SSH_FETCH_PUB }}
+          SEC_AGE: ${{ secrets.DESKTOP_BACKUP_AGE_RECIPIENT }}
+        run: |
+          set -euo pipefail
+          CREATE="${IN_CREATE:-}"
+          FETCH="${IN_FETCH:-}"
+          AGE="${IN_AGE:-}"
+          if [ -z "$CREATE" ]; then CREATE="${SEC_CREATE:-}"; fi
+          if [ -z "$FETCH" ]; then FETCH="${SEC_FETCH:-}"; fi
+          if [ -z "$AGE" ]; then AGE="${SEC_AGE:-}"; fi
+          if [ -z "$CREATE" ] || [ -z "$FETCH" ]; then
+            echo "Missing create/fetch public keys. Set workflow inputs OR repository secrets:"
+            echo "  DESKTOP_BACKUP_SSH_CREATE_PUB, DESKTOP_BACKUP_SSH_FETCH_PUB, DESKTOP_BACKUP_AGE_RECIPIENT"
+            exit 1
+          fi
+          echo "create_len=${#CREATE}"
+          echo "fetch_len=${#FETCH}"
+          {
+            echo "CREATE_PUB<<EOF"
+            echo "$CREATE"
+            echo "EOF"
+            echo "FETCH_PUB<<EOF"
+            echo "$FETCH"
+            echo "EOF"
+            echo "AGE_PUB<<EOF"
+            echo "$AGE"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Pair VPS for Windows desktop pull
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_USER: ${{ secrets.VPS_USER }}
           VPS_PORT: ${{ secrets.VPS_PORT }}
           VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
-          CREATE_PUB: ${{ inputs.create_pub }}
-          FETCH_PUB: ${{ inputs.fetch_pub }}
-          AGE_PUB: ${{ inputs.age_recipient }}
+          CREATE_PUB: ${{ steps.pair.outputs.CREATE_PUB }}
+          FETCH_PUB: ${{ steps.pair.outputs.FETCH_PUB }}
+          AGE_PUB: ${{ steps.pair.outputs.AGE_PUB }}
           ENABLE_EXPORT: ${{ inputs.enable_export }}
         run: |
           set -euo pipefail
