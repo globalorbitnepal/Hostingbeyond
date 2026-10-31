@@ -322,6 +322,23 @@ export const PUBLIC_PAGE_SEO_REGISTRY: PublicPageSeoEntry[] = [
     },
   },
   {
+    slug: "case-studies-hub",
+    label: "Case studies",
+    path: "/resources/case-studies",
+    editorHref: "/orbit/blog/case-studies-hub",
+    defaultSeo: {
+      metaTitle:
+        "HostingBeyond Case Studies | Web Hosting, Domains & Email Success Stories",
+      metaDescription:
+        "Customer case studies for HostingBeyond hosting, domain registration, business email and migration — real outcomes for ecommerce, agencies, healthcare and SaaS.",
+      keywords:
+        "hosting case studies, customer success stories, web hosting results, business email migration, domain hosting",
+      ogTitle: "HostingBeyond Case Studies",
+      ogDescription:
+        "See how teams launch faster with HostingBeyond hosting, domains and professional email.",
+    },
+  },
+  {
     slug: "get-started",
     label: "Get started",
     path: "/get-started",

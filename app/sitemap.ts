@@ -29,6 +29,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     routes.cloud,
     routes.businessEmail,
     routes.domains,
+    "/resources/case-studies",
+    "/resources/updates",
+    "/resources/tips",
   ];
 
   const all = [...new Set([...paths, ...extraHosting])];

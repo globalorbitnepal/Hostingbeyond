@@ -4,6 +4,7 @@ import Link from "next/link";
 import { BlogSiteShell } from "@/components/blog/blog-shell";
 import { buildMetadata } from "@/lib/metadata";
 import { BLOG_BASE, TIPS_BASE } from "@/lib/blog/paths";
+import { CASE_STUDIES_BASE } from "@/lib/case-studies/paths";
 import { UPDATES_BASE } from "@/lib/updates/paths";
 
 export const metadata: Metadata = buildMetadata({
@@ -49,6 +50,15 @@ export default function ResourcesIndexPage() {
             </h2>
             <p className="mt-2 text-sm text-slate-600">
               How-tos, troubleshooting and learning hub.
+            </p>
+          </Link>
+          <Link
+            href={CASE_STUDIES_BASE}
+            className="rounded-2xl border border-violet-100 bg-white p-6 shadow-sm hover:border-violet-200"
+          >
+            <h2 className="text-lg font-bold text-[#1a1035]">Case studies</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Customer success stories for hosting, domains and email.
             </p>
           </Link>
           <Link

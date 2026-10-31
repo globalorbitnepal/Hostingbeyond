@@ -80,6 +80,11 @@ import {
   type CmsUpdatesHubPageContent,
 } from "@/lib/orbit/updates-hub-page-content";
 import {
+  defaultCaseStudiesHubPageContent,
+  mergeCaseStudiesHubPageContent,
+  type CmsCaseStudiesHubPageContent,
+} from "@/lib/orbit/case-studies-hub-page-content";
+import {
   defaultAboutPageContent,
   mergeAboutPageContent,
   type CmsAboutPageContent,
@@ -117,6 +122,7 @@ const WEBSITE_MIGRATION_PAGE_SLUG = "website-migration-product";
 const DOMAIN_TRANSFER_PAGE_SLUG = "domain-transfer-product";
 const TIPS_HUB_PAGE_SLUG = "tips-hub";
 const UPDATES_HUB_PAGE_SLUG = "updates-hub";
+const CASE_STUDIES_HUB_PAGE_SLUG = "case-studies-hub";
 const ABOUT_PAGE_SLUG = "about-page";
 const CONTACT_PAGE_SLUG = "contact-page";
 /** Safety net so a bad cache entry can never outlive a few minutes. */
@@ -419,6 +425,30 @@ export const getUpdatesHubPageContent = cache(
       return await readUpdatesHubPageContent();
     } catch {
       return defaultUpdatesHubPageContent();
+    }
+  },
+);
+
+const readCaseStudiesHubPageContent = nextCache(
+  async (): Promise<CmsCaseStudiesHubPageContent> => {
+    const page = await prisma.pageContent.findUnique({
+      where: { slug: CASE_STUDIES_HUB_PAGE_SLUG },
+    });
+    if (!page) return defaultCaseStudiesHubPageContent();
+    return mergeCaseStudiesHubPageContent(
+      page.sections as Partial<CmsCaseStudiesHubPageContent>,
+    );
+  },
+  ["orbit-case-studies-hub-page-content"],
+  { tags: [CMS_TAG], revalidate: CMS_REVALIDATE },
+);
+
+export const getCaseStudiesHubPageContent = cache(
+  async (): Promise<CmsCaseStudiesHubPageContent> => {
+    try {
+      return await readCaseStudiesHubPageContent();
+    } catch {
+      return defaultCaseStudiesHubPageContent();
     }
   },
 );
@@ -793,6 +823,39 @@ export async function saveUpdatesHubPageContent(
   return normalized;
 }
 
+export async function saveCaseStudiesHubPageContent(
+  content: CmsCaseStudiesHubPageContent,
+) {
+  const normalized = mergeCaseStudiesHubPageContent(content);
+  await prisma.pageContent.upsert({
+    where: { slug: CASE_STUDIES_HUB_PAGE_SLUG },
+    create: {
+      slug: CASE_STUDIES_HUB_PAGE_SLUG,
+      title: "Case Studies Hub",
+      isPublished: true,
+      isVisible: true,
+      sections: normalized,
+      seo: {
+        title: normalized.seoTitle,
+        description: normalized.seoDescription,
+        keywords:
+          "hosting case studies, web hosting success stories, business email migration, domain hosting customer stories, HostingBeyond",
+      },
+    },
+    update: {
+      sections: normalized,
+      seo: {
+        title: normalized.seoTitle,
+        description: normalized.seoDescription,
+      },
+    },
+  });
+  revalidateContent();
+  revalidatePath("/resources/case-studies");
+  revalidatePath("/orbit/blog/case-studies-hub");
+  return normalized;
+}
+
 export async function saveTipsHubPageContent(content: CmsTipsHubPageContent) {
   const normalized = mergeTipsHubPageContent(content);
   await prisma.pageContent.upsert({
@@ -1087,6 +1150,12 @@ export async function ensureHomeSeeded() {
     });
     if (!updatesHub) {
       await saveUpdatesHubPageContent(defaultUpdatesHubPageContent());
+    }
+    const caseStudiesHub = await prisma.pageContent.findUnique({
+      where: { slug: CASE_STUDIES_HUB_PAGE_SLUG },
+    });
+    if (!caseStudiesHub) {
+      await saveCaseStudiesHubPageContent(defaultCaseStudiesHubPageContent());
     }
     const aboutPage = await prisma.pageContent.findUnique({
       where: { slug: ABOUT_PAGE_SLUG },
