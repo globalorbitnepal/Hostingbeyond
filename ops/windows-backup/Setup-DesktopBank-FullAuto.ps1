@@ -69,10 +69,10 @@ if (Test-Path $auditPath) {
 
 $statusPath = Join-Path $BackupRoot "APKA-STATUS-HINDI.txt"
 @(
-  "HostingBeyond — aapki site ki suraksha copy (Desktop bank)"
+  "HostingBeyond - aapki site ki suraksha copy (Desktop bank)"
   "Folder: $BackupRoot"
   ""
-  "Har raat Nepal 11 baje (23:00) — jab PC ON ho — automatic update."
+  "Har raat Nepal 11 baje (23:00) - jab PC ON ho - automatic update."
   "Task name: HostingBeyond-DailyBackup"
   ""
   "Aaj ki taiyari:"
@@ -80,17 +80,17 @@ $statusPath = Join-Path $BackupRoot "APKA-STATUS-HINDI.txt"
   "  Poori site copy (encrypted) ready: $full"
   ""
   "Ye folder cPanel par upload karke site NAHI chalti."
-  "Ye LIVE site ka encrypted backup hai — database + uploads + metadata."
+  "Ye LIVE site ka encrypted backup hai - database + uploads + metadata."
   "Server dead / hack par naya Linux server par restore hota hai (README-RECOVERY.md)."
   ""
   "Aapko roz kuch nahi karna. PC 11 baje ke around ON rakhein."
   "Details: README-RECOVERY.md aur VPS-OWNER-STEPS.txt (server one-time)."
   ""
   "Updated: $((Get-Date).ToString('yyyy-MM-dd HH:mm'))"
-) | Set-Content -LiteralPath $statusPath -Encoding UTF8
+) | Set-Content -LiteralPath $statusPath -Encoding ascii
 
 Write-Host ""
 Write-Host "Full auto setup done. Status: $statusPath"
 if ($full -ne "True") {
-  Write-Host "NOTE: Pehli baar server par one-time pairing chahiye — phir raat ko poori encrypted copy aayegi."
+  Write-Host "NOTE: Pehli baar server par one-time pairing chahiye - phir raat ko poori encrypted copy aayegi."
 }
