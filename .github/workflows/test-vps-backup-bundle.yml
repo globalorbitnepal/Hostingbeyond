@@ -1,0 +1,45 @@
+name: Test VPS backup bundle create
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Run create-pull-bundle on VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          export KEY_FILE="${RUNNER_TEMP}/hb_gha_ssh_key"
+          trap 'rm -f -- "$KEY_FILE"' EXIT
+          python3 - <<'PY'
+          import os, pathlib
+          key = os.environ["VPS_SSH_KEY"]
+          raw = key.replace("\r\n", "\n").replace("\r", "\n").strip()
+          if raw.count("\n") < 2 and "\\n" in raw:
+              raw = raw.replace("\\n", "\n")
+          if not raw.endswith("\n"):
+              raw += "\n"
+          path = pathlib.Path(os.environ["KEY_FILE"])
+          path.write_text(raw)
+          path.chmod(0o600)
+          PY
+          mkdir -p "${HOME}/.ssh"
+          ssh-keyscan -4 -p "${VPS_PORT:-22}" -T 10 "${VPS_HOST}" >> "${HOME}/.ssh/known_hosts"
+          SSH=(ssh -4 -i "${KEY_FILE}" -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes -p "${VPS_PORT:-22}" "${VPS_USER}@${VPS_HOST}")
+          "${SSH[@]}" "bash -s" <<'REMOTE'
+          set -euo pipefail
+          cd /srv/apps/hostingbeyond
+          test -x ops/backup/production/create-pull-bundle.sh
+          ops/backup/production/create-pull-bundle.sh
+          ls -la ~/backup-export | tail -5
+          REMOTE
