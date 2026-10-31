@@ -80,6 +80,7 @@ import {
   type CmsUpdatesHubPageContent,
 } from "@/lib/orbit/updates-hub-page-content";
 import {
+  CASE_STUDIES_HUB_REVISION,
   defaultCaseStudiesHubPageContent,
   mergeCaseStudiesHubPageContent,
   type CmsCaseStudiesHubPageContent,
@@ -429,8 +430,26 @@ export const getUpdatesHubPageContent = cache(
   },
 );
 
+export async function syncCaseStudiesHubFromDefaultsIfNeeded() {
+  try {
+    const page = await prisma.pageContent.findUnique({
+      where: { slug: CASE_STUDIES_HUB_PAGE_SLUG },
+    });
+    if (!page) {
+      await saveCaseStudiesHubPageContent(defaultCaseStudiesHubPageContent());
+      return;
+    }
+    const stored = page.sections as Partial<CmsCaseStudiesHubPageContent>;
+    if ((stored.hubRevision ?? 1) >= CASE_STUDIES_HUB_REVISION) return;
+    await saveCaseStudiesHubPageContent(defaultCaseStudiesHubPageContent());
+  } catch {
+    /* DB may be unavailable during local UI work */
+  }
+}
+
 const readCaseStudiesHubPageContent = nextCache(
   async (): Promise<CmsCaseStudiesHubPageContent> => {
+    await syncCaseStudiesHubFromDefaultsIfNeeded();
     const page = await prisma.pageContent.findUnique({
       where: { slug: CASE_STUDIES_HUB_PAGE_SLUG },
     });
@@ -1156,6 +1175,8 @@ export async function ensureHomeSeeded() {
     });
     if (!caseStudiesHub) {
       await saveCaseStudiesHubPageContent(defaultCaseStudiesHubPageContent());
+    } else {
+      await syncCaseStudiesHubFromDefaultsIfNeeded();
     }
     const aboutPage = await prisma.pageContent.findUnique({
       where: { slug: ABOUT_PAGE_SLUG },

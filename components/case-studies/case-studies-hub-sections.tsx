@@ -116,6 +116,38 @@ function ServiceTags({ services }: { services: string[] }) {
   );
 }
 
+function CaseStudyImage({
+  study,
+  featured,
+}: {
+  study: CmsCaseStudyEntry;
+  featured?: boolean;
+}) {
+  if (!study.image?.trim()) return null;
+  return (
+    <div
+      className={`relative overflow-hidden bg-gradient-to-br from-[#ede9fe] to-[#dbeafe] ${
+        featured
+          ? "min-h-[220px] lg:min-h-[320px]"
+          : "min-h-[200px] md:h-full md:min-h-0"
+      }`}
+    >
+      <Image
+        src={study.image}
+        alt={study.imageAlt || study.clientName || study.title}
+        fill
+        unoptimized={isRuntimeMediaSrc(study.image)}
+        className="object-cover object-center"
+        sizes={
+          featured
+            ? "(max-width: 1024px) 100vw, 320px"
+            : "(max-width: 768px) 100vw, 280px"
+        }
+      />
+    </div>
+  );
+}
+
 export function CaseStudyArticle({
   study,
   featured = false,
@@ -124,13 +156,23 @@ export function CaseStudyArticle({
   featured?: boolean;
 }) {
   const headingId = `case-study-${study.id}`;
+  const hasImage = Boolean(study.image?.trim());
   return (
     <article
       id={headingId}
       className={`overflow-hidden rounded-[24px] border border-violet-100/90 bg-white shadow-[0_20px_50px_-36px_rgba(47,28,106,0.35)] ${
-        featured ? "lg:grid lg:grid-cols-[minmax(0,1fr)_280px]" : ""
+        hasImage
+          ? featured
+            ? "lg:grid lg:grid-cols-[minmax(0,1fr)_min(38%,320px)]"
+            : "md:grid md:grid-cols-[minmax(0,1fr)_min(36%,280px)]"
+          : ""
       }`}
     >
+      {hasImage && !featured ? (
+        <div className="md:order-2">
+          <CaseStudyImage study={study} featured={featured} />
+        </div>
+      ) : null}
       <div className="p-6 sm:p-8">
         <p className="text-xs font-bold tracking-[0.16em] text-[#673de6] uppercase">
           {study.industry}
@@ -203,16 +245,9 @@ export function CaseStudyArticle({
           </Link>
         ) : null}
       </div>
-      {featured && study.image ? (
-        <div className="relative min-h-[220px] bg-gradient-to-br from-[#ede9fe] to-[#dbeafe] lg:min-h-full">
-          <Image
-            src={study.image}
-            alt={study.imageAlt || study.clientName}
-            fill
-            unoptimized={isRuntimeMediaSrc(study.image)}
-            className="object-cover object-top"
-            sizes="280px"
-          />
+      {hasImage && featured ? (
+        <div className="order-first lg:order-none">
+          <CaseStudyImage study={study} featured />
         </div>
       ) : null}
     </article>
@@ -308,7 +343,10 @@ export function CaseStudiesFaqSection({
   );
   if (!faqs.length) return null;
   return (
-    <section className="rounded-2xl border border-violet-100 bg-white p-6 sm:p-8">
+    <section
+      id="faq"
+      className="rounded-2xl border border-violet-100 bg-white p-6 sm:p-8"
+    >
       <h2 className="text-2xl font-extrabold text-[#1a1035]">
         Case studies FAQ
       </h2>

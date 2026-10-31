@@ -1,10 +1,9 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Building2, LineChart, Mail, Server, Sparkles } from "lucide-react";
 
-import type {
-  CmsCaseStudiesHubPageContent,
-  CmsCaseStudyEntry,
-} from "@/lib/orbit/case-studies-hub-page-content";
+import type { CmsCaseStudiesHubPageContent } from "@/lib/orbit/case-studies-hub-page-content";
+import { isRuntimeMediaSrc } from "@/lib/orbit/media-url";
 
 const ICONS = [LineChart, Building2, Server, Mail, Sparkles];
 
@@ -66,9 +65,22 @@ export function CaseStudiesPremiumHero({
                   key={item.id}
                   className="flex gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3"
                 >
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white/15">
-                    <Icon className="size-4" />
-                  </span>
+                  {item.image?.trim() ? (
+                    <span className="relative size-12 shrink-0 overflow-hidden rounded-lg ring-2 ring-white/20">
+                      <Image
+                        src={item.image}
+                        alt=""
+                        fill
+                        unoptimized={isRuntimeMediaSrc(item.image)}
+                        className="object-cover"
+                        sizes="48px"
+                      />
+                    </span>
+                  ) : (
+                    <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white/15">
+                      <Icon className="size-4" />
+                    </span>
+                  )}
                   <div className="min-w-0">
                     <p className="text-xs text-white/70">{item.industry}</p>
                     <p className="text-sm font-bold text-white">

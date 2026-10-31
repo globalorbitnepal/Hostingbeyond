@@ -3,6 +3,9 @@ import { TIPS_BASE } from "@/lib/blog/paths";
 
 export const CASE_STUDIES_BASE = "/resources/case-studies";
 
+/** Bump when default hub content (copy, images, FAQs) should replace stale CMS rows. */
+export const CASE_STUDIES_HUB_REVISION = 2;
+
 export type CmsCaseStudyMetric = {
   id: string;
   label: string;
@@ -51,6 +54,7 @@ export type CmsCaseStudiesHubPillar = {
 };
 
 export type CmsCaseStudiesHubPageContent = {
+  hubRevision?: number;
   seoTitle: string;
   seoDescription: string;
   heroEyebrow: string;
@@ -90,6 +94,7 @@ function metric(label: string, value: string): CmsCaseStudyMetric {
 
 export function defaultCaseStudiesHubPageContent(): CmsCaseStudiesHubPageContent {
   return {
+    hubRevision: CASE_STUDIES_HUB_REVISION,
     seoTitle:
       "HostingBeyond Case Studies | Web Hosting, Domains & Business Email Success Stories",
     seoDescription:
@@ -145,8 +150,8 @@ export function defaultCaseStudiesHubPageContent(): CmsCaseStudiesHubPageContent
           "We stopped firefighting plugins and started shipping campaigns. HostingBeyond gave us one dashboard for the store, the domain and the inbox.",
         quoteAuthor: "Jordan Ellis",
         quoteRole: "Co-founder, Northline Goods",
-        image: "/images/business-email/people/p-woman.jpg",
-        imageAlt: "E-commerce founder reviewing analytics",
+        image: "/images/hosting/ecommerce.jpg",
+        imageAlt: "E-commerce storefront and online retail workspace",
         href: routes.hosting,
       },
       {
@@ -174,8 +179,8 @@ export function defaultCaseStudiesHubPageContent(): CmsCaseStudiesHubPageContent
           "One login for domains, hosting and mail means our producers spend time on design, not credentials.",
         quoteAuthor: "Priya Nair",
         quoteRole: "Operations lead, Studio Meridian",
-        image: "/images/business-email/people/p-team.jpg",
-        imageAlt: "Agency team collaborating",
+        image: "/images/hosting/wordpress.jpg",
+        imageAlt: "WordPress and agency web design workflow",
         href: `${routes.hosting}/wordpress`,
       },
       {
@@ -203,8 +208,8 @@ export function defaultCaseStudiesHubPageContent(): CmsCaseStudiesHubPageContent
           "Patients notice when email comes from our domain. Setup was faster than our old IT retainer quoted.",
         quoteAuthor: "Dr. Elena Morales",
         quoteRole: "Medical director",
-        image: "/images/business-email/people/p-woman2.jpg",
-        imageAlt: "Healthcare professional at desk",
+        image: "/images/home/solutions/business-email.png",
+        imageAlt: "Professional business email on a custom domain",
         href: routes.businessEmail,
       },
       {
@@ -237,8 +242,8 @@ export function defaultCaseStudiesHubPageContent(): CmsCaseStudiesHubPageContent
           "Investors see a polished domain and inbox — the infrastructure story matches the product story.",
         quoteAuthor: "Tomás Ferreira",
         quoteRole: "CEO, Pulseboard",
-        image: "/images/business-email/people/p-man.jpg",
-        imageAlt: "SaaS founder presenting metrics",
+        image: "/images/home/solutions/cloud-hosting.png",
+        imageAlt: "Cloud hosting and scalable infrastructure",
         href: routes.cloud,
       },
     ],
@@ -293,6 +298,12 @@ export function defaultCaseStudiesHubPageContent(): CmsCaseStudiesHubPageContent
         question: "Where do I learn implementation details?",
         answer:
           "Visit the Tips & Guides hub for DNS, WordPress, email and security tutorials referenced in many case studies.",
+      },
+      {
+        id: "f5",
+        question: "Can I change case studies and images in Orbit?",
+        answer:
+          "Yes. Open Orbit → Blog → Case studies hub to edit every story, metric, FAQ, hero image URL and visibility. Save to publish on this page instantly.",
       },
     ],
     ctaEyebrow: "Write your success story",
