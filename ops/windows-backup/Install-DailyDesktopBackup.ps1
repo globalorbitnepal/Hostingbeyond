@@ -58,7 +58,22 @@ if (-not (Test-Path -LiteralPath "$fetchKey")) {
 }
 
 if (-not (Test-Path -LiteralPath $knownHosts)) {
-  ssh-keyscan -p 22 -H $SshHost 2>$null | Out-File -FilePath $knownHosts -Encoding ascii
+  $scanLines = @()
+  try {
+    $raw = ssh-keyscan -p 22 -H $SshHost 2>&1
+    foreach ($line in $raw) {
+      if ($line -match "^\S+\s+ssh-") {
+        $scanLines += [string]$line
+      }
+    }
+  }
+  catch {
+    Write-Host "WARN: ssh-keyscan failed: $($_.Exception.Message)"
+  }
+  if ($scanLines.Count -eq 0) {
+    throw "Could not build known_hosts for $SshHost — check DNS/network"
+  }
+  $scanLines | Out-File -FilePath $knownHosts -Encoding ascii
 }
 
 $ageIdentity = Join-Path $keys "backup-age-identity.txt"
