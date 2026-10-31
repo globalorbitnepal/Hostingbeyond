@@ -1,0 +1,162 @@
+#Requires -Version 5.1
+<#
+  One-shot Desktop daily backup setup (HostingBeyond).
+  Creates Desktop\hostingbeyond, SSH keys, age recipient file, config.json, scheduled task.
+  VPS still needs owner to append public keys + age recipient once (see generated VPS-OWNER-STEPS.txt).
+#>
+param(
+  [string]$BackupRoot = (Join-Path $env:USERPROFILE "Desktop\hostingbeyond"),
+  [string]$SshHost = "hosting.theglobalorbit.com",
+  [string]$RepoUrl = "https://github.com/globalorbitnepal/Hostingbeyond.git"
+)
+
+$ErrorActionPreference = "Stop"
+$tooling = Join-Path $BackupRoot "_tooling\Hostingbeyond"
+$winBackup = Join-Path $tooling "ops\windows-backup"
+
+function Ensure-Git {
+  if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+    throw "Install Git for Windows first: https://git-scm.com/download/win"
+  }
+}
+
+function Ensure-Age {
+  if (-not (Get-Command age -ErrorAction SilentlyContinue)) {
+    Write-Host "WARN: age not in PATH. Install from https://github.com/FiloSottile/age/releases"
+    Write-Host "      Backup pull requires age before first production run."
+    return $false
+  }
+  return $true
+}
+
+New-Item -ItemType Directory -Force -Path $BackupRoot | Out-Null
+@("backups", "current", "logs", "reports", "restore-tests", "keys") | ForEach-Object {
+  New-Item -ItemType Directory -Force -Path (Join-Path $BackupRoot $_) | Out-Null
+}
+
+Ensure-Git
+if (-not (Test-Path -LiteralPath (Join-Path $winBackup "Invoke-HostingBeyondBackup.ps1"))) {
+  New-Item -ItemType Directory -Force -Path (Split-Path $tooling -Parent) | Out-Null
+  if (Test-Path -LiteralPath $tooling) {
+    Remove-Item -LiteralPath $tooling -Recurse -Force
+  }
+  git clone --depth 1 --branch main $RepoUrl $tooling
+}
+
+. (Join-Path $winBackup "Setup-DesktopBackupLayout.ps1") -BackupRoot $BackupRoot
+
+$keys = Join-Path $BackupRoot "keys"
+$createKey = Join-Path $keys "hostingbeyond-backup-create_ed25519"
+$fetchKey = Join-Path $keys "hostingbeyond-backup-fetch_ed25519"
+$knownHosts = Join-Path $keys "known_hosts"
+
+if (-not (Test-Path -LiteralPath "$createKey")) {
+  ssh-keygen -t ed25519 -f $createKey -N '""' -C "hostingbeyond-backup-create"
+}
+if (-not (Test-Path -LiteralPath "$fetchKey")) {
+  ssh-keygen -t ed25519 -f $fetchKey -N '""' -C "hostingbeyond-backup-fetch"
+}
+
+if (-not (Test-Path -LiteralPath $knownHosts)) {
+  ssh-keyscan -p 22 -H $SshHost 2>$null | Out-File -FilePath $knownHosts -Encoding ascii
+}
+
+$ageIdentity = Join-Path $keys "backup-age-identity.txt"
+$ageRecipient = Join-Path $keys "backup-recipient.txt"
+if ((Get-Command age-keygen -ErrorAction SilentlyContinue) -and -not (Test-Path -LiteralPath $ageRecipient)) {
+  age-keygen -o $ageIdentity 2>&1 | Out-Null
+  Get-Content $ageIdentity | Select-String "^# public key:" -Context 0,1 | Out-Null
+  $pubLine = (Get-Content $ageIdentity | Where-Object { $_ -match "^age1" } | Select-Object -First 1)
+  if ($pubLine) {
+    $pubLine | Set-Content -LiteralPath $ageRecipient -Encoding ascii
+  }
+}
+
+$user = $env:USERNAME
+$escapedRoot = $BackupRoot -replace '\\', '\\'
+$configPath = Join-Path $BackupRoot "config.json"
+$config = @{
+  backupRoot = $BackupRoot
+  ssh = @{
+    host = $SshHost
+    user = "hostingbeyond"
+    port = 22
+    createIdentityFile = $createKey
+    fetchIdentityFile = $fetchKey
+    knownHostsFile = $knownHosts
+  }
+  schedule = @{
+    mode = "daily"
+    timeLocal = "23:00"
+    timeZoneNote = "Set Windows timezone to Kathmandu (UTC+05:45) for Nepal 11 PM"
+    dayOfWeek = "Sunday"
+  }
+  mirror = @{
+    enabled = $true
+    folderName = "current"
+  }
+  retention = @{
+    weeklyKeep = 8
+    monthlyKeep = 12
+  }
+  encryption = @{
+    enabled = $true
+    required = $true
+  }
+  restoreTest = @{
+    identityFile = $ageIdentity
+    runDecryptTestOnPull = $false
+  }
+  testMode = @{
+    syntheticOnly = $false
+  }
+  diskSpaceMinFreeGb = 50
+}
+$config | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $configPath -Encoding UTF8
+
+$registerScript = Join-Path $winBackup "Register-ScheduledTask.ps1"
+$invokeScript = Join-Path $winBackup "Invoke-HostingBeyondBackup.ps1"
+Copy-Item -LiteralPath (Join-Path $winBackup "templates\README-RECOVERY.md") `
+  -Destination (Join-Path $BackupRoot "README-RECOVERY.md") -Force -ErrorAction SilentlyContinue
+
+$vpsSteps = @"
+HostingBeyond — one-time VPS steps (owner or sysadmin on 51.15.21.166)
+
+1) As user hostingbeyond, install age PUBLIC recipient only:
+   mkdir -p ~/.config/hostingbeyond-backup
+   chmod 700 ~/.config/hostingbeyond-backup
+   Paste contents of: $ageRecipient
+   into ~/.config/hostingbeyond-backup/age-recipient.txt
+   chmod 600 ~/.config/hostingbeyond-backup/age-recipient.txt
+
+2) Append to /home/hostingbeyond/.ssh/authorized_keys:
+
+command="/srv/apps/hostingbeyond/ops/backup/production/ssh-forced-backup.sh",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty $(Get-Content "$createKey.pub")
+
+command="/srv/apps/hostingbeyond/ops/backup/production/ssh-forced-fetch.sh",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty $(Get-Content "$fetchKey.pub")
+
+3) In /srv/apps/hostingbeyond/.env (owner):
+   HOSTINGBEYOND_PRODUCTION_BACKUP_EXPORT_APPROVED=true
+
+4) Deploy latest main on VPS (git pull) so bundle scripts exist.
+
+5) Test from Windows:
+   powershell -ExecutionPolicy Bypass -File "$invokeScript" -ConfigPath "$configPath"
+
+Keep $ageIdentity OFF backup-only disk copies; store copy in password manager.
+"@
+$vpsSteps | Set-Content -LiteralPath (Join-Path $BackupRoot "VPS-OWNER-STEPS.txt") -Encoding UTF8
+
+$action = New-ScheduledTaskAction -Execute "powershell.exe" `
+  -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$invokeScript`" -ConfigPath `"$configPath`""
+$trigger = New-ScheduledTaskTrigger -Daily -At "23:00"
+$settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -MultipleInstances IgnoreNew `
+  -ExecutionTimeLimit (New-TimeSpan -Hours 8)
+Register-ScheduledTask -TaskName "HostingBeyond-DailyBackup" -Action $action -Trigger $trigger `
+  -Settings $settings -Description "HostingBeyond daily pull to $BackupRoot" -Force
+
+Write-Host ""
+Write-Host "Desktop backup folder ready: $BackupRoot"
+Write-Host "Scheduled: HostingBeyond-DailyBackup daily 23:00 local time."
+Write-Host "Complete VPS steps in: $(Join-Path $BackupRoot 'VPS-OWNER-STEPS.txt')"
+Write-Host "Set Windows timezone to Kathmandu for Nepal 11 PM."
