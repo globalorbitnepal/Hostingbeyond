@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { OrbitImageField } from "@/components/orbit/image-field";
 import {
@@ -11,6 +13,31 @@ import type {
   CmsBusinessEmailPageContent,
   CmsBusinessEmailPlan,
 } from "@/lib/orbit/business-email-page-content";
+import { routes } from "@/config/routes";
+
+export const BUSINESS_EMAIL_EDITOR_TABS = [
+  "hero",
+  "impression",
+  "pricing",
+  "ai",
+  "bands",
+  "reviews",
+  "support",
+  "faq",
+  "closing",
+] as const;
+
+export type BusinessEmailEditorTabId =
+  (typeof BUSINESS_EMAIL_EDITOR_TABS)[number];
+
+export function parseBusinessEmailEditorTab(
+  raw: string | null | undefined,
+): BusinessEmailEditorTabId {
+  if (raw && (BUSINESS_EMAIL_EDITOR_TABS as readonly string[]).includes(raw)) {
+    return raw as BusinessEmailEditorTabId;
+  }
+  return "hero";
+}
 
 function Field({
   label,
@@ -55,18 +82,26 @@ export function BusinessEmailProductPageEditor({
   value,
   onChange,
   onPersist,
+  saving = false,
 }: Props) {
-  const [tab, setTab] = useState<
-    | "hero"
-    | "impression"
-    | "pricing"
-    | "ai"
-    | "bands"
-    | "reviews"
-    | "support"
-    | "faq"
-    | "closing"
-  >("hero");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [tab, setTab] = useState<BusinessEmailEditorTabId>(() =>
+    parseBusinessEmailEditorTab(searchParams.get("tab")),
+  );
+
+  useEffect(() => {
+    setTab(parseBusinessEmailEditorTab(searchParams.get("tab")));
+  }, [searchParams]);
+
+  function selectTab(id: BusinessEmailEditorTabId) {
+    setTab(id);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", id);
+    router.replace(`/orbit/business-email?${params.toString()}`, {
+      scroll: false,
+    });
+  }
 
   function patch(next: Partial<CmsBusinessEmailPageContent>, persist = false) {
     const merged = { ...value, ...next };
@@ -80,20 +115,41 @@ export function BusinessEmailProductPageEditor({
     ["pricing", "Pricing"],
     ["ai", "AI & integrations"],
     ["bands", "Migrate & marketing"],
-    ["reviews", "Reviews"],
+    ["reviews", "Customer reviews"],
     ["support", "Support tiles"],
     ["faq", "FAQs"],
     ["closing", "Closing CTA"],
-  ] as const;
+  ] as const satisfies ReadonlyArray<
+    readonly [BusinessEmailEditorTabId, string]
+  >;
 
   return (
     <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5">
+      <div className="rounded-xl border border-violet-100 bg-violet-50/80 px-3 py-2.5 text-[12px] leading-relaxed text-violet-950">
+        <span className="font-bold">Testimonial cards</span> (quote, name,
+        avatar) on{" "}
+        <a
+          href={`${routes.businessEmail}#customer-reviews`}
+          className="underline"
+        >
+          /business-email
+        </a>{" "}
+        → open the{" "}
+        <button
+          type="button"
+          className="font-bold underline"
+          onClick={() => selectTab("reviews")}
+        >
+          Customer reviews
+        </button>{" "}
+        tab below.
+      </div>
       <div className="flex flex-wrap gap-2">
         {tabs.map(([id, label]) => (
           <button
             key={id}
             type="button"
-            onClick={() => setTab(id)}
+            onClick={() => selectTab(id)}
             className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
               tab === id
                 ? "bg-violet-600 text-white"
@@ -552,6 +608,29 @@ export function BusinessEmailProductPageEditor({
 
       {tab === "reviews" ? (
         <div className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm font-semibold text-slate-800">
+              Customer review cards ({value.reviews.length})
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href={`${routes.businessEmail}#customer-reviews`}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+              >
+                Preview on site
+              </Link>
+              <button
+                type="button"
+                disabled={saving}
+                className="rounded-lg bg-violet-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60"
+                onClick={() => onPersist(value)}
+              >
+                {saving ? "Saving…" : "Save reviews"}
+              </button>
+            </div>
+          </div>
           <Field
             label="Reviews heading"
             value={value.reviewsHeading}

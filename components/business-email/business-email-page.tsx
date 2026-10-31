@@ -309,7 +309,10 @@ export function BusinessEmailPageView({
         </div>
       </section>
 
-      <section className="hb-band-cream relative overflow-hidden py-16 sm:py-20">
+      <section
+        className="hb-band-cream relative overflow-hidden py-16 sm:py-20"
+        id="customer-reviews"
+      >
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(103,61,230,0.08),transparent_55%)]"

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import Link from "next/link";
 
 import { BusinessEmailProductPageEditor } from "@/components/orbit/business-email-product-page-editor";
 import {
@@ -8,8 +9,9 @@ import {
   type CmsBusinessEmailPageContent,
 } from "@/lib/orbit/business-email-page-content";
 import { readResponseError } from "@/lib/orbit/read-response-error";
+import { routes } from "@/config/routes";
 
-export default function OrbitBusinessEmailPage() {
+function OrbitBusinessEmailPageInner() {
   const [content, setContent] = useState<CmsBusinessEmailPageContent>(
     defaultBusinessEmailPageContent(),
   );
@@ -58,13 +60,23 @@ export default function OrbitBusinessEmailPage() {
         </h1>
         <p className="mt-1 text-sm text-slate-600">
           Edit the full{" "}
-          <a href="/business-email" className="text-violet-600 underline">
+          <a href={routes.businessEmail} className="text-violet-600 underline">
             /business-email
           </a>{" "}
           landing page. Slug:{" "}
           <code className="rounded bg-slate-100 px-1">
             business-email-product
           </code>
+        </p>
+        <p className="mt-2 text-sm text-slate-600">
+          Edit customer testimonial cards:{" "}
+          <Link
+            href="/orbit/business-email?tab=reviews"
+            className="font-semibold text-violet-700 underline"
+          >
+            Customer reviews
+          </Link>{" "}
+          (quote, name, photo per card).
         </p>
         {status ? (
           <p className="mt-2 text-sm text-slate-600">{status}</p>
@@ -85,5 +97,19 @@ export default function OrbitBusinessEmailPage() {
         {saving ? "Saving…" : "Save all"}
       </button>
     </div>
+  );
+}
+
+export default function OrbitBusinessEmailPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="mx-auto max-w-4xl py-8 text-sm text-slate-500">
+          Loading editor…
+        </div>
+      }
+    >
+      <OrbitBusinessEmailPageInner />
+    </Suspense>
   );
 }
