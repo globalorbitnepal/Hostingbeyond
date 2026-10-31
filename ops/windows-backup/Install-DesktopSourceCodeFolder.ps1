@@ -11,7 +11,8 @@ param(
   [string]$Desktop = [Environment]::GetFolderPath("Desktop"),
   [string]$RepoUrl = "https://github.com/globalorbitnepal/Hostingbeyond.git",
   [string]$SshHost = "hosting.theglobalorbit.com",
-  [string]$SshUser = "hostingbeyond"
+  [string]$SshUser = "hostingbeyond",
+  [switch]$TryPullEnvFromServer
 )
 
 $ErrorActionPreference = "Stop"
@@ -64,7 +65,7 @@ if (Test-Path -LiteralPath $example) {
 }
 $prodEnv = Join-Path $envDir "production.env.from-server.txt"
 $gotEnv = $false
-if (Get-Command scp -ErrorAction SilentlyContinue) {
+if ($TryPullEnvFromServer -and (Get-Command scp -ErrorAction SilentlyContinue)) {
   $remote = "${SshUser}@${SshHost}:/srv/apps/hostingbeyond/.env"
   Write-Host "    Trying SCP (needs your SSH key or password)..."
   $prev = $ErrorActionPreference
@@ -83,13 +84,17 @@ if (-not $gotEnv) {
   @(
     "production.env.from-server.txt yahan tab aayegi jab:"
     ""
-    "  WinSCP se server se download karo:"
-    "    Remote: /srv/apps/hostingbeyond/.env"
-    "    Save as: isi folder mein production.env.from-server.txt"
+    "  WinSCP (recommended) - server login sysadmin/developer se lo:"
+    "    Host: hosting.theglobalorbit.com"
+    "    User: hostingbeyond (ya jo unhone diya ho)"
+    "    Remote file: /srv/apps/hostingbeyond/.env"
+    "    Save here as: production.env.from-server.txt"
     ""
-    "  Ya KeePassXC mein rakho - is folder mein plain file mat chhodo agar PC shared hai."
+    "  SCP password yahan script mein mat dalo - backup SSH keys .env ke liye kaam nahi karte."
     ""
-    "Server: $SshUser@$SshHost"
+    "  Ya KeePassXC mein poori .env rakho (best)."
+    ""
+    "Server path: /srv/apps/hostingbeyond/.env"
   ) | Set-Content -LiteralPath $prodEnv -Encoding UTF8
 }
 
