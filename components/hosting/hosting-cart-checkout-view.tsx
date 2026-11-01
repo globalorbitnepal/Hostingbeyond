@@ -8,6 +8,7 @@ import { Check, Globe2, Loader2, Search, ShieldCheck } from "lucide-react";
 import { SiteHeader } from "@/components/layout/header";
 import { CheckoutCouponField } from "@/components/checkout/checkout-coupon-field";
 import { CheckoutStepNav } from "@/components/checkout/checkout-step-nav";
+import { SecureCheckoutPanel } from "@/components/checkout/secure-checkout-panel";
 import {
   formatAddonsReviewSummary,
   HostingCartAddonCards,
@@ -40,15 +41,6 @@ const BOOKING_NAV = [
   { id: 3, label: "Add-ons" },
   { id: 4, label: "Payment" },
 ] as const;
-
-function money(value: number, currency = "USD") {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value);
-}
 
 function parseBookingStep(raw: string | null): HostingBookingStep {
   if (
@@ -138,12 +130,13 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
   const step = parseBookingStep(searchParams.get("step"));
 
   const [quote, setQuote] = useState(props.initialQuote);
-  const formatQuoteAmount = (value: number) =>
-    quote.currency === "USD"
-      ? formatCatalogUsd(value)
-      : money(value, quote.currency);
+  const formatQuoteAmount = (value: number) => formatCatalogUsd(value);
   const [loading, setLoading] = useState(false);
-  const [held, setHeld] = useState(false);
+  const [checkoutBusy, setCheckoutBusy] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<{
+    tone: "success" | "error";
+    text: string;
+  } | null>(null);
   const [stepHint, setStepHint] = useState<string | null>(null);
   const [domainQuery, setDomainQuery] = useState(
     props.initialQuote.configuration.domainName ?? "",
@@ -156,6 +149,12 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
   );
 
   const intentQuery = serializeHostingPurchaseIntent(props.intent);
+  const loginHref = useMemo(() => {
+    const q = new URLSearchParams(intentQuery);
+    q.set("billing", quote.configuration.billingPeriod);
+    q.set("step", step);
+    return `${routes.login}?next=${encodeURIComponent(`/checkout/hosting?${q.toString()}`)}`;
+  }, [intentQuery, quote.configuration.billingPeriod, step]);
   const isAnnual = quote.configuration.billingPeriod === "annually";
   const domainChoice = quote.configuration.domainChoice ?? "later";
   const domainIncluded = domainChoice !== "later";
@@ -326,6 +325,95 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
     }
   }
 
+  function checkoutIdempotencyKey(): string {
+    const storageKey = "hb_hosting_order_idem";
+    try {
+      let value = sessionStorage.getItem(storageKey);
+      if (!value) {
+        value = crypto.randomUUID();
+        sessionStorage.setItem(storageKey, value);
+      }
+      return value;
+    } catch {
+      return crypto.randomUUID();
+    }
+  }
+
+  async function placeHostingOrder() {
+    if (!props.isLoggedIn) {
+      setStepHint("Sign in to place your hosting order.");
+      return;
+    }
+    if (quote.errors.length > 0) return;
+
+    setCheckoutBusy(true);
+    setStepHint(null);
+    setStatusMessage(null);
+    const idempotencyKey = checkoutIdempotencyKey();
+
+    try {
+      const orderRes = await fetch("/api/hosting/orders", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "Idempotency-Key": idempotencyKey,
+        },
+        body: JSON.stringify(quote.configuration),
+      });
+      const orderJson = (await orderRes.json()) as {
+        orderId?: string;
+        error?: string;
+      };
+      if (!orderRes.ok || !orderJson.orderId) {
+        setStatusMessage({
+          tone: "error",
+          text: orderJson.error ?? "Could not save your order. Try again.",
+        });
+        return;
+      }
+
+      if (props.hostingCheckoutPaymentAvailable) {
+        const payRes = await fetch(
+          `/api/hosting/orders/${orderJson.orderId}/checkout`,
+          {
+            method: "POST",
+            headers: { "Idempotency-Key": `${idempotencyKey}:pay` },
+          },
+        );
+        const payJson = (await payRes.json()) as {
+          checkoutUrl?: string;
+          error?: string;
+        };
+        if (!payRes.ok || !payJson.checkoutUrl) {
+          setStatusMessage({
+            tone: "error",
+            text:
+              payJson.error ??
+              "Order saved, but payment could not start. Open Hosting orders in your account to retry.",
+          });
+          return;
+        }
+        window.location.href = payJson.checkoutUrl;
+        return;
+      }
+
+      setStatusMessage({
+        tone: "success",
+        text: "Order saved to your account. We will notify you when online payment is available for this order.",
+      });
+      router.push(
+        `${routes.accountHostingOrders}?saved=${encodeURIComponent(orderJson.orderId)}`,
+      );
+    } catch {
+      setStatusMessage({
+        tone: "error",
+        text: "Something went wrong. Check your connection and try again.",
+      });
+    } finally {
+      setCheckoutBusy(false);
+    }
+  }
+
   function handleContinue() {
     if (step === "plan") {
       goStep("domain");
@@ -345,8 +433,14 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
       goStep("review");
       return;
     }
-    setHeld(true);
+    if (!props.isLoggedIn) {
+      router.push(loginHref);
+      return;
+    }
+    void placeHostingOrder();
   }
+
+  const busy = loading || checkoutBusy;
 
   const continueLabel =
     step === "plan"
@@ -354,10 +448,12 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
       : step === "domain"
         ? "Continue to add-ons"
         : step === "addons"
-          ? "Continue to review"
-          : held
-            ? "Booking saved"
-            : "Hold this booking";
+          ? "Continue to payment"
+          : !props.isLoggedIn
+            ? "Sign in to pay"
+            : props.hostingCheckoutPaymentAvailable
+              ? `Pay ${formatQuoteAmount(quote.total)} securely`
+              : `Save order · ${formatQuoteAmount(quote.total)}`;
 
   return (
     <div className="hb-checkout-premium hb-checkout-premium--hosting hb-hosting-booking relative">
@@ -786,60 +882,13 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
                 <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--hb-co-surface)] text-[var(--hb-co-primary)]">
                   <ShieldCheck className="size-5" aria-hidden />
                 </span>
-                <div className="min-w-0">
-                  <h1 className="font-heading text-[1.55rem] font-extrabold text-[var(--hb-co-royal)] sm:text-3xl">
-                    Secure payment
-                  </h1>
-                  <p className="mt-2 text-[14px] leading-relaxed text-[var(--hb-co-text-muted)]">
-                    Confirm who this booking is for. Card fields are Stripe
-                    sandbox only — nothing is charged until live mode is turned
-                    on.
-                  </p>
-                  <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                    <label className="text-[13px] font-semibold">
-                      Full name
-                      <input
-                        required
-                        className="mt-1 h-12 w-full rounded-xl border border-[var(--hb-co-border)] px-3"
-                        autoComplete="name"
-                      />
-                    </label>
-                    <label className="text-[13px] font-semibold">
-                      Email
-                      <input
-                        required
-                        type="email"
-                        className="mt-1 h-12 w-full rounded-xl border border-[var(--hb-co-border)] px-3"
-                        autoComplete="email"
-                      />
-                    </label>
-                    <label className="text-[13px] font-semibold sm:col-span-2">
-                      Address
-                      <input
-                        className="mt-1 h-12 w-full rounded-xl border border-[var(--hb-co-border)] px-3"
-                        autoComplete="street-address"
-                      />
-                    </label>
-                  </div>
-                  <div className="hb-checkout-premium__stripe mt-5">
-                    <p className="text-[12px] font-bold tracking-wide text-[var(--hb-co-text-muted)] uppercase">
-                      Card · Stripe sandbox
-                    </p>
-                    <div className="hb-checkout-premium__stripe-row mt-3">
-                      <input
-                        readOnly
-                        aria-label="Card number"
-                        placeholder="Card number"
-                      />
-                      <input
-                        readOnly
-                        aria-label="Expiry"
-                        placeholder="MM / YY"
-                      />
-                      <input readOnly aria-label="CVC" placeholder="CVC" />
-                    </div>
-                  </div>
-                </div>
+                <SecureCheckoutPanel
+                  productLabel="hosting"
+                  isLoggedIn={props.isLoggedIn}
+                  paymentAvailable={props.hostingCheckoutPaymentAvailable}
+                  loginHref={loginHref}
+                  className="flex-1"
+                />
               </div>
               <dl className="mt-6 space-y-4 text-[15px]">
                 <div className="flex justify-between gap-4 border-b border-[var(--hb-co-border)] pb-3">
@@ -861,13 +910,16 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
                   </dd>
                 </div>
               </dl>
-              {held ? (
+              {statusMessage ? (
                 <p
-                  className="mt-5 rounded-xl bg-[var(--hb-co-surface)] px-4 py-3 text-[14px] font-semibold text-[var(--hb-co-royal)]"
+                  className={`mt-5 rounded-xl px-4 py-3 text-[14px] font-semibold ${
+                    statusMessage.tone === "success"
+                      ? "bg-emerald-50 text-emerald-900"
+                      : "bg-red-50 text-red-900"
+                  }`}
                   role="status"
                 >
-                  Booking held. No charge today. Payment will be enabled in a
-                  later update.
+                  {statusMessage.text}
                 </p>
               ) : null}
               <div className="mt-5 flex flex-wrap gap-3">
@@ -953,11 +1005,11 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
             </p>
             <button
               type="button"
-              disabled={loading || quote.errors.length > 0 || held}
+              disabled={busy || quote.errors.length > 0}
               onClick={() => handleContinue()}
               className="hb-checkout-premium__cta mt-5 hidden w-full disabled:opacity-50 lg:inline-flex"
             >
-              {loading ? (
+              {busy ? (
                 <Loader2 className="size-5 animate-spin" />
               ) : (
                 continueLabel
@@ -1005,15 +1057,11 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
           ) : null}
           <button
             type="button"
-            disabled={loading || quote.errors.length > 0 || held}
+            disabled={busy || quote.errors.length > 0}
             onClick={() => handleContinue()}
             className="hb-checkout-premium__cta min-w-0 flex-1 disabled:opacity-50"
           >
-            {loading ? (
-              <Loader2 className="size-5 animate-spin" />
-            ) : (
-              continueLabel
-            )}
+            {busy ? <Loader2 className="size-5 animate-spin" /> : continueLabel}
           </button>
         </div>
       </div>

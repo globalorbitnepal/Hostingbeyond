@@ -19,9 +19,9 @@ import {
 } from "@/lib/orbit/content";
 
 export const metadata: Metadata = {
-  title: "Book Business Email — HostingBeyond",
+  title: "Business email checkout — HostingBeyond",
   description:
-    "Four-step HostingBeyond booking: mailbox plan, domain, add-ons, and payment.",
+    "Choose your mailbox plan, domain, and add-ons, then complete your order securely.",
   robots: { index: false, follow: true },
 };
 

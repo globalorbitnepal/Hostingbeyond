@@ -7,6 +7,7 @@ import { Check, Globe2, Loader2, Search, ShieldCheck } from "lucide-react";
 
 import { CheckoutCouponField } from "@/components/checkout/checkout-coupon-field";
 import { CheckoutStepNav } from "@/components/checkout/checkout-step-nav";
+import { SecureCheckoutPanel } from "@/components/checkout/secure-checkout-panel";
 import { SiteHeader } from "@/components/layout/header";
 import { useLocale } from "@/components/locale/locale-provider";
 import { routes } from "@/config/routes";
@@ -52,15 +53,6 @@ type DomainSearchResult = {
   status: string;
   priceFirstYear?: string;
 };
-
-function money(value: number, currency = "USD") {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value);
-}
 
 function parseBookingStep(raw: string | null): HostingBookingStep {
   if (
@@ -152,7 +144,10 @@ export function BusinessEmailCartCheckoutView(
   const [config, setConfig] = useState<EmailCartConfiguration>(() =>
     defaultEmailCartConfiguration(props.intent),
   );
-  const [held, setHeld] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<{
+    tone: "success" | "error";
+    text: string;
+  } | null>(null);
   const [stepHint, setStepHint] = useState<string | null>(null);
   const [domainQuery, setDomainQuery] = useState("");
   const [domainResults, setDomainResults] = useState<DomainSearchResult[]>([]);
@@ -173,12 +168,19 @@ export function BusinessEmailCartCheckoutView(
     [config, props.extras, props.hostingOffer, props.plan],
   );
 
-  const formatQuoteAmount = (value: number) =>
-    quote.currency === "USD"
-      ? formatCatalogUsd(value)
-      : money(value, quote.currency);
+  const formatQuoteAmount = (value: number) => formatCatalogUsd(value);
 
   const intentQuery = serializeEmailPurchaseIntent(props.intent);
+  const loginHref = useMemo(
+    () =>
+      `${routes.login}?next=${encodeURIComponent(
+        emailCheckoutPath(
+          { plan: props.intent.plan, term: props.intent.term },
+          step,
+        ),
+      )}`,
+    [props.intent.plan, props.intent.term, step],
+  );
   const domainChoice = config.domainChoice ?? "later";
   const domainIncluded = domainChoice !== "later";
   const termOptions = useMemo(
@@ -337,8 +339,20 @@ export function BusinessEmailCartCheckoutView(
       goStep("review");
       return;
     }
-    setHeld(true);
+    if (!props.isLoggedIn) {
+      router.push(loginHref);
+      return;
+    }
+    setStatusMessage({
+      tone: "success",
+      text: "Your business email order is saved. Contact support if you need help activating mailboxes before online checkout goes live.",
+    });
   }
+
+  const perMonth = emailPricePerMonthForTerm(props.plan, config.term);
+  const dueToday = quote.firstMonthFree
+    ? 0
+    : emailDueTodayForTerm(props.plan, config.term);
 
   const continueLabel =
     step === "plan"
@@ -347,14 +361,9 @@ export function BusinessEmailCartCheckoutView(
         ? "Continue to add-ons"
         : step === "addons"
           ? "Continue to payment"
-          : held
-            ? "Booking saved"
-            : "Hold this booking";
-
-  const perMonth = emailPricePerMonthForTerm(props.plan, config.term);
-  const dueToday = quote.firstMonthFree
-    ? 0
-    : emailDueTodayForTerm(props.plan, config.term);
+          : !props.isLoggedIn
+            ? "Sign in to complete order"
+            : `Complete order · ${formatQuoteAmount(dueToday)}`;
 
   return (
     <div className="hb-checkout-premium hb-checkout-premium--email hb-checkout-premium--hosting hb-hosting-booking relative">
@@ -816,53 +825,13 @@ export function BusinessEmailCartCheckoutView(
                 <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--hb-co-surface)] text-[var(--hb-co-primary)]">
                   <ShieldCheck className="size-5" aria-hidden />
                 </span>
-                <div className="min-w-0">
-                  <h1 className="font-heading text-[1.55rem] font-extrabold text-[var(--hb-co-royal)] sm:text-3xl">
-                    Secure payment
-                  </h1>
-                  <p className="mt-2 text-[14px] leading-relaxed text-[var(--hb-co-text-muted)]">
-                    {props.isLoggedIn
-                      ? "Confirm billing details. Card fields are Stripe sandbox only."
-                      : "Sign in from your account area before live checkout. Card fields are Stripe sandbox only."}
-                  </p>
-                  <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                    <label className="text-[13px] font-semibold">
-                      Full name
-                      <input
-                        required
-                        className="mt-1 h-12 w-full rounded-xl border border-[var(--hb-co-border)] px-3"
-                        autoComplete="name"
-                      />
-                    </label>
-                    <label className="text-[13px] font-semibold">
-                      Email
-                      <input
-                        required
-                        type="email"
-                        className="mt-1 h-12 w-full rounded-xl border border-[var(--hb-co-border)] px-3"
-                        autoComplete="email"
-                      />
-                    </label>
-                  </div>
-                  <div className="hb-checkout-premium__stripe mt-5">
-                    <p className="text-[12px] font-bold tracking-wide text-[var(--hb-co-text-muted)] uppercase">
-                      Card · Stripe sandbox
-                    </p>
-                    <div className="hb-checkout-premium__stripe-row mt-3">
-                      <input
-                        readOnly
-                        aria-label="Card number"
-                        placeholder="Card number"
-                      />
-                      <input
-                        readOnly
-                        aria-label="Expiry"
-                        placeholder="MM / YY"
-                      />
-                      <input readOnly aria-label="CVC" placeholder="CVC" />
-                    </div>
-                  </div>
-                </div>
+                <SecureCheckoutPanel
+                  productLabel="business email"
+                  isLoggedIn={props.isLoggedIn}
+                  paymentAvailable={false}
+                  loginHref={loginHref}
+                  className="flex-1"
+                />
               </div>
               <dl className="mt-6 space-y-4 text-[15px]">
                 <div className="flex justify-between gap-4 border-b border-[var(--hb-co-border)] pb-3">
@@ -888,13 +857,16 @@ export function BusinessEmailCartCheckoutView(
                   </dd>
                 </div>
               </dl>
-              {held ? (
+              {statusMessage ? (
                 <p
-                  className="mt-5 rounded-xl bg-[var(--hb-co-surface)] px-4 py-3 text-[14px] font-semibold text-[var(--hb-co-royal)]"
+                  className={`mt-5 rounded-xl px-4 py-3 text-[14px] font-semibold ${
+                    statusMessage.tone === "success"
+                      ? "bg-emerald-50 text-emerald-900"
+                      : "bg-red-50 text-red-900"
+                  }`}
                   role="status"
                 >
-                  Booking held. No charge today. Payment will be enabled in a
-                  later update.
+                  {statusMessage.text}
                 </p>
               ) : null}
             </section>
@@ -963,7 +935,7 @@ export function BusinessEmailCartCheckoutView(
             </p>
             <button
               type="button"
-              disabled={quote.errors.length > 0 || held}
+              disabled={quote.errors.length > 0}
               onClick={() => handleContinue()}
               className="hb-checkout-premium__cta mt-5 hidden w-full disabled:opacity-50 lg:inline-flex"
             >
@@ -1011,7 +983,7 @@ export function BusinessEmailCartCheckoutView(
           ) : null}
           <button
             type="button"
-            disabled={quote.errors.length > 0 || held}
+            disabled={quote.errors.length > 0}
             onClick={() => handleContinue()}
             className="hb-checkout-premium__cta min-w-0 flex-1 disabled:opacity-50"
           >
