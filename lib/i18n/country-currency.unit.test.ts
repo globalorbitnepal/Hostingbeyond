@@ -88,14 +88,20 @@ describe("country → display currency", () => {
 
   it("mentions a manual override instead of claiming the country default", () => {
     const note = currencyNoticeFor(resolveCountryDisplayCurrency("NP"), {
-      appliedCurrency: "USD",
+      appliedCurrency: "EUR",
     });
-    assert.match(note, /USD/);
+    assert.match(note, /EUR/);
     assert.match(note, /your choice/i);
   });
 
-  it("never implies a different checkout currency than USD", () => {
-    for (const country of ["NP", "US", "DE", "RU"]) {
+  it("charges in the selected currency when the provider supports it", () => {
+    const de = currencyNoticeFor(resolveCountryDisplayCurrency("DE"));
+    assert.match(de, /EUR/);
+    assert.match(de, /charged in EUR/i);
+  });
+
+  it("falls back to the settlement currency when the provider cannot charge it", () => {
+    for (const country of ["NP", "RU"]) {
       const note = currencyNoticeFor(resolveCountryDisplayCurrency(country));
       assert.match(note, /Checkout is charged in USD/);
     }

@@ -1,5 +1,5 @@
 import { getCountry } from "@/config/geo";
-import { CHECKOUT_SETTLE_CURRENCY } from "@/lib/payments/checkout-currency";
+import { resolveSettlementCurrency } from "@/lib/payments/settlement-currency";
 import {
   isConfiguredDisplayCurrency,
   normalizePublicDisplayCurrency,
@@ -117,15 +117,28 @@ export function resolveCountryDisplayCurrency(
  * prices are never mistaken for the amount actually charged.
  *
  * `appliedCurrency` is the currency actually rendering prices, which can differ
- * from the country's default after a manual pick.
+ * from the country's default after a manual pick. The checkout currency follows
+ * that choice whenever the payment provider supports it.
  */
 export function currencyNoticeFor(
   resolution: CountryCurrencyResolution,
   options: { checkoutCurrency?: string; appliedCurrency?: string } = {},
 ): string {
-  const checkoutCurrency = options.checkoutCurrency ?? CHECKOUT_SETTLE_CURRENCY;
   const applied = options.appliedCurrency ?? resolution.currency;
+  const checkoutCurrency = (
+    options.checkoutCurrency ?? resolveSettlementCurrency(applied)
+  ).toUpperCase();
+  const appliedUpper = applied.toUpperCase();
 
+  if (appliedUpper === checkoutCurrency) {
+    if (applied !== resolution.currency) {
+      return `Prices shown in ${applied} (your choice). You are charged in ${applied} at checkout.`;
+    }
+    if (resolution.exact) {
+      return `Prices shown in ${applied}. You are charged in ${applied} at checkout.`;
+    }
+    return `No ${resolution.requestedCurrency} price list is configured yet — prices shown in ${applied}. You are charged in ${applied} at checkout.`;
+  }
   if (applied !== resolution.currency) {
     return `Prices shown in ${applied} (your choice). Checkout is charged in ${checkoutCurrency}.`;
   }

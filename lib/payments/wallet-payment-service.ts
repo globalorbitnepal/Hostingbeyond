@@ -11,6 +11,16 @@ import {
   getStripeWebhookSecret,
   isStripeConfigured,
 } from "@/lib/payments/stripe-config";
+import {
+  fromProviderMinorUnits,
+  toProviderMinorUnits,
+} from "@/lib/payments/settlement-currency";
+import { sanitizePaymentFailureReason } from "@/lib/payments/sanitize-failure-reason";
+import { buildVerifiedStripeWebhookContext } from "@/lib/payments/stripe-webhook-pipeline";
+import {
+  planWalletCheckoutCompletedAction,
+  walletStripeCreditIdempotencyKey,
+} from "@/lib/payments/wallet-checkout-webhook";
 
 export type TopUpSessionResult =
   | {
@@ -32,11 +42,16 @@ export function isPaymentProviderConfigured(): boolean {
   return isStripeConfigured() && Boolean(getStripeWebhookSecret());
 }
 
+/**
+ * Wallet top-up is a USD ledger (domain costs settle in USD), so the charge
+ * currency stays USD regardless of the storefront display currency.
+ */
 export async function createWalletTopUpCheckoutSession(input: {
   userId: string;
   amount: number;
   idempotencyKey: string;
 }): Promise<TopUpSessionResult> {
+  const currency = "USD";
   const amount = normalizeTopUpAmount(input.amount);
   if (amount == null) {
     return {
@@ -80,7 +95,7 @@ export async function createWalletTopUpCheckoutSession(input: {
       publicId: publicId("WLT"),
       userId: input.userId,
       amount,
-      currency: "USD",
+      currency,
       status: "PENDING",
       idempotencyKey: input.idempotencyKey,
     },
@@ -95,8 +110,8 @@ export async function createWalletTopUpCheckoutSession(input: {
       {
         quantity: 1,
         price_data: {
-          currency: "usd",
-          unit_amount: Math.round(amount * 100),
+          currency: currency.toLowerCase(),
+          unit_amount: toProviderMinorUnits(amount, currency),
           product_data: {
             name: "HostingBeyond wallet top-up",
             description: "Add funds for domain registrations and renewals",
@@ -162,16 +177,19 @@ export async function processStripeWalletWebhook(input: {
     return { ok: false, error: "Invalid signature", status: 400 };
   }
 
-  switch (event.type) {
-    case "checkout.session.completed":
+  const webhookContext = buildVerifiedStripeWebhookContext(event);
+  void webhookContext.eventIdempotencyStorageKey;
+
+  switch (webhookContext.dispatch) {
+    case "checkout_completed":
       return handleCheckoutSessionCompleted(
         event.data.object as Stripe.Checkout.Session,
       );
-    case "checkout.session.expired":
+    case "checkout_expired":
       return handleCheckoutSessionExpired(
         event.data.object as Stripe.Checkout.Session,
       );
-    case "payment_intent.payment_failed":
+    case "payment_failed":
       return handlePaymentIntentFailed(
         event.data.object as Stripe.PaymentIntent,
       );
@@ -225,7 +243,9 @@ async function handlePaymentIntentFailed(
     where: { id: payment.id },
     data: {
       status: "FAILED",
-      failureReason: intent.last_payment_error?.message ?? "payment_failed",
+      failureReason: sanitizePaymentFailureReason(
+        intent.last_payment_error?.message,
+      ),
     },
   });
   return { ok: true, handled: true };
@@ -271,19 +291,21 @@ export function verifyPaidCheckoutForWallet(
   if (session.amount_total == null) {
     return { ok: false, reason: "missing_amount" };
   }
-  const paidAmount = session.amount_total / 100;
-  const expected = Number(payment.amount);
-  if (Math.abs(paidAmount - expected) > 0.001) {
+  const currency = (session.currency ?? "usd").toUpperCase();
+  const paidAmount = fromProviderMinorUnits(session.amount_total, currency);
+  if (Math.abs(paidAmount - Number(payment.amount)) > 0.001) {
     return { ok: false, reason: "amount_mismatch" };
   }
-  const currency = (session.currency ?? "usd").toUpperCase();
   if (currency !== payment.currency.toUpperCase()) {
     return { ok: false, reason: "currency_mismatch" };
   }
-  return { ok: true, paidAmount: expected };
+  return { ok: true, paidAmount: Number(payment.amount) };
 }
 
-/** Credits wallet only after Stripe session + amount + customer verified. */
+/**
+ * Dispatches a verified Checkout Session: hosting orders or wallet credit.
+ * Does not mark hosting ACTIVE (provisioning is a separate adapter).
+ */
 export async function handleCheckoutSessionCompleted(
   session: Stripe.Checkout.Session,
 ): Promise<WebhookProcessResult> {
@@ -316,13 +338,40 @@ export async function handleCheckoutSessionCompleted(
       ? session.payment_intent
       : (session.payment_intent?.id ?? null);
 
-  if (payment.status === "SUCCEEDED" && payment.walletTransactionId) {
+  const plan = planWalletCheckoutCompletedAction({
+    paymentStatus: payment.status,
+    paymentWalletTransactionId: payment.walletTransactionId,
+    sessionId: session.id,
+    paymentIntentId,
+  });
+
+  if (plan.action === "skip_duplicate") {
     return { ok: true, handled: true, duplicate: true };
   }
 
-  const creditKey = paymentIntentId
-    ? `stripe:credit:${paymentIntentId}`
-    : `stripe:session:${session.id}`;
+  if (plan.action === "reconcile") {
+    const existingTx = await prisma.walletTransaction.findUnique({
+      where: { idempotencyKey: plan.creditKey },
+    });
+    if (existingTx) {
+      await prisma.walletPayment.update({
+        where: { id: payment.id },
+        data: {
+          status: "SUCCEEDED",
+          providerCheckoutSessionId: session.id,
+          providerPaymentIntentId: paymentIntentId,
+          walletTransactionId: existingTx.id,
+          completedAt: payment.completedAt ?? new Date(),
+        },
+      });
+      return { ok: true, handled: true, duplicate: true };
+    }
+  }
+
+  const creditKey =
+    plan.action === "credit" || plan.action === "reconcile"
+      ? plan.creditKey
+      : walletStripeCreditIdempotencyKey(session.id, paymentIntentId);
 
   const tx = await creditWallet({
     userId: payment.userId,

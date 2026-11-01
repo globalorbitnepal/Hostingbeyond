@@ -63,10 +63,8 @@ import {
   resolveUsdToLocalRate,
   type DisplayCurrencyRateOverrides,
 } from "@/lib/pricing/display-rates";
-import {
-  CHECKOUT_SETTLE_CURRENCY,
-  buildCheckoutNote,
-} from "@/lib/payments/checkout-currency";
+import { buildCheckoutNote } from "@/lib/payments/checkout-currency";
+import { resolveSettlementCurrency } from "@/lib/payments/settlement-currency";
 
 type LocaleContextValue = {
   preferences: UserPreferences;
@@ -89,6 +87,10 @@ type LocaleContextValue = {
   currencyNotice: string;
   /** Short note under price blocks: which currency is charged at checkout. */
   checkoutNote: string;
+  /** Currency the payment provider will actually charge. */
+  settlementCurrency: string;
+  /** True when the charge currency equals the displayed price currency. */
+  chargesInSelectedCurrency: boolean;
   formatPrice: (productId: ProductPriceId) => string;
   formatCatalogUsd: (usdAmount: number) => string;
   t: {
@@ -275,9 +277,19 @@ export function LocaleProvider({
         window.location.pathname,
       );
       const nextPath = localizePublicPath(bare, resolved);
+      const current = window.location.pathname;
+      /**
+       * Same URL (e.g. switching between two languages served from one prefix)
+       * needs no navigation: commit state so the swap is instant.
+       */
+      if (nextPath === current) {
+        startTransition(() => setPreferences(normalized));
+        router.refresh();
+        return;
+      }
       window.location.assign(`${nextPath}${window.location.search}`);
     },
-    [enabledLanguageCodes, preferences],
+    [enabledLanguageCodes, preferences, router],
   );
 
   const applySelection = useCallback(
@@ -334,6 +346,7 @@ export function LocaleProvider({
 
   const value = useMemo<LocaleContextValue>(() => {
     const countryCurrency = resolveCountryDisplayCurrency(preferences.country);
+    const settlementCurrency = resolveSettlementCurrency(preferences.currency);
     return {
       preferences,
       dictionary,
@@ -351,12 +364,15 @@ export function LocaleProvider({
       countryCurrency,
       currencyNotice: currencyNoticeFor(countryCurrency, {
         appliedCurrency: preferences.currency,
-        checkoutCurrency: CHECKOUT_SETTLE_CURRENCY,
+        checkoutCurrency: settlementCurrency,
       }),
       checkoutNote: buildCheckoutNote(
         getDictionary(resolveUiCopyLanguage(preferences)).common,
         preferences.currency,
+        settlementCurrency,
       ),
+      settlementCurrency,
+      chargesInSelectedCurrency: settlementCurrency === preferences.currency,
       t: {
         nav: dictionary.nav,
         locale: dictionary.locale,

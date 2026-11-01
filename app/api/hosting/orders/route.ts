@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 
 import { requireCustomerSession } from "@/lib/domains/require-customer";
 import { parseCartBody, quoteHostingCart } from "@/lib/hosting/cart/pricing";
+import { settleHostingQuote } from "@/lib/hosting/cart/settlement";
 import { upsertHostingDraftOrder } from "@/lib/hosting/hosting-orders";
+import { settlementForRequest } from "@/lib/payments/request-settlement";
 
 export const runtime = "nodejs";
 
@@ -57,10 +59,13 @@ export async function POST(request: Request) {
     );
   }
 
+  const { currency, rate } = await settlementForRequest();
+
   const order = await upsertHostingDraftOrder({
     userId: user.id,
     quote,
     status: "DRAFT",
+    settlement: settleHostingQuote(quote, currency, rate),
   });
 
   return NextResponse.json({ orderId: order.id, quote });

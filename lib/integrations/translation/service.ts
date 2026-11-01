@@ -1,4 +1,7 @@
-import { shouldSkipCloudTranslation } from "@/lib/integrations/translation/skip-policy";
+import {
+  readTranslationCache,
+  writeTranslationCache,
+} from "@/lib/integrations/translation/cache";
 import {
   translateTextsWithGoogleCloud,
   type CloudTranslateFn,
@@ -6,12 +9,45 @@ import {
 } from "@/lib/integrations/translation/google-cloud";
 import { translateTextsWithGoogleGtx } from "@/lib/integrations/translation/google-gtx";
 import { translateTextsWithMyMemory } from "@/lib/integrations/translation/google-mymemory";
+import { shouldSkipCloudTranslation } from "@/lib/integrations/translation/skip-policy";
 
 export type PreparedTranslation = {
   original: string;
   translated: string;
   skipped: boolean;
 };
+
+type ProviderResult = { ok: true; translations: string[] };
+
+/**
+ * Provider order: paid Cloud Translation when configured, then the batched
+ * public Google endpoint (fast, no key), then MyMemory as a last resort.
+ */
+async function runProviders(
+  texts: string[],
+  targetLanguage: string,
+  env: Record<string, string | undefined>,
+  translateFn?: CloudTranslateFn,
+): Promise<
+  ProviderResult | { ok: false; code: GoogleCloudTranslateErrorCode }
+> {
+  const cloud = await translateTextsWithGoogleCloud(
+    texts,
+    targetLanguage,
+    env,
+    translateFn,
+  );
+  if (cloud.ok) return cloud;
+  if (translateFn) return cloud;
+
+  const gtx = await translateTextsWithGoogleGtx(texts, targetLanguage);
+  if (gtx.ok) return gtx;
+
+  const memory = await translateTextsWithMyMemory(texts, targetLanguage);
+  if (memory.ok) return memory;
+
+  return cloud.ok ? cloud : { ok: false, code: cloud.code };
+}
 
 export async function prepareCloudTranslations(
   texts: readonly string[],
@@ -30,42 +66,50 @@ export async function prepareCloudTranslations(
     translated: original,
     skipped: shouldSkipCloudTranslation(original),
   }));
+
+  /** Memo hits (repeat navigation) skip the upstream call entirely. */
+  const memo = new Map<string, string>();
+  for (const item of items) {
+    if (item.skipped) continue;
+    const hit = readTranslationCache(targetLanguage, item.original);
+    if (hit) memo.set(item.original, hit);
+  }
+
   const pendingIndexes = items
-    .map((item, index) => (item.skipped ? -1 : index))
+    .map((item, index) =>
+      item.skipped || memo.has(item.original) ? -1 : index,
+    )
     .filter((index) => index >= 0);
+
   if (pendingIndexes.length === 0) {
+    for (const item of items) {
+      const hit = memo.get(item.original);
+      if (hit) item.translated = hit;
+    }
     return { ok: true, items };
   }
+
   const pendingTexts = pendingIndexes.map((index) => items[index]!.original);
-  const result = await translateTextsWithGoogleCloud(
+  const resolved = await runProviders(
     pendingTexts,
     targetLanguage,
     env,
     translateFn,
   );
-  let resolved = result;
-  if (!resolved.ok && !translateFn) {
-    const memory = await translateTextsWithMyMemory(
-      pendingTexts,
-      targetLanguage,
-    );
-    if (memory.ok) resolved = memory;
-    if (!resolved.ok) {
-      const gtx = await translateTextsWithGoogleGtx(
-        pendingTexts,
-        targetLanguage,
-      );
-      if (gtx.ok) resolved = gtx;
-    }
-  }
   if (!resolved.ok) return resolved;
+
   pendingIndexes.forEach((itemIndex, i) => {
-    const translated = resolved.translations[i] ?? items[itemIndex]!.original;
-    items[itemIndex] = {
-      original: items[itemIndex]!.original,
-      translated,
-      skipped: false,
-    };
+    const original = items[itemIndex]!.original;
+    const translated = resolved.translations[i] ?? original;
+    items[itemIndex] = { original, translated, skipped: false };
+    if (translated && translated !== original) {
+      writeTranslationCache(targetLanguage, original, translated);
+    }
   });
+
+  for (const item of items) {
+    const hit = memo.get(item.original);
+    if (hit) item.translated = hit;
+  }
   return { ok: true, items };
 }

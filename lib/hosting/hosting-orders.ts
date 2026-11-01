@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 import { buildOrderSnapshot } from "./cart/snapshot";
 import type { HostingCartQuote } from "./cart/types";
+import type { SettledHostingQuote } from "./cart/settlement";
 import { canTransitionHostingOrderStatus } from "./provisioning";
 
 const DRAFT_TTL_HOURS = 72;
@@ -12,13 +13,16 @@ export type CreateHostingOrderInput = {
   userId: string | null;
   quote: HostingCartQuote;
   status?: HostingOrderStatus;
+  /** Charge currency + converted totals; defaults to the quote's own currency. */
+  settlement?: SettledHostingQuote;
 };
 
 export async function upsertHostingDraftOrder(input: CreateHostingOrderInput) {
   const { quote, userId } = input;
   const status = input.status ?? "DRAFT";
   const expiresAt = new Date(Date.now() + DRAFT_TTL_HOURS * 60 * 60 * 1000);
-  const snapshot = buildOrderSnapshot(quote);
+  const settlement = input.settlement ?? null;
+  const snapshot = buildOrderSnapshot(quote, settlement);
 
   const data = {
     userId,
@@ -28,11 +32,11 @@ export async function upsertHostingDraftOrder(input: CreateHostingOrderInput) {
     billingCycle: quote.configuration.billingPeriod,
     configuration: quote.configuration as Prisma.InputJsonValue,
     lineItemsSnapshot: snapshot as Prisma.InputJsonValue,
-    currency: quote.currency,
-    subtotal: quote.subtotal,
-    discount: quote.discount,
-    tax: quote.tax,
-    total: quote.total,
+    currency: settlement?.currency ?? quote.currency,
+    subtotal: settlement?.subtotal ?? quote.subtotal,
+    discount: settlement?.discount ?? quote.discount,
+    tax: settlement?.tax ?? quote.tax,
+    total: settlement?.total ?? quote.total,
     expiresAt,
   };
 

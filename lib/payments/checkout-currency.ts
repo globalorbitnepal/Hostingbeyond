@@ -1,20 +1,19 @@
+import {
+  defaultSettlementCurrency,
+  resolveSettlementCurrency,
+} from "@/lib/payments/settlement-currency";
+
 /**
  * Checkout settlement copy.
  *
- * Storefront prices are displayed in the visitor's currency, but the payment
- * provider settles in a single currency today. Keep that fact in one place so
- * every pricing surface states it the same way — and leads with the currency the
- * visitor actually selected.
+ * Storefront prices are displayed in the visitor's currency. When the payment
+ * provider can charge that currency, the note simply states it. Otherwise the
+ * note discloses the currency that will actually be charged — it never implies a
+ * charge in a currency the provider cannot settle.
  */
 
-/**
- * Currency the payment provider actually charges today.
- * Override with `NEXT_PUBLIC_CHECKOUT_CURRENCY` once a local-currency gateway
- * (for example NPR) is live, without touching any copy.
- */
-export const CHECKOUT_SETTLE_CURRENCY = (
-  process.env.NEXT_PUBLIC_CHECKOUT_CURRENCY || "USD"
-).toUpperCase();
+/** Fallback charge currency from environment (per-currency resolution lives below). */
+export const CHECKOUT_SETTLE_CURRENCY = defaultSettlementCurrency();
 
 export type CheckoutNoteCopy = {
   /** e.g. "Charged in {currency} at checkout." */
@@ -26,22 +25,27 @@ export type CheckoutNoteCopy = {
 /**
  * Sentence shown under a price block.
  *
- * When the selected currency is also the settlement currency we only state the
- * charge. Otherwise the selected currency leads and the settlement currency is
- * disclosed after it, so the note never contradicts the prices above it.
+ * `settleCurrency` defaults to the provider's currency for `selectedCurrency`,
+ * so the note follows the visitor's selection instead of a single fixed code.
  */
 export function buildCheckoutNote(
   copy: CheckoutNoteCopy,
   selectedCurrency: string,
-  settleCurrency: string = CHECKOUT_SETTLE_CURRENCY,
+  settleCurrency?: string,
 ): string {
-  const selected = (selectedCurrency || settleCurrency).toUpperCase();
-  const settle = (settleCurrency || "USD").toUpperCase();
+  const selected = (selectedCurrency || "USD").toUpperCase();
+  const settle = (
+    settleCurrency || resolveSettlementCurrency(selected)
+  ).toUpperCase();
 
   if (selected === settle) {
-    return copy.chargedInCheckout.replace(/\{currency\}/g, settle);
+    return copy.chargedInCheckout
+      .replace(/\{currency\}/g, settle)
+      .replace(/\{local\}/g, settle)
+      .replace(/\{checkout\}/g, settle);
   }
   return copy.chargedInLocalCheckout
     .replace(/\{local\}/g, selected)
+    .replace(/\{currency\}/g, settle)
     .replace(/\{checkout\}/g, settle);
 }

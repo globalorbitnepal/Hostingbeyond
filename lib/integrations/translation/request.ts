@@ -4,7 +4,12 @@ import { googleTranslateIncludedLanguages } from "@/lib/i18n/website-languages";
 
 export const TRANSLATE_MAX_STRINGS = 40;
 export const TRANSLATE_MAX_CHARS_EACH = 500;
-export const TRANSLATE_MAX_CHARS_TOTAL = 6_000;
+
+/**
+ * A full storefront page can carry well over 6k characters of copy. Keep a
+ * generous ceiling so one request covers a page, while still bounding abuse.
+ */
+export const TRANSLATE_MAX_CHARS_TOTAL = 20_000;
 
 const allowedTargets = new Set(
   googleTranslateIncludedLanguages()

@@ -42,7 +42,7 @@ describe("cloudTranslateRequestSchema", () => {
     });
     assert.equal(tooMany.success, false);
     assert.ok(
-      totalTranslateChars(["a".repeat(3000), "b".repeat(3001)]) >
+      totalTranslateChars(["a".repeat(10_000), "b".repeat(10_001)]) >
         TRANSLATE_MAX_CHARS_TOTAL,
     );
   });

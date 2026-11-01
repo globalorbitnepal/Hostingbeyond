@@ -4,16 +4,26 @@ import type Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
 import { getAppBaseUrl, getStripeClient } from "@/lib/payments/stripe-config";
 import {
+  fromProviderMinorUnits,
+  toProviderMinorUnits,
+} from "@/lib/payments/settlement-currency";
+import {
   isPaymentProviderConfigured,
   type WebhookProcessResult,
 } from "@/lib/payments/wallet-payment-service";
 import { quoteHostingCart } from "@/lib/hosting/cart/pricing";
+import { settleHostingQuote } from "@/lib/hosting/cart/settlement";
 import type { HostingCartConfiguration } from "@/lib/hosting/cart/types";
+import { getSiteSettings } from "@/lib/orbit/content";
+import { resolveUsdToLocalRate } from "@/lib/pricing/display-rates";
+import type { CurrencyCode } from "@/config/pricing";
 import {
   decideHostingCheckoutCompletedWebhook,
   shouldMarkHostingCheckoutExpired,
   shouldMarkHostingCheckoutFailed,
 } from "@/lib/hosting/hosting-order-checkout-policy";
+import { sanitizePaymentFailureReason } from "@/lib/payments/sanitize-failure-reason";
+import { attemptHostingProvision } from "@/lib/hosting/provision-orchestration";
 
 export function isHostingCheckoutPaymentAvailable(): boolean {
   return isPaymentProviderConfigured();
@@ -51,12 +61,12 @@ export function verifyPaidCheckoutForHostingOrder(
   if (session.amount_total == null) {
     return { ok: false, reason: "missing_amount" };
   }
-  const paidAmount = session.amount_total / 100;
+  const currency = (session.currency ?? "usd").toUpperCase();
+  const paidAmount = fromProviderMinorUnits(session.amount_total, currency);
   const expected = Number(order.total);
   if (Math.abs(paidAmount - expected) > 0.001) {
     return { ok: false, reason: "amount_mismatch" };
   }
-  const currency = (session.currency ?? "usd").toUpperCase();
   if (currency !== order.currency.toUpperCase()) {
     return { ok: false, reason: "currency_mismatch" };
   }
@@ -160,7 +170,16 @@ export async function createHostingOrderStripeCheckout(
           error: quote.errors.join(" "),
         };
       }
-      if (Math.abs(quote.total - Number(order.total)) > 0.01) {
+
+      const orderCurrency = (order.currency || "USD").toUpperCase();
+      const settings = await getSiteSettings();
+      const rate = resolveUsdToLocalRate(
+        orderCurrency as CurrencyCode,
+        settings.displayCurrencyRates,
+      );
+      const settled = settleHostingQuote(quote, orderCurrency, rate);
+      /** The stored total must still match a fresh quote in the same currency. */
+      if (Math.abs(settled.total - Number(order.total)) > 0.01) {
         return {
           ok: false,
           status: 409,
@@ -234,7 +253,11 @@ export async function createHostingOrderStripeCheckout(
       }
 
       const base = getAppBaseUrl();
-      const amountCents = Math.round(Number(order.total) * 100);
+      const chargeCurrency = (order.currency || "USD").toUpperCase();
+      const amountMinor = toProviderMinorUnits(
+        Number(order.total),
+        chargeCurrency,
+      );
       const snap = order.lineItemsSnapshot as { planName?: string } | null;
       const productLabel =
         snap?.planName ?? `${order.productSlug} · ${order.planKey}`;
@@ -246,8 +269,8 @@ export async function createHostingOrderStripeCheckout(
             {
               quantity: 1,
               price_data: {
-                currency: order.currency.toLowerCase(),
-                unit_amount: amountCents,
+                currency: chargeCurrency.toLowerCase(),
+                unit_amount: amountMinor,
                 product_data: {
                   name: `HostingBeyond — ${productLabel}`,
                   description: `Web hosting order (${order.billingCycle})`,
@@ -380,6 +403,12 @@ export async function handleHostingOrderCheckoutCompleted(
   });
 
   if (decision.action === "duplicate") {
+    await attemptHostingProvision({
+      orderId: order.id,
+      orderStatus: order.status,
+      paymentReference: order.paymentReference,
+      webhookOutcome: { handled: true, duplicate: true },
+    });
     return { ok: true, handled: true, duplicate: true };
   }
 
@@ -458,11 +487,30 @@ export async function handleHostingOrderCheckoutCompleted(
   });
 
   if (updated === "duplicate") {
+    const paidOrder = await prisma.hostingOrder.findUnique({
+      where: { id: order.id },
+      select: { status: true, paymentReference: true },
+    });
+    if (paidOrder?.status === "PAID") {
+      await attemptHostingProvision({
+        orderId: order.id,
+        orderStatus: paidOrder.status,
+        paymentReference: paidOrder.paymentReference,
+        webhookOutcome: { handled: true, duplicate: true },
+      });
+    }
     return { ok: true, handled: true, duplicate: true };
   }
   if (updated === "conflict") {
     return { ok: false, error: "order_state_conflict", status: 409 };
   }
+
+  await attemptHostingProvision({
+    orderId: order.id,
+    orderStatus: "PAID",
+    paymentReference: paidRef,
+    webhookOutcome: { handled: true, duplicate: false },
+  });
 
   return { ok: true, handled: true };
 }
@@ -563,7 +611,9 @@ export async function handleHostingOrderPaymentIntentFailed(
     return { ok: true, handled: true };
   }
 
-  const reason = intent.last_payment_error?.message ?? "payment_failed";
+  const reason = sanitizePaymentFailureReason(
+    intent.last_payment_error?.message,
+  );
 
   await prisma.$transaction(async (tx) => {
     await tx.hostingOrderCheckout.update({

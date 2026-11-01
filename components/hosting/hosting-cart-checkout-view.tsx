@@ -9,11 +9,12 @@ import { SiteHeader } from "@/components/layout/header";
 import { CheckoutCouponField } from "@/components/checkout/checkout-coupon-field";
 import { CheckoutStepNav } from "@/components/checkout/checkout-step-nav";
 import { SecureCheckoutPanel } from "@/components/checkout/secure-checkout-panel";
+import { useLocale } from "@/components/locale/locale-provider";
 import {
   formatAddonsReviewSummary,
   HostingCartAddonCards,
 } from "@/components/hosting/hosting-cart-addon-cards";
-import { useLocale } from "@/components/locale/locale-provider";
+import { CheckoutNote } from "@/components/i18n/checkout-note";
 import { routes } from "@/config/routes";
 import type { CartAddonUiModel } from "@/lib/hosting/addons/load-cart-ui";
 import {
@@ -1000,9 +1001,10 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
               </span>
             </div>
             <CheckoutCouponField className="mt-4" />
-            <p className="mt-2 text-[12px] text-[var(--hb-co-text-muted)]">
-              {checkoutNote}
-            </p>
+            <CheckoutNote
+              text={checkoutNote}
+              className="mt-2 text-[12px] text-[var(--hb-co-text-muted)]"
+            />
             <button
               type="button"
               disabled={busy || quote.errors.length > 0}

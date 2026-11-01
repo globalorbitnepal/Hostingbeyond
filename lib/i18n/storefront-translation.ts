@@ -1,4 +1,3 @@
-import type { LanguageCode } from "@/config/geo";
 import { GOOGLE_PAGE_LANGUAGE } from "@/lib/i18n/google-translate-client";
 import { appLanguageForGoogle } from "@/lib/i18n/hostinger-locale-markets";
 import {
