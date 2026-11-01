@@ -22,8 +22,6 @@ import {
   shouldMarkHostingCheckoutExpired,
   shouldMarkHostingCheckoutFailed,
 } from "@/lib/hosting/hosting-order-checkout-policy";
-import { sanitizePaymentFailureReason } from "@/lib/payments/sanitize-failure-reason";
-import { attemptHostingProvision } from "@/lib/hosting/provision-orchestration";
 
 export function isHostingCheckoutPaymentAvailable(): boolean {
   return isPaymentProviderConfigured();
@@ -170,7 +168,6 @@ export async function createHostingOrderStripeCheckout(
           error: quote.errors.join(" "),
         };
       }
-
       const orderCurrency = (order.currency || "USD").toUpperCase();
       const settings = await getSiteSettings();
       const rate = resolveUsdToLocalRate(
@@ -403,12 +400,6 @@ export async function handleHostingOrderCheckoutCompleted(
   });
 
   if (decision.action === "duplicate") {
-    await attemptHostingProvision({
-      orderId: order.id,
-      orderStatus: order.status,
-      paymentReference: order.paymentReference,
-      webhookOutcome: { handled: true, duplicate: true },
-    });
     return { ok: true, handled: true, duplicate: true };
   }
 
@@ -487,30 +478,11 @@ export async function handleHostingOrderCheckoutCompleted(
   });
 
   if (updated === "duplicate") {
-    const paidOrder = await prisma.hostingOrder.findUnique({
-      where: { id: order.id },
-      select: { status: true, paymentReference: true },
-    });
-    if (paidOrder?.status === "PAID") {
-      await attemptHostingProvision({
-        orderId: order.id,
-        orderStatus: paidOrder.status,
-        paymentReference: paidOrder.paymentReference,
-        webhookOutcome: { handled: true, duplicate: true },
-      });
-    }
     return { ok: true, handled: true, duplicate: true };
   }
   if (updated === "conflict") {
     return { ok: false, error: "order_state_conflict", status: 409 };
   }
-
-  await attemptHostingProvision({
-    orderId: order.id,
-    orderStatus: "PAID",
-    paymentReference: paidRef,
-    webhookOutcome: { handled: true, duplicate: false },
-  });
 
   return { ok: true, handled: true };
 }
@@ -611,9 +583,7 @@ export async function handleHostingOrderPaymentIntentFailed(
     return { ok: true, handled: true };
   }
 
-  const reason = sanitizePaymentFailureReason(
-    intent.last_payment_error?.message,
-  );
+  const reason = intent.last_payment_error?.message ?? "payment_failed";
 
   await prisma.$transaction(async (tx) => {
     await tx.hostingOrderCheckout.update({

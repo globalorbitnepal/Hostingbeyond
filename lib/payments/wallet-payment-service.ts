@@ -15,12 +15,6 @@ import {
   fromProviderMinorUnits,
   toProviderMinorUnits,
 } from "@/lib/payments/settlement-currency";
-import { sanitizePaymentFailureReason } from "@/lib/payments/sanitize-failure-reason";
-import { buildVerifiedStripeWebhookContext } from "@/lib/payments/stripe-webhook-pipeline";
-import {
-  planWalletCheckoutCompletedAction,
-  walletStripeCreditIdempotencyKey,
-} from "@/lib/payments/wallet-checkout-webhook";
 
 export type TopUpSessionResult =
   | {
@@ -177,19 +171,16 @@ export async function processStripeWalletWebhook(input: {
     return { ok: false, error: "Invalid signature", status: 400 };
   }
 
-  const webhookContext = buildVerifiedStripeWebhookContext(event);
-  void webhookContext.eventIdempotencyStorageKey;
-
-  switch (webhookContext.dispatch) {
-    case "checkout_completed":
+  switch (event.type) {
+    case "checkout.session.completed":
       return handleCheckoutSessionCompleted(
         event.data.object as Stripe.Checkout.Session,
       );
-    case "checkout_expired":
+    case "checkout.session.expired":
       return handleCheckoutSessionExpired(
         event.data.object as Stripe.Checkout.Session,
       );
-    case "payment_failed":
+    case "payment_intent.payment_failed":
       return handlePaymentIntentFailed(
         event.data.object as Stripe.PaymentIntent,
       );
@@ -243,9 +234,7 @@ async function handlePaymentIntentFailed(
     where: { id: payment.id },
     data: {
       status: "FAILED",
-      failureReason: sanitizePaymentFailureReason(
-        intent.last_payment_error?.message,
-      ),
+      failureReason: intent.last_payment_error?.message ?? "payment_failed",
     },
   });
   return { ok: true, handled: true };
@@ -293,19 +282,17 @@ export function verifyPaidCheckoutForWallet(
   }
   const currency = (session.currency ?? "usd").toUpperCase();
   const paidAmount = fromProviderMinorUnits(session.amount_total, currency);
-  if (Math.abs(paidAmount - Number(payment.amount)) > 0.001) {
+  const expected = Number(payment.amount);
+  if (Math.abs(paidAmount - expected) > 0.001) {
     return { ok: false, reason: "amount_mismatch" };
   }
   if (currency !== payment.currency.toUpperCase()) {
     return { ok: false, reason: "currency_mismatch" };
   }
-  return { ok: true, paidAmount: Number(payment.amount) };
+  return { ok: true, paidAmount: expected };
 }
 
-/**
- * Dispatches a verified Checkout Session: hosting orders or wallet credit.
- * Does not mark hosting ACTIVE (provisioning is a separate adapter).
- */
+/** Credits wallet only after Stripe session + amount + customer verified. */
 export async function handleCheckoutSessionCompleted(
   session: Stripe.Checkout.Session,
 ): Promise<WebhookProcessResult> {
@@ -338,40 +325,13 @@ export async function handleCheckoutSessionCompleted(
       ? session.payment_intent
       : (session.payment_intent?.id ?? null);
 
-  const plan = planWalletCheckoutCompletedAction({
-    paymentStatus: payment.status,
-    paymentWalletTransactionId: payment.walletTransactionId,
-    sessionId: session.id,
-    paymentIntentId,
-  });
-
-  if (plan.action === "skip_duplicate") {
+  if (payment.status === "SUCCEEDED" && payment.walletTransactionId) {
     return { ok: true, handled: true, duplicate: true };
   }
 
-  if (plan.action === "reconcile") {
-    const existingTx = await prisma.walletTransaction.findUnique({
-      where: { idempotencyKey: plan.creditKey },
-    });
-    if (existingTx) {
-      await prisma.walletPayment.update({
-        where: { id: payment.id },
-        data: {
-          status: "SUCCEEDED",
-          providerCheckoutSessionId: session.id,
-          providerPaymentIntentId: paymentIntentId,
-          walletTransactionId: existingTx.id,
-          completedAt: payment.completedAt ?? new Date(),
-        },
-      });
-      return { ok: true, handled: true, duplicate: true };
-    }
-  }
-
-  const creditKey =
-    plan.action === "credit" || plan.action === "reconcile"
-      ? plan.creditKey
-      : walletStripeCreditIdempotencyKey(session.id, paymentIntentId);
+  const creditKey = paymentIntentId
+    ? `stripe:credit:${paymentIntentId}`
+    : `stripe:session:${session.id}`;
 
   const tx = await creditWallet({
     userId: payment.userId,
