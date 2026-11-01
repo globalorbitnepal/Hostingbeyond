@@ -62,20 +62,20 @@ describe("locale preference parsing", () => {
     assert.equal(prefs.currency, "NPR");
   });
 
-  it("keeps Hindi Google Translate for India while HTML copy stays English", () => {
+  it("uses native Hindi dictionary for India (no Cloud Translate pass)", () => {
     const prefs = normalizePreferences({
       localeMarketId: "IN-hi",
       language: "hi",
       googleTargetLang: "hi",
       currency: "INR",
     });
-    assert.equal(prefs.language, "en");
+    assert.equal(prefs.language, "hi");
     assert.equal(prefs.googleTargetLang, "hi");
     assert.equal(prefs.country, "IN");
     assert.equal(prefs.currency, "INR");
   });
 
-  it("keeps Hindi translation when the visitor switches display currency to NPR", () => {
+  it("keeps Hindi UI language when display currency is switched to NPR", () => {
     const prefs = normalizePreferences({
       country: "IN",
       localeMarketId: "IN-hi",
@@ -86,7 +86,7 @@ describe("locale preference parsing", () => {
     });
     assert.equal(prefs.googleTargetLang, "hi");
     assert.equal(prefs.currency, "NPR");
-    assert.equal(prefs.language, "en");
+    assert.equal(prefs.language, "hi");
   });
 
   it("keeps language independent of country and currency", () => {
