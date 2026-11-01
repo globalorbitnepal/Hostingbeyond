@@ -1,11 +1,10 @@
 "use client";
 
-import { GoogleWebsiteTranslateRuntime } from "@/components/locale/google-website-translate-runtime";
+import { StorefrontTranslationBridge } from "@/components/locale/storefront-translation-bridge";
 
 /**
- * Live storefront translation uses Google Website Translator so copy is
- * translated in the browser. Cloud Translation remains available for Orbit.
+ * Public storefront translation (Cloud DOM + Website Translator fallback).
  */
 export function GoogleTranslateBridge() {
-  return <GoogleWebsiteTranslateRuntime />;
+  return <StorefrontTranslationBridge />;
 }

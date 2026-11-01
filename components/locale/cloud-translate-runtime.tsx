@@ -9,6 +9,7 @@ import {
   clearGoogtransCookie,
   isGoogleTranslationActive,
 } from "@/lib/i18n/google-translate-client";
+import { shouldUseCloudDomTranslation } from "@/lib/i18n/storefront-translation";
 import {
   TRANSLATE_ATTRS,
   applyAttrMap,
@@ -159,7 +160,11 @@ async function fetchBatches(
   return { map, ok: true, configured: true };
 }
 
-export function CloudTranslateRuntime() {
+export function CloudTranslateRuntime({
+  onUnavailable,
+}: {
+  onUnavailable?: () => void;
+} = {}) {
   const { preferences, enabledLanguageCodes } = useLocale();
   const pathname = usePathname();
   const [status, setStatus] = useState<Status>("idle");
@@ -176,8 +181,10 @@ export function CloudTranslateRuntime() {
     !languageAllowed;
 
   useEffect(() => {
-    clearGoogtransCookie();
-  }, []);
+    if (isGoogleTranslationActive(target)) {
+      clearGoogtransCookie();
+    }
+  }, [target]);
 
   useEffect(() => {
     const root = document.getElementById("hb-translate-root");
@@ -193,7 +200,7 @@ export function CloudTranslateRuntime() {
       applying.current = false;
     };
 
-    if (disabled || !isGoogleTranslationActive(target)) {
+    if (disabled || !shouldUseCloudDomTranslation(target)) {
       restoreAll();
       setStatus("idle");
       return;
@@ -228,6 +235,7 @@ export function CloudTranslateRuntime() {
       if (!probeJson?.configured) {
         restoreAll();
         setStatus("unavailable");
+        onUnavailable?.();
         return;
       }
       if (!root) {
@@ -248,6 +256,7 @@ export function CloudTranslateRuntime() {
         if (!fetched.configured) {
           restoreAll();
           setStatus("unavailable");
+          onUnavailable?.();
           return;
         }
         if (!fetched.ok) {
@@ -306,7 +315,7 @@ export function CloudTranslateRuntime() {
       observer?.disconnect();
       if (debounce) clearTimeout(debounce);
     };
-  }, [disabled, pathname, preferences.googleTargetLang, target]);
+  }, [disabled, onUnavailable, pathname, preferences.googleTargetLang, target]);
 
   void status;
   return null;
