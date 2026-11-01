@@ -1,3 +1,4 @@
+import { filterNavBeyondAi } from "./beyond-ai-public";
 import { routes } from "./routes";
 
 export type NavChild = {
@@ -11,7 +12,7 @@ export type NavItem = {
   children?: NavChild[];
 };
 
-export const mainNavigation: NavItem[] = [
+const _mainNavigation: NavItem[] = [
   {
     label: "Domains",
     href: routes.domains,
@@ -55,3 +56,5 @@ export const mainNavigation: NavItem[] = [
     href: routes.beyondAi,
   },
 ];
+
+export const mainNavigation: NavItem[] = filterNavBeyondAi(_mainNavigation);

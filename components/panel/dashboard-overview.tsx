@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 
 import type { DashboardOverview } from "@/lib/panel/load-dashboard-overview";
+import { BEYOND_AI_PUBLIC_ENABLED } from "@/config/beyond-ai-public";
 import { routes } from "@/config/routes";
 
 function orderStatusLabel(status: string) {
@@ -74,34 +75,45 @@ export function DashboardOverview({
       </section>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          {
-            label: "Wallet balance",
-            value: `${wallet.currency} ${wallet.balance.toFixed(2)}`,
-            href: routes.accountWallet,
-          },
-          {
-            label: "Active domains",
-            value: String(counts.activeDomains),
-            href: routes.myDomains,
-          },
-          {
-            label: "Hosting orders",
-            value: String(counts.hostingOrdersTotal),
-            sub:
-              counts.hostingOrdersTotal === 0
-                ? "None on file"
-                : counts.hostingOrdersActive > 0
-                  ? `${counts.hostingOrdersActive} active or provisioning · ${counts.hostingOrdersTotal} total`
-                  : `${counts.hostingOrdersTotal} total (none active yet)`,
-            href: routes.accountHostingOrders,
-          },
-          {
-            label: "Builder projects",
-            value: String(counts.beyondAiProjects),
-            href: routes.beyondAi,
-          },
-        ].map((stat) => (
+        {(
+          [
+            {
+              label: "Wallet balance",
+              value: `${wallet.currency} ${wallet.balance.toFixed(2)}`,
+              href: routes.accountWallet,
+            },
+            {
+              label: "Active domains",
+              value: String(counts.activeDomains),
+              href: routes.myDomains,
+            },
+            {
+              label: "Hosting orders",
+              value: String(counts.hostingOrdersTotal),
+              sub:
+                counts.hostingOrdersTotal === 0
+                  ? "None on file"
+                  : counts.hostingOrdersActive > 0
+                    ? `${counts.hostingOrdersActive} active or provisioning · ${counts.hostingOrdersTotal} total`
+                    : `${counts.hostingOrdersTotal} total (none active yet)`,
+              href: routes.accountHostingOrders,
+            },
+            ...(BEYOND_AI_PUBLIC_ENABLED
+              ? [
+                  {
+                    label: "Builder projects",
+                    value: String(counts.beyondAiProjects),
+                    href: routes.beyondAi,
+                  },
+                ]
+              : []),
+          ] as Array<{
+            label: string;
+            value: string;
+            href: string;
+            sub?: string;
+          }>
+        ).map((stat) => (
           <Link
             key={stat.label}
             href={stat.href}

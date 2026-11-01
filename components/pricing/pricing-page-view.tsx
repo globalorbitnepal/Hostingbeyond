@@ -30,6 +30,7 @@ import { PricingFaqsSection } from "@/components/pricing/pricing-faqs-section";
 import { PricingHighlights } from "@/components/pricing/pricing-highlights";
 import { PricingMotionStage } from "@/components/pricing/pricing-motion-stage";
 import { PricingPlanPanel } from "@/components/pricing/pricing-plan-panel";
+import { BEYOND_AI_PUBLIC_ENABLED } from "@/config/beyond-ai-public";
 import { rewriteDeadBookingCta } from "@/lib/hosting/checkout";
 import { useLocale } from "@/components/locale/locale-provider";
 import { routes } from "@/config/routes";
@@ -73,9 +74,7 @@ const trustIcon = {
   ai: Sparkles,
 } as const;
 
-function parseCategoryFromHash(): PricingCategoryId {
-  if (typeof window === "undefined") return "websites";
-  const raw = window.location.hash.replace(/^#/, "");
+function visiblePricingCategoryIds(): PricingCategoryId[] {
   const ids: PricingCategoryId[] = [
     "websites",
     "ecommerce",
@@ -85,6 +84,16 @@ function parseCategoryFromHash(): PricingCategoryId {
     "ai-agents",
     "business-email",
   ];
+  if (!BEYOND_AI_PUBLIC_ENABLED) {
+    return ids.filter((id) => id !== "ai-builder");
+  }
+  return ids;
+}
+
+function parseCategoryFromHash(): PricingCategoryId {
+  if (typeof window === "undefined") return "websites";
+  const raw = window.location.hash.replace(/^#/, "");
+  const ids = visiblePricingCategoryIds();
   return ids.includes(raw as PricingCategoryId)
     ? (raw as PricingCategoryId)
     : "websites";
@@ -198,6 +207,7 @@ export function PricingPageView({
     () =>
       [...pricing.categories]
         .filter((c) => c.visible !== false)
+        .filter((c) => BEYOND_AI_PUBLIC_ENABLED || c.id !== "ai-builder")
         .sort((a, b) => a.order - b.order),
     [pricing.categories],
   );

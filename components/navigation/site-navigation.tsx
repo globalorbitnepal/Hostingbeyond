@@ -3,13 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
+import { BEYOND_AI_PUBLIC_ENABLED } from "@/config/beyond-ai-public";
 import { routes } from "@/config/routes";
 import { cn } from "@/lib/utils";
 
 const PREFETCH_PATHS: string[] = [
   routes.home,
   routes.pricing,
-  routes.beyondAi,
+  ...(BEYOND_AI_PUBLIC_ENABLED ? [routes.beyondAi] : []),
   routes.businessEmail,
   routes.domainSearch,
   routes.login,

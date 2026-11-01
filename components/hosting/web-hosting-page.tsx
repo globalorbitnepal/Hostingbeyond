@@ -19,6 +19,7 @@ import {
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 import { HostingPlansCream } from "@/components/hosting/hosting-plans-cream";
+import { BEYOND_AI_PUBLIC_ENABLED } from "@/config/beyond-ai-public";
 import { HostingSpecs } from "@/components/hosting/hosting-specs";
 import type { CmsHostingPlansContent } from "@/lib/orbit/defaults";
 import type {
@@ -130,10 +131,12 @@ export function WebHostingPageView({
                   </li>
                 ))}
               </ul>
-              <div className="mt-6 flex items-center gap-2 text-[13px] text-white/75">
-                <Bot className="size-4 text-[#c4b5fd]" />
-                Beyond AI credit on annual plans
-              </div>
+              {BEYOND_AI_PUBLIC_ENABLED ? (
+                <div className="mt-6 flex items-center gap-2 text-[13px] text-white/75">
+                  <Bot className="size-4 text-[#c4b5fd]" />
+                  Beyond AI credit on annual plans
+                </div>
+              ) : null}
             </motion.div>
           </div>
         </section>

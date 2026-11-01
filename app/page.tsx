@@ -18,6 +18,7 @@ import type { Metadata } from "next";
 
 import { HeroJourneySlider } from "@/components/home/hero-journey-slider";
 import { buildPublicPageMetadata } from "@/lib/orbit/content";
+import { BEYOND_AI_PUBLIC_ENABLED } from "@/config/beyond-ai-public";
 import { getLocalizedPublicChrome } from "@/lib/i18n/public-chrome";
 
 export const dynamic = "force-dynamic";
@@ -26,7 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildPublicPageMetadata("home", "/", {
     title: "Web Hosting, Domains, Email & AI Sites",
     description:
-      "Premium hosting, domain registration, business email and Beyond AI websites — one panel, transparent pricing, 24/7 support.",
+      "Premium hosting, domain registration, business email and managed websites — one panel, transparent pricing, 24/7 support.",
     image: "/images/home/domains.webp",
   });
 }
@@ -67,7 +68,7 @@ export default async function HomePage() {
 
       <EssentialsSection content={sections.essentials} />
 
-      {sections.beyondAi?.visible !== false ? (
+      {BEYOND_AI_PUBLIC_ENABLED && sections.beyondAi?.visible !== false ? (
         <BeyondAiSection content={sections.beyondAi} />
       ) : null}
 

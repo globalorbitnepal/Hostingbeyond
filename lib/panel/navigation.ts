@@ -1,4 +1,5 @@
 import { routes } from "@/config/routes";
+import { BEYOND_AI_PUBLIC_ENABLED } from "@/config/beyond-ai-public";
 
 export type PanelNavItem = {
   id: string;
@@ -132,6 +133,14 @@ export const PANEL_NAV: PanelNavSection[] = [
   },
 ];
 
+export function getPanelNav(): PanelNavSection[] {
+  if (BEYOND_AI_PUBLIC_ENABLED) return PANEL_NAV;
+  return PANEL_NAV.map((section) => ({
+    ...section,
+    items: section.items.filter((item) => item.id !== "builder"),
+  }));
+}
+
 function pathMatchesNavItem(pathname: string, href: string) {
   if (href === "/account") return pathname === "/account";
   if (pathname === href) return true;
@@ -144,7 +153,7 @@ export function panelTitleForPath(pathname: string): string {
   if (pathname.startsWith("/account/invoices/")) return "Invoice details";
   if (pathname.startsWith("/account/hosting-orders")) return "Hosting orders";
   let best: { label: string; href: string } | null = null;
-  for (const section of PANEL_NAV) {
+  for (const section of getPanelNav()) {
     for (const item of section.items) {
       if (!item.href) continue;
       if (!pathMatchesNavItem(pathname, item.href)) continue;

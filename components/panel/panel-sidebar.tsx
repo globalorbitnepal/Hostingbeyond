@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-import { PANEL_NAV } from "@/lib/panel/navigation";
+import { getPanelNav } from "@/lib/panel/navigation";
 import { panelNavIcon } from "@/components/panel/panel-nav-icons";
 import { cn } from "@/lib/utils";
 
@@ -75,7 +75,7 @@ export function PanelSidebar({
           </button>
         </div>
         <nav className="flex-1 overflow-y-auto px-2 py-4">
-          {PANEL_NAV.map((section) => (
+          {getPanelNav().map((section) => (
             <div key={section.id} className="mb-5">
               {!collapsed ? (
                 <p className="mb-2 px-2 text-[10px] font-bold tracking-[0.14em] text-slate-400 uppercase">

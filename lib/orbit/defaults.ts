@@ -3,6 +3,8 @@ import { productOffers } from "@/config/products";
 import type { CurrencyCode } from "@/config/pricing";
 import { siteConfig } from "@/config/site";
 import { routes } from "@/config/routes";
+import { applyBeyondAiPublicHomePolicy } from "@/lib/beyond-ai/public-home-policy";
+import { BEYOND_AI_PUBLIC_ENABLED } from "@/config/beyond-ai-public";
 import { hostingCheckoutHref } from "@/lib/hosting/checkout";
 import {
   attachControlledCatalogUsd,
@@ -3021,7 +3023,7 @@ function mergeBeyondAiSection(
           workspaceImageAlt: defaults.workspaceImageAlt,
         }
       : {}),
-    visible: stored.visible !== false,
+    visible: BEYOND_AI_PUBLIC_ENABLED ? stored.visible !== false : false,
     heroVideoUrl: (() => {
       const raw = stored.heroVideoUrl;
       if (typeof raw === "string" && raw.trim() === "") return "";
@@ -3773,7 +3775,7 @@ export function mergeHomeSections(
   stored?: Partial<CmsHomeSections> | null,
 ): CmsHomeSections {
   const defaults = defaultHomeSections();
-  if (!stored) return defaults;
+  if (!stored) return applyBeyondAiPublicHomePolicy(defaults);
 
   const storedOffers = Array.isArray(stored.products?.offers)
     ? stored.products!.offers
@@ -4171,141 +4173,149 @@ export function mergeHomeSections(
           /^cloud\s*&\s*vps$/i.test(item.label.trim())),
     );
 
-  return retargetLegacyDomainLinks({
-    ...defaults,
-    ...stored,
-    hero,
-    journey: mergeJourneySection(stored.journey),
-    solutions: {
-      ...defaults.solutions,
-      ...stored.solutions,
-      visible: stored.solutions?.visible !== false,
-      products: solutionProducts.sort((a, b) => a.order - b.order),
-    },
-    products: {
-      ...defaults.products,
-      ...stored.products,
-      offers: offers.sort((a, b) => a.order - b.order),
-    },
-    hostingTypes: {
-      ...defaults.hostingTypes,
-      ...stored.hostingTypes,
-      visible: stored.hostingTypes?.visible !== false,
-      cards: hostingTypeCards.sort((a, b) => a.order - b.order),
-    },
-    hostingPlans: {
-      ...defaults.hostingPlans,
-      ...stored.hostingPlans,
-      eyebrow:
-        stored.hostingPlans?.eyebrow?.trim() || defaults.hostingPlans.eyebrow,
-      title:
-        !stored.hostingPlans?.title?.trim() ||
-        stored.hostingPlans.title === "Web Hosting Plans"
-          ? defaults.hostingPlans.title
-          : stored.hostingPlans.title,
-      titleAccent:
-        stored.hostingPlans?.titleAccent === "Plans & Price"
-          ? defaults.hostingPlans.titleAccent
-          : stored.hostingPlans?.titleAccent ||
-            defaults.hostingPlans.titleAccent,
-      description: (() => {
-        const value = stored.hostingPlans?.description;
-        if (
-          typeof value === "string" &&
-          value.trim() &&
-          !/nepal/i.test(value) &&
-          !/affordable web hosting prices/i.test(value)
-        ) {
-          return value;
+  return applyBeyondAiPublicHomePolicy(
+    retargetLegacyDomainLinks({
+      ...defaults,
+      ...stored,
+      hero,
+      journey: mergeJourneySection(stored.journey),
+      solutions: {
+        ...defaults.solutions,
+        ...stored.solutions,
+        visible: stored.solutions?.visible !== false,
+        products: solutionProducts.sort((a, b) => a.order - b.order),
+      },
+      products: {
+        ...defaults.products,
+        ...stored.products,
+        offers: offers.sort((a, b) => a.order - b.order),
+      },
+      hostingTypes: {
+        ...defaults.hostingTypes,
+        ...stored.hostingTypes,
+        visible: stored.hostingTypes?.visible !== false,
+        cards: hostingTypeCards.sort((a, b) => a.order - b.order),
+      },
+      hostingPlans: {
+        ...defaults.hostingPlans,
+        ...stored.hostingPlans,
+        eyebrow:
+          stored.hostingPlans?.eyebrow?.trim() || defaults.hostingPlans.eyebrow,
+        title:
+          !stored.hostingPlans?.title?.trim() ||
+          stored.hostingPlans.title === "Web Hosting Plans"
+            ? defaults.hostingPlans.title
+            : stored.hostingPlans.title,
+        titleAccent:
+          stored.hostingPlans?.titleAccent === "Plans & Price"
+            ? defaults.hostingPlans.titleAccent
+            : stored.hostingPlans?.titleAccent ||
+              defaults.hostingPlans.titleAccent,
+        description: (() => {
+          const value = stored.hostingPlans?.description;
+          if (
+            typeof value === "string" &&
+            value.trim() &&
+            !/nepal/i.test(value) &&
+            !/affordable web hosting prices/i.test(value)
+          ) {
+            return value;
+          }
+          return defaults.hostingPlans.description;
+        })(),
+        supportLabel: /local support/i.test(
+          stored.hostingPlans?.supportLabel || "",
+        )
+          ? defaults.hostingPlans.supportLabel
+          : stored.hostingPlans?.supportLabel ||
+            defaults.hostingPlans.supportLabel,
+        supportHint:
+          stored.hostingPlans?.supportHint?.trim() ||
+          defaults.hostingPlans.supportHint,
+        activationHint:
+          stored.hostingPlans?.activationHint?.trim() ||
+          defaults.hostingPlans.activationHint,
+        uptimeLabel:
+          stored.hostingPlans?.uptimeLabel?.trim() ||
+          defaults.hostingPlans.uptimeLabel,
+        uptimeHint:
+          stored.hostingPlans?.uptimeHint?.trim() ||
+          defaults.hostingPlans.uptimeHint,
+        scaleLabel:
+          stored.hostingPlans?.scaleLabel?.trim() ||
+          defaults.hostingPlans.scaleLabel,
+        scaleHint:
+          stored.hostingPlans?.scaleHint?.trim() ||
+          defaults.hostingPlans.scaleHint,
+        saveBadge:
+          stored.hostingPlans?.saveBadge?.trim() ||
+          defaults.hostingPlans.saveBadge,
+        annualToggleLabel: /50%/.test(
+          stored.hostingPlans?.annualToggleLabel || "",
+        )
+          ? defaults.hostingPlans.annualToggleLabel
+          : stored.hostingPlans?.annualToggleLabel?.trim() ||
+            defaults.hostingPlans.annualToggleLabel,
+        defaultBilling:
+          stored.hostingPlans?.defaultBilling === "monthly"
+            ? "monthly"
+            : "annually",
+        plans: plans.sort((a, b) => a.order - b.order),
+        guarantees,
+      },
+      essentials: mergeEssentialsSection(stored.essentials),
+      beyondAi: mergeBeyondAiSection(stored.beyondAi),
+      controlStory: mergeStoryBandSection(
+        stored.controlStory,
+        defaultControlStorySection,
+      ),
+      businessEmail: mergeBusinessEmailSection(stored.businessEmail),
+      growStory: mergeStoryBandSection(
+        stored.growStory,
+        defaultGrowStorySection,
+      ),
+      aiAssistant: mergeAiAssistantSection(stored.aiAssistant),
+      powerTiles: mergePowerTilesSection(stored.powerTiles),
+      whyChoose: mergeWhyChooseSection(stored.whyChoose),
+      proof: mergeProofSection(stored.proof),
+      closeCta: mergeCloseCtaSection(stored.closeCta),
+      homeFaqs: mergeHomeFaqsSection(stored.homeFaqs),
+      footer: mergeFooterSection(stored.footer),
+      // Drop legacy top-level Cloud & VPS — those live under Hosting now.
+      // Also normalize stored "Web Hosting" label → "Hosting".
+      navigation: (() => {
+        const source =
+          hasLegacyCloudTopNav || !Array.isArray(storedNav)
+            ? defaults.navigation
+            : storedNav.map((item) =>
+                item.label === "Web Hosting"
+                  ? { ...item, label: "Hosting" }
+                  : item,
+              );
+        const next = [...source];
+        if (!next.some((item) => item.label === "Pricing")) {
+          next.push({ label: "Pricing", href: "/pricing" });
         }
-        return defaults.hostingPlans.description;
+        if (
+          BEYOND_AI_PUBLIC_ENABLED &&
+          !next.some((item) => item.label === "Beyond AI")
+        ) {
+          next.push({ label: "Beyond AI", href: "/beyond-ai" });
+        }
+        // Stored menus still point at the retired /domains tree — send those
+        // entries to the domain search page instead of the redirect hop.
+        const domainsItem = defaults.navigation.find(
+          (item) => item.label === "Domains",
+        );
+        return next.map((item) => {
+          if (!/^\/domains(\/|$)/.test(item.href)) return item;
+          return {
+            ...item,
+            href: routes.domainSearch,
+            children: domainsItem?.children?.map((child) => ({ ...child })),
+          };
+        });
       })(),
-      supportLabel: /local support/i.test(
-        stored.hostingPlans?.supportLabel || "",
-      )
-        ? defaults.hostingPlans.supportLabel
-        : stored.hostingPlans?.supportLabel ||
-          defaults.hostingPlans.supportLabel,
-      supportHint:
-        stored.hostingPlans?.supportHint?.trim() ||
-        defaults.hostingPlans.supportHint,
-      activationHint:
-        stored.hostingPlans?.activationHint?.trim() ||
-        defaults.hostingPlans.activationHint,
-      uptimeLabel:
-        stored.hostingPlans?.uptimeLabel?.trim() ||
-        defaults.hostingPlans.uptimeLabel,
-      uptimeHint:
-        stored.hostingPlans?.uptimeHint?.trim() ||
-        defaults.hostingPlans.uptimeHint,
-      scaleLabel:
-        stored.hostingPlans?.scaleLabel?.trim() ||
-        defaults.hostingPlans.scaleLabel,
-      scaleHint:
-        stored.hostingPlans?.scaleHint?.trim() ||
-        defaults.hostingPlans.scaleHint,
-      saveBadge:
-        stored.hostingPlans?.saveBadge?.trim() ||
-        defaults.hostingPlans.saveBadge,
-      annualToggleLabel: /50%/.test(
-        stored.hostingPlans?.annualToggleLabel || "",
-      )
-        ? defaults.hostingPlans.annualToggleLabel
-        : stored.hostingPlans?.annualToggleLabel?.trim() ||
-          defaults.hostingPlans.annualToggleLabel,
-      defaultBilling:
-        stored.hostingPlans?.defaultBilling === "monthly"
-          ? "monthly"
-          : "annually",
-      plans: plans.sort((a, b) => a.order - b.order),
-      guarantees,
-    },
-    essentials: mergeEssentialsSection(stored.essentials),
-    beyondAi: mergeBeyondAiSection(stored.beyondAi),
-    controlStory: mergeStoryBandSection(
-      stored.controlStory,
-      defaultControlStorySection,
-    ),
-    businessEmail: mergeBusinessEmailSection(stored.businessEmail),
-    growStory: mergeStoryBandSection(stored.growStory, defaultGrowStorySection),
-    aiAssistant: mergeAiAssistantSection(stored.aiAssistant),
-    powerTiles: mergePowerTilesSection(stored.powerTiles),
-    whyChoose: mergeWhyChooseSection(stored.whyChoose),
-    proof: mergeProofSection(stored.proof),
-    closeCta: mergeCloseCtaSection(stored.closeCta),
-    homeFaqs: mergeHomeFaqsSection(stored.homeFaqs),
-    footer: mergeFooterSection(stored.footer),
-    // Drop legacy top-level Cloud & VPS — those live under Hosting now.
-    // Also normalize stored "Web Hosting" label → "Hosting".
-    navigation: (() => {
-      const source =
-        hasLegacyCloudTopNav || !Array.isArray(storedNav)
-          ? defaults.navigation
-          : storedNav.map((item) =>
-              item.label === "Web Hosting"
-                ? { ...item, label: "Hosting" }
-                : item,
-            );
-      const next = [...source];
-      if (!next.some((item) => item.label === "Pricing")) {
-        next.push({ label: "Pricing", href: "/pricing" });
-      }
-      if (!next.some((item) => item.label === "Beyond AI")) {
-        next.push({ label: "Beyond AI", href: "/beyond-ai" });
-      }
-      // Stored menus still point at the retired /domains tree — send those
-      // entries to the domain search page instead of the redirect hop.
-      const domainsItem = defaults.navigation.find(
-        (item) => item.label === "Domains",
-      );
-      return next.map((item) => {
-        if (!/^\/domains(\/|$)/.test(item.href)) return item;
-        return {
-          ...item,
-          href: routes.domainSearch,
-          children: domainsItem?.children?.map((child) => ({ ...child })),
-        };
-      });
-    })(),
-  });
+    }),
+  );
 }

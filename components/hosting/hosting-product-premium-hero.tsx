@@ -5,6 +5,7 @@ import { ArrowRight, Bot, Check } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 
 import { cn } from "@/lib/utils";
+import { BEYOND_AI_PUBLIC_ENABLED } from "@/config/beyond-ai-public";
 
 export type HostingProductPremiumHeroProps = {
   eyebrow: string;
@@ -46,7 +47,7 @@ export function HostingProductPremiumHero({
   highlights,
   cardLine,
   cardSubline,
-  showAiCredit = true,
+  showAiCredit = BEYOND_AI_PUBLIC_ENABLED,
 }: HostingProductPremiumHeroProps) {
   const reduce = useReducedMotion();
 

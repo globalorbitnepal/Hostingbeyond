@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import {
+  BEYOND_AI_PUBLIC_ENABLED,
+  isBeyondAiPublicPath,
+} from "@/config/beyond-ai-public";
+
 import { sanitizeCustomerRedirectPath } from "@/lib/customer/safe-redirect";
 import {
   isLoopbackHost,
@@ -94,6 +99,15 @@ function handlePublicLocaleRouting(request: NextRequest): NextResponse | null {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  if (!BEYOND_AI_PUBLIC_ENABLED) {
+    if (isBeyondAiPublicPath(pathname)) {
+      return NextResponse.redirect(new URL("/", requestSiteOrigin(request)));
+    }
+    if (pathname.startsWith("/api/beyond-ai")) {
+      return NextResponse.json({ error: "Not available" }, { status: 404 });
+    }
+  }
 
   if (pathname.startsWith("/account")) {
     const token = request.cookies.get(CUSTOMER_SESSION_COOKIE)?.value;

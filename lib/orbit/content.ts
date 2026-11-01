@@ -69,6 +69,7 @@ import {
   mergePricingPageContent,
   type CmsPricingPageContent,
 } from "@/lib/orbit/pricing-content";
+import { applyBeyondAiPublicPricingPolicy } from "@/lib/beyond-ai/public-pricing-policy";
 import {
   defaultTipsHubPageContent,
   mergeTipsHubPageContent,
@@ -305,9 +306,10 @@ const readPricingContent = nextCache(
     const page = await prisma.pageContent.findUnique({
       where: { slug: PRICING_SLUG },
     });
-    if (!page) return defaultPricingPageContent();
-    return mergePricingPageContent(
-      page.sections as Partial<CmsPricingPageContent>,
+    if (!page)
+      return applyBeyondAiPublicPricingPolicy(defaultPricingPageContent());
+    return applyBeyondAiPublicPricingPolicy(
+      mergePricingPageContent(page.sections as Partial<CmsPricingPageContent>),
     );
   },
   ["orbit-pricing-content"],
@@ -319,7 +321,7 @@ export const getPricingPageContent = cache(
     try {
       return await readPricingContent();
     } catch {
-      return defaultPricingPageContent();
+      return applyBeyondAiPublicPricingPolicy(defaultPricingPageContent());
     }
   },
 );

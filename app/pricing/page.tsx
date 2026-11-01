@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildPublicPageMetadata("pricing", "/pricing", {
     title: "Hosting & Domain Pricing — Transparent Plans",
     description:
-      "Compare HostingBeyond pricing for websites, ecommerce, domains, Beyond AI, VPS and business email. Premium hosting with transparent plans and 24/7 support.",
+      "Compare HostingBeyond pricing for websites, ecommerce, domains, VPS and business email. Premium hosting with transparent plans and 24/7 support.",
     image: "/images/home/domains.webp",
   });
 }

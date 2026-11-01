@@ -7,6 +7,7 @@ import {
 } from "@/lib/blog/sitemap";
 import { siteConfig } from "@/config/site";
 import { routes } from "@/config/routes";
+import { BEYOND_AI_PUBLIC_ENABLED } from "@/config/beyond-ai-public";
 
 const SITEMAP_EXCLUDE = new Set([
   routes.login,
@@ -20,7 +21,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const lastModified = new Date();
 
   const paths = Object.values(routes).filter(
-    (path) => !SITEMAP_EXCLUDE.has(path),
+    (path) =>
+      !SITEMAP_EXCLUDE.has(path) &&
+      (BEYOND_AI_PUBLIC_ENABLED || path !== routes.beyondAi),
   );
 
   const extraHosting = [

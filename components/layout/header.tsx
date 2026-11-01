@@ -8,6 +8,7 @@ import { ChevronDown, Menu, Sparkles, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { mainNavigation, type NavItem } from "@/config/navigation";
+import { filterNavBeyondAi } from "@/config/beyond-ai-public";
 import { routes } from "@/config/routes";
 import { CustomerHeaderAccountMenu } from "@/components/auth/customer-header-account-menu";
 import { DomainCartHeaderLink } from "@/components/layout/domain-cart-header-link";
@@ -310,10 +311,7 @@ export function SiteHeader({
     if (!deduped.some((item) => item.label === "Pricing")) {
       deduped.push({ label: "Pricing", href: routes.pricing });
     }
-    if (!deduped.some((item) => item.label === "Beyond AI")) {
-      deduped.push({ label: "Beyond AI", href: routes.beyondAi });
-    }
-    return sortNav(deduped);
+    return sortNav(filterNavBeyondAi(deduped));
   })();
 
   useEffect(() => {
