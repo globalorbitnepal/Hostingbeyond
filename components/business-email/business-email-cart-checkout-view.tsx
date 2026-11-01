@@ -146,7 +146,7 @@ export function BusinessEmailCartCheckoutView(
 ) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { formatCatalogUsd, t } = useLocale();
+  const { formatCatalogUsd, checkoutNote } = useLocale();
   const step = parseBookingStep(searchParams.get("step"));
 
   const [config, setConfig] = useState<EmailCartConfiguration>(() =>
@@ -959,7 +959,7 @@ export function BusinessEmailCartCheckoutView(
             </div>
             <CheckoutCouponField className="mt-4" />
             <p className="mt-2 text-[12px] text-[var(--hb-co-text-muted)]">
-              {t.common.billedInUsd}
+              {checkoutNote}
             </p>
             <button
               type="button"

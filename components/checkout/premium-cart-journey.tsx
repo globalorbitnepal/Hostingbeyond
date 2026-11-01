@@ -107,7 +107,7 @@ export function PremiumCartJourney() {
   const reduceMotion = useReducedMotion();
   const { cart, removeDomain, checkoutHref, isAuthenticated, refreshCart } =
     useDomainCart();
-  const { formatCatalogUsd, t } = useLocale();
+  const { formatCatalogUsd, checkoutNote } = useLocale();
 
   const [hints, setHints] = useState<CheckoutHints | null>(null);
   const [hintsError, setHintsError] = useState(false);
@@ -666,7 +666,7 @@ export function PremiumCartJourney() {
             <span className="text-[13px] font-bold">
               {formatCatalogUsd(total)}
               <span className="mt-0.5 block text-[10px] font-medium text-[var(--hb-co-text-muted)]">
-                {t.common.billedInUsd}
+                {checkoutNote}
               </span>
             </span>
             <button

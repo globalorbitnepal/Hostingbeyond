@@ -62,6 +62,10 @@ import {
   resolveUsdToLocalRate,
   type DisplayCurrencyRateOverrides,
 } from "@/lib/pricing/display-rates";
+import {
+  CHECKOUT_SETTLE_CURRENCY,
+  buildCheckoutNote,
+} from "@/lib/payments/checkout-currency";
 
 type LocaleContextValue = {
   preferences: UserPreferences;
@@ -82,6 +86,8 @@ type LocaleContextValue = {
   countryCurrency: ReturnType<typeof resolveCountryDisplayCurrency>;
   /** Footer copy explaining display currency vs checkout currency. */
   currencyNotice: string;
+  /** Short note under price blocks: which currency is charged at checkout. */
+  checkoutNote: string;
   formatPrice: (productId: ProductPriceId) => string;
   formatCatalogUsd: (usdAmount: number) => string;
   t: {
@@ -344,7 +350,9 @@ export function LocaleProvider({
       countryCurrency,
       currencyNotice: currencyNoticeFor(countryCurrency, {
         appliedCurrency: preferences.currency,
+        checkoutCurrency: CHECKOUT_SETTLE_CURRENCY,
       }),
+      checkoutNote: buildCheckoutNote(dictionary.common, preferences.currency),
       t: {
         nav: dictionary.nav,
         locale: dictionary.locale,

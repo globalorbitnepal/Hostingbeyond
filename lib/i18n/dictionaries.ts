@@ -28,7 +28,8 @@ export type Dictionary = {
     cart: string;
   };
   common: {
-    billedInUsd: string;
+    chargedInCheckout: string;
+    chargedInLocalCheckout: string;
   };
   locale: {
     selectLocation: string;
@@ -109,7 +110,9 @@ const en: Dictionary = {
     cart: "Cart",
   },
   common: {
-    billedInUsd: "Charged in USD at checkout.",
+    chargedInCheckout: "Charged in {currency} at checkout.",
+    chargedInLocalCheckout:
+      "Prices in {local}. Charged in {checkout} at checkout.",
   },
   locale: {
     selectLocation: "Select language",
@@ -191,6 +194,11 @@ const ne: Dictionary = {
     resources: "स्रोतहरू",
     login: "लगइन",
     getStarted: "सुरु गर्नुहोस्",
+  },
+  common: {
+    chargedInCheckout: "चेकआउटमा {currency} मा शुल्क लाग्छ।",
+    chargedInLocalCheckout:
+      "मूल्य {local} मा देखाइएको छ। चेकआउटमा {checkout} मा शुल्क लाग्छ।",
   },
   locale: {
     selectLocation: "भाषा छान्नुहोस्",
@@ -292,7 +300,9 @@ const hi: Dictionary = {
     cart: "कार्ट",
   },
   common: {
-    billedInUsd: "चेकआउट पर भुगतान USD में होगा।",
+    chargedInCheckout: "चेकआउट पर {currency} में भुगतान होगा।",
+    chargedInLocalCheckout:
+      "कीमतें {local} में दिखाई गई हैं। चेकआउट पर {checkout} में भुगतान होगा।",
   },
   locale: {
     selectLocation: "भाषा चुनें",

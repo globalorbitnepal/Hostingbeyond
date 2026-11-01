@@ -131,7 +131,7 @@ export function DomainPremiumCheckout({
   allDone,
   googleOAuth = false,
 }: PremiumCheckoutProps) {
-  const { t, formatCatalogUsd } = useLocale();
+  const { formatCatalogUsd, checkoutNote } = useLocale();
   const [step, setStep] = useState<StepId>("domains");
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(() => {
     const saved = readPremiumCartServices();
@@ -918,7 +918,7 @@ export function DomainPremiumCheckout({
                     : " from wallet"}
                 </p>
                 <p className="text-[11px] font-semibold text-slate-500">
-                  {t.common.billedInUsd}
+                  {checkoutNote}
                 </p>
               </div>
               {!allDone ? (

@@ -36,7 +36,7 @@ export function WalletAccountPanel({
   topUpStatus?: string | null;
   paymentPublicId?: string | null;
 }) {
-  const { t } = useLocale();
+  const { checkoutNote } = useLocale();
   const [balance, setBalance] = useState(initialBalance);
   const [transactions, setTransactions] = useState<WalletTx[]>([]);
   const [payments, setPayments] = useState<WalletPaymentRow[]>([]);
@@ -86,7 +86,7 @@ export function WalletAccountPanel({
       </p>
       <p className="text-sm text-slate-500">
         Wallet amounts are the USD ledger used for charges and credits.{" "}
-        {t.common.billedInUsd}
+        {checkoutNote}
       </p>
       {statusBanner ? (
         <p className="rounded-xl bg-violet-50 px-3 py-2 text-sm text-violet-900">

@@ -1,4 +1,5 @@
 import { getCountry } from "@/config/geo";
+import { CHECKOUT_SETTLE_CURRENCY } from "@/lib/payments/checkout-currency";
 import {
   isConfiguredDisplayCurrency,
   normalizePublicDisplayCurrency,
@@ -122,7 +123,7 @@ export function currencyNoticeFor(
   resolution: CountryCurrencyResolution,
   options: { checkoutCurrency?: string; appliedCurrency?: string } = {},
 ): string {
-  const checkoutCurrency = options.checkoutCurrency ?? "USD";
+  const checkoutCurrency = options.checkoutCurrency ?? CHECKOUT_SETTLE_CURRENCY;
   const applied = options.appliedCurrency ?? resolution.currency;
 
   if (applied !== resolution.currency) {

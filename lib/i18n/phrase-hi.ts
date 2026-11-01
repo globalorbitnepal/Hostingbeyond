@@ -126,7 +126,7 @@ export const HI_PHRASES: Record<string, string> = {
   "DNS management": "DNS प्रबंधन",
   "Included free with your domain": "आपके डोमेन के साथ मुफ़्त शामिल",
   "Domain Protection": "डोमेन प्रोटेक्शन",
-  "Charged in USD at checkout.": "चेकआउट पर भुगतान USD में होगा।",
+  "Charged in {currency} at checkout.": "चेकआउट पर {currency} में भुगतान होगा।",
   Extension: "एक्सटेंशन",
   "First year": "पहला वर्ष",
   "Renews at": "नवीनीकरण",

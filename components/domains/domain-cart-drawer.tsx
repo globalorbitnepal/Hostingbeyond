@@ -18,7 +18,7 @@ export function DomainCartDrawer() {
     checkoutHref,
     isAuthenticated,
   } = useDomainCart();
-  const { formatCatalogUsd, t } = useLocale();
+  const { formatCatalogUsd, checkoutNote } = useLocale();
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
@@ -169,11 +169,11 @@ export function DomainCartDrawer() {
             {!isAuthenticated ? (
               <p className="mt-2 text-[11.5px] leading-snug text-slate-500">
                 Sign in to save your cart and complete registration. Prices are
-                confirmed again at checkout. {t.common.billedInUsd}
+                confirmed again at checkout. {checkoutNote}
               </p>
             ) : (
               <p className="mt-2 text-[11.5px] leading-snug text-slate-500">
-                {t.common.billedInUsd}
+                {checkoutNote}
               </p>
             )}
             <Link

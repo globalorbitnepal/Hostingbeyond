@@ -24,7 +24,7 @@ export function DomainTransferCheckoutView({
   currency,
   walletBalance,
 }: Props) {
-  const { t } = useLocale();
+  const { checkoutNote } = useLocale();
   const [authCode, setAuthCode] = useState("");
   const [showAuth, setShowAuth] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
@@ -135,8 +135,7 @@ export function DomainTransferCheckoutView({
           </p>
           <p className="mt-1 text-xs text-slate-500">
             On most extensions, the transfer fee extends your registration by
-            one year. Final total is charged from your wallet.{" "}
-            {t.common.billedInUsd}
+            one year. Final total is charged from your wallet. {checkoutNote}
           </p>
           <p className="mt-2 text-sm text-slate-600">
             Wallet: {currency} {walletBalance.toFixed(2)}

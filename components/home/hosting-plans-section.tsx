@@ -83,7 +83,7 @@ export function PlanCard({
   productCheckoutSlug?: string;
 }) {
   const reduceMotion = useReducedMotion();
-  const { t } = useLocale();
+  const { checkoutNote } = useLocale();
   const popular = Boolean(plan.popular);
   const isAnnual = billing === "annually";
   const catalogUsd = resolveCmsHostingCatalogUsd(plan);
@@ -191,7 +191,7 @@ export function PlanCard({
         </div>
         {purchase ? (
           <p className="mt-1 text-[11px] font-medium text-[#64748b]">
-            {t.common.billedInUsd}
+            {checkoutNote}
           </p>
         ) : null}
       </div>

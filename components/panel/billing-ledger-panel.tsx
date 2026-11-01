@@ -50,7 +50,7 @@ function statusBadge(status: string): string {
 }
 
 export function BillingLedgerPanel() {
-  const { t } = useLocale();
+  const { checkoutNote } = useLocale();
   const [entries, setEntries] = useState<LedgerEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -116,8 +116,7 @@ export function BillingLedgerPanel() {
   return (
     <div className="mt-6">
       <p className="mb-3 text-sm text-slate-500">
-        Billing history is shown in USD, the ledger currency.{" "}
-        {t.common.billedInUsd}
+        Billing history is shown in USD, the ledger currency. {checkoutNote}
       </p>
       <ul className="divide-y divide-slate-100">
         {entries.map((row) => (

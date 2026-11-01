@@ -34,7 +34,7 @@ export function PremiumOrderSummary({
   compact = false,
   className,
 }: Props) {
-  const { t } = useLocale();
+  const { checkoutNote } = useLocale();
   const fmt = (n: number) => <CatalogPrice usd={n} />;
 
   return (
@@ -107,7 +107,7 @@ export function PremiumOrderSummary({
       <p className="mt-3 text-[11px] leading-snug text-[var(--hb-co-text-muted)]">
         This total is shown on the checkout button. Domains are charged from
         your wallet ({currency}); hosting and email continue immediately after.{" "}
-        {t.common.billedInUsd}
+        {checkoutNote}
       </p>
     </aside>
   );

@@ -16,7 +16,7 @@ export function HostingCheckoutView({
   context: ResolvedHostingPurchaseContext;
   logoPath?: string;
 }) {
-  const { t } = useLocale();
+  const { checkoutNote } = useLocale();
   const logo = logoPath?.trim() || "/logo/hostingbeyond-logo-v6.png";
   const query = serializeHostingPurchaseIntent(context.intent);
 
@@ -67,9 +67,7 @@ export function HostingCheckoutView({
               context.billedLabel
             )}
           </p>
-          <p className="mt-2 text-[12px] text-slate-500">
-            {t.common.billedInUsd}
-          </p>
+          <p className="mt-2 text-[12px] text-slate-500">{checkoutNote}</p>
 
           <ul className="mt-6 space-y-2 text-[14px] text-slate-700">
             <li className="flex items-start gap-2">
