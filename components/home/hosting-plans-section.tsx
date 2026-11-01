@@ -27,6 +27,7 @@ import {
   filterPlanFeatures,
   getAnnualPerkLines,
 } from "@/components/hosting/annual-plan-perks";
+import { CheckoutNote } from "@/components/i18n/checkout-note";
 import { CatalogPrice } from "@/components/i18n/localized-text";
 import { useLocale } from "@/components/locale/locale-provider";
 import { annualSaveBadgeLabel } from "@/lib/hosting/annual-save-badge";
@@ -190,9 +191,10 @@ export function PlanCard({
           ) : null}
         </div>
         {purchase ? (
-          <p className="mt-1 text-[11px] font-medium text-[#64748b]">
-            {checkoutNote}
-          </p>
+          <CheckoutNote
+            text={checkoutNote}
+            className="mt-1 text-[11px] font-medium text-[#64748b]"
+          />
         ) : null}
       </div>
 

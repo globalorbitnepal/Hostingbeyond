@@ -27,6 +27,7 @@ import {
   resolveCountryDisplayCurrency,
 } from "@/lib/i18n/country-currency";
 import { serverCopyLanguage } from "@/lib/i18n/server-copy-language";
+import { resolveUiCopyLanguage } from "@/lib/i18n/ui-copy-language";
 import {
   getLocaleMarket,
   type HostingerLocaleMarket,
@@ -352,7 +353,10 @@ export function LocaleProvider({
         appliedCurrency: preferences.currency,
         checkoutCurrency: CHECKOUT_SETTLE_CURRENCY,
       }),
-      checkoutNote: buildCheckoutNote(dictionary.common, preferences.currency),
+      checkoutNote: buildCheckoutNote(
+        getDictionary(resolveUiCopyLanguage(preferences)).common,
+        preferences.currency,
+      ),
       t: {
         nav: dictionary.nav,
         locale: dictionary.locale,

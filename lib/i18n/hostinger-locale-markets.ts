@@ -54,7 +54,7 @@ const LEGACY_MARKET_IDS: Record<string, string> = {
   "IN-en": "IN-hi",
 };
 
-function appLanguageForGoogle(code: string): LanguageCode {
+export function appLanguageForGoogle(code: string): LanguageCode {
   const base = code.split("-")[0] ?? "en";
   const map: Record<string, LanguageCode> = {
     en: "en",

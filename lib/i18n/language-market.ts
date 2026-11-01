@@ -1,7 +1,10 @@
 import type { UserPreferences } from "@/lib/i18n/preferences";
 import { resolveCountryDisplayCurrency } from "@/lib/i18n/country-currency";
 import type { PublicDisplayCurrency } from "@/lib/i18n/display-currencies";
-import { HOSTINGER_LOCALE_MARKETS } from "@/lib/i18n/hostinger-locale-markets";
+import {
+  appLanguageForGoogle,
+  HOSTINGER_LOCALE_MARKETS,
+} from "@/lib/i18n/hostinger-locale-markets";
 import {
   DEFAULT_WEBSITE_LANGUAGE_CODE,
   websiteLanguageByCode,
@@ -58,6 +61,7 @@ export function preferencesFromWebsiteLanguage(
     country: market.country,
     localeMarketId: market.localeMarketId,
     currency: market.currency,
+    language: appLanguageForGoogle(market.googleTargetLang),
     currencyLocked: false,
     languageLocked: true,
   };

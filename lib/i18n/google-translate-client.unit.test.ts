@@ -23,6 +23,8 @@ describe("Google Website Translator helpers", () => {
     assert.equal(isGoogleTranslationActive("en"), false);
     assert.equal(isGoogleTranslationActive("de"), true);
     assert.equal(isGoogleTranslationActive("zh-CN"), true);
+    assert.equal(isGoogleTranslationActive("ne"), false);
+    assert.equal(isGoogleTranslationActive("hi"), false);
     assert.equal(isGoogleTranslationActive(""), false);
   });
 

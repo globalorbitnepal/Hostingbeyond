@@ -15,6 +15,7 @@ import {
   normalizePublicDisplayCurrency,
 } from "@/lib/i18n/display-currencies";
 import { resolveCountryDisplayCurrency } from "@/lib/i18n/country-currency";
+import { appLanguageForGoogle } from "@/lib/i18n/hostinger-locale-markets";
 import { isGoogleTranslationActive } from "@/lib/i18n/google-translate-client";
 import { PUBLIC_ENGLISH_ONLY } from "@/lib/i18n/public-language";
 import { resolveWebsiteLanguageCode } from "@/lib/i18n/website-languages";
@@ -89,13 +90,14 @@ export function normalizePreferences(
     : resolveWebsiteLanguageCode(
         input?.googleTargetLang ?? market.googleTargetLang,
       );
-  /** Storefront HTML stays English; Cloud Translation handles the selected language. */
+  const appLanguage = appLanguageForGoogle(googleTargetLang);
+  /** English + Cloud Translation for most markets; native dictionary for ne/hi. */
   const language =
     PUBLIC_ENGLISH_ONLY || isGoogleTranslationActive(googleTargetLang)
       ? DEFAULT_LANGUAGE
       : isLanguageCode(input?.language)
         ? input.language
-        : DEFAULT_LANGUAGE;
+        : appLanguage;
   const country = getCountry(countryFromInput ?? market.countryCode);
   /**
    * Precedence: an explicit manual pick (currencyLocked) wins; otherwise the

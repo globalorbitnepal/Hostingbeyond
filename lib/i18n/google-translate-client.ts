@@ -1,5 +1,7 @@
 /** Client-only helpers for the free Google Website Translator. */
 
+import { appLanguageForGoogle } from "@/lib/i18n/hostinger-locale-markets";
+import { usesNativeStorefrontCopy } from "@/lib/i18n/ui-copy-language";
 import { googleTranslateIncludedLanguages } from "@/lib/i18n/website-languages";
 
 export const GOOGTRANS_COOKIE = "googtrans";
@@ -35,6 +37,8 @@ export function isGoogleTranslationActive(
   targetLang: string | undefined | null,
 ): boolean {
   if (!targetLang || targetLang === GOOGLE_PAGE_LANGUAGE) return false;
+  const appLang = appLanguageForGoogle(targetLang);
+  if (usesNativeStorefrontCopy(appLang)) return false;
   return true;
 }
 

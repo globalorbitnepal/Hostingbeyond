@@ -386,6 +386,10 @@ const es: Dictionary = {
     login: "Iniciar sesión",
     getStarted: "Comenzar",
   },
+  common: {
+    chargedInCheckout: "Cobro en {currency} al pagar.",
+    chargedInLocalCheckout: "Precios en {local}. Cobro en {checkout} al pagar.",
+  },
   locale: {
     selectLocation: "Selecciona el idioma",
     searchPlaceholder: "Buscar idioma",
@@ -448,6 +452,11 @@ const fr: Dictionary = {
     login: "Connexion",
     getStarted: "Commencer",
   },
+  common: {
+    chargedInCheckout: "Facturation en {currency} au paiement.",
+    chargedInLocalCheckout:
+      "Prix affichés en {local}. Facturation en {checkout} au paiement.",
+  },
   locale: {
     selectLocation: "Choisir la langue",
     searchPlaceholder: "Rechercher une langue",
@@ -509,6 +518,11 @@ const de: Dictionary = {
     resources: "Ressourcen",
     login: "Anmelden",
     getStarted: "Loslegen",
+  },
+  common: {
+    chargedInCheckout: "Abrechnung in {currency} an der Kasse.",
+    chargedInLocalCheckout:
+      "Preise in {local}. Abrechnung in {checkout} an der Kasse.",
   },
   locale: {
     selectLocation: "Sprache wählen",
@@ -579,6 +593,11 @@ const dictionaries: Record<LanguageCode, Dictionary> = {
       login: "Accedi",
       getStarted: "Inizia",
     },
+    common: {
+      chargedInCheckout: "Addebito in {currency} al checkout.",
+      chargedInLocalCheckout:
+        "Prezzi in {local}. Addebito in {checkout} al checkout.",
+    },
     locale: {
       selectLocation: "Seleziona la lingua",
       searchPlaceholder: "Cerca lingua",
@@ -637,6 +656,11 @@ const dictionaries: Record<LanguageCode, Dictionary> = {
       resources: "Recursos",
       login: "Entrar",
       getStarted: "Começar",
+    },
+    common: {
+      chargedInCheckout: "Cobrança em {currency} no checkout.",
+      chargedInLocalCheckout:
+        "Preços em {local}. Cobrança em {checkout} no checkout.",
     },
     locale: {
       selectLocation: "Selecione o idioma",
@@ -697,6 +721,11 @@ const dictionaries: Record<LanguageCode, Dictionary> = {
       login: "ログイン",
       getStarted: "はじめる",
     },
+    common: {
+      chargedInCheckout: "お支払いは {currency} で請求されます。",
+      chargedInLocalCheckout:
+        "表示価格は {local} です。お支払いは {checkout} で請求されます。",
+    },
     locale: {
       selectLocation: "言語を選択",
       searchPlaceholder: "言語を検索",
@@ -755,6 +784,11 @@ const dictionaries: Record<LanguageCode, Dictionary> = {
       resources: "리소스",
       login: "로그인",
       getStarted: "시작하기",
+    },
+    common: {
+      chargedInCheckout: "결제 시 {currency}로 청구됩니다.",
+      chargedInLocalCheckout:
+        "표시 가격은 {local}입니다. 결제 시 {checkout}로 청구됩니다.",
     },
     locale: {
       selectLocation: "언어 선택",
@@ -815,6 +849,11 @@ const dictionaries: Record<LanguageCode, Dictionary> = {
       login: "登录",
       getStarted: "立即开始",
     },
+    common: {
+      chargedInCheckout: "结账时将按 {currency} 收费。",
+      chargedInLocalCheckout:
+        "价格为 {local} 显示。结账时将按 {checkout} 收费。",
+    },
     locale: {
       selectLocation: "选择语言",
       searchPlaceholder: "搜索语言",
@@ -872,6 +911,11 @@ const dictionaries: Record<LanguageCode, Dictionary> = {
       resources: "الموارد",
       login: "تسجيل الدخول",
       getStarted: "ابدأ الآن",
+    },
+    common: {
+      chargedInCheckout: "يتم الخصم بـ {currency} عند الدفع.",
+      chargedInLocalCheckout:
+        "الأسعار معروضة بـ {local}. يتم الخصم بـ {checkout} عند الدفع.",
     },
     locale: {
       selectLocation: "اختر اللغة",
