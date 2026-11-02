@@ -604,19 +604,6 @@ export function CountryLanguageSelector({
                   })
                 )}
               </div>
-
-              <p
-                className={cn(
-                  "shrink-0 border-t px-4 py-2.5 text-[10px] leading-snug",
-                  light
-                    ? "border-slate-200/80 text-slate-500"
-                    : "border-white/[0.07] text-white/40",
-                )}
-              >
-                Each language sets matching prices (Portuguese → Euro, not
-                Brazilian Real). Change USD, INR, NPR, EUR anytime in the
-                currency menu.
-              </p>
             </div>,
             document.body,
           )
