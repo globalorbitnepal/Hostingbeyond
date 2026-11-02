@@ -28,6 +28,35 @@ export const PANEL_NAV: PanelNavSection[] = [
     ],
   },
   {
+    id: "domains",
+    label: "Domains",
+    items: [
+      { id: "my-domains", label: "My Domains", href: routes.myDomains },
+      { id: "register", label: "Register Domain", href: routes.domainSearch },
+      { id: "transfer", label: "Transfer Domain", href: routes.domainTransfer },
+      {
+        id: "renewals",
+        label: "Renewals & expiry",
+        href: routes.myDomains,
+      },
+    ],
+  },
+  {
+    id: "hosting",
+    label: "Hosting",
+    items: [
+      { id: "web-hosting", label: "Web Hosting", href: routes.hosting },
+      { id: "plans", label: "Hosting Plans", href: routes.pricing },
+      {
+        id: "hosting-orders",
+        label: "Hosting Orders",
+        href: routes.accountHostingOrders,
+      },
+      { id: "manage", label: "Manage Hosting", soon: true },
+      { id: "usage", label: "Resource Usage", soon: true },
+    ],
+  },
+  {
     id: "websites",
     label: "Websites",
     items: [
@@ -40,31 +69,6 @@ export const PANEL_NAV: PanelNavSection[] = [
         href: routes.websiteMigration,
       },
       { id: "backups", label: "Backups", soon: true },
-    ],
-  },
-  {
-    id: "hosting",
-    label: "Hosting",
-    items: [
-      { id: "web-hosting", label: "Web Hosting", href: routes.hosting },
-      { id: "plans", label: "Hosting Plans", href: routes.pricing },
-      { id: "manage", label: "Manage Hosting", soon: true },
-      { id: "usage", label: "Resource Usage", soon: true },
-    ],
-  },
-  {
-    id: "domains",
-    label: "Domains",
-    items: [
-      { id: "my-domains", label: "My Domains", href: routes.myDomains },
-      { id: "register", label: "Register Domain", href: routes.domainSearch },
-      { id: "transfer", label: "Transfer Domain", href: routes.domainTransfer },
-      {
-        id: "dns",
-        label: "DNS & nameservers",
-        href: routes.myDomains,
-      },
-      { id: "renewals", label: "Domain Renewals", href: routes.myDomains },
     ],
   },
   {
@@ -102,14 +106,8 @@ export const PANEL_NAV: PanelNavSection[] = [
         href: routes.accountBilling,
       },
       { id: "orders", label: "Domain orders", href: routes.accountOrders },
-      {
-        id: "hosting-orders",
-        label: "Hosting orders",
-        href: routes.accountHostingOrders,
-      },
       { id: "invoices", label: "Invoices", href: routes.accountInvoices },
       { id: "payment-methods", label: "Payment Methods", soon: true },
-      { id: "renewals-billing", label: "Renewals", href: routes.myDomains },
     ],
   },
   {
@@ -126,7 +124,7 @@ export const PANEL_NAV: PanelNavSection[] = [
     label: "Account",
     items: [
       { id: "profile", label: "Profile", href: routes.account },
-      { id: "security", label: "Security", soon: true },
+      { id: "security", label: "Security", href: routes.accountSecurity },
       { id: "sessions", label: "Login & Sessions", soon: true },
       { id: "prefs", label: "Notification Preferences", soon: true },
     ],

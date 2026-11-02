@@ -1,3 +1,4 @@
+import { normalizeNameserverList } from "@/lib/domains/nameserver-host";
 import { DomainProviderError } from "@/lib/domains/providers/types";
 import { resolveLifecycleProviderForDomain } from "@/lib/domains/registrar-router";
 import { requireActiveDomainRegistration } from "@/lib/domains/require-domain-ownership";
@@ -35,29 +36,43 @@ async function auditCustomerDomainAction(
 }
 
 export async function getCustomerDomainDetail(userId: string, domain: string) {
-  const owned = await requireActiveDomainRegistration(userId, domain);
-  if (!owned.ok) return owned;
+  const normalized = domain.trim().toLowerCase();
+  const registration = await prisma.domainRegistration.findFirst({
+    where: { userId, domain: normalized },
+  });
+  if (!registration) {
+    return { ok: false as const, status: 404, error: "Domain not found." };
+  }
 
-  const retail = await getRetailQuoteForTld(owned.registration.tld);
-  const provider = await resolveLifecycleProviderForDomain(domain);
+  const retail = await getRetailQuoteForTld(registration.tld);
   let nameservers: string[] = [];
-  let transferLock = owned.registration.transferLock;
+  let transferLock = registration.transferLock;
   let providerStatus: string | null = null;
+
+  /**
+   * Only live registrations have a provider record to query. Pending ones must
+   * still render in the panel so the customer sees an honest "setting up"
+   * state instead of a 404 on the page they were just linked to.
+   */
+  const provider =
+    registration.status === "ACTIVE"
+      ? await resolveLifecycleProviderForDomain(normalized)
+      : null;
 
   if (provider) {
     try {
-      const details = await provider.getDomainDetails(domain);
+      const details = await provider.getDomainDetails(normalized);
       nameservers = details.nameservers;
       transferLock = details.transferLock;
       providerStatus = details.status;
       await prisma.domainRegistration.update({
-        where: { id: owned.registration.id },
+        where: { id: registration.id },
         data: {
           nameservers: nameservers,
           transferLock,
           expiresAt: details.expiresAt
             ? new Date(details.expiresAt)
-            : owned.registration.expiresAt,
+            : registration.expiresAt,
         },
       });
     } catch (error) {
@@ -70,16 +85,22 @@ export async function getCustomerDomainDetail(userId: string, domain: string) {
     }
   }
 
+  const storedNameservers = Array.isArray(registration.nameservers)
+    ? (registration.nameservers as unknown[]).filter(
+        (entry): entry is string => typeof entry === "string",
+      )
+    : [];
+
   return {
     ok: true as const,
     domain: {
-      id: owned.registration.id,
-      domain: owned.registration.domain,
-      status: owned.registration.status,
-      registeredAt: owned.registration.registeredAt,
-      expiresAt: owned.registration.expiresAt,
-      autoRenew: owned.registration.autoRenew,
-      nameservers,
+      id: registration.id,
+      domain: registration.domain,
+      status: registration.status,
+      registeredAt: registration.registeredAt,
+      expiresAt: registration.expiresAt,
+      autoRenew: registration.autoRenew,
+      nameservers: nameservers.length > 0 ? nameservers : storedNameservers,
       transferLock,
       providerStatus,
       renewalPrice: retail?.renew ?? null,
@@ -96,16 +117,15 @@ export async function updateCustomerNameservers(
   const owned = await requireActiveDomainRegistration(userId, domain);
   if (!owned.ok) return owned;
 
-  const cleaned = nameservers
-    .map((ns) => ns.trim().toLowerCase())
-    .filter(Boolean);
-  if (cleaned.length < 2 || cleaned.length > 13) {
+  const normalized = normalizeNameserverList(nameservers);
+  if (!normalized.ok) {
     return {
       ok: false as const,
       status: 400,
-      error: "Enter at least two valid nameservers.",
+      error: normalized.error,
     };
   }
+  const hosts = normalized.nameservers;
 
   const provider = await resolveLifecycleProviderForDomain(domain);
   if (!provider) {
@@ -117,15 +137,15 @@ export async function updateCustomerNameservers(
   }
 
   try {
-    await provider.updateNameservers(domain, cleaned);
+    await provider.updateNameservers(domain, hosts);
     await prisma.domainRegistration.update({
       where: { id: owned.registration.id },
-      data: { nameservers: cleaned },
+      data: { nameservers: hosts },
     });
     await auditCustomerDomainAction(userId, domain, "DOMAIN_NS_UPDATE", {
-      nameservers: cleaned,
+      nameservers: hosts,
     });
-    return { ok: true as const, nameservers: cleaned };
+    return { ok: true as const, nameservers: hosts };
   } catch {
     return {
       ok: false as const,
@@ -133,6 +153,26 @@ export async function updateCustomerNameservers(
       error: "We could not update nameservers. Please try again.",
     };
   }
+}
+
+export async function setCustomerDomainAutoRenew(
+  userId: string,
+  domain: string,
+  autoRenew: boolean,
+) {
+  const owned = await requireActiveDomainRegistration(userId, domain);
+  if (!owned.ok) return owned;
+
+  await prisma.domainRegistration.update({
+    where: { id: owned.registration.id },
+    data: { autoRenew },
+  });
+  await auditCustomerDomainAction(
+    userId,
+    domain,
+    autoRenew ? "DOMAIN_AUTORENEW_ON" : "DOMAIN_AUTORENEW_OFF",
+  );
+  return { ok: true as const, autoRenew };
 }
 
 export async function setCustomerDomainLock(

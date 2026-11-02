@@ -1,12 +1,15 @@
 "use client";
 
+import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Headphones, Menu, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Headphones, Menu, Search, X } from "lucide-react";
 
 import { BrandMark } from "@/components/auth/brand-mark";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { routes } from "@/config/routes";
-import { panelTitleForPath } from "@/lib/panel/navigation";
+import { panelTitleForPath, getPanelNav } from "@/lib/panel/navigation";
+import { cn } from "@/lib/utils";
 
 type PanelUser = {
   name: string | null;
@@ -20,9 +23,86 @@ type Props = {
   onOpenMobileNav: () => void;
 };
 
+type SearchTarget = { label: string; href: string; group: string };
+
+/** Everything a customer can jump to from the panel search box. */
+function searchTargets(): SearchTarget[] {
+  const targets: SearchTarget[] = [
+    { label: "My domains", href: routes.myDomains, group: "Domains" },
+    { label: "Register a domain", href: routes.domainSearch, group: "Domains" },
+    {
+      label: "Transfer a domain",
+      href: routes.domainTransfer,
+      group: "Domains",
+    },
+    { label: "Wallet & top up", href: routes.accountWallet, group: "Billing" },
+    { label: "Domain orders", href: routes.accountOrders, group: "Billing" },
+    {
+      label: "Hosting orders",
+      href: routes.accountHostingOrders,
+      group: "Billing",
+    },
+    { label: "Invoices", href: routes.accountInvoices, group: "Billing" },
+    { label: "Transactions", href: routes.accountBilling, group: "Billing" },
+    { label: "Web hosting plans", href: routes.hosting, group: "Hosting" },
+    { label: "Compare all pricing", href: routes.pricing, group: "Hosting" },
+    { label: "Business email", href: routes.businessEmail, group: "Email" },
+    {
+      label: "Website migration",
+      href: routes.websiteMigration,
+      group: "Websites",
+    },
+    { label: "Contact support", href: routes.contact, group: "Support" },
+    {
+      label: "Security & password",
+      href: routes.accountSecurity,
+      group: "Account",
+    },
+  ];
+
+  for (const section of getPanelNav()) {
+    for (const item of section.items) {
+      if (!item.href || item.soon) continue;
+      if (targets.some((target) => target.href === item.href)) continue;
+      targets.push({
+        label: item.label,
+        href: item.href,
+        group: section.label,
+      });
+    }
+  }
+  return targets;
+}
+
 export function PanelHeader({ user, pathname, onOpenMobileNav }: Props) {
   const title = panelTitleForPath(pathname);
   const displayName = user.name?.trim() || user.email.split("@")[0];
+  const router = useRouter();
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+
+  const allTargets = useMemo(searchTargets, []);
+  const results = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    if (!needle) return [];
+    return allTargets
+      .filter((target) => target.label.toLowerCase().includes(needle))
+      .slice(0, 6);
+  }, [allTargets, query]);
+
+  function onSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    if (results[0]) {
+      router.push(results[0].href);
+    } else if (query.trim()) {
+      router.push(routes.domainSearch);
+    }
+    setOpen(false);
+    setQuery("");
+    inputRef.current?.blur();
+  }
 
   return (
     <header className="sticky top-0 z-30 border-b border-[var(--hb-p-border)] bg-white/90 backdrop-blur-md">
@@ -44,24 +124,73 @@ export function PanelHeader({ user, pathname, onOpenMobileNav }: Props) {
             {title}
           </h1>
         </div>
-        <div className="hidden max-w-xs flex-1 md:flex">
-          <label className="relative w-full">
-            <span className="sr-only">Search services</span>
+
+        <form
+          onSubmit={onSubmit}
+          className="relative hidden max-w-xs flex-1 md:block"
+          role="search"
+        >
+          <label className="relative block w-full">
+            <span className="sr-only">Search your services</span>
             <Search
               className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400"
               aria-hidden
             />
             <input
+              ref={inputRef}
               type="search"
-              disabled
-              placeholder="Search your services (coming soon)"
-              className="h-9 w-full rounded-full border border-slate-200 bg-slate-50 pr-3 pl-9 text-sm text-slate-500"
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setOpen(true);
+              }}
+              onFocus={() => setOpen(true)}
+              onBlur={() => window.setTimeout(() => setOpen(false), 130)}
+              placeholder="Search domains, billing, support…"
+              className="h-9 w-full rounded-full border border-slate-200 bg-slate-50 pr-8 pl-9 text-sm text-slate-800 placeholder:text-slate-400 focus:border-[var(--hb-p-primary)]/40 focus:bg-white focus:outline-none"
             />
+            {query ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setQuery("");
+                  inputRef.current?.focus();
+                }}
+                className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                aria-label="Clear search"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            ) : null}
           </label>
-        </div>
+          {open && results.length > 0 ? (
+            <ul className="absolute top-full right-0 left-0 z-40 mt-1.5 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+              {results.map((result) => (
+                <li key={`${result.group}-${result.href}-${result.label}`}>
+                  <Link
+                    href={result.href}
+                    onClick={() => {
+                      setOpen(false);
+                      setQuery("");
+                    }}
+                    className="flex items-center justify-between gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-violet-50"
+                  >
+                    <span className="truncate">{result.label}</span>
+                    <span className="shrink-0 text-[10px] font-semibold tracking-wide text-slate-400 uppercase">
+                      {result.group}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </form>
+
         <Link
           href={routes.contact}
-          className="hidden items-center gap-1.5 rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 sm:inline-flex"
+          className={cn(
+            "hidden items-center gap-1.5 rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 sm:inline-flex",
+          )}
         >
           <Headphones className="h-3.5 w-3.5" />
           Support

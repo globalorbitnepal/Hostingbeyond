@@ -22,25 +22,34 @@ export default async function ManageDomainPage({ params }: Params) {
   const { domain: domainParam } = await params;
   const domain = decodeURIComponent(domainParam).toLowerCase();
   const registration = await prisma.domainRegistration.findFirst({
-    where: { userId: user.id, domain, status: "ACTIVE" },
+    where: { userId: user.id, domain },
   });
   if (!registration) notFound();
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <div className="hb-panel-card p-6 sm:p-8">
+    <div className="mx-auto max-w-5xl">
+      <nav className="mb-3 flex items-center gap-2 text-xs text-slate-500">
+        <Link
+          href={routes.account}
+          className="hover:text-[var(--hb-p-primary)]"
+        >
+          Dashboard
+        </Link>
+        <span aria-hidden>/</span>
         <Link
           href={routes.myDomains}
-          className="text-sm font-semibold text-[#673de6]"
+          className="hover:text-[var(--hb-p-primary)]"
         >
-          ← My domains
+          My domains
         </Link>
-        <div className="mt-6">
-          <DomainManagePanel
-            registrationId={registration.id}
-            domainName={registration.domain}
-          />
-        </div>
+        <span aria-hidden>/</span>
+        <span className="font-semibold text-slate-700">{domain}</span>
+      </nav>
+      <div className="hb-panel-card p-5 sm:p-7">
+        <DomainManagePanel
+          registrationId={registration.id}
+          domainName={registration.domain}
+        />
       </div>
     </div>
   );
