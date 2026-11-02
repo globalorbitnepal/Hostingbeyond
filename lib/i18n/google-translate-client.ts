@@ -32,27 +32,77 @@ export function googtransCookieValue(targetLang: string): string {
   return `/${GOOGLE_PAGE_LANGUAGE}/${target}`;
 }
 
+/** Host + parent domains Google may have used for a leftover googtrans cookie. */
+export function googtransCookieDomains(hostname: string): string[] {
+  const host = hostname.trim().toLowerCase();
+  if (!host) return [];
+  const domains = new Set<string>([host]);
+  if (host.includes(".")) {
+    domains.add(`.${host}`);
+    const labels = host.split(".").filter(Boolean);
+    if (labels.length >= 2) {
+      domains.add(`.${labels.slice(-2).join(".")}`);
+    }
+  }
+  return [...domains];
+}
+
+export function googtransCookieBase(
+  https: boolean,
+  maxAgeSeconds: number,
+): string {
+  const secure = https ? ";Secure" : "";
+  return `path=/;max-age=${maxAgeSeconds};SameSite=Lax${secure}`;
+}
+
 export function isGoogleTranslationActive(
   targetLang: string | undefined | null,
 ): boolean {
   return shouldUseGoogleWebsiteTranslator(targetLang);
 }
 
+function expireGoogtransCookies() {
+  if (typeof document === "undefined") return;
+  const https = window.location.protocol === "https:";
+  const expireVariants = [
+    googtransCookieBase(https, 0),
+    "path=/;max-age=0;SameSite=Lax",
+    "path=/;max-age=0;SameSite=Lax;Secure",
+  ];
+  const domains = ["", ...googtransCookieDomains(window.location.hostname)];
+  for (const domain of domains) {
+    const domainPart = domain ? `;domain=${domain}` : "";
+    for (const expire of expireVariants) {
+      document.cookie = `${GOOGTRANS_COOKIE}=;${expire}${domainPart}`;
+    }
+  }
+}
+
 /** Set googtrans on current host and parent domain (Google Translate convention). */
 export function writeGoogtransCookie(targetLang: string) {
   if (typeof document === "undefined") return;
+  expireGoogtransCookies();
   const value = googtransCookieValue(targetLang);
-  const base = `path=/;max-age=${60 * 60 * 24 * 365};SameSite=Lax`;
+  const https = window.location.protocol === "https:";
+  const base = googtransCookieBase(https, 60 * 60 * 24 * 365);
   document.cookie = `${GOOGTRANS_COOKIE}=${value};${base}`;
-  const host = window.location.hostname;
-  if (host.includes(".")) {
-    const root = host.split(".").slice(-2).join(".");
-    document.cookie = `${GOOGTRANS_COOKIE}=${value};domain=.${root};${base}`;
+  for (const domain of googtransCookieDomains(window.location.hostname)) {
+    document.cookie = `${GOOGTRANS_COOKIE}=${value};domain=${domain};${base}`;
   }
 }
 
 export function clearGoogtransCookie() {
   writeGoogtransCookie(GOOGLE_PAGE_LANGUAGE);
+}
+
+export function googleTranslateComboLang(targetLang: string): string {
+  return targetLang === "zh-CN" ? "zh-CN" : targetLang;
+}
+
+export function googleTranslateComboMatches(targetLang: string): boolean {
+  if (typeof document === "undefined") return false;
+  const combo = document.querySelector<HTMLSelectElement>(".goog-te-combo");
+  return combo?.value === googleTranslateComboLang(targetLang);
 }
 
 let googleTranslateGuardsInstalled = false;
@@ -93,11 +143,12 @@ export function selectGoogleTranslateCombo(targetLang: string): boolean {
   if (!isGoogleTranslationActive(targetLang)) return true;
   const combo = document.querySelector<HTMLSelectElement>(".goog-te-combo");
   if (!combo) return false;
-  const lang = targetLang === "zh-CN" ? "zh-CN" : targetLang;
-  if (combo.value === lang) return true;
-  combo.value = lang;
-  combo.dispatchEvent(new Event("change"));
-  return true;
+  const lang = googleTranslateComboLang(targetLang);
+  if (combo.value !== lang) {
+    combo.value = lang;
+    combo.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+  return combo.value === lang;
 }
 
 export function pageIsGoogleTranslated(): boolean {

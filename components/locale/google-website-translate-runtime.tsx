@@ -9,6 +9,7 @@ import {
   GOOGLE_TRANSLATE_ELEMENT_ID,
   bootGoogleWebsiteTranslator,
   clearGoogtransCookie,
+  googleTranslateComboMatches,
   installReactGoogleTranslateGuards,
   isGoogleTranslationActive,
   pageIsGoogleTranslated,
@@ -49,14 +50,18 @@ export function GoogleWebsiteTranslateRuntime({
     let tries = 0;
     const timer = window.setInterval(() => {
       tries += 1;
-      const selected = selectGoogleTranslateCombo(target);
-      if (selected && pageIsGoogleTranslated()) {
+      if (!googleTranslateComboMatches(target)) {
+        writeGoogtransCookie(target);
+        selectGoogleTranslateCombo(target);
+      } else if (pageIsGoogleTranslated()) {
         window.clearInterval(timer);
         return;
       }
-      if (tries > 24) {
+      if (tries > 40) {
         window.clearInterval(timer);
-        if (!pageIsGoogleTranslated()) onFailed?.();
+        if (!googleTranslateComboMatches(target) || !pageIsGoogleTranslated()) {
+          onFailed?.();
+        }
       }
     }, 250);
 

@@ -411,8 +411,9 @@ export function CountryLanguageSelector({
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={t.locale.selectLocation}
+        translate="no"
         className={cn(
-          "inline-flex items-center gap-1.5 border backdrop-blur-xl transition-all duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563eb]",
+          "notranslate inline-flex items-center gap-1.5 border backdrop-blur-xl transition-all duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563eb]",
           light
             ? "border-slate-200/90 bg-white/85 text-slate-800 shadow-[0_4px_16px_rgba(15,23,42,0.06)] hover:bg-white"
             : "border-white/[0.12] bg-white/[0.06] text-white hover:bg-white/[0.09]",

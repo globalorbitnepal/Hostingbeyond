@@ -3,6 +3,8 @@ import { describe, it } from "node:test";
 
 import {
   GOOGLE_PAGE_LANGUAGE,
+  googtransCookieBase,
+  googtransCookieDomains,
   googtransCookieValue,
   googleTranslateElementOptions,
   isGoogleTranslationActive,
@@ -26,6 +28,17 @@ describe("Google Website Translator helpers", () => {
     assert.equal(isGoogleTranslationActive("ne"), true);
     assert.equal(isGoogleTranslationActive("hi"), true);
     assert.equal(isGoogleTranslationActive(""), false);
+  });
+
+  it("expires leftover parent-domain googtrans cookies on HTTPS", () => {
+    assert.deepEqual(googtransCookieDomains("hosting.theglobalorbit.com"), [
+      "hosting.theglobalorbit.com",
+      ".hosting.theglobalorbit.com",
+      ".theglobalorbit.com",
+    ]);
+    assert.match(googtransCookieBase(true, 0), /Secure/);
+    assert.match(googtransCookieBase(true, 31536000), /Secure/);
+    assert.equal(googtransCookieBase(false, 0).includes("Secure"), false);
   });
 
   it("includes every storefront language in the widget allow-list", () => {
