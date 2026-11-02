@@ -2,22 +2,36 @@ import { NextRequest, NextResponse } from "next/server";
 import { BlogContentType, BlogPostStatus } from "@prisma/client";
 
 import { upsertBlogPost, type BlogPostWriteInput } from "@/lib/blog/queries";
-import { parseOptionalEnumParam } from "@/lib/http/enum-param";
 import { requireOrbitAdmin, unauthorizedJson } from "@/lib/orbit/api";
 import { logActivity } from "@/lib/orbit/session";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
+/**
+ * Optional enum query param: absent means "no filter", unknown means 400 so a
+ * typo cannot silently return an unfiltered list.
+ */
+function parseOptionalEnum<T extends string>(
+  raw: string | null,
+  allowed: readonly T[],
+): { ok: true; value: T | undefined } | { ok: false } {
+  const value = raw?.trim() ?? "";
+  if (!value) return { ok: true, value: undefined };
+  return (allowed as readonly string[]).includes(value)
+    ? { ok: true, value: value as T }
+    : { ok: false };
+}
+
 export async function GET(request: NextRequest) {
   const admin = await requireOrbitAdmin();
   if (!admin) return unauthorizedJson();
 
-  const status = parseOptionalEnumParam(
+  const status = parseOptionalEnum(
     request.nextUrl.searchParams.get("status"),
     Object.values(BlogPostStatus),
   );
-  const contentType = parseOptionalEnumParam(
+  const contentType = parseOptionalEnum(
     request.nextUrl.searchParams.get("contentType"),
     Object.values(BlogContentType),
   );
