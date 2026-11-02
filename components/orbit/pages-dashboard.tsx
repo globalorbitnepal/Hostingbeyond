@@ -116,8 +116,9 @@ export function OrbitPagesDashboard() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Pages</h1>
           <p className="mt-1 max-w-2xl text-sm text-slate-500">
-            Saves revalidate cache tags and the public path — changes appear on
-            the next request, usually within seconds. Legacy Page SEO screen:{" "}
+            Every public route on HostingBeyond — edit page content, SEO, and
+            open the live URL. Saves revalidate cache tags and the public path
+            so changes appear within seconds. Older bulk SEO UI:{" "}
             <Link
               href="/orbit/seo"
               className="font-semibold text-[var(--hb-blue)]"
