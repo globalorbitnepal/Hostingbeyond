@@ -112,7 +112,11 @@ const nav: NavGroup[] = [
   { href: "/orbit/business-email", label: "Business Email", icon: Mail },
   { href: "/orbit/hosting", label: "Web Hosting", icon: Globe },
   { href: "/orbit/ssl", label: "SSL Certificates", icon: ShieldCheck },
-  { href: "/orbit/hosting-products", label: "Hosting Products", icon: Tags },
+  {
+    href: "/orbit/hosting-products",
+    label: "Hosting Plans",
+    icon: Tags,
+  },
   { href: "/orbit/hosting-addons", label: "Hosting Add-ons", icon: Tags },
   { href: "/orbit/cloud", label: "Cloud Hosting", icon: Cloud },
   {

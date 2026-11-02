@@ -525,6 +525,12 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
                 {formatQuoteAmount(quote.billedAmount)}
                 {isAnnual ? "/year" : "/month"}
               </p>
+              {quote.renewalPrice != null ? (
+                <p className="mt-1 text-[13px] text-[var(--hb-co-text-muted)]">
+                  Renews at {formatQuoteAmount(quote.renewalPrice)}
+                  {isAnnual ? "/year" : "/month"} at the standard rate.
+                </p>
+              ) : null}
               <div className="mt-6 grid gap-3 sm:grid-cols-2">
                 {props.billingMonthlyEnabled ? (
                   <button
@@ -1031,6 +1037,13 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
                 {formatQuoteAmount(quote.total)}
               </span>
             </div>
+            {quote.renewalPrice != null ? (
+              <p className="mt-2 px-1 text-[12px] leading-relaxed text-[var(--hb-co-text-muted)]">
+                After the first term this order renews at{" "}
+                {formatQuoteAmount(quote.renewalPrice)}
+                {isAnnual ? " per year" : " per month"} unless you cancel.
+              </p>
+            ) : null}
             <CheckoutCouponField className="mt-4" />
             <CheckoutNote
               text={checkoutNote}

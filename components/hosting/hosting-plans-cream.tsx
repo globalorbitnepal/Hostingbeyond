@@ -23,6 +23,7 @@ import type {
 } from "@/lib/hosting/product-plans-trust-chips";
 import type { CmsHostingPlansContent } from "@/lib/orbit/defaults";
 import { annualSaveBadgeLabel } from "@/lib/hosting/annual-save-badge";
+import { FAIR_USE_NOTE, planNeedsFairUseNote } from "@/lib/hosting/plan-claims";
 import { cn } from "@/lib/utils";
 
 type Billing = "annually" | "monthly";
@@ -102,6 +103,8 @@ export function HostingPlansCream({
   const plans = [...(data.plans ?? [])]
     .filter((p) => p.visible !== false)
     .sort((a, b) => a.order - b.order);
+
+  const needsFairUseNote = plans.some(planNeedsFairUseNote);
 
   const iconOverrides = data.trustChipIcons ?? {};
 
@@ -264,6 +267,11 @@ export function HostingPlansCream({
         {footnote ? (
           <p className="mt-8 text-center text-[12.5px] leading-relaxed font-medium text-slate-500 sm:mt-10 sm:text-[13px]">
             {footnote}
+          </p>
+        ) : null}
+        {needsFairUseNote ? (
+          <p className="mx-auto mt-3 max-w-3xl text-center text-[12px] leading-relaxed font-medium text-slate-500">
+            {FAIR_USE_NOTE}
           </p>
         ) : null}
       </div>

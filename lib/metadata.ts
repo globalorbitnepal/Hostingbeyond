@@ -33,9 +33,15 @@ export function buildMetadata({
   noIndex = false,
 }: BuildMetadataInput = {}): Metadata {
   const url = new URL(path, siteConfig.url).toString();
-  const fullTitle = title
-    ? `${title} | ${siteConfig.name}`
-    : `${siteConfig.name} — ${siteConfig.tagline}`;
+  const brand = siteConfig.name;
+  const brandSuffix = new RegExp(`\\s*[|–—-]\\s*${brand}\\s*$`, "i");
+  /** Titles that already end with the brand must not be branded twice. */
+  const rawTitle = title?.trim() ?? "";
+  const fullTitle = rawTitle
+    ? brandSuffix.test(rawTitle)
+      ? rawTitle
+      : `${rawTitle} | ${brand}`
+    : `${brand} — ${siteConfig.tagline}`;
   const socialTitle = ogTitle || fullTitle;
   const socialDescription = ogDescription || description;
   const xTitle = twitterTitle || socialTitle;

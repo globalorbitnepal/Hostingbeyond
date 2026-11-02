@@ -5,7 +5,9 @@ import {
   replaceHostingProductPlans,
   type HostingPlanUpdateInput,
 } from "@/lib/hosting/hosting-products";
+import { orbitAdminMutationError } from "@/lib/http/safe-api-error";
 import { requireOrbitAdmin, unauthorizedJson } from "@/lib/orbit/api";
+import { logActivity } from "@/lib/orbit/session";
 
 export const runtime = "nodejs";
 
@@ -16,21 +18,27 @@ export async function PUT(request: NextRequest, context: RouteContext) {
   if (!admin) return unauthorizedJson();
 
   const { id } = await context.params;
-  const body = (await request.json()) as { plans?: HostingPlanUpdateInput[] };
-  if (!body.plans?.length) {
+  const body = (await request.json().catch(() => null)) as {
+    plans?: HostingPlanUpdateInput[];
+  } | null;
+  if (!body?.plans?.length) {
     return NextResponse.json({ error: "Missing plans" }, { status: 400 });
   }
 
   try {
     const product = await replaceHostingProductPlans(id, body.plans);
+    await logActivity({
+      adminUserId: admin.id,
+      action: "CONTENT_UPDATE",
+      resource: `hosting-product:${product?.slug ?? id}`,
+      details: `Updated ${body.plans.length} hosting plan(s): ${body.plans
+        .map((p) => `${p.planKey} $${p.monthlyPrice}/mo`)
+        .join(", ")}`,
+    });
     return NextResponse.json({ ok: true, product });
   } catch (error) {
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Save failed",
-      },
-      { status: 400 },
-    );
+    const { error: message, status } = orbitAdminMutationError(error);
+    return NextResponse.json({ error: message }, { status });
   }
 }
 

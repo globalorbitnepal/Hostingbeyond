@@ -5,11 +5,13 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 
 import { HostingProductEditor } from "@/components/orbit/hosting-product-editor";
+import type { AdminHostingPlan } from "@/lib/hosting/hosting-products";
 import { readResponseError } from "@/lib/orbit/read-response-error";
 
 export default function OrbitHostingProductEditPage() {
   const params = useParams<{ id: string }>();
   const [product, setProduct] = useState<null | Record<string, unknown>>(null);
+  const [plans, setPlans] = useState<AdminHostingPlan[]>([]);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -22,8 +24,10 @@ export default function OrbitHostingProductEditPage() {
         }
         const json = (await res.json()) as {
           product?: Record<string, unknown>;
+          plans?: AdminHostingPlan[];
         };
         setProduct(json.product ?? null);
+        setPlans(json.plans ?? []);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Load failed");
       }
@@ -39,11 +43,11 @@ export default function OrbitHostingProductEditPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4">
+    <div className="mx-auto max-w-5xl space-y-4">
       <div>
         <Link
           href="/orbit/hosting-products"
-          className="text-sm text-violet-600 underline"
+          className="text-sm font-semibold text-[var(--hb-blue)]"
         >
           ← Hosting products
         </Link>
@@ -54,7 +58,7 @@ export default function OrbitHostingProductEditPage() {
           {String(product.canonicalPath)}
         </p>
       </div>
-      <HostingProductEditor initial={product as never} />
+      <HostingProductEditor initial={product as never} initialPlans={plans} />
     </div>
   );
 }

@@ -89,7 +89,7 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
     label: "Developer Hosting",
     items: [
       {
-        href: `${routes.hosting}?stack=nodejs`,
+        href: "/nodejs-hosting",
         title: "Node.js Hosting",
         description: "Deploy Node.js applications with high performance.",
         logo: "/images/nav-brands/nodedotjs.svg",
@@ -106,7 +106,7 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         tile: "bg-[#eff6ff]",
       },
       {
-        href: `${routes.hosting}?stack=laravel`,
+        href: "/laravel-hosting",
         title: "Laravel Hosting",
         description: "Optimized hosting for Laravel projects.",
         logo: "/images/nav-brands/laravel.svg",
@@ -114,7 +114,7 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         tile: "bg-[#fff1f2]",
       },
       {
-        href: `${routes.hosting}?stack=django`,
+        href: "/django-hosting",
         title: "Django Hosting",
         description: "Hosting for Django applications.",
         logo: "/images/nav-brands/django.svg",
@@ -122,7 +122,7 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         tile: "bg-[#ecfdf5]",
       },
       {
-        href: `${routes.hosting}?stack=nestjs`,
+        href: "/nestjs-hosting",
         title: "NestJS Hosting",
         description: "Deploy modern NestJS applications.",
         logo: "/images/nav-brands/nestjs.svg",
@@ -136,7 +136,7 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
     label: "VPS Hosting",
     items: [
       {
-        href: `${routes.vps}?hypervisor=kvm`,
+        href: "/kvm-vps",
         title: "KVM VPS",
         description: "Full root access with KVM virtualization.",
         lucide: Layers,
@@ -144,7 +144,7 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         tile: "bg-[#fff7ed]",
       },
       {
-        href: `${routes.vps}?storage=nvme`,
+        href: "/nvme-vps",
         title: "NVMe VPS",
         description: "High-speed NVMe VPS for demanding workloads.",
         logo: "/images/nav-brands/nvme.svg",
@@ -153,7 +153,7 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         logoVariant: "nvme",
       },
       {
-        href: `${routes.vps}?os=linux`,
+        href: "/linux-vps",
         title: "Linux VPS",
         description: "Ubuntu, Debian and other Linux distributions.",
         logo: "/images/nav-brands/linux-mark.svg",
@@ -162,7 +162,7 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         logoVariant: "linux",
       },
       {
-        href: `${routes.vps}?managed=1`,
+        href: "/managed-vps",
         title: "Managed VPS",
         description: "Managed updates, security and technical support.",
         lucide: ServerCog,
@@ -185,7 +185,7 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
         logoVariant: "cpanel",
       },
       {
-        href: routes.hosting,
+        href: "/agency-hosting",
         title: "Agency Hosting",
         description: "Manage hosting for multiple clients.",
         lucide: Users,

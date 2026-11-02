@@ -1013,7 +1013,7 @@ function defaultHostingPlans(): CmsHostingPlan[] {
       domainPerk: "Domain — free for 1 year",
       annualCredit: "$7 Beyond AI Credit",
       features: [
-        "Unlimited Websites",
+        "Unlimited Websites (fair use)",
         "40 GB NVMe SSD Storage",
         "Unmetered Bandwidth",
         "6 GB RAM",
@@ -1049,7 +1049,7 @@ function defaultHostingPlans(): CmsHostingPlan[] {
       domainPerk: "Domain — free for 1 year",
       annualCredit: "$12 Beyond AI Credit",
       features: [
-        "Unlimited Websites",
+        "Unlimited Websites (fair use)",
         "60 GB NVMe SSD Storage",
         "Unmetered Bandwidth",
         "8 GB RAM",

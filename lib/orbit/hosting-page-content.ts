@@ -104,7 +104,7 @@ export function defaultHostingPageContent(): CmsHostingPageContent {
     pricingDescription:
       "Transparent pricing with renewal rates shown upfront. Switch between monthly and annual billing anytime.",
     pricingNote:
-      "Prices shown are promotional rates for the first term. Renewals use standard rates listed at checkout.",
+      "All prices are in US dollars. The monthly price shown is the promotional rate for the first term; at renewal the plan bills at its standard rate, which is displayed at checkout before you pay. Unlimited plans are subject to the fair-use policy described below.",
 
     featuresEyebrow: "Why HostingBeyond",
     featuresHeading: "Everything you need to go live",

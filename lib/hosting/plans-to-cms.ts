@@ -2,6 +2,7 @@ import type { HostingProductPlan } from "@prisma/client";
 import type { Decimal } from "@prisma/client/runtime/library";
 
 import { hostingCheckoutHref } from "@/lib/hosting/checkout";
+import { normalizePlanFeatures } from "@/lib/hosting/plan-claims";
 import type {
   CmsHostingPlan,
   CmsHostingPlansContent,
@@ -39,7 +40,7 @@ export function dbPlansToCmsHostingPlans(
     const features = Array.isArray(plan.features)
       ? (plan.features as string[])
       : [];
-    const featureLines = features.length
+    const rawFeatureLines = features.length
       ? features
       : [
           plan.storage ? `${plan.storage} storage` : "",
@@ -47,6 +48,8 @@ export function dbPlansToCmsHostingPlans(
           plan.websites ? `${plan.websites} websites` : "",
           plan.ssl ? plan.ssl : "Free SSL",
         ].filter(Boolean);
+    /** One place qualifies "Unlimited …" claims for every hosting product. */
+    const featureLines = normalizePlanFeatures(rawFeatureLines);
 
     const annualMonthlyEquiv = yearly / 12;
     const discountPct =

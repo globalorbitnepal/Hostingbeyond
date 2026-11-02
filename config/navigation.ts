@@ -12,6 +12,11 @@ export type NavItem = {
   children?: NavChild[];
 };
 
+/**
+ * Every hosting child points at a real, canonical route (no query-string
+ * redirects and no 404s). Keep this list in sync with `HOSTING_PRODUCT_REGISTRY`
+ * and `app/**` hosting routes.
+ */
 const _mainNavigation: NavItem[] = [
   {
     label: "Domains",
@@ -19,17 +24,24 @@ const _mainNavigation: NavItem[] = [
     children: [
       { label: "Domain Name Search", href: routes.domainSearch },
       { label: "Bulk Domain Search", href: routes.bulkDomainSearch },
+      { label: "Domain Transfer", href: routes.domainTransfer },
     ],
   },
   {
     label: "Hosting",
     href: routes.hosting,
     children: [
-      { label: "Shared Hosting", href: `${routes.hosting}/shared` },
+      { label: "Web Hosting", href: routes.hosting },
       { label: "WordPress Hosting", href: `${routes.hosting}/wordpress` },
+      { label: "eCommerce Hosting", href: `${routes.hosting}/ecommerce` },
+      { label: "Business Hosting", href: routes.cloud },
+      { label: "SSL Certificates", href: `${routes.hosting}/ssl` },
+      { label: "Node.js Hosting", href: "/nodejs-hosting" },
+      { label: "Laravel Hosting", href: "/laravel-hosting" },
+      { label: "Django Hosting", href: "/django-hosting" },
+      { label: "KVM VPS", href: "/kvm-vps" },
       { label: "Reseller Hosting", href: `${routes.hosting}/reseller` },
-      { label: "Cloud Hosting", href: routes.cloud },
-      { label: "VPS Hosting", href: routes.vps },
+      { label: "Agency Hosting", href: "/agency-hosting" },
     ],
   },
   {

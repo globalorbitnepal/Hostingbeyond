@@ -331,6 +331,13 @@ export async function quoteHostingCart(
   const total = subtotal;
   const monthlyEquivalent = isAnnual ? roundMoney(yearly / 12) : monthly;
 
+  /**
+   * Renewal price: the plan's own standard rate for the same cycle. Promotional
+   * pricing is not persisted per plan, so we surface the standard catalog rate
+   * rather than inventing a discount schedule.
+   */
+  const renewalPrice = isAnnual ? roundMoney(yearly) : roundMoney(monthly);
+
   return {
     configuration,
     planName: plan.planName,
@@ -344,7 +351,7 @@ export async function quoteHostingCart(
     freeDomainEligible,
     monthlyEquivalent,
     billedAmount: hostingCharge,
-    renewalPrice: null,
+    renewalPrice,
     features: planFeatures(plan),
     errors,
     eligibleAddonSlugs: eligibleSlugs,

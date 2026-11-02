@@ -1,4 +1,5 @@
 import { routes } from "@/config/routes";
+import { normalizePlanFeatures } from "@/lib/hosting/plan-claims";
 import type { CmsHostingPlansContent } from "@/lib/orbit/defaults";
 import type { CmsHostingPageContent } from "@/lib/orbit/hosting-page-content";
 
@@ -26,7 +27,7 @@ export function polishWebHostingPlans(
       ...plan,
       ctaLabel: plan.ctaLabel?.trim() ? plan.ctaLabel : "Buy now",
       ctaHref: hostingCheckoutHref("web-hosting", plan.id),
-      features: plan.features.map(polishFeatureLine),
+      features: normalizePlanFeatures(plan.features.map(polishFeatureLine)),
     })),
   };
 }

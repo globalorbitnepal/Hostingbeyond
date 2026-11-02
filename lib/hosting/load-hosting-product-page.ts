@@ -9,6 +9,7 @@ import {
 } from "@/lib/orbit/content";
 import type { CmsCloudHostingPageContent } from "@/lib/orbit/cloud-hosting-page-content";
 import type { CmsHostingPageContent } from "@/lib/orbit/hosting-page-content";
+import { normalizePlanFeatures } from "@/lib/hosting/plan-claims";
 import { defaultHostingPlansSection } from "@/lib/orbit/defaults";
 import { rewriteDeadBookingCta } from "@/lib/hosting/checkout";
 import type { CmsHostingPlansContent } from "@/lib/orbit/defaults";
@@ -126,6 +127,9 @@ export async function loadHostingProductPage(
     product?.legacyCmsSlug ?? registry?.legacyCmsSlug,
   );
 
+  /** The registry decides the URL; a DB row must never move a live page. */
+  const canonicalPath = registry?.canonicalPath ?? product!.canonicalPath;
+
   const sectionFlags = {
     ...DEFAULT_HOSTING_SECTION_FLAGS,
     ...(registry?.sectionFlags ?? {}),
@@ -185,7 +189,7 @@ export async function loadHostingProductPage(
   const resolved = {
     slug: product.slug,
     name: product.name,
-    canonicalPath: product.canonicalPath,
+    canonicalPath,
     pageTemplate,
     sectionFlags,
     benefits: (product.benefits as HostingProductBenefit[]) ?? [],
@@ -204,9 +208,23 @@ export async function loadHostingProductPage(
     };
   }
 
+  /**
+   * Every standard-template hosting product shares the plan card renderer, so
+   * the same claim normalisation must apply or WordPress/eCommerce/Cloud cards
+   * would still show unsupported "unlimited"/"faster" copy.
+   */
+  const polishedPlans: CmsHostingPlansContent = {
+    ...resolved.hostingPlans,
+    plans: resolved.hostingPlans.plans.map((plan) => ({
+      ...plan,
+      features: normalizePlanFeatures(plan.features ?? []),
+    })),
+  };
+
   return {
     ...resolved,
     page: polishProductPageCtas(resolved.page),
+    hostingPlans: polishedPlans,
     cloudPage: resolved.cloudPage
       ? polishCloudPageCtas(resolved.cloudPage)
       : undefined,
