@@ -135,9 +135,7 @@ export async function DeveloperHostingRoute({
       <DeveloperHostingPageView
         content={localized.content}
         plans={plans}
-        productName={product.name}
         productCheckoutSlug={product.slug}
-        canonicalPath={DEVELOPER_STACK_PATHS[stack]}
         stackLabel={STACK_LABEL[stack]}
       />
     </HostingProductSiteShell>

@@ -20,6 +20,7 @@ import {
 import { motion, useReducedMotion } from "framer-motion";
 
 import { HostingPlansCream } from "@/components/hosting/hosting-plans-cream";
+import { HostingProductPremiumHero } from "@/components/hosting/hosting-product-premium-hero";
 import type {
   CmsDeveloperHostingContent,
   DeveloperFeatureIcon,
@@ -86,16 +87,12 @@ function SectionHeading({
 export function DeveloperHostingPageView({
   content,
   plans,
-  productName,
   productCheckoutSlug,
-  canonicalPath,
   stackLabel,
 }: {
   content: CmsDeveloperHostingContent;
   plans: CmsHostingPlansContent;
-  productName: string;
   productCheckoutSlug: string;
-  canonicalPath: string;
   stackLabel: string;
 }) {
   const reduce = useReducedMotion();
@@ -124,73 +121,34 @@ export function DeveloperHostingPageView({
 
   return (
     <>
-      {/* A. Hero */}
-      <section className="hb-band-purple relative overflow-hidden text-white">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_12%_0%,rgba(255,255,255,0.16),transparent_46%),radial-gradient(ellipse_at_88%_85%,rgba(37,99,235,0.24),transparent_52%)]"
-        />
-        <div className="hb-shell relative grid gap-10 py-14 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:py-20">
-          <motion.div
-            initial={reduce ? false : { opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <p className="text-[12px] font-bold tracking-[0.22em] text-[#c4b5fd] uppercase">
-              {content.heroEyebrow}
-            </p>
-            <h1 className="font-heading mt-4 text-[clamp(2.1rem,4.8vw,3.6rem)] leading-[1.05] font-extrabold tracking-[-0.045em]">
-              {content.heroTitle}{" "}
-              <span className="text-[#c7d7ff]">{content.heroTitleAccent}</span>
-            </h1>
-            <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-white/85 sm:text-[16px]">
-              {content.heroDescription}
-            </p>
-            {content.heroPromo ? (
-              <p className="mt-4 inline-flex rounded-full bg-emerald-400/15 px-3 py-1 text-[13px] font-bold text-emerald-200 ring-1 ring-emerald-400/30">
-                {content.heroPromo}
-              </p>
-            ) : null}
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href={content.heroPrimaryHref}
-                className="inline-flex h-12 items-center rounded-xl bg-white px-6 text-[15px] font-extrabold text-[#2f1c6a] shadow-lg"
-              >
-                {content.heroPrimaryLabel}
-              </Link>
-              <Link
-                href={content.heroSecondaryHref}
-                className="inline-flex h-12 items-center rounded-xl border border-white/35 px-6 text-[15px] font-bold text-white hover:bg-white/10"
-              >
-                {content.heroSecondaryLabel}
-              </Link>
-            </div>
-          </motion.div>
+      <HostingProductPremiumHero
+        eyebrow={content.heroEyebrow}
+        title={content.heroTitle}
+        titleAccent={content.heroTitleAccent}
+        description={content.heroDescription}
+        promo={content.heroPromo}
+        primaryLabel={content.heroPrimaryLabel}
+        primaryHref={content.heroPrimaryHref}
+        secondaryLabel={content.heroSecondaryLabel}
+        secondaryHref={content.heroSecondaryHref}
+        cardEyebrow={`${stackLabel} on HostingBeyond`}
+        highlights={content.heroHighlights}
+        cardSubline="Capabilities reflect the current platform — anything not available yet is listed openly below."
+        showAiCredit={false}
+      />
 
-          <motion.div
-            initial={reduce ? false : { opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="rounded-[28px] border border-white/15 bg-white/10 p-6 backdrop-blur-md"
-          >
-            <p className="text-[11px] font-bold tracking-wide text-white/60 uppercase">
-              {stackLabel} on HostingBeyond
-            </p>
-            <ul className="mt-4 space-y-3 text-[14px] text-white/90">
-              {content.heroHighlights.map((line) => (
-                <li key={line} className="flex items-start gap-2">
-                  <Check className="mt-0.5 size-4 shrink-0 text-emerald-400" />
-                  {line}
-                </li>
-              ))}
-            </ul>
-            <p className="mt-5 border-t border-white/15 pt-4 text-[12.5px] leading-relaxed text-white/70">
-              Capabilities shown here reflect the current platform. Anything not
-              yet available is listed openly in the features section.
-            </p>
-          </motion.div>
-        </div>
-      </section>
+      <HostingPlansCream
+        plansContent={plans}
+        eyebrow={content.pricingEyebrow}
+        title={content.pricingTitle}
+        titleAccent={content.pricingTitleAccent}
+        description={content.pricingDescription}
+        footnote={content.pricingNote}
+        className="!pt-6 sm:!pt-8"
+        productCheckoutSlug={productCheckoutSlug}
+      />
 
-      {/* B. Technology-specific benefits */}
+      {/* Technology-specific benefits */}
       {benefits.length > 0 ? (
         <section className="hb-band-cream py-14 sm:py-18">
           <div className="hb-shell">
@@ -317,18 +275,7 @@ export function DeveloperHostingPageView({
         </section>
       ) : null}
 
-      {/* E. Pricing — authoritative catalog data */}
-      <HostingPlansCream
-        plansContent={plans}
-        eyebrow={content.pricingEyebrow}
-        title={content.pricingTitle}
-        titleAccent={content.pricingTitleAccent}
-        description={content.pricingDescription}
-        footnote={content.pricingNote}
-        productCheckoutSlug={productCheckoutSlug}
-      />
-
-      {/* F. Plan selection guidance */}
+      {/* Plan selection guidance */}
       <section className="hb-band-cream py-14 sm:py-16">
         <div className="hb-shell mx-auto max-w-4xl">
           <motion.div {...fade(0)}>
@@ -424,9 +371,6 @@ export function DeveloperHostingPageView({
               <ArrowRight className="size-4" aria-hidden />
             </Link>
           </div>
-          <p className="mt-6 text-[12.5px] text-white/60">
-            {productName} · {canonicalPath}
-          </p>
         </div>
       </section>
     </>

@@ -167,10 +167,10 @@ export function DeveloperHostingEditor({ stack }: { stack: string }) {
             <ExternalLink className="size-3.5" />
           </a>
           <Link
-            href="/orbit/hosting-products"
+            href={`/orbit/hosting-products?search=${encodeURIComponent(activeStack)}`}
             className="text-slate-600 underline"
           >
-            Edit plans & pricing
+            Edit {meta.label} plans & pricing
           </Link>
           <Link href="/orbit/pages" className="text-slate-600 underline">
             SEO settings

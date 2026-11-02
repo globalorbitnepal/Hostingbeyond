@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
 
@@ -27,11 +28,17 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 export default function OrbitHostingProductsPage() {
+  const searchParams = useSearchParams();
   const [rows, setRows] = useState<ProductRow[]>([]);
   const [status, setStatus] = useState("");
   const [category, setCategory] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState(() => searchParams.get("search")?.trim() ?? "");
+
+  useEffect(() => {
+    const fromUrl = searchParams.get("search")?.trim();
+    if (fromUrl) setQ(fromUrl);
+  }, [searchParams]);
 
   useEffect(() => {
     void (async () => {
