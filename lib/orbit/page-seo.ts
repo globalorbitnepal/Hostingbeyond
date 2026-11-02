@@ -281,6 +281,16 @@ export const PUBLIC_PAGE_SEO_REGISTRY: PublicPageSeoEntry[] = [
     },
   },
   {
+    slug: "ssl",
+    label: "SSL certificates",
+    path: "/web-hosting/ssl",
+    editorHref: "/orbit/ssl",
+    defaultSeo: {
+      keywords:
+        "ssl certificate, free ssl, https, wildcard ssl, multi domain ssl, buy ssl, tls certificate, secure website",
+    },
+  },
+  {
     slug: "domain-transfer",
     label: "Domain transfer",
     path: "/domain-transfer",

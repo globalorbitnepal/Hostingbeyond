@@ -60,6 +60,11 @@ import {
   type CmsWebsiteMigrationPageContent,
 } from "@/lib/orbit/website-migration-page-content";
 import {
+  defaultSslPageContent,
+  mergeSslPageContent,
+  type CmsSslPageContent,
+} from "@/lib/orbit/ssl-page-content";
+import {
   defaultDomainTransferPageContent,
   mergeDomainTransferPageContent,
   type CmsDomainTransferPageContent,
@@ -133,6 +138,7 @@ const WORDPRESS_HOSTING_PAGE_SLUG = "wordpress-hosting-product";
 const ECOMMERCE_HOSTING_PAGE_SLUG = "ecommerce-hosting-product";
 const PYTHON_HOSTING_PAGE_SLUG = "python-hosting-product";
 const WEBSITE_MIGRATION_PAGE_SLUG = "website-migration-product";
+const SSL_PAGE_SLUG = "ssl-product";
 const DOMAIN_TRANSFER_PAGE_SLUG = "domain-transfer-product";
 const TIPS_HUB_PAGE_SLUG = "tips-hub";
 const UPDATES_HUB_PAGE_SLUG = "updates-hub";
@@ -738,6 +744,26 @@ export const getWebsiteMigrationPageContent = cache(
   },
 );
 
+const readSslPageContent = nextCache(
+  async (): Promise<CmsSslPageContent> => {
+    const page = await prisma.pageContent.findUnique({
+      where: { slug: SSL_PAGE_SLUG },
+    });
+    if (!page) return defaultSslPageContent();
+    return mergeSslPageContent(page.sections as Partial<CmsSslPageContent>);
+  },
+  ["orbit-ssl-page-content"],
+  { tags: [CMS_TAG], revalidate: CMS_REVALIDATE },
+);
+
+export const getSslPageContent = cache(async (): Promise<CmsSslPageContent> => {
+  try {
+    return await readSslPageContent();
+  } catch {
+    return defaultSslPageContent();
+  }
+});
+
 const readDomainTransferPageContent = nextCache(
   async (): Promise<CmsDomainTransferPageContent> => {
     const page = await prisma.pageContent.findUnique({
@@ -815,6 +841,32 @@ export async function saveWebsiteMigrationPageContent(
   revalidateContent();
   revalidatePath(routes.websiteMigration);
   revalidatePath("/orbit/website-migration");
+  return normalized;
+}
+
+export async function saveSslPageContent(content: CmsSslPageContent) {
+  const normalized = mergeSslPageContent(content);
+  await prisma.pageContent.upsert({
+    where: { slug: SSL_PAGE_SLUG },
+    create: {
+      slug: SSL_PAGE_SLUG,
+      title: "SSL certificates",
+      isPublished: true,
+      isVisible: true,
+      sections: normalized,
+      seo: {
+        title: "SSL Certificates — Free HTTPS & Premium SSL | HostingBeyond",
+        description:
+          "Free automated SSL on every hosting plan, plus premium DV, wildcard, and multi-domain certificates with automatic installation and renewal monitoring.",
+        keywords:
+          "ssl certificate, free ssl, https, wildcard ssl, multi domain ssl, buy ssl, tls certificate",
+      },
+    },
+    update: { sections: normalized },
+  });
+  revalidateContent();
+  revalidatePath("/web-hosting/ssl");
+  revalidatePath("/orbit/ssl");
   return normalized;
 }
 
@@ -1321,6 +1373,12 @@ export async function ensureHomeSeeded() {
       await saveWebsiteMigrationPageContent(
         defaultWebsiteMigrationPageContent(),
       );
+    }
+    const sslPage = await prisma.pageContent.findUnique({
+      where: { slug: SSL_PAGE_SLUG },
+    });
+    if (!sslPage) {
+      await saveSslPageContent(defaultSslPageContent());
     }
     const tipsHub = await prisma.pageContent.findUnique({
       where: { slug: TIPS_HUB_PAGE_SLUG },

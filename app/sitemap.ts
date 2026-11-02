@@ -29,6 +29,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const extraHosting = [
     "/web-hosting/wordpress",
     "/web-hosting/ecommerce",
+    "/web-hosting/ssl",
     routes.cloud,
     routes.businessEmail,
     routes.domains,
