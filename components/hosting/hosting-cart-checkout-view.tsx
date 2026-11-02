@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Check, Globe2, Loader2, Search, ShieldCheck } from "lucide-react";
 
 import { SiteHeader } from "@/components/layout/header";
@@ -148,6 +148,7 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
   const [domainSearchError, setDomainSearchError] = useState<string | null>(
     null,
   );
+  const quoteRequestRef = useRef(0);
 
   const intentQuery = serializeHostingPurchaseIntent(props.intent);
   const loginHref = useMemo(() => {
@@ -176,6 +177,7 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
 
   const refreshQuote = useCallback(
     async (patch: Partial<HostingCartQuote["configuration"]>) => {
+      const requestId = ++quoteRequestRef.current;
       setLoading(true);
       setStepHint(null);
       const nextConfig = { ...quote.configuration, ...patch };
@@ -186,16 +188,37 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
           body: JSON.stringify(nextConfig),
         });
         const json = (await res.json()) as { quote?: HostingCartQuote };
-        if (json.quote) {
+        if (json.quote && quoteRequestRef.current === requestId) {
           setQuote(json.quote);
           persistExtras(json.quote);
         }
       } finally {
-        setLoading(false);
+        if (quoteRequestRef.current === requestId) {
+          setLoading(false);
+        }
       }
     },
     [quote.configuration, persistExtras],
   );
+
+  const searchKey = searchParams.toString();
+
+  useEffect(() => {
+    quoteRequestRef.current += 1;
+    setLoading(false);
+    setCheckoutBusy(false);
+  }, [searchKey]);
+
+  useEffect(() => {
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (!event.persisted) return;
+      quoteRequestRef.current += 1;
+      setLoading(false);
+      setCheckoutBusy(false);
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, []);
 
   useEffect(() => {
     try {
@@ -206,7 +229,10 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
         stored.productSlug === props.intent.product &&
         stored.planKey === props.intent.plan
       ) {
-        void refreshQuote(stored);
+        void refreshQuote({
+          ...stored,
+          billingPeriod: props.intent.billing,
+        });
       }
     } catch {
       /* ignore */
@@ -442,6 +468,8 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
   }
 
   const busy = loading || checkoutBusy;
+  const checkoutBlocked =
+    busy || (step === "plan" ? false : quote.errors.length > 0);
 
   const continueLabel =
     step === "plan"
@@ -457,7 +485,10 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
               : `Save order · ${formatQuoteAmount(quote.total)}`;
 
   return (
-    <div className="hb-checkout-premium hb-checkout-premium--hosting hb-hosting-booking relative">
+    <div
+      className="hb-checkout-premium hb-checkout-premium--hosting hb-hosting-booking notranslate relative"
+      translate="no"
+    >
       <div className="hb-checkout-premium__ambient" aria-hidden />
       <div className="relative z-20">
         <SiteHeader layout="checkout" />
@@ -1007,7 +1038,7 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
             />
             <button
               type="button"
-              disabled={busy || quote.errors.length > 0}
+              disabled={checkoutBlocked}
               onClick={() => handleContinue()}
               className="hb-checkout-premium__cta mt-5 hidden w-full disabled:opacity-50 lg:inline-flex"
             >
@@ -1059,7 +1090,7 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
           ) : null}
           <button
             type="button"
-            disabled={busy || quote.errors.length > 0}
+            disabled={checkoutBlocked}
             onClick={() => handleContinue()}
             className="hb-checkout-premium__cta min-w-0 flex-1 disabled:opacity-50"
           >
