@@ -103,6 +103,8 @@ export default async function BlogArticlePage({ params }: Params) {
         related={related}
         prev={adjacent.prev}
         next={adjacent.next}
+        guideType={post.guideType}
+        tags={post.tags.map((t) => ({ name: t.tag.name, slug: t.tag.slug }))}
       />
     </BlogSiteShell>
   );

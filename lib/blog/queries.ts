@@ -540,8 +540,12 @@ export async function upsertBlogPost(
 }
 
 export async function seedBlogTaxonomyIfEmpty() {
-  const count = await prisma.blogCategory.count();
-  if (count > 0) return;
+  try {
+    const count = await prisma.blogCategory.count();
+    if (count > 0) return;
+  } catch {
+    return;
+  }
 
   const categories = [
     ["Hosting", "hosting"],

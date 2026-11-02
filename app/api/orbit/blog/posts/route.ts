@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { BlogContentType, BlogPostStatus } from "@prisma/client";
 
 import { upsertBlogPost, type BlogPostWriteInput } from "@/lib/blog/queries";
+import { parseOptionalEnumParam } from "@/lib/http/enum-param";
 import { requireOrbitAdmin, unauthorizedJson } from "@/lib/orbit/api";
 import { logActivity } from "@/lib/orbit/session";
 import { prisma } from "@/lib/prisma";
@@ -11,19 +13,37 @@ export async function GET(request: NextRequest) {
   const admin = await requireOrbitAdmin();
   if (!admin) return unauthorizedJson();
 
-  const status = request.nextUrl.searchParams.get("status");
-  const contentType = request.nextUrl.searchParams.get("contentType");
+  const status = parseOptionalEnumParam(
+    request.nextUrl.searchParams.get("status"),
+    Object.values(BlogPostStatus),
+  );
+  const contentType = parseOptionalEnumParam(
+    request.nextUrl.searchParams.get("contentType"),
+    Object.values(BlogContentType),
+  );
+  if (!status.ok) {
+    return NextResponse.json({ error: "Invalid status." }, { status: 400 });
+  }
+  if (!contentType.ok) {
+    return NextResponse.json(
+      { error: "Invalid contentType." },
+      { status: 400 },
+    );
+  }
   const q = request.nextUrl.searchParams.get("q")?.trim();
+  const categoryId = request.nextUrl.searchParams.get("categoryId")?.trim();
 
   const posts = await prisma.blogPost.findMany({
     where: {
-      ...(status ? { status: status as never } : {}),
-      ...(contentType ? { contentType: contentType as never } : {}),
+      ...(status.value ? { status: status.value } : {}),
+      ...(contentType.value ? { contentType: contentType.value } : {}),
+      ...(categoryId ? { categoryId } : {}),
       ...(q
         ? {
             OR: [
               { title: { contains: q, mode: "insensitive" } },
               { slug: { contains: q, mode: "insensitive" } },
+              { excerpt: { contains: q, mode: "insensitive" } },
             ],
           }
         : {}),

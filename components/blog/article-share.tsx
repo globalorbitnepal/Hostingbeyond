@@ -10,10 +10,12 @@ export function ArticleShare({
   title,
   slug,
   className = "",
+  compact = false,
 }: {
   title: string;
   slug: string;
   className?: string;
+  compact?: boolean;
 }) {
   const [copied, setCopied] = useState(false);
   const url = new URL(blogPostPath(slug), siteConfig.url).toString();
@@ -49,8 +51,14 @@ export function ArticleShare({
   ];
 
   return (
-    <div className={className}>
-      <p className="text-sm font-semibold text-slate-700">Share</p>
+    <div
+      className={
+        compact
+          ? `rounded-2xl border border-violet-100 bg-white p-4 shadow-sm ${className}`
+          : className
+      }
+    >
+      <p className="text-sm font-semibold text-slate-700">Share this article</p>
       <div className="mt-2 flex flex-wrap gap-2">
         {links.map((item) => (
           <a

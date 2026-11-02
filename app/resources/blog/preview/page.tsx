@@ -49,6 +49,8 @@ export default async function BlogPreviewPage({
         related={[]}
         prev={null}
         next={null}
+        guideType={post.guideType}
+        tags={post.tags.map((t) => ({ name: t.tag.name, slug: t.tag.slug }))}
       />
     </BlogSiteShell>
   );

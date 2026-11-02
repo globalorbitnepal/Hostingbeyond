@@ -11,6 +11,7 @@ export async function GET() {
   if (!admin) return unauthorizedJson();
   const categories = await prisma.blogCategory.findMany({
     orderBy: { name: "asc" },
+    include: { _count: { select: { posts: true } } },
   });
   return NextResponse.json({ categories });
 }
