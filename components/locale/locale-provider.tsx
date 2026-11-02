@@ -55,6 +55,7 @@ import { getDictionary, type Dictionary } from "@/lib/i18n/dictionaries";
 import {
   LOCALE_COOKIE,
   normalizePreferences,
+  parsePreferencesCookie,
   preferencesCookieOptions,
   serializePreferences,
   type UserPreferences,
@@ -117,6 +118,20 @@ function writePrefsCookie(prefs: UserPreferences) {
   }
 }
 
+function readPrefsCookie(): UserPreferences | null {
+  if (typeof document === "undefined") return null;
+  const raw = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith(`${LOCALE_COOKIE}=`))
+    ?.slice(LOCALE_COOKIE.length + 1);
+  if (!raw) return null;
+  try {
+    return parsePreferencesCookie(decodeURIComponent(raw));
+  } catch {
+    return null;
+  }
+}
+
 export function LocaleProvider({
   children,
   initialPreferences,
@@ -157,6 +172,25 @@ export function LocaleProvider({
     initialPreferences.googleTargetLang,
     initialPreferences.localeMarketId,
   ]);
+
+  useEffect(() => {
+    const fromCookie = readPrefsCookie();
+    if (!fromCookie) return;
+    let changed = false;
+    setPreferences((prev) => {
+      if (
+        prev.googleTargetLang === fromCookie.googleTargetLang &&
+        prev.currency === fromCookie.currency &&
+        prev.country === fromCookie.country &&
+        prev.localeMarketId === fromCookie.localeMarketId
+      ) {
+        return prev;
+      }
+      changed = true;
+      return fromCookie;
+    });
+    if (changed) router.refresh();
+  }, [router]);
 
   const dictionary = useMemo(
     () => getDictionary(serverCopyLanguage(preferences)),
