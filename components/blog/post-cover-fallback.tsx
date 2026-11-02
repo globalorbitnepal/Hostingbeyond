@@ -38,12 +38,6 @@ export function PostCoverFallback({
 }) {
   const gradient = paletteFor(category ?? title);
   const label = category ?? "Editorial";
-  const initials = title
-    .split(/\s+/)
-    .filter((word) => /[a-z0-9]/i.test(word))
-    .slice(0, 2)
-    .map((word) => word[0]?.toUpperCase() ?? "")
-    .join("");
 
   return (
     <div
@@ -65,15 +59,16 @@ export function PostCoverFallback({
       <div className="absolute -top-16 -right-10 size-44 rounded-full bg-white/10 blur-2xl" />
       <div className="absolute -bottom-20 -left-12 size-52 rounded-full bg-white/10 blur-2xl" />
 
-      <div className="relative flex flex-col items-center gap-1.5 px-6 text-center">
+      <div className="relative flex flex-col items-center gap-2 px-6 text-center">
         <span
           className={cn(
             "font-extrabold tracking-tight drop-shadow-sm",
-            size === "hero" ? "text-4xl" : "text-3xl",
+            size === "hero" ? "text-3xl sm:text-4xl" : "text-2xl",
           )}
         >
-          {initials || "HB"}
+          Hosting<span className="text-white/70">Beyond</span>
         </span>
+        <span className="h-px w-10 bg-white/40" />
         <span
           className={cn(
             "font-semibold tracking-[0.26em] text-white/85 uppercase",
