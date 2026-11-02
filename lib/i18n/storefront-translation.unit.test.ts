@@ -9,15 +9,17 @@ import {
 } from "@/lib/i18n/storefront-translation";
 
 describe("storefront translation routing", () => {
-  it("routes native Nepali to cloud DOM, not the website widget", () => {
-    assert.equal(shouldUseGoogleWebsiteTranslator("ne"), false);
+  it("uses the Google widget for Nepali and Hindi so the full page translates", () => {
+    assert.equal(shouldUseGoogleWebsiteTranslator("ne"), true);
+    assert.equal(shouldUseGoogleWebsiteTranslator("hi"), true);
     assert.equal(shouldUseCloudDomTranslation("ne"), true);
-    assert.equal(pickStorefrontTranslationBackend("ne", true), "cloud");
+    assert.equal(pickStorefrontTranslationBackend("ne", true), "widget");
+    assert.equal(pickStorefrontTranslationBackend("hi", false), "widget");
   });
 
-  it("routes German to cloud when available, otherwise the website widget", () => {
+  it("uses the Google widget for German even when Cloud is available", () => {
     assert.equal(shouldUseGoogleWebsiteTranslator("de"), true);
-    assert.equal(pickStorefrontTranslationBackend("de", true), "cloud");
+    assert.equal(pickStorefrontTranslationBackend("de", true), "widget");
     assert.equal(pickStorefrontTranslationBackend("de", false), "widget");
   });
 

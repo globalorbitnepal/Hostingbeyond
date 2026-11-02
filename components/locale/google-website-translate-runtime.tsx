@@ -17,7 +17,11 @@ import {
 } from "@/lib/i18n/google-translate-client";
 import { PUBLIC_ENGLISH_ONLY } from "@/lib/i18n/public-language";
 
-export function GoogleWebsiteTranslateRuntime() {
+export function GoogleWebsiteTranslateRuntime({
+  onFailed,
+}: {
+  onFailed?: () => void;
+} = {}) {
   const { preferences } = useLocale();
   const pathname = usePathname();
   const target = preferences.googleTargetLang ?? GOOGLE_PAGE_LANGUAGE;
@@ -45,13 +49,19 @@ export function GoogleWebsiteTranslateRuntime() {
     let tries = 0;
     const timer = window.setInterval(() => {
       tries += 1;
-      if (selectGoogleTranslateCombo(target) || tries > 24) {
+      const selected = selectGoogleTranslateCombo(target);
+      if (selected && pageIsGoogleTranslated()) {
         window.clearInterval(timer);
+        return;
+      }
+      if (tries > 24) {
+        window.clearInterval(timer);
+        if (!pageIsGoogleTranslated()) onFailed?.();
       }
     }, 250);
 
     return () => window.clearInterval(timer);
-  }, [skip, target, pathname]);
+  }, [skip, target, pathname, onFailed]);
 
   return (
     <div

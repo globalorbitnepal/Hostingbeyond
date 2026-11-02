@@ -1,53 +1,45 @@
-import { GOOGLE_PAGE_LANGUAGE } from "@/lib/i18n/google-translate-client";
-import { appLanguageForGoogle } from "@/lib/i18n/hostinger-locale-markets";
-import {
-  resolveUiCopyLanguage,
-  usesNativeStorefrontCopy,
-} from "@/lib/i18n/ui-copy-language";
-import type { UserPreferences } from "@/lib/i18n/preferences";
+/**
+ * Public HTML is authored in English; the Google widget translates from this.
+ */
+const PAGE_LANGUAGE = "en";
 
 /** Visitor selected a non-English website language. */
 export function isNonEnglishWebsiteLanguage(
   targetLang: string | undefined | null,
 ): boolean {
-  if (!targetLang || targetLang === GOOGLE_PAGE_LANGUAGE) return false;
+  if (!targetLang || targetLang === PAGE_LANGUAGE) return false;
   return true;
 }
 
-/** Free Google Website Translator widget (English HTML → target). Skip for native SSR locales. */
+/**
+ * Full-page Google Website Translator for every non-English storefront language,
+ * including Nepali and Hindi. HTML stays English so the widget has a stable source;
+ * prices and checkout notes are marked notranslate separately.
+ */
 export function shouldUseGoogleWebsiteTranslator(
   targetLang: string | undefined | null,
 ): boolean {
-  if (!isNonEnglishWebsiteLanguage(targetLang)) return false;
-  return !usesNativeStorefrontCopy(appLanguageForGoogle(targetLang as string));
+  return isNonEnglishWebsiteLanguage(targetLang);
 }
 
-/** Cloud DOM translation (API with GTX / MyMemory fallbacks). All non-English targets. */
+/** Cloud DOM fallback when the Google widget cannot rewrite the page. */
 export function shouldUseCloudDomTranslation(
   targetLang: string | undefined | null,
 ): boolean {
   return isNonEnglishWebsiteLanguage(targetLang);
 }
 
-export function usesNativeStorefrontDictionary(
-  preferences: UserPreferences,
-): boolean {
-  return usesNativeStorefrontCopy(resolveUiCopyLanguage(preferences));
-}
-
 export type StorefrontTranslationBackend = "cloud" | "widget" | "none";
 
+/**
+ * Prefer the Google widget so the *entire* page translates. Cloud DOM is only
+ * used when the widget is known to be unavailable.
+ */
 export function pickStorefrontTranslationBackend(
   targetLang: string | undefined | null,
   cloudAvailable: boolean,
 ): StorefrontTranslationBackend {
   if (!isNonEnglishWebsiteLanguage(targetLang)) return "none";
-  if (shouldUseCloudDomTranslation(targetLang) && cloudAvailable) {
-    return "cloud";
-  }
-  if (shouldUseGoogleWebsiteTranslator(targetLang)) return "widget";
-  if (usesNativeStorefrontCopy(appLanguageForGoogle(targetLang ?? "en"))) {
-    return cloudAvailable ? "cloud" : "none";
-  }
-  return "none";
+  void cloudAvailable;
+  return "widget";
 }
