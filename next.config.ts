@@ -54,6 +54,17 @@ const nextConfig: NextConfig = {
         destination: "/web-hosting/:path*",
         permanent: true,
       },
+      /** "Shared Hosting" was linked publicly but never existed as a page. */
+      {
+        source: "/web-hosting/shared",
+        destination: "/web-hosting",
+        permanent: true,
+      },
+      {
+        source: "/shared-hosting",
+        destination: "/web-hosting",
+        permanent: true,
+      },
       {
         source: "/cloud",
         destination: "/cloud-hosting",
