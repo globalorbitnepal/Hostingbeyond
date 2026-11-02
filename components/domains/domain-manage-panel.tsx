@@ -20,6 +20,7 @@ import {
   domainHealth,
   domainStatusLabel,
   expiryCopy,
+  formatDomainDate,
   healthTone,
 } from "@/lib/panel/domain-status";
 import { cn } from "@/lib/utils";
@@ -51,12 +52,6 @@ function formatMoney(amount: number, currency: string) {
     currency,
     minimumFractionDigits: 2,
   }).format(amount);
-}
-
-function formatDate(value: string | null) {
-  if (!value) return "—";
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "—" : date.toLocaleDateString();
 }
 
 export function DomainManagePanel({
@@ -344,8 +339,11 @@ export function DomainManagePanel({
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
               { label: "Status", value: domainStatusLabel(detail.status) },
-              { label: "Registered", value: formatDate(detail.registeredAt) },
-              { label: "Expires", value: formatDate(detail.expiresAt) },
+              {
+                label: "Registered",
+                value: formatDomainDate(detail.registeredAt),
+              },
+              { label: "Expires", value: formatDomainDate(detail.expiresAt) },
               {
                 label: "Renewal price",
                 value:

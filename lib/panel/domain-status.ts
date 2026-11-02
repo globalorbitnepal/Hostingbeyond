@@ -51,6 +51,47 @@ export function domainStatusLabel(status: string): string {
   return map[status] ?? status;
 }
 
+/**
+ * Formats a domain calendar date (expiry, registration) as `D MMM YYYY`.
+ *
+ * Pinned to UTC and a fixed locale on purpose: these components render on the
+ * server *and* hydrate in the browser, so a locale/timezone-dependent call such
+ * as `toLocaleDateString()` would produce different text on each side and
+ * trigger a hydration mismatch (plus a date that shifts by a day for visitors
+ * ahead of UTC). Expiry is a date, not an instant, so UTC is the correct frame.
+ */
+export function formatDomainDate(
+  value: Date | string | null | undefined,
+): string {
+  if (!value) return "—";
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(date);
+}
+
+/** Same reasoning as `formatDomainDate`, for timestamps shown in the panel. */
+export function formatPanelDateTime(
+  value: Date | string | null | undefined,
+): string {
+  if (!value) return "—";
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "UTC",
+    hour12: false,
+  }).format(date);
+}
+
 /** Short, human expiry copy: "in 23 days", "today", "12 days ago". */
 export function expiryCopy(
   expiresAt: Date | string | null | undefined,

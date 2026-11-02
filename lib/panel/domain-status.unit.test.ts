@@ -8,6 +8,8 @@ import {
   domainHealth,
   domainStatusLabel,
   expiryCopy,
+  formatDomainDate,
+  formatPanelDateTime,
   healthTone,
   summarizeDomains,
 } from "./domain-status";
@@ -108,6 +110,46 @@ describe("healthTone", () => {
       assert.ok(tone.pill.includes("bg-"));
       assert.ok(tone.label.length > 0);
     }
+  });
+});
+
+describe("formatDomainDate", () => {
+  it("returns an em dash for missing or invalid input", () => {
+    assert.equal(formatDomainDate(null), "—");
+    assert.equal(formatDomainDate(undefined), "—");
+    assert.equal(formatDomainDate("nope"), "—");
+  });
+
+  it("formats in UTC so server and browser agree", () => {
+    // 00:30 UTC would render as the previous day in a negative-offset zone.
+    assert.equal(formatDomainDate("2027-03-01T00:30:00.000Z"), "1 Mar 2027");
+    // 23:30 UTC would render as the next day in a positive-offset zone.
+    assert.equal(formatDomainDate("2027-02-28T23:30:00.000Z"), "28 Feb 2027");
+  });
+
+  it("is stable regardless of the ambient timezone", () => {
+    const original = process.env.TZ;
+    const value = "2027-06-15T23:45:00.000Z";
+    const results: string[] = [];
+    for (const tz of ["UTC", "Asia/Kathmandu", "America/Los_Angeles"]) {
+      process.env.TZ = tz;
+      results.push(formatDomainDate(value));
+    }
+    process.env.TZ = original;
+    assert.deepEqual(new Set(results), new Set(["15 Jun 2027"]));
+  });
+});
+
+describe("formatPanelDateTime", () => {
+  it("renders a deterministic UTC timestamp", () => {
+    assert.equal(
+      formatPanelDateTime("2027-01-02T03:04:00.000Z"),
+      "2 Jan 2027, 03:04",
+    );
+  });
+
+  it("handles empty input", () => {
+    assert.equal(formatPanelDateTime(null), "—");
   });
 });
 

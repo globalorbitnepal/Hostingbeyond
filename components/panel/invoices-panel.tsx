@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+
+import { formatDomainDate } from "@/lib/panel/domain-status";
 import { useCallback, useEffect, useState } from "react";
 
 import { routes } from "@/config/routes";
@@ -69,8 +71,8 @@ export function InvoicesPanel() {
           <div>
             <p className="font-semibold text-slate-900">{row.invoiceNumber}</p>
             <p className="text-xs text-slate-500">
-              {row.issuedAt ? new Date(row.issuedAt).toLocaleDateString() : "—"}{" "}
-              · {row.status}
+              {row.issuedAt ? formatDomainDate(row.issuedAt) : "—"} ·{" "}
+              {row.status}
               {row.tax !== "0.00" ? ` · Tax ${row.tax} ${row.currency}` : ""}
             </p>
           </div>

@@ -29,6 +29,8 @@ import {
   domainHealth,
   domainStatusLabel,
   expiryCopy,
+  formatDomainDate,
+  formatPanelDateTime,
   healthTone,
 } from "@/lib/panel/domain-status";
 import { BEYOND_AI_PUBLIC_ENABLED } from "@/config/beyond-ai-public";
@@ -337,7 +339,7 @@ export function DashboardOverview({
                         </p>
                         <p className="text-xs text-slate-500">
                           {domain.expiresAt
-                            ? `Expires ${domain.expiresAt.toLocaleDateString()}`
+                            ? `Expires ${formatDomainDate(domain.expiresAt)}`
                             : "No expiry date on file"}
                           {days !== null && days > 0
                             ? ` · ${days} day${days === 1 ? "" : "s"} left`
@@ -540,7 +542,7 @@ export function DashboardOverview({
                       {tx.note ?? tx.type}
                     </p>
                     <p className="text-xs text-slate-500">
-                      {tx.createdAt.toLocaleString()}
+                      {formatPanelDateTime(tx.createdAt)}
                     </p>
                   </div>
                   <span className="shrink-0 font-semibold text-slate-900 tabular-nums">

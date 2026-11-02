@@ -9,6 +9,7 @@ import {
   domainHealth,
   domainStatusLabel,
   expiryCopy,
+  formatDomainDate,
   healthTone,
 } from "@/lib/panel/domain-status";
 import { cn } from "@/lib/utils";
@@ -38,12 +39,6 @@ function formatMoney(amount: number, currency: string) {
     currency,
     minimumFractionDigits: 2,
   }).format(amount);
-}
-
-function formatDate(value: string | null) {
-  if (!value) return "—";
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "—" : date.toLocaleDateString();
 }
 
 export function DomainTable({ rows }: { rows: DomainTableRow[] }) {
@@ -155,7 +150,7 @@ export function DomainTable({ rows }: { rows: DomainTableRow[] }) {
                     </td>
                     <td className="px-4 py-3">
                       <p className="font-medium text-slate-800 tabular-nums">
-                        {formatDate(row.expiresAt)}
+                        {formatDomainDate(row.expiresAt)}
                       </p>
                       <p className={cn("text-[11px]", tone.text)}>
                         {expiryCopy(row.expiresAt)}

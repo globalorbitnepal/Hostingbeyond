@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+
+import { formatPanelDateTime } from "@/lib/panel/domain-status";
 import { useEffect, useState } from "react";
 
 import { useLocale } from "@/components/locale/locale-provider";
@@ -127,8 +129,7 @@ export function BillingLedgerPanel() {
             <div className="min-w-0">
               <p className="font-medium text-slate-900">{row.description}</p>
               <p className="mt-0.5 text-xs text-slate-500">
-                {new Date(row.createdAt).toLocaleString()} ·{" "}
-                {statusBadge(row.status)}
+                {formatPanelDateTime(row.createdAt)} · {statusBadge(row.status)}
                 {row.type === "RESERVE" ? " · Reserved" : ""}
               </p>
               {row.domainOrderPublicId ? (
