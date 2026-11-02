@@ -353,7 +353,7 @@ export function defaultSslPageContent(): CmsSslPageContent {
     pricingDescription:
       "Start free with automated Let's Encrypt SSL, or upgrade for warranty-backed validation, unlimited subdomains, and priority issuance.",
     pricingNote:
-      "Prices are per certificate and exclude applicable taxes. Multi-year terms are paid upfront; renewal pricing is shown before checkout.",
+      "All prices are per year for the selected term. Multi-year options are billed upfront (e.g. 3 years at $29.99/yr = $89.97 today). After your term ends, renewal is at the standard yearly rate shown on each card. Taxes may apply at checkout.",
     pricingSaveBadge: "Save up to 45% on multi-year terms",
     pricingTrust1: "Instant activation",
     pricingTrust2: "Free reissue",
@@ -391,7 +391,7 @@ export function defaultSslPageContent(): CmsSslPageContent {
         price2: "34.99",
         price3: "29.99",
         renew: "49.99",
-        off: "SAVE 20%",
+        off: "SAVE 25%",
         features: [
           "DV certificate with $250,000 warranty",
           "Issued in under 2 minutes",

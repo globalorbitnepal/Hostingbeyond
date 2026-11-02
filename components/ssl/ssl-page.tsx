@@ -44,6 +44,11 @@ const TERMS: { value: Term; label: string; hint: string }[] = [
   { value: 3, label: "3 years", hint: "Lowest per year" },
 ];
 
+function parseUsd(value: string): number {
+  const n = Number.parseFloat(value.replace(/[^0-9.]/g, ""));
+  return Number.isFinite(n) ? n : 0;
+}
+
 function planPrice(
   plan: { price1: string; price2: string; price3: string },
   term: Term,
@@ -53,9 +58,9 @@ function planPrice(
   return plan.price1;
 }
 
-function formatMoney(raw: string) {
-  const amount = Number.parseFloat(raw.replace(/[^0-9.]/g, ""));
-  if (!Number.isFinite(amount)) return raw;
+function formatMoney(raw: string | number) {
+  const amount = typeof raw === "number" ? raw : parseUsd(raw);
+  if (!Number.isFinite(amount)) return String(raw);
   if (amount === 0) return "Free";
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -445,7 +450,11 @@ export function SslPageView({ content }: { content: CmsSslPageContent }) {
           <div className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {plans.map((plan, index) => {
               const popular = Boolean(plan.popular);
-              const price = planPrice(plan, term);
+              const yearlyRate = planPrice(plan, term);
+              const perYear = parseUsd(yearlyRate);
+              const listYear = parseUsd(plan.price1);
+              const upfrontTotal = perYear * term;
+              const renewYear = parseUsd(plan.renew);
               return (
                 <motion.article
                   key={plan.id}
@@ -492,33 +501,58 @@ export function SslPageView({ content }: { content: CmsSslPageContent }) {
                     Best for {plan.bestFor}
                   </p>
 
-                  <div className="mt-5 flex items-end gap-1.5">
+                  <div className="mt-5 flex flex-wrap items-end gap-x-2 gap-y-1">
+                    {term > 1 && listYear > perYear && perYear > 0 ? (
+                      <span
+                        className={cn(
+                          "text-[14px] font-bold line-through",
+                          popular ? "text-violet-200/70" : "text-slate-400",
+                        )}
+                      >
+                        {formatMoney(listYear)}/yr
+                      </span>
+                    ) : null}
                     <span
                       className={cn(
                         "text-[clamp(1.9rem,3.4vw,2.35rem)] leading-none font-extrabold tracking-[-0.03em]",
                         popular ? "text-white" : "text-[#1e1b4b]",
                       )}
                     >
-                      {formatMoney(price)}
+                      {formatMoney(yearlyRate)}
                     </span>
-                    {Number.parseFloat(price) > 0 ? (
+                    {perYear > 0 ? (
                       <span
                         className={cn(
                           "pb-1 text-[13px] font-extrabold",
                           popular ? "text-violet-100" : "text-slate-600",
                         )}
                       >
-                        /{term === 1 ? "yr" : `${term} yrs`}
+                        /yr
                       </span>
                     ) : null}
                   </div>
+                  {perYear > 0 && term > 1 ? (
+                    <p
+                      className={cn(
+                        "mt-1.5 text-[12px] leading-snug font-bold",
+                        popular ? "text-violet-100" : "text-[#673de6]",
+                      )}
+                    >
+                      Pay {formatMoney(upfrontTotal)} upfront · {term}-year term
+                    </p>
+                  ) : null}
                   <p
                     className={cn(
                       "mt-2 text-[12px] leading-snug font-semibold",
                       popular ? "text-violet-100/85" : "text-slate-600",
                     )}
                   >
-                    {plan.badge} · Renews at {formatMoney(plan.renew)}/yr
+                    {plan.badge}
+                    {perYear === 0
+                      ? " · Included on hosting plans"
+                      : renewYear > 0
+                        ? ` · After ${term} yr${term > 1 ? "s" : ""}, renews at ${formatMoney(plan.renew)}/yr`
+                        : null}
                   </p>
 
                   <ul className="mt-4 flex-1 space-y-2">

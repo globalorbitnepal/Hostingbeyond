@@ -445,6 +445,13 @@ export function SslPageEditor({
 
       {tab === "pricing" ? (
         <div className="space-y-3">
+          <p className="rounded-lg border border-violet-200 bg-violet-50/80 px-3 py-2 text-[11px] leading-relaxed text-violet-950">
+            <span className="font-bold">Pricing model:</span> Price 1/2/3 are{" "}
+            <strong>per year</strong> for that term length. The page shows{" "}
+            <code className="rounded bg-white px-1">$/yr</code>, upfront total
+            for 2–3 year prepay, and renewal at the Renew field after the term
+            ends.
+          </p>
           <div className="grid gap-3 sm:grid-cols-2">
             <Field
               label="Eyebrow"
@@ -542,8 +549,9 @@ export function SslPageEditor({
                   }}
                 />
                 <Field
-                  label="Price — 1 year (USD)"
+                  label="Price — 1-year term ($/yr)"
                   value={plan.price1}
+                  hint="Per year when customer pays for 1 year"
                   onChange={(price1) => {
                     const plans = [...value.plans];
                     plans[index] = { ...plan, price1 };
@@ -551,8 +559,9 @@ export function SslPageEditor({
                   }}
                 />
                 <Field
-                  label="Price — 2 years"
+                  label="Price — 2-year term ($/yr)"
                   value={plan.price2}
+                  hint="Per year when billed for 2 years upfront"
                   onChange={(price2) => {
                     const plans = [...value.plans];
                     plans[index] = { ...plan, price2 };
@@ -560,8 +569,9 @@ export function SslPageEditor({
                   }}
                 />
                 <Field
-                  label="Price — 3 years"
+                  label="Price — 3-year term ($/yr)"
                   value={plan.price3}
+                  hint="Per year when billed for 3 years upfront"
                   onChange={(price3) => {
                     const plans = [...value.plans];
                     plans[index] = { ...plan, price3 };
@@ -569,8 +579,9 @@ export function SslPageEditor({
                   }}
                 />
                 <Field
-                  label="Renewal (per year)"
+                  label="Renewal after term ($/yr)"
                   value={plan.renew}
+                  hint="Standard yearly price after intro term ends"
                   onChange={(renew) => {
                     const plans = [...value.plans];
                     plans[index] = { ...plan, renew };
