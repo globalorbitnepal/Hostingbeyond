@@ -8,6 +8,9 @@ export const DEFAULT_PUBLIC_SITE_ORIGIN = "https://hosting.theglobalorbit.com";
 
 export const STOREFRONT_PUBLIC_HOST = "hosting.theglobalorbit.com";
 
+/** Google OAuth redirect_uri host — shows hostingbeyond.com on the Google sign-in screen. */
+export const DEFAULT_CUSTOMER_OAUTH_PUBLIC_ORIGIN = "https://hostingbeyond.com";
+
 function stripTrailingSlash(origin: string) {
   return origin.replace(/\/+$/, "");
 }
@@ -115,16 +118,56 @@ export function requestSiteOrigin(request: NextRequest): string {
 }
 
 /**
- * OAuth redirect_uri must use the public storefront host (not a bare parent
- * domain like theglobalorbit.com) so Google shows the correct site to users.
+ * OAuth redirect_uri host. Production defaults to hostingbeyond.com for Google
+ * branding; override with CUSTOMER_OAUTH_PUBLIC_ORIGIN. Dev uses the live request host.
  */
 export function storefrontSiteOriginForOAuth(
   input?: RequestOriginInput,
 ): string {
-  const resolved = input
-    ? resolveRequestSiteOrigin(input)
-    : configuredSiteOrigin();
-  return normalizeStorefrontOAuthOrigin(resolved);
+  const production = process.env.NODE_ENV === "production";
+  const fromEnv = normalizeEnvSiteOrigin(
+    process.env.CUSTOMER_OAUTH_PUBLIC_ORIGIN,
+    { production },
+  );
+  if (fromEnv) return fromEnv;
+  if (production) return DEFAULT_CUSTOMER_OAUTH_PUBLIC_ORIGIN;
+  if (input) return stripTrailingSlash(resolveRequestSiteOrigin(input));
+  return configuredSiteOrigin();
+}
+
+export function oauthOriginsMatch(a: string, b: string): boolean {
+  try {
+    return new URL(a).origin === new URL(b).origin;
+  } catch {
+    return stripTrailingSlash(a) === stripTrailingSlash(b);
+  }
+}
+
+export function allowedCustomerReturnOrigins(): string[] {
+  const set = new Set<string>();
+  const add = (raw: string | undefined) => {
+    const normalized = raw?.trim() ? stripTrailingSlash(raw.trim()) : null;
+    if (normalized && !isLoopbackOrigin(normalized)) set.add(normalized);
+  };
+  add(process.env.NEXT_PUBLIC_SITE_URL);
+  add(process.env.NEXT_PUBLIC_APP_URL);
+  set.add(DEFAULT_PUBLIC_SITE_ORIGIN);
+  set.add(DEFAULT_CUSTOMER_OAUTH_PUBLIC_ORIGIN);
+  return [...set];
+}
+
+/** Where the customer started OAuth — must be an allowed storefront origin. */
+export function resolveStorefrontReturnOrigin(
+  input: RequestOriginInput,
+): string {
+  const requestOrigin = stripTrailingSlash(resolveRequestSiteOrigin(input));
+  const allowed = allowedCustomerReturnOrigins();
+  if (
+    allowed.some((candidate) => oauthOriginsMatch(candidate, requestOrigin))
+  ) {
+    return requestOrigin;
+  }
+  return configuredSiteOrigin();
 }
 
 function normalizeStorefrontOAuthOrigin(origin: string): string {

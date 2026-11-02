@@ -11,6 +11,7 @@ describe("nextPathFromOAuthStatePayload", () => {
         kind: "oauth",
         provider: "google",
         next: "/cart?step=3",
+        returnOrigin: "https://hosting.theglobalorbit.com",
       },
       "google",
     );
@@ -41,6 +42,7 @@ describe("nextPathFromOAuthStatePayload", () => {
         kind: "oauth",
         provider: "google",
         next: "//phish.example",
+        returnOrigin: "https://hosting.theglobalorbit.com",
       },
       "google",
     );

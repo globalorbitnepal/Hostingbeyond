@@ -21,6 +21,7 @@ import {
   Settings,
   Sparkles,
   Tags,
+  Users,
   X,
 } from "lucide-react";
 import { useState } from "react";
@@ -32,6 +33,7 @@ const nav = [
   { href: "/orbit", label: "Dashboard", icon: LayoutDashboard },
   { href: "/orbit/pages", label: "Pages", icon: FileText },
   { href: "/orbit/about", label: "About Page", icon: Building2 },
+  { href: "/orbit/users", label: "Users", icon: Users },
   { href: "/orbit/contact", label: "Contact Page", icon: Mail },
   { href: "/orbit/blog", label: "Blog", icon: FileText },
   { href: "/orbit/content", label: "Website Content", icon: Sparkles },

@@ -16,7 +16,12 @@ import {
   customerCookieOptions,
 } from "@/lib/customer/session";
 import { sanitizeCustomerRedirectPath } from "@/lib/customer/safe-redirect";
-import { absoluteSiteUrl } from "@/lib/customer/site-origin";
+import {
+  absoluteSiteUrl,
+  oauthOriginsMatch,
+  requestSiteOrigin,
+} from "@/lib/customer/site-origin";
+import { signOAuthEstablishToken } from "@/lib/customer/oauth-bridge";
 import { routes } from "@/config/routes";
 import { sessionSecret } from "@/lib/orbit/jwt";
 
@@ -72,11 +77,13 @@ export async function GET(
   }
 
   let nextPath: string = routes.account;
+  let returnOrigin = requestSiteOrigin(request);
   try {
     const { payload } = await jwtVerify(state, sessionSecret());
     const verified = nextPathFromOAuthStatePayload(payload, rawProvider);
     if (!verified) return fail(request, "oauth");
     nextPath = verified.nextPath;
+    returnOrigin = verified.returnOrigin;
   } catch {
     return fail(request, "oauth");
   }
@@ -142,19 +149,35 @@ export async function GET(
     });
   }
 
+  const clearState = (response: NextResponse) => {
+    response.cookies.set("hb_oauth_state", "", {
+      path: "/",
+      expires: new Date(0),
+    });
+    return response;
+  };
+
+  if (!oauthOriginsMatch(oauthOrigin, returnOrigin)) {
+    const establishToken = await signOAuthEstablishToken({
+      userId: user.id,
+      nextPath,
+    });
+    const establishUrl = new URL(
+      `${returnOrigin.replace(/\/+$/, "")}/api/auth/oauth/establish`,
+    );
+    establishUrl.searchParams.set("token", establishToken);
+    return clearState(NextResponse.redirect(establishUrl));
+  }
+
   const { token, expiresAt } = await createCustomerSession(user.id, {
     remember: true,
     userAgent: request.headers.get("user-agent"),
   });
 
   const response = NextResponse.redirect(
-    absoluteSiteUrl(request, nextPath, routes.account),
+    new URL(nextPath, `${returnOrigin.replace(/\/+$/, "")}/`),
   );
   const cookie = customerCookieOptions(expiresAt);
   response.cookies.set(cookie.name, token, cookie);
-  response.cookies.set("hb_oauth_state", "", {
-    path: "/",
-    expires: new Date(0),
-  });
-  return response;
+  return clearState(response);
 }

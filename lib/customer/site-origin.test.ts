@@ -60,21 +60,29 @@ describe("site origin resolution", () => {
     assert.ok(!DEFAULT_PUBLIC_SITE_ORIGIN.includes("localhost"));
   });
 
-  it("maps bare theglobalorbit.com OAuth origins to the storefront host", () => {
-    assert.equal(
-      storefrontSiteOriginForOAuth({
-        forwardedHost: "theglobalorbit.com",
-        forwardedProto: "https",
-      }),
-      "https://hosting.theglobalorbit.com",
-    );
-    assert.equal(
-      storefrontSiteOriginForOAuth({
-        forwardedHost: "hosting.theglobalorbit.com",
-        forwardedProto: "https",
-      }),
-      "https://hosting.theglobalorbit.com",
-    );
+  it("uses hostingbeyond.com for OAuth redirect in production when env unset", () => {
+    const prevNode = process.env.NODE_ENV;
+    const prevOAuth = process.env.CUSTOMER_OAUTH_PUBLIC_ORIGIN;
+    const prevSite = process.env.NEXT_PUBLIC_SITE_URL;
+    delete process.env.CUSTOMER_OAUTH_PUBLIC_ORIGIN;
+    process.env.NEXT_PUBLIC_SITE_URL = "https://hosting.theglobalorbit.com";
+    process.env.NODE_ENV = "production";
+    try {
+      assert.equal(
+        storefrontSiteOriginForOAuth({
+          forwardedHost: "hosting.theglobalorbit.com",
+          forwardedProto: "https",
+        }),
+        "https://hostingbeyond.com",
+      );
+    } finally {
+      process.env.NODE_ENV = prevNode;
+      if (prevOAuth === undefined)
+        delete process.env.CUSTOMER_OAUTH_PUBLIC_ORIGIN;
+      else process.env.CUSTOMER_OAUTH_PUBLIC_ORIGIN = prevOAuth;
+      if (prevSite === undefined) delete process.env.NEXT_PUBLIC_SITE_URL;
+      else process.env.NEXT_PUBLIC_SITE_URL = prevSite;
+    }
   });
 
   it("configuredSiteOrigin prefers NEXT_PUBLIC_SITE_URL", () => {

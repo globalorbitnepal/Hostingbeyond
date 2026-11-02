@@ -30,6 +30,7 @@ enum ActivityAction {
   WALLET_TRANSACTION
   INVOICE_VOID
   INVOICE_CREDIT_NOTE
+  CUSTOMER_PASSWORD_RESET
 }
 
 enum InvoiceStatus {

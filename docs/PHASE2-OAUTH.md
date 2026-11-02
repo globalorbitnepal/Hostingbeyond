@@ -4,11 +4,13 @@
 
 OAuth callback and `/account` login redirects must **not** use `request.url` as the redirect base behind Nginx (PM2 listens on `127.0.0.1:3030`). Use `lib/customer/site-origin.ts` (`requestSiteOrigin` / `absoluteSiteUrl`). Ensure production sets `NEXT_PUBLIC_SITE_URL=https://hosting.theglobalorbit.com` and Nginx passes `X-Forwarded-Host` / `X-Forwarded-Proto`.
 
-Customer OAuth `redirect_uri` is built from the live request host via `storefrontSiteOriginForOAuth()` — never a bare `https://theglobalorbit.com` parent domain. Register this callback in Google Cloud Console:
+Customer OAuth `redirect_uri` uses `storefrontSiteOriginForOAuth()` — production defaults to **`https://hostingbeyond.com`** (`CUSTOMER_OAUTH_PUBLIC_ORIGIN`). Register this callback in Google Cloud Console:
 
-`https://hosting.theglobalorbit.com/api/auth/oauth/google/callback`
+`https://hostingbeyond.com/api/auth/oauth/google/callback`
 
-On the OAuth consent screen, set **App name** to **HostingBeyond** (and logo/homepage `https://hosting.theglobalorbit.com`). Google may still show the verified registrable domain (`theglobalorbit.com`) under the account picker; the app name is what customers should recognize as your product.
+Also ensure **`hostingbeyond.com`** (and `hosting.theglobalorbit.com`) are allowed return origins: after Google returns to `hostingbeyond.com`, the app redirects to the storefront host via `/api/auth/oauth/establish` so the session cookie is set where the customer browses (`NEXT_PUBLIC_SITE_URL`).
+
+On the OAuth consent screen, set **App name** to **HostingBeyond** (logo/homepage `https://hostingbeyond.com` or your storefront URL).
 
 ## Redirect safety
 

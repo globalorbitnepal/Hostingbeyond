@@ -8,7 +8,10 @@ import {
   oauthSiteOriginFromRequest,
 } from "@/lib/customer/oauth";
 import { sanitizeCustomerRedirectPath } from "@/lib/customer/safe-redirect";
-import { absoluteSiteUrl } from "@/lib/customer/site-origin";
+import {
+  absoluteSiteUrl,
+  resolveStorefrontReturnOrigin,
+} from "@/lib/customer/site-origin";
 import { routes } from "@/config/routes";
 import { sessionSecret } from "@/lib/orbit/jwt";
 
@@ -34,12 +37,18 @@ export async function GET(
     request.nextUrl.searchParams.get("next"),
     routes.account,
   );
+  const returnOrigin = resolveStorefrontReturnOrigin({
+    forwardedHost: request.headers.get("x-forwarded-host"),
+    host: request.headers.get("host"),
+    forwardedProto: request.headers.get("x-forwarded-proto"),
+  });
   const nonce = crypto.randomUUID();
   const state = await new SignJWT({
     kind: "oauth",
     provider: rawProvider,
     nonce,
     next: nextPath,
+    returnOrigin,
   })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()

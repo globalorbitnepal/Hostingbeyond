@@ -14,7 +14,13 @@ import {
 
 type DashboardData = {
   admin: { displayName: string };
-  stats: { credentials: number; media: number; pages: number };
+  stats: {
+    credentials: number;
+    media: number;
+    pages: number;
+    totalCustomers: number;
+    googleSignups: number;
+  };
   recentActivity: Array<{
     id: string;
     action: string;
@@ -98,9 +104,14 @@ export default function OrbitDashboardPage() {
             external: true,
           },
           {
-            label: "Pages",
-            value: String(data?.stats.pages ?? "—"),
-            href: "/orbit/pages",
+            label: "Customer signups",
+            value: String(data?.stats.totalCustomers ?? "—"),
+            href: "/orbit/users",
+          },
+          {
+            label: "Google sign-ins",
+            value: String(data?.stats.googleSignups ?? "—"),
+            href: "/orbit/users",
           },
           {
             label: "Media assets",
