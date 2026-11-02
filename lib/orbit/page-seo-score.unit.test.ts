@@ -1,5 +1,8 @@
-import { scorePageSeo } from "@/lib/orbit/page-seo-score";
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
+
 import type { StoredPageSeo } from "@/lib/orbit/page-seo";
+import { scorePageSeo } from "@/lib/orbit/page-seo-score";
 
 describe("scorePageSeo", () => {
   it("scores a complete entry highly", () => {
@@ -16,12 +19,12 @@ describe("scorePageSeo", () => {
       twitterDescription: "Register domains with transparent pricing.",
     };
     const result = scorePageSeo(seo, "/domain-name-search");
-    expect(result.score).toBeGreaterThanOrEqual(85);
-    expect(result.grade).toBe("A");
+    assert.ok(result.score >= 85);
+    assert.equal(result.grade, "A");
   });
 
   it("scores empty SEO low", () => {
     const result = scorePageSeo({}, "/pricing");
-    expect(result.score).toBeLessThan(30);
+    assert.ok(result.score < 30);
   });
 });
