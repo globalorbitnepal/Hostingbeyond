@@ -17,6 +17,14 @@ const SITEMAP_EXCLUDE = new Set([
   "/checkout/business-email",
 ]);
 
+/**
+ * The sitemap is generated from live CMS data (posts, categories, tips,
+ * updates). Building it once at deploy time would miss every article published
+ * afterwards, so it is rendered on request and cached briefly.
+ */
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const lastModified = new Date();
 

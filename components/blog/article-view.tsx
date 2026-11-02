@@ -8,6 +8,7 @@ import { ArticleShare } from "@/components/blog/article-share";
 import { ArticleToc } from "@/components/blog/article-toc";
 import { ReadingProgress } from "@/components/blog/reading-progress";
 import { BlogCta } from "@/components/blog/blog-cta";
+import { PostCoverFallback } from "@/components/blog/post-cover-fallback";
 import type { BlogPostCard as Card } from "@/lib/blog/queries";
 import {
   BLOG_BASE,
@@ -197,7 +198,15 @@ export function ArticleView({
                   className="object-cover"
                 />
               </div>
-            ) : null}
+            ) : (
+              <div className="relative mt-8 aspect-[16/7] overflow-hidden rounded-2xl">
+                <PostCoverFallback
+                  category={post.category?.name ?? null}
+                  title={post.title}
+                  size="hero"
+                />
+              </div>
+            )}
 
             <ArticleToc items={toc} className="mt-8 lg:hidden" />
 

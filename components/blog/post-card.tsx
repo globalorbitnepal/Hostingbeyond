@@ -6,6 +6,7 @@ import type { BlogPostCard } from "@/lib/blog/queries";
 import { blogPostPath, tipsPostPath } from "@/lib/blog/paths";
 import { formatBlogDate } from "@/lib/blog/format";
 import { guideTypeBadge } from "@/lib/blog/guide-type";
+import { PostCoverFallback } from "@/components/blog/post-cover-fallback";
 
 export function BlogPostCard({
   post,
@@ -26,7 +27,7 @@ export function BlogPostCard({
       <Link
         href={href}
         tabIndex={-1}
-        className="relative block aspect-[16/10] overflow-hidden bg-gradient-to-br from-violet-100 via-indigo-50 to-sky-50"
+        className="relative block aspect-[16/10] overflow-hidden"
       >
         {post.featuredImageUrl ? (
           <Image
@@ -37,15 +38,10 @@ export function BlogPostCard({
             className="object-cover transition duration-300 group-hover:scale-[1.03]"
           />
         ) : (
-          <div className="flex h-full flex-col items-center justify-center gap-1 text-violet-500/80">
-            <span className="text-2xl font-extrabold tracking-tight">
-              Hosting
-              <span className="text-violet-400">Beyond</span>
-            </span>
-            <span className="text-[10px] font-semibold tracking-[0.24em] uppercase">
-              {post.category?.name ?? "Editorial"}
-            </span>
-          </div>
+          <PostCoverFallback
+            category={post.category?.name ?? null}
+            title={post.title}
+          />
         )}
         {badge ? (
           <span className="absolute top-3 left-3 rounded-md bg-[#1a1035]/90 px-2 py-0.5 text-[10px] font-bold tracking-wide text-white uppercase backdrop-blur">

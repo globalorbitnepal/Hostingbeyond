@@ -6,6 +6,7 @@ import type { BlogPostCard } from "@/lib/blog/queries";
 import { blogPostPath } from "@/lib/blog/paths";
 import { formatBlogDate } from "@/lib/blog/format";
 import { guideTypeBadge } from "@/lib/blog/guide-type";
+import { PostCoverFallback } from "@/components/blog/post-cover-fallback";
 
 export function FeaturedBlogPost({
   post,
@@ -24,7 +25,7 @@ export function FeaturedBlogPost({
         <Link
           href={blogPostPath(post.slug)}
           tabIndex={-1}
-          className="relative block min-h-[240px] overflow-hidden bg-gradient-to-br from-violet-100 via-indigo-50 to-sky-50 lg:min-h-[360px]"
+          className="relative block min-h-[240px] overflow-hidden lg:min-h-[360px]"
         >
           {post.featuredImageUrl ? (
             <Image
@@ -36,14 +37,11 @@ export function FeaturedBlogPost({
               className="object-cover"
             />
           ) : (
-            <div className="flex h-full flex-col items-center justify-center gap-2 text-violet-500/80">
-              <span className="text-3xl font-extrabold tracking-tight">
-                Hosting<span className="text-violet-400">Beyond</span>
-              </span>
-              <span className="text-[11px] font-semibold tracking-[0.26em] uppercase">
-                {post.category?.name ?? "Editorial"}
-              </span>
-            </div>
+            <PostCoverFallback
+              category={post.category?.name ?? null}
+              title={post.title}
+              size="hero"
+            />
           )}
         </Link>
 
