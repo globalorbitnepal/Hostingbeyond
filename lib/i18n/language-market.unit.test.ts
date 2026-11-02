@@ -83,4 +83,21 @@ describe("preferencesFromWebsiteLanguage", () => {
     assert.equal(next.googleTargetLang, "hi");
     assert.equal(next.currency, "INR");
   });
+
+  it("unlocks currency so German replaces leftover INR", () => {
+    const before = normalizePreferences({
+      country: "IN",
+      localeMarketId: "IN-hi",
+      currency: "INR",
+      currencyLocked: true,
+      googleTargetLang: "hi",
+    });
+    const next = normalizePreferences(
+      preferencesFromWebsiteLanguage(before, "de"),
+    );
+    assert.equal(next.googleTargetLang, "de");
+    assert.equal(next.country, "DE");
+    assert.equal(next.currency, "EUR");
+    assert.equal(next.currencyLocked, false);
+  });
 });

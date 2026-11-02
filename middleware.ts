@@ -58,11 +58,9 @@ function mergeLocaleCookie(
   const current = parsePreferencesCookie(raw);
   const googleTargetLang = resolveWebsiteLanguageCode(language);
   if (current.googleTargetLang === googleTargetLang) return response;
-  const next = normalizePreferences({
-    ...preferencesFromWebsiteLanguage(current, language),
-    currencyLocked: current.currencyLocked,
-    ...(current.currencyLocked ? { currency: current.currency } : {}),
-  });
+  const next = normalizePreferences(
+    preferencesFromWebsiteLanguage(current, language),
+  );
   const opts = preferencesCookieOptions();
   response.cookies.set(LOCALE_COOKIE, serializePreferences(next), {
     path: opts.path,

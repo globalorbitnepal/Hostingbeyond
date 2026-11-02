@@ -138,6 +138,26 @@ export function LocaleProvider({
   );
   const [isPending, startTransition] = useTransition();
 
+  useEffect(() => {
+    const next = normalizePreferences(initialPreferences);
+    setPreferences((prev) => {
+      if (
+        prev.googleTargetLang === next.googleTargetLang &&
+        prev.currency === next.currency &&
+        prev.country === next.country &&
+        prev.localeMarketId === next.localeMarketId
+      ) {
+        return prev;
+      }
+      return next;
+    });
+  }, [
+    initialPreferences.country,
+    initialPreferences.currency,
+    initialPreferences.googleTargetLang,
+    initialPreferences.localeMarketId,
+  ]);
+
   const dictionary = useMemo(
     () => getDictionary(serverCopyLanguage(preferences)),
     [preferences],
