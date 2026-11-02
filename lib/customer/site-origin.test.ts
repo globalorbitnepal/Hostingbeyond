@@ -61,28 +61,54 @@ describe("site origin resolution", () => {
     assert.ok(!DEFAULT_PUBLIC_SITE_ORIGIN.includes("localhost"));
   });
 
-  it("production OAuth redirect default is hostingbeyond.com", () => {
+  it("production OAuth redirect default matches live storefront", () => {
     assert.equal(
       DEFAULT_CUSTOMER_OAUTH_PUBLIC_ORIGIN,
-      "https://hostingbeyond.com",
+      DEFAULT_PUBLIC_SITE_ORIGIN,
+    );
+    assert.equal(
+      DEFAULT_CUSTOMER_OAUTH_PUBLIC_ORIGIN,
+      "https://hosting.theglobalorbit.com",
     );
   });
 
   it("storefrontSiteOriginForOAuth honors CUSTOMER_OAUTH_PUBLIC_ORIGIN", () => {
     const prevOAuth = process.env.CUSTOMER_OAUTH_PUBLIC_ORIGIN;
-    process.env.CUSTOMER_OAUTH_PUBLIC_ORIGIN = "https://hostingbeyond.com";
+    process.env.CUSTOMER_OAUTH_PUBLIC_ORIGIN = "https://oauth.example.test";
     try {
       assert.equal(
         storefrontSiteOriginForOAuth({
           forwardedHost: "hosting.theglobalorbit.com",
           forwardedProto: "https",
         }),
-        "https://hostingbeyond.com",
+        "https://oauth.example.test",
       );
     } finally {
       if (prevOAuth === undefined)
         delete process.env.CUSTOMER_OAUTH_PUBLIC_ORIGIN;
       else process.env.CUSTOMER_OAUTH_PUBLIC_ORIGIN = prevOAuth;
+    }
+  });
+
+  it("ignores deprecated hostingbeyond.com OAuth env override", () => {
+    const prevOAuth = process.env.CUSTOMER_OAUTH_PUBLIC_ORIGIN;
+    const prevSite = process.env.NEXT_PUBLIC_SITE_URL;
+    process.env.CUSTOMER_OAUTH_PUBLIC_ORIGIN = "https://hostingbeyond.com";
+    process.env.NEXT_PUBLIC_SITE_URL = "https://hosting.theglobalorbit.com";
+    try {
+      assert.equal(
+        storefrontSiteOriginForOAuth({
+          forwardedHost: "hosting.theglobalorbit.com",
+          forwardedProto: "https",
+        }),
+        "https://hosting.theglobalorbit.com",
+      );
+    } finally {
+      if (prevOAuth === undefined)
+        delete process.env.CUSTOMER_OAUTH_PUBLIC_ORIGIN;
+      else process.env.CUSTOMER_OAUTH_PUBLIC_ORIGIN = prevOAuth;
+      if (prevSite === undefined) delete process.env.NEXT_PUBLIC_SITE_URL;
+      else process.env.NEXT_PUBLIC_SITE_URL = prevSite;
     }
   });
 

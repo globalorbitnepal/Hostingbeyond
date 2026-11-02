@@ -8,8 +8,8 @@ export const DEFAULT_PUBLIC_SITE_ORIGIN = "https://hosting.theglobalorbit.com";
 
 export const STOREFRONT_PUBLIC_HOST = "hosting.theglobalorbit.com";
 
-/** Google OAuth redirect_uri host — shows hostingbeyond.com on the Google sign-in screen. */
-export const DEFAULT_CUSTOMER_OAUTH_PUBLIC_ORIGIN = "https://hostingbeyond.com";
+/** OAuth redirect_uri host when env is unset — must be a live DNS name (see .env.example). */
+export const DEFAULT_CUSTOMER_OAUTH_PUBLIC_ORIGIN = DEFAULT_PUBLIC_SITE_ORIGIN;
 
 function stripTrailingSlash(origin: string) {
   return origin.replace(/\/+$/, "");
@@ -118,19 +118,34 @@ export function requestSiteOrigin(request: NextRequest): string {
 }
 
 /**
- * OAuth redirect_uri host. Production defaults to hostingbeyond.com for Google
- * branding; override with CUSTOMER_OAUTH_PUBLIC_ORIGIN. Dev uses the live request host.
+ * OAuth redirect_uri host. Production uses `NEXT_PUBLIC_SITE_URL` (or
+ * `CUSTOMER_OAUTH_PUBLIC_ORIGIN` when set). Dev uses the live request host.
  */
-export function storefrontSiteOriginForOAuth(
-  input?: RequestOriginInput,
-): string {
+/** Legacy env value — domain has no public DNS; do not use for OAuth redirect_uri. */
+const DEPRECATED_OAUTH_PUBLIC_ORIGINS = new Set([
+  "https://hostingbeyond.com",
+  "http://hostingbeyond.com",
+]);
+
+function resolveOAuthPublicOriginFromEnv(): string | null {
   const production = process.env.NODE_ENV === "production";
   const fromEnv = normalizeEnvSiteOrigin(
     process.env.CUSTOMER_OAUTH_PUBLIC_ORIGIN,
     { production },
   );
+  if (!fromEnv) return null;
+  const key = stripTrailingSlash(fromEnv).toLowerCase();
+  if (DEPRECATED_OAUTH_PUBLIC_ORIGINS.has(key)) return null;
+  return fromEnv;
+}
+
+export function storefrontSiteOriginForOAuth(
+  input?: RequestOriginInput,
+): string {
+  const production = process.env.NODE_ENV === "production";
+  const fromEnv = resolveOAuthPublicOriginFromEnv();
   if (fromEnv) return fromEnv;
-  if (production) return DEFAULT_CUSTOMER_OAUTH_PUBLIC_ORIGIN;
+  if (production) return configuredSiteOrigin();
   if (input) return stripTrailingSlash(resolveRequestSiteOrigin(input));
   return configuredSiteOrigin();
 }
