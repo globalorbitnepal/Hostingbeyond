@@ -1,19 +1,21 @@
 import type { Metadata } from "next";
 
-import { HostingProductRoute } from "@/components/hosting/hosting-product-route";
-import { hostingProductMetadata } from "@/lib/hosting/hosting-product-metadata";
+import {
+  DeveloperHostingRoute,
+  developerHostingMetadata,
+} from "@/lib/hosting/developer-hosting-route";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return hostingProductMetadata("nodejs-hosting", {
-    title: "Node.js Hosting — Deploy Apps on NVMe",
+  return developerHostingMetadata("nodejs-hosting", {
+    title: "Node.js Hosting Plans | HostingBeyond",
     description:
-      "Node.js hosting with npm, modern runtimes, free SSL, and scalable resources. Choose a plan and deploy APIs or full-stack apps on HostingBeyond.",
+      "Host Node.js APIs and full-stack JavaScript apps with the Node.js runtime on Pro and above, npm over SSH, MySQL, NVMe storage and free automatic SSL.",
     image: "/images/hosting/cloud.jpg",
   });
 }
 
 export default function NodeJsHostingPage() {
-  return <HostingProductRoute slug="nodejs-hosting" />;
+  return <DeveloperHostingRoute stack="nodejs-hosting" />;
 }

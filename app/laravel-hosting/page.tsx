@@ -1,19 +1,21 @@
 import type { Metadata } from "next";
 
-import { HostingProductRoute } from "@/components/hosting/hosting-product-route";
-import { hostingProductMetadata } from "@/lib/hosting/hosting-product-metadata";
+import {
+  DeveloperHostingRoute,
+  developerHostingMetadata,
+} from "@/lib/hosting/developer-hosting-route";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return hostingProductMetadata("laravel-hosting", {
-    title: "Laravel Hosting — PHP, Composer & Queues",
+  return developerHostingMetadata("laravel-hosting", {
+    title: "Laravel Hosting Plans | HostingBeyond",
     description:
-      "Laravel-optimized hosting with Composer, cron, queues, free SSL, and NVMe performance. Launch Laravel projects on HostingBeyond.",
+      "Laravel hosting with PHP, Composer and artisan over SSH, MySQL for Eloquent, cron for the scheduler, and free automatic SSL on Pro plans and above.",
     image: "/images/hosting/cloud.jpg",
   });
 }
 
 export default function LaravelHostingPage() {
-  return <HostingProductRoute slug="laravel-hosting" />;
+  return <DeveloperHostingRoute stack="laravel-hosting" />;
 }

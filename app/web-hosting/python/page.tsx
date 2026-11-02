@@ -1,18 +1,21 @@
 import type { Metadata } from "next";
 
-import { HostingProductRoute } from "@/components/hosting/hosting-product-route";
-import { hostingProductMetadata } from "@/lib/hosting/hosting-product-metadata";
+import {
+  DeveloperHostingRoute,
+  developerHostingMetadata,
+} from "@/lib/hosting/developer-hosting-route";
+
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return hostingProductMetadata("python-hosting", {
-    title: "Python Hosting — Django, Flask & FastAPI on NVMe",
+  return developerHostingMetadata("python-hosting", {
+    title: "Python Hosting Plans | HostingBeyond",
     description:
-      "Managed Python hosting for Flask, Django, and FastAPI on Linux NVMe. Free SSL, SSH on Pro+ plans, and 24/7 developer support.",
+      "Run Flask, Django and FastAPI on managed Linux with pip and virtual environments over SSH, MySQL databases, cron scheduling and free automatic SSL.",
     image: "/images/home/solutions/wordpress-screen.png",
   });
 }
 
 export default function PythonHostingPage() {
-  return <HostingProductRoute slug="python-hosting" />;
+  return <DeveloperHostingRoute stack="python-hosting" />;
 }

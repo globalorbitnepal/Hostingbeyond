@@ -1,19 +1,21 @@
 import type { Metadata } from "next";
 
-import { HostingProductRoute } from "@/components/hosting/hosting-product-route";
-import { hostingProductMetadata } from "@/lib/hosting/hosting-product-metadata";
+import {
+  DeveloperHostingRoute,
+  developerHostingMetadata,
+} from "@/lib/hosting/developer-hosting-route";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return hostingProductMetadata("django-hosting", {
-    title: "Django Hosting — Python Web Apps on NVMe",
+  return developerHostingMetadata("django-hosting", {
+    title: "Django Hosting Plans | HostingBeyond",
     description:
-      "Managed Django hosting with pip, virtual environments, free SSL, and developer-friendly tooling on HostingBeyond.",
+      "Django hosting on managed Linux with a virtual environment per project, pip over SSH, MySQL for the ORM, cron for management commands and free SSL.",
     image: "/images/hosting/cloud.jpg",
   });
 }
 
 export default function DjangoHostingPage() {
-  return <HostingProductRoute slug="django-hosting" />;
+  return <DeveloperHostingRoute stack="django-hosting" />;
 }

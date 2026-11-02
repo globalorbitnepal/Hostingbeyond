@@ -1,19 +1,21 @@
 import type { Metadata } from "next";
 
-import { HostingProductRoute } from "@/components/hosting/hosting-product-route";
-import { hostingProductMetadata } from "@/lib/hosting/hosting-product-metadata";
+import {
+  DeveloperHostingRoute,
+  developerHostingMetadata,
+} from "@/lib/hosting/developer-hosting-route";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return hostingProductMetadata("nestjs-hosting", {
-    title: "NestJS Hosting — Modern Node APIs",
+  return developerHostingMetadata("nestjs-hosting", {
+    title: "NestJS Hosting Plans | HostingBeyond",
     description:
-      "Deploy NestJS applications with process management, npm, free SSL, and scalable hosting on HostingBeyond.",
+      "Host NestJS APIs on the Node.js runtime with npm and TypeScript builds over SSH, MySQL for TypeORM or Prisma, NVMe storage and free automatic SSL.",
     image: "/images/hosting/cloud.jpg",
   });
 }
 
 export default function NestJsHostingPage() {
-  return <HostingProductRoute slug="nestjs-hosting" />;
+  return <DeveloperHostingRoute stack="nestjs-hosting" />;
 }

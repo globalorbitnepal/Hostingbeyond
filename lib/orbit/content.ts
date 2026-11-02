@@ -119,6 +119,13 @@ import {
   metadataFromStoredSeo,
   type StoredPageSeo,
 } from "@/lib/orbit/page-seo";
+import {
+  defaultDeveloperHostingContent,
+  mergeDeveloperHostingContent,
+  DEVELOPER_STACK_PATHS,
+  type CmsDeveloperHostingContent,
+  type DeveloperStackKey,
+} from "@/lib/orbit/developer-hosting-content";
 import type { Metadata } from "next";
 
 import { ensureHostingProductsSeeded } from "@/lib/hosting/seed-hosting-products";
@@ -1432,4 +1439,88 @@ export async function ensureHomeSeeded() {
   } catch {
     /* DB may be unavailable during local UI work */
   }
+}
+
+/* ------------------------------------------------------------------------- *
+ * Developer hosting pages (Node.js, Python, Laravel, Django, NestJS)
+ *
+ * Each stack stores its own content JSON in `PageContent.sections` under a
+ * dedicated slug, so editing one page never touches the others. No schema
+ * migration is required — `sections` is already JSON.
+ * ------------------------------------------------------------------------- */
+
+const DEVELOPER_PAGE_SLUG: Record<DeveloperStackKey, string> = {
+  "nodejs-hosting": "developer-nodejs-page",
+  "python-hosting": "developer-python-page",
+  "laravel-hosting": "developer-laravel-page",
+  "django-hosting": "developer-django-page",
+  "nestjs-hosting": "developer-nestjs-page",
+};
+
+const DEVELOPER_PAGE_TITLE: Record<DeveloperStackKey, string> = {
+  "nodejs-hosting": "Node.js Hosting",
+  "python-hosting": "Python Hosting",
+  "laravel-hosting": "Laravel Hosting",
+  "django-hosting": "Django Hosting",
+  "nestjs-hosting": "NestJS Hosting",
+};
+
+function developerReadCache(key: DeveloperStackKey) {
+  return nextCache(
+    async (): Promise<CmsDeveloperHostingContent> => {
+      const page = await prisma.pageContent.findUnique({
+        where: { slug: DEVELOPER_PAGE_SLUG[key] },
+      });
+      if (!page) return defaultDeveloperHostingContent(key);
+      return mergeDeveloperHostingContent(
+        key,
+        page.sections as Partial<CmsDeveloperHostingContent>,
+      );
+    },
+    [`orbit-developer-hosting-${key}`],
+    { tags: [CMS_TAG], revalidate: CMS_REVALIDATE },
+  );
+}
+
+const developerCaches = {
+  "nodejs-hosting": developerReadCache("nodejs-hosting"),
+  "python-hosting": developerReadCache("python-hosting"),
+  "laravel-hosting": developerReadCache("laravel-hosting"),
+  "django-hosting": developerReadCache("django-hosting"),
+  "nestjs-hosting": developerReadCache("nestjs-hosting"),
+} satisfies Record<
+  DeveloperStackKey,
+  () => Promise<CmsDeveloperHostingContent>
+>;
+
+export async function getDeveloperHostingContent(
+  key: DeveloperStackKey,
+): Promise<CmsDeveloperHostingContent> {
+  try {
+    return await cache(developerCaches[key])();
+  } catch {
+    return defaultDeveloperHostingContent(key);
+  }
+}
+
+export async function saveDeveloperHostingContent(
+  key: DeveloperStackKey,
+  content: Partial<CmsDeveloperHostingContent>,
+): Promise<CmsDeveloperHostingContent> {
+  const normalized = mergeDeveloperHostingContent(key, content);
+  await prisma.pageContent.upsert({
+    where: { slug: DEVELOPER_PAGE_SLUG[key] },
+    create: {
+      slug: DEVELOPER_PAGE_SLUG[key],
+      title: DEVELOPER_PAGE_TITLE[key],
+      isPublished: true,
+      isVisible: true,
+      sections: normalized,
+    },
+    update: { sections: normalized },
+  });
+  revalidateContent();
+  revalidatePath(DEVELOPER_STACK_PATHS[key]);
+  revalidatePath("/orbit/developer-hosting");
+  return normalized;
 }

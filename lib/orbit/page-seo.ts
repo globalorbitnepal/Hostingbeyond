@@ -128,7 +128,7 @@ export const PUBLIC_PAGE_SEO_REGISTRY: PublicPageSeoEntry[] = [
     slug: "python-hosting",
     label: "Python hosting",
     path: "/web-hosting/python",
-    editorHref: "/orbit/hosting-products",
+    editorHref: "/orbit/developer-hosting",
     defaultSeo: {
       keywords:
         "Python hosting, Django hosting, Flask hosting, FastAPI hosting, Python web app hosting, CPython Linux",
@@ -141,7 +141,7 @@ export const PUBLIC_PAGE_SEO_REGISTRY: PublicPageSeoEntry[] = [
     slug: "nodejs-hosting",
     label: "Node.js hosting",
     path: "/nodejs-hosting",
-    editorHref: "/orbit/hosting-products",
+    editorHref: "/orbit/developer-hosting",
     defaultSeo: {
       keywords:
         "Node.js hosting, npm hosting, deploy Node app, Express hosting, NVMe Node.js",
@@ -154,7 +154,7 @@ export const PUBLIC_PAGE_SEO_REGISTRY: PublicPageSeoEntry[] = [
     slug: "laravel-hosting",
     label: "Laravel hosting",
     path: "/laravel-hosting",
-    editorHref: "/orbit/hosting-products",
+    editorHref: "/orbit/developer-hosting",
     defaultSeo: {
       keywords:
         "Laravel hosting, PHP hosting, Composer hosting, Laravel queues cron",
@@ -167,7 +167,7 @@ export const PUBLIC_PAGE_SEO_REGISTRY: PublicPageSeoEntry[] = [
     slug: "django-hosting",
     label: "Django hosting",
     path: "/django-hosting",
-    editorHref: "/orbit/hosting-products",
+    editorHref: "/orbit/developer-hosting",
     defaultSeo: {
       keywords: "Django hosting, Python Django, pip virtualenv hosting",
       ogTitle: "Django Hosting — Python Web Apps on NVMe",
@@ -179,7 +179,7 @@ export const PUBLIC_PAGE_SEO_REGISTRY: PublicPageSeoEntry[] = [
     slug: "nestjs-hosting",
     label: "NestJS hosting",
     path: "/nestjs-hosting",
-    editorHref: "/orbit/hosting-products",
+    editorHref: "/orbit/developer-hosting",
     defaultSeo: {
       keywords: "NestJS hosting, Node API hosting, TypeScript backend hosting",
       ogTitle: "NestJS Hosting — Modern Node APIs",
