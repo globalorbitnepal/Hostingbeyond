@@ -4,6 +4,7 @@ import { describe, it } from "node:test";
 import {
   preferencesFromWebsiteLanguage,
   storefrontFromWebsiteLanguage,
+  syncedPreferencesForWebsiteLanguage,
 } from "@/lib/i18n/language-market";
 import { normalizePreferences } from "@/lib/i18n/preferences";
 import { WEBSITE_LANGUAGES } from "@/lib/i18n/website-languages";
@@ -99,5 +100,23 @@ describe("preferencesFromWebsiteLanguage", () => {
     assert.equal(next.country, "DE");
     assert.equal(next.currency, "EUR");
     assert.equal(next.currencyLocked, false);
+  });
+
+  it("rewrites leftover INR on German even when the language cookie is already de", () => {
+    const stuck = normalizePreferences({
+      country: "DE",
+      localeMarketId: "DE-de",
+      currency: "INR",
+      currencyLocked: true,
+      googleTargetLang: "de",
+    });
+    const next = syncedPreferencesForWebsiteLanguage(stuck, "de");
+    assert.ok(next);
+    assert.equal(next?.currency, "EUR");
+    assert.equal(next?.currencyLocked, false);
+    assert.equal(
+      syncedPreferencesForWebsiteLanguage(normalizePreferences(next!), "de"),
+      null,
+    );
   });
 });

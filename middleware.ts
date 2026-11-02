@@ -23,12 +23,11 @@ import {
 } from "@/lib/i18n/locale-path";
 import {
   LOCALE_COOKIE,
-  normalizePreferences,
   parsePreferencesCookie,
   preferencesCookieOptions,
   serializePreferences,
 } from "@/lib/i18n/preferences";
-import { preferencesFromWebsiteLanguage } from "@/lib/i18n/language-market";
+import { syncedPreferencesForWebsiteLanguage } from "@/lib/i18n/language-market";
 import { PUBLIC_ENGLISH_ONLY } from "@/lib/i18n/public-language";
 import {
   resolveWebsiteLanguageCode,
@@ -56,11 +55,11 @@ function mergeLocaleCookie(
   if (PUBLIC_ENGLISH_ONLY) return response;
   const raw = request.cookies.get(LOCALE_COOKIE)?.value;
   const current = parsePreferencesCookie(raw);
-  const googleTargetLang = resolveWebsiteLanguageCode(language);
-  if (current.googleTargetLang === googleTargetLang) return response;
-  const next = normalizePreferences(
-    preferencesFromWebsiteLanguage(current, language),
+  const next = syncedPreferencesForWebsiteLanguage(
+    current,
+    resolveWebsiteLanguageCode(language),
   );
+  if (!next) return response;
   const opts = preferencesCookieOptions();
   response.cookies.set(LOCALE_COOKIE, serializePreferences(next), {
     path: opts.path,

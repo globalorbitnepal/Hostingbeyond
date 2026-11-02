@@ -66,3 +66,24 @@ export function preferencesFromWebsiteLanguage(
     languageLocked: true,
   };
 }
+
+/**
+ * Language prefix always owns country + prices. Return null when the cookie
+ * is already on that market so middleware can skip a write.
+ */
+export function syncedPreferencesForWebsiteLanguage(
+  prefs: UserPreferences,
+  code: WebsiteLanguageCode,
+): UserPreferences | null {
+  const next = preferencesFromWebsiteLanguage(prefs, code);
+  if (
+    prefs.googleTargetLang === next.googleTargetLang &&
+    prefs.currency === next.currency &&
+    prefs.country === next.country &&
+    prefs.localeMarketId === next.localeMarketId &&
+    prefs.currencyLocked === next.currencyLocked
+  ) {
+    return null;
+  }
+  return next;
+}
