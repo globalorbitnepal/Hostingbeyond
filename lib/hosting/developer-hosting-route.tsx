@@ -26,6 +26,18 @@ const STACK_LABEL: Record<DeveloperStackKey, string> = {
   "nestjs-hosting": "NestJS",
 };
 
+/**
+ * The developer pages reuse the shared web hosting plans, whose feature lists
+ * include WordPress-specific lines. Those are still true of the plan, but they
+ * are noise on a Node.js or Laravel page, so they are filtered from the card
+ * display here only — the Web Hosting page still shows them in full.
+ */
+const WORDPRESS_SPECIFIC = /wordpress|woocommerce/i;
+
+function developerPlanFeatures(features: string[]): string[] {
+  return features.filter((line) => !WORDPRESS_SPECIFIC.test(line));
+}
+
 export async function developerHostingMetadata(
   key: DeveloperStackKey,
   defaults: { title: string; description: string; image?: string },
@@ -64,7 +76,7 @@ export async function DeveloperHostingRoute({
     ...basePlans,
     plans: basePlans.plans.map((plan) => ({
       ...plan,
-      features: normalizePlanFeatures(plan.features),
+      features: developerPlanFeatures(normalizePlanFeatures(plan.features)),
     })),
   };
 
