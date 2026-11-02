@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 import { OrbitImageField } from "@/components/orbit/image-field";
@@ -89,9 +90,9 @@ export function CloudHostingPageEditor({
           {routes.cloud}
         </a>
         . SEO:{" "}
-        <a href="/orbit/seo" className="underline">
-          Orbit → SEO
-        </a>{" "}
+        <Link href="/orbit/pages" className="underline">
+          Orbit → Pages
+        </Link>{" "}
         slug <code className="rounded bg-white px-1">cloud</code>.
       </p>
       <div className="flex flex-wrap gap-2">

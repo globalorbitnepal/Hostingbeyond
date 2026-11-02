@@ -137,7 +137,6 @@ const nav: NavGroup[] = [
   },
   { href: "/orbit/navigation", label: "Navigation", icon: Navigation },
   { href: "/orbit/media", label: "Media Library", icon: ImageIcon },
-  { href: "/orbit/seo", label: "SEO", icon: Search },
   {
     href: "/orbit/currency-rates",
     label: "Currency & FX",

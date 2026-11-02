@@ -55,7 +55,7 @@ const cmsAreas = [
     icon: Navigation,
   },
   {
-    href: "/orbit/seo",
+    href: "/orbit/pages",
     label: "SEO",
     detail: "Meta titles, descriptions, and Open Graph defaults",
     icon: Search,

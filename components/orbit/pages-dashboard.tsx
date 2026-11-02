@@ -118,14 +118,8 @@ export function OrbitPagesDashboard() {
           <p className="mt-1 max-w-2xl text-sm text-slate-500">
             Every public route on HostingBeyond — edit page content, SEO, and
             open the live URL. Saves revalidate cache tags and the public path
-            so changes appear within seconds. Older bulk SEO UI:{" "}
-            <Link
-              href="/orbit/seo"
-              className="font-semibold text-[var(--hb-blue)]"
-            >
-              /orbit/seo
-            </Link>
-            .
+            so changes appear within seconds. This is the single SEO editor —
+            the old bulk screen now redirects here.
           </p>
         </div>
         <a

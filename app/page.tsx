@@ -18,6 +18,7 @@ import type { Metadata } from "next";
 
 import { HeroJourneySlider } from "@/components/home/hero-journey-slider";
 import { buildPublicPageMetadata } from "@/lib/orbit/content";
+import { getPublicWebHostingPlans } from "@/lib/hosting/public-hosting-plans";
 import { BEYOND_AI_PUBLIC_ENABLED } from "@/config/beyond-ai-public";
 import { getLocalizedPublicChrome } from "@/lib/i18n/public-chrome";
 
@@ -33,7 +34,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const { sections, settings } = await getLocalizedPublicChrome();
+  const [{ sections, settings }, publicHostingPlans] = await Promise.all([
+    getLocalizedPublicChrome(),
+    getPublicWebHostingPlans(),
+  ]);
   const heroPhoto =
     sections.hero.speakerImage?.trim() ||
     sections.hero.backgroundImage?.trim() ||
@@ -62,8 +66,8 @@ export default async function HomePage() {
       {sections.solutions ? (
         <SolutionsSection content={sections.solutions} />
       ) : null}
-      {sections.hostingPlans?.visible !== false ? (
-        <HostingPlansSection content={sections.hostingPlans} />
+      {publicHostingPlans.visible !== false ? (
+        <HostingPlansSection content={publicHostingPlans} />
       ) : null}
 
       <EssentialsSection content={sections.essentials} />

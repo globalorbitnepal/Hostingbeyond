@@ -3,11 +3,11 @@ import type { Metadata } from "next";
 import { WebsiteMigrationPageView } from "@/components/migration/website-migration-page";
 import { SiteFooter, SiteHeader } from "@/components/layout";
 import { routes } from "@/config/routes";
-import { defaultHostingPlansSection } from "@/lib/orbit/defaults";
 import {
   buildPublicPageMetadata,
   getWebsiteMigrationPageContent,
 } from "@/lib/orbit/content";
+import { getPublicWebHostingPlans } from "@/lib/hosting/public-hosting-plans";
 import {
   getLocalizedPublicChrome,
   localizeForPreferences,
@@ -25,13 +25,15 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function WebsiteMigrationPage() {
-  const [{ sections, settings, preferences }, rawPage] = await Promise.all([
-    getLocalizedPublicChrome(),
-    getWebsiteMigrationPageContent(),
-  ]);
+  const [{ sections, settings, preferences }, rawPage, publicHostingPlans] =
+    await Promise.all([
+      getLocalizedPublicChrome(),
+      getWebsiteMigrationPageContent(),
+      getPublicWebHostingPlans(),
+    ]);
   const page = localizeForPreferences(preferences, rawPage);
 
-  const hostingPlans = sections.hostingPlans ?? defaultHostingPlansSection();
+  const hostingPlans = publicHostingPlans;
 
   return (
     <div className="hb-band-cream min-h-dvh overflow-x-hidden">

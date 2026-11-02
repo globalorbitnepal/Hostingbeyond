@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { routes } from "@/config/routes";
@@ -57,9 +58,9 @@ export default function OrbitHostingPage() {
             {routes.hosting}
           </a>{" "}
           · SEO in{" "}
-          <a href="/orbit/seo" className="underline">
-            Orbit → SEO
-          </a>{" "}
+          <Link href="/orbit/pages" className="underline">
+            Orbit → Pages
+          </Link>{" "}
           (slug <code className="rounded bg-slate-100 px-1">hosting</code>)
         </p>
         {status ? (

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 
 import { AiAssistantEditor } from "@/components/orbit/ai-assistant-editor";
 import { BeyondAiEditor } from "@/components/orbit/beyond-ai-editor";
@@ -37,7 +38,6 @@ import {
   type CmsDomainTld,
   type CmsHomeSections,
   type CmsHostingGuarantee,
-  type CmsHostingPlan,
   type CmsHostingTypeCard,
   type CmsHeroFeatureBar,
   type CmsLoginFeature,
@@ -1054,8 +1054,17 @@ export default function OrbitContentPage() {
           <div>
             <h2 className="font-semibold">Web Hosting Plans & Price</h2>
             <p className="mt-0.5 text-xs text-slate-500">
-              Full A–Z editor: add, edit, reorder, or remove plans. Image-style
-              glass cards on the homepage update after Save home.
+              Section heading, toggle labels and guarantees for the homepage and
+              /pricing. Plan names, prices and specs are <strong>not</strong>{" "}
+              edited here — they come from{" "}
+              <Link
+                href="/orbit/hosting-products"
+                className="font-semibold text-[var(--hb-blue)] underline"
+              >
+                Hosting Plans
+              </Link>{" "}
+              so one price edit updates the homepage, /pricing, /web-hosting and
+              checkout together.
             </p>
           </div>
           <label className="flex items-center gap-2 text-xs text-slate-500">
@@ -1215,91 +1224,52 @@ export default function OrbitContentPage() {
           the plan CTA, not on Monthly.
         </p>
 
-        {(sections.hostingPlans?.plans ?? []).map((plan, index) => (
-          <HostingPlanEditor
-            key={plan.id}
-            plan={plan}
-            onChange={(patch) => {
-              const current = sectionsRef.current;
-              if (!current?.hostingPlans) return;
-              const plans = [...current.hostingPlans.plans];
-              plans[index] = { ...plans[index], ...patch };
-              const hostingPlans = { ...current.hostingPlans, plans };
-              const next = { ...current, hostingPlans };
-              sectionsRef.current = next;
-              setSections(next);
-            }}
-            onPersist={() => {
-              if (sectionsRef.current) commitHome(sectionsRef.current);
-            }}
-            onMove={(direction) => {
-              const target = index + direction;
-              const plans = [...sections.hostingPlans.plans];
-              if (target < 0 || target >= plans.length) return;
-              const [item] = plans.splice(index, 1);
-              plans.splice(target, 0, item);
-              const hostingPlans = {
-                ...sections.hostingPlans,
-                plans: plans.map((p, order) => ({ ...p, order })),
-              };
-              setSections({ ...sections, hostingPlans });
-              commitHome({ ...sections, hostingPlans });
-            }}
-            onRemove={() => {
-              const plans = sections.hostingPlans.plans.filter(
-                (_, i) => i !== index,
-              );
-              const hostingPlans = {
-                ...sections.hostingPlans,
-                plans: plans.map((p, order) => ({ ...p, order })),
-              };
-              setSections({ ...sections, hostingPlans });
-              commitHome({ ...sections, hostingPlans });
-            }}
-          />
-        ))}
-
-        <button
-          type="button"
-          onClick={() => {
-            const plans = sections.hostingPlans?.plans ?? [];
-            const hostingPlans = {
-              ...sections.hostingPlans,
-              plans: [
-                ...plans,
-                {
-                  id: `plan-${Date.now()}`,
-                  visible: true,
-                  order: plans.length,
-                  name: "New Plan",
-                  tagline: "Short plan description.",
-                  discountBadge: "70% OFF",
-                  popular: false,
-                  popularLabel: "",
-                  accent: "blue" as const,
-                  priceAnnually: "$0.00",
-                  originalAnnually: "$0.00",
-                  billedAnnually: "Billed annually",
-                  saveAnnually: "",
-                  priceMonthly: "$0.00",
-                  originalMonthly: "",
-                  billedMonthly: "Billed monthly",
-                  saveMonthly: "",
-                  domainPerk: "Domain — free for 1 year",
-                  annualCredit: "",
-                  features: ["Feature 1"],
-                  ctaLabel: "Get Started",
-                  ctaHref: "/get-started",
-                },
-              ],
-            };
-            setSections({ ...sections, hostingPlans });
-            commitHome({ ...sections, hostingPlans });
-          }}
-          className="rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-500 hover:text-slate-900"
-        >
-          + Add plan
-        </button>
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-bold tracking-wide text-slate-500 uppercase">
+              Plans shown on this section
+            </p>
+            <Link
+              href="/orbit/hosting-products"
+              className="rounded-lg bg-[#2f1c6a] px-3 py-1.5 text-xs font-semibold text-white"
+            >
+              Edit plans, prices & specs
+            </Link>
+          </div>
+          <ul className="mt-3 space-y-1.5">
+            {(sections.hostingPlans?.plans ?? []).map((plan) => (
+              <li
+                key={plan.id}
+                className="flex flex-wrap items-baseline justify-between gap-2 rounded-lg bg-white px-3 py-2 text-sm"
+              >
+                <span className="font-semibold text-slate-800">
+                  {plan.name}
+                  {plan.popular ? (
+                    <span className="ml-2 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-bold text-violet-700">
+                      POPULAR
+                    </span>
+                  ) : null}
+                </span>
+                <span className="font-mono text-xs text-slate-500">
+                  {plan.priceMonthly}/mo · {plan.priceAnnually}/mo annual ·{" "}
+                  {plan.id}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
+            The live homepage, /pricing and /web-hosting price cards now read
+            directly from the{" "}
+            <Link
+              href="/orbit/hosting-products"
+              className="font-semibold text-[var(--hb-blue)] underline"
+            >
+              Hosting Plans
+            </Link>{" "}
+            catalog. Editing prices here would create a second source of truth,
+            so this list is read-only.
+          </p>
+        </div>
 
         <div className="space-y-3 border-t border-slate-200 pt-4">
           <h3 className="text-sm font-semibold">Guarantee cards</h3>
@@ -2020,191 +1990,6 @@ function HostingTypeCardEditor({
         value={card.imageUrl}
         onChange={(url) => onChange({ imageUrl: url })}
         onCommit={onImageCommit}
-      />
-    </div>
-  );
-}
-
-function HostingPlanEditor({
-  plan,
-  onChange,
-  onPersist,
-  onMove,
-  onRemove,
-}: {
-  plan: CmsHostingPlan;
-  onChange: (patch: Partial<CmsHostingPlan>) => void;
-  onPersist?: () => void;
-  onMove: (direction: -1 | 1) => void;
-  onRemove: () => void;
-}) {
-  return (
-    <div className="space-y-3 rounded-xl border border-slate-200 p-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold tracking-wide uppercase">
-          {plan.name || plan.id} plan
-        </h3>
-        <div className="flex flex-wrap items-center gap-2">
-          <label className="flex items-center gap-2 text-xs text-slate-500">
-            <input
-              type="checkbox"
-              checked={plan.visible !== false}
-              onChange={(e) => {
-                onChange({ visible: e.target.checked });
-                onPersist?.();
-              }}
-            />
-            Visible
-          </label>
-          <label className="flex items-center gap-2 text-xs text-slate-500">
-            <input
-              type="checkbox"
-              checked={Boolean(plan.popular)}
-              onChange={(e) => {
-                onChange({ popular: e.target.checked });
-                onPersist?.();
-              }}
-            />
-            Most popular
-          </label>
-          <button
-            type="button"
-            onClick={() => onMove(-1)}
-            className="rounded-lg border border-slate-200 px-2 py-1 text-xs"
-          >
-            ↑
-          </button>
-          <button
-            type="button"
-            onClick={() => onMove(1)}
-            className="rounded-lg border border-slate-200 px-2 py-1 text-xs"
-          >
-            ↓
-          </button>
-          <button
-            type="button"
-            onClick={onRemove}
-            className="rounded-lg border border-red-200 px-2 py-1 text-xs text-red-600"
-          >
-            Remove
-          </button>
-        </div>
-      </div>
-
-      <div className="grid gap-3 md:grid-cols-2">
-        <Field
-          label="Plan name"
-          value={plan.name}
-          onChange={(value) => onChange({ name: value })}
-          onCommit={() => onPersist?.()}
-        />
-        <Field
-          label="Tagline"
-          value={plan.tagline}
-          onChange={(value) => onChange({ tagline: value })}
-          onCommit={() => onPersist?.()}
-        />
-        <Field
-          label="Discount badge"
-          value={plan.discountBadge}
-          onChange={(value) => onChange({ discountBadge: value })}
-          onCommit={() => onPersist?.()}
-        />
-        <Field
-          label="Popular label"
-          value={plan.popularLabel}
-          onChange={(value) => onChange({ popularLabel: value })}
-          onCommit={() => onPersist?.()}
-        />
-        <Field
-          label="Accent (blue / purple / gradient)"
-          value={plan.accent}
-          onChange={(value) =>
-            onChange({
-              accent:
-                value === "purple" || value === "gradient" ? value : "blue",
-            })
-          }
-          onCommit={() => onPersist?.()}
-        />
-        <Field
-          label="Annual price /mo"
-          value={plan.priceAnnually}
-          onChange={(value) => onChange({ priceAnnually: value })}
-          onCommit={() => onPersist?.()}
-        />
-        <Field
-          label="Annual original (strikethrough)"
-          value={plan.originalAnnually}
-          onChange={(value) => onChange({ originalAnnually: value })}
-          onCommit={() => onPersist?.()}
-        />
-        <Field
-          label="Billed annually text"
-          value={plan.billedAnnually}
-          onChange={(value) => onChange({ billedAnnually: value })}
-          onCommit={() => onPersist?.()}
-        />
-        <Field
-          label="Annual save text"
-          value={plan.saveAnnually}
-          onChange={(value) => onChange({ saveAnnually: value })}
-          onCommit={() => onPersist?.()}
-        />
-        <Field
-          label="Monthly price /mo"
-          value={plan.priceMonthly}
-          onChange={(value) => onChange({ priceMonthly: value })}
-          onCommit={() => onPersist?.()}
-        />
-        <Field
-          label="Monthly original (strikethrough)"
-          value={plan.originalMonthly}
-          onChange={(value) => onChange({ originalMonthly: value })}
-          onCommit={() => onPersist?.()}
-        />
-        <Field
-          label="Billed monthly text"
-          value={plan.billedMonthly}
-          onChange={(value) => onChange({ billedMonthly: value })}
-          onCommit={() => onPersist?.()}
-        />
-        <Field
-          label="Monthly save text"
-          value={plan.saveMonthly}
-          onChange={(value) => onChange({ saveMonthly: value })}
-          onCommit={() => onPersist?.()}
-        />
-        <Field
-          label="Annual-only: free domain line (e.g. Domain — free for 1 year)"
-          value={plan.domainPerk ?? ""}
-          onChange={(value) => onChange({ domainPerk: value })}
-          onCommit={() => onPersist?.()}
-        />
-        <Field
-          label="Annual-only: Beyond AI credit (e.g. $2 Beyond AI Credit — “Free” added on site)"
-          value={plan.annualCredit ?? ""}
-          onChange={(value) => onChange({ annualCredit: value })}
-          onCommit={() => onPersist?.()}
-        />
-        <Field
-          label="CTA text"
-          value={plan.ctaLabel}
-          onChange={(value) => onChange({ ctaLabel: value })}
-          onCommit={() => onPersist?.()}
-        />
-        <Field
-          label="CTA link"
-          value={plan.ctaHref}
-          onChange={(value) => onChange({ ctaHref: value })}
-          onCommit={() => onPersist?.()}
-        />
-      </div>
-
-      <FeatureEditor
-        features={plan.features}
-        onChange={(features) => onChange({ features })}
-        onCommit={() => onPersist?.()}
       />
     </div>
   );

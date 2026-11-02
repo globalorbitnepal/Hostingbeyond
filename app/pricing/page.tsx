@@ -6,6 +6,7 @@ import {
   buildPublicPageMetadata,
   getPricingPageContent,
 } from "@/lib/orbit/content";
+import { getPublicWebHostingPlans } from "@/lib/hosting/public-hosting-plans";
 import {
   getLocalizedPublicChrome,
   localizeForPreferences,
@@ -23,12 +24,14 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function PricingPage() {
-  const [{ sections, settings, preferences }, rawPricing] = await Promise.all([
-    getLocalizedPublicChrome(),
-    getPricingPageContent(),
-  ]);
+  const [{ sections, settings, preferences }, rawPricing, publicHostingPlans] =
+    await Promise.all([
+      getLocalizedPublicChrome(),
+      getPricingPageContent(),
+      getPublicWebHostingPlans(),
+    ]);
   const pricing = localizeForPreferences(preferences, rawPricing);
-  const hostingPlans = sections.hostingPlans;
+  const hostingPlans = publicHostingPlans;
 
   return (
     <div className="hb-band-cream min-h-dvh overflow-x-hidden">

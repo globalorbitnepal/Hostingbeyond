@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { RefreshCw } from "lucide-react";
 
 import { OrbitImageField } from "@/components/orbit/image-field";
 import type { CmsSiteSettings } from "@/lib/orbit/defaults";
@@ -10,37 +11,92 @@ import { readResponseError } from "@/lib/orbit/read-response-error";
 export default function OrbitSettingsPage() {
   const [settings, setSettings] = useState<CmsSiteSettings | null>(null);
   const [status, setStatus] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
     void (async () => {
-      const res = await fetch("/api/orbit/settings");
-      const json = await res.json();
-      if (res.ok) setSettings(json.settings);
+      setLoading(true);
+      setError("");
+      try {
+        const res = await fetch("/api/orbit/settings");
+        if (!res.ok) {
+          const parsed = await readResponseError(
+            res,
+            "Could not load settings.",
+          );
+          throw new Error(parsed.text);
+        }
+        const json = (await res.json()) as { settings?: CmsSiteSettings };
+        if (!cancelled) setSettings(json.settings ?? null);
+      } catch (err) {
+        if (!cancelled) {
+          setError(
+            err instanceof Error ? err.message : "Could not load settings.",
+          );
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   async function save() {
     if (!settings) return;
-    const res = await fetch("/api/orbit/settings", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ settings }),
-    });
-    if (!res.ok) {
-      const parsed = await readResponseError(res, "Save failed");
-      setStatus(parsed.text);
-      return;
+    setSaving(true);
+    setStatus("");
+    setError("");
+    try {
+      const res = await fetch("/api/orbit/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ settings }),
+      });
+      if (!res.ok) {
+        const parsed = await readResponseError(res, "Save failed");
+        throw new Error(parsed.text);
+      }
+      const json = (await res.json()) as { settings?: CmsSiteSettings };
+      if (json.settings) setSettings(json.settings);
+      setStatus("Settings saved — live on the public site.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Save failed");
+    } finally {
+      setSaving(false);
     }
-    const json = (await res.json()) as { settings?: CmsSiteSettings };
-    if (json.settings) setSettings(json.settings);
-    setStatus("Settings saved — live on the public site");
   }
 
-  if (!settings) return <p className="text-sm text-slate-500">Loading…</p>;
+  if (loading) {
+    return <p className="text-sm text-slate-500">Loading settings…</p>;
+  }
+
+  if (!settings) {
+    return (
+      <div className="space-y-3">
+        <h1 className="text-2xl font-bold">Settings</h1>
+        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-800">
+          {error || "Settings could not be loaded."}
+        </p>
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700"
+        >
+          <RefreshCw className="size-4" />
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-end justify-between">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Settings</h1>
           <p className="mt-1 text-sm text-slate-500">
@@ -50,12 +106,22 @@ export default function OrbitSettingsPage() {
         <button
           type="button"
           onClick={() => void save()}
-          className="rounded-xl bg-gradient-to-r from-[var(--hb-blue)] to-[var(--hb-purple)] px-4 py-2 text-sm font-semibold text-white"
+          disabled={saving}
+          className="rounded-xl bg-gradient-to-r from-[var(--hb-blue)] to-[var(--hb-purple)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
         >
-          Save
+          {saving ? "Saving…" : "Save"}
         </button>
       </div>
-      {status ? <p className="text-sm text-emerald-700">{status}</p> : null}
+      {status ? (
+        <p className="rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+          {status}
+        </p>
+      ) : null}
+      {error ? (
+        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-800">
+          {error}
+        </p>
+      ) : null}
 
       <div className="rounded-2xl border border-indigo-200 bg-indigo-50/80 p-4 text-sm text-indigo-950">
         Display currency rates (INR, NPR, EUR, …) are managed under{" "}

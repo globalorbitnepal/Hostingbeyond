@@ -9,12 +9,28 @@ import { siteConfig } from "@/config/site";
 import { routes } from "@/config/routes";
 import { BEYOND_AI_PUBLIC_ENABLED } from "@/config/beyond-ai-public";
 
+/**
+ * Routes that must never appear in the sitemap: private account areas, carts,
+ * checkout, auth screens, and legacy redirect-only paths. A sitemap entry for a
+ * 307 redirect wastes crawl budget and can surface the wrong canonical.
+ */
 const SITEMAP_EXCLUDE = new Set([
   routes.login,
   routes.signup,
   routes.account,
+  routes.accountWallet,
+  routes.accountOrders,
+  routes.accountHostingOrders,
+  routes.accountBilling,
+  routes.accountInvoices,
+  routes.myDomains,
+  routes.accountSecurity,
+  routes.domainCart,
+  routes.domainCheckout,
+  routes.vps,
   "/checkout/hosting",
   "/checkout/business-email",
+  "/forgot-password",
 ]);
 
 /**
@@ -31,6 +47,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const paths = Object.values(routes).filter(
     (path) =>
       !SITEMAP_EXCLUDE.has(path) &&
+      !path.startsWith("/account") &&
       (BEYOND_AI_PUBLIC_ENABLED || path !== routes.beyondAi),
   );
 
@@ -75,5 +92,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     tipsSitemapEntries(),
     updatesSitemapEntries(),
   ]);
-  return [...staticEntries, ...blogEntries, ...tipsEntries, ...updatesEntries];
+
+  /**
+   * Hub pages are listed both in the static route list and again by the blog
+   * sitemap helpers. Duplicate <loc> entries make Google pick one arbitrarily,
+   * so the URL set is deduped across every source before it is returned.
+   */
+  const seen = new Set<string>();
+  const allEntries = [
+    ...staticEntries,
+    ...blogEntries,
+    ...tipsEntries,
+    ...updatesEntries,
+  ].filter((entry) => {
+    if (seen.has(entry.url)) return false;
+    seen.add(entry.url);
+    return true;
+  });
+
+  return allEntries;
 }
