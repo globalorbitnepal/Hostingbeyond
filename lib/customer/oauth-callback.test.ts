@@ -5,13 +5,12 @@ import {
   oauthCallbackUrl,
   oauthSiteOriginFromRequest,
 } from "@/lib/customer/oauth";
+import { resolveRequestSiteOrigin } from "@/lib/customer/site-origin";
 
 describe("customer OAuth callback URLs", () => {
-  it("uses hostingbeyond.com for Google redirect_uri in production", () => {
-    const prevNode = process.env.NODE_ENV;
+  it("uses CUSTOMER_OAUTH_PUBLIC_ORIGIN for Google redirect_uri", () => {
     const prevOAuth = process.env.CUSTOMER_OAUTH_PUBLIC_ORIGIN;
-    delete process.env.CUSTOMER_OAUTH_PUBLIC_ORIGIN;
-    process.env.NODE_ENV = "production";
+    process.env.CUSTOMER_OAUTH_PUBLIC_ORIGIN = "https://hostingbeyond.com";
     try {
       const origin = oauthSiteOriginFromRequest({
         forwardedHost: "hosting.theglobalorbit.com",
@@ -22,27 +21,20 @@ describe("customer OAuth callback URLs", () => {
         "https://hostingbeyond.com/api/auth/oauth/google/callback",
       );
     } finally {
-      process.env.NODE_ENV = prevNode;
       if (prevOAuth === undefined)
         delete process.env.CUSTOMER_OAUTH_PUBLIC_ORIGIN;
       else process.env.CUSTOMER_OAUTH_PUBLIC_ORIGIN = prevOAuth;
     }
   });
 
-  it("uses request host in non-production dev", () => {
-    const prevNode = process.env.NODE_ENV;
-    process.env.NODE_ENV = "development";
-    try {
-      const origin = oauthSiteOriginFromRequest({
-        forwardedHost: "localhost:3000",
-        forwardedProto: "http",
-      });
-      assert.equal(
-        oauthCallbackUrl("google", origin),
-        "http://localhost:3000/api/auth/oauth/google/callback",
-      );
-    } finally {
-      process.env.NODE_ENV = prevNode;
-    }
+  it("builds callback URL from resolved request origin on loopback", () => {
+    const origin = resolveRequestSiteOrigin({
+      host: "localhost:3000",
+      forwardedProto: "http",
+    });
+    assert.equal(
+      oauthCallbackUrl("google", origin),
+      "http://localhost:3000/api/auth/oauth/google/callback",
+    );
   });
 });
