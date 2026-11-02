@@ -1,27 +1,16 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import Script from "next/script";
 
-import { AboutPremiumHero } from "@/components/about/about-premium-hero";
-import {
-  AboutCommitment,
-  AboutCtaBand,
-  AboutFaqSection,
-  AboutMilestones,
-  AboutMissionVision,
-  AboutProductsGrid,
-  AboutStatsBand,
-  AboutStorySection,
-  AboutTeamSection,
-  AboutTrustSection,
-  AboutUsaSection,
-  AboutValuesGrid,
-} from "@/components/about/about-page-sections";
-import { BlogSiteShell } from "@/components/blog/blog-shell";
+import { AboutPageView } from "@/components/about/about-page-view";
+import { SiteFooter, SiteHeader } from "@/components/layout";
 import { routes } from "@/config/routes";
 import { siteConfig } from "@/config/site";
 import { breadcrumbJsonLd } from "@/lib/blog/seo";
 import { buildMetadata } from "@/lib/metadata";
+import {
+  getLocalizedPublicChrome,
+  localizeForPreferences,
+} from "@/lib/i18n/public-chrome";
 import { getAboutPageContent } from "@/lib/orbit/content";
 
 export const dynamic = "force-dynamic";
@@ -32,11 +21,16 @@ export async function generateMetadata(): Promise<Metadata> {
     title: about.seoTitle,
     description: about.seoDescription,
     path: routes.about,
+    image: "/images/hosting/cloud.jpg",
   });
 }
 
 export default async function AboutPage() {
-  const content = await getAboutPageContent();
+  const [{ sections, settings, preferences }, content] = await Promise.all([
+    getLocalizedPublicChrome(),
+    getAboutPageContent(),
+  ]);
+  const localized = localizeForPreferences(preferences, content);
 
   const breadcrumbs = breadcrumbJsonLd([
     { name: "Home", path: "/" },
@@ -46,23 +40,32 @@ export default async function AboutPage() {
   const organizationJsonLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: content.companyLegalName || siteConfig.name,
+    name: localized.legalEntityName || localized.companyLegalName,
+    legalName: localized.legalEntityName || localized.companyLegalName,
     url: siteConfig.url,
-    description: content.seoDescription,
+    description: localized.seoDescription,
     slogan: siteConfig.tagline,
-    areaServed: "Worldwide",
     foundingLocation: {
       "@type": "Country",
       name: "United States",
     },
+    areaServed: "Worldwide",
+    contactPoint: localized.legalContactEmail
+      ? {
+          "@type": "ContactPoint",
+          contactType: "customer support",
+          email: localized.legalContactEmail,
+          availableLanguage: ["English"],
+        }
+      : undefined,
   };
 
   const faqJsonLd =
-    content.faqs.length > 0
+    localized.faqs.length > 0
       ? {
           "@context": "https://schema.org",
           "@type": "FAQPage",
-          mainEntity: content.faqs
+          mainEntity: localized.faqs
             .filter((f) => f.visible !== false && f.question && f.answer)
             .map((f) => ({
               "@type": "Question",
@@ -73,7 +76,7 @@ export default async function AboutPage() {
       : null;
 
   return (
-    <BlogSiteShell>
+    <div className="hb-band-cream min-h-dvh overflow-x-hidden text-[#1a1035]">
       <Script
         id="about-breadcrumb-jsonld"
         type="application/ld+json"
@@ -92,36 +95,24 @@ export default async function AboutPage() {
         />
       ) : null}
 
-      <div className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2">
-        <AboutPremiumHero content={content} />
+      <div className="hb-band-purple">
+        <SiteHeader
+          navigation={sections.navigation}
+          loginLabel={settings.loginLabel}
+          loginHref={settings.loginHref}
+          getStartedLabel={settings.getStartedLabel}
+          getStartedHref={settings.getStartedHref}
+          logoPath={settings.logoPath}
+        />
       </div>
 
-      <div className="mx-auto mt-10 max-w-[1320px] space-y-16 px-1 sm:px-0">
-        <nav aria-label="Breadcrumb" className="text-sm text-slate-500">
-          <ol className="flex flex-wrap items-center gap-2">
-            <li>
-              <Link href="/" className="hover:text-[#673de6]">
-                Home
-              </Link>
-            </li>
-            <li aria-hidden>/</li>
-            <li className="font-medium text-[#1a1035]">About</li>
-          </ol>
-        </nav>
+      <main id="main-content">
+        <AboutPageView content={localized} />
+      </main>
 
-        <AboutStatsBand content={content} />
-        <AboutMissionVision content={content} />
-        <AboutUsaSection content={content} />
-        <AboutStorySection content={content} />
-        <AboutValuesGrid content={content} />
-        <AboutProductsGrid content={content} />
-        <AboutMilestones content={content} />
-        <AboutTeamSection content={content} />
-        <AboutTrustSection content={content} />
-        <AboutCommitment content={content} />
-        <AboutFaqSection content={content} />
-        <AboutCtaBand content={content} />
-      </div>
-    </BlogSiteShell>
+      {sections.footer?.visible !== false ? (
+        <SiteFooter content={sections.footer} logoPath={settings.logoPath} />
+      ) : null}
+    </div>
   );
 }
