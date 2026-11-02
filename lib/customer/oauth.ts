@@ -1,4 +1,8 @@
-import { configuredSiteOrigin } from "@/lib/customer/site-origin";
+import {
+  configuredSiteOrigin,
+  storefrontSiteOriginForOAuth,
+  type RequestOriginInput,
+} from "@/lib/customer/site-origin";
 
 export type OAuthProvider = "google" | "github" | "facebook";
 
@@ -6,8 +10,13 @@ export function publicOrigin() {
   return configuredSiteOrigin();
 }
 
-export function oauthCallbackUrl(provider: OAuthProvider) {
-  return `${publicOrigin()}/api/auth/oauth/${provider}/callback`;
+export function oauthCallbackUrl(provider: OAuthProvider, origin?: string) {
+  const base = origin ?? configuredSiteOrigin();
+  return `${base.replace(/\/+$/, "")}/api/auth/oauth/${provider}/callback`;
+}
+
+export function oauthSiteOriginFromRequest(input: RequestOriginInput) {
+  return storefrontSiteOriginForOAuth(input);
 }
 
 export function getOAuthProvider(provider: OAuthProvider) {

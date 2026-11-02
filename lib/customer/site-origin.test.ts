@@ -8,6 +8,7 @@ import {
   normalizeEnvSiteOrigin,
   internalAppRewriteUrl,
   resolveRequestSiteOrigin,
+  storefrontSiteOriginForOAuth,
 } from "@/lib/customer/site-origin";
 
 describe("site origin resolution", () => {
@@ -57,6 +58,23 @@ describe("site origin resolution", () => {
       "https://hosting.theglobalorbit.com",
     );
     assert.ok(!DEFAULT_PUBLIC_SITE_ORIGIN.includes("localhost"));
+  });
+
+  it("maps bare theglobalorbit.com OAuth origins to the storefront host", () => {
+    assert.equal(
+      storefrontSiteOriginForOAuth({
+        forwardedHost: "theglobalorbit.com",
+        forwardedProto: "https",
+      }),
+      "https://hosting.theglobalorbit.com",
+    );
+    assert.equal(
+      storefrontSiteOriginForOAuth({
+        forwardedHost: "hosting.theglobalorbit.com",
+        forwardedProto: "https",
+      }),
+      "https://hosting.theglobalorbit.com",
+    );
   });
 
   it("configuredSiteOrigin prefers NEXT_PUBLIC_SITE_URL", () => {

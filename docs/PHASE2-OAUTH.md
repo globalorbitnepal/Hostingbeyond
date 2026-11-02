@@ -4,6 +4,12 @@
 
 OAuth callback and `/account` login redirects must **not** use `request.url` as the redirect base behind Nginx (PM2 listens on `127.0.0.1:3030`). Use `lib/customer/site-origin.ts` (`requestSiteOrigin` / `absoluteSiteUrl`). Ensure production sets `NEXT_PUBLIC_SITE_URL=https://hosting.theglobalorbit.com` and Nginx passes `X-Forwarded-Host` / `X-Forwarded-Proto`.
 
+Customer OAuth `redirect_uri` is built from the live request host via `storefrontSiteOriginForOAuth()` — never a bare `https://theglobalorbit.com` parent domain. Register this callback in Google Cloud Console:
+
+`https://hosting.theglobalorbit.com/api/auth/oauth/google/callback`
+
+On the OAuth consent screen, set **App name** to **HostingBeyond** (and logo/homepage `https://hosting.theglobalorbit.com`). Google may still show the verified registrable domain (`theglobalorbit.com`) under the account picker; the app name is what customers should recognize as your product.
+
 ## Redirect safety
 
 - `sanitizeCustomerRedirectPath()` in `lib/customer/safe-redirect.ts` is used for OAuth `next`, login/signup `next`, and OAuth state payloads.

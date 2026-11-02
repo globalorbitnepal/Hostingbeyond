@@ -6,6 +6,8 @@ import { sanitizeCustomerRedirectPath } from "@/lib/customer/safe-redirect";
 /** Canonical public site when env is unset in production builds. */
 export const DEFAULT_PUBLIC_SITE_ORIGIN = "https://hosting.theglobalorbit.com";
 
+export const STOREFRONT_PUBLIC_HOST = "hosting.theglobalorbit.com";
+
 function stripTrailingSlash(origin: string) {
   return origin.replace(/\/+$/, "");
 }
@@ -49,12 +51,12 @@ export function configuredSiteOrigin(): string {
   const site = normalizeEnvSiteOrigin(process.env.NEXT_PUBLIC_SITE_URL, {
     production,
   });
-  if (site) return site;
+  if (site) return normalizeStorefrontOAuthOrigin(site);
 
   const app = normalizeEnvSiteOrigin(process.env.NEXT_PUBLIC_APP_URL, {
     production,
   });
-  if (app) return app;
+  if (app) return normalizeStorefrontOAuthOrigin(app);
 
   const orbit = process.env.ORBIT_ORIGIN?.trim();
   if (orbit && !isLoopbackOrigin(orbit)) {
@@ -110,6 +112,36 @@ export function requestSiteOrigin(request: NextRequest): string {
     host: request.headers.get("host"),
     forwardedProto: request.headers.get("x-forwarded-proto"),
   });
+}
+
+/**
+ * OAuth redirect_uri must use the public storefront host (not a bare parent
+ * domain like theglobalorbit.com) so Google shows the correct site to users.
+ */
+export function storefrontSiteOriginForOAuth(
+  input?: RequestOriginInput,
+): string {
+  const resolved = input
+    ? resolveRequestSiteOrigin(input)
+    : configuredSiteOrigin();
+  return normalizeStorefrontOAuthOrigin(resolved);
+}
+
+function normalizeStorefrontOAuthOrigin(origin: string): string {
+  const normalized = stripTrailingSlash(origin);
+  try {
+    const host = new URL(normalized).hostname.toLowerCase();
+    if (
+      host === "theglobalorbit.com" ||
+      host === "www.theglobalorbit.com" ||
+      host === STOREFRONT_PUBLIC_HOST
+    ) {
+      return DEFAULT_PUBLIC_SITE_ORIGIN;
+    }
+  } catch {
+    /* use resolved origin */
+  }
+  return normalized;
 }
 
 /** Build an absolute on-site URL for redirects (path must be relative). */

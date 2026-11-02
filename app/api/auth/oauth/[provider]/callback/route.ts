@@ -8,6 +8,7 @@ import {
   getOAuthProvider,
   isOAuthProvider,
   oauthCallbackUrl,
+  oauthSiteOriginFromRequest,
 } from "@/lib/customer/oauth";
 import { nextPathFromOAuthStatePayload } from "@/lib/customer/oauth-state";
 import {
@@ -28,12 +29,13 @@ function fail(request: NextRequest, code: string) {
 async function exchangeCode(
   provider: ReturnType<typeof getOAuthProvider>,
   code: string,
+  oauthOrigin: string,
 ) {
   const body = new URLSearchParams({
     client_id: provider.clientId,
     client_secret: provider.clientSecret,
     code,
-    redirect_uri: oauthCallbackUrl(provider.provider),
+    redirect_uri: oauthCallbackUrl(provider.provider, oauthOrigin),
     grant_type: "authorization_code",
   });
 
@@ -83,7 +85,13 @@ export async function GET(
   const provider = getOAuthProvider(rawProvider);
   if (!provider.configured) return fail(request, `${rawProvider}_unavailable`);
 
-  const accessToken = await exchangeCode(provider, code);
+  const oauthOrigin = oauthSiteOriginFromRequest({
+    forwardedHost: request.headers.get("x-forwarded-host"),
+    host: request.headers.get("host"),
+    forwardedProto: request.headers.get("x-forwarded-proto"),
+  });
+
+  const accessToken = await exchangeCode(provider, code, oauthOrigin);
   if (!accessToken) return fail(request, "oauth");
 
   const profile = await fetchOAuthProfile(rawProvider, accessToken);

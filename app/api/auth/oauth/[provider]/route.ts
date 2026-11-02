@@ -5,6 +5,7 @@ import {
   getOAuthProvider,
   isOAuthProvider,
   oauthCallbackUrl,
+  oauthSiteOriginFromRequest,
 } from "@/lib/customer/oauth";
 import { sanitizeCustomerRedirectPath } from "@/lib/customer/safe-redirect";
 import { absoluteSiteUrl } from "@/lib/customer/site-origin";
@@ -45,9 +46,18 @@ export async function GET(
     .setExpirationTime("10m")
     .sign(sessionSecret());
 
+  const oauthOrigin = oauthSiteOriginFromRequest({
+    forwardedHost: request.headers.get("x-forwarded-host"),
+    host: request.headers.get("host"),
+    forwardedProto: request.headers.get("x-forwarded-proto"),
+  });
+
   const url = new URL(provider.authorizationUrl);
   url.searchParams.set("client_id", provider.clientId);
-  url.searchParams.set("redirect_uri", oauthCallbackUrl(rawProvider));
+  url.searchParams.set(
+    "redirect_uri",
+    oauthCallbackUrl(rawProvider, oauthOrigin),
+  );
   url.searchParams.set("response_type", "code");
   url.searchParams.set("scope", provider.scope);
   url.searchParams.set("state", state);
