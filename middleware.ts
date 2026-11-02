@@ -17,6 +17,7 @@ import {
 } from "@/lib/customer/session";
 import {
   LOCALE_REWRITE_HEADER,
+  localeCanonicalRedirectPath,
   localePrefixRewritePath,
   shouldApplyLocaleRouting,
   stripLocalePrefixFromPath,
@@ -82,6 +83,20 @@ function handlePublicLocaleRouting(request: NextRequest): NextResponse | null {
   const { pathname } = request.nextUrl;
   if (!shouldApplyLocaleRouting(pathname)) return null;
   if (isInternalLocaleRewriteRequest(request)) return null;
+
+  const canonical = localeCanonicalRedirectPath(pathname);
+  if (canonical) {
+    const target = new URL(
+      `${canonical}${request.nextUrl.search}`,
+      requestSiteOrigin(request),
+    );
+    const parsed = stripLocalePrefixFromPath(pathname);
+    return mergeLocaleCookie(
+      request,
+      NextResponse.redirect(target, 301),
+      parsed.language,
+    );
+  }
 
   const rewritePath = localePrefixRewritePath(pathname);
   if (!rewritePath) return null;

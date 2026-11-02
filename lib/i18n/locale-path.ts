@@ -1,35 +1,44 @@
 import {
   DEFAULT_WEBSITE_LANGUAGE_CODE,
+  WEBSITE_LANGUAGES,
   isWebsiteLanguageCode,
   type WebsiteLanguageCode,
 } from "@/lib/i18n/website-languages";
 
-/** First URL segment for each translatable language (English has no prefix). */
+/**
+ * First URL segment is the language's flag country (India → /in), never the
+ * ISO language code. English stays unprefixed.
+ */
 export const LOCALE_URL_SEGMENT_BY_LANGUAGE: Record<
   Exclude<WebsiteLanguageCode, "en">,
   string
-> = {
+> = Object.fromEntries(
+  WEBSITE_LANGUAGES.filter((row) => !row.isDefault).map((row) => [
+    row.code,
+    row.flagCountryCode.toLowerCase(),
+  ]),
+) as Record<Exclude<WebsiteLanguageCode, "en">, string>;
+
+/**
+ * Old language-code prefixes still resolve so /hi, /ne, /bn, /ja, /ko, /zh
+ * can 301 to the country URL.
+ */
+export const LEGACY_LOCALE_URL_SEGMENTS: Record<string, WebsiteLanguageCode> = {
   hi: "hi",
   ne: "ne",
   bn: "bn",
-  fr: "fr",
-  de: "de",
-  id: "id",
-  it: "it",
   ja: "ja",
   ko: "ko",
-  pt: "pt",
-  ru: "ru",
-  "zh-CN": "zh",
-  es: "es",
+  zh: "zh-CN",
 };
 
-const LANGUAGE_BY_URL_SEGMENT = new Map<string, WebsiteLanguageCode>(
-  Object.entries(LOCALE_URL_SEGMENT_BY_LANGUAGE).map(([code, segment]) => [
-    segment,
-    code as WebsiteLanguageCode,
-  ]),
-);
+const LANGUAGE_BY_URL_SEGMENT = new Map<string, WebsiteLanguageCode>([
+  ...Object.entries(LOCALE_URL_SEGMENT_BY_LANGUAGE).map(
+    ([code, segment]) =>
+      [segment, code as WebsiteLanguageCode] as [string, WebsiteLanguageCode],
+  ),
+  ...Object.entries(LEGACY_LOCALE_URL_SEGMENTS),
+]);
 
 export const LOCALE_URL_SEGMENTS = [
   ...new Set(Object.values(LOCALE_URL_SEGMENT_BY_LANGUAGE)),
@@ -77,6 +86,8 @@ export type ParsedLocalePath = {
   pathname: string;
   /** Whether a locale segment was present. */
   hadPrefix: boolean;
+  /** First URL segment when it was a locale prefix. */
+  prefixSegment: string | null;
 };
 
 export function stripLocalePrefixFromPath(pathname: string): ParsedLocalePath {
@@ -87,6 +98,7 @@ export function stripLocalePrefixFromPath(pathname: string): ParsedLocalePath {
       language: DEFAULT_WEBSITE_LANGUAGE_CODE,
       pathname: "/",
       hadPrefix: false,
+      prefixSegment: null,
     };
   }
   const first = parts[0]!;
@@ -96,6 +108,7 @@ export function stripLocalePrefixFromPath(pathname: string): ParsedLocalePath {
       language: DEFAULT_WEBSITE_LANGUAGE_CODE,
       pathname: raw,
       hadPrefix: false,
+      prefixSegment: null,
     };
   }
   const rest = parts.slice(1);
@@ -103,6 +116,7 @@ export function stripLocalePrefixFromPath(pathname: string): ParsedLocalePath {
     language: fromUrl,
     pathname: rest.length ? `/${rest.join("/")}` : "/",
     hadPrefix: true,
+    prefixSegment: first.toLowerCase(),
   };
 }
 
@@ -116,6 +130,22 @@ export function localizePublicPath(
   if (!segment) return bare;
   if (bare === "/") return `/${segment}`;
   return `/${segment}${bare}`;
+}
+
+/**
+ * 301 target when the visitor used /hi instead of /in (or /en instead of /).
+ * Null when the URL is already canonical.
+ */
+export function localeCanonicalRedirectPath(pathname: string): string | null {
+  const parsed = stripLocalePrefixFromPath(pathname);
+  if (!parsed.hadPrefix || !parsed.prefixSegment) return null;
+  const canonical = websiteLanguageToUrlSegment(parsed.language);
+  if (!canonical) {
+    return parsed.pathname;
+  }
+  if (parsed.prefixSegment === canonical) return null;
+  if (parsed.pathname === "/") return `/${canonical}`;
+  return `/${canonical}${parsed.pathname}`;
 }
 
 export function resolveLanguageForPublicRequest(
