@@ -1,11 +1,8 @@
 import { NextResponse } from "next/server";
 
 import { requireOrbitAdmin, unauthorizedJson } from "@/lib/orbit/api";
-import {
-  PUBLIC_PAGE_SEO_REGISTRY,
-  mergeStoredPageSeo,
-  type StoredPageSeo,
-} from "@/lib/orbit/page-seo";
+import { getOrbitPageInventory } from "@/lib/orbit/page-inventory";
+import { mergeStoredPageSeo, type StoredPageSeo } from "@/lib/orbit/page-seo";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath, revalidateTag } from "next/cache";
 
@@ -18,7 +15,8 @@ export async function GET() {
   });
   const bySlug = new Map(rows.map((row) => [row.slug, row.seo]));
 
-  const pages = PUBLIC_PAGE_SEO_REGISTRY.map((entry) => ({
+  const inventory = getOrbitPageInventory();
+  const pages = inventory.map((entry) => ({
     ...entry,
     seo: mergeStoredPageSeo(bySlug.get(entry.slug), entry.defaultSeo ?? {}),
   }));
@@ -39,7 +37,7 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "slug is required" }, { status: 400 });
   }
 
-  const entry = PUBLIC_PAGE_SEO_REGISTRY.find((item) => item.slug === slug);
+  const entry = getOrbitPageInventory().find((item) => item.slug === slug);
   if (!entry) {
     return NextResponse.json({ error: "Unknown page slug" }, { status: 400 });
   }

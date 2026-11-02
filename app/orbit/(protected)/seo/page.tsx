@@ -103,7 +103,7 @@ export default function OrbitSeoPage() {
         page.slug === activeSlug ? { ...page, seo: draft } : page,
       ),
     );
-    setStatus("Saved. Live metadata updates on next request.");
+    setStatus("Saved — live site updates within seconds.");
   }
 
   if (loading) {
