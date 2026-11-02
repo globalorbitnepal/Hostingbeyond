@@ -192,9 +192,12 @@ export async function orbitAdminResetCustomerPassword(input: {
     prisma.activityLog.create({
       data: {
         adminUserId: input.adminUserId,
-        action: "CUSTOMER_PASSWORD_RESET",
+        action: "SETTINGS_UPDATE",
         resource: `CustomerUser:${input.userId}`,
-        details: JSON.stringify({ via: "orbit_admin" }),
+        details: JSON.stringify({
+          via: "orbit_admin",
+          kind: "customer_password_reset",
+        }),
       },
     }),
   ]);
