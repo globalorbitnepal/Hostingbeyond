@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Headphones, Menu, Search, X } from "lucide-react";
+import { Headphones, Menu, Moon, Search, Sun, X } from "lucide-react";
 
 import { BrandMark } from "@/components/auth/brand-mark";
 import { LogoutButton } from "@/components/auth/logout-button";
@@ -20,6 +20,8 @@ type PanelUser = {
 type Props = {
   user: PanelUser;
   pathname: string;
+  theme: "light" | "dark";
+  onToggleTheme: () => void;
   onOpenMobileNav: () => void;
 };
 
@@ -29,10 +31,14 @@ type SearchTarget = { label: string; href: string; group: string };
 function searchTargets(): SearchTarget[] {
   const targets: SearchTarget[] = [
     { label: "My domains", href: routes.myDomains, group: "Domains" },
-    { label: "Register a domain", href: routes.domainSearch, group: "Domains" },
+    {
+      label: "Register a domain",
+      href: routes.accountDomainFind,
+      group: "Domains",
+    },
     {
       label: "Transfer a domain",
-      href: routes.domainTransfer,
+      href: routes.accountDomainTransfer,
       group: "Domains",
     },
     { label: "Wallet & top up", href: routes.accountWallet, group: "Billing" },
@@ -44,15 +50,9 @@ function searchTargets(): SearchTarget[] {
     },
     { label: "Invoices", href: routes.accountInvoices, group: "Billing" },
     { label: "Transactions", href: routes.accountBilling, group: "Billing" },
-    { label: "Web hosting plans", href: routes.hosting, group: "Hosting" },
-    { label: "Compare all pricing", href: routes.pricing, group: "Hosting" },
-    { label: "Business email", href: routes.businessEmail, group: "Email" },
-    {
-      label: "Website migration",
-      href: routes.websiteMigration,
-      group: "Websites",
-    },
-    { label: "Contact support", href: routes.contact, group: "Support" },
+    { label: "Hosting plans", href: routes.accountHosting, group: "Hosting" },
+    { label: "Business email", href: routes.accountEmail, group: "Email" },
+    { label: "Support", href: routes.accountSupport, group: "Support" },
     {
       label: "Security & password",
       href: routes.accountSecurity,
@@ -74,7 +74,13 @@ function searchTargets(): SearchTarget[] {
   return targets;
 }
 
-export function PanelHeader({ user, pathname, onOpenMobileNav }: Props) {
+export function PanelHeader({
+  user,
+  pathname,
+  theme,
+  onToggleTheme,
+  onOpenMobileNav,
+}: Props) {
   const title = panelTitleForPath(pathname);
   const displayName = user.name?.trim() || user.email.split("@")[0];
   const router = useRouter();
@@ -97,7 +103,9 @@ export function PanelHeader({ user, pathname, onOpenMobileNav }: Props) {
     if (results[0]) {
       router.push(results[0].href);
     } else if (query.trim()) {
-      router.push(routes.domainSearch);
+      router.push(
+        `${routes.accountDomainFind}?q=${encodeURIComponent(query.trim())}`,
+      );
     }
     setOpen(false);
     setQuery("");
@@ -105,22 +113,24 @@ export function PanelHeader({ user, pathname, onOpenMobileNav }: Props) {
   }
 
   return (
-    <header className="sticky top-0 z-30 border-b border-[var(--hb-p-border)] bg-white/90 backdrop-blur-md">
+    <header className="hb-panel-topbar">
       <div className="flex h-14 items-center gap-3 px-4 sm:px-6">
         <button
           type="button"
-          className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 lg:hidden"
+          className="rounded-lg p-2 text-[var(--hb-p-muted)] hover:bg-[var(--hb-p-primary)]/10 lg:hidden"
           onClick={onOpenMobileNav}
           aria-label="Open navigation"
         >
           <Menu className="h-5 w-5" />
         </button>
-        <Link href={routes.home} className="hidden shrink-0 sm:block">
+        <Link href={routes.account} className="hidden shrink-0 sm:block">
           <BrandMark className="!h-8 !max-w-[180px]" />
         </Link>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-xs text-slate-500">Customer area</p>
-          <h1 className="font-heading truncate text-base font-semibold text-slate-900 sm:text-lg">
+          <p className="truncate text-xs text-[var(--hb-p-muted)]">
+            Customer area
+          </p>
+          <h1 className="font-heading truncate text-base font-semibold text-[var(--hb-p-text)] sm:text-lg">
             {title}
           </h1>
         </div>
@@ -186,8 +196,22 @@ export function PanelHeader({ user, pathname, onOpenMobileNav }: Props) {
           ) : null}
         </form>
 
+        <button
+          type="button"
+          onClick={onToggleTheme}
+          className="inline-flex size-9 items-center justify-center rounded-full border border-[var(--hb-p-border)] text-[var(--hb-p-text)] hover:bg-[var(--hb-p-primary)]/10"
+          aria-label={
+            theme === "dark" ? "Switch to cream mode" : "Switch to dark mode"
+          }
+        >
+          {theme === "dark" ? (
+            <Sun className="size-4" />
+          ) : (
+            <Moon className="size-4" />
+          )}
+        </button>
         <Link
-          href={routes.contact}
+          href={routes.accountSupport}
           className={cn(
             "hidden items-center gap-1.5 rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 sm:inline-flex",
           )}

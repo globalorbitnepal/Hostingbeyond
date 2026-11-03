@@ -33,7 +33,6 @@ import {
   formatPanelDateTime,
   healthTone,
 } from "@/lib/panel/domain-status";
-import { BEYOND_AI_PUBLIC_ENABLED } from "@/config/beyond-ai-public";
 import { routes } from "@/config/routes";
 import { cn } from "@/lib/utils";
 
@@ -209,32 +208,40 @@ export function DashboardOverview({
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       {/* Greeting */}
-      <section className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h2 className="font-heading text-2xl font-bold tracking-tight text-slate-950 sm:text-[1.75rem]">
-            {firstName ? `Welcome back, ${firstName}` : "Welcome back"}
-          </h2>
-          <button
-            type="button"
-            onClick={() => void copyAccountEmail()}
-            className="mt-1 inline-flex items-center gap-1.5 text-sm text-slate-500 transition hover:text-[var(--hb-p-primary)]"
-            title="Copy account email"
-          >
-            {user.email}
-            {copied ? (
-              <CheckCircle2 className="size-3.5 text-emerald-600" />
-            ) : (
-              <Copy className="size-3.5 opacity-60" />
-            )}
-          </button>
-        </div>
-        <Link
-          href={routes.domainSearch}
-          className="inline-flex items-center gap-2 rounded-xl bg-[var(--hb-p-primary)] px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:brightness-110"
+      <section className="hb-panel-hero">
+        <p className="text-xs font-semibold tracking-[0.16em] text-white/75 uppercase">
+          HostingBeyond
+        </p>
+        <h2 className="font-heading mt-2 text-2xl font-bold tracking-tight sm:text-3xl">
+          {firstName ? `Good to see you, ${firstName}` : "Good to see you"}
+        </h2>
+        <p className="mt-1 max-w-xl text-sm text-white/80">
+          Domains, hosting, and business email stay in this panel. Open a domain
+          to change nameservers, lock, or renew.
+        </p>
+        <form
+          className="relative mt-5 max-w-xl"
+          action={routes.accountDomainFind}
         >
-          <Search className="size-4" />
-          Register a domain
-        </Link>
+          <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-violet-700" />
+          <input
+            name="q"
+            placeholder="Find a domain"
+            className="hb-panel-search"
+          />
+        </form>
+        <button
+          type="button"
+          onClick={() => void copyAccountEmail()}
+          className="mt-3 inline-flex items-center gap-1.5 text-xs text-white/75"
+        >
+          {user.email}
+          {copied ? (
+            <CheckCircle2 className="size-3.5" />
+          ) : (
+            <Copy className="size-3.5" />
+          )}
+        </button>
       </section>
 
       {orderBannerId ? (
@@ -257,7 +264,7 @@ export function DashboardOverview({
           </div>
           <div className="flex items-center gap-2">
             <Link
-              href={routes.domainSearch}
+              href={routes.accountDomainFind}
               className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--hb-p-border)] px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-[var(--hb-p-primary)]/40"
             >
               <Search className="size-3.5" />
@@ -287,14 +294,14 @@ export function DashboardOverview({
             </p>
             <div className="mt-5 flex flex-wrap justify-center gap-2">
               <Link
-                href={routes.domainSearch}
+                href={routes.accountDomainFind}
                 className="inline-flex items-center gap-2 rounded-xl bg-[var(--hb-p-primary)] px-4 py-2.5 text-sm font-bold text-white transition hover:brightness-110"
               >
                 <Search className="size-4" />
                 Search a domain
               </Link>
               <Link
-                href={routes.domainTransfer}
+                href={routes.accountDomainTransfer}
                 className="inline-flex items-center gap-2 rounded-xl border border-[var(--hb-p-border)] px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-[var(--hb-p-primary)]/40"
               >
                 Transfer an existing domain
@@ -413,25 +420,25 @@ export function DashboardOverview({
             {
               label: "Register domain",
               hint: "Find an available name",
-              href: routes.domainSearch,
+              href: routes.accountDomainFind,
               icon: Globe,
             },
             {
               label: "Transfer domain",
               hint: "Move a domain to us",
-              href: routes.domainTransfer,
+              href: routes.accountDomainTransfer,
               icon: Lock,
             },
             {
               label: "Web hosting",
               hint: "NVMe plans with free SSL",
-              href: routes.hosting,
+              href: routes.accountHosting,
               icon: ShoppingBag,
             },
             {
               label: "Business email",
               hint: "Your name@yourdomain",
-              href: routes.businessEmail,
+              href: routes.accountEmail,
               icon: Mail,
             },
           ].map((action) => {
@@ -477,7 +484,7 @@ export function DashboardOverview({
             <div className="mt-4 rounded-xl border border-dashed border-[var(--hb-p-border)] px-4 py-6 text-center">
               <p className="text-sm text-slate-600">No hosting orders yet.</p>
               <Link
-                href={routes.hosting}
+                href={routes.accountHosting}
                 className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-[var(--hb-p-primary)] hover:underline"
               >
                 Browse hosting plans
@@ -603,22 +610,14 @@ export function DashboardOverview({
               <span>— coming in a later phase.</span>
             </p>
             <div className="mt-3 flex flex-wrap gap-3 text-xs font-semibold text-[var(--hb-p-primary)]">
-              <Link href={routes.contact} className="hover:underline">
+              <Link href={routes.accountSupport} className="hover:underline">
                 Contact support
               </Link>
               {counts.migrationRequests > 0 ? (
-                <Link
-                  href={routes.websiteMigration}
-                  className="hover:underline"
-                >
+                <span>
                   {counts.migrationRequests} migration request
                   {counts.migrationRequests === 1 ? "" : "s"} on file
-                </Link>
-              ) : null}
-              {BEYOND_AI_PUBLIC_ENABLED ? (
-                <Link href={routes.beyondAi} className="hover:underline">
-                  Website builder
-                </Link>
+                </span>
               ) : null}
             </div>
           </div>

@@ -1,5 +1,4 @@
 import { routes } from "@/config/routes";
-import { BEYOND_AI_PUBLIC_ENABLED } from "@/config/beyond-ai-public";
 
 export type PanelNavItem = {
   id: string;
@@ -21,19 +20,23 @@ export const PANEL_NAV: PanelNavSection[] = [
   {
     id: "overview",
     label: "Overview",
-    items: [
-      { id: "dashboard", label: "Dashboard", href: routes.account },
-      { id: "notifications", label: "Notifications", soon: true },
-      { id: "activity", label: "Recent activity", soon: true },
-    ],
+    items: [{ id: "dashboard", label: "Dashboard", href: routes.account }],
   },
   {
     id: "domains",
     label: "Domains",
     items: [
       { id: "my-domains", label: "My Domains", href: routes.myDomains },
-      { id: "register", label: "Register Domain", href: routes.domainSearch },
-      { id: "transfer", label: "Transfer Domain", href: routes.domainTransfer },
+      {
+        id: "register",
+        label: "Register Domain",
+        href: routes.accountDomainFind,
+      },
+      {
+        id: "transfer",
+        label: "Transfer Domain",
+        href: routes.accountDomainTransfer,
+      },
       {
         id: "renewals",
         label: "Renewals & expiry",
@@ -45,54 +48,27 @@ export const PANEL_NAV: PanelNavSection[] = [
     id: "hosting",
     label: "Hosting",
     items: [
-      { id: "web-hosting", label: "Web Hosting", href: routes.hosting },
-      { id: "plans", label: "Hosting Plans", href: routes.pricing },
+      {
+        id: "web-hosting",
+        label: "Hosting plans",
+        href: routes.accountHosting,
+      },
       {
         id: "hosting-orders",
         label: "Hosting Orders",
         href: routes.accountHostingOrders,
       },
-      { id: "manage", label: "Manage Hosting", soon: true },
-      { id: "usage", label: "Resource Usage", soon: true },
-    ],
-  },
-  {
-    id: "websites",
-    label: "Websites",
-    items: [
-      { id: "my-websites", label: "My Websites", soon: true },
-      { id: "wordpress", label: "WordPress", soon: true },
-      { id: "builder", label: "Website Builder", href: routes.beyondAi },
-      {
-        id: "migration",
-        label: "Website Migration",
-        href: routes.websiteMigration,
-      },
-      { id: "backups", label: "Backups", soon: true },
     ],
   },
   {
     id: "email",
     label: "Business Email",
     items: [
-      { id: "my-email", label: "My Email Services", soon: true },
       {
         id: "buy-email",
-        label: "Buy Business Email",
-        href: routes.businessEmail,
+        label: "Business Email",
+        href: routes.accountEmail,
       },
-      { id: "mailboxes", label: "Mailboxes", soon: true },
-      { id: "email-dns", label: "Email Setup & DNS", soon: true },
-    ],
-  },
-  {
-    id: "servers",
-    label: "Servers",
-    items: [
-      { id: "vps", label: "VPS Servers", href: routes.vps },
-      { id: "dedicated", label: "Dedicated Servers", soon: true },
-      { id: "server-orders", label: "Server Orders", soon: true },
-      { id: "monitoring", label: "Resource Monitoring", soon: true },
     ],
   },
   {
@@ -107,36 +83,24 @@ export const PANEL_NAV: PanelNavSection[] = [
       },
       { id: "orders", label: "Domain orders", href: routes.accountOrders },
       { id: "invoices", label: "Invoices", href: routes.accountInvoices },
-      { id: "payment-methods", label: "Payment Methods", soon: true },
     ],
   },
   {
     id: "support",
     label: "Support",
-    items: [
-      { id: "help", label: "Help Centre", href: routes.resources },
-      { id: "tickets", label: "Support Tickets", soon: true },
-      { id: "contact", label: "Contact Support", href: routes.contact },
-    ],
+    items: [{ id: "tickets", label: "Support", href: routes.accountSupport }],
   },
   {
     id: "account",
     label: "Account",
     items: [
-      { id: "profile", label: "Profile", href: routes.account },
       { id: "security", label: "Security", href: routes.accountSecurity },
-      { id: "sessions", label: "Login & Sessions", soon: true },
-      { id: "prefs", label: "Notification Preferences", soon: true },
     ],
   },
 ];
 
 export function getPanelNav(): PanelNavSection[] {
-  if (BEYOND_AI_PUBLIC_ENABLED) return PANEL_NAV;
-  return PANEL_NAV.map((section) => ({
-    ...section,
-    items: section.items.filter((item) => item.id !== "builder"),
-  }));
+  return PANEL_NAV;
 }
 
 function pathMatchesNavItem(pathname: string, href: string) {
@@ -146,10 +110,20 @@ function pathMatchesNavItem(pathname: string, href: string) {
 }
 
 export function panelTitleForPath(pathname: string): string {
+  if (pathname.startsWith("/account/domains/find")) return "Register a domain";
+  if (pathname.startsWith("/account/domains/transfer"))
+    return "Transfer a domain";
+  if (pathname.startsWith("/account/hosting-orders")) return "Hosting orders";
+  if (
+    pathname === "/account/hosting" ||
+    pathname.startsWith("/account/hosting/")
+  )
+    return "Hosting plans";
+  if (pathname.startsWith("/account/email")) return "Business email";
+  if (pathname.startsWith("/account/support")) return "Support";
   if (pathname.startsWith("/account/my-domains/")) return "Domain details";
   if (pathname.startsWith("/account/orders/")) return "Order details";
   if (pathname.startsWith("/account/invoices/")) return "Invoice details";
-  if (pathname.startsWith("/account/hosting-orders")) return "Hosting orders";
   let best: { label: string; href: string } | null = null;
   for (const section of getPanelNav()) {
     for (const item of section.items) {

@@ -41,7 +41,7 @@ export function PanelSidebar({
       />
       <aside
         className={cn(
-          "hb-panel-card z-50 flex h-dvh shrink-0 flex-col border-r bg-white transition-[width,transform] duration-200",
+          "hb-panel-card z-50 flex h-dvh shrink-0 flex-col border-r transition-[width,transform] duration-200",
           "fixed top-0 left-0 lg:sticky lg:top-0 lg:self-start",
           collapsed
             ? "w-[var(--hb-p-sidebar-collapsed)]"
@@ -63,7 +63,7 @@ export function PanelSidebar({
           ) : null}
           <button
             type="button"
-            className="hidden rounded-lg p-2 text-slate-500 hover:bg-slate-100 lg:inline-flex"
+            className="hidden rounded-lg p-2 text-[var(--hb-p-muted)] hover:bg-[var(--hb-p-primary)]/10 lg:inline-flex"
             onClick={onToggleCollapsed}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
@@ -78,7 +78,7 @@ export function PanelSidebar({
           {getPanelNav().map((section) => (
             <div key={section.id} className="mb-5">
               {!collapsed ? (
-                <p className="mb-2 px-2 text-[10px] font-bold tracking-[0.14em] text-slate-400 uppercase">
+                <p className="mb-2 px-2 text-[10px] font-bold tracking-[0.14em] text-[var(--hb-p-muted)] uppercase">
                   {section.label}
                 </p>
               ) : null}
