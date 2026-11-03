@@ -15,6 +15,15 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+/**
+ * Applies the saved panel theme before first paint.
+ *
+ * Without this the cream theme flashes for one frame on a dark-mode session,
+ * which is exactly the "text hard to read" complaint we are fixing. The script
+ * is intentionally tiny and dependency-free.
+ */
+const THEME_BOOTSTRAP = `(function(){try{var t=localStorage.getItem("hb-panel-theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.hbTheme=t;}catch(e){}})();`;
+
 export default async function AccountLayout({
   children,
 }: {
@@ -27,14 +36,17 @@ export default async function AccountLayout({
   if (!user) redirect(routes.login);
 
   return (
-    <PanelAccountChrome
-      user={{
-        name: user.name,
-        email: user.email,
-        image: user.image,
-      }}
-    >
-      {children}
-    </PanelAccountChrome>
+    <>
+      <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
+      <PanelAccountChrome
+        user={{
+          name: user.name,
+          email: user.email,
+          image: user.image,
+        }}
+      >
+        {children}
+      </PanelAccountChrome>
+    </>
   );
 }

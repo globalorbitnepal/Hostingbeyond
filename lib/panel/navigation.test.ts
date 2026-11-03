@@ -25,10 +25,27 @@ describe("panel navigation", () => {
       panelTitleForPath("/account/hosting-orders"),
       "Hosting orders",
     );
-    assert.equal(panelTitleForPath("/account/my-domains"), "My Domains");
+    assert.equal(panelTitleForPath("/account/my-domains"), "Domain portfolio");
     assert.equal(
       panelTitleForPath("/account/my-domains/example.com"),
       "Domain details",
     );
+    assert.equal(panelTitleForPath("/account/domains/find"), "Domain search");
+    assert.equal(panelTitleForPath("/account/domains/transfer"), "Transfers");
+    assert.equal(panelTitleForPath("/account/hosting"), "Hosting plans");
+    assert.equal(panelTitleForPath("/account/email"), "Business email");
+    assert.equal(panelTitleForPath("/account/support"), "Support");
+  });
+
+  it("keeps every nav link inside the customer panel", () => {
+    for (const section of PANEL_NAV) {
+      for (const item of section.items) {
+        if (!item.href) continue;
+        assert.ok(
+          item.href.startsWith("/account"),
+          `${item.label} leaves the panel: ${item.href}`,
+        );
+      }
+    }
   });
 });

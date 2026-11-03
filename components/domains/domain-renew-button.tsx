@@ -48,13 +48,11 @@ export function DomainRenewButton({ domain }: { domain: string }) {
         type="button"
         disabled={loading}
         onClick={() => void renew()}
-        className="text-xs font-bold text-[#673de6] hover:underline disabled:opacity-60"
+        className="hb-btn hb-btn-primary hb-btn-sm disabled:opacity-60"
       >
         {loading ? "Renewing…" : "Renew now"}
       </button>
-      {message ? (
-        <p className="mt-1 text-xs text-slate-600">{message}</p>
-      ) : null}
+      {message ? <p className="hb-muted mt-1 text-xs">{message}</p> : null}
     </div>
   );
 }

@@ -3,8 +3,6 @@
 import { useState } from "react";
 import { KeyRound } from "lucide-react";
 
-import { cn } from "@/lib/utils";
-
 type Props = {
   email: string;
   hasPassword: boolean;
@@ -18,8 +16,7 @@ export function AccountSecurityPanel({ email, hasPassword }: Props) {
   const [success, setSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const inputClass =
-    "h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#673de6] focus:ring-4 focus:ring-[#673de6]/12 focus:outline-none";
+  const inputClass = "hb-input h-11";
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -62,16 +59,15 @@ export function AccountSecurityPanel({ email, hasPassword }: Props) {
   }
 
   return (
-    <form className="mt-8 space-y-5" onSubmit={(e) => void onSubmit(e)}>
-      <div className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/80 px-4 py-3">
-        <KeyRound className="mt-0.5 size-5 shrink-0 text-[#673de6]" />
-        <div className="min-w-0 text-sm leading-relaxed text-slate-600">
-          <p className="font-semibold text-slate-900">
+    <form className="mt-6 space-y-5" onSubmit={(e) => void onSubmit(e)}>
+      <div className="hb-soft flex items-start gap-3 px-4 py-3">
+        <KeyRound className="mt-0.5 size-5 shrink-0 text-[var(--hb-p-primary)]" />
+        <div className="hb-muted min-w-0 text-sm leading-relaxed">
+          <p className="hb-text font-bold">
             {hasPassword ? "Change password" : "Set a password"}
           </p>
           <p className="mt-1">
-            Signed in as{" "}
-            <span className="font-medium text-slate-800">{email}</span>.
+            Signed in as <span className="hb-text font-semibold">{email}</span>.
             {hasPassword
               ? " Enter your current password, then choose a new one."
               : " You signed in with Google, GitHub, or Facebook — add a password to sign in with email too."}
@@ -81,9 +77,7 @@ export function AccountSecurityPanel({ email, hasPassword }: Props) {
 
       {hasPassword ? (
         <label className="block">
-          <span className="mb-1.5 block text-[13px] font-semibold text-slate-700">
-            Current password
-          </span>
+          <span className="hb-label">Current password</span>
           <input
             type="password"
             autoComplete="current-password"
@@ -126,18 +120,12 @@ export function AccountSecurityPanel({ email, hasPassword }: Props) {
       </label>
 
       {error ? (
-        <p
-          className="rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-800"
-          role="alert"
-        >
+        <p className="hb-pill hb-pill-danger inline-flex" role="alert">
           {error}
         </p>
       ) : null}
       {success ? (
-        <p
-          className="rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-sm text-emerald-800"
-          role="status"
-        >
+        <p className="hb-pill hb-pill-ok inline-flex" role="status">
           Your password has been updated. Use it the next time you sign in with
           email.
         </p>
@@ -146,9 +134,7 @@ export function AccountSecurityPanel({ email, hasPassword }: Props) {
       <button
         type="submit"
         disabled={submitting}
-        className={cn(
-          "inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-r from-[#673de6] to-[#2563eb] px-6 text-sm font-semibold text-white shadow-sm transition hover:opacity-95 disabled:opacity-60",
-        )}
+        className="hb-btn hb-btn-primary h-11 px-6"
       >
         {submitting
           ? "Saving…"

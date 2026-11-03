@@ -106,45 +106,29 @@ export function expiryCopy(
 }
 
 export type DomainHealthTone = {
-  /** Tailwind classes for a small status pill. */
-  pill: string;
-  /** Tailwind text colour for supporting copy. */
-  text: string;
+  /** Theme-aware pill class from the panel design system. */
+  pillClass: string;
   label: string;
 };
 
+/**
+ * Status colours come from CSS tokens (`styles/panel.css`) rather than fixed
+ * Tailwind palettes: the panel ships a cream theme and a purple/blue dark
+ * theme, and hard-coded `bg-amber-50 text-amber-800` becomes unreadable when
+ * the surface turns dark.
+ */
 export function healthTone(health: DomainHealth): DomainHealthTone {
   switch (health) {
     case "expired":
-      return {
-        pill: "bg-red-50 text-red-700 ring-1 ring-red-200",
-        text: "text-red-700",
-        label: "Expired",
-      };
+      return { pillClass: "hb-pill-danger", label: "Expired" };
     case "critical":
-      return {
-        pill: "bg-amber-50 text-amber-800 ring-1 ring-amber-200",
-        text: "text-amber-700",
-        label: "Action needed",
-      };
+      return { pillClass: "hb-pill-warn", label: "Action needed" };
     case "expiring":
-      return {
-        pill: "bg-amber-50 text-amber-800 ring-1 ring-amber-200",
-        text: "text-amber-700",
-        label: "Expiring soon",
-      };
+      return { pillClass: "hb-pill-warn", label: "Expiring soon" };
     case "pending":
-      return {
-        pill: "bg-sky-50 text-sky-800 ring-1 ring-sky-200",
-        text: "text-sky-700",
-        label: "Setting up",
-      };
+      return { pillClass: "hb-pill-info", label: "Setting up" };
     default:
-      return {
-        pill: "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200",
-        text: "text-emerald-700",
-        label: "Active",
-      };
+      return { pillClass: "hb-pill-ok", label: "Active" };
   }
 }
 

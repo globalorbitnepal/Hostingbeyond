@@ -98,7 +98,7 @@ describe("domainStatusLabel", () => {
 });
 
 describe("healthTone", () => {
-  it("gives every health state a pill and a label", () => {
+  it("gives every health state a theme-aware pill and a label", () => {
     for (const health of [
       "healthy",
       "expiring",
@@ -107,9 +107,15 @@ describe("healthTone", () => {
       "pending",
     ] as const) {
       const tone = healthTone(health);
-      assert.ok(tone.pill.includes("bg-"));
+      assert.ok(tone.pillClass.startsWith("hb-pill-"));
       assert.ok(tone.label.length > 0);
     }
+  });
+
+  it("maps severe states to danger and warning tokens", () => {
+    assert.equal(healthTone("expired").pillClass, "hb-pill-danger");
+    assert.equal(healthTone("critical").pillClass, "hb-pill-warn");
+    assert.equal(healthTone("healthy").pillClass, "hb-pill-ok");
   });
 });
 

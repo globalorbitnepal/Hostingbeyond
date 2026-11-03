@@ -46,7 +46,7 @@ export function WalletTopUpForm({
 
   return (
     <form onSubmit={(e) => void submit(e)} className="mt-6 space-y-3">
-      <label className="block text-sm font-semibold text-slate-800">
+      <label className="hb-label !text-sm">
         Add funds
         <input
           type="number"
@@ -55,11 +55,11 @@ export function WalletTopUpForm({
           step={1}
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
-          className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+          className="hb-input mt-1 h-11"
         />
       </label>
       {!paymentProviderConfigured ? (
-        <p className="text-xs text-slate-500">
+        <p className="hb-muted text-xs">
           Payment provider integration is pending. No charge will be made until
           verified checkout is enabled.
         </p>
@@ -67,14 +67,12 @@ export function WalletTopUpForm({
       <button
         type="submit"
         disabled={loading}
-        className="inline-flex h-11 items-center rounded-full bg-gradient-to-r from-[#673de6] to-[#2563eb] px-5 text-sm font-bold text-white disabled:opacity-60"
+        className="hb-btn hb-btn-primary h-11"
       >
         {loading ? "Please wait…" : "Continue to payment"}
       </button>
       {message ? (
-        <p className="rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-700">
-          {message}
-        </p>
+        <p className="hb-soft hb-text-soft px-3 py-2 text-sm">{message}</p>
       ) : null}
     </form>
   );

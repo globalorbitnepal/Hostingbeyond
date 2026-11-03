@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   AlertTriangle,
+  ArrowLeft,
   CheckCircle2,
   Copy,
   Globe,
@@ -15,6 +16,7 @@ import {
 } from "lucide-react";
 
 import { DomainRenewButton } from "@/components/domains/domain-renew-button";
+import { DomainDnsPanel } from "@/components/panel/domain-dns-panel";
 import {
   daysUntil,
   domainHealth,
@@ -38,10 +40,11 @@ type DomainDetail = {
   currency: string;
 };
 
-type Tab = "overview" | "nameservers" | "security";
+type Tab = "overview" | "dns" | "nameservers" | "security";
 
 const TABS: Array<{ id: Tab; label: string }> = [
   { id: "overview", label: "Overview" },
+  { id: "dns", label: "DNS records" },
   { id: "nameservers", label: "Nameservers" },
   { id: "security", label: "Lock & transfer" },
 ];
@@ -74,7 +77,9 @@ export function DomainManagePanel({
   const load = useCallback(async () => {
     setLoadError("");
     try {
-      const res = await fetch(`/api/domains/${registrationId}`);
+      const res = await fetch(`/api/domains/${registrationId}`, {
+        cache: "no-store",
+      });
       if (!res.ok) {
         setLoadError("Could not load this domain right now.");
         return;
@@ -114,6 +119,30 @@ export function DomainManagePanel({
       const json = (await res.json()) as { error?: string };
       if (res.ok) {
         setMessage("Nameservers saved. DNS updates can take up to 24 hours.");
+        void load();
+      } else {
+        setError(json.error ?? "Nameservers could not be updated.");
+      }
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function applyNameservers(hosts: string[]) {
+    setNsInput(hosts.join("\n"));
+    setBusy(true);
+    resetFeedback();
+    try {
+      const res = await fetch(`/api/domains/${registrationId}/nameservers`, {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ nameservers: hosts }),
+      });
+      const json = (await res.json()) as { error?: string };
+      if (res.ok) {
+        setMessage("Nameservers updated. Propagation can take up to 24 hours.");
         void load();
       } else {
         setError(json.error ?? "Nameservers could not be updated.");
@@ -214,20 +243,19 @@ export function DomainManagePanel({
 
   if (loadError) {
     return (
-      <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+      <p className="hb-pill hb-pill-danger inline-flex">
+        <AlertTriangle className="size-3.5" />
         {loadError}
-      </div>
+      </p>
     );
   }
 
   if (!detail) {
     return (
       <div className="space-y-3">
-        <p className="font-heading text-2xl font-bold text-slate-950">
-          {domainName}
-        </p>
-        <div className="h-4 w-72 animate-pulse rounded bg-slate-100" />
-        <div className="h-32 animate-pulse rounded-xl bg-slate-100" />
+        <p className="hb-h1">{domainName}</p>
+        <div className="hb-soft h-4 w-72 animate-pulse rounded" />
+        <div className="hb-soft h-32 animate-pulse rounded-xl" />
       </div>
     );
   }
@@ -236,26 +264,26 @@ export function DomainManagePanel({
   const tone = healthTone(health);
   const days = daysUntil(detail.expiresAt);
   const needsRenewal = days !== null && days <= 45;
+  const usesHostingBeyondNs = detail.nameservers.some((ns) =>
+    /ns1\.hostingbeyond\.com/i.test(ns),
+  );
 
   return (
     <div className="space-y-5">
-      {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
+          <Link
+            href="/account/my-domains"
+            className="hb-muted hover:hb-text mb-2 inline-flex items-center gap-1 text-xs font-semibold"
+          >
+            <ArrowLeft className="size-3.5" />
+            Domain portfolio
+          </Link>
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="font-heading truncate text-2xl font-bold text-slate-950">
-              {detail.domain}
-            </h2>
-            <span
-              className={cn(
-                "rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase",
-                tone.pill,
-              )}
-            >
-              {tone.label}
-            </span>
+            <h1 className="hb-h1 truncate">{detail.domain}</h1>
+            <span className={cn("hb-pill", tone.pillClass)}>{tone.label}</span>
           </div>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="hb-muted mt-1 text-sm">
             {domainStatusLabel(detail.status)} · {expiryCopy(detail.expiresAt)}
           </p>
         </div>
@@ -264,14 +292,14 @@ export function DomainManagePanel({
             href={`https://${detail.domain}`}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--hb-p-border)] bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--hb-p-primary)]/40"
+            className="hb-btn hb-btn-ghost"
           >
             <Globe className="size-4" />
             Visit site
           </a>
           {needsRenewal ? (
-            <span className="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800 ring-1 ring-amber-200">
-              <AlertTriangle className="size-4" />
+            <span className="hb-pill hb-pill-warn">
+              <AlertTriangle className="size-3.5" />
               Renew soon
             </span>
           ) : null}
@@ -281,15 +309,15 @@ export function DomainManagePanel({
       {health === "expiring" ||
       health === "critical" ||
       health === "expired" ? (
-        <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-          <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-600" />
-          <div className="text-sm text-amber-900">
-            <p className="font-semibold">
+        <div className="hb-panel-card flex items-start gap-3 p-4">
+          <AlertTriangle className="mt-0.5 size-4 shrink-0 text-[var(--hb-p-warn)]" />
+          <div className="text-sm">
+            <p className="hb-text font-bold">
               {health === "expired"
                 ? "This domain has expired."
                 : `This domain expires ${expiryCopy(detail.expiresAt).toLowerCase()}.`}
             </p>
-            <p className="mt-0.5 text-amber-900/80">
+            <p className="hb-muted mt-0.5">
               After expiry your website and email stop working, and the name can
               be registered by someone else.
               {detail.renewalPrice != null
@@ -303,19 +331,26 @@ export function DomainManagePanel({
         </div>
       ) : null}
 
-      {/* Tabs */}
-      <div className="flex flex-wrap gap-1.5 border-b border-[var(--hb-p-border)] pb-2">
+      <div className="flex flex-wrap gap-1.5">
         {TABS.map((item) => (
           <button
             key={item.id}
             type="button"
             onClick={() => setTab(item.id)}
             className={cn(
-              "rounded-lg px-3 py-1.5 text-sm font-semibold transition",
+              "rounded-full px-3.5 py-1.5 text-sm font-bold transition",
               tab === item.id
-                ? "bg-[var(--hb-p-primary)]/10 text-[var(--hb-p-primary-deep)]"
-                : "text-slate-600 hover:bg-slate-100",
+                ? "text-white"
+                : "hb-muted hover:bg-[var(--hb-p-primary)]/10",
             )}
+            style={
+              tab === item.id
+                ? {
+                    background:
+                      "linear-gradient(135deg, var(--hb-p-primary-strong), var(--hb-p-accent))",
+                  }
+                : undefined
+            }
           >
             {item.label}
           </button>
@@ -323,13 +358,14 @@ export function DomainManagePanel({
       </div>
 
       {message ? (
-        <p className="flex items-start gap-2 rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
-          <CheckCircle2 className="mt-0.5 size-4 shrink-0" />
+        <p className="hb-pill hb-pill-ok inline-flex">
+          <CheckCircle2 className="size-3.5" />
           {message}
         </p>
       ) : null}
       {error ? (
-        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-800">
+        <p className="hb-pill hb-pill-danger inline-flex">
+          <AlertTriangle className="size-3.5" />
           {error}
         </p>
       ) : null}
@@ -352,25 +388,20 @@ export function DomainManagePanel({
                     : "—",
               },
             ].map((item) => (
-              <div
-                key={item.label}
-                className="rounded-xl border border-[var(--hb-p-border)] bg-white px-4 py-3"
-              >
-                <p className="text-[11px] font-semibold tracking-wide text-slate-400 uppercase">
+              <div key={item.label} className="hb-panel-stat px-4 py-3">
+                <p className="hb-muted text-[11px] font-bold tracking-wide uppercase">
                   {item.label}
                 </p>
-                <p className="mt-1 text-sm font-semibold text-slate-900">
-                  {item.value}
-                </p>
+                <p className="hb-text mt-1 text-sm font-bold">{item.value}</p>
               </div>
             ))}
           </div>
 
-          <div className="rounded-xl border border-[var(--hb-p-border)] bg-white p-4">
+          <div className="hb-panel-card p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <h3 className="text-sm font-bold text-slate-900">Auto-renew</h3>
-                <p className="mt-0.5 text-xs text-slate-500">
+                <h3 className="hb-text text-sm font-bold">Auto-renew</h3>
+                <p className="hb-muted mt-0.5 text-xs">
                   {detail.autoRenew
                     ? "We keep this domain active automatically before expiry."
                     : "You will need to renew manually before the expiry date."}
@@ -381,10 +412,8 @@ export function DomainManagePanel({
                 disabled={busy}
                 onClick={() => void toggleAutoRenew(!detail.autoRenew)}
                 className={cn(
-                  "inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition disabled:opacity-60",
-                  detail.autoRenew
-                    ? "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200"
-                    : "bg-slate-100 text-slate-700 ring-1 ring-slate-200",
+                  "hb-btn",
+                  detail.autoRenew ? "hb-btn-ghost" : "hb-btn-primary",
                 )}
               >
                 <RefreshCw className="size-4" />
@@ -393,41 +422,88 @@ export function DomainManagePanel({
             </div>
           </div>
 
-          <div className="rounded-xl border border-[var(--hb-p-border)] bg-white p-4">
-            <h3 className="text-sm font-bold text-slate-900">
+          <div className="hb-panel-card p-4">
+            <h3 className="hb-text text-sm font-bold">
               Point this domain somewhere
             </h3>
-            <p className="mt-1 text-xs text-slate-500">
-              To use it with hosting or email, set the nameservers to your
-              provider. Current nameservers:
+            <p className="hb-muted mt-1 text-xs">
+              Nameservers decide where DNS lives. If this domain uses
+              HostingBeyond nameservers you can edit records in the DNS tab.
             </p>
-            <ul className="mt-2 space-y-1 font-mono text-xs text-slate-700">
+            <ul className="hb-text-soft mt-2 space-y-1 font-mono text-xs">
               {detail.nameservers.length === 0 ? (
-                <li className="text-slate-500">No nameservers on file.</li>
+                <li className="hb-muted">No nameservers on file.</li>
               ) : (
                 detail.nameservers.map((ns) => <li key={ns}>{ns}</li>)
               )}
             </ul>
-            <button
-              type="button"
-              onClick={() => setTab("nameservers")}
-              className="mt-3 text-sm font-semibold text-[var(--hb-p-primary)] hover:underline"
-            >
-              Edit nameservers →
-            </button>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setTab("nameservers")}
+                className="hb-btn hb-btn-ghost hb-btn-sm"
+              >
+                Edit nameservers
+              </button>
+              <button
+                type="button"
+                onClick={() => setTab("dns")}
+                className="hb-btn hb-btn-ghost hb-btn-sm"
+              >
+                DNS records
+              </button>
+            </div>
           </div>
         </div>
       ) : null}
 
+      {tab === "dns" ? (
+        <div className="hb-panel-card p-5">
+          {usesHostingBeyondNs ? null : (
+            <p className="hb-pill hb-pill-warn mb-4 rounded-xl px-3 py-2 text-xs">
+              <AlertTriangle className="size-3.5" />
+              This domain uses third-party nameservers. Records here are stored
+              at the registrar but DNS answers come from those nameservers.
+            </p>
+          )}
+          <DomainDnsPanel
+            registrationId={registrationId}
+            domainName={detail.domain}
+          />
+        </div>
+      ) : null}
+
       {tab === "nameservers" ? (
-        <div className="rounded-xl border border-[var(--hb-p-border)] bg-white p-4">
-          <h3 className="text-sm font-bold text-slate-900">Nameservers</h3>
-          <p className="mt-1 text-xs text-slate-500">
-            One hostname per line, for example <code>ns1.example.com</code>.
-            Most providers require at least two.
+        <div className="hb-panel-card p-5">
+          <h3 className="hb-text text-sm font-bold">Nameservers</h3>
+          <p className="hb-muted mt-1 text-xs">
+            One hostname per line. Most registrars require at least two.
           </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() =>
+                void applyNameservers([
+                  "ns1.hostingbeyond.com",
+                  "ns2.hostingbeyond.com",
+                ])
+              }
+              className="hb-btn hb-btn-ghost hb-btn-sm"
+            >
+              Use HostingBeyond nameservers
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => setNsInput(detail.nameservers.join("\n"))}
+              className="hb-btn hb-btn-ghost hb-btn-sm"
+            >
+              Reset to saved
+            </button>
+          </div>
           <textarea
-            className="mt-3 w-full rounded-xl border border-[var(--hb-p-border)] px-3 py-2 font-mono text-sm"
+            className="hb-textarea mt-3 font-mono"
             rows={4}
             value={nsInput}
             onChange={(e) => setNsInput(e.target.value)}
@@ -437,7 +513,7 @@ export function DomainManagePanel({
             type="button"
             disabled={busy}
             onClick={() => void saveNameservers()}
-            className="mt-3 rounded-xl bg-[var(--hb-p-primary)] px-4 py-2 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-60"
+            className="hb-btn hb-btn-primary mt-3"
           >
             {busy ? "Saving…" : "Save nameservers"}
           </button>
@@ -446,18 +522,18 @@ export function DomainManagePanel({
 
       {tab === "security" ? (
         <div className="space-y-3">
-          <div className="rounded-xl border border-[var(--hb-p-border)] bg-white p-4">
+          <div className="hb-panel-card p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
-                <h3 className="flex items-center gap-2 text-sm font-bold text-slate-900">
+                <h3 className="hb-text flex items-center gap-2 text-sm font-bold">
                   {detail.transferLock ? (
-                    <Lock className="size-4 text-emerald-600" />
+                    <Lock className="size-4 text-[var(--hb-p-ok)]" />
                   ) : (
-                    <Unlock className="size-4 text-amber-600" />
+                    <Unlock className="size-4 text-[var(--hb-p-warn)]" />
                   )}
                   Transfer lock {detail.transferLock ? "enabled" : "disabled"}
                 </h3>
-                <p className="mt-1 max-w-lg text-xs text-slate-500">
+                <p className="hb-muted mt-1 max-w-lg text-xs">
                   {detail.transferLock
                     ? "Locked domains cannot be moved to another registrar without your auth code. This is the safe default."
                     : "Anyone with your auth code can start a transfer right now."}
@@ -467,34 +543,34 @@ export function DomainManagePanel({
                 type="button"
                 disabled={busy}
                 onClick={() => void toggleLock(!detail.transferLock)}
-                className="rounded-xl border border-[var(--hb-p-border)] px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--hb-p-primary)]/40 disabled:opacity-60"
+                className="hb-btn hb-btn-ghost"
               >
                 {detail.transferLock ? "Unlock domain" : "Lock domain"}
               </button>
             </div>
           </div>
 
-          <div className="rounded-xl border border-[var(--hb-p-border)] bg-white p-4">
-            <h3 className="flex items-center gap-2 text-sm font-bold text-slate-900">
+          <div className="hb-panel-card p-4">
+            <h3 className="hb-text flex items-center gap-2 text-sm font-bold">
               <KeyRound className="size-4 text-[var(--hb-p-primary)]" />
               Authorisation (EPP) code
             </h3>
-            <p className="mt-1 text-xs text-slate-500">
-              Needed when transferring this domain to another registrar. Unlock
-              the domain first, then request the code.
+            <p className="hb-muted mt-1 text-xs">
+              Needed when transferring this domain away. Unlock the domain
+              first, then request the code.
             </p>
             {authCode ? (
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                <code className="rounded-lg bg-slate-50 px-3 py-2 font-mono text-sm text-slate-900 ring-1 ring-slate-200">
+                <code className="hb-soft hb-text rounded-lg px-3 py-2 font-mono text-sm">
                   {authCode}
                 </code>
                 <button
                   type="button"
                   onClick={() => void copyAuthCode()}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--hb-p-border)] px-3 py-1.5 text-xs font-semibold text-slate-700"
+                  className="hb-btn hb-btn-ghost hb-btn-sm"
                 >
                   {copied ? (
-                    <CheckCircle2 className="size-3.5 text-emerald-600" />
+                    <CheckCircle2 className="size-3.5" />
                   ) : (
                     <Copy className="size-3.5" />
                   )}
@@ -506,7 +582,7 @@ export function DomainManagePanel({
               type="button"
               disabled={busy}
               onClick={() => void fetchAuthCode()}
-              className="mt-3 inline-flex items-center gap-2 rounded-xl bg-[var(--hb-p-primary)] px-4 py-2 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-60"
+              className="hb-btn hb-btn-primary mt-3"
             >
               <ShieldCheck className="size-4" />
               {busy
@@ -519,13 +595,10 @@ export function DomainManagePanel({
         </div>
       ) : null}
 
-      <p className="text-xs text-slate-400">
+      <p className="hb-faint text-xs">
         Need help?{" "}
-        <Link
-          href="/contact"
-          className="font-semibold text-[var(--hb-p-primary)] hover:underline"
-        >
-          Contact support
+        <Link href="/account/support" className="hb-link">
+          Open a support ticket
         </Link>
       </p>
     </div>

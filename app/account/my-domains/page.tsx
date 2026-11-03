@@ -43,27 +43,26 @@ export default async function MyDomainsPage() {
   );
 
   return (
-    <div className="mx-auto max-w-6xl space-y-5">
+    <div className="mx-auto w-full max-w-7xl space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-heading text-2xl font-bold text-slate-950">
-            My domains
-          </h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Renew, lock, and point your domains at any website or email
-            provider.
+          <p className="hb-eyebrow">Domains</p>
+          <h1 className="hb-h1 mt-1">Domain portfolio</h1>
+          <p className="hb-muted mt-1 max-w-2xl text-sm">
+            Renew, lock, change nameservers and edit DNS records. Everything
+            here talks to the registrar directly.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
-            href={routes.domainSearch}
-            className="inline-flex items-center gap-2 rounded-xl bg-[var(--hb-p-primary)] px-4 py-2.5 text-sm font-bold text-white transition hover:brightness-110"
+            href={routes.accountDomainFind}
+            className="hb-btn hb-btn-primary"
           >
             Register a domain
           </Link>
           <Link
-            href={routes.domainTransfer}
-            className="inline-flex items-center gap-2 rounded-xl border border-[var(--hb-p-border)] bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-[var(--hb-p-primary)]/40"
+            href={routes.accountDomainTransfer}
+            className="hb-btn hb-btn-ghost"
           >
             Transfer
           </Link>
@@ -79,8 +78,10 @@ export default async function MyDomainsPage() {
             { label: "Expired", value: summary.expired },
           ].map((stat) => (
             <div key={stat.label} className="hb-panel-stat px-4 py-3">
-              <p className="text-xs font-medium text-slate-500">{stat.label}</p>
-              <p className="mt-1 text-xl font-bold text-[var(--hb-p-primary-deep)] tabular-nums">
+              <p className="hb-muted text-[11px] font-bold tracking-wide uppercase">
+                {stat.label}
+              </p>
+              <p className="hb-text mt-1 text-2xl font-extrabold tabular-nums">
                 {stat.value}
               </p>
             </div>
@@ -89,24 +90,19 @@ export default async function MyDomainsPage() {
       ) : null}
 
       {loadError ? (
-        <p
-          className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
-          role="alert"
-        >
+        <p className="hb-pill hb-pill-danger inline-flex" role="alert">
           Could not load your domains right now. Please refresh in a moment.
         </p>
       ) : rows.length === 0 ? (
         <div className="hb-panel-card px-5 py-12 text-center">
-          <h2 className="font-heading text-lg font-bold text-slate-900">
-            No domains yet
-          </h2>
-          <p className="mx-auto mt-2 max-w-md text-sm text-slate-500">
+          <h2 className="hb-h2">No domains yet</h2>
+          <p className="hb-muted mx-auto mt-2 max-w-md text-sm">
             A domain is the address customers type to reach you. Search for one
             and it appears here in seconds.
           </p>
           <Link
-            href={routes.domainSearch}
-            className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[var(--hb-p-primary)] px-5 py-2.5 text-sm font-bold text-white transition hover:brightness-110"
+            href={routes.accountDomainFind}
+            className="hb-btn hb-btn-primary mt-5"
           >
             Search domains
           </Link>

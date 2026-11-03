@@ -8,6 +8,7 @@ import {
   CUSTOMER_SESSION_COOKIE,
   getCustomerFromToken,
 } from "@/lib/customer/session";
+import { formatDomainDate } from "@/lib/panel/domain-status";
 
 type Props = { params: Promise<{ publicId: string }> };
 
@@ -23,29 +24,27 @@ export default async function AccountInvoiceDetailPage({ params }: Props) {
   if (!invoice) notFound();
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto w-full max-w-3xl">
       <div className="hb-panel-card space-y-4 p-6 sm:p-8">
-        <Link
-          href={routes.accountInvoices}
-          className="text-sm font-semibold text-[#673de6]"
-        >
+        <Link href={routes.accountInvoices} className="hb-link text-sm">
           ← All invoices
         </Link>
-        <h1 className="font-heading text-2xl font-semibold text-slate-950">
-          {invoice.invoiceNumber}
-        </h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="hb-h1">{invoice.invoiceNumber}</h1>
+        <p className="hb-muted text-sm">
           Status: {invoice.status}
           {invoice.issuedAt
-            ? ` · Issued ${new Date(invoice.issuedAt).toLocaleDateString()}`
+            ? ` · Issued ${formatDomainDate(invoice.issuedAt)}`
             : ""}
         </p>
         <table className="w-full text-sm">
           <tbody>
             {invoice.lineItems.map((line) => (
-              <tr key={line.description} className="border-b border-slate-100">
-                <td className="py-2">{line.description}</td>
-                <td className="py-2 text-right">
+              <tr
+                key={line.description}
+                className="border-b border-[var(--hb-p-border)]"
+              >
+                <td className="hb-text py-2">{line.description}</td>
+                <td className="hb-text py-2 text-right tabular-nums">
                   {line.lineTotal} {invoice.currency}
                 </td>
               </tr>
@@ -53,25 +52,25 @@ export default async function AccountInvoiceDetailPage({ params }: Props) {
           </tbody>
         </table>
         <dl className="grid grid-cols-2 gap-2 text-sm">
-          <dt className="text-slate-500">Subtotal</dt>
-          <dd className="text-right">
+          <dt className="hb-muted">Subtotal</dt>
+          <dd className="hb-text text-right tabular-nums">
             {invoice.subtotal} {invoice.currency}
           </dd>
-          <dt className="text-slate-500">Tax</dt>
-          <dd className="text-right">
+          <dt className="hb-muted">Tax</dt>
+          <dd className="hb-text text-right tabular-nums">
             {invoice.tax} {invoice.currency}
           </dd>
-          <dt className="font-semibold text-slate-800">Total</dt>
-          <dd className="text-right font-semibold">
+          <dt className="hb-text font-bold">Total</dt>
+          <dd className="hb-text text-right font-bold tabular-nums">
             {invoice.total} {invoice.currency}
           </dd>
         </dl>
         {invoice.domainOrderPublicId ? (
-          <p className="text-xs text-slate-500">
+          <p className="hb-muted text-xs">
             Order{" "}
             <Link
               href={`${routes.accountOrders}/${invoice.domainOrderPublicId}`}
-              className="font-semibold text-[#673de6]"
+              className="hb-link"
             >
               {invoice.domainOrderPublicId}
             </Link>
@@ -79,7 +78,7 @@ export default async function AccountInvoiceDetailPage({ params }: Props) {
         ) : null}
         <a
           href={`/api/account/invoices/${invoice.publicId}/pdf`}
-          className="inline-flex rounded-lg bg-[#673de6] px-4 py-2 text-sm font-semibold text-white"
+          className="hb-btn hb-btn-primary"
         >
           Download PDF
         </a>

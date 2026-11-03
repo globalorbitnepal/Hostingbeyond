@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import {
   AlertTriangle,
   ArrowRight,
@@ -8,17 +9,13 @@ import {
   CheckCircle2,
   Copy,
   Globe,
-  Lock,
   Mail,
   RefreshCw,
   Search,
   Server,
   ShieldCheck,
-  ShoppingBag,
-  Sparkles,
   Wallet,
 } from "lucide-react";
-import { useState } from "react";
 
 import type {
   DashboardDomain,
@@ -35,6 +32,14 @@ import {
 } from "@/lib/panel/domain-status";
 import { routes } from "@/config/routes";
 import { cn } from "@/lib/utils";
+
+import {
+  PanelCard,
+  PanelCardTitle,
+  PanelEmpty,
+  PanelQuickAction,
+  PanelStat,
+} from "./panel-ui";
 
 const ORDER_STATUS_LABELS: Record<string, string> = {
   PENDING_PAYMENT: "Pending payment",
@@ -59,17 +64,18 @@ function DomainRow({ domain }: { domain: DashboardDomain }) {
   const health = domainHealth(domain.status, domain.expiresAt);
   const tone = healthTone(health);
   const days = daysUntil(domain.expiresAt);
+  const manageHref = `/account/my-domains/${encodeURIComponent(domain.domain)}`;
 
   return (
-    <li className="group flex flex-wrap items-center gap-3 rounded-xl border border-[var(--hb-p-border)] bg-white px-4 py-3 transition hover:border-[var(--hb-p-primary)]/40 hover:shadow-sm">
+    <li className="hb-table-row group flex flex-wrap items-center gap-3 px-4 py-3">
       <span
         className={cn(
-          "inline-flex size-9 shrink-0 items-center justify-center rounded-lg",
+          "inline-flex size-9 shrink-0 items-center justify-center rounded-xl",
           health === "healthy"
-            ? "bg-emerald-50 text-emerald-600"
+            ? "hb-pill-ok"
             : health === "pending"
-              ? "bg-sky-50 text-sky-600"
-              : "bg-amber-50 text-amber-600",
+              ? "hb-pill-info"
+              : "hb-pill-warn",
         )}
         aria-hidden
       >
@@ -79,26 +85,17 @@ function DomainRow({ domain }: { domain: DashboardDomain }) {
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <Link
-            href={`/account/my-domains/${encodeURIComponent(domain.domain)}`}
-            className="truncate text-sm font-semibold text-slate-900 hover:text-[var(--hb-p-primary)]"
+            href={manageHref}
+            className="hb-text truncate text-sm font-bold"
           >
             {domain.domain}
           </Link>
-          <span
-            className={cn(
-              "rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase",
-              tone.pill,
-            )}
-          >
-            {tone.label}
-          </span>
+          <span className={cn("hb-pill", tone.pillClass)}>{tone.label}</span>
           {!domain.autoRenew ? (
-            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold tracking-wide text-slate-600 uppercase">
-              Auto-renew off
-            </span>
+            <span className="hb-pill hb-pill-neutral">Auto-renew off</span>
           ) : null}
         </div>
-        <p className="mt-0.5 truncate text-xs text-slate-500">
+        <p className="hb-muted mt-0.5 truncate text-xs">
           {domainStatusLabel(domain.status)} · {expiryCopy(domain.expiresAt)}
           {domain.renewalPrice != null
             ? ` · renews at ${formatMoney(domain.renewalPrice, domain.currency)}`
@@ -108,19 +105,13 @@ function DomainRow({ domain }: { domain: DashboardDomain }) {
 
       <div className="flex shrink-0 items-center gap-2">
         {days !== null && days <= 45 ? (
-          <Link
-            href={`/account/my-domains/${encodeURIComponent(domain.domain)}`}
-            className="rounded-lg bg-[var(--hb-p-primary)] px-3 py-1.5 text-xs font-bold text-white transition hover:brightness-110"
-          >
+          <Link href={manageHref} className="hb-btn hb-btn-primary hb-btn-sm">
             Renew
           </Link>
         ) : null}
-        <Link
-          href={`/account/my-domains/${encodeURIComponent(domain.domain)}`}
-          className="inline-flex items-center gap-1 rounded-lg border border-[var(--hb-p-border)] px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-[var(--hb-p-primary)]/40 hover:text-[var(--hb-p-primary)]"
-        >
+        <Link href={manageHref} className="hb-btn hb-btn-ghost hb-btn-sm">
           Manage
-          <ArrowRight className="size-3" />
+          <ArrowRight className="size-3.5" />
         </Link>
       </div>
     </li>
@@ -158,179 +149,174 @@ export function DashboardOverview({
     }
   }
 
-  const stats = [
-    {
-      label: "Domains",
-      value: String(domainSummary.total),
-      sub:
-        domainSummary.expiring > 0
-          ? `${domainSummary.expiring} expiring soon`
-          : domainSummary.total === 0
-            ? "Register your first domain"
-            : "All up to date",
-      href: routes.myDomains,
-      icon: Globe,
-      tone:
-        domainSummary.expiring + domainSummary.expired > 0
-          ? ("warning" as const)
-          : ("default" as const),
-    },
-    {
-      label: "Hosting",
-      value: String(counts.hostingOrdersActive),
-      sub:
-        counts.hostingOrdersActive > 0
-          ? `of ${counts.hostingOrdersTotal} orders active`
-          : "No active hosting",
-      href: routes.accountHostingOrders,
-      icon: Server,
-      tone: "default" as const,
-    },
-    {
-      label: "Wallet balance",
-      value: formatMoney(wallet.balance, wallet.currency),
-      sub: "Available to spend",
-      href: routes.accountWallet,
-      icon: Wallet,
-      tone: "default" as const,
-    },
-    {
-      label: "Open invoices",
-      value: String(counts.openInvoices),
-      sub: counts.openInvoices > 0 ? "Payment due" : "Nothing to pay",
-      href: routes.accountInvoices,
-      icon: ShieldCheck,
-      tone:
-        counts.openInvoices > 0 ? ("warning" as const) : ("default" as const),
-    },
-  ];
+  const nearestDomain = [...domains]
+    .filter((domain) => domain.expiresAt)
+    .sort(
+      (a, b) =>
+        new Date(a.expiresAt as Date).getTime() -
+        new Date(b.expiresAt as Date).getTime(),
+    )[0];
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
-      {/* Greeting */}
+    <div className="mx-auto w-full max-w-7xl space-y-6">
+      {/* Hero */}
       <section className="hb-panel-hero">
-        <p className="text-xs font-semibold tracking-[0.16em] text-white/75 uppercase">
-          HostingBeyond
-        </p>
-        <h2 className="font-heading mt-2 text-2xl font-bold tracking-tight sm:text-3xl">
-          {firstName ? `Good to see you, ${firstName}` : "Good to see you"}
-        </h2>
-        <p className="mt-1 max-w-xl text-sm text-white/80">
-          Domains, hosting, and business email stay in this panel. Open a domain
-          to change nameservers, lock, or renew.
-        </p>
-        <form
-          className="relative mt-5 max-w-xl"
-          action={routes.accountDomainFind}
-        >
-          <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-violet-700" />
-          <input
-            name="q"
-            placeholder="Find a domain"
-            className="hb-panel-search"
-          />
-        </form>
-        <button
-          type="button"
-          onClick={() => void copyAccountEmail()}
-          className="mt-3 inline-flex items-center gap-1.5 text-xs text-white/75"
-        >
-          {user.email}
-          {copied ? (
-            <CheckCircle2 className="size-3.5" />
-          ) : (
-            <Copy className="size-3.5" />
-          )}
-        </button>
+        <div className="flex flex-wrap items-start justify-between gap-5">
+          <div className="min-w-0">
+            <p className="text-[11px] font-bold tracking-[0.18em] text-white/75 uppercase">
+              HostingBeyond control panel
+            </p>
+            <h2 className="font-heading mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">
+              {firstName ? `Good to see you, ${firstName}` : "Good to see you"}
+            </h2>
+            <p className="mt-1.5 max-w-lg text-sm text-white/85">
+              Domains, hosting, wallet and support — every control below is
+              wired to the live registrar and billing systems.
+            </p>
+            <button
+              type="button"
+              onClick={() => void copyAccountEmail()}
+              className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/12 px-2.5 py-1 text-xs font-semibold text-white/90 ring-1 ring-white/25"
+            >
+              {user.email}
+              {copied ? (
+                <CheckCircle2 className="size-3.5" />
+              ) : (
+                <Copy className="size-3.5" />
+              )}
+            </button>
+          </div>
+
+          <form
+            className="relative w-full max-w-md"
+            action={routes.accountDomainFind}
+          >
+            <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-violet-700" />
+            <input
+              name="q"
+              placeholder="Find your next domain"
+              className="hb-panel-search"
+              aria-label="Search for a domain"
+            />
+            <button
+              type="submit"
+              className="absolute top-1/2 right-1.5 -translate-y-1/2 rounded-full bg-violet-700 px-3 py-1.5 text-xs font-bold text-white"
+            >
+              Search
+            </button>
+          </form>
+        </div>
+
+        <div className="mt-5 grid gap-2 sm:grid-cols-3">
+          {[
+            {
+              label: "Next renewal",
+              value: nearestDomain?.domain ?? "No domain yet",
+              hint: nearestDomain ? expiryCopy(nearestDomain.expiresAt) : null,
+              href: routes.myDomains,
+            },
+            {
+              label: "Wallet",
+              value: formatMoney(wallet.balance, wallet.currency),
+              hint: "Available to spend",
+              href: routes.accountWallet,
+            },
+            {
+              label: "Open invoices",
+              value: String(counts.openInvoices),
+              hint: counts.openInvoices > 0 ? "Payment due" : "Nothing to pay",
+              href: routes.accountInvoices,
+            },
+          ].map((tile) => (
+            <Link
+              key={tile.label}
+              href={tile.href}
+              className="rounded-xl bg-white/12 px-3 py-2.5 ring-1 ring-white/20 backdrop-blur-sm transition hover:bg-white/20"
+            >
+              <p className="text-[10px] font-bold tracking-[0.14em] text-white/70 uppercase">
+                {tile.label}
+              </p>
+              <p className="mt-0.5 truncate text-sm font-bold text-white">
+                {tile.value}
+              </p>
+              {tile.hint ? (
+                <p className="truncate text-[11px] text-white/70">
+                  {tile.hint}
+                </p>
+              ) : null}
+            </Link>
+          ))}
+        </div>
       </section>
 
       {orderBannerId ? (
-        <p className="rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm text-violet-900">
-          Order saved ({orderBannerId}). Complete payment when billing is
-          enabled — no charge has been made yet.
+        <p className="hb-panel-card hb-text px-4 py-3 text-sm">
+          Order saved ({orderBannerId}). Complete payment in Billing — no charge
+          has been made yet.
         </p>
       ) : null}
 
-      {/* Domains first — the core product */}
-      <section className="hb-panel-card overflow-hidden">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--hb-p-border)] px-5 py-4">
-          <div>
-            <h3 className="text-sm font-bold text-slate-900">Your domains</h3>
-            <p className="mt-0.5 text-xs text-slate-500">
-              {domainSummary.total === 0
-                ? "A domain is step one — everything else points at it."
-                : `${domainSummary.active} active · ${domainSummary.expiring} expiring · ${domainSummary.expired} expired`}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Link
-              href={routes.accountDomainFind}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--hb-p-border)] px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-[var(--hb-p-primary)]/40"
-            >
-              <Search className="size-3.5" />
-              Register
-            </Link>
-            <Link
-              href={routes.myDomains}
-              className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-[var(--hb-p-primary)] transition hover:underline"
-            >
-              View all
-              <ArrowRight className="size-3" />
-            </Link>
-          </div>
-        </div>
+      {/* Stats */}
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <PanelStat
+          label="Domains"
+          value={String(domainSummary.total)}
+          hint={
+            domainSummary.expiring + domainSummary.expired > 0
+              ? `${domainSummary.expiring + domainSummary.expired} need attention`
+              : domainSummary.total === 0
+                ? "Register your first domain"
+                : "All up to date"
+          }
+          href={routes.myDomains}
+          icon={Globe}
+          tone={
+            domainSummary.expiring + domainSummary.expired > 0
+              ? "warn"
+              : "default"
+          }
+        />
+        <PanelStat
+          label="Hosting"
+          value={String(counts.hostingOrdersActive)}
+          hint={
+            counts.hostingOrdersActive > 0
+              ? `of ${counts.hostingOrdersTotal} orders active`
+              : "No active hosting"
+          }
+          href={routes.accountHostingOrders}
+          icon={Server}
+        />
+        <PanelStat
+          label="Wallet"
+          value={formatMoney(wallet.balance, wallet.currency)}
+          hint="Available to spend"
+          href={routes.accountWallet}
+          icon={Wallet}
+        />
+        <PanelStat
+          label="Open invoices"
+          value={String(counts.openInvoices)}
+          hint={counts.openInvoices > 0 ? "Payment due" : "Nothing to pay"}
+          href={routes.accountInvoices}
+          icon={ShieldCheck}
+          tone={counts.openInvoices > 0 ? "warn" : "ok"}
+        />
+      </div>
 
-        {domains.length === 0 ? (
-          <div className="px-5 py-10 text-center">
-            <span className="mx-auto inline-flex size-12 items-center justify-center rounded-2xl bg-[var(--hb-p-primary)]/10 text-[var(--hb-p-primary)]">
-              <Globe className="size-6" />
-            </span>
-            <p className="mt-4 text-sm font-semibold text-slate-900">
-              No domains yet
-            </p>
-            <p className="mx-auto mt-1 max-w-md text-sm text-slate-500">
-              Search for a name, register it, then point it at hosting whenever
-              you are ready. Free WHOIS privacy on eligible extensions.
-            </p>
-            <div className="mt-5 flex flex-wrap justify-center gap-2">
-              <Link
-                href={routes.accountDomainFind}
-                className="inline-flex items-center gap-2 rounded-xl bg-[var(--hb-p-primary)] px-4 py-2.5 text-sm font-bold text-white transition hover:brightness-110"
-              >
-                <Search className="size-4" />
-                Search a domain
-              </Link>
-              <Link
-                href={routes.accountDomainTransfer}
-                className="inline-flex items-center gap-2 rounded-xl border border-[var(--hb-p-border)] px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-[var(--hb-p-primary)]/40"
-              >
-                Transfer an existing domain
-              </Link>
-            </div>
-          </div>
-        ) : (
-          <ul className="space-y-2 px-3 py-3 sm:px-4">
-            {domains.map((domain) => (
-              <DomainRow key={domain.domain} domain={domain} />
-            ))}
-          </ul>
-        )}
-      </section>
-
-      {/* Attention required */}
       {attentionDomains.length > 0 ? (
-        <section className="rounded-2xl border border-amber-200 bg-amber-50/70 p-5">
+        <section className="hb-panel-card p-5">
           <div className="flex items-start gap-3">
-            <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-600" />
+            <AlertTriangle className="mt-0.5 size-5 shrink-0 text-[var(--hb-p-warn)]" />
             <div className="min-w-0 flex-1">
-              <h3 className="text-sm font-bold text-amber-900">
+              <h3 className="hb-text text-sm font-bold">
                 {attentionDomains.length === 1
                   ? "One domain needs your attention"
                   : `${attentionDomains.length} domains need your attention`}
               </h3>
-              <p className="mt-1 text-sm text-amber-900/80">
+              <p className="hb-muted mt-1 text-sm">
                 Expired domains lose their website and email, and someone else
-                can register them. Renew before the date below.
+                can register them.
               </p>
               <ul className="mt-3 space-y-2">
                 {attentionDomains.map((domain) => {
@@ -338,13 +324,13 @@ export function DashboardOverview({
                   return (
                     <li
                       key={domain.domain}
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white px-3 py-2"
+                      className="hb-soft flex flex-wrap items-center justify-between gap-2 px-3 py-2"
                     >
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-slate-900">
+                        <p className="hb-text truncate text-sm font-bold">
                           {domain.domain}
                         </p>
-                        <p className="text-xs text-slate-500">
+                        <p className="hb-muted text-xs">
                           {domain.expiresAt
                             ? `Expires ${formatDomainDate(domain.expiresAt)}`
                             : "No expiry date on file"}
@@ -355,7 +341,7 @@ export function DashboardOverview({
                       </div>
                       <Link
                         href={`/account/my-domains/${encodeURIComponent(domain.domain)}`}
-                        className="shrink-0 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-amber-700"
+                        className="hb-btn hb-btn-primary hb-btn-sm shrink-0"
                       >
                         Renew now
                       </Link>
@@ -368,261 +354,203 @@ export function DashboardOverview({
         </section>
       ) : null}
 
-      {/* Key stats */}
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {stats.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <Link
-              key={stat.label}
-              href={stat.href}
-              className={cn(
-                "hb-panel-stat group block p-4 transition hover:shadow-md",
-                stat.tone === "warning" && "ring-1 ring-amber-200",
-              )}
-            >
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-medium text-slate-500">
-                  {stat.label}
-                </p>
-                <Icon
-                  className={cn(
-                    "size-4",
-                    stat.tone === "warning"
-                      ? "text-amber-600"
-                      : "text-[var(--hb-p-primary)]/60",
-                  )}
-                />
+      {/* Domains */}
+      <PanelCard className="!p-0">
+        <div className="px-5 pt-5">
+          <PanelCardTitle
+            title="Domain portfolio"
+            description={
+              domainSummary.total === 0
+                ? "A domain is step one — hosting and email point at it."
+                : `${domainSummary.active} active · ${domainSummary.expiring} expiring · ${domainSummary.expired} expired · ${domainSummary.pending} setting up`
+            }
+            action={
+              <div className="flex items-center gap-2">
+                <Link
+                  href={routes.accountDomainFind}
+                  className="hb-btn hb-btn-ghost hb-btn-sm"
+                >
+                  <Search className="size-3.5" />
+                  Search
+                </Link>
+                <Link
+                  href={routes.myDomains}
+                  className="hb-btn hb-btn-ghost hb-btn-sm"
+                >
+                  View all
+                  <ArrowRight className="size-3.5" />
+                </Link>
               </div>
-              <p className="mt-1.5 text-2xl font-bold tracking-tight text-[var(--hb-p-primary-deep)] tabular-nums">
-                {stat.value}
-              </p>
-              <p
-                className={cn(
-                  "mt-0.5 text-xs",
-                  stat.tone === "warning"
-                    ? "font-semibold text-amber-700"
-                    : "text-slate-500",
-                )}
+            }
+          />
+        </div>
+
+        {domains.length === 0 ? (
+          <div className="px-5 pt-4 pb-5">
+            <PanelEmpty
+              title="No domains yet"
+              description="Search for a name, register it, then point nameservers or DNS at hosting whenever you are ready."
+            >
+              <Link
+                href={routes.accountDomainFind}
+                className="hb-btn hb-btn-primary"
               >
-                {stat.sub}
-              </p>
-            </Link>
-          );
-        })}
-      </div>
+                <Search className="size-4" />
+                Search a domain
+              </Link>
+              <Link
+                href={routes.accountDomainTransfer}
+                className="hb-btn hb-btn-ghost"
+              >
+                Transfer a domain
+              </Link>
+            </PanelEmpty>
+          </div>
+        ) : (
+          <ul className="space-y-2 px-4 pt-4 pb-4">
+            {domains.slice(0, 6).map((domain) => (
+              <DomainRow key={domain.domain} domain={domain} />
+            ))}
+          </ul>
+        )}
+      </PanelCard>
 
       {/* Quick actions */}
       <section>
-        <h3 className="text-sm font-bold text-slate-900">Quick actions</h3>
-        <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            {
-              label: "Register domain",
-              hint: "Find an available name",
-              href: routes.accountDomainFind,
-              icon: Globe,
-            },
-            {
-              label: "Transfer domain",
-              hint: "Move a domain to us",
-              href: routes.accountDomainTransfer,
-              icon: Lock,
-            },
-            {
-              label: "Web hosting",
-              hint: "NVMe plans with free SSL",
-              href: routes.accountHosting,
-              icon: ShoppingBag,
-            },
-            {
-              label: "Business email",
-              hint: "Your name@yourdomain",
-              href: routes.accountEmail,
-              icon: Mail,
-            },
-          ].map((action) => {
-            const Icon = action.icon;
-            return (
-              <Link
-                key={action.label}
-                href={action.href}
-                className="group flex items-start gap-3 rounded-xl border border-[var(--hb-p-border)] bg-white px-4 py-3 transition hover:border-[var(--hb-p-primary)]/40 hover:shadow-sm"
-              >
-                <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-[var(--hb-p-primary)]/10 text-[var(--hb-p-primary)]">
-                  <Icon className="size-4" />
-                </span>
-                <span className="min-w-0">
-                  <span className="block text-sm font-semibold text-slate-900">
-                    {action.label}
-                  </span>
-                  <span className="block text-xs text-slate-500">
-                    {action.hint}
-                  </span>
-                </span>
-              </Link>
-            );
-          })}
+        <h3 className="hb-eyebrow mb-2">Quick actions</h3>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <PanelQuickAction
+            label="Register domain"
+            hint="Live availability and pricing"
+            href={routes.accountDomainFind}
+            icon={Globe}
+          />
+          <PanelQuickAction
+            label="Transfer domain"
+            hint="Move a domain to HostingBeyond"
+            href={routes.accountDomainTransfer}
+            icon={RefreshCw}
+          />
+          <PanelQuickAction
+            label="Hosting plans"
+            hint="NVMe hosting with free SSL"
+            href={routes.accountHosting}
+            icon={Server}
+          />
+          <PanelQuickAction
+            label="Business email"
+            hint="yourname@yourdomain"
+            href={routes.accountEmail}
+            icon={Mail}
+          />
         </div>
       </section>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        {/* Hosting orders */}
-        <section className="hb-panel-card p-5">
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="text-sm font-bold text-slate-900">
-              Recent hosting orders
-            </h3>
-            <Link
-              href={routes.accountHostingOrders}
-              className="text-xs font-semibold text-[var(--hb-p-primary)] hover:underline"
-            >
-              View all
-            </Link>
-          </div>
-          {orders.length === 0 ? (
-            <div className="mt-4 rounded-xl border border-dashed border-[var(--hb-p-border)] px-4 py-6 text-center">
-              <p className="text-sm text-slate-600">No hosting orders yet.</p>
+        <PanelCard>
+          <PanelCardTitle
+            title="Recent hosting orders"
+            action={
               <Link
-                href={routes.accountHosting}
-                className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-[var(--hb-p-primary)] hover:underline"
+                href={routes.accountHostingOrders}
+                className="hb-link text-xs"
               >
-                Browse hosting plans
-                <ArrowUpRight className="size-3.5" />
+                View all
               </Link>
+            }
+          />
+          {orders.length === 0 ? (
+            <div className="mt-4">
+              <PanelEmpty
+                title="No hosting orders yet"
+                description="Pick a plan and it will appear here with its activation status."
+              >
+                <Link
+                  href={routes.accountHosting}
+                  className="hb-btn hb-btn-primary"
+                >
+                  Browse plans
+                  <ArrowUpRight className="size-3.5" />
+                </Link>
+              </PanelEmpty>
             </div>
           ) : (
             <ul className="mt-4 space-y-2">
               {orders.map((order) => (
                 <li
                   key={order.id}
-                  className="flex flex-wrap items-start justify-between gap-2 rounded-xl border border-slate-100 bg-slate-50/70 px-4 py-3"
+                  className="hb-table-row flex flex-wrap items-start justify-between gap-2 px-4 py-3"
                 >
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-slate-900">
+                    <p className="hb-text truncate text-sm font-bold">
                       {order.planName ??
                         `${order.productSlug} · ${order.planKey}`}
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="hb-muted text-xs">
                       {ORDER_STATUS_LABELS[order.status] ?? order.status} ·{" "}
                       {order.billingCycle}
                     </p>
                   </div>
-                  <p className="shrink-0 text-sm font-bold text-[var(--hb-p-primary-deep)] tabular-nums">
+                  <p className="hb-text shrink-0 text-sm font-bold tabular-nums">
                     {formatMoney(order.total, order.currency)}
                   </p>
                 </li>
               ))}
             </ul>
           )}
-        </section>
+        </PanelCard>
 
-        {/* Wallet activity */}
-        <section className="hb-panel-card p-5">
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="text-sm font-bold text-slate-900">
-              Recent wallet activity
-            </h3>
-            <Link
-              href={routes.accountBilling}
-              className="text-xs font-semibold text-[var(--hb-p-primary)] hover:underline"
-            >
-              All transactions
-            </Link>
-          </div>
+        <PanelCard>
+          <PanelCardTitle
+            title="Wallet activity"
+            action={
+              <Link href={routes.accountBilling} className="hb-link text-xs">
+                All transactions
+              </Link>
+            }
+          />
           {recentTransactions.length === 0 ? (
-            <div className="mt-4 rounded-xl border border-dashed border-[var(--hb-p-border)] px-4 py-6 text-center">
-              <p className="text-sm text-slate-600">No transactions yet.</p>
-              <p className="mt-1 text-xs text-slate-500">
-                Domain purchases and renewals debit your wallet when completed.
-              </p>
+            <div className="mt-4">
+              <PanelEmpty
+                title="No transactions yet"
+                description="Domain purchases, renewals and top-ups appear here once money moves."
+              />
             </div>
           ) : (
             <ul className="mt-4 space-y-2">
               {recentTransactions.map((tx) => (
                 <li
                   key={tx.id}
-                  className="flex items-center justify-between gap-2 text-sm"
+                  className="flex items-center justify-between gap-2 border-b border-[var(--hb-p-border)] pb-2 last:border-0 last:pb-0"
                 >
                   <div className="min-w-0">
-                    <p className="truncate font-medium text-slate-800">
+                    <p className="hb-text truncate text-sm font-semibold">
                       {tx.note ?? tx.type}
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="hb-muted text-xs">
                       {formatPanelDateTime(tx.createdAt)}
                     </p>
                   </div>
-                  <span className="shrink-0 font-semibold text-slate-900 tabular-nums">
+                  <span className="hb-text shrink-0 text-sm font-bold tabular-nums">
                     {formatMoney(tx.amount, tx.currency)}
                   </span>
                 </li>
               ))}
             </ul>
           )}
-          <div className="mt-4 flex flex-wrap gap-3 text-xs font-semibold text-[var(--hb-p-primary)]">
-            <Link href={routes.accountWallet} className="hover:underline">
+          <div className="mt-4 flex flex-wrap gap-3 text-xs">
+            <Link href={routes.accountWallet} className="hb-link">
               Top up wallet
             </Link>
-            <Link href={routes.accountOrders} className="hover:underline">
+            <Link href={routes.accountOrders} className="hb-link">
               Domain orders
             </Link>
-            <Link href={routes.accountInvoices} className="hover:underline">
+            <Link href={routes.accountInvoices} className="hb-link">
               Invoices
             </Link>
           </div>
-        </section>
+        </PanelCard>
       </div>
-
-      {/* What is not live yet — honest, no fake buttons */}
-      <section className="rounded-2xl border border-[var(--hb-p-border)] bg-slate-50/70 p-5">
-        <div className="flex items-start gap-3">
-          <Sparkles className="mt-0.5 size-4 shrink-0 text-slate-400" />
-          <div className="min-w-0">
-            <h3 className="text-sm font-bold text-slate-900">
-              What is live in your panel
-            </h3>
-            <p className="mt-1 text-xs text-slate-500">
-              We only show controls that actually work. Everything below is
-              active today.
-            </p>
-            <ul className="mt-3 grid gap-2 text-sm text-slate-700 sm:grid-cols-2">
-              {[
-                "Register, renew and transfer domains",
-                "Wallet top-up and transaction history",
-                "Invoices with PDF download",
-                "Domain management: nameservers, lock, auth code",
-              ].map((line) => (
-                <li key={line} className="flex items-start gap-2">
-                  <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600" />
-                  {line}
-                </li>
-              ))}
-            </ul>
-            <p className="mt-3 flex flex-wrap items-center gap-3 text-xs text-slate-500">
-              <span className="inline-flex items-center gap-1.5">
-                <RefreshCw className="size-3" />
-                Automated hosting provisioning
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <Mail className="size-3" />
-                Mailbox provisioning
-              </span>
-              <span>— coming in a later phase.</span>
-            </p>
-            <div className="mt-3 flex flex-wrap gap-3 text-xs font-semibold text-[var(--hb-p-primary)]">
-              <Link href={routes.accountSupport} className="hover:underline">
-                Contact support
-              </Link>
-              {counts.migrationRequests > 0 ? (
-                <span>
-                  {counts.migrationRequests} migration request
-                  {counts.migrationRequests === 1 ? "" : "s"} on file
-                </span>
-              ) : null}
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

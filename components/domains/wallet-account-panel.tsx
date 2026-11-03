@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { useLocale } from "@/components/locale/locale-provider";
+import { formatDomainDate } from "@/lib/panel/domain-status";
 
 type WalletTx = {
   id: string;
@@ -81,18 +82,18 @@ export function WalletAccountPanel({
 
   return (
     <div className="mt-6 space-y-6">
-      <p className="text-lg font-bold text-slate-900">
+      <p className="hb-text text-lg font-bold">
         Balance: {currency} {balance.toFixed(2)}
       </p>
-      <p className="text-sm text-slate-500">
+      <p className="hb-muted text-sm">
         Wallet amounts are the USD ledger used for charges and credits.{" "}
         {checkoutNote}
       </p>
       {statusBanner ? (
-        <p className="rounded-xl bg-violet-50 px-3 py-2 text-sm text-violet-900">
+        <p className="hb-pill hb-pill-info w-full justify-start text-sm">
           {statusBanner}
           {paymentPublicId ? (
-            <span className="mt-1 block text-xs text-violet-700">
+            <span className="mt-1 block w-full text-xs">
               Reference: {paymentPublicId}
             </span>
           ) : null}
@@ -100,26 +101,24 @@ export function WalletAccountPanel({
       ) : null}
 
       <div>
-        <h2 className="text-sm font-semibold text-slate-800">
-          Recent payments
-        </h2>
+        <h2 className="hb-text text-sm font-bold">Recent payments</h2>
         {loading && payments.length === 0 ? (
-          <p className="mt-2 text-sm text-slate-500">Loading…</p>
+          <p className="hb-muted mt-2 text-sm">Loading…</p>
         ) : payments.length === 0 ? (
-          <p className="mt-2 text-sm text-slate-500">No top-up payments yet.</p>
+          <p className="hb-muted mt-2 text-sm">No top-up payments yet.</p>
         ) : (
-          <ul className="mt-2 divide-y divide-slate-100 rounded-xl border border-slate-100">
+          <ul className="mt-2 space-y-1">
             {payments.slice(0, 8).map((p) => (
               <li
                 key={p.publicId}
-                className="flex justify-between px-3 py-2 text-sm"
+                className="hb-table-row flex justify-between px-3 py-2 text-sm"
               >
                 <span>
                   {p.currency} {p.amount.toFixed(2)}{" "}
-                  <span className="text-slate-500">({p.status})</span>
+                  <span className="hb-muted">({p.status})</span>
                 </span>
-                <span className="text-xs text-slate-400">
-                  {new Date(p.createdAt).toLocaleDateString()}
+                <span className="hb-faint text-xs">
+                  {formatDomainDate(p.createdAt)}
                 </span>
               </li>
             ))}
@@ -128,19 +127,17 @@ export function WalletAccountPanel({
       </div>
 
       <div>
-        <h2 className="text-sm font-semibold text-slate-800">
-          Transaction history
-        </h2>
+        <h2 className="hb-text text-sm font-bold">Transaction history</h2>
         {loading && transactions.length === 0 ? (
-          <p className="mt-2 text-sm text-slate-500">Loading…</p>
+          <p className="hb-muted mt-2 text-sm">Loading…</p>
         ) : transactions.length === 0 ? (
-          <p className="mt-2 text-sm text-slate-500">No wallet activity yet.</p>
+          <p className="hb-muted mt-2 text-sm">No wallet activity yet.</p>
         ) : (
-          <ul className="mt-2 divide-y divide-slate-100 rounded-xl border border-slate-100">
+          <ul className="mt-2 space-y-1">
             {transactions.slice(0, 15).map((tx) => (
-              <li key={tx.id} className="px-3 py-2 text-sm">
+              <li key={tx.id} className="hb-table-row px-3 py-2 text-sm">
                 <div className="flex justify-between gap-2">
-                  <span className="font-medium text-slate-800">
+                  <span className="hb-text font-semibold">
                     {tx.type} · {tx.status}
                   </span>
                   <span>
@@ -148,9 +145,7 @@ export function WalletAccountPanel({
                     {tx.currency} {Math.abs(tx.amount).toFixed(2)}
                   </span>
                 </div>
-                {tx.note ? (
-                  <p className="text-xs text-slate-500">{tx.note}</p>
-                ) : null}
+                {tx.note ? <p className="hb-muted text-xs">{tx.note}</p> : null}
               </li>
             ))}
           </ul>

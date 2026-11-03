@@ -1,10 +1,16 @@
+import { isEnvStrictTrue } from "@/lib/integrations/env-flags";
 import {
   fetchNameSiloAccountPrices,
   toProviderTldPricing,
 } from "@/lib/domains/providers/namesilo-pricing";
+import {
+  parseNameSiloDnsRecords,
+  type ValidatedDnsRecord,
+} from "@/lib/domains/providers/namesilo-dns";
 import { DomainProviderError } from "@/lib/domains/providers/types";
 import type {
   DomainRegistrarProvider,
+  ProviderDnsRecord,
   ProviderDomainDetails,
   ProviderRegisterInput,
   ProviderRegisterResult,
@@ -26,7 +32,7 @@ function apiKey(): string {
 }
 
 function billableBlocked(): void {
-  if (process.env.NAMESILO_ALLOW_BILLABLE === "true") return;
+  if (isEnvStrictTrue(process.env.NAMESILO_ALLOW_BILLABLE)) return;
   throw new DomainProviderError(
     "provider_failure",
     "namesilo_billable_operations_disabled",
@@ -73,7 +79,7 @@ async function namesiloRequest(
 }
 
 export function assertNameSiloLifecycleEnabled(): void {
-  if (process.env.NAMESILO_LIFECYCLE_ENABLED !== "true") {
+  if (!isEnvStrictTrue(process.env.NAMESILO_LIFECYCLE_ENABLED)) {
     throw new DomainProviderError(
       "provider_failure",
       "namesilo_lifecycle_not_enabled",
@@ -204,6 +210,71 @@ function buildProvider(): DomainRegistrarProvider {
     async getDomainStatus(domain: string) {
       const d = await this.getDomainDetails(domain);
       return d.status;
+    },
+
+    supportsDnsEditing() {
+      return true;
+    },
+
+    async listDnsRecords(domain: string): Promise<ProviderDnsRecord[]> {
+      assertNameSiloLifecycleEnabled();
+      const reply = await namesiloRequest("dnsListRecords", { domain });
+      return parseNameSiloDnsRecords(reply);
+    },
+
+    async addDnsRecord(domain: string, record: ValidatedDnsRecord) {
+      assertNameSiloLifecycleEnabled();
+      const params: Record<string, string> = {
+        domain,
+        rrtype: record.type,
+        rrhost: record.host,
+        rrvalue: record.value,
+        rrttl: String(record.ttl),
+      };
+      if (record.type === "MX") {
+        params.rrdistance = String(record.distance ?? 10);
+      }
+      const reply = await namesiloRequest("dnsAddRecord", params);
+      const created = parseNameSiloDnsRecords(reply).find(
+        (row) =>
+          row.type === record.type &&
+          row.host === record.host.toLowerCase() &&
+          row.value === record.value,
+      );
+      return (
+        created ?? {
+          recordId: "",
+          type: record.type,
+          host: record.host.toLowerCase(),
+          value: record.value,
+          ttl: record.ttl,
+          distance: record.distance ?? 0,
+        }
+      );
+    },
+
+    async updateDnsRecord(
+      domain: string,
+      record: ValidatedDnsRecord & { recordId: string },
+    ) {
+      assertNameSiloLifecycleEnabled();
+      const params: Record<string, string> = {
+        domain,
+        rrid: record.recordId,
+        rrtype: record.type,
+        rrhost: record.host,
+        rrvalue: record.value,
+        rrttl: String(record.ttl),
+      };
+      if (record.type === "MX") {
+        params.rrdistance = String(record.distance ?? 10);
+      }
+      await namesiloRequest("dnsUpdateRecord", params);
+    },
+
+    async deleteDnsRecord(domain: string, recordId: string) {
+      assertNameSiloLifecycleEnabled();
+      await namesiloRequest("dnsDeleteRecord", { domain, rrid: recordId });
     },
   };
 }

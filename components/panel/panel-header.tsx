@@ -1,15 +1,23 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Headphones, Menu, Moon, Search, Sun, X } from "lucide-react";
+import {
+  ArrowRight,
+  Bell,
+  Headphones,
+  Menu,
+  Monitor,
+  Moon,
+  Search,
+  Sun,
+  X,
+} from "lucide-react";
 
-import { BrandMark } from "@/components/auth/brand-mark";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { routes } from "@/config/routes";
 import { panelTitleForPath, getPanelNav } from "@/lib/panel/navigation";
-import { cn } from "@/lib/utils";
 
 type PanelUser = {
   name: string | null;
@@ -17,20 +25,22 @@ type PanelUser = {
   image: string | null;
 };
 
+type PanelTheme = "light" | "dark";
+
 type Props = {
   user: PanelUser;
   pathname: string;
-  theme: "light" | "dark";
-  onToggleTheme: () => void;
+  theme: PanelTheme;
+  onThemeChange: (theme: PanelTheme) => void;
   onOpenMobileNav: () => void;
 };
 
 type SearchTarget = { label: string; href: string; group: string };
 
-/** Everything a customer can jump to from the panel search box. */
 function searchTargets(): SearchTarget[] {
   const targets: SearchTarget[] = [
-    { label: "My domains", href: routes.myDomains, group: "Domains" },
+    { label: "Dashboard", href: routes.account, group: "Overview" },
+    { label: "Domain portfolio", href: routes.myDomains, group: "Domains" },
     {
       label: "Register a domain",
       href: routes.accountDomainFind,
@@ -41,17 +51,17 @@ function searchTargets(): SearchTarget[] {
       href: routes.accountDomainTransfer,
       group: "Domains",
     },
-    { label: "Wallet & top up", href: routes.accountWallet, group: "Billing" },
-    { label: "Domain orders", href: routes.accountOrders, group: "Billing" },
+    { label: "Hosting plans", href: routes.accountHosting, group: "Hosting" },
     {
       label: "Hosting orders",
       href: routes.accountHostingOrders,
-      group: "Billing",
+      group: "Hosting",
     },
+    { label: "Business email", href: routes.accountEmail, group: "Email" },
+    { label: "Wallet & top up", href: routes.accountWallet, group: "Billing" },
+    { label: "Domain orders", href: routes.accountOrders, group: "Billing" },
     { label: "Invoices", href: routes.accountInvoices, group: "Billing" },
     { label: "Transactions", href: routes.accountBilling, group: "Billing" },
-    { label: "Hosting plans", href: routes.accountHosting, group: "Hosting" },
-    { label: "Business email", href: routes.accountEmail, group: "Email" },
     { label: "Support", href: routes.accountSupport, group: "Support" },
     {
       label: "Security & password",
@@ -78,16 +88,18 @@ export function PanelHeader({
   user,
   pathname,
   theme,
-  onToggleTheme,
+  onThemeChange,
   onOpenMobileNav,
 }: Props) {
   const title = panelTitleForPath(pathname);
   const displayName = user.name?.trim() || user.email.split("@")[0];
+  const initial = displayName.charAt(0).toUpperCase();
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const allTargets = useMemo(searchTargets, []);
   const results = useMemo(() => {
@@ -97,6 +109,13 @@ export function PanelHeader({
       .filter((target) => target.label.toLowerCase().includes(needle))
       .slice(0, 6);
   }, [allTargets, query]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const close = () => setMenuOpen(false);
+    window.addEventListener("click", close);
+    return () => window.removeEventListener("click", close);
+  }, [menuOpen]);
 
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -114,36 +133,32 @@ export function PanelHeader({
 
   return (
     <header className="hb-panel-topbar">
-      <div className="flex h-14 items-center gap-3 px-4 sm:px-6">
+      <div className="flex h-16 items-center gap-3 px-4 sm:px-6">
         <button
           type="button"
-          className="rounded-lg p-2 text-[var(--hb-p-muted)] hover:bg-[var(--hb-p-primary)]/10 lg:hidden"
+          className="hb-icon-btn lg:hidden"
           onClick={onOpenMobileNav}
           aria-label="Open navigation"
         >
           <Menu className="h-5 w-5" />
         </button>
-        <Link href={routes.account} className="hidden shrink-0 sm:block">
-          <BrandMark className="!h-8 !max-w-[180px]" />
-        </Link>
+
         <div className="min-w-0 flex-1">
-          <p className="truncate text-xs text-[var(--hb-p-muted)]">
+          <p className="hb-muted truncate text-[11px] font-semibold tracking-wide uppercase">
             Customer area
           </p>
-          <h1 className="font-heading truncate text-base font-semibold text-[var(--hb-p-text)] sm:text-lg">
-            {title}
-          </h1>
+          <h1 className="hb-h2 truncate">{title}</h1>
         </div>
 
         <form
           onSubmit={onSubmit}
-          className="relative hidden max-w-xs flex-1 md:block"
+          className="relative hidden w-full max-w-sm md:block"
           role="search"
         >
           <label className="relative block w-full">
             <span className="sr-only">Search your services</span>
             <Search
-              className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400"
+              className="hb-faint pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2"
               aria-hidden
             />
             <input
@@ -156,8 +171,8 @@ export function PanelHeader({
               }}
               onFocus={() => setOpen(true)}
               onBlur={() => window.setTimeout(() => setOpen(false), 130)}
-              placeholder="Search domains, billing, support…"
-              className="h-9 w-full rounded-full border border-slate-200 bg-slate-50 pr-8 pl-9 text-sm text-slate-800 placeholder:text-slate-400 focus:border-[var(--hb-p-primary)]/40 focus:bg-white focus:outline-none"
+              placeholder="Search domains, hosting, billing…"
+              className="hb-input !rounded-full !py-2 pr-8 pl-9 text-sm"
             />
             {query ? (
               <button
@@ -166,7 +181,7 @@ export function PanelHeader({
                   setQuery("");
                   inputRef.current?.focus();
                 }}
-                className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                className="hb-faint absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-1 hover:text-[var(--hb-p-text)]"
                 aria-label="Clear search"
               >
                 <X className="h-3.5 w-3.5" />
@@ -174,7 +189,7 @@ export function PanelHeader({
             ) : null}
           </label>
           {open && results.length > 0 ? (
-            <ul className="absolute top-full right-0 left-0 z-40 mt-1.5 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+            <ul className="hb-panel-card absolute top-full right-0 left-0 z-40 mt-2 overflow-hidden !rounded-xl p-1">
               {results.map((result) => (
                 <li key={`${result.group}-${result.href}-${result.label}`}>
                   <Link
@@ -183,10 +198,10 @@ export function PanelHeader({
                       setOpen(false);
                       setQuery("");
                     }}
-                    className="flex items-center justify-between gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-violet-50"
+                    className="hb-text-soft flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm hover:bg-[var(--hb-p-primary)]/10"
                   >
                     <span className="truncate">{result.label}</span>
-                    <span className="shrink-0 text-[10px] font-semibold tracking-wide text-slate-400 uppercase">
+                    <span className="hb-faint shrink-0 text-[10px] font-bold tracking-wide uppercase">
                       {result.group}
                     </span>
                   </Link>
@@ -196,41 +211,115 @@ export function PanelHeader({
           ) : null}
         </form>
 
-        <button
-          type="button"
-          onClick={onToggleTheme}
-          className="inline-flex size-9 items-center justify-center rounded-full border border-[var(--hb-p-border)] text-[var(--hb-p-text)] hover:bg-[var(--hb-p-primary)]/10"
-          aria-label={
-            theme === "dark" ? "Switch to cream mode" : "Switch to dark mode"
-          }
-        >
-          {theme === "dark" ? (
-            <Sun className="size-4" />
-          ) : (
-            <Moon className="size-4" />
-          )}
-        </button>
+        <div className="hb-segmented" role="group" aria-label="Theme">
+          <button
+            type="button"
+            data-active={theme === "light" ? "true" : "false"}
+            onClick={() => onThemeChange("light")}
+            aria-label="Cream mode"
+            title="Cream mode"
+          >
+            <Sun className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            data-active={theme === "dark" ? "true" : "false"}
+            onClick={() => onThemeChange("dark")}
+            aria-label="Dark mode"
+            title="Dark mode"
+          >
+            <Moon className="h-3.5 w-3.5" />
+          </button>
+        </div>
+
         <Link
           href={routes.accountSupport}
-          className={cn(
-            "hidden items-center gap-1.5 rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 sm:inline-flex",
-          )}
+          className="hb-btn hb-btn-ghost hb-btn-sm hidden sm:inline-flex"
         >
           <Headphones className="h-3.5 w-3.5" />
           Support
         </Link>
-        <div className="flex items-center gap-2">
-          <div
-            className="hidden text-right text-xs sm:block"
-            title={user.email}
+
+        <div className="relative">
+          <button
+            type="button"
+            className="flex items-center gap-2 rounded-full border border-[var(--hb-p-border)] py-1 pr-3 pl-1"
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
+            onClick={(event) => {
+              event.stopPropagation();
+              setMenuOpen((current) => !current);
+            }}
           >
-            <p className="font-semibold text-slate-800">{displayName}</p>
-            <p className="max-w-[140px] truncate text-slate-500">
-              {user.email}
-            </p>
-          </div>
-          <LogoutButton />
+            <span
+              aria-hidden
+              className="grid size-8 place-items-center rounded-full text-xs font-black text-white"
+              style={{
+                background:
+                  "linear-gradient(135deg, var(--hb-p-primary-strong), var(--hb-p-accent))",
+              }}
+            >
+              {initial}
+            </span>
+            <span className="hb-text hidden max-w-[9rem] truncate text-xs font-bold sm:block">
+              {displayName}
+            </span>
+          </button>
+          {menuOpen ? (
+            <div
+              className="hb-panel-card absolute top-full right-0 z-50 mt-2 w-60 !rounded-2xl p-2"
+              role="menu"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="border-b border-[var(--hb-p-border)] px-2 pb-2">
+                <p className="hb-text truncate text-sm font-bold">
+                  {displayName}
+                </p>
+                <p className="hb-muted truncate text-xs">{user.email}</p>
+              </div>
+              <div className="mt-1 space-y-0.5">
+                <Link
+                  href={routes.account}
+                  className="hb-text-soft block rounded-lg px-2 py-1.5 text-sm hover:bg-[var(--hb-p-primary)]/10"
+                  role="menuitem"
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  href={routes.accountSecurity}
+                  className="hb-text-soft block rounded-lg px-2 py-1.5 text-sm hover:bg-[var(--hb-p-primary)]/10"
+                  role="menuitem"
+                >
+                  Security
+                </Link>
+                <Link
+                  href={routes.accountBilling}
+                  className="hb-text-soft block rounded-lg px-2 py-1.5 text-sm hover:bg-[var(--hb-p-primary)]/10"
+                  role="menuitem"
+                >
+                  Billing
+                </Link>
+                <Link
+                  href={routes.accountSupport}
+                  className="hb-text-soft block rounded-lg px-2 py-1.5 text-sm hover:bg-[var(--hb-p-primary)]/10"
+                  role="menuitem"
+                >
+                  Support
+                </Link>
+              </div>
+              <div className="mt-2 border-t border-[var(--hb-p-border)] pt-2">
+                <LogoutButton />
+              </div>
+            </div>
+          ) : null}
         </div>
+
+        <span className="hb-faint hidden items-center gap-1 text-[11px] font-semibold xl:flex">
+          <Bell className="h-3.5 w-3.5" aria-hidden />
+          Live
+          <ArrowRight className="h-3 w-3" aria-hidden />
+          <Monitor className="h-3.5 w-3.5" aria-hidden />
+        </span>
       </div>
     </header>
   );

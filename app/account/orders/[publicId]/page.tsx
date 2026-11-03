@@ -12,6 +12,8 @@ import {
   getCustomerFromToken,
 } from "@/lib/customer/session";
 import { getCustomerDomainOrderByPublicId } from "@/lib/domains/customer-domain-orders";
+import { formatPanelDateTime } from "@/lib/panel/domain-status";
+import { parseCustomerDomainOrderPublicId } from "@/lib/domains/customer-domain-public-id";
 
 type Params = { params: Promise<{ publicId: string }> };
 
@@ -40,64 +42,58 @@ export default async function AccountOrderDetailPage({ params }: Params) {
   if (!user) redirect(routes.login);
 
   const { publicId } = await params;
-  const order = await getCustomerDomainOrderByPublicId(
-    user.id,
+  const parsedId = parseCustomerDomainOrderPublicId(
     decodeURIComponent(publicId),
   );
+  if (!parsedId) notFound();
+  const order = await getCustomerDomainOrderByPublicId(user.id, parsedId);
   if (!order) notFound();
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto w-full max-w-2xl">
       <div className="hb-panel-card p-6 sm:p-8">
-        <Link
-          href={routes.accountOrders}
-          className="text-sm font-semibold text-[#673de6]"
-        >
+        <Link href={routes.accountOrders} className="hb-link text-sm">
           ← All orders
         </Link>
-        <h1 className="font-heading mt-4 text-2xl font-semibold text-slate-950">
-          {order.domain}
-        </h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="hb-h1 mt-4">{order.domain}</h1>
+        <p className="hb-muted mt-1 text-sm">
           {domainOrderTypeLabel(order.orderType)} · Ref {order.publicId}
         </p>
 
         <dl className="mt-8 space-y-4 text-sm">
           <div className="flex justify-between gap-4">
-            <dt className="text-slate-500">Status</dt>
-            <dd className="text-right font-medium text-slate-900">
+            <dt className="hb-muted">Status</dt>
+            <dd className="hb-text text-right font-semibold">
               {domainOrderStatusLabel(order.status)}
             </dd>
           </div>
           <div className="flex justify-between gap-4">
-            <dt className="text-slate-500">Amount</dt>
-            <dd className="font-medium text-slate-900 tabular-nums">
+            <dt className="hb-muted">Amount</dt>
+            <dd className="hb-text font-semibold tabular-nums">
               {formatMoney(order.total, order.currency)}
             </dd>
           </div>
           <div className="flex justify-between gap-4">
-            <dt className="text-slate-500">Payment</dt>
-            <dd className="text-right font-medium text-slate-900">
+            <dt className="hb-muted">Payment</dt>
+            <dd className="hb-text text-right font-semibold">
               {paymentLabel(order.paymentMethod, order.paymentReference)}
             </dd>
           </div>
           <div className="flex justify-between gap-4">
-            <dt className="text-slate-500">Placed</dt>
-            <dd className="text-slate-900">
-              {new Date(order.createdAt).toLocaleString()}
-            </dd>
+            <dt className="hb-muted">Placed</dt>
+            <dd className="hb-text">{formatPanelDateTime(order.createdAt)}</dd>
           </div>
           {order.completedAt ? (
             <div className="flex justify-between gap-4">
-              <dt className="text-slate-500">Completed</dt>
-              <dd className="text-slate-900">
-                {new Date(order.completedAt).toLocaleString()}
+              <dt className="hb-muted">Completed</dt>
+              <dd className="hb-text">
+                {formatPanelDateTime(order.completedAt)}
               </dd>
             </div>
           ) : null}
         </dl>
 
-        <p className="mt-6 rounded-lg bg-slate-50 p-4 text-sm text-slate-600">
+        <p className="hb-soft hb-muted mt-6 p-4 text-sm">
           {order.statusMessage}
         </p>
 
@@ -105,7 +101,7 @@ export default async function AccountOrderDetailPage({ params }: Params) {
           <p className="mt-4 text-sm">
             <Link
               href={`${routes.myDomains}/${encodeURIComponent(order.domain)}`}
-              className="font-semibold text-[#673de6]"
+              className="hb-link"
             >
               Manage domain
             </Link>

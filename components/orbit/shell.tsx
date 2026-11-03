@@ -64,6 +64,7 @@ const nav: NavGroup[] = [
   { href: "/orbit/pages", label: "Pages", icon: FileText },
   { href: "/orbit/about", label: "About Page", icon: Building2 },
   { href: "/orbit/users", label: "Users", icon: Users },
+  { href: "/orbit/customer-domains", label: "Customer domains", icon: Globe },
   { href: "/orbit/contact", label: "Contact Page", icon: Mail },
   {
     href: "/orbit/blog",

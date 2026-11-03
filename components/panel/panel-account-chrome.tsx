@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 
 import { PanelHeader } from "@/components/panel/panel-header";
@@ -13,6 +13,8 @@ type PanelUser = {
 };
 
 type PanelTheme = "light" | "dark";
+
+const THEME_KEY = "hb-panel-theme";
 
 export function PanelAccountChrome({
   user,
@@ -27,17 +29,31 @@ export function PanelAccountChrome({
   const [theme, setTheme] = useState<PanelTheme>("light");
 
   useEffect(() => {
-    const stored = window.localStorage.getItem("hb-panel-theme");
-    if (stored === "dark" || stored === "light") setTheme(stored);
+    const stored = window.localStorage.getItem(THEME_KEY);
+    if (stored === "dark" || stored === "light") {
+      setTheme(stored);
+      return;
+    }
+    const bootstrapped = document.documentElement.dataset.hbTheme;
+    if (bootstrapped === "dark" || bootstrapped === "light") {
+      setTheme(bootstrapped);
+      return;
+    }
+    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      setTheme("dark");
+    }
   }, []);
 
-  function toggleTheme() {
-    setTheme((current) => {
-      const next: PanelTheme = current === "dark" ? "light" : "dark";
-      window.localStorage.setItem("hb-panel-theme", next);
-      return next;
-    });
-  }
+  useEffect(() => {
+    document.documentElement.dataset.hbTheme = theme;
+    window.localStorage.setItem(THEME_KEY, theme);
+  }, [theme]);
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  const applyTheme = useCallback((next: PanelTheme) => setTheme(next), []);
 
   return (
     <div className="hb-panel flex min-h-dvh" data-theme={theme}>
@@ -53,10 +69,12 @@ export function PanelAccountChrome({
           user={user}
           pathname={pathname}
           theme={theme}
-          onToggleTheme={toggleTheme}
+          onThemeChange={applyTheme}
           onOpenMobileNav={() => setMobileOpen(true)}
         />
-        <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+        <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+          {children}
+        </main>
       </div>
     </div>
   );

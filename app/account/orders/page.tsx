@@ -6,12 +6,14 @@ import {
   domainOrderStatusLabel,
   domainOrderTypeLabel,
 } from "@/components/panel/domain-order-type-label";
+import { PanelEmpty, PanelPageHeader } from "@/components/panel/panel-ui";
 import { routes } from "@/config/routes";
 import {
   CUSTOMER_SESSION_COOKIE,
   getCustomerFromToken,
 } from "@/lib/customer/session";
 import { listCustomerDomainOrders } from "@/lib/domains/customer-domain-orders";
+import { formatPanelDateTime } from "@/lib/panel/domain-status";
 
 function formatMoney(amount: number, currency: string) {
   return new Intl.NumberFormat("en-US", {
@@ -36,64 +38,64 @@ export default async function AccountOrdersPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <div className="hb-panel-card p-6 sm:p-8">
-        <h1 className="font-heading text-2xl font-semibold text-slate-950">
-          Domain orders
-        </h1>
-        <p className="mt-2 text-sm text-slate-500">
-          Registrations, renewals, and transfers charged from your wallet. Order
-          totals are in USD, the currency actually billed.
-        </p>
-        <p className="mt-2 text-xs text-slate-500">
-          <Link
-            href={routes.accountBilling}
-            className="font-semibold text-[#673de6]"
-          >
-            View wallet transactions
+    <div className="mx-auto w-full max-w-4xl space-y-5">
+      <PanelPageHeader
+        eyebrow="Billing"
+        title="Domain orders"
+        description="Registrations, renewals and transfers charged from your wallet. Totals are in USD, the currency actually billed."
+        actions={
+          <Link href={routes.accountBilling} className="hb-btn hb-btn-ghost">
+            Wallet transactions
           </Link>
-        </p>
+        }
+      />
 
+      <div className="hb-panel-card p-5">
         {loadError ? (
-          <p className="mt-6 text-sm text-red-600" role="alert">
+          <p className="hb-pill hb-pill-danger inline-flex" role="alert">
             Could not load your orders. Please try again shortly.
           </p>
         ) : null}
 
         {!loadError && orders.length === 0 ? (
-          <p className="mt-6 text-sm text-slate-600">
-            No domain orders yet.{" "}
-            <Link href={routes.domainSearch} className="text-[#673de6]">
-              Search for a domain
+          <PanelEmpty
+            title="No domain orders yet"
+            description="Register or renew a domain and the order will appear here with its reference number."
+          >
+            <Link
+              href={routes.accountDomainFind}
+              className="hb-btn hb-btn-primary"
+            >
+              Search domains
             </Link>
-          </p>
+          </PanelEmpty>
         ) : null}
 
         {!loadError && orders.length > 0 ? (
-          <ul className="mt-6 divide-y divide-slate-100">
+          <ul className="space-y-2">
             {orders.map((order) => (
               <li
                 key={order.publicId}
-                className="flex flex-wrap items-center justify-between gap-3 py-4"
+                className="hb-table-row flex flex-wrap items-center justify-between gap-3 px-4 py-3"
               >
-                <div>
-                  <p className="font-semibold text-slate-900">{order.domain}</p>
-                  <p className="text-xs text-slate-500">
+                <div className="min-w-0">
+                  <p className="hb-text font-bold">{order.domain}</p>
+                  <p className="hb-muted text-xs">
                     {domainOrderTypeLabel(order.orderType)} ·{" "}
                     {domainOrderStatusLabel(order.status)} ·{" "}
-                    {new Date(order.createdAt).toLocaleString()}
+                    {formatPanelDateTime(order.createdAt)}
                   </p>
-                  <p className="mt-0.5 text-xs text-slate-500">
+                  <p className="hb-faint mt-0.5 text-xs">
                     Ref {order.publicId}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold text-slate-900 tabular-nums">
+                  <p className="hb-text font-bold tabular-nums">
                     {formatMoney(order.total, order.currency)}
                   </p>
                   <Link
                     href={`${routes.accountOrders}/${encodeURIComponent(order.publicId)}`}
-                    className="text-sm font-semibold text-[#673de6]"
+                    className="hb-link text-sm"
                   >
                     Details
                   </Link>

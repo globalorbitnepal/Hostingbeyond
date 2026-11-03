@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AlertTriangle, CheckCircle2, Loader2, Send } from "lucide-react";
 
 const TOPICS = [
   "Technical support",
@@ -54,26 +55,28 @@ export function PanelSupportForm({
   }
 
   return (
-    <div className="mx-auto max-w-xl">
+    <div className="mx-auto w-full max-w-2xl space-y-5">
+      <header>
+        <p className="hb-eyebrow">Support</p>
+        <h1 className="hb-h1 mt-1">Open a support request</h1>
+        <p className="hb-muted mt-1 text-sm">
+          Replies go to {email}. For domain DNS changes, use the DNS tab on the
+          domain page — those apply immediately.
+        </p>
+      </header>
+
       <form
         onSubmit={(event) => void onSubmit(event)}
-        className="hb-panel-card space-y-4 p-6"
+        className="hb-panel-card space-y-4 p-5"
       >
-        <div>
-          <h2 className="font-heading text-xl font-bold">Support</h2>
-          <p className="mt-1 text-sm text-[var(--hb-p-muted)]">
-            This opens a real request on your account email. Domain DNS changes
-            stay on My Domains → the domain → Nameservers.
-          </p>
-        </div>
-        <label className="block text-sm">
-          <span className="font-semibold">Topic</span>
+        <label className="block">
+          <span className="hb-label">Topic</span>
           <select
             value={topic}
             onChange={(event) =>
               setTopic(event.target.value as (typeof TOPICS)[number])
             }
-            className="mt-1 h-11 w-full rounded-xl border border-[var(--hb-p-border)] bg-transparent px-3"
+            className="hb-select h-11"
           >
             {TOPICS.map((item) => (
               <option key={item} value={item}>
@@ -82,25 +85,35 @@ export function PanelSupportForm({
             ))}
           </select>
         </label>
-        <label className="block text-sm">
-          <span className="font-semibold">Message</span>
+        <label className="block">
+          <span className="hb-label">Message</span>
           <textarea
             required
             minLength={10}
             value={message}
             onChange={(event) => setMessage(event.target.value)}
-            className="mt-1 min-h-32 w-full rounded-xl border border-[var(--hb-p-border)] bg-transparent px-3 py-2"
-            placeholder="Domain, hosting order, and what you need."
+            className="hb-textarea min-h-32"
+            placeholder="Include the domain or order reference and what you need."
           />
         </label>
-        {error ? <p className="text-sm text-amber-700">{error}</p> : null}
-        {status ? <p className="text-sm text-emerald-700">{status}</p> : null}
-        <button
-          type="submit"
-          disabled={busy}
-          className="rounded-xl px-4 py-2 text-sm font-bold text-white"
-          style={{ background: "#5b21b6" }}
-        >
+        {error ? (
+          <p className="hb-pill hb-pill-danger inline-flex">
+            <AlertTriangle className="size-3.5" />
+            {error}
+          </p>
+        ) : null}
+        {status ? (
+          <p className="hb-pill hb-pill-ok inline-flex">
+            <CheckCircle2 className="size-3.5" />
+            {status}
+          </p>
+        ) : null}
+        <button type="submit" disabled={busy} className="hb-btn hb-btn-primary">
+          {busy ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <Send className="size-4" />
+          )}
           {busy ? "Sending" : "Send request"}
         </button>
       </form>

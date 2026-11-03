@@ -48,47 +48,47 @@ export function InvoicesPanel() {
   }, [load]);
 
   if (loading) {
-    return <p className="text-sm text-slate-500">Loading invoices…</p>;
+    return <p className="hb-muted text-sm">Loading invoices…</p>;
   }
   if (error) {
-    return <p className="text-sm text-red-600">{error}</p>;
+    return <p className="hb-pill hb-pill-danger inline-flex">{error}</p>;
   }
   if (rows.length === 0) {
     return (
-      <p className="text-sm text-slate-500">
+      <p className="hb-muted text-sm">
         No invoices yet. Invoices are issued when domain orders complete.
       </p>
     );
   }
 
   return (
-    <ul className="mt-6 divide-y divide-slate-100">
+    <ul className="mt-2 space-y-2">
       {rows.map((row) => (
         <li
           key={row.publicId}
-          className="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:justify-between"
+          className="hb-table-row flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
         >
           <div>
-            <p className="font-semibold text-slate-900">{row.invoiceNumber}</p>
-            <p className="text-xs text-slate-500">
+            <p className="hb-text font-bold">{row.invoiceNumber}</p>
+            <p className="hb-muted text-xs">
               {row.issuedAt ? formatDomainDate(row.issuedAt) : "—"} ·{" "}
               {row.status}
               {row.tax !== "0.00" ? ` · Tax ${row.tax} ${row.currency}` : ""}
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-sm font-semibold text-slate-800">
+            <span className="hb-text text-sm font-bold tabular-nums">
               {row.total} {row.currency}
             </span>
             <Link
               href={`${routes.accountInvoices}/${row.publicId}`}
-              className="text-sm font-semibold text-[#673de6]"
+              className="hb-link text-sm"
             >
               View
             </Link>
             <a
               href={`/api/account/invoices/${row.publicId}/pdf`}
-              className="text-sm font-semibold text-[#673de6]"
+              className="hb-link text-sm"
             >
               PDF
             </a>

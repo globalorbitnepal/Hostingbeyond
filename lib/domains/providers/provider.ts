@@ -36,6 +36,27 @@ export type ProviderRegisterResult = {
   errorMessageInternal?: string;
 };
 
+/** One DNS resource record as the registrar stores it. */
+export type ProviderDnsRecord = {
+  recordId: string;
+  /** A, AAAA, CNAME, MX, TXT, NS, SRV, … */
+  type: string;
+  /** Host label relative to the zone (`@` for the apex). */
+  host: string;
+  value: string;
+  ttl: number;
+  distance: number;
+};
+
+export type ProviderDnsRecordInput = {
+  type: string;
+  host: string;
+  value: string;
+  ttl: number;
+  distance?: number;
+  recordId?: string;
+};
+
 export type ProviderTransferResult = {
   outcome: "success" | "failed" | "unknown";
   providerTransferId?: string;
@@ -79,6 +100,24 @@ export interface DomainRegistrarProvider {
   updateNameservers(domain: string, nameservers: string[]): Promise<void>;
 
   updateDnsRecords?(domain: string, records: unknown[]): Promise<void>;
+
+  /** Zone records for the registrar's own nameservers. */
+  listDnsRecords?(domain: string): Promise<ProviderDnsRecord[]>;
+
+  addDnsRecord?(
+    domain: string,
+    record: ProviderDnsRecordInput,
+  ): Promise<ProviderDnsRecord>;
+
+  updateDnsRecord?(
+    domain: string,
+    record: ProviderDnsRecordInput & { recordId: string },
+  ): Promise<void>;
+
+  deleteDnsRecord?(domain: string, recordId: string): Promise<void>;
+
+  /** True when the registrar can edit the zone (hosted DNS, not third-party NS). */
+  supportsDnsEditing?(): boolean;
 
   getAuthCode(domain: string): Promise<string>;
 

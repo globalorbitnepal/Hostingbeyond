@@ -3,6 +3,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { PanelEmpty, PanelPageHeader } from "@/components/panel/panel-ui";
 import { routes } from "@/config/routes";
 import {
   CUSTOMER_SESSION_COOKIE,
@@ -10,6 +11,7 @@ import {
 } from "@/lib/customer/session";
 import { listHostingOrdersForUser } from "@/lib/hosting/hosting-orders";
 import { HOSTING_ORDER_STATUS_LABELS } from "@/lib/hosting/provisioning";
+import { formatPanelDateTime } from "@/lib/panel/domain-status";
 
 function orderStatusLabel(status: string) {
   return HOSTING_ORDER_STATUS_LABELS[status as HostingOrderStatus] ?? status;
@@ -30,9 +32,9 @@ export default async function AccountHostingOrdersPage({
   const params = await searchParams;
   const paymentNotice =
     params.payment === "processing"
-      ? "If you completed payment, this page will update to Paid after our payment provider confirms it. Hosting is not activated automatically yet."
+      ? "If you completed payment, this page updates to Paid after our payment provider confirms it. Hosting is not activated automatically yet."
       : params.payment === "cancelled"
-        ? "Payment was cancelled. You can return to checkout to try again when online payment is available."
+        ? "Payment was cancelled. You can return to checkout to try again."
         : null;
 
   const jar = await cookies();
@@ -44,78 +46,83 @@ export default async function AccountHostingOrdersPage({
   const orders = await listHostingOrdersForUser(user.id);
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <div className="hb-panel-card p-6 sm:p-8">
-        <h1 className="font-heading text-2xl font-semibold text-slate-950">
-          Hosting orders
-        </h1>
-        <p className="mt-2 text-sm text-slate-500">
-          Web hosting checkout orders for your account. Service provisioning is
-          not automated yet — only orders marked Active represent live hosting.
-          Amounts are in USD, the currency actually billed.
-        </p>
-        {paymentNotice ? (
-          <p
-            className="mt-4 rounded-lg border border-violet-200 bg-violet-50 px-4 py-3 text-sm text-violet-950"
-            role="status"
-          >
-            {paymentNotice}
-          </p>
-        ) : null}
-        <p className="mt-2 text-xs text-slate-500">
-          <Link
-            href={routes.accountOrders}
-            className="font-semibold text-[#673de6]"
-          >
-            Domain orders
+    <div className="mx-auto w-full max-w-4xl space-y-5">
+      <PanelPageHeader
+        eyebrow="Hosting"
+        title="Hosting orders"
+        description="Only orders marked Active represent live hosting. Amounts are in USD, the currency actually billed."
+        actions={
+          <Link href={routes.accountHosting} className="hb-btn hb-btn-primary">
+            Browse plans
           </Link>
-          {" · "}
-          <Link
-            href={routes.accountInvoices}
-            className="font-semibold text-[#673de6]"
-          >
-            Invoices
-          </Link>
-        </p>
+        }
+      />
 
+      {paymentNotice ? (
+        <p className="hb-pill hb-pill-info inline-flex" role="status">
+          {paymentNotice}
+        </p>
+      ) : null}
+
+      <div className="hb-panel-card p-5">
         {orders.length === 0 ? (
-          <p className="mt-6 text-sm text-slate-600">
-            No hosting orders yet.{" "}
+          <PanelEmpty
+            title="No hosting orders yet"
+            description="Pick a hosting plan and the order will show here with its activation status."
+          >
             <Link
-              href={routes.pricing}
-              className="font-semibold text-[#673de6]"
+              href={routes.accountHosting}
+              className="hb-btn hb-btn-primary"
             >
-              Browse hosting plans
+              Hosting plans
             </Link>
-          </p>
+          </PanelEmpty>
         ) : (
-          <ul className="mt-6 divide-y divide-slate-100">
+          <ul className="space-y-2">
             {orders.map((order) => {
               const snap = order.lineItemsSnapshot as {
                 planName?: string;
               } | null;
               const label =
                 snap?.planName ?? `${order.productSlug} · ${order.planKey}`;
+              const active =
+                order.status === "ACTIVE" || order.status === "PROVISIONING";
               return (
                 <li
                   key={order.id}
-                  className="flex flex-wrap items-center justify-between gap-3 py-4"
+                  className="hb-table-row flex flex-wrap items-center justify-between gap-3 px-4 py-3"
                 >
-                  <div>
-                    <p className="font-semibold text-slate-900">{label}</p>
-                    <p className="text-xs text-slate-500">
+                  <div className="min-w-0">
+                    <p className="hb-text font-bold">{label}</p>
+                    <p className="hb-muted text-xs">
                       {orderStatusLabel(order.status)} · {order.billingCycle} ·{" "}
-                      {new Date(order.createdAt).toLocaleString()}
+                      {formatPanelDateTime(order.createdAt)}
                     </p>
                   </div>
-                  <p className="font-semibold text-slate-900 tabular-nums">
-                    {formatMoney(Number(order.total), order.currency)}
-                  </p>
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`hb-pill ${active ? "hb-pill-ok" : "hb-pill-neutral"}`}
+                    >
+                      {orderStatusLabel(order.status)}
+                    </span>
+                    <p className="hb-text font-bold tabular-nums">
+                      {formatMoney(Number(order.total), order.currency)}
+                    </p>
+                  </div>
                 </li>
               );
             })}
           </ul>
         )}
+      </div>
+
+      <div className="flex flex-wrap gap-3 text-sm">
+        <Link href={routes.accountOrders} className="hb-link">
+          Domain orders
+        </Link>
+        <Link href={routes.accountInvoices} className="hb-link">
+          Invoices
+        </Link>
       </div>
     </div>
   );

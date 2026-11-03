@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { WalletTopUpForm } from "@/components/domains/wallet-top-up-form";
 import { WalletAccountPanel } from "@/components/domains/wallet-account-panel";
+import { PanelPageHeader } from "@/components/panel/panel-ui";
 import { routes } from "@/config/routes";
 import {
   CUSTOMER_SESSION_COOKIE,
@@ -38,15 +39,13 @@ export default async function AccountWalletPage({
   }
 
   return (
-    <div className="mx-auto max-w-xl">
-      <div className="hb-panel-card p-6 sm:p-8">
-        <h1 className="font-heading text-2xl font-semibold text-slate-950">
-          Wallet
-        </h1>
-        <p className="mt-2 text-sm text-slate-500">
-          Domain registrations, renewals, and transfers use your HostingBeyond
-          wallet balance.
-        </p>
+    <div className="mx-auto w-full max-w-2xl space-y-5">
+      <PanelPageHeader
+        eyebrow="Billing"
+        title="Wallet"
+        description="Domain registrations, renewals and transfers are paid from your HostingBeyond wallet balance."
+      />
+      <div className="hb-panel-card p-5 sm:p-7">
         <WalletAccountPanel
           initialBalance={Number(wallet.balance)}
           currency={wallet.currency}

@@ -6,7 +6,10 @@ export type PanelNavItem = {
   href?: string;
   /** Shown but not linked — feature not available yet */
   soon?: boolean;
-  icon?: string;
+  /** Indented child of the previous top-level item. */
+  child?: boolean;
+  /** Small tag next to the label, e.g. Beta. */
+  tag?: string;
 };
 
 export type PanelNavSection = {
@@ -15,7 +18,13 @@ export type PanelNavSection = {
   items: PanelNavItem[];
 };
 
-/** Customer panel navigation — only link routes that exist today. */
+/**
+ * Customer panel navigation.
+ *
+ * Every entry must resolve to a page inside `/account`. Marketing pages are
+ * deliberately absent: once a customer is signed in, clicking a sidebar link
+ * should never throw them back to the public storefront.
+ */
 export const PANEL_NAV: PanelNavSection[] = [
   {
     id: "overview",
@@ -26,21 +35,16 @@ export const PANEL_NAV: PanelNavSection[] = [
     id: "domains",
     label: "Domains",
     items: [
-      { id: "my-domains", label: "My Domains", href: routes.myDomains },
+      { id: "my-domains", label: "Domain portfolio", href: routes.myDomains },
       {
         id: "register",
-        label: "Register Domain",
+        label: "Domain search",
         href: routes.accountDomainFind,
       },
       {
         id: "transfer",
-        label: "Transfer Domain",
+        label: "Transfers",
         href: routes.accountDomainTransfer,
-      },
-      {
-        id: "renewals",
-        label: "Renewals & expiry",
-        href: routes.myDomains,
       },
     ],
   },
@@ -55,7 +59,7 @@ export const PANEL_NAV: PanelNavSection[] = [
       },
       {
         id: "hosting-orders",
-        label: "Hosting Orders",
+        label: "Hosting orders",
         href: routes.accountHostingOrders,
       },
     ],
@@ -64,11 +68,7 @@ export const PANEL_NAV: PanelNavSection[] = [
     id: "email",
     label: "Business Email",
     items: [
-      {
-        id: "buy-email",
-        label: "Business Email",
-        href: routes.accountEmail,
-      },
+      { id: "buy-email", label: "Mailbox plans", href: routes.accountEmail },
     ],
   },
   {
@@ -109,21 +109,27 @@ function pathMatchesNavItem(pathname: string, href: string) {
   return pathname.startsWith(`${href}/`);
 }
 
+const EXACT_TITLES: Array<[string, string]> = [
+  ["/account/domains/find", "Domain search"],
+  ["/account/domains/transfer", "Transfers"],
+  ["/account/hosting-orders", "Hosting orders"],
+  ["/account/my-domains/", "Domain details"],
+  ["/account/orders/", "Order details"],
+  ["/account/invoices/", "Invoice details"],
+  ["/account/hosting", "Hosting plans"],
+  ["/account/email", "Business email"],
+  ["/account/support", "Support"],
+];
+
 export function panelTitleForPath(pathname: string): string {
-  if (pathname.startsWith("/account/domains/find")) return "Register a domain";
-  if (pathname.startsWith("/account/domains/transfer"))
-    return "Transfer a domain";
-  if (pathname.startsWith("/account/hosting-orders")) return "Hosting orders";
-  if (
-    pathname === "/account/hosting" ||
-    pathname.startsWith("/account/hosting/")
-  )
-    return "Hosting plans";
-  if (pathname.startsWith("/account/email")) return "Business email";
-  if (pathname.startsWith("/account/support")) return "Support";
-  if (pathname.startsWith("/account/my-domains/")) return "Domain details";
-  if (pathname.startsWith("/account/orders/")) return "Order details";
-  if (pathname.startsWith("/account/invoices/")) return "Invoice details";
+  for (const [prefix, title] of EXACT_TITLES) {
+    if (
+      prefix.endsWith("/") ? pathname.startsWith(prefix) : pathname === prefix
+    ) {
+      return title;
+    }
+  }
+
   let best: { label: string; href: string } | null = null;
   for (const section of getPanelNav()) {
     for (const item of section.items) {

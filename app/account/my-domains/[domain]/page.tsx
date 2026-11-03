@@ -27,30 +27,22 @@ export default async function ManageDomainPage({ params }: Params) {
   if (!registration) notFound();
 
   return (
-    <div className="mx-auto max-w-5xl">
-      <nav className="mb-3 flex items-center gap-2 text-xs text-slate-500">
-        <Link
-          href={routes.account}
-          className="hover:text-[var(--hb-p-primary)]"
-        >
+    <div className="mx-auto w-full max-w-6xl space-y-5">
+      <nav className="hb-muted flex items-center gap-2 text-xs">
+        <Link href={routes.account} className="hover:hb-text">
           Dashboard
         </Link>
         <span aria-hidden>/</span>
-        <Link
-          href={routes.myDomains}
-          className="hover:text-[var(--hb-p-primary)]"
-        >
-          My domains
+        <Link href={routes.myDomains} className="hover:hb-text">
+          Domain portfolio
         </Link>
         <span aria-hidden>/</span>
-        <span className="font-semibold text-slate-700">{domain}</span>
+        <span className="hb-text font-semibold">{domain}</span>
       </nav>
-      <div className="hb-panel-card p-5 sm:p-7">
-        <DomainManagePanel
-          registrationId={registration.id}
-          domainName={registration.domain}
-        />
-      </div>
+      <DomainManagePanel
+        registrationId={registration.id}
+        domainName={registration.domain}
+      />
     </div>
   );
 }
