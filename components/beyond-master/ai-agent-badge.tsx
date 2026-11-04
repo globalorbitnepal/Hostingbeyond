@@ -4,7 +4,6 @@ import Image from "next/image";
 
 import { CANONICAL_HEADER_LOGO_SRC } from "@/components/shared/logo";
 import { BEYOND_MASTER_BRAND_NAME } from "@/lib/beyond-master/copy";
-import { BeyondMasterIcon } from "./beyond-master-icon";
 
 export function AiAgentBadge({
   variant = "header",
@@ -27,15 +26,8 @@ export function AiAgentBadge({
           />
         </span>
         <span className="hb-ai-badge-rule" />
-        <span className="hb-ai-badge-copy">
-          <span className="hb-ai-badge-ai">AI</span>
-          <span className="hb-ai-badge-agent">Agent</span>
-        </span>
-        <span className="hb-ai-badge-orb" aria-hidden="true">
-          <BeyondMasterIcon size={14} />
-        </span>
+        <span className="hb-ai-badge-copy">{BEYOND_MASTER_BRAND_NAME}</span>
       </span>
-      <span className="sr-only">{BEYOND_MASTER_BRAND_NAME}</span>
     </span>
   );
 }

@@ -50,60 +50,78 @@
 
 .hb-ai-badge {
   position: relative;
-  isolation: isolate;
   display: inline-flex;
-  height: 44px;
+  max-width: 100%;
+  height: 42px;
   padding: 2px;
   border-radius: 999px;
-  background: conic-gradient(
-    from var(--hb-ai-angle),
-    #f0abfc,
-    #7c3aed 18%,
-    #2563eb 42%,
-    #22d3ee 62%,
-    #60a5fa 78%,
-    #c026d3,
-    #f0abfc
+  background: linear-gradient(
+    100deg,
+    #f5d0fe 0%,
+    #e879f9 16%,
+    #818cf8 48%,
+    #7dd3fc 76%,
+    #ecfeff 100%
   );
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.9),
-    0 10px 22px rgba(79, 70, 229, 0.2),
-    0 0 18px rgba(34, 211, 238, 0.18);
-  animation: hb-ai-ring 5.5s linear infinite;
+    0 0 10px rgba(217, 70, 239, 0.55),
+    0 0 18px rgba(37, 99, 235, 0.4),
+    0 8px 16px rgba(30, 27, 75, 0.18);
+  animation: hb-ai-neon 2.8s ease-in-out infinite;
 }
 
 .hb-ai-badge-inner {
   position: relative;
   display: flex;
+  width: 100%;
   height: 100%;
   align-items: center;
   gap: 8px;
   overflow: hidden;
-  padding: 0 8px 0 9px;
+  padding: 0 16px 0 10px;
   border-radius: inherit;
-  background: linear-gradient(180deg, #ffffff 0%, #f7f8ff 100%);
+  background:
+    radial-gradient(
+      90% 80% at 12% 0%,
+      rgba(255, 255, 255, 0.38),
+      transparent 46%
+    ),
+    linear-gradient(102deg, #6d28d9 0%, #4f46e5 34%, #2563eb 68%, #0284c7 100%);
   box-shadow:
-    inset 0 1px 0 #fff,
-    inset 0 -8px 12px rgba(99, 102, 241, 0.05);
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -10px 16px rgba(8, 15, 40, 0.28);
+}
+
+.hb-ai-badge-inner::before {
+  content: "";
+  position: absolute;
+  top: 1px;
+  right: 10%;
+  left: 8%;
+  height: 46%;
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.55),
+    rgba(255, 255, 255, 0)
+  );
+  pointer-events: none;
 }
 
 .hb-ai-badge-inner::after {
   content: "";
   position: absolute;
-  top: -20%;
-  bottom: -20%;
-  left: 0;
-  width: 34%;
-  background: linear-gradient(
-    100deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0) 35%,
-    rgba(255, 255, 255, 0.95) 50%,
-    rgba(125, 211, 252, 0.35) 62%,
-    transparent 78%
+  right: -8%;
+  bottom: -38%;
+  left: -8%;
+  height: 78%;
+  background: radial-gradient(
+    58% 70% at 50% 0%,
+    rgba(125, 211, 252, 0.55),
+    rgba(192, 132, 252, 0.15) 46%,
+    transparent 70%
   );
-  mix-blend-mode: soft-light;
-  animation: hb-ai-sheen 3.8s ease-in-out infinite;
+  animation: hb-ai-wave 3.6s ease-in-out infinite;
   pointer-events: none;
 }
 
@@ -111,16 +129,16 @@
   position: relative;
   z-index: 1;
   display: block;
-  width: 42px;
-  height: 34px;
+  width: 40px;
+  height: 32px;
   flex: none;
   overflow: hidden;
-  filter: drop-shadow(0 2px 3px rgba(37, 99, 235, 0.18));
+  filter: drop-shadow(0 0 6px rgba(125, 211, 252, 0.65));
 }
 
 .hb-ai-badge-hb img {
   display: block;
-  height: 34px;
+  height: 32px;
   width: auto;
   max-width: none;
 }
@@ -130,114 +148,73 @@
   z-index: 1;
   display: block;
   width: 2px;
-  height: 20px;
+  height: 18px;
   flex: none;
   border-radius: 999px;
-  background: linear-gradient(180deg, #60a5fa, #2563eb);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.95),
+    rgba(125, 211, 252, 0.8)
+  );
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.45);
 }
 
 .hb-ai-badge-copy {
   position: relative;
   z-index: 1;
-  display: inline-flex;
-  align-items: baseline;
-  gap: 5px;
-  padding-right: 2px;
-  line-height: 1;
-  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-  font-weight: 800;
-  letter-spacing: -0.045em;
-}
-
-.hb-ai-badge-ai {
-  background: linear-gradient(96deg, #d946ef 0%, #7c3aed 42%, #2563eb 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-  font-size: 18px;
-  font-weight: 800;
-}
-
-.hb-ai-badge-agent {
-  color: #0e1228;
-  font-size: 18px;
-  font-weight: 800;
-}
-
-.hb-ai-badge-orb {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  width: 30px;
-  height: 30px;
-  flex: none;
-  place-items: center;
-  border-radius: 999px;
+  overflow: hidden;
   color: #fff;
-  background:
-    radial-gradient(
-      circle at 32% 24%,
-      rgba(255, 255, 255, 0.85),
-      transparent 34%
-    ),
-    linear-gradient(155deg, #f0abfc 0%, #7c3aed 42%, #1d4ed8 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    inset 0 -6px 8px rgba(30, 27, 75, 0.28),
-    0 4px 10px rgba(79, 70, 229, 0.28);
-}
-
-.hb-ai-badge-orb svg {
-  filter: drop-shadow(0 1px 1px rgba(15, 23, 42, 0.35));
-  transform-origin: center;
-  animation: hb-ai-twinkle 2.6s ease-in-out infinite;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 2px rgba(15, 23, 42, 0.35);
+  white-space: nowrap;
 }
 
 .hb-ai-badge-compact {
-  height: 36px;
+  height: 34px;
+}
+
+.hb-ai-badge-compact .hb-ai-badge-inner {
+  gap: 6px;
+  padding: 0 12px 0 8px;
 }
 
 .hb-ai-badge-compact .hb-ai-badge-hb {
-  width: 34px;
-  height: 28px;
+  width: 30px;
+  height: 24px;
 }
 
 .hb-ai-badge-compact .hb-ai-badge-hb img {
-  height: 28px;
+  height: 24px;
 }
 
-.hb-ai-badge-compact .hb-ai-badge-ai,
-.hb-ai-badge-compact .hb-ai-badge-agent {
-  font-size: 13.5px;
+.hb-ai-badge-compact .hb-ai-badge-copy {
+  font-size: 13px;
 }
 
-.hb-ai-badge-compact .hb-ai-badge-orb {
-  width: 22px;
-  height: 22px;
+.hb-ai-badge-compact .hb-ai-badge-rule {
+  height: 14px;
 }
 
 .hb-ai-badge-panel {
-  height: 48px;
+  height: 46px;
 }
 
 .hb-ai-badge-panel .hb-ai-badge-hb {
-  width: 46px;
-  height: 38px;
+  width: 44px;
+  height: 36px;
 }
 
 .hb-ai-badge-panel .hb-ai-badge-hb img {
-  height: 38px;
+  height: 36px;
 }
 
-.hb-ai-badge-panel .hb-ai-badge-ai,
-.hb-ai-badge-panel .hb-ai-badge-agent {
-  font-size: 19px;
-}
-
-.hb-ai-badge-panel .hb-ai-badge-orb {
-  width: 32px;
-  height: 32px;
+.hb-ai-badge-panel .hb-ai-badge-copy {
+  font-size: 18px;
 }
 
 .hb-bmai-header-brand {
@@ -799,7 +776,6 @@
   .hb-bmai-launch::after,
   .hb-ai-badge,
   .hb-ai-badge-inner::after,
-  .hb-ai-badge-orb svg,
   .hb-bmai-dots i {
     transition: none;
     animation: none;
@@ -839,39 +815,30 @@
   }
 }
 
-@keyframes hb-ai-ring {
-  to {
-    --hb-ai-angle: 360deg;
-  }
-}
-
-@keyframes hb-ai-sheen {
-  0%,
-  18% {
-    transform: translateX(-130%);
-    opacity: 0;
-  }
-  32% {
-    opacity: 1;
-  }
-  68% {
-    opacity: 1;
-  }
-  84%,
-  100% {
-    transform: translateX(340%);
-    opacity: 0;
-  }
-}
-
-@keyframes hb-ai-twinkle {
+@keyframes hb-ai-neon {
   0%,
   100% {
-    transform: scale(0.9);
-    opacity: 0.82;
+    box-shadow:
+      0 0 8px rgba(217, 70, 239, 0.45),
+      0 0 16px rgba(37, 99, 235, 0.32),
+      0 8px 16px rgba(30, 27, 75, 0.16);
   }
   50% {
-    transform: scale(1.08);
+    box-shadow:
+      0 0 16px rgba(232, 121, 249, 0.8),
+      0 0 28px rgba(34, 211, 238, 0.55),
+      0 8px 18px rgba(30, 27, 75, 0.2);
+  }
+}
+
+@keyframes hb-ai-wave {
+  0%,
+  100% {
+    transform: translateX(-4%);
+    opacity: 0.75;
+  }
+  50% {
+    transform: translateX(4%);
     opacity: 1;
   }
 }
