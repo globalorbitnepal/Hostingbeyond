@@ -25,6 +25,7 @@ type Copy = {
   statusPremium: string;
   statusUnknown: string;
   perYear: string;
+  perYearShort: string;
   from: string;
   languageName: string;
 };
@@ -68,6 +69,7 @@ const EN: Copy = {
   statusPremium: "premium price",
   statusUnknown: "could not be verified",
   perYear: "per year",
+  perYearShort: "/yr",
   from: "from",
   languageName: "English",
 };
@@ -111,6 +113,7 @@ const HI: Copy = {
   statusPremium: "प्रीमियम कीमत",
   statusUnknown: "जाँच नहीं हो सकी",
   perYear: "प्रति वर्ष",
+  perYearShort: "/वर्ष",
   from: "से शुरू",
   languageName: "हिन्दी",
 };
@@ -154,6 +157,7 @@ const NE: Copy = {
   statusPremium: "प्रिमियम मूल्य",
   statusUnknown: "जाँच हुन सकेन",
   perYear: "प्रति वर्ष",
+  perYearShort: "/वर्ष",
   from: "देखि",
   languageName: "नेपाली",
 };

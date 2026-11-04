@@ -72,9 +72,16 @@ function formatPlans(plans: AgentHostingPlan[]): string {
   return plans
     .slice(0, 6)
     .map((plan) => {
+      const sites = plan.websiteLimit?.trim();
+      const siteText =
+        sites && !/unlimited/i.test(sites)
+          ? `${sites} ${sites === "1" ? "site" : "sites"}`
+          : sites
+            ? "unlimited sites"
+            : null;
       const specs = [
         plan.storage,
-        plan.websiteLimit ? `${plan.websiteLimit} sites` : null,
+        siteText,
         plan.emailAccounts ? `${plan.emailAccounts} mailboxes` : null,
       ].filter(Boolean);
       const specText = specs.length ? ` — ${specs.join(", ")}` : "";

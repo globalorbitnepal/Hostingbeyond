@@ -117,7 +117,7 @@ export function formatDomainSearchForCustomer(
   for (const row of search.results) {
     const price =
       row.register != null
-        ? ` · ${copy.from} $${row.register.toFixed(2)}/${copy.perYear}`
+        ? ` · ${copy.from} $${row.register.toFixed(2)} ${copy.perYearShort}`
         : "";
     lines.push(
       `• ${row.domain} — ${statusLabel(language, row.status)}${price}`,
