@@ -201,9 +201,6 @@ export function BeyondMasterAiPanel() {
         <div className="hb-bmai-scroll">
           {messages.length === 0 ? (
             <div className="hb-bmai-welcome">
-              <div className="hb-bmai-hero-mark">
-                <BeyondMasterIcon size={34} />
-              </div>
               <h2>{BEYOND_MASTER_WELCOME_HEADING}</h2>
               <button
                 type="button"

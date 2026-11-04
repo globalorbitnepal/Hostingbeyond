@@ -411,6 +411,7 @@ export async function sendBeyondMasterMessage(text?: string) {
   });
 
   try {
+    const startedAt = Date.now();
     const response = await fetch("/api/beyond-master/chat", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -437,6 +438,13 @@ export async function sendBeyondMasterMessage(text?: string) {
     let assistantId: string | null = null;
     let assistantBody = "";
     let failedMessage: string | null = null;
+    const MIN_TYPING_MS = 900;
+    const waitForTyping = async () => {
+      const remaining = MIN_TYPING_MS - (Date.now() - startedAt);
+      if (remaining > 0) {
+        await new Promise((resolve) => setTimeout(resolve, remaining));
+      }
+    };
     const apply = (
       next: BeyondMasterConversation,
       extra?: Partial<Snapshot>,
@@ -597,6 +605,7 @@ export async function sendBeyondMasterMessage(text?: string) {
         } else if (frame.event === "delta" && typeof data.text === "string") {
           assistantBody += data.text;
           if (!assistantId) {
+            await waitForTyping();
             assistantId = newId();
             const sent = markMessage(
               current,

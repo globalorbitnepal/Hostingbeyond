@@ -1,11 +1,14 @@
 import type { BeyondMasterQuickAction } from "@/lib/beyond-master/types";
 
-/** Orbit console product name. The public header launcher uses Agent. */
-export const BEYOND_MASTER_NAME = "BEYOND MASTER AI";
+/** Product name used by Orbit status and the public panel. */
+export const BEYOND_MASTER_NAME = "Beyond Master AI";
 
 export const BEYOND_MASTER_LAUNCHER_LABEL = "Agent";
 
-export const BEYOND_MASTER_PANEL_TITLE = "Beyond Master AI";
+/** Same brand on the header button, the panel header, and Orbit. */
+export const BEYOND_MASTER_BRAND_NAME = "Beyond Master AI";
+
+export const BEYOND_MASTER_PANEL_TITLE = BEYOND_MASTER_BRAND_NAME;
 
 export const BEYOND_MASTER_TAGLINE = "Your hosting and business assistant";
 
@@ -18,7 +21,7 @@ export const BEYOND_MASTER_PRIMARY_TITLE = "Help me find what I need";
 export const BEYOND_MASTER_PRIMARY_BODY =
   "Tell me what you are trying to do and I will point you in the right direction.";
 
-export const BEYOND_MASTER_INPUT_PLACEHOLDER = "Message HostingBeyond Agent...";
+export const BEYOND_MASTER_INPUT_PLACEHOLDER = "Message Beyond Master AI...";
 
 export const BEYOND_MASTER_GREETING_REPLY =
   "Hi! Tell me what you'd like to get started with — a domain, hosting, business email, or your website — or describe it in your own words.";
@@ -40,18 +43,18 @@ export const BEYOND_MASTER_QUICK_ACTIONS: readonly BeyondMasterQuickAction[] = [
   },
   {
     id: "hosting",
-    label: "Compare hosting plans",
-    prompt: "Help me compare hosting plans and prices.",
-  },
-  {
-    id: "website",
-    label: "Build or fix my website",
-    prompt: "Help me set up or fix my website.",
+    label: "Compare hosting plans and prices",
+    prompt: "Show me your hosting plans and prices.",
   },
   {
     id: "email",
     label: "Set up business email",
     prompt: "Help me set up business email.",
+  },
+  {
+    id: "website",
+    label: "Fix my website",
+    prompt: "Help me fix my website.",
   },
 ];
 

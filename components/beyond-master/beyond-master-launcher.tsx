@@ -1,6 +1,6 @@
 "use client";
 
-import { BEYOND_MASTER_LAUNCHER_LABEL } from "@/lib/beyond-master/copy";
+import { BEYOND_MASTER_BRAND_NAME } from "@/lib/beyond-master/copy";
 import {
   closeBeyondMasterAi,
   openBeyondMasterAi,
@@ -36,9 +36,11 @@ export function BeyondMasterAiLauncher({
         data-open={open ? "true" : "false"}
         onClick={togglePanel}
       >
-        <BeyondMasterIcon size={16} />
-        <span className="notranslate" translate="no">
-          {BEYOND_MASTER_LAUNCHER_LABEL}
+        <span className="hb-bmai-launch-mark">
+          <BeyondMasterIcon size={16} />
+        </span>
+        <span className="hb-bmai-launch-text notranslate" translate="no">
+          {BEYOND_MASTER_BRAND_NAME}
         </span>
         <span className="hb-bmai-ai-chip notranslate" translate="no">
           AI
@@ -51,17 +53,21 @@ export function BeyondMasterAiLauncher({
     <button
       type="button"
       className={
-        compact ? "hb-bmai-launch hb-bmai-launch-compact" : "hb-bmai-launch"
+        compact
+          ? "hb-bmai-launch hb-bmai-launch-compact"
+          : "hb-bmai-launch hb-bmai-launch-wide"
       }
       aria-expanded={open}
       aria-controls="beyond-master-ai-panel"
-      aria-label={BEYOND_MASTER_LAUNCHER_LABEL}
+      aria-label={BEYOND_MASTER_BRAND_NAME}
       data-open={open ? "true" : "false"}
       onClick={togglePanel}
     >
-      <BeyondMasterIcon size={16} />
-      <span className="notranslate" translate="no">
-        {BEYOND_MASTER_LAUNCHER_LABEL}
+      <span className="hb-bmai-launch-mark">
+        <BeyondMasterIcon size={16} />
+      </span>
+      <span className="hb-bmai-launch-text notranslate" translate="no">
+        {BEYOND_MASTER_BRAND_NAME}
       </span>
       <span className="hb-bmai-ai-chip notranslate" translate="no">
         AI

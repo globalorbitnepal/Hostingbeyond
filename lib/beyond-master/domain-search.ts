@@ -1,3 +1,5 @@
+import type { AgentLanguage } from "@/lib/beyond-master/language";
+import { agentCopy, statusLabel } from "@/lib/beyond-master/replies";
 import type { BeyondMasterDomainSuggestion } from "@/lib/beyond-master/types";
 import type { DomainResult } from "@/lib/domains/availability";
 import { lookupDomainNames, lookupErrorMessage } from "@/lib/domains/lookup";
@@ -102,21 +104,25 @@ export function formatDomainSearchForPrompt(search: AgentDomainSearch): string {
 
 export function formatDomainSearchForCustomer(
   search: AgentDomainSearch,
+  language: AgentLanguage = "en",
 ): string {
+  const copy = agentCopy(language);
   if (search.error && search.results.length === 0) {
-    return `${search.error} You can also search live names at /domain-name-search.`;
+    return copy.domainFailed;
   }
   if (search.results.length === 0) {
-    return `I could not list live results for ${search.query} here. Open /domain-name-search to check availability and prices.`;
+    return copy.domainEmpty(search.query);
   }
-  const lines = [`Here is a live check for ${search.query}:`];
+  const lines = [copy.domainHeading(search.query)];
   for (const row of search.results) {
     const price =
-      row.register != null ? ` · from $${row.register.toFixed(2)}/yr` : "";
-    lines.push(`• ${row.domain} — ${row.status}${price}`);
+      row.register != null
+        ? ` · ${copy.from} $${row.register.toFixed(2)}/${copy.perYear}`
+        : "";
+    lines.push(
+      `• ${row.domain} — ${statusLabel(language, row.status)}${price}`,
+    );
   }
-  lines.push(
-    `Open ${domainSearchHref(search.query)} to register an available name. I cannot complete checkout from this chat.`,
-  );
+  lines.push(copy.domainFooter(domainSearchHref(search.query)));
   return lines.join("\n");
 }
