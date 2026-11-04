@@ -19,7 +19,7 @@ describe("verify-migration-inventory", () => {
     const inventory = loadCommittedInventory();
     const result = compareMigrationInventory(inventory, folders);
     assert.equal(result.ok, true, JSON.stringify(result));
-    assert.equal(folders.length, 25);
+    assert.equal(folders.length, inventory.length);
     for (const name of REQUIRED_PHASE2) {
       assert.ok(folders.includes(name), name);
     }
