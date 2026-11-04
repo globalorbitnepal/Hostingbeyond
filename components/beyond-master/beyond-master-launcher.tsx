@@ -36,11 +36,12 @@ export function BeyondMasterAiLauncher({
         data-open={open ? "true" : "false"}
         onClick={togglePanel}
       >
-        <span className="hb-bmai-launch-mark">
-          <BeyondMasterIcon size={15} />
-        </span>
+        <BeyondMasterIcon size={16} />
         <span className="notranslate" translate="no">
           {BEYOND_MASTER_LAUNCHER_LABEL}
+        </span>
+        <span className="hb-bmai-ai-chip notranslate" translate="no">
+          AI
         </span>
       </button>
     );
@@ -58,11 +59,12 @@ export function BeyondMasterAiLauncher({
       data-open={open ? "true" : "false"}
       onClick={togglePanel}
     >
-      <span className="hb-bmai-launch-mark">
-        <BeyondMasterIcon size={15} />
-      </span>
+      <BeyondMasterIcon size={16} />
       <span className="notranslate" translate="no">
         {BEYOND_MASTER_LAUNCHER_LABEL}
+      </span>
+      <span className="hb-bmai-ai-chip notranslate" translate="no">
+        AI
       </span>
     </button>
   );

@@ -47,6 +47,10 @@ export function isAgentGreeting(message: string): boolean {
   return GREETING.test(text);
 }
 
+export function wantsBulkDomainSearch(message: string): boolean {
+  return /bulk/.test(message.toLowerCase());
+}
+
 export function wantsDomainHelp(message: string): boolean {
   return DOMAIN_HELP.test(message.toLowerCase()) || FQDN.test(message);
 }

@@ -14,6 +14,7 @@ import {
   searchDomainsForAgent,
 } from "@/lib/beyond-master/domain-search";
 import { groundedBeyondMasterReply } from "@/lib/beyond-master/grounded";
+import { customerFirstName } from "@/lib/beyond-master/customer-name";
 import { buildBeyondMasterSystemPrompt } from "@/lib/beyond-master/knowledge/build";
 import { getBeyondMasterChatTestOverride } from "@/lib/beyond-master/chat-test-hook";
 import {
@@ -117,9 +118,11 @@ export async function POST(request: Request) {
         const config = readBeyondMasterRuntimeConfig();
         const lastMessage =
           parsed.messages[parsed.messages.length - 1]?.content ?? "";
-        const domainQuery = wantsDomainHelp(lastMessage)
-          ? extractDomainQuery(lastMessage)
-          : null;
+        const domainQuery =
+          wantsDomainHelp(lastMessage) && !/\bbulk\b/i.test(lastMessage)
+            ? extractDomainQuery(lastMessage)
+            : null;
+        const firstName = await customerFirstName(customerUserId);
         const domainSearch = domainQuery
           ? await searchDomainsForAgent(domainQuery)
           : null;
@@ -127,14 +130,17 @@ export async function POST(request: Request) {
           send("domains", { results: domainSearch.results });
         }
         if (!override && !config.configured) {
-          const grounded = await groundedBeyondMasterReply(lastMessage, () =>
-            Promise.resolve(
-              domainSearch ?? {
-                query: domainQuery ?? lastMessage,
-                error: null,
-                results: [],
-              },
-            ),
+          const grounded = await groundedBeyondMasterReply(
+            lastMessage,
+            () =>
+              Promise.resolve(
+                domainSearch ?? {
+                  query: domainQuery ?? lastMessage,
+                  error: null,
+                  results: [],
+                },
+              ),
+            firstName,
           );
           if (grounded.domains.length) {
             send("domains", { results: grounded.domains });

@@ -8,63 +8,81 @@
 }
 
 .hb-bmai-launch {
-  --bmai-ring: conic-gradient(
-    from 180deg,
-    #7c3aed,
-    #2563eb,
-    #22d3ee,
-    #a855f7,
-    #7c3aed
-  );
   position: relative;
   display: inline-flex;
-  height: 36px;
+  height: 40px;
   max-width: none;
   align-items: center;
   gap: 8px;
-  padding: 0 14px 0 10px;
-  border: 0;
+  overflow: hidden;
+  padding: 0 5px 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
   border-radius: 999px;
-  color: #f8fafc;
+  color: #fff;
   background:
-    linear-gradient(#0b1224, #0b1224) padding-box,
-    var(--bmai-ring) border-box;
+    linear-gradient(180deg, rgba(255, 255, 255, 0.42), transparent 46%),
+    linear-gradient(100deg, #e879f9 0%, #7c3aed 36%, #2563eb 70%, #22d3ee 100%);
   box-shadow:
-    0 8px 20px rgba(37, 99, 235, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  font-size: 13px;
-  font-weight: 650;
-  letter-spacing: 0.01em;
-  isolation: isolate;
+    0 0 0 3px rgba(168, 85, 247, 0.16),
+    0 0 18px rgba(124, 58, 237, 0.45),
+    0 0 28px rgba(34, 211, 238, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-shadow: 0 1px 1px rgba(76, 29, 149, 0.25);
   transition:
     transform 180ms ease,
     box-shadow 180ms ease;
 }
 
-.hb-bmai-launch::before {
+.hb-bmai-launch::after {
   content: "";
   position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  padding: 1.5px;
-  background: var(--bmai-ring);
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
+  right: 18%;
+  bottom: 5px;
+  left: 16%;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.55),
+    transparent
+  );
+  filter: blur(1px);
+  animation: hb-bmai-sheen 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.hb-bmai-ai-chip {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  height: 22px;
+  min-width: 28px;
+  place-items: center;
+  padding: 0 7px;
+  border-radius: 999px;
+  color: #6d28d9;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 4px 10px rgba(37, 99, 235, 0.18);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-shadow: none;
 }
 
 .hb-bmai-launch:hover,
 .hb-bmai-launch[data-open="true"] {
   transform: translateY(-1px);
   box-shadow:
-    0 12px 26px rgba(124, 58, 237, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    0 0 0 4px rgba(168, 85, 247, 0.2),
+    0 0 24px rgba(124, 58, 237, 0.55),
+    0 0 36px rgba(34, 211, 238, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 .hb-bmai-launch:focus-visible {
@@ -74,7 +92,8 @@
 
 .hb-bmai-launch-compact {
   height: 36px;
-  padding: 0 12px 0 8px;
+  gap: 6px;
+  padding: 0 4px 0 10px;
   font-size: 13px;
 }
 
@@ -86,13 +105,11 @@
   margin-bottom: 8px;
 }
 
-.hb-bmai-launch-mark {
-  display: grid;
-  width: 18px;
-  height: 18px;
+.hb-bmai-launch svg {
+  position: relative;
+  z-index: 1;
   flex: none;
-  place-items: center;
-  color: #fff;
+  filter: drop-shadow(0 1px 2px rgba(76, 29, 149, 0.35));
 }
 
 .hb-bmai-backdrop {
@@ -600,7 +617,7 @@
 @media (prefers-reduced-motion: reduce) {
   .hb-bmai-panel,
   .hb-bmai-launch,
-  .hb-bmai-launch-mark,
+  .hb-bmai-launch::after,
   .hb-bmai-hero-mark,
   .hb-bmai-dots i {
     transition: none;
@@ -616,6 +633,18 @@
   }
   40% {
     opacity: 1;
+  }
+}
+
+@keyframes hb-bmai-sheen {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: translateX(-6px);
+  }
+  50% {
+    opacity: 0.9;
+    transform: translateX(8px);
   }
 }
 

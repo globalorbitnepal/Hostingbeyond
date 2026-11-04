@@ -62,6 +62,25 @@ describe("beyond master grounded replies", () => {
     assert.equal(reply.text.includes("/web-hosting"), false);
   });
 
+  it("points bulk search to the bulk page instead of the generic line", async () => {
+    const reply = await groundedBeyondMasterReply(
+      "cal u help mein bulk search",
+    );
+    assert.match(reply.text, /bulk-domain-search/);
+    assert.equal(reply.text.includes("DNS, SSL, and billing"), false);
+  });
+
+  it("uses the signed-in first name in a greeting", async () => {
+    const reply = await groundedBeyondMasterReply(
+      "helo",
+      async () => {
+        throw new Error("no search");
+      },
+      "Aarav",
+    );
+    assert.match(reply.text, /^Hi Aarav!/);
+  });
+
   it("answers DNS from customer help, not a provider notice", async () => {
     const reply = await groundedBeyondMasterReply("Help me with DNS");
     assert.match(reply.text, /account\/my-domains/);

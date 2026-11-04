@@ -4,6 +4,7 @@ import { BEYOND_MASTER_GREETING_REPLY } from "@/lib/beyond-master/copy";
 import {
   extractDomainQuery,
   isAgentGreeting,
+  wantsBulkDomainSearch,
   wantsDomainHelp,
 } from "@/lib/beyond-master/domain-intent";
 import {
@@ -29,7 +30,7 @@ const CUSTOMER_GUIDES: Array<{ test: RegExp; text: string }> = [
   },
   {
     test: /email|mailbox|webmail|mx/,
-    text: `Business email setup starts at /business-email. You will need a domain you control, then mailbox name and password. DNS (MX, and often SPF/DKIM/DMARC) is copied from that product page — I will not invent mail-host values.`,
+    text: `Business email on your own domain starts at /business-email. Pick a plan, connect a domain you already own or register one here, then choose the mailbox name. I will not invent mailbox prices or MX hosts — those stay on that page.`,
   },
   {
     test: /ssl|https|certificate|security/,
@@ -48,10 +49,21 @@ const CUSTOMER_GUIDES: Array<{ test: RegExp; text: string }> = [
 export async function groundedBeyondMasterReply(
   question: string,
   search: (query: string) => Promise<AgentDomainSearch> = searchDomainsForAgent,
+  firstName?: string | null,
 ): Promise<GroundedReply> {
   const text = question.trim();
+  const who = firstName?.trim();
   if (isAgentGreeting(text)) {
-    return { text: BEYOND_MASTER_GREETING_REPLY, domains: [] };
+    const hello = who
+      ? `Hi ${who}! Tell me what you'd like to get started with — a domain, hosting, business email, or your website — or describe it in your own words.`
+      : BEYOND_MASTER_GREETING_REPLY;
+    return { text: hello, domains: [] };
+  }
+  if (wantsBulkDomainSearch(text)) {
+    return {
+      text: "Bulk domain search is at /bulk-domain-search. You can check up to 10 names together there. Send me one name in this chat, like bakery.com, if you want a live availability check right now.",
+      domains: [],
+    };
   }
   if (wantsDomainHelp(text)) {
     const query = extractDomainQuery(text);
@@ -96,7 +108,7 @@ export async function groundedBeyondMasterReply(
 
   if (parts.length === 0) {
     return {
-      text: "I can help with domains, hosting, websites, business email, DNS, SSL, and billing on HostingBeyond. Tell me what you want to do, or send a domain like example.com to search it.",
+      text: `${who ? `${who}, I` : "I"} can check a domain, run you through bulk search, compare hosting, or set up business email. Tell me which one, or send a name like example.com.`,
       domains: [],
     };
   }
