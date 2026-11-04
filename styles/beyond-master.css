@@ -42,189 +42,54 @@
   margin-bottom: 8px;
 }
 
-@property --hb-ai-angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
-
 .hb-ai-badge {
   position: relative;
   display: inline-flex;
   max-width: 100%;
-  height: 48px;
-  padding: 4px;
-  border-radius: 999px;
-  background: linear-gradient(
-    102deg,
-    #ff4ecd 0%,
-    #e879f9 14%,
-    #818cf8 42%,
-    #38bdf8 70%,
-    #f8fdff 86%,
-    #67e8f9 100%
-  );
-  box-shadow:
-    0 0 10px 2px rgba(255, 78, 205, 0.9),
-    0 0 18px 3px rgba(34, 211, 238, 0.65);
-  animation: hb-ai-neon 2.6s ease-in-out infinite;
-}
-
-.hb-ai-badge-inner {
-  position: relative;
-  display: flex;
-  width: 100%;
-  height: 100%;
-  align-items: center;
-  gap: 9px;
+  height: 40px;
   overflow: hidden;
-  padding: 0 18px 0 10px;
-  border-radius: inherit;
-  background: linear-gradient(
-    102deg,
-    #5b1fd1 0%,
-    #6d28d9 20%,
-    #4338ca 46%,
-    #1d4ed8 72%,
-    #0284c7 100%
-  );
-  box-shadow: inset 0 -12px 16px rgba(8, 15, 40, 0.28);
-}
-
-.hb-ai-badge-gloss {
-  position: absolute;
-  top: 1px;
-  right: 7%;
-  left: 6%;
-  z-index: 1;
-  height: 46%;
   border-radius: 999px;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.72),
-    rgba(255, 255, 255, 0.08) 62%,
-    transparent
-  );
-  pointer-events: none;
+  animation: hb-ai-neon 2.4s ease-in-out infinite;
 }
 
-.hb-ai-badge-wave {
-  position: absolute;
-  bottom: -6%;
-  left: -30%;
-  z-index: 1;
-  width: 170%;
-  height: 62%;
-  pointer-events: none;
-  animation: hb-ai-wave 4.4s ease-in-out infinite;
-}
-
-.hb-ai-badge-sheen {
-  position: absolute;
-  top: -10%;
-  bottom: -10%;
-  left: 0;
-  z-index: 2;
-  width: 26%;
-  background: linear-gradient(
-    100deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.55) 48%,
-    rgba(224, 242, 254, 0.2) 68%,
-    transparent 100%
-  );
-  mix-blend-mode: screen;
-  pointer-events: none;
-  animation: hb-ai-sheen 3.8s ease-in-out infinite;
-}
-
-.hb-ai-badge-hb {
-  position: relative;
-  z-index: 3;
+.hb-ai-badge img {
   display: block;
-  width: 46px;
-  height: 38px;
-  flex: none;
-  overflow: hidden;
-  filter: drop-shadow(0 0 7px rgba(125, 211, 252, 0.85));
-}
-
-.hb-ai-badge-hb img {
-  display: block;
-  height: 38px;
+  height: 40px;
   width: auto;
   max-width: none;
 }
 
-.hb-ai-badge-rule {
-  position: relative;
-  z-index: 3;
-  display: block;
-  width: 2px;
-  height: 20px;
-  flex: none;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #fff, #bae6fd);
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
-}
-
-.hb-ai-badge-copy {
-  position: relative;
-  z-index: 3;
-  overflow: hidden;
-  color: #fff;
-  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1;
-  text-overflow: ellipsis;
-  text-shadow: 0 1px 2px rgba(15, 23, 42, 0.4);
-  white-space: nowrap;
+.hb-ai-badge-sheen {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 28%;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.55) 46%,
+    transparent 100%
+  );
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: hb-ai-sheen 3.2s ease-in-out infinite;
 }
 
 .hb-ai-badge-compact {
-  height: 36px;
-  padding: 2px;
+  height: 32px;
 }
 
-.hb-ai-badge-compact .hb-ai-badge-inner {
-  gap: 6px;
-  padding: 0 12px 0 7px;
-}
-
-.hb-ai-badge-compact .hb-ai-badge-hb {
-  width: 32px;
-  height: 26px;
-}
-
-.hb-ai-badge-compact .hb-ai-badge-hb img {
-  height: 26px;
-}
-
-.hb-ai-badge-compact .hb-ai-badge-copy {
-  font-size: 13px;
-}
-
-.hb-ai-badge-compact .hb-ai-badge-rule {
-  height: 14px;
+.hb-ai-badge-compact img {
+  height: 32px;
 }
 
 .hb-ai-badge-panel {
-  height: 50px;
+  height: 44px;
 }
 
-.hb-ai-badge-panel .hb-ai-badge-hb {
-  width: 48px;
-  height: 40px;
-}
-
-.hb-ai-badge-panel .hb-ai-badge-hb img {
-  height: 40px;
-}
-
-.hb-ai-badge-panel .hb-ai-badge-copy {
-  font-size: 20px;
+.hb-ai-badge-panel img {
+  height: 44px;
 }
 
 .hb-bmai-header-brand {
@@ -826,23 +691,15 @@
   }
 }
 
-@keyframes hb-ai-ring {
-  to {
-    --hb-ai-angle: 360deg;
-  }
-}
-
 @keyframes hb-ai-neon {
   0%,
   100% {
-    box-shadow:
-      0 0 8px 1px rgba(255, 78, 205, 0.7),
-      0 0 14px 2px rgba(34, 211, 238, 0.4);
+    filter: drop-shadow(0 0 3px rgba(232, 121, 249, 0.45))
+      drop-shadow(0 0 8px rgba(34, 211, 238, 0.28));
   }
   50% {
-    box-shadow:
-      0 0 14px 2px rgba(255, 78, 205, 0.95),
-      0 0 26px 4px rgba(34, 211, 238, 0.7);
+    filter: drop-shadow(0 0 8px rgba(232, 121, 249, 0.9))
+      drop-shadow(0 0 16px rgba(34, 211, 238, 0.65));
   }
 }
 
