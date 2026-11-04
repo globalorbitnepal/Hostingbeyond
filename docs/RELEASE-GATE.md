@@ -11,7 +11,7 @@
 
 ### Integration database in CI
 
-- Fixed env: `postgresql://hb_ci:***@127.0.0.1:5432/hostingbeyond_integration_test` (password is ephemeral CI-only, not a repository secret).
+- Fixed env: `postgresql://hb_ci:***@127.0.0.1:55432/hostingbeyond_integration_test` (password is ephemeral CI-only, not a repository secret). The GitHub Postgres service is published on host **55432** (container 5432) so CI cannot share production loopback 5432.
 - **Never** uses production `.env`, `hostingbeyond_db`, or production secrets for tests.
 - Pull requests run CI only; **deploy does not run** for PR workflows.
 

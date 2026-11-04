@@ -17,7 +17,9 @@ permissions:
 
 env:
   # Ephemeral CI database only — not production, not repository secrets.
-  DATABASE_URL: postgresql://hb_ci:hb_ci_test_only@127.0.0.1:5432/hostingbeyond_integration_test?schema=public
+  # Host port 55432 matches scripts/isolated-database-policy.mjs so CI cannot
+  # share production's 5432 even on loopback.
+  DATABASE_URL: postgresql://hb_ci:hb_ci_test_only@127.0.0.1:55432/hostingbeyond_integration_test?schema=public
 
 jobs:
   quality:
@@ -33,7 +35,7 @@ jobs:
           POSTGRES_PASSWORD: hb_ci_test_only
           POSTGRES_DB: hostingbeyond_integration_test
         ports:
-          - 5432:5432
+          - 55432:5432
         options: >-
           --health-cmd "pg_isready -U hb_ci -d hostingbeyond_integration_test"
           --health-interval 5s
