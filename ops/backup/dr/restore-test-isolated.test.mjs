@@ -10,10 +10,22 @@ const SCRIPT = path.join(ROOT, "ops/backup/dr/restore-test-isolated.mjs");
 const LAB = "hostingbeyond_restore_test";
 const MISSING_DUMP = "/nonexistent/hostingbeyond-restore-guard.dump";
 
+function labEnv(extra = {}) {
+  return {
+    PGHOST: "127.0.0.1",
+    PGPORT: "55433",
+    PGDATABASE: LAB,
+    PGUSER: "hostingbeyond_restore_test_owner",
+    PGPASSWORD: "restore-test-only",
+    ...extra,
+  };
+}
+
 function run(argv3, envExtra = {}) {
   const env = {
     PATH: process.env.PATH ?? "",
     HOME: process.env.HOME ?? "/tmp",
+    ...labEnv(),
     ...envExtra,
   };
   return spawnSync("node", [SCRIPT, MISSING_DUMP, argv3], {
@@ -80,7 +92,11 @@ describe("restore-test-isolated.mjs", () => {
     fs.writeFileSync(empty, "");
     const r = spawnSync("node", [SCRIPT, empty, LAB], {
       encoding: "utf8",
-      env: { PATH: process.env.PATH ?? "", HOME: process.env.HOME ?? "/tmp" },
+      env: {
+        PATH: process.env.PATH ?? "",
+        HOME: process.env.HOME ?? "/tmp",
+        ...labEnv(),
+      },
     });
     fs.unlinkSync(empty);
     assert.equal(r.status, 5);
@@ -94,6 +110,7 @@ describe("restore-test-isolated.mjs", () => {
       env: {
         PATH: "/nonexistent-hb-tools",
         HOME: process.env.HOME ?? "/tmp",
+        ...labEnv(),
       },
     });
     fs.unlinkSync(dump);

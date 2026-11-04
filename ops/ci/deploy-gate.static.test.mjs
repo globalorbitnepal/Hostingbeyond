@@ -108,6 +108,23 @@ test("workflow: documents no automatic schema rollback after migrate", () => {
   assert.match(workflowYaml, /NO_SCHEMA_ROLLBACK/);
 });
 
+test("workflow: normal migrate approval does not resolve beyond_ai", () => {
+  assert.match(workflowYaml, /HOSTINGBEYOND_BEYOND_AI_HISTORY_REPAIR_APPROVED/);
+  assert.match(workflowYaml, /--backup-evidence absent/);
+  assert.doesNotMatch(
+    workflowYaml,
+    /RUN_PRISMA_MIGRATE_DEPLOY:-0\}" = "1"[\s\S]*migrate resolve --rolled-back/,
+  );
+  const repairDecision = workflowYaml.indexOf('RUN_BEYOND_AI_REPAIR:-0}" = "1"');
+  const resolve = workflowYaml.indexOf(
+    "npx prisma migrate resolve --rolled-back 20260913120000_beyond_ai",
+  );
+  const restart = workflowYaml.indexOf("hostingbeyond-ctl restart");
+  assert.ok(repairDecision >= 0 && resolve > repairDecision);
+  assert.ok(restart > resolve);
+  assert.doesNotMatch(workflowYaml, /echo "\$\{MIGRATE_STATUS_OUT\}"/);
+});
+
 test("workflow: build and verification failures are explicit", () => {
   assert.match(workflowYaml, /BUILD_FAIL/);
   assert.match(workflowYaml, /VERIFY_FAIL/);

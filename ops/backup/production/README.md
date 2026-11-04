@@ -79,24 +79,34 @@ After Windows pull, owner may remove old export files under `~/backup-export/` (
 
 - Inner `hostingbeyond.dump` and outer `*.bundle.tar` exist only briefly on the VPS during the run.
 - `encrypt-artifact.sh` shreds the inner dump and outer tar after successful **age** encryption.
-- If outer encryption or publication fails, the exit trap removes any **unpublished** plaintext outer tar and partial ciphertext/meta for that timestamp only. Prior `LATEST` targets and older export files are untouched.
+- If encryption fails, `encrypt-artifact.sh` deletes the plaintext input and any partial output, then exits 8 if a path remains. `shred` does not prove the old bytes are unrecoverable on SSD, snapshot, or copy-on-write storage.
+- If outer encryption or publication fails, the exit trap removes any **unpublished** plaintext outer tar and partial ciphertext/meta for that timestamp only. Prior `LATEST.json` and older export files are untouched.
 
 ## Publication (`LATEST` symlinks)
 
 - `publish-export.mjs` writes `*.bundle.meta.json` only after outer ciphertext exists, then updates `LATEST.bundle.tar.age` and `LATEST.bundle.meta.json` via staging symlinks.
 - If the meta symlink step fails, the age symlink is rolled back to the previous target when possible.
-- **Limitation:** the two `LATEST` links are updated sequentially, not as a single atomic pair. A crash between steps could leave fetch and meta pointing at different sets until the next successful run.
+- Fetch reads one atomic pointer, `LATEST.json`, written only after both symlinks succeed. The fetch command does not follow the two symlinks independently.
+- Retention on the Windows copy keeps 8 newest verified weekly sets and 12 verified monthly sets. A set is eligible only when `reports/verify-<folder>.json` has `status` `PASS` and `backupSetFinalized` true. The newest verified set is never deleted. Do not run `retention.mjs --apply` until that report exists.
 
 ## Database target guard
 
-- **Name:** `assert-production-database.mjs` requires `PGDATABASE` = `hostingbeyond_db` and blocks restore/lab name patterns.
-- **Host:** the repository does not record the production PostgreSQL hostname. Connection target is taken from deployment `.env` without echoing it. Operators must confirm host/database via owner preflight (`docs/PRODUCTION-PREFLIGHT-RUNBOOK.md`) before approving exports.
+`assert-production-database.mjs` accepts only host `127.0.0.1`, port `5432`, database `hostingbeyond_db`, role `hostingbeyond_user`, and a non-empty password. It prints the failed field name and never prints the connection string or password.
+
+## Checksums and retention
+
+- Ciphertext check: `node ops/backup/dr/verify-encrypted-artifact.mjs <file.bundle.tar.age> <expectedSha256>`
+- Inner bundle check, after an owner decrypt: `node ops/backup/dr/verify-backup-set.mjs <extracted-bundle-dir>`
+- Retention plan, without deletion: `node ops/backup/dr/retention.mjs <windows-backup-root>`
+- Those scripts live under `ops/backup/dr/`, not `ops/backup/production/`.
 
 ## Isolated restore lab
 
-- Decrypted dumps must be restored only with `ops/backup/dr/restore-test-isolated.mjs` into **`hostingbeyond_restore_test`** (see `ops/backup/dr/ISOLATED-RESTORE-SETUP.md`).
-- A matching outer ciphertext SHA-256 (see `.bundle.meta.json`) proves file integrity on disk, **not** recoverability — run decrypt smoke + `verify-backup-set.mjs` and an isolated restore drill before trusting a set.
+- Decrypted dumps must be restored only with `ops/backup/dr/restore-test-isolated.mjs` into **`hostingbeyond_restore_test`** on **`127.0.0.1:55433`** (see `ops/backup/dr/ISOLATED-RESTORE-SETUP.md`).
+- The copy of that script currently on the production checkout still accepts port `5432`. Do not run it. The safe script is in this development release and reaches `/srv/apps/hostingbeyond` only when that release is deployed. Do not push this release only to update the restore script.
+- A matching outer ciphertext SHA-256 proves file integrity on disk, **not** recoverability. An isolated restore drill is still required.
 
 ## Owner approval on production VPS
 
 - First-time age recipient install, `authorized_keys` forced commands, and running `create-pull-bundle.sh` remain **owner-operated** steps (this repo does not execute them in CI).
+- Owner sequence for the first export: confirm the public age recipient, keep the private identity offline, set `HOSTINGBEYOND_PRODUCTION_BACKUP_EXPORT_APPROVED=true` only for the window, run `export-preflight.sh` and then `create-pull-bundle.sh` as user `hostingbeyond`, clear the flag, confirm the plaintext dump and `.bundle.tar` are gone, copy the `.bundle.tar.age` off-site, and match its SHA-256 with `verify-encrypted-artifact.mjs`.

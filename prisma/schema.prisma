@@ -131,6 +131,7 @@ model AdminUser {
   credentials  WebAuthnCredential[]
   sessions     AdminSession[]
   activityLogs ActivityLog[]
+  assignedBeyondMasterTickets BeyondMasterTicket[]
 }
 
 model WebAuthnCredential {
@@ -245,6 +246,9 @@ model CustomerUser {
   invoices            Invoice[]
   creditNotes         CreditNote[]
   hostingOrderCheckouts HostingOrderCheckout[]
+  beyondMasterTickets BeyondMasterTicket[]
+  beyondMasterTicketDrafts BeyondMasterTicketDraft[]
+  beyondMasterDnsProposals BeyondMasterDnsProposal[]
 }
 
 enum HostingOrderCheckoutStatus {
@@ -385,6 +389,181 @@ model BeyondAiProject {
   updatedAt   DateTime     @updatedAt
 
   @@index([userId])
+}
+
+/// Beyond Master AI request log. No prompt text and no provider secrets.
+model BeyondMasterUsage {
+  id               String   @id @default(cuid())
+  createdAt        DateTime @default(now())
+  provider         String
+  model            String
+  status           String
+  latencyMs        Int?
+  promptTokens     Int?
+  completionTokens Int?
+  customerUserId   String?
+  ipHash           String?
+  errorCode        String?
+
+  @@index([createdAt])
+  @@index([customerUserId])
+  @@index([provider])
+  @@index([status])
+}
+
+/// Operator-managed Beyond Master articles. No customer records and no secrets.
+/// Built-in articles still answer when this table has not been migrated.
+model BeyondMasterKnowledgeArticle {
+  id         String   @id @default(cuid())
+  slug       String   @unique
+  category   String
+  title      String
+  body       String
+  keywords   Json     @default("[]")
+  published  Boolean  @default(false)
+  sourceNote String   @default("")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([category])
+  @@index([published])
+}
+
+/// Prepared support request. Submit Ticket is the only path that creates a ticket.
+model BeyondMasterTicketDraft {
+  id               String       @id @default(cuid())
+  confirmationId   String       @unique
+  customerUserId   String
+  customer         CustomerUser @relation(fields: [customerUserId], references: [id], onDelete: Cascade)
+  idempotencyKey   String       @unique
+  category         String
+  priority         String
+  subject          String
+  description      String
+  domainName       String?
+  domainId         String?
+  serviceId        String?
+  serviceLabel     String?
+  handoff          Boolean      @default(false)
+  contextNote      String?
+  status           String
+  expiresAt        DateTime
+  ticketReference  String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([customerUserId, status])
+  @@index([expiresAt])
+}
+
+model BeyondMasterTicketSequence {
+  id         String @id
+  nextNumber Int
+}
+
+model BeyondMasterTicket {
+  id              String    @id @default(cuid())
+  reference       String    @unique
+  customerUserId  String
+  customer        CustomerUser @relation(fields: [customerUserId], references: [id], onDelete: Cascade)
+  idempotencyKey  String    @unique
+  subject         String
+  description     String
+  category        String
+  priority        String
+  status          String
+  domainName      String?
+  domainId        String?
+  serviceLabel    String?
+  serviceId       String?
+  assigneeId      String?
+  assignee        AdminUser? @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
+  handoff         Boolean   @default(false)
+  contextNote     String?
+  notification    Json      @default("{}")
+  resolvedAt      DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  messages        BeyondMasterTicketMessage[]
+  activities      BeyondMasterTicketActivity[]
+  attachments     BeyondMasterTicketAttachment[]
+
+  @@index([customerUserId, status])
+  @@index([status, updatedAt])
+  @@index([assigneeId])
+  @@index([category])
+  @@index([priority])
+}
+
+model BeyondMasterTicketMessage {
+  id         String   @id @default(cuid())
+  publicId   String   @unique
+  ticketId   String
+  ticket     BeyondMasterTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  authorType String
+  authorId   String?
+  visibility String
+  body       String
+  createdAt  DateTime @default(now())
+
+  @@index([ticketId, createdAt])
+  @@index([visibility])
+}
+
+model BeyondMasterTicketAttachment {
+  id          String   @id @default(cuid())
+  ticketId    String
+  ticket      BeyondMasterTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  fileName    String
+  contentType String
+  sizeBytes   Int
+  status      String
+  createdAt   DateTime @default(now())
+
+  @@index([ticketId])
+}
+
+model BeyondMasterTicketActivity {
+  id        String   @id @default(cuid())
+  ticketId  String
+  ticket    BeyondMasterTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  actorType String
+  actorId   String?
+  action    String
+  detail    String?
+  createdAt DateTime @default(now())
+
+  @@index([ticketId, createdAt])
+  @@index([action])
+}
+
+/// Pending DNS change. A row is not a provider write. Confirm executes through the existing DNS service.
+model BeyondMasterDnsProposal {
+  id              String       @id @default(cuid())
+  publicId        String       @unique
+  customerUserId  String
+  customer        CustomerUser @relation(fields: [customerUserId], references: [id], onDelete: Cascade)
+  idempotencyKey  String       @unique
+  domain          String
+  action          String
+  recordType      String
+  host            String
+  value           String
+  ttl             Int
+  priority        Int?
+  recordId        String?
+  snapshot        Json?
+  status          String
+  expiresAt       DateTime
+  claimToken      String?
+  providerStatus  String?
+  verified        Boolean?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([customerUserId, status])
+  @@index([domain])
+  @@index([expiresAt])
 }
 
 model CustomerSession {

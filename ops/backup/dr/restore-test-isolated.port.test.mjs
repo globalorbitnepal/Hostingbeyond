@@ -9,6 +9,17 @@ const SCRIPT = path.join(ROOT, "ops/backup/dr/restore-test-isolated.mjs");
 const LAB = "hostingbeyond_restore_test";
 const MISSING_DUMP = "/nonexistent/hostingbeyond-restore-test.dump";
 
+function labEnv(extra = {}) {
+  return {
+    PGHOST: "127.0.0.1",
+    PGPORT: "55433",
+    PGDATABASE: LAB,
+    PGUSER: "hostingbeyond_restore_test_owner",
+    PGPASSWORD: "restore-test-only",
+    ...extra,
+  };
+}
+
 function run(envExtra = {}) {
   const env = { PATH: process.env.PATH ?? "", HOME: process.env.HOME ?? "/tmp" };
   return spawnSync("node", [SCRIPT, MISSING_DUMP, LAB], {
@@ -18,12 +29,21 @@ function run(envExtra = {}) {
 }
 
 describe("resolveLabPort", () => {
-  it("accepts documented lab port", () => {
-    assert.deepEqual(resolveLabPort({ PGPORT: "5432" }), {
+  it("accepts the dedicated restore port", () => {
+    assert.equal(LAB_PORT, 55433);
+    assert.deepEqual(resolveLabPort({ PGPORT: "55433" }), {
       ok: true,
-      port: LAB_PORT,
+      port: 55433,
     });
-    assert.deepEqual(resolveLabPort({}), { ok: true, port: LAB_PORT });
+  });
+
+  it("rejects a missing port", () => {
+    assert.equal(resolveLabPort({}).exitCode, 10);
+  });
+
+  it("rejects production and staging ports", () => {
+    assert.equal(resolveLabPort({ PGPORT: "5432" }).exitCode, 9);
+    assert.equal(resolveLabPort({ PGPORT: "55432" }).exitCode, 9);
   });
 
   it("rejects non-default port", () => {
@@ -37,21 +57,31 @@ describe("resolveLabPort", () => {
 });
 
 describe("restore-test-isolated PGPORT guards", () => {
+  it("refuses production port 5432 before database commands", () => {
+    const r = run(labEnv({ PGPORT: "5432" }));
+    assert.equal(r.status, 9);
+  });
+
+  it("refuses staging port 55432 before database commands", () => {
+    const r = run(labEnv({ PGPORT: "55432" }));
+    assert.equal(r.status, 9);
+  });
+
   it("refuses non-default PGPORT before database commands", () => {
-    const r = run({ PGPORT: "5433" });
+    const r = run(labEnv({ PGPORT: "5433" }));
     assert.equal(r.status, 9);
   });
 
   it("refuses invalid PGPORT", () => {
-    const r = run({ PGPORT: "not-a-port" });
+    const r = run(labEnv({ PGPORT: "not-a-port" }));
     assert.equal(r.status, 10);
   });
 
-  it("allows approved PGPORT through env guards", () => {
-    const r = run({ PGPORT: "5432" });
-    assert.notEqual(r.status, 9, "port must not be rejected as unapproved");
-    assert.notEqual(r.status, 10, "port must not be rejected as malformed");
-    assert.notEqual(r.status, 8, "host guard should pass with defaults");
-    assert.notEqual(r.status, 3, "lab database name must be accepted");
+  it("allows port 55433 through env guards and stops before a connection", () => {
+    const r = run(labEnv());
+    assert.equal(r.status, 5);
+    assert.notEqual(r.status, 9);
+    assert.notEqual(r.status, 8);
+    assert.notEqual(r.status, 3);
   });
 });

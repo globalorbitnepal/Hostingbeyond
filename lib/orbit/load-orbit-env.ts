@@ -18,13 +18,53 @@ function parseEnvLine(line: string): [string, string] | null {
   return [key, value];
 }
 
+const ISOLATED_STAGING_PORT = "55432";
+const ISOLATED_STAGING_DATABASE = "hostingbeyond_integration_test";
+const PRODUCTION_DATABASE_ROLE = "hostingbeyond_user";
+
+/**
+ * True only for the private staging database. Production URLs, missing URLs,
+ * and unparseable URLs stay false so file secrets still apply.
+ */
+export function isIsolatedStagingDatabase(
+  databaseUrl: string | undefined,
+): boolean {
+  if (!databaseUrl) return false;
+  let parsed: URL;
+  try {
+    parsed = new URL(databaseUrl);
+  } catch {
+    return false;
+  }
+  const host = parsed.hostname.replace(/^\[|\]$/g, "");
+  const loopback =
+    host === "127.0.0.1" || host === "localhost" || host === "::1";
+  const database = decodeURIComponent(parsed.pathname.replace(/^\//, ""));
+  const role = decodeURIComponent(parsed.username);
+  return (
+    loopback &&
+    parsed.port === ISOLATED_STAGING_PORT &&
+    database === ISOLATED_STAGING_DATABASE &&
+    role.length > 0 &&
+    role !== PRODUCTION_DATABASE_ROLE
+  );
+}
+
 /**
  * Load Orbit secrets from `.env` at request time.
  * The file is the source of truth so a stale process env cannot keep an
  * old access key after `.env` is updated. Never logs values.
+ * The isolated staging database is the exception: its process secrets are
+ * left untouched so a checkout `.env` cannot replace them.
  */
-export function hydrateOrbitEnvFromFile() {
-  const paths = [
+export function hydrateOrbitEnvFromFile(options?: {
+  paths?: string[];
+  databaseUrl?: string;
+}) {
+  const databaseUrl = options?.databaseUrl ?? process.env.DATABASE_URL;
+  if (isIsolatedStagingDatabase(databaseUrl)) return;
+
+  const paths = options?.paths ?? [
     resolve(process.cwd(), ".env"),
     "/srv/apps/hostingbeyond/.env",
   ];

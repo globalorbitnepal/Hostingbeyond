@@ -38,6 +38,7 @@ const UNIT_GLOBS = [
   "lib/hosting/**/*.test.ts",
   "lib/business-email/**/*.test.ts",
   "lib/beyond-ai/**/*.test.ts",
+  "lib/beyond-master/**/*.test.ts",
   "lib/support/**/*.test.ts",
   "lib/i18n/**/*.test.ts",
   "lib/currency/**/*.test.ts",

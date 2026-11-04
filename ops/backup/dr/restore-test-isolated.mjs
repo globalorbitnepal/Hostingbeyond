@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 /**
  * Destructive restore test into an isolated database only.
- * Target must be hostingbeyond_restore_test on localhost:5432 (lab profile).
+ * Target must be hostingbeyond_restore_test on 127.0.0.1:55433.
+ * Ports 5432 and 55432, remote hosts, and application roles are refused.
  *
- * Tunnel note: pinning 127.0.0.1:5432 does not prove the server is physically
+ * Tunnel note: pinning 127.0.0.1:55433 does not prove the server is physically
  * local — an SSH tunnel can forward that port elsewhere. Use OS/network policy
  * or a dedicated lab host for stronger isolation (see ISOLATED-RESTORE-SETUP.md).
  */
@@ -13,8 +14,11 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 export const LAB_DATABASE = "hostingbeyond_restore_test";
-/** Documented lab port (ISOLATED-RESTORE-SETUP.md). */
-export const LAB_PORT = 5432;
+export const LAB_HOST = "127.0.0.1";
+/** Dedicated restore instance. Never 5432 (production) or 55432 (staging). */
+export const LAB_PORT = 55433;
+export const LAB_ROLE = "hostingbeyond_restore_test_owner";
+export const REQUIRED_TABLES = ["CustomerUser", "AdminUser", "DomainOrder", "Invoice"];
 
 const ALLOWED_PGSSLMODE = new Set(["", "disable", "prefer", "allow"]);
 
@@ -43,7 +47,8 @@ const BLOCKED = new Set([
 ]);
 
 export function resolveLabPort(env = process.env) {
-  const raw = String(env.PGPORT ?? LAB_PORT).trim();
+  const raw = String(env.PGPORT ?? "").trim();
+  if (!raw) return { ok: false, reason: "missing", exitCode: 10 };
   if (!/^\d+$/.test(raw)) {
     return { ok: false, reason: "invalid", exitCode: 10 };
   }
@@ -51,10 +56,68 @@ export function resolveLabPort(env = process.env) {
   if (!Number.isInteger(port) || port < 1 || port > 65535) {
     return { ok: false, reason: "range", exitCode: 10 };
   }
-  if (port !== LAB_PORT) {
+  if (port === 5432 || port === 55432 || port !== LAB_PORT) {
     return { ok: false, reason: "unapproved", exitCode: 9 };
   }
   return { ok: true, port };
+}
+
+export function resolveRestoreConfig(env = process.env) {
+  const host = String(env.PGHOST ?? "").trim();
+  if (!host) return { ok: false, reason: "host_missing", exitCode: 8 };
+  if (host !== LAB_HOST) return { ok: false, reason: "host_rejected", exitCode: 8 };
+
+  const portResult = resolveLabPort(env);
+  if (!portResult.ok) return { ok: false, reason: portResult.reason, exitCode: portResult.exitCode };
+
+  const database = String(env.PGDATABASE ?? "").trim();
+  if (!database || BLOCKED.has(database) || database !== LAB_DATABASE) {
+    return { ok: false, reason: "database_rejected", exitCode: 9 };
+  }
+
+  const role = String(env.PGUSER ?? "").trim();
+  if (!role || role === "hostingbeyond_user" || role !== LAB_ROLE) {
+    return { ok: false, reason: "role_rejected", exitCode: 9 };
+  }
+
+  if (!String(env.PGPASSWORD ?? "").trim()) {
+    return { ok: false, reason: "credentials_missing", exitCode: 9 };
+  }
+
+  return { ok: true, host, port: portResult.port, database, role };
+}
+
+export function assessServerIdentity(probe) {
+  const addr = String(probe.serverAddr ?? "").replace(/\/\d+$/, "");
+  if (probe.currentDatabase !== LAB_DATABASE) return { ok: false, reason: "database_identity" };
+  if (addr !== LAB_HOST) return { ok: false, reason: "address_identity" };
+  if (Number(probe.serverPort) !== LAB_PORT) return { ok: false, reason: "port_identity" };
+  return { ok: true };
+}
+
+export function assessSchema(probe) {
+  const tables = Array.isArray(probe.tables) ? probe.tables : [];
+  if (!Number.isInteger(probe.migrationRows) || probe.migrationRows < 1) {
+    return { ok: false, reason: "migrations" };
+  }
+  for (const table of REQUIRED_TABLES) {
+    if (!tables.includes(table)) return { ok: false, reason: "schema" };
+  }
+  if (Object.prototype.hasOwnProperty.call(probe, "customerRows")) {
+    return { ok: false, reason: "customer_data_forbidden" };
+  }
+  return { ok: true };
+}
+
+export function scrubChildEnv(parent, target) {
+  const env = { ...parent };
+  for (const key of FORBIDDEN_CONN_ENV) delete env[key];
+  env.PGHOST = target.host;
+  env.PGPORT = String(target.port);
+  env.PGDATABASE = target.database;
+  env.PGUSER = target.role;
+  delete env.PGHOSTADDR;
+  return env;
 }
 
 function refuseConflictingEnv() {
@@ -69,42 +132,34 @@ function refuseConflictingEnv() {
     console.error("restore-test-isolated: refuse PGSSLMODE for lab connection");
     process.exit(9);
   }
-  const pgdb = (process.env.PGDATABASE || "").trim();
-  if (pgdb && pgdb !== LAB_DATABASE) {
-    console.error("restore-test-isolated: PGDATABASE mismatch");
-    process.exit(9);
-  }
-  const portResult = resolveLabPort();
-  if (!portResult.ok) {
-    if (portResult.reason === "unapproved") {
+  const config = resolveRestoreConfig();
+  if (!config.ok) {
+    if (config.reason === "unapproved") {
       console.error("restore-test-isolated: unapproved PGPORT");
-    } else {
+    } else if (config.reason === "invalid" || config.reason === "range" || config.reason === "missing") {
       console.error("restore-test-isolated: invalid PGPORT");
+    } else if (config.reason === "database_rejected") {
+      console.error("restore-test-isolated: PGDATABASE mismatch");
+    } else if (config.reason === "role_rejected") {
+      console.error("restore-test-isolated: refused database role");
+    } else if (config.reason === "credentials_missing") {
+      console.error("restore-test-isolated: restore credentials missing");
+    } else if (config.reason === "host_missing" || config.reason === "host_rejected") {
+      console.error("restore-test-isolated: refused non-local PGHOST");
+    } else {
+      console.error("restore-test-isolated: refused restore configuration");
     }
-    process.exit(portResult.exitCode);
+    process.exit(config.exitCode);
   }
-}
-
-function resolveLocalHost() {
-  const raw = (process.env.PGHOST || "127.0.0.1").trim();
-  const localHosts = new Set(["127.0.0.1", "localhost", "::1"]);
-  if (!localHosts.has(raw)) {
-    console.error("restore-test-isolated: refused non-local PGHOST");
-    process.exit(8);
-  }
-  if (raw === "localhost") return "127.0.0.1";
-  return raw;
 }
 
 function labConnEnv(host, port) {
-  const env = { ...process.env };
-  for (const key of FORBIDDEN_CONN_ENV) {
-    delete env[key];
-  }
-  env.PGHOST = host;
-  env.PGPORT = String(port);
-  env.PGDATABASE = LAB_DATABASE;
-  return env;
+  return scrubChildEnv(process.env, {
+    host,
+    port,
+    database: LAB_DATABASE,
+    role: LAB_ROLE,
+  });
 }
 
 /** pg_restore argv for lab restore (exported for non-destructive tests). */
@@ -146,13 +201,17 @@ function runPsql(host, port, env, sql) {
 }
 
 function assertCurrentDatabase(host, port, env, phase) {
-  const actual = runPsql(host, port, env, "SELECT current_database();");
+  const actual = runPsql(
+    host,
+    port,
+    env,
+    "SELECT current_database() || '|' || COALESCE(host(inet_server_addr()), '') || '|' || inet_server_port()::text;",
+  );
   if (actual.status !== 0) process.exit(actual.status || 1);
-  const current = actual.stdout.trim();
-  if (current !== LAB_DATABASE) {
-    console.error(
-      `restore-test-isolated: current_database mismatch (${phase})`,
-    );
+  const [currentDatabase, serverAddr, serverPort] = actual.stdout.trim().split("|");
+  const identity = assessServerIdentity({ currentDatabase, serverAddr, serverPort });
+  if (!identity.ok) {
+    console.error(`restore-test-isolated: server identity mismatch (${phase})`);
     process.exit(4);
   }
 }
@@ -172,9 +231,10 @@ function main() {
     process.exit(3);
   }
 
-  const host = resolveLocalHost();
   refuseConflictingEnv();
-  const { port } = resolveLabPort();
+  const target = resolveRestoreConfig();
+  const host = target.host;
+  const port = target.port;
 
   if (!fs.existsSync(dump)) process.exit(5);
   const dumpStat = fs.statSync(dump);
@@ -214,9 +274,33 @@ function main() {
   if (counts.status !== 0) process.exit(counts.status || 1);
 
   const migrationRows = Number(counts.stdout.trim());
+  const tablesResult = runPsql(
+    host,
+    port,
+    connEnv,
+    `SELECT COALESCE(string_agg(name, ','), '') FROM (
+      SELECT 'CustomerUser' AS name WHERE to_regclass('public."CustomerUser"') IS NOT NULL
+      UNION ALL SELECT 'AdminUser' WHERE to_regclass('public."AdminUser"') IS NOT NULL
+      UNION ALL SELECT 'DomainOrder' WHERE to_regclass('public."DomainOrder"') IS NOT NULL
+      UNION ALL SELECT 'Invoice' WHERE to_regclass('public."Invoice"') IS NOT NULL
+    ) found;`,
+  );
+  if (tablesResult.status !== 0) process.exit(tablesResult.status || 1);
+  const tables = tablesResult.stdout
+    .trim()
+    .split(",")
+    .map((name) => name.trim())
+    .filter(Boolean);
+  const schema = assessSchema({ migrationRows, tables });
+  const migrationPass = migrationRows > 0 ? "PASS" : "FAIL";
   const out = {
-    status: migrationRows > 0 ? "PASS" : "FAIL",
+    status: migrationPass === "PASS" && schema.ok ? "PASS" : "FAIL",
+    database: LAB_DATABASE,
+    host: LAB_HOST,
+    port: LAB_PORT,
     migrationRows,
+    tables,
+    trafficRedirected: false,
     verifiedAt: new Date().toISOString(),
   };
   process.stdout.write(JSON.stringify(out, null, 2) + "\n");

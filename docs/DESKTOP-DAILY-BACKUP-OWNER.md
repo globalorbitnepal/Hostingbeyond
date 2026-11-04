@@ -15,7 +15,7 @@ Desktop\hostingbeyond\
     ciphertext.meta.stderr
     MIRROR.json
     verify-report.json
-  backups\                    ← purane verified copies (retention)
+  backups\                    ← 8 newest verified weekly sets and 12 verified monthly sets
   keys\                       ← SSH + age (ACL locked)
   logs\
   reports\last-run.json       ← SUCCESS / FAIL

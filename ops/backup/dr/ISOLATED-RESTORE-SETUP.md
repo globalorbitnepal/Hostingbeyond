@@ -6,7 +6,7 @@
 
 ## Prerequisites
 
-1. Local PostgreSQL **16.x** listening on `127.0.0.1:5432` (owner-verified on dev host).
+1. Local PostgreSQL **16.x** listening on `127.0.0.1:55433` (owner-verified on dev host).
 2. `age` for encrypt/decrypt exercises in the lab pipeline.
 3. Disposable lab database **`hostingbeyond_restore_test`** and role **`hostingbeyond_restore_test_owner`** (create with owner-approved phased SQL — no `createuser || true` shortcuts).
 
@@ -18,21 +18,21 @@ Before any `psql`, `pg_dump`, or `restore-test-isolated.mjs` run:
 unset DATABASE_URL
 unset PGSERVICE PGSERVICEFILE PGHOSTADDR PGOPTIONS
 export PGHOST=127.0.0.1
-export PGPORT=5432
+export PGPORT=55433
 export PGUSER=hostingbeyond_restore_test_owner
 export PGDATABASE=hostingbeyond_restore_test
-# PGPASSWORD via interactive \password and ~/.pgpass (mode 600) — never commit
+export PGPASSWORD='…owner-chosen restore password…'
 
-psql -h 127.0.0.1 -p 5432 -d hostingbeyond_restore_test -v ON_ERROR_STOP=1 \
+psql -h 127.0.0.1 -p 55433 -d hostingbeyond_restore_test -v ON_ERROR_STOP=1 \
   -c "SELECT current_database();"
 # Must print: hostingbeyond_restore_test
 ```
 
-`restore-test-isolated.mjs` **refuses** `DATABASE_URL`, service-file and SSL-related libpq overrides, disallowed `PGSSLMODE`, unapproved `PGPORT` (only **5432**), non-local `PGHOST`, and `PGDATABASE` values that do not match the lab database. It exits **5** if the dump file is missing **before** any `psql` / `pg_restore` call.
+`restore-test-isolated.mjs` **refuses** `DATABASE_URL`, service-file and SSL-related libpq overrides, disallowed `PGSSLMODE`, unapproved `PGPORT` (only **55433**), non-local `PGHOST`, and `PGDATABASE` values that do not match the lab database. It exits **5** if the dump file is missing **before** any `psql` / `pg_restore` call.
 
 ### SSH tunnels and “localhost”
 
-The script connects to `127.0.0.1:5432` (or `::1` with the same port). That **does not guarantee** the PostgreSQL instance is on the same machine: an SSH local forward (`ssh -L 5432:remote:5432`) can expose a **remote** server on that socket. The script **cannot detect** tunnels. For stronger isolation, use a dedicated lab host, firewall rules, or OS policy — not application checks alone.
+The script connects only to `127.0.0.1:55433`. `localhost`, `::1`, port **5432**, port **55432**, and role `hostingbeyond_user` are refused. That **does not guarantee** the PostgreSQL instance is on the same machine: an SSH local forward (`ssh -L 55433:remote:55433`) can expose a **remote** server on that socket. The script **cannot detect** tunnels. For stronger isolation, use a dedicated lab host, firewall rules, or OS policy — not application checks alone.
 
 ## Lab pipeline (synthetic data only)
 
@@ -40,7 +40,7 @@ The script connects to `127.0.0.1:5432` (or `::1` with the same port). That **do
 
 Summary:
 
-1. Owner-verified lab profile on **`hostingbeyond_restore_test`** @ **`127.0.0.1:5432`** (tunnel check required).
+1. Owner-verified lab profile on **`hostingbeyond_restore_test`** @ **`127.0.0.1:55433`** (tunnel check required).
 2. Apply schema with **`npx prisma migrate deploy`** to the lab DB only (populates `_prisma_migrations` — minimum data for script PASS).
 3. `pg_dump -Fc` → verify with `pg_restore -l` (temporary file under `/tmp/hostingbeyond-restore-drill.*`).
 4. Restore **only** via:

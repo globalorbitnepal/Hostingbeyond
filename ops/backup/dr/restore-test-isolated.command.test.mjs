@@ -14,10 +14,22 @@ const SCRIPT = path.join(ROOT, "ops/backup/dr/restore-test-isolated.mjs");
 const LAB = "hostingbeyond_restore_test";
 const MISSING_DUMP = "/nonexistent/hostingbeyond-restore-drill.dump";
 
+function labEnv(extra = {}) {
+  return {
+    PGHOST: "127.0.0.1",
+    PGPORT: "55433",
+    PGDATABASE: LAB,
+    PGUSER: "hostingbeyond_restore_test_owner",
+    PGPASSWORD: "restore-test-only",
+    ...extra,
+  };
+}
+
 function runScript(argv, envExtra = {}) {
   const env = {
     PATH: process.env.PATH ?? "",
     HOME: process.env.HOME ?? "/tmp",
+    ...labEnv(),
     ...envExtra,
   };
   return spawnSync("node", [SCRIPT, ...argv], { encoding: "utf8", env });
@@ -30,7 +42,7 @@ describe("restore-test-isolated command construction", () => {
       "-h",
       "127.0.0.1",
       "-p",
-      "5432",
+      "55433",
       "--clean",
       "--if-exists",
       "--no-owner",

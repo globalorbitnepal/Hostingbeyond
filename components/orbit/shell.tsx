@@ -5,6 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   Activity,
   ArrowLeftRight,
+  BookOpen,
+  Bot,
   Building2,
   CalendarClock,
   ChevronDown,
@@ -61,6 +63,43 @@ const articlesChildren: NavLeaf[] = [
 
 const nav: NavGroup[] = [
   { href: "/orbit", label: "Dashboard", icon: LayoutDashboard },
+  {
+    href: "/orbit/beyond-master",
+    label: "BEYOND MASTER AI",
+    icon: Bot,
+    children: [
+      {
+        href: "/orbit/beyond-master",
+        label: "Overview",
+        icon: LayoutDashboard,
+      },
+      {
+        href: "/orbit/beyond-master/usage",
+        label: "Usage analytics",
+        icon: Activity,
+      },
+      {
+        href: "/orbit/beyond-master/tickets",
+        label: "Support Tickets",
+        icon: FileText,
+      },
+      {
+        href: "/orbit/beyond-master/knowledge",
+        label: "Knowledge Base",
+        icon: BookOpen,
+      },
+      {
+        href: "/orbit/beyond-master/dns",
+        label: "DNS Management",
+        icon: Globe,
+      },
+      {
+        href: "/orbit/beyond-master/security",
+        label: "Security & Audit",
+        icon: ShieldCheck,
+      },
+    ],
+  },
   { href: "/orbit/pages", label: "Pages", icon: FileText },
   { href: "/orbit/about", label: "About Page", icon: Building2 },
   { href: "/orbit/users", label: "Users", icon: Users },

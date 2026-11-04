@@ -11,6 +11,10 @@ import { mainNavigation, type NavItem } from "@/config/navigation";
 import { filterNavBeyondAi } from "@/config/beyond-ai-public";
 import { routes } from "@/config/routes";
 import { CustomerHeaderAccountMenu } from "@/components/auth/customer-header-account-menu";
+import {
+  BeyondMasterHeaderHost,
+  BeyondMasterHeaderLauncher,
+} from "@/components/beyond-master/header-mount";
 import { DomainCartHeaderLink } from "@/components/layout/domain-cart-header-link";
 import { CountryLanguageSelector } from "@/components/locale/country-language-selector";
 import { CurrencySelector } from "@/components/locale/currency-selector";
@@ -402,6 +406,7 @@ export function SiteHeader({
             </nav>
 
             <div className="relative z-10 hidden shrink-0 items-center justify-end gap-1 lg:flex xl:gap-2">
+              <BeyondMasterHeaderLauncher checkout={checkoutBar} />
               <DomainCartHeaderLink />
               <CurrencySelector tone="light" />
               <CountryLanguageSelector tone="light" className="shrink-0" />
@@ -416,6 +421,7 @@ export function SiteHeader({
             </div>
 
             <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-1.5 lg:hidden">
+              <BeyondMasterHeaderLauncher checkout={checkoutBar} compact />
               <CurrencySelector compact tone="light" />
               <DomainCartHeaderLink compact />
               <button
@@ -483,6 +489,11 @@ export function SiteHeader({
                 className="flex flex-col gap-0.5 p-4"
                 aria-label="Mobile navigation"
               >
+                <BeyondMasterHeaderLauncher
+                  checkout={checkoutBar}
+                  menu
+                  onOpen={() => setOpen(false)}
+                />
                 <div className="mb-3 grid grid-cols-2 gap-2 rounded-2xl border border-slate-100 bg-slate-50/80 p-2">
                   <CountryLanguageSelector
                     compact
@@ -597,6 +608,7 @@ export function SiteHeader({
           </motion.div>
         ) : null}
       </AnimatePresence>
+      <BeyondMasterHeaderHost checkout={checkoutBar} />
     </header>
   );
 }

@@ -52,6 +52,30 @@ export async function creditWallet(input: {
   });
 }
 
+/**
+ * Subtracts `amount` only when the current balance is large enough.
+ * `updateMany` with `balance: { gte }` is one row-level check, so two concurrent
+ * debits cannot both succeed against the same funds.
+ */
+export async function debitWalletIfSufficient(
+  tx: Prisma.TransactionClient,
+  userId: string,
+  amount: Prisma.Decimal | number,
+) {
+  const debit = new Prisma.Decimal(amount);
+  if (debit.lte(0)) throw new Error("insufficient_funds");
+  const updated = await tx.customerWallet.updateMany({
+    where: { userId, balance: { gte: debit } },
+    data: { balance: { decrement: debit } },
+  });
+  if (updated.count !== 1) {
+    throw new Error("insufficient_funds");
+  }
+  const wallet = await tx.customerWallet.findUnique({ where: { userId } });
+  if (!wallet) throw new Error("insufficient_funds");
+  return wallet;
+}
+
 /** Holds funds — not captured until finalizeReserve. */
 export async function reserveWalletFunds(input: {
   userId: string;
@@ -67,24 +91,18 @@ export async function reserveWalletFunds(input: {
     });
     if (existing) return existing;
 
-    const wallet = await tx.customerWallet.findUnique({
-      where: { userId: input.userId },
-    });
-    if (!wallet || wallet.balance.lessThan(input.amount)) {
-      throw new Error("insufficient_funds");
-    }
-    const next = wallet.balance.sub(new Prisma.Decimal(input.amount));
-    await tx.customerWallet.update({
-      where: { id: wallet.id },
-      data: { balance: next },
-    });
+    const wallet = await debitWalletIfSufficient(
+      tx,
+      input.userId,
+      input.amount,
+    );
     return tx.walletTransaction.create({
       data: {
         userId: input.userId,
         type: "RESERVE",
         status: "COMPLETED",
         amount: input.amount,
-        balanceAfter: next,
+        balanceAfter: wallet.balance,
         idempotencyKey: input.idempotencyKey,
         referenceType: input.referenceType,
         referenceId: input.referenceId,

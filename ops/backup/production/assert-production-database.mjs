@@ -1,42 +1,41 @@
 #!/usr/bin/env node
 /**
- * Refuse non-production database names for VPS export (fail closed).
- * Exit 0 if allowed; 7 if blocked. Never prints credentials.
+ * Refuse any production export target that is not the live database.
+ * Host, port, database, and role must all match. Never prints credentials.
  */
-const name = (process.env.PGDATABASE || process.argv[2] || "").trim();
-if (!name) {
-  console.error("assert-production-database: missing database name");
-  process.exit(2);
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+export const PRODUCTION_TARGET = {
+  host: "127.0.0.1",
+  port: "5432",
+  database: "hostingbeyond_db",
+  role: "hostingbeyond_user",
+};
+
+export function assertProductionIdentity(env = process.env) {
+  const host = String(env.PGHOST ?? "").trim();
+  const port = String(env.PGPORT ?? "").trim();
+  const database = String(env.PGDATABASE ?? "").trim();
+  const role = String(env.PGUSER ?? "").trim();
+  const password = String(env.PGPASSWORD ?? "");
+  if (!host || host !== PRODUCTION_TARGET.host) return { ok: false, reason: "host" };
+  if (!port || port !== PRODUCTION_TARGET.port) return { ok: false, reason: "port" };
+  if (!database || database !== PRODUCTION_TARGET.database) return { ok: false, reason: "database" };
+  if (!role || role !== PRODUCTION_TARGET.role) return { ok: false, reason: "role" };
+  if (!password.trim()) return { ok: false, reason: "credentials" };
+  return { ok: true };
 }
 
-const ALLOWED = new Set(["hostingbeyond_db"]);
+const isMain =
+  process.argv[1] &&
+  path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
 
-const BLOCKED = new Set([
-  "hostingbeyond_integration_test",
-  "hostingbeyond_test",
-  "hostingbeyond_dev",
-  "hostingbeyond_staging_db",
-  "postgres",
-  "template0",
-  "template1",
-]);
-
-const BLOCKED_SUBSTR = ["integration_test", "_restore_test"];
-
-if (!ALLOWED.has(name)) {
-  console.error("assert-production-database: unexpected production database name");
-  process.exit(7);
-}
-
-if (BLOCKED.has(name)) {
-  console.error("assert-production-database: blocked database name");
-  process.exit(7);
-}
-for (const s of BLOCKED_SUBSTR) {
-  if (name.includes(s)) {
-    console.error("assert-production-database: blocked database name pattern");
+if (isMain) {
+  const result = assertProductionIdentity();
+  if (!result.ok) {
+    console.error(`assert-production-database: refused target (${result.reason})`);
     process.exit(7);
   }
+  process.exit(0);
 }
-
-process.exit(0);

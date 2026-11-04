@@ -92,21 +92,50 @@ OUTER_AGE=""
 META=""
 OUTER_PUBLISHED=0
 
+secure_delete_file() {
+  local target="$1"
+  if [ ! -e "$target" ]; then
+    return 0
+  fi
+  shred -u "$target" 2>/dev/null || rm -f "$target"
+  if [ -e "$target" ]; then
+    echo "create-pull-bundle: plaintext cleanup failed" >&2
+    return 1
+  fi
+  return 0
+}
+
 cleanup_on_exit() {
+  local rc=$?
+  local failed=0
   if [ "$BUNDLE_OK" != "1" ] && [ -n "${BUNDLE:-}" ] && [ -d "$BUNDLE" ]; then
+    while IFS= read -r -d '' plain; do
+      secure_delete_file "$plain" || failed=1
+    done < <(find "$BUNDLE" -type f \( -name '*.dump' -o -name '*.tar' -o -name '*.tar.gz' \) -print0)
     rm -rf "$BUNDLE"
+    if [ -d "$BUNDLE" ]; then
+      echo "create-pull-bundle: bundle directory remained after cleanup" >&2
+      failed=1
+    fi
   fi
   if [ "$OUTER_PUBLISHED" != "1" ]; then
     if [ -n "$OUTER_TAR" ] && [ -f "$OUTER_TAR" ]; then
-      rm -f "$OUTER_TAR"
+      secure_delete_file "$OUTER_TAR" || failed=1
     fi
     if [ -n "$OUTER_AGE" ] && [ -f "$OUTER_AGE" ]; then
       rm -f "$OUTER_AGE"
+      if [ -e "$OUTER_AGE" ]; then
+        failed=1
+      fi
     fi
     if [ -n "$META" ] && [ -f "$META" ]; then
       rm -f "$META"
     fi
   fi
+  if [ "$failed" = 1 ]; then
+    exit 14
+  fi
+  exit "$rc"
 }
 trap cleanup_on_exit EXIT INT TERM HUP
 
@@ -154,11 +183,9 @@ if [ -f "$BUNDLE/database/hostingbeyond.dump" ]; then
 fi
 
 echo "==> Source aggregates (sanitized)"
-if node "$SCRIPT_DIR/source-aggregates.mjs" >"$BUNDLE/metadata/source-aggregates.json" 2>/dev/null; then
-  echo "aggregates=ok"
-else
-  echo "aggregates=skipped"
-  echo '{}' >"$BUNDLE/metadata/source-aggregates.json"
+if ! "${RUN_PG[@]}" node "$SCRIPT_DIR/source-aggregates.mjs" >"$BUNDLE/metadata/source-aggregates.json"; then
+  echo "create-pull-bundle: source aggregates failed" >&2
+  exit 15
 fi
 
 ORBIT_UPLOAD=""

@@ -50,14 +50,14 @@ Secrets (`.env`, TLS keys, Stripe, domain API keys) are **not** in Git bundles; 
 
 ## Backup matrix (production)
 
-| Asset             | Method                               | Schedule (target)                       | Retention (target)       | Status                                                                                                                 |
-| ----------------- | ------------------------------------ | --------------------------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| PostgreSQL        | `pg_dump -Fc` → encrypt              | Daily after owner enables cron/SSH pull | 14+ offline copies on PC | **BLOCKED** — set `HOSTINGBEYOND_PRODUCTION_BACKUP_EXPORT_APPROVED=true` in production `.env` for approved window only |
-| Upload trees      | tar members in bundle                | Same as DB                              | Same                     | **BLOCKED**                                                                                                            |
-| Prisma migrations | `prisma-migrations.tar.gz` in bundle | Same                                    | Same                     | **BLOCKED**                                                                                                            |
-| Env inventory     | `env-inventory.json` (names only)    | Same                                    | Same                     | **BLOCKED**                                                                                                            |
-| App code          | Git + `gitCommit` in metadata        | Continuous (Git)                        | N/A                      | **PASS**                                                                                                               |
-| Nginx/TLS/DNS     | Manual export / certbot              | Documented in DR runbook                | N/A                      | **PENDING** owner copy                                                                                                 |
+| Asset             | Method                               | Schedule (target)                       | Retention (target)                                         | Status                                                                                                                 |
+| ----------------- | ------------------------------------ | --------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| PostgreSQL        | `pg_dump -Fc` → encrypt              | Daily after owner enables cron/SSH pull | 8 newest verified weekly sets and 12 verified monthly sets | **BLOCKED** — set `HOSTINGBEYOND_PRODUCTION_BACKUP_EXPORT_APPROVED=true` in production `.env` for approved window only |
+| Upload trees      | tar members in bundle                | Same as DB                              | Same                                                       | **BLOCKED**                                                                                                            |
+| Prisma migrations | `prisma-migrations.tar.gz` in bundle | Same                                    | Same                                                       | **BLOCKED**                                                                                                            |
+| Env inventory     | `env-inventory.json` (names only)    | Same                                    | Same                                                       | **BLOCKED**                                                                                                            |
+| App code          | Git + `gitCommit` in metadata        | Continuous (Git)                        | N/A                                                        | **PASS**                                                                                                               |
+| Nginx/TLS/DNS     | Manual export / certbot              | Documented in DR runbook                | N/A                                                        | **PENDING** owner copy                                                                                                 |
 
 ## Destination and encryption
 

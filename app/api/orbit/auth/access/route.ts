@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 import {
   createAdminSession,
-  createJwtOnlySession,
   ensureOrbitAdmin,
   getEnrollmentSecret,
   logActivity,
@@ -43,8 +42,7 @@ export async function POST(request: NextRequest) {
     }
 
     let session: { token: string; expiresAt: Date };
-    let adminId = "orbit-super-admin";
-
+    let adminId: string;
     try {
       const admin = await ensureOrbitAdmin();
       adminId = admin.id;
@@ -61,8 +59,14 @@ export async function POST(request: NextRequest) {
         details: "Access key login",
       });
     } catch (dbError) {
-      console.error("[orbit] DB session unavailable, using JWT-only", dbError);
-      session = await createJwtOnlySession();
+      console.error("[orbit] DB session unavailable; login refused", dbError);
+      return NextResponse.json(
+        {
+          error:
+            "Orbit sign-in is unavailable until the session database can be reached.",
+        },
+        { status: 503 },
+      );
     }
 
     const response = NextResponse.json({

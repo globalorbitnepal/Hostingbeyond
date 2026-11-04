@@ -64,7 +64,7 @@ On Windows after pull (optional phases):
 - Failed run: `trap` removes incomplete inner bundle directory and unpublished outer plaintext/ciphertext/meta for the current timestamp; **does not** change `LATEST` symlinks or delete prior successful exports.
 - Two-link `LATEST` update is best-effort atomic per link (staging + rename); a crash between age and meta symlink steps is possible — see `README.md`.
 - Windows pull: staging under `backups\_staging\` removed on failure; prior `backups\<timestamp>\` untouched.
-- Retention: never deletes without finalized `verify-*.json`; never deletes newest verified set (`retention.mjs`).
+- Retention: 8 newest verified weekly sets and 12 verified monthly sets. Never deletes a set without `verify-*.json` status PASS and `backupSetFinalized` true. Never deletes the newest verified set (`retention.mjs`). Do not pass `--apply` until that report exists.
 
 ## Database name gate
 

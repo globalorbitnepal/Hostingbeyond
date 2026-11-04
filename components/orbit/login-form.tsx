@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 
+import { OrbitPasskeyPanel } from "@/components/orbit/passkey-panel";
 import { Logo } from "@/components/shared/logo";
 
 const capabilities = [
@@ -214,6 +215,7 @@ export function OrbitLoginForm() {
                   {submitting ? "Authenticating…" : "Open Orbit Dashboard"}
                 </button>
               </form>
+              <OrbitPasskeyPanel />
 
               <div
                 id={errorId}

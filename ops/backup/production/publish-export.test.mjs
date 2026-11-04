@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { describe, it } from "node:test";
 
-import { publishExportArtifacts } from "./publish-export.mjs";
+import { publishExportArtifacts, readLatestPointer } from "./publish-export.mjs";
 
 function canSymlink() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "hb-symlink-probe-"));
@@ -49,6 +49,10 @@ describe("publish-export.mjs", () => {
       fs.readlinkSync(path.join(root, "LATEST.bundle.meta.json")),
       r.metaPath,
     );
+    const pointer = JSON.parse(fs.readFileSync(path.join(root, "LATEST.json"), "utf8"));
+    assert.equal(pointer.ciphertextPath, cipher);
+    assert.equal(pointer.metaPath, r.metaPath);
+    assert.equal(pointer.ciphertextSha256, "abc123");
     fs.rmSync(root, { recursive: true, force: true });
   });
 
@@ -90,6 +94,21 @@ describe("publish-export.mjs", () => {
       !fs.existsSync(path.join(root, `${ts}.bundle.meta.json`)),
       "meta file must not remain after failed publication",
     );
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  it("rejects a pointer that names a path outside the export root", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "hb-pointer-"));
+    fs.writeFileSync(
+      path.join(root, "LATEST.json"),
+      JSON.stringify({
+        backupSetId: "x",
+        ciphertextPath: "/etc/passwd",
+        metaPath: path.join(root, "x.bundle.meta.json"),
+        ciphertextSha256: "abc",
+      }),
+    );
+    assert.throws(() => readLatestPointer(root), /ciphertext path refused/);
     fs.rmSync(root, { recursive: true, force: true });
   });
 });

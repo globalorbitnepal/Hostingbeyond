@@ -1,8 +1,11 @@
 import type Stripe from "stripe";
-import { Prisma } from "@prisma/client";
 
 import { publicId } from "@/lib/domains/transfer-service";
-import { creditWallet, ensureCustomerWallet } from "@/lib/domains/wallet";
+import {
+  creditWallet,
+  debitWalletIfSufficient,
+  ensureCustomerWallet,
+} from "@/lib/domains/wallet";
 import { prisma } from "@/lib/prisma";
 import {
   constructStripeWebhookEvent,
@@ -450,24 +453,18 @@ async function adminDebitWallet(input: {
     });
     if (existing) return existing;
 
-    const wallet = await tx.customerWallet.findUnique({
-      where: { userId: input.userId },
-    });
-    if (!wallet || wallet.balance.lessThan(input.amount)) {
-      throw new Error("insufficient_funds");
-    }
-    const next = wallet.balance.sub(new Prisma.Decimal(input.amount));
-    await tx.customerWallet.update({
-      where: { id: wallet.id },
-      data: { balance: next },
-    });
+    const wallet = await debitWalletIfSufficient(
+      tx,
+      input.userId,
+      input.amount,
+    );
     const walletTx = await tx.walletTransaction.create({
       data: {
         userId: input.userId,
         type: "DEBIT",
         status: "COMPLETED",
         amount: input.amount,
-        balanceAfter: next,
+        balanceAfter: wallet.balance,
         idempotencyKey: `admin:${input.idempotencyKey}`,
         referenceType: "admin_adjustment",
         referenceId: input.adminUserId,
@@ -515,24 +512,18 @@ export async function adminReverseWalletCredit(input: {
     });
     if (existing) return existing;
 
-    const wallet = await tx.customerWallet.findUnique({
-      where: { userId: original.userId },
-    });
-    if (!wallet || wallet.balance.lessThan(original.amount)) {
-      throw new Error("insufficient_funds");
-    }
-    const next = wallet.balance.sub(original.amount);
-    await tx.customerWallet.update({
-      where: { id: wallet.id },
-      data: { balance: next },
-    });
+    const wallet = await debitWalletIfSufficient(
+      tx,
+      original.userId,
+      original.amount,
+    );
     const reversal = await tx.walletTransaction.create({
       data: {
         userId: original.userId,
         type: "REFUND",
         status: "COMPLETED",
         amount: original.amount,
-        balanceAfter: next,
+        balanceAfter: wallet.balance,
         idempotencyKey: reversalKey,
         referenceType: "wallet_reversal",
         referenceId: original.id,

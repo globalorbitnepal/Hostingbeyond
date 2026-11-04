@@ -41,7 +41,7 @@ describe("restore-test-isolated preflight (static, matches RESTORE-DRILL-LAB.md)
 
   it("documents lab database and port constants used by runbook", () => {
     assert.equal(LAB_DATABASE, "hostingbeyond_restore_test");
-    assert.equal(LAB_PORT, 5432);
+    assert.equal(LAB_PORT, 55433);
     assert.match(text, /_prisma_migrations/);
     assert.match(text, /migrationRows > 0 \? "PASS" : "FAIL"/);
   });

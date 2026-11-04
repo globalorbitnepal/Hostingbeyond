@@ -9,28 +9,45 @@ const SCRIPT = path.join(
   "assert-production-database.mjs",
 );
 
-function assertBlocked(name) {
-  const r = spawnSync("node", [SCRIPT, name], { encoding: "utf8" });
-  assert.equal(r.status, 7, `expected block for ${name}`);
+const productionEnv = {
+  PGHOST: "127.0.0.1",
+  PGPORT: "5432",
+  PGDATABASE: "hostingbeyond_db",
+  PGUSER: "hostingbeyond_user",
+  PGPASSWORD: "unused-test-value",
+};
+
+function run(env) {
+  return spawnSync("node", [SCRIPT], { encoding: "utf8", env });
 }
 
 describe("assert-production-database.mjs", () => {
-  it("allows hostingbeyond_db", () => {
-    const r = spawnSync("node", [SCRIPT, "hostingbeyond_db"], {
-      encoding: "utf8",
-    });
+  it("allows the exact production target", () => {
+    const r = run({ ...productionEnv, PATH: process.env.PATH });
     assert.equal(r.status, 0);
+    assert.doesNotMatch(r.stderr, /unused-test-value/);
   });
 
-  it("blocks integration database", () => {
-    assertBlocked("hostingbeyond_integration_test");
+  it("rejects a database name without the rest of the identity", () => {
+    const r = run({
+      PATH: process.env.PATH,
+      PGDATABASE: "hostingbeyond_db",
+    });
+    assert.equal(r.status, 7);
   });
 
-  it("blocks other tenant-like database names", () => {
-    assertBlocked("globalorbitnepal_db");
-    assertBlocked("ambition_holidays");
-    assertBlocked("hostingbeyond_restore_test");
-    assertBlocked("hostingbeyond_test");
-    assertBlocked("postgres");
+  it("rejects staging port, restore port, remote host, and staging role", () => {
+    assert.equal(run({ ...productionEnv, PATH: process.env.PATH, PGPORT: "55432" }).status, 7);
+    assert.equal(run({ ...productionEnv, PATH: process.env.PATH, PGPORT: "55433" }).status, 7);
+    assert.equal(run({ ...productionEnv, PATH: process.env.PATH, PGHOST: "203.0.113.5" }).status, 7);
+    assert.equal(
+      run({ ...productionEnv, PATH: process.env.PATH, PGUSER: "hostingbeyond_integration_user" }).status,
+      7,
+    );
+    assert.equal(
+      run({ ...productionEnv, PATH: process.env.PATH, PGDATABASE: "hostingbeyond_integration_test" }).status,
+      7,
+    );
+    assert.equal(run({ ...productionEnv, PATH: process.env.PATH, PGPASSWORD: "" }).status, 7);
   });
 });

@@ -1,0 +1,204 @@
+import { BEYOND_MASTER_PROVIDER_NOTICE } from "@/lib/beyond-master/copy";
+import {
+  beyondMasterTicketCustomerOverride,
+  supportEventForChat,
+} from "@/lib/beyond-master/tickets/http";
+import { accountEventForChat } from "@/lib/beyond-master/account/chat";
+import { dnsEventForChat, dnsPromptBlock } from "@/lib/beyond-master/dns/chat";
+import { beyondMasterDnsRuntime } from "@/lib/beyond-master/dns/http";
+import { buildBeyondMasterSystemPrompt } from "@/lib/beyond-master/knowledge/build";
+import { getBeyondMasterChatTestOverride } from "@/lib/beyond-master/chat-test-hook";
+import {
+  BeyondMasterProviderError,
+  publicProviderError,
+  streamBeyondMasterProvider,
+} from "@/lib/beyond-master/providers/stream";
+import { allowBeyondMasterChat } from "@/lib/beyond-master/rate-limit";
+import { parseBeyondMasterChatRequest } from "@/lib/beyond-master/request";
+import { readBeyondMasterRuntimeConfig } from "@/lib/beyond-master/settings";
+import { recordBeyondMasterUsage } from "@/lib/beyond-master/usage";
+import {
+  CUSTOMER_SESSION_COOKIE,
+  verifyCustomerJwt,
+} from "@/lib/customer/session";
+import {
+  clientKeyFromRequest,
+  rateLimitResponse,
+} from "@/lib/http/fixed-window-rate-limit";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+function cookieValue(request: Request, name: string) {
+  const header = request.headers.get("cookie");
+  if (!header) return undefined;
+  for (const part of header.split(";")) {
+    const [key, ...rest] = part.trim().split("=");
+    if (key === name) return decodeURIComponent(rest.join("="));
+  }
+  return undefined;
+}
+
+export async function POST(request: Request) {
+  let payload: unknown;
+  try {
+    payload = await request.json();
+  } catch {
+    return Response.json({ error: "Send valid JSON." }, { status: 400 });
+  }
+  const parsed = parseBeyondMasterChatRequest(payload);
+  if (!parsed.ok)
+    return Response.json({ error: parsed.error }, { status: 400 });
+  if (!allowBeyondMasterChat(request)) {
+    await recordBeyondMasterUsage({
+      provider: "none",
+      model: "none",
+      status: "rate_limited",
+      ip: clientKeyFromRequest(request),
+      errorCode: "rate_limited",
+    });
+    return Response.json(rateLimitResponse(), { status: 429 });
+  }
+
+  const overrideCustomer = beyondMasterTicketCustomerOverride();
+  const verified = overrideCustomer
+    ? { customerUserId: overrideCustomer.customerUserId }
+    : await verifyCustomerJwt(cookieValue(request, CUSTOMER_SESSION_COOKIE));
+  const customerUserId = verified?.customerUserId ?? null;
+  const ip = clientKeyFromRequest(request);
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller) {
+      const send = (event: string, data: unknown) => {
+        controller.enqueue(
+          encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`),
+        );
+      };
+      const started = Date.now();
+      try {
+        const support = await supportEventForChat(
+          parsed.messages[parsed.messages.length - 1]?.content ?? "",
+          customerUserId,
+        );
+        if (support) send("support", support);
+        const account = await accountEventForChat(
+          parsed.messages[parsed.messages.length - 1]?.content ?? "",
+          customerUserId,
+          ip,
+        );
+        if (account) {
+          send("account", {
+            cards: account.read.cards,
+            signInRequired: account.read.signInRequired,
+          });
+        }
+        const dnsRuntime = beyondMasterDnsRuntime();
+        const dns = await dnsEventForChat({
+          message: parsed.messages[parsed.messages.length - 1]?.content ?? "",
+          userId: customerUserId,
+          ports: dnsRuntime.ports,
+          store: dnsRuntime.store,
+        });
+        if (dns) send("dns", dns);
+        const override = getBeyondMasterChatTestOverride();
+        const config = readBeyondMasterRuntimeConfig();
+        if (!override && !config.configured) {
+          send("notice", {
+            code: "provider_not_configured",
+            body: BEYOND_MASTER_PROVIDER_NOTICE,
+          });
+          await recordBeyondMasterUsage({
+            provider: config.provider ?? "none",
+            model: config.model ?? "none",
+            status: "unconfigured",
+            customerUserId,
+            ip,
+            latencyMs: Date.now() - started,
+          });
+          send("done", {});
+          return;
+        }
+        let promptTokens: number | undefined;
+        let completionTokens: number | undefined;
+        let produced = false;
+        const systemPrompt = `${await buildBeyondMasterSystemPrompt(
+          parsed.messages[parsed.messages.length - 1]?.content ?? "",
+        )}${account?.prompt ? `\n\n${account.prompt}` : ""}${
+          dns ? `\n\n${dnsPromptBlock(dns)}` : ""
+        }`;
+        const source = override
+          ? override({ messages: parsed.messages, systemPrompt })
+          : streamBeyondMasterProvider({
+              config,
+              messages: parsed.messages,
+              systemPrompt,
+              signal: request.signal,
+            });
+        for await (const event of source) {
+          if (event.type === "delta") {
+            produced = true;
+            send("delta", { text: event.text });
+          } else if (event.type === "usage") {
+            promptTokens = event.promptTokens ?? promptTokens;
+            completionTokens = event.completionTokens ?? completionTokens;
+          }
+        }
+        if (!produced) {
+          throw new BeyondMasterProviderError(
+            "empty",
+            "Provider returned no text.",
+          );
+        }
+        await recordBeyondMasterUsage({
+          provider: config.provider ?? "test",
+          model: config.model ?? "test",
+          status: "success",
+          latencyMs: Date.now() - started,
+          promptTokens,
+          completionTokens,
+          customerUserId,
+          ip,
+        });
+        send("done", {});
+      } catch (error) {
+        if (
+          error instanceof BeyondMasterProviderError &&
+          error.code === "aborted"
+        ) {
+          await recordBeyondMasterUsage({
+            provider: "none",
+            model: "none",
+            status: "aborted",
+            customerUserId,
+            ip,
+            latencyMs: Date.now() - started,
+            errorCode: "aborted",
+          });
+          return;
+        }
+        const code =
+          error instanceof BeyondMasterProviderError ? error.code : "upstream";
+        await recordBeyondMasterUsage({
+          provider: "none",
+          model: "none",
+          status: code === "timeout" ? "timeout" : "error",
+          customerUserId,
+          ip,
+          latencyMs: Date.now() - started,
+          errorCode: code,
+        });
+        send("error", { message: publicProviderError(error) });
+      } finally {
+        controller.close();
+      }
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "content-type": "text/event-stream; charset=utf-8",
+      "cache-control": "no-cache, no-transform",
+      "x-accel-buffering": "no",
+    },
+  });
+}

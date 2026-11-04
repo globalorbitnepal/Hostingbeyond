@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 import { SESSION_TTL_MS, signOrbitJwt, verifyOrbitJwt } from "./jwt";
 import { hydrateOrbitEnvFromFile } from "./load-orbit-env";
+import { decideOrbitSessionTrust } from "./session-trust";
 
 export { ORBIT_SESSION_COOKIE, SESSION_TTL_MS, verifyOrbitJwt } from "./jwt";
 
@@ -57,17 +58,6 @@ export async function ensureOrbitAdmin() {
   });
 }
 
-/** Signed session without DB — used when Postgres is unavailable. */
-export async function createJwtOnlySession() {
-  const sid = randomBytes(32).toString("base64url");
-  const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
-  const token = await signOrbitJwt({
-    sid,
-    adminUserId: "orbit-super-admin",
-  });
-  return { token, expiresAt };
-}
-
 export async function createAdminSession(
   adminUserId: string,
   meta?: {
@@ -96,9 +86,13 @@ export async function createAdminSession(
 export async function destroyAdminSession(token: string | undefined) {
   const verified = await verifyOrbitJwt(token);
   if (!verified) return;
-  await prisma.adminSession.deleteMany({
-    where: { tokenHash: hashToken(verified.sid) },
-  });
+  try {
+    await prisma.adminSession.deleteMany({
+      where: { tokenHash: hashToken(verified.sid) },
+    });
+  } catch {
+    /* Cookie clearing still proceeds. The JWT cannot pass getSessionAdmin without this row. */
+  }
 }
 
 export async function getSessionAdmin(token: string | undefined) {
@@ -112,30 +106,31 @@ export async function getSessionAdmin(token: string | undefined) {
       include: { adminUser: true },
     });
 
-    if (session) {
-      if (session.expiresAt.getTime() < Date.now()) {
-        await prisma.adminSession
-          .delete({ where: { id: session.id } })
-          .catch(() => undefined);
-        return null;
-      }
-      return session.adminUser;
+    const decision = decideOrbitSessionTrust({
+      jwtValid: true,
+      hasAdminUserId: Boolean(verified.adminUserId),
+      databaseUnavailable: false,
+      sessionFound: Boolean(session),
+      sessionExpired: Boolean(
+        session && session.expiresAt.getTime() < Date.now(),
+      ),
+    });
+    if (
+      decision.outcome === "reject" &&
+      decision.reason === "session_expired" &&
+      session
+    ) {
+      await prisma.adminSession
+        .delete({ where: { id: session.id } })
+        .catch(() => undefined);
+      return null;
     }
+    if (decision.outcome === "database_session" && session)
+      return session.adminUser;
+    return null;
   } catch {
-    /* DB unavailable — fall through to JWT-only trust */
+    return null;
   }
-
-  // Access-key JWT fallback (no DB row) or orphaned valid JWT
-  if (verified.adminUserId) {
-    return {
-      id: verified.adminUserId,
-      displayName: "Super Admin",
-      createdAt: new Date(0),
-      updatedAt: new Date(0),
-    };
-  }
-
-  return null;
 }
 
 export async function logActivity(input: {

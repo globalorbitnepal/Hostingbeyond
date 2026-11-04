@@ -28,6 +28,16 @@ describe("create-pull-bundle.sh export gate (static)", () => {
     assert.match(text, /exit 13/);
   });
 
+  it("fails the export when source aggregates fail", () => {
+    const text = fs.readFileSync(SCRIPT, "utf8");
+    const call = text.indexOf('"${RUN_PG[@]}" node "$SCRIPT_DIR/source-aggregates.mjs"');
+    const empty = text.indexOf("echo '{}' >\"$BUNDLE/metadata/source-aggregates.json\"");
+    assert.ok(call > text.indexOf("pg_dump -Fc"));
+    assert.equal(empty, -1);
+    assert.match(text, /source aggregates failed/);
+    assert.match(text, /exit 15/);
+  });
+
   it("does not pass process-env approval override to preflight", () => {
     const text = fs.readFileSync(SCRIPT, "utf8");
     assert.equal(text.includes("allow-process-env-approval"), false);

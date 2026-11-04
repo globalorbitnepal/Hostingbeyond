@@ -81,5 +81,8 @@ export function checkIsolatedIntegrationDatabaseUrl(
       reason: "production application role is not allowed for integration",
     };
   }
+  if (meta.port !== "55432") {
+    return { ok: false, reason: "port must be 55432" };
+  }
   return { ok: true, meta };
 }

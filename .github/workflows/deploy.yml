@@ -60,6 +60,20 @@ jobs:
           fi
           echo "RUN_PRISMA_MIGRATE_DEPLOY=${RUN_MIGRATE}" >> "${GITHUB_ENV}"
 
+      - name: Beyond AI history repair gate (separate, fail closed)
+        env:
+          REPAIR_SECRET: ${{ secrets.HOSTINGBEYOND_BEYOND_AI_HISTORY_REPAIR_APPROVED }}
+        run: |
+          set -euo pipefail
+          RUN_REPAIR=0
+          if [ "${REPAIR_SECRET:-}" = "true" ]; then
+            RUN_REPAIR=1
+            echo "Beyond AI history repair secret is set. It does not approve prisma migrate deploy."
+          else
+            echo "BEYOND_AI_REPAIR_SKIPPED: 20260913120000_beyond_ai will not be resolved."
+          fi
+          echo "RUN_BEYOND_AI_HISTORY_REPAIR=${RUN_REPAIR}" >> "${GITHUB_ENV}"
+
       - name: Confirm SSH secrets exist
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
@@ -124,6 +138,7 @@ jobs:
           DOMAIN_API_LIVE_KEY: ${{ secrets.DOMAIN_API_LIVE_KEY }}
           NAMESILO_API_KEY: ${{ secrets.NAMESILO_API_KEY }}
           RUN_PRISMA_MIGRATE_DEPLOY: ${{ env.RUN_PRISMA_MIGRATE_DEPLOY }}
+          RUN_BEYOND_AI_HISTORY_REPAIR: ${{ env.RUN_BEYOND_AI_HISTORY_REPAIR }}
         run: |
           set -euo pipefail
           export KEY_FILE="${RUNNER_TEMP}/hostingbeyond_gha_ssh_key"
@@ -169,7 +184,7 @@ jobs:
 
           REMOTE_SCRIPT="/tmp/hostingbeyond-gha-deploy-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.sh"
           echo "==> Uploading remote deploy script"
-          "${SSH[@]}" "printf '%s\\n' '#!/bin/bash' 'set -euo pipefail' 'export RUN_PRISMA_MIGRATE_DEPLOY=${RUN_PRISMA_MIGRATE_DEPLOY:-0}' > '${REMOTE_SCRIPT}'"
+          "${SSH[@]}" "printf '%s\\n' '#!/bin/bash' 'set -euo pipefail' 'export RUN_PRISMA_MIGRATE_DEPLOY=${RUN_PRISMA_MIGRATE_DEPLOY:-0}' 'export RUN_BEYOND_AI_HISTORY_REPAIR=${RUN_BEYOND_AI_HISTORY_REPAIR:-0}' > '${REMOTE_SCRIPT}'"
           "${SSH[@]}" "cat >> '${REMOTE_SCRIPT}'" <<'REMOTE'
           # Keep the GitHub SSH channel quiet except for heartbeats. Next.js
           # stdout on bash -s previously caused the client to close (~64s).
@@ -264,30 +279,34 @@ jobs:
           fi
           npx prisma generate </dev/null
 
-          if [ "${RUN_PRISMA_MIGRATE_DEPLOY:-0}" = "1" ]; then
-            echo "==> Clearing failed Prisma row so already-present tables can be recorded"
-            npx prisma migrate resolve --rolled-back 20260913120000_beyond_ai </dev/null \
-              && echo "RESOLVED_FAILED=20260913120000_beyond_ai" \
-              || echo "RESOLVE_SKIPPED=20260913120000_beyond_ai"
-          fi
-
-          echo "==> Checking prisma migrate status (read-only vs _prisma_migrations)"
+          echo "==> Checking prisma migrate status (read-only vs _prisma_migrations; raw status is not printed)"
           set +e
           MIGRATE_STATUS_OUT="$(npx prisma migrate status </dev/null 2>&1)"
           MIGRATE_STATUS_RC=$?
           set -e
           STATUS_FILE="$(mktemp)"
           printf '%s\n' "${MIGRATE_STATUS_OUT}" > "${STATUS_FILE}"
+          unset MIGRATE_STATUS_OUT
           set +e
-          GATE_OUT="$(node ops/ci/pending-migrations-gate.mjs --approved "${RUN_PRISMA_MIGRATE_DEPLOY:-0}" --status-exit "${MIGRATE_STATUS_RC}" --status-file "${STATUS_FILE}")"
+          GATE_OUT="$(node ops/ci/pending-migrations-gate.mjs --approved "${RUN_PRISMA_MIGRATE_DEPLOY:-0}" --repair-approved "${RUN_BEYOND_AI_HISTORY_REPAIR:-0}" --backup-evidence absent --status-exit "${MIGRATE_STATUS_RC}" --status-file "${STATUS_FILE}")"
           GATE_RC=$?
           set -e
           rm -f -- "${STATUS_FILE}"
           echo "${GATE_OUT}"
           GATE_ACTION="$(printf '%s\n' "${GATE_OUT}" | awk -F= '/^GATE_ACTION=/{print $2; exit}')"
-          if [ "${GATE_RC}" -ne 0 ] || [ "${GATE_ACTION}" = "block" ]; then
+          RUN_BEYOND_AI_REPAIR="$(printf '%s\n' "${GATE_OUT}" | awk -F= '/^RUN_BEYOND_AI_REPAIR=/{print $2; exit}')"
+          if [ "${GATE_RC}" -ne 0 ] || [ "${GATE_ACTION}" = "block" ] || [ "${GATE_ACTION}" = "repair" ]; then
             echo "PENDING_MIGRATIONS_BLOCK: schema-dependent code will not build or restart until migrations are approved and applied"
-            echo "Set HOSTINGBEYOND_PRODUCTION_MIGRATE_APPROVED=true only after backup/restore evidence and docs/PRODUCTION-PREFLIGHT-RUNBOOK.md PASS"
+            echo "Normal approval does not resolve 20260913120000_beyond_ai. History repair requires HOSTINGBEYOND_BEYOND_AI_HISTORY_REPAIR_APPROVED and a classified failed row."
+            echo "Backup evidence must be a verified dump, encrypted off-site copy, and isolated restore. A secret is not evidence."
+            if [ "${RUN_BEYOND_AI_REPAIR:-0}" = "1" ]; then
+              echo "==> Recording the classified beyond_ai failure as rolled back"
+              if ! npx prisma migrate resolve --rolled-back 20260913120000_beyond_ai </dev/null; then
+                echo "REPAIR_FAILED: build and PM2 restart were not attempted"
+                exit 1
+              fi
+              echo "REPAIR_RECORDED: migrate deploy and PM2 restart were not run in this invocation"
+            fi
             exit 1
           fi
           if [ "${GATE_ACTION}" = "migrate" ]; then

@@ -14,10 +14,22 @@ printf 'plaintext-outer' >"$OUTER_TAR"
 printf 'cipher' >"$OUTER_AGE"
 printf '{}' >"$META"
 
+secure_delete_file() {
+  local target="$1"
+  if [ ! -e "$target" ]; then
+    return 0
+  fi
+  shred -u "$target" 2>/dev/null || rm -f "$target"
+  if [ -e "$target" ]; then
+    echo "plaintext cleanup failed" >&2
+    return 1
+  fi
+}
+
 cleanup_on_exit() {
   if [ "$OUTER_PUBLISHED" != "1" ]; then
     if [ -n "$OUTER_TAR" ] && [ -f "$OUTER_TAR" ]; then
-      rm -f "$OUTER_TAR"
+      secure_delete_file "$OUTER_TAR"
     fi
     if [ -n "$OUTER_AGE" ] && [ -f "$OUTER_AGE" ]; then
       rm -f "$OUTER_AGE"
