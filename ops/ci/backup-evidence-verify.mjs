@@ -8,11 +8,16 @@ import crypto from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+/** Ciphertext SHA-256 of the restorable 2026-11-04_15-30-20 production bundle. */
 export const REQUIRED_AGE_SHA256 =
-  "a4a1a55178c44959346360851610706f3fd785cd8f9bf226a11ee20cd076522f";
+  "a17a560d43353616d78c06f78d0b150d86b840cdc984ae3a6726919bc176a7bc";
 export const LAB_HOST = "127.0.0.1";
 export const LAB_PORT = 55433;
 export const LAB_DATABASE = "hostingbeyond_restore_test";
+export const DEFAULT_AGE_PATH =
+  "/home/hostingbeyond/backup-export/LATEST.bundle.tar.age";
+export const DEFAULT_RESTORE_REPORT_PATH =
+  "/home/hostingbeyond/backup-export/LATEST.restore-report.json";
 
 function sha256File(path) {
   const hash = crypto.createHash("sha256");
@@ -95,8 +100,8 @@ export function assessBackupEvidenceFromEnv(
   env = process.env,
 ) {
   return assessBackupEvidence({
-    agePath: env.HB_BACKUP_AGE_PATH,
-    restoreReportPath: env.HB_BACKUP_RESTORE_REPORT,
+    agePath: env.HB_BACKUP_AGE_PATH || DEFAULT_AGE_PATH,
+    restoreReportPath: env.HB_BACKUP_RESTORE_REPORT || DEFAULT_RESTORE_REPORT_PATH,
     expectedAgeSha256: env.HB_BACKUP_AGE_SHA256,
     migrateApproved: env.HOSTINGBEYOND_PRODUCTION_MIGRATE_APPROVED === "true",
     repairApproved:
