@@ -68,15 +68,15 @@ function detectTopic(text: string): Topic | null {
   return TOPIC_TESTS.find((row) => row.test.test(text))?.topic ?? null;
 }
 
-function formatPlans(plans: AgentHostingPlan[]): string {
+export function formatPlansForAgent(plans: AgentHostingPlan[]): string {
   return plans
     .slice(0, 6)
     .map((plan) => {
+      // The catalog already stores "1 Website" / "5 Websites"; never append a
+      // second noun, only normalise the "Unlimited Websites" wording.
       const sites = plan.websiteLimit?.trim();
       const siteText = sites
-        ? /unlimited/i.test(sites)
-          ? "unlimited sites"
-          : `${sites} ${sites === "1" ? "site" : "sites"}`
+        ? sites.replace(/^unlimited\b.*$/i, "unlimited sites")
         : null;
       const specs = [
         plan.storage,
@@ -158,7 +158,7 @@ export async function groundedBeyondMasterReply(
       return { text: copy.hostingNoCatalog, domains: [], language };
     }
     return {
-      text: `${copy.hostingHeading}\n${formatPlans(plans)}\n\n${copy.hostingFooter}`,
+      text: `${copy.hostingHeading}\n${formatPlansForAgent(plans)}\n\n${copy.hostingFooter}`,
       domains: [],
       language,
     };
