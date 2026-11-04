@@ -287,13 +287,8 @@ export function BeyondMasterAiPanel() {
         {state.dnsCard && state.dnsCard.state !== "loading" ? (
           <section className="hb-bmai-review" aria-label="DNS review">
             <h3>Review Changes</h3>
-            {state.dnsCard.state === "loading" ||
-            state.dnsCard.state === "executing" ? (
-              <p>
-                {state.dnsCard.state === "executing"
-                  ? "Executing the confirmed DNS change…"
-                  : "Loading DNS records…"}
-              </p>
+            {state.dnsCard.state === "executing" ? (
+              <p>Executing the confirmed DNS change…</p>
             ) : null}
             {state.dnsCard.message ? <p>{state.dnsCard.message}</p> : null}
             {state.dnsCard.records?.map((record) => (
