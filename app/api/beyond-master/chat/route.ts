@@ -1,4 +1,3 @@
-import { BEYOND_MASTER_PROVIDER_NOTICE } from "@/lib/beyond-master/copy";
 import {
   beyondMasterTicketCustomerOverride,
   supportEventForChat,
@@ -6,6 +5,15 @@ import {
 import { accountEventForChat } from "@/lib/beyond-master/account/chat";
 import { dnsEventForChat, dnsPromptBlock } from "@/lib/beyond-master/dns/chat";
 import { beyondMasterDnsRuntime } from "@/lib/beyond-master/dns/http";
+import {
+  extractDomainQuery,
+  wantsDomainHelp,
+} from "@/lib/beyond-master/domain-intent";
+import {
+  formatDomainSearchForPrompt,
+  searchDomainsForAgent,
+} from "@/lib/beyond-master/domain-search";
+import { groundedBeyondMasterReply } from "@/lib/beyond-master/grounded";
 import { buildBeyondMasterSystemPrompt } from "@/lib/beyond-master/knowledge/build";
 import { getBeyondMasterChatTestOverride } from "@/lib/beyond-master/chat-test-hook";
 import {
@@ -107,15 +115,35 @@ export async function POST(request: Request) {
         if (dns) send("dns", dns);
         const override = getBeyondMasterChatTestOverride();
         const config = readBeyondMasterRuntimeConfig();
+        const lastMessage =
+          parsed.messages[parsed.messages.length - 1]?.content ?? "";
+        const domainQuery = wantsDomainHelp(lastMessage)
+          ? extractDomainQuery(lastMessage)
+          : null;
+        const domainSearch = domainQuery
+          ? await searchDomainsForAgent(domainQuery)
+          : null;
+        if (domainSearch?.results.length) {
+          send("domains", { results: domainSearch.results });
+        }
         if (!override && !config.configured) {
-          send("notice", {
-            code: "provider_not_configured",
-            body: BEYOND_MASTER_PROVIDER_NOTICE,
-          });
+          const grounded = await groundedBeyondMasterReply(lastMessage, () =>
+            Promise.resolve(
+              domainSearch ?? {
+                query: domainQuery ?? lastMessage,
+                error: null,
+                results: [],
+              },
+            ),
+          );
+          if (grounded.domains.length) {
+            send("domains", { results: grounded.domains });
+          }
+          send("delta", { text: grounded.text });
           await recordBeyondMasterUsage({
-            provider: config.provider ?? "none",
-            model: config.model ?? "none",
-            status: "unconfigured",
+            provider: "grounded",
+            model: "hostingbeyond-agent",
+            status: "success",
             customerUserId,
             ip,
             latencyMs: Date.now() - started,
@@ -127,10 +155,10 @@ export async function POST(request: Request) {
         let completionTokens: number | undefined;
         let produced = false;
         const systemPrompt = `${await buildBeyondMasterSystemPrompt(
-          parsed.messages[parsed.messages.length - 1]?.content ?? "",
+          lastMessage,
         )}${account?.prompt ? `\n\n${account.prompt}` : ""}${
           dns ? `\n\n${dnsPromptBlock(dns)}` : ""
-        }`;
+        }${domainSearch ? `\n\n${formatDomainSearchForPrompt(domainSearch)}` : ""}`;
         const source = override
           ? override({ messages: parsed.messages, systemPrompt })
           : streamBeyondMasterProvider({

@@ -46,4 +46,13 @@ describe("header assistant slots", () => {
     assert.equal(source.includes("<DomainCartHeaderLink />"), true);
     assert.equal(source.includes("<DomainCartHeaderLink compact />"), true);
   });
+
+  it("labels the public launcher Agent", () => {
+    const launcher = readFileSync(
+      "components/beyond-master/beyond-master-launcher.tsx",
+      "utf8",
+    );
+    assert.equal(launcher.includes("BEYOND_MASTER_LAUNCHER_LABEL"), true);
+    assert.equal(launcher.includes("BEYOND MASTER AI"), false);
+  });
 });

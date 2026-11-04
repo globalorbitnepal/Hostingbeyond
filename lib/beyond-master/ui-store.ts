@@ -20,7 +20,10 @@ import {
   upsertConversation,
   validateDraft,
 } from "@/lib/beyond-master/thread";
-import type { BeyondMasterConversation } from "@/lib/beyond-master/types";
+import type {
+  BeyondMasterConversation,
+  BeyondMasterDomainSuggestion,
+} from "@/lib/beyond-master/types";
 import type { AccountCard } from "@/lib/beyond-master/account/types";
 import type { DnsProposalView } from "@/lib/beyond-master/dns/workflow";
 
@@ -76,6 +79,7 @@ type Snapshot = {
   supportCard: SupportCard | null;
   accountCards: AccountCard[] | null;
   dnsCard: DnsCardState | null;
+  domainSuggestions: BeyondMasterDomainSuggestion[] | null;
 };
 
 const serverSnapshot: Snapshot = {
@@ -91,6 +95,7 @@ const serverSnapshot: Snapshot = {
   supportCard: null,
   accountCards: null,
   dnsCard: null,
+  domainSuggestions: null,
 };
 
 let snapshot: Snapshot = serverSnapshot;
@@ -227,6 +232,7 @@ export function startBeyondMasterConversation() {
     error: null,
     draft: "",
     activeId: conversation.id,
+    domainSuggestions: null,
     conversations: upsertConversation(snapshot.conversations, conversation),
   });
 }
@@ -263,6 +269,7 @@ export async function sendBeyondMasterMessage(text?: string) {
     error: null,
     checking: true,
     accountCards: null,
+    domainSuggestions: null,
     dnsCard: { state: "loading", proposal: null, message: null, records: null },
     activeId: withUser.id,
     conversations: upsertConversation(ensured.state.conversations, withUser),
@@ -334,6 +341,7 @@ export async function sendBeyondMasterMessage(text?: string) {
             ttl: number;
           }[];
           proposal?: DnsProposalView;
+          results?: BeyondMasterDomainSuggestion[];
         };
         if (
           frame.event === "dns" &&
@@ -380,6 +388,19 @@ export async function sendBeyondMasterMessage(text?: string) {
         }
         if (frame.event === "account" && Array.isArray(data.cards)) {
           emit({ ...snapshot, accountCards: data.cards });
+        }
+        if (frame.event === "domains" && Array.isArray(data.results)) {
+          emit({
+            ...snapshot,
+            domainSuggestions: data.results.filter(
+              (row): row is BeyondMasterDomainSuggestion =>
+                Boolean(
+                  row &&
+                  typeof row.domain === "string" &&
+                  typeof row.href === "string",
+                ),
+            ),
+          });
         }
         if (
           frame.event === "support" &&

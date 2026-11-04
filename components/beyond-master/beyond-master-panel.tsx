@@ -5,13 +5,14 @@ import { createPortal } from "react-dom";
 import { Clock3, Plus, Send, X } from "lucide-react";
 
 import {
+  BEYOND_MASTER_DISCLAIMER,
   BEYOND_MASTER_INPUT_PLACEHOLDER,
-  BEYOND_MASTER_NAME,
+  BEYOND_MASTER_LAUNCHER_LABEL,
+  BEYOND_MASTER_PANEL_TITLE,
   BEYOND_MASTER_PRIMARY_BODY,
   BEYOND_MASTER_PRIMARY_TITLE,
   BEYOND_MASTER_QUICK_ACTIONS,
   BEYOND_MASTER_TAGLINE,
-  BEYOND_MASTER_WELCOME_BODY,
   BEYOND_MASTER_WELCOME_HEADING,
 } from "@/lib/beyond-master/copy";
 import {
@@ -63,39 +64,6 @@ export function BeyondMasterAiPanel() {
   const [ticketNote, setTicketNote] = useState("");
   const [replyReference, setReplyReference] = useState("");
   const [replyBody, setReplyBody] = useState("");
-  const [modelNote, setModelNote] = useState(
-    "Checking which AI models are configured…",
-  );
-
-  useEffect(() => {
-    let cancelled = false;
-    void fetch("/api/beyond-master/models")
-      .then(async (response) => {
-        const payload = (await response.json().catch(() => null)) as {
-          configured?: boolean;
-          models?: { id: string; provider: string; available: boolean }[];
-        } | null;
-        if (cancelled) return;
-        const model = payload?.models?.[0];
-        if (!payload?.configured || !model?.available) {
-          setModelNote(
-            "No live AI model is configured. Chat still opens knowledge, tickets, and DNS help.",
-          );
-          return;
-        }
-        setModelNote(
-          `Configured model: ${model.provider}/${model.id}. It is not marked live-verified until a provider request succeeds.`,
-        );
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setModelNote("Model status could not be loaded.");
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   async function loadTickets() {
     const params = new URLSearchParams();
@@ -185,7 +153,7 @@ export function BeyondMasterAiPanel() {
       <button
         type="button"
         className="hb-bmai-backdrop"
-        aria-label={`Close ${BEYOND_MASTER_NAME}`}
+        aria-label={`Close ${BEYOND_MASTER_LAUNCHER_LABEL}`}
         tabIndex={state.open ? 0 : -1}
         hidden={!state.open}
         onClick={closeBeyondMasterAi}
@@ -205,7 +173,7 @@ export function BeyondMasterAiPanel() {
             <BeyondMasterIcon size={20} />
           </span>
           <div className="hb-bmai-title">
-            <strong id={titleId}>{BEYOND_MASTER_NAME}</strong>
+            <strong id={titleId}>{BEYOND_MASTER_PANEL_TITLE}</strong>
             <span>{BEYOND_MASTER_TAGLINE}</span>
           </div>
           <button
@@ -228,7 +196,7 @@ export function BeyondMasterAiPanel() {
           <button
             type="button"
             className="hb-bmai-icon-btn"
-            aria-label={`Close ${BEYOND_MASTER_NAME}`}
+            aria-label={`Close ${BEYOND_MASTER_LAUNCHER_LABEL}`}
             onClick={closeBeyondMasterAi}
           >
             <X className="size-4" />
@@ -238,7 +206,7 @@ export function BeyondMasterAiPanel() {
         {state.view === "history" ? (
           <div className="hb-bmai-history" aria-label="Conversation history">
             {state.conversations.length === 0 ? (
-              <p className="px-2 py-3 text-sm text-[#b7c3de]">
+              <p className="px-2 py-3 text-sm text-slate-500">
                 No conversations in this browser tab yet.
               </p>
             ) : (
@@ -264,8 +232,6 @@ export function BeyondMasterAiPanel() {
                 <BeyondMasterIcon size={34} />
               </div>
               <h2>{BEYOND_MASTER_WELCOME_HEADING}</h2>
-              <p>{BEYOND_MASTER_WELCOME_BODY}</p>
-              <p className="text-sm text-[#b7c3de]">{modelNote}</p>
               <button
                 type="button"
                 className="hb-bmai-primary"
@@ -365,8 +331,8 @@ export function BeyondMasterAiPanel() {
                     <i />
                   </span>
                   {state.streaming
-                    ? "Beyond Master AI is writing…"
-                    : "Checking whether a language model is connected…"}
+                    ? "Agent is writing…"
+                    : "Agent is looking that up…"}
                 </div>
               ) : null}
             </div>
@@ -543,6 +509,22 @@ export function BeyondMasterAiPanel() {
           </section>
         ) : null}
 
+        {state.domainSuggestions?.length ? (
+          <div className="hb-bmai-domains" aria-label="Domain suggestions">
+            {state.domainSuggestions.map((row) => (
+              <a key={row.domain} className="hb-bmai-domain" href={row.href}>
+                <span>
+                  <strong>{row.domain}</strong>
+                  <span>
+                    {row.status}
+                    {row.register != null ? ` · $${row.register}/yr` : ""}
+                  </span>
+                </span>
+              </a>
+            ))}
+          </div>
+        ) : null}
+
         {state.error ? (
           <p className="hb-bmai-error" role="alert">
             {state.error}
@@ -596,67 +578,69 @@ export function BeyondMasterAiPanel() {
           </p>
         ) : null}
 
-        <section className="hb-bmai-review" aria-label="Your support tickets">
-          <h3>Your support tickets</h3>
-          <div className="hb-bmai-review-actions">
-            <input
-              aria-label="Search tickets"
-              value={ticketQuery}
-              onChange={(event) => setTicketQuery(event.target.value)}
-              placeholder="Search reference or subject"
-            />
-            <select
-              aria-label="Filter by status"
-              value={ticketStatus}
-              onChange={(event) => setTicketStatus(event.target.value)}
-            >
-              <option value="">All statuses</option>
-              <option value="open">Open</option>
-              <option value="in_progress">In progress</option>
-              <option value="waiting_customer">Waiting for customer</option>
-              <option value="waiting_support">Waiting for support</option>
-              <option value="resolved">Resolved</option>
-              <option value="closed">Closed</option>
-            </select>
-            <button type="button" onClick={() => void loadTickets()}>
-              Search
-            </button>
-          </div>
-          {ticketNote ? <p>{ticketNote}</p> : null}
-          <ul>
-            {ticketRows.map((ticket) => (
-              <li key={ticket.reference}>
-                <button
-                  type="button"
-                  onClick={() => setReplyReference(ticket.reference)}
-                >
-                  {ticket.reference} · {ticket.status} · {ticket.subject}
-                </button>
-              </li>
-            ))}
-          </ul>
-          <div className="hb-bmai-review-actions">
-            <input
-              aria-label="Ticket reference"
-              value={replyReference}
-              onChange={(event) => setReplyReference(event.target.value)}
-              placeholder="BM-1000"
-            />
-            <input
-              aria-label="Reply"
-              value={replyBody}
-              onChange={(event) => setReplyBody(event.target.value)}
-              placeholder="Reply"
-            />
-            <button type="button" onClick={() => void sendTicketReply()}>
-              Reply
-            </button>
-          </div>
-        </section>
+        {messages.length > 0 ? (
+          <section className="hb-bmai-review" aria-label="Your support tickets">
+            <h3>Your support tickets</h3>
+            <div className="hb-bmai-review-actions">
+              <input
+                aria-label="Search tickets"
+                value={ticketQuery}
+                onChange={(event) => setTicketQuery(event.target.value)}
+                placeholder="Search reference or subject"
+              />
+              <select
+                aria-label="Filter by status"
+                value={ticketStatus}
+                onChange={(event) => setTicketStatus(event.target.value)}
+              >
+                <option value="">All statuses</option>
+                <option value="open">Open</option>
+                <option value="in_progress">In progress</option>
+                <option value="waiting_customer">Waiting for customer</option>
+                <option value="waiting_support">Waiting for support</option>
+                <option value="resolved">Resolved</option>
+                <option value="closed">Closed</option>
+              </select>
+              <button type="button" onClick={() => void loadTickets()}>
+                Search
+              </button>
+            </div>
+            {ticketNote ? <p>{ticketNote}</p> : null}
+            <ul>
+              {ticketRows.map((ticket) => (
+                <li key={ticket.reference}>
+                  <button
+                    type="button"
+                    onClick={() => setReplyReference(ticket.reference)}
+                  >
+                    {ticket.reference} · {ticket.status} · {ticket.subject}
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <div className="hb-bmai-review-actions">
+              <input
+                aria-label="Ticket reference"
+                value={replyReference}
+                onChange={(event) => setReplyReference(event.target.value)}
+                placeholder="BM-1000"
+              />
+              <input
+                aria-label="Reply"
+                value={replyBody}
+                onChange={(event) => setReplyBody(event.target.value)}
+                placeholder="Reply"
+              />
+              <button type="button" onClick={() => void sendTicketReply()}>
+                Reply
+              </button>
+            </div>
+          </section>
+        ) : null}
 
         <form className="hb-bmai-composer" onSubmit={onSubmit}>
           <label className="sr-only" htmlFor="beyond-master-ai-input">
-            Message {BEYOND_MASTER_NAME}
+            Message {BEYOND_MASTER_LAUNCHER_LABEL}
           </label>
           <textarea
             id="beyond-master-ai-input"
@@ -682,6 +666,7 @@ export function BeyondMasterAiPanel() {
             <Send className="size-4" />
           </button>
         </form>
+        <p className="hb-bmai-foot">{BEYOND_MASTER_DISCLAIMER}</p>
       </section>
     </>
   );

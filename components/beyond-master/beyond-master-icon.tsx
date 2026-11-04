@@ -1,4 +1,10 @@
-export function BeyondMasterIcon({ size = 18 }: { size?: number }) {
+export function BeyondMasterIcon({
+  size = 18,
+  className,
+}: {
+  size?: number;
+  className?: string;
+}) {
   return (
     <svg
       width={size}
@@ -6,19 +12,16 @@ export function BeyondMasterIcon({ size = 18 }: { size?: number }) {
       viewBox="0 0 32 32"
       aria-hidden="true"
       focusable="false"
+      className={className}
     >
       <path
-        d="M16 4.5 26.5 10v12L16 27.5 5.5 22V10L16 4.5Z"
-        fill="none"
-        stroke="white"
-        strokeWidth="1.7"
+        fill="currentColor"
+        d="M16 2.4c.55 5.2 3.15 8.4 8.2 9.6-5.05 1.2-7.65 4.4-8.2 9.6-.55-5.2-3.15-8.4-8.2-9.6C12.85 10.8 15.45 7.6 16 2.4Z"
       />
-      <circle cx="16" cy="16" r="3.1" fill="white" />
       <path
-        d="M16 8.2v4.2M16 19.6v4.2M8.8 12.2l3.5 2M19.7 17.8l3.5 2M8.8 19.8l3.5-2M19.7 14.2l3.5-2"
-        stroke="white"
-        strokeWidth="1.5"
-        strokeLinecap="round"
+        fill="currentColor"
+        opacity="0.88"
+        d="M16 8.2c.28 3.1 1.86 4.95 4.9 5.8-3.04.85-4.62 2.7-4.9 5.8-.28-3.1-1.86-4.95-4.9-5.8 3.04-.85 4.62-2.7 4.9-5.8Z"
       />
     </svg>
   );

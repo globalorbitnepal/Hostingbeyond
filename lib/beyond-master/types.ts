@@ -28,3 +28,10 @@ export type BeyondMasterQuickAction = {
   label: string;
   prompt: string;
 };
+
+export type BeyondMasterDomainSuggestion = {
+  domain: string;
+  status: string;
+  register: number | null;
+  href: string;
+};

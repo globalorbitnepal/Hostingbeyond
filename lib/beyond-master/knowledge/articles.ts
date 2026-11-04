@@ -65,7 +65,7 @@ Searching for a new name is a different task and starts at /domain-name-search.`
     body: `New domain search is at /domain-name-search. Bulk search is at /bulk-domain-search. Transfer starts at /domain-transfer.
 The cart is /cart and domain checkout is /get-started.
 Retail register, renew, and transfer amounts are stored per extension in the domain price catalog. Quote a price only when a live catalog block in this prompt lists that extension, currency, and amount. Otherwise say the price is on the domain search page and do not guess it.
-This chat cannot check availability, register a domain, renew a domain, or start a transfer.
+This chat can check live availability for a name the customer provides and suggest nearby extensions. It cannot complete registration, renewal, or transfer; those finish on /domain-name-search, /domain-transfer, or /cart.
 A transfer does not by itself change DNS. The existing website and mail keep using the current nameservers and records until those are changed in the domain panel.`,
   },
   {

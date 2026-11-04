@@ -51,7 +51,7 @@ export function catalogIntent(question: string): {
 } {
   const text = question.toLowerCase();
   const asksAmount =
-    /price|prices|cost|how much|plan|storage|spec|कीमत|मूल्य|कति|दाम/.test(
+    /price|prices|cost|how much|plan|plans|compare|storage|spec|कीमत|मूल्य|कति|दाम/.test(
       text,
     );
   if (!asksAmount) return { hostingSlugs: [], tlds: [] };

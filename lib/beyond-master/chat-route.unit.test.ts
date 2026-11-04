@@ -3,11 +3,10 @@ import { describe, it } from "node:test";
 
 import { POST } from "@/app/api/beyond-master/chat/route";
 import { setBeyondMasterChatTestOverride } from "@/lib/beyond-master/chat-test-hook";
-import { BEYOND_MASTER_PROVIDER_NOTICE } from "@/lib/beyond-master/copy";
 import { beyondMasterAdminStatus } from "@/lib/beyond-master/settings";
 
 describe("beyond master chat route", () => {
-  it("returns the honest notice when no provider is configured", async () => {
+  it("answers from grounded Agent help when no language model is configured", async () => {
     const previous = {
       provider: process.env.BEYOND_MASTER_AI_PROVIDER,
       model: process.env.BEYOND_MASTER_AI_MODEL,
@@ -31,13 +30,9 @@ describe("beyond master chat route", () => {
       );
       const text = await response.text();
       assert.equal(response.status, 200);
-      assert.match(text, /provider_not_configured/);
-      assert.match(
-        text,
-        new RegExp(
-          BEYOND_MASTER_PROVIDER_NOTICE.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
-        ),
-      );
+      assert.match(text, /event: delta/);
+      assert.match(text, /account\/my-domains/);
+      assert.equal(text.includes("provider_not_configured"), false);
       assert.equal(text.includes("registered"), false);
     } finally {
       if (previous.provider === undefined)

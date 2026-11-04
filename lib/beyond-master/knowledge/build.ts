@@ -64,6 +64,22 @@ export async function buildBeyondMasterSystemPrompt(
   });
 }
 
+export async function readLiveCatalogForAgent(intent: {
+  hostingSlugs: string[];
+  tlds: string[];
+}): Promise<string | null> {
+  const parts: string[] = [];
+  if (intent.hostingSlugs.length > 0) {
+    parts.push(
+      formatHostingCatalog(await readHostingCatalog(intent.hostingSlugs)),
+    );
+  }
+  if (intent.tlds.length > 0) {
+    parts.push(formatDomainCatalog(await readDomainCatalog(intent.tlds)));
+  }
+  return parts.length ? parts.join("\n\n") : null;
+}
+
 export function composeBeyondMasterSystemPrompt(input: {
   articles: BeyondMasterKnowledgeArticle[];
   insufficient: boolean;
