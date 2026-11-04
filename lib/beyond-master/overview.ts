@@ -38,7 +38,7 @@ export type OverviewUsage =
     };
 
 export type BeyondMasterOverview = {
-  product: "Beyond Master AI";
+  product: "AI Agent";
   readOnly: true;
   ai: {
     provider: string;
@@ -103,7 +103,7 @@ export function buildBeyondMasterOverview(
   const status = beyondMasterAdminStatus(env);
   const usage = facts.usageTable ? usageFrom(facts) : unavailableUsage();
   return {
-    product: "Beyond Master AI",
+    product: "AI Agent",
     readOnly: true,
     ai: {
       provider: status.provider ?? "Not configured",

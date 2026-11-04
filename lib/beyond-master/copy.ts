@@ -1,12 +1,12 @@
 import type { BeyondMasterQuickAction } from "@/lib/beyond-master/types";
 
 /** Product name used by Orbit status and the public panel. */
-export const BEYOND_MASTER_NAME = "Beyond Master AI";
+export const BEYOND_MASTER_NAME = "AI Agent";
 
-export const BEYOND_MASTER_LAUNCHER_LABEL = "Agent";
+export const BEYOND_MASTER_LAUNCHER_LABEL = "AI Agent";
 
 /** Same brand on the header button, the panel header, and Orbit. */
-export const BEYOND_MASTER_BRAND_NAME = "Beyond Master AI";
+export const BEYOND_MASTER_BRAND_NAME = "AI Agent";
 
 export const BEYOND_MASTER_PANEL_TITLE = BEYOND_MASTER_BRAND_NAME;
 
@@ -21,7 +21,7 @@ export const BEYOND_MASTER_PRIMARY_TITLE = "Help me find what I need";
 export const BEYOND_MASTER_PRIMARY_BODY =
   "Tell me what you are trying to do and I will point you in the right direction.";
 
-export const BEYOND_MASTER_INPUT_PLACEHOLDER = "Message Beyond Master AI...";
+export const BEYOND_MASTER_INPUT_PLACEHOLDER = "Message AI Agent...";
 
 export const BEYOND_MASTER_GREETING_REPLY =
   "Hi! Tell me what you'd like to get started with — a domain, hosting, business email, or your website — or describe it in your own words.";

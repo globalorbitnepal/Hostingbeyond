@@ -6,7 +6,7 @@ export function beyondMasterKnowledgeAdminStatus(
 ) {
   const published = articles.filter((article) => article.published);
   return {
-    product: "Beyond Master AI",
+    product: "AI Agent",
     management: "read-only metadata for a future Orbit screen",
     categories: BEYOND_MASTER_KNOWLEDGE_CATEGORIES,
     counts: {

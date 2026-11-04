@@ -66,7 +66,7 @@ const nav: NavGroup[] = [
   { href: "/orbit", label: "Dashboard", icon: LayoutDashboard },
   {
     href: "/orbit/beyond-master",
-    label: "Beyond Master AI",
+    label: "AI Agent",
     icon: Bot,
     children: [
       {

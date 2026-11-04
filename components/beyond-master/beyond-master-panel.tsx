@@ -5,14 +5,13 @@ import { createPortal } from "react-dom";
 import { ArrowUp, Clock3, ImagePlus, Plus, X } from "lucide-react";
 
 import {
+  BEYOND_MASTER_BRAND_NAME,
   BEYOND_MASTER_DISCLAIMER,
   BEYOND_MASTER_INPUT_PLACEHOLDER,
   BEYOND_MASTER_LAUNCHER_LABEL,
-  BEYOND_MASTER_PANEL_TITLE,
   BEYOND_MASTER_PRIMARY_BODY,
   BEYOND_MASTER_PRIMARY_TITLE,
   BEYOND_MASTER_QUICK_ACTIONS,
-  BEYOND_MASTER_TAGLINE,
   BEYOND_MASTER_WELCOME_HEADING,
 } from "@/lib/beyond-master/copy";
 import {
@@ -38,7 +37,7 @@ import {
 import { isAgentGreeting } from "@/lib/beyond-master/domain-intent";
 
 import "@/styles/beyond-master.css";
-import { BeyondMasterIcon } from "./beyond-master-icon";
+import { AiAgentBadge } from "./ai-agent-badge";
 
 function formatStamp(iso: string) {
   const date = new Date(iso);
@@ -140,14 +139,11 @@ export function BeyondMasterAiPanel() {
         }}
       >
         <header className="hb-bmai-header">
-          <span className="hb-bmai-mark">
-            <BeyondMasterIcon size={20} />
-          </span>
-          <div className="hb-bmai-title">
-            <strong id={titleId} className="notranslate" translate="no">
-              {BEYOND_MASTER_PANEL_TITLE}
-            </strong>
-            <span>{BEYOND_MASTER_TAGLINE}</span>
+          <div className="hb-bmai-header-brand">
+            <h2 id={titleId} className="sr-only">
+              {BEYOND_MASTER_BRAND_NAME}
+            </h2>
+            <AiAgentBadge variant="panel" />
           </div>
           <button
             type="button"

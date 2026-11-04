@@ -125,7 +125,7 @@ export default function OrbitBeyondMasterConversationsPage() {
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold text-slate-900">
-            Agent conversations
+            AI Agent conversations
           </h1>
           <p className="mt-1 text-sm text-slate-600">
             Every customer conversation is saved here, including files up to 5

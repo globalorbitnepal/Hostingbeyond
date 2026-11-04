@@ -126,7 +126,7 @@ export function beyondMasterAdminStatus(
     }
   }
   return {
-    product: "Beyond Master AI",
+    product: "AI Agent",
     configured: config.configured,
     provider: config.provider,
     model: config.model,

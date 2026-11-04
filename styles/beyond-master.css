@@ -10,171 +10,181 @@
 .hb-bmai-launch {
   position: relative;
   display: inline-flex;
-  height: 40px;
+  height: auto;
   max-width: none;
   align-items: center;
-  gap: 7px;
-  overflow: hidden;
-  padding: 0 5px 0 7px;
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  padding: 0;
+  border: 0;
   border-radius: 999px;
-  color: #f8fafc;
-  background:
-    radial-gradient(
-      120% 140% at 8% 0%,
-      rgba(255, 255, 255, 0.4),
-      transparent 42%
-    ),
-    linear-gradient(102deg, #5b21b6 0%, #6d28d9 26%, #4338ca 62%, #0369a1 100%);
-  box-shadow:
-    0 0 0 1px rgba(129, 140, 248, 0.28),
-    0 0 14px rgba(124, 58, 237, 0.34),
-    0 0 26px rgba(14, 165, 233, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.55),
-    inset 0 -6px 14px rgba(30, 27, 75, 0.5);
-  font-size: 12.5px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  color: inherit;
+  background: transparent;
+  box-shadow: none;
   white-space: nowrap;
-  text-shadow: 0 1px 1px rgba(30, 27, 75, 0.5);
   transition:
     transform 180ms ease,
-    box-shadow 180ms ease;
-}
-
-.hb-bmai-launch::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(
-    96deg,
-    rgba(232, 121, 249, 0.55),
-    transparent 42%,
-    rgba(34, 211, 238, 0.5)
-  );
-  mix-blend-mode: screen;
-  opacity: 0.75;
-  pointer-events: none;
-}
-
-.hb-bmai-launch::after {
-  content: "";
-  position: absolute;
-  top: 2px;
-  right: 20%;
-  bottom: 2px;
-  left: 22%;
-  border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.45),
-    transparent
-  );
-  filter: blur(2px);
-  animation: hb-bmai-sheen 3.4s ease-in-out infinite;
-  pointer-events: none;
-}
-
-.hb-bmai-launch-mark {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  width: 26px;
-  height: 26px;
-  flex: none;
-  place-items: center;
-  color: #fff;
-  background: radial-gradient(circle at 32% 26%, #a78bfa, #4c1d95 72%);
-  border-radius: 999px;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    0 2px 6px rgba(30, 27, 75, 0.45);
-}
-
-.hb-bmai-launch-text {
-  position: relative;
-  z-index: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.hb-bmai-launch-wide .hb-bmai-launch-text {
-  display: none;
-}
-
-.hb-bmai-ai-chip {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  height: 21px;
-  min-width: 26px;
-  place-items: center;
-  padding: 0 6px;
-  border-radius: 999px;
-  color: #4c1d95;
-  background: rgba(255, 255, 255, 0.95);
-  box-shadow:
-    inset 0 1px 0 #fff,
-    0 3px 8px rgba(30, 27, 75, 0.35);
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-  text-shadow: none;
+    filter 180ms ease;
 }
 
 .hb-bmai-launch:hover,
 .hb-bmai-launch[data-open="true"] {
   transform: translateY(-1px);
-  box-shadow:
-    0 0 0 1px rgba(165, 180, 252, 0.45),
-    0 0 18px rgba(124, 58, 237, 0.5),
-    0 0 34px rgba(14, 165, 233, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    inset 0 -6px 14px rgba(30, 27, 75, 0.5);
-}
-
-@media (min-width: 1280px) {
-  .hb-bmai-launch-wide .hb-bmai-launch-text {
-    display: inline;
-  }
-
-  .hb-bmai-launch-wide {
-    padding-right: 5px;
-    padding-left: 7px;
-  }
+  filter: brightness(1.08);
 }
 
 .hb-bmai-launch:focus-visible {
   outline: 2px solid #67e8f9;
-  outline-offset: 2px;
-}
-
-.hb-bmai-launch-compact {
-  height: 36px;
-  gap: 5px;
-  padding: 0 4px 0 5px;
-  font-size: 12px;
-}
-
-.hb-bmai-launch-compact .hb-bmai-launch-text {
-  display: none;
+  outline-offset: 3px;
 }
 
 .hb-bmai-launch-menu {
   display: flex;
   width: 100%;
-  height: 44px;
   justify-content: center;
   margin-bottom: 8px;
 }
 
-.hb-bmai-launch svg {
-  position: relative;
-  z-index: 1;
+.hb-ai-badge {
+  display: inline-flex;
+  height: 40px;
+  padding: 2.5px;
+  border-radius: 999px;
+  background: linear-gradient(
+    98deg,
+    #e879f9 0%,
+    #a855f7 22%,
+    #4f46e5 52%,
+    #2563eb 76%,
+    #22d3ee 100%
+  );
+  box-shadow:
+    0 0 0 1px rgba(34, 211, 238, 0.18),
+    0 0 14px rgba(168, 85, 247, 0.38),
+    0 0 22px rgba(34, 211, 238, 0.22);
+}
+
+.hb-ai-badge-inner {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  gap: 7px;
+  padding: 0 6px 0 8px;
+  border-radius: inherit;
+  background: #05060d;
+  box-shadow: inset 0 0 0 1px rgba(2, 6, 23, 0.7);
+}
+
+.hb-ai-badge-hb {
+  display: block;
+  width: 32px;
+  height: 32px;
   flex: none;
-  filter: drop-shadow(0 1px 2px rgba(76, 29, 149, 0.35));
+  overflow: visible;
+  filter: drop-shadow(0 2px 6px rgba(34, 211, 238, 0.32));
+}
+
+.hb-ai-badge-rule {
+  display: block;
+  width: 2px;
+  height: 18px;
+  flex: none;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #818cf8, #2563eb);
+  opacity: 0.95;
+}
+
+.hb-ai-badge-copy {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding-right: 2px;
+  line-height: 1;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.hb-ai-badge-ai {
+  background: linear-gradient(90deg, #d946ef 0%, #818cf8 48%, #22d3ee 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  font-size: 15px;
+}
+
+.hb-ai-badge-agent {
+  color: #2c3f8f;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.hb-ai-badge-orb {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  place-items: center;
+  border-radius: 999px;
+  color: #fff;
+  background:
+    radial-gradient(
+      circle at 32% 28%,
+      rgba(255, 255, 255, 0.55),
+      transparent 42%
+    ),
+    linear-gradient(145deg, #d946ef 0%, #7c3aed 48%, #2563eb 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 2px 8px rgba(37, 99, 235, 0.45);
+}
+
+.hb-ai-badge-orb svg {
+  filter: drop-shadow(0 1px 1px rgba(15, 23, 42, 0.35));
+}
+
+.hb-ai-badge-compact {
+  height: 36px;
+}
+
+.hb-ai-badge-compact .hb-ai-badge-hb {
+  width: 26px;
+  height: 26px;
+}
+
+.hb-ai-badge-compact .hb-ai-badge-ai,
+.hb-ai-badge-compact .hb-ai-badge-agent {
+  font-size: 13.5px;
+}
+
+.hb-ai-badge-compact .hb-ai-badge-orb {
+  width: 22px;
+  height: 22px;
+}
+
+.hb-ai-badge-panel {
+  height: 44px;
+}
+
+.hb-ai-badge-panel .hb-ai-badge-hb {
+  width: 36px;
+  height: 36px;
+}
+
+.hb-ai-badge-panel .hb-ai-badge-ai,
+.hb-ai-badge-panel .hb-ai-badge-agent {
+  font-size: 16.5px;
+}
+
+.hb-ai-badge-panel .hb-ai-badge-orb {
+  width: 28px;
+  height: 28px;
+}
+
+.hb-bmai-header-brand {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
 }
 
 .hb-bmai-backdrop {
