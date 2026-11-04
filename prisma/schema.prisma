@@ -248,6 +248,7 @@ model CustomerUser {
   hostingOrderCheckouts HostingOrderCheckout[]
   beyondMasterTickets BeyondMasterTicket[]
   beyondMasterTicketDrafts BeyondMasterTicketDraft[]
+  beyondMasterChatThreads BeyondMasterChatThread[]
   beyondMasterDnsProposals BeyondMasterDnsProposal[]
 }
 
@@ -535,6 +536,50 @@ model BeyondMasterTicketActivity {
 
   @@index([ticketId, createdAt])
   @@index([action])
+}
+
+/// A customer Agent conversation. Closing the panel does not delete this row;
+/// Orbit keeps the request history until an admin removes it.
+model BeyondMasterChatThread {
+  id             String   @id @default(cuid())
+  customerUserId String?
+  customer       CustomerUser? @relation(fields: [customerUserId], references: [id], onDelete: Cascade)
+  guestKey       String?
+  title          String   @default("New conversation")
+  status         String   @default("open")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  messages    BeyondMasterChatMessage[]
+  attachments BeyondMasterChatAttachment[]
+
+  @@index([customerUserId, updatedAt])
+  @@index([updatedAt])
+}
+
+model BeyondMasterChatMessage {
+  id        String   @id @default(cuid())
+  threadId  String
+  thread    BeyondMasterChatThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  role      String
+  body      String
+  createdAt DateTime @default(now())
+
+  @@index([threadId, createdAt])
+}
+
+/// Customer attachment held for support review. Capped at 5 MB in the API.
+model BeyondMasterChatAttachment {
+  id          String   @id @default(cuid())
+  threadId    String
+  thread      BeyondMasterChatThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  fileName    String
+  contentType String
+  sizeBytes   Int
+  data        Bytes
+  createdAt   DateTime @default(now())
+
+  @@index([threadId])
 }
 
 /// Pending DNS change. A row is not a provider write. Confirm executes through the existing DNS service.

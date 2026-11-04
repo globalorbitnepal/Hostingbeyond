@@ -5,7 +5,7 @@ export const BEYOND_MASTER_NAME = "BEYOND MASTER AI";
 
 export const BEYOND_MASTER_LAUNCHER_LABEL = "Agent";
 
-export const BEYOND_MASTER_PANEL_TITLE = "HostingBeyond Agent";
+export const BEYOND_MASTER_PANEL_TITLE = "Beyond Master AI";
 
 export const BEYOND_MASTER_TAGLINE = "Your hosting and business assistant";
 

@@ -66,6 +66,14 @@ type DnsCardState = {
   records: { type: string; host: string; value: string; ttl: number }[] | null;
 };
 
+export type PendingAttachment = {
+  id: string;
+  name: string;
+  sizeBytes: number;
+};
+
+export const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024;
+
 type Snapshot = {
   open: boolean;
   view: BeyondMasterView;
@@ -80,6 +88,8 @@ type Snapshot = {
   accountCards: AccountCard[] | null;
   dnsCard: DnsCardState | null;
   domainSuggestions: BeyondMasterDomainSuggestion[] | null;
+  attachments: PendingAttachment[];
+  uploading: boolean;
 };
 
 const serverSnapshot: Snapshot = {
@@ -96,6 +106,8 @@ const serverSnapshot: Snapshot = {
   accountCards: null,
   dnsCard: null,
   domainSuggestions: null,
+  attachments: [],
+  uploading: false,
 };
 
 let snapshot: Snapshot = serverSnapshot;
@@ -206,7 +218,118 @@ export function openBeyondMasterAi() {
 export function closeBeyondMasterAi() {
   sendController?.abort();
   sendController = null;
-  emit({ ...snapshot, open: false, checking: false, streaming: false });
+  const conversation = activeConversation(snapshot);
+  void persistActiveThread(snapshot);
+  emit({
+    ...snapshot,
+    open: false,
+    checking: false,
+    streaming: false,
+    attachments: [],
+    activeId: "",
+    conversations: conversation
+      ? snapshot.conversations.filter((item) => item.id !== conversation.id)
+      : snapshot.conversations,
+  });
+}
+
+function persistActiveThread(state: Snapshot) {
+  const conversation = activeConversation(state);
+  if (!conversation || conversation.messages.length === 0) return;
+  const payload = JSON.stringify({
+    threadId: conversation.id,
+    title: conversation.title,
+    messages: conversation.messages.map((message) => ({
+      role: message.role,
+      body: message.body,
+      createdAt: message.createdAt,
+    })),
+  });
+  try {
+    const body =
+      typeof navigator !== "undefined" &&
+      typeof navigator.sendBeacon === "function"
+        ? new Blob([payload], { type: "application/json" })
+        : null;
+    if (body && navigator.sendBeacon("/api/beyond-master/threads", body)) {
+      return;
+    }
+  } catch {
+    /* fall through to fetch */
+  }
+  void fetch("/api/beyond-master/threads", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: payload,
+    keepalive: true,
+  }).catch(() => undefined);
+}
+
+export function removeBeyondMasterAttachment(id: string) {
+  emit({
+    ...snapshot,
+    attachments: snapshot.attachments.filter((file) => file.id !== id),
+  });
+}
+
+export async function uploadBeyondMasterAttachments(files: File[]) {
+  if (files.length === 0) return;
+  const tooLarge = files.find((file) => file.size > MAX_ATTACHMENT_BYTES);
+  if (tooLarge) {
+    emit({
+      ...snapshot,
+      error: `${tooLarge.name} is larger than 5 MB.`,
+    });
+    return;
+  }
+  const ensured = ensureActive(snapshot);
+  emit({
+    ...ensured.state,
+    uploading: true,
+    error: null,
+    attachments: [
+      ...snapshot.attachments,
+      ...files.map((file) => ({
+        id: `pending-${file.name}-${file.size}-${Date.now()}`,
+        name: file.name,
+        sizeBytes: file.size,
+      })),
+    ],
+  });
+  const form = new FormData();
+  form.set("title", ensured.conversation.title);
+  for (const file of files) form.append("files", file);
+  try {
+    const response = await fetch(
+      `/api/beyond-master/threads/${encodeURIComponent(ensured.conversation.id)}/attachments`,
+      { method: "POST", body: form },
+    );
+    const payload = (await response.json().catch(() => null)) as {
+      error?: string;
+      saved?: number;
+    } | null;
+    if (!response.ok) {
+      emit({
+        ...snapshot,
+        uploading: false,
+        attachments: [],
+        error: payload?.error ?? "The file could not be uploaded.",
+      });
+      return;
+    }
+    emit({
+      ...snapshot,
+      uploading: false,
+      attachments: [],
+    });
+  } catch {
+    emit({
+      ...snapshot,
+      uploading: false,
+      attachments: [],
+      error: "The file could not be uploaded.",
+    });
+  }
 }
 
 export function toggleBeyondMasterHistory() {
@@ -534,6 +657,7 @@ export async function sendBeyondMasterMessage(text?: string) {
     if (failedMessage) throw new Error(failedMessage);
     if (snapshot.checking)
       emit({ ...snapshot, checking: false, streaming: false });
+    persistActiveThread(snapshot);
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") {
       const current = activeConversation(snapshot);

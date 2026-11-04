@@ -22,6 +22,7 @@ import {
   LogOut,
   Mail,
   Menu,
+  MessageSquare,
   Navigation,
   PenLine,
   Search,
@@ -82,6 +83,11 @@ const nav: NavGroup[] = [
         href: "/orbit/beyond-master/tickets",
         label: "Support Tickets",
         icon: FileText,
+      },
+      {
+        href: "/orbit/beyond-master/conversations",
+        label: "Agent conversations",
+        icon: MessageSquare,
       },
       {
         href: "/orbit/beyond-master/knowledge",

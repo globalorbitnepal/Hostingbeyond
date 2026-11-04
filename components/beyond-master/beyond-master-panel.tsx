@@ -1,8 +1,8 @@
 "use client";
 
-import { FormEvent, useEffect, useId, useRef } from "react";
+import { FormEvent, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowUp, Clock3, Plus, X } from "lucide-react";
+import { ArrowUp, Clock3, ImagePlus, Plus, X } from "lucide-react";
 
 import {
   BEYOND_MASTER_DISCLAIMER,
@@ -19,6 +19,7 @@ import {
   closeBeyondMasterAi,
   copyBeyondMasterMessage,
   hydrateBeyondMasterAi,
+  removeBeyondMasterAttachment,
   retryBeyondMasterMessage,
   selectBeyondMasterConversation,
   sendBeyondMasterMessage,
@@ -30,6 +31,7 @@ import {
   confirmBeyondMasterDns,
   cancelBeyondMasterDns,
   toggleBeyondMasterHistory,
+  uploadBeyondMasterAttachments,
   useBeyondMasterAi,
 } from "@/lib/beyond-master/ui-store";
 
@@ -58,6 +60,8 @@ export function BeyondMasterAiPanel() {
     (item) => item.id === state.activeId,
   );
   const messages = conversation?.messages ?? [];
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [dragging, setDragging] = useState(false);
   const lastUser = [...messages]
     .reverse()
     .find((message) => message.role === "user");
@@ -112,8 +116,28 @@ export function BeyondMasterAiPanel() {
         aria-labelledby={titleId}
         aria-hidden={!state.open}
         data-open={state.open ? "true" : "false"}
+        data-dragging={dragging ? "true" : "false"}
         className="hb-bmai-panel"
         inert={state.open ? undefined : true}
+        onDragOver={(event) => {
+          event.preventDefault();
+          setDragging(true);
+        }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={(event) => {
+          event.preventDefault();
+          setDragging(false);
+          void uploadBeyondMasterAttachments(
+            Array.from(event.dataTransfer.files),
+          );
+        }}
+        onPaste={(event) => {
+          const files = Array.from(event.clipboardData.files);
+          if (files.length > 0) {
+            event.preventDefault();
+            void uploadBeyondMasterAttachments(files);
+          }
+        }}
       >
         <header className="hb-bmai-header">
           <span className="hb-bmai-mark">
@@ -523,10 +547,51 @@ export function BeyondMasterAiPanel() {
           </p>
         ) : null}
 
+        {state.attachments.length > 0 || state.uploading ? (
+          <div className="hb-bmai-attachments" aria-label="Attachments">
+            {state.attachments.map((file) => (
+              <span key={file.id} className="hb-bmai-attachment">
+                <ImagePlus className="size-3.5" aria-hidden />
+                {file.name}
+                <button
+                  type="button"
+                  aria-label={`Remove ${file.name}`}
+                  onClick={() => removeBeyondMasterAttachment(file.id)}
+                >
+                  <X className="size-3" />
+                </button>
+              </span>
+            ))}
+            {state.uploading ? (
+              <span className="hb-bmai-attachment">Uploading…</span>
+            ) : null}
+          </div>
+        ) : null}
+
         <form className="hb-bmai-composer" onSubmit={onSubmit}>
           <label className="sr-only" htmlFor="beyond-master-ai-input">
             Message {BEYOND_MASTER_LAUNCHER_LABEL}
           </label>
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="sr-only"
+            accept="image/png,image/jpeg,image/webp,image/gif,application/pdf,text/plain,text/csv"
+            multiple
+            onChange={(event) => {
+              const files = Array.from(event.target.files ?? []);
+              event.target.value = "";
+              void uploadBeyondMasterAttachments(files);
+            }}
+          />
+          <button
+            type="button"
+            className="hb-bmai-attach"
+            aria-label="Attach a file up to 5 MB"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <ImagePlus className="size-[18px]" />
+          </button>
           <textarea
             id="beyond-master-ai-input"
             ref={inputRef}

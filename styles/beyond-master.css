@@ -133,18 +133,18 @@
   overflow: hidden;
   color: var(--bmai-ink);
   background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.9) 0%,
-      rgba(244, 247, 255, 0.82) 100%
-    ),
     radial-gradient(
-      120% 80% at 100% 0%,
-      rgba(124, 58, 237, 0.14),
+      120% 62% at 100% 0%,
+      rgba(124, 58, 237, 0.12),
       transparent 46%
     ),
-    radial-gradient(90% 60% at 0% 100%, rgba(37, 99, 235, 0.1), transparent 42%);
-  border: 1px solid rgba(124, 58, 237, 0.16);
+    radial-gradient(
+      90% 60% at 0% 100%,
+      rgba(37, 99, 235, 0.09),
+      transparent 42%
+    ),
+    linear-gradient(175deg, #fdfcff 0%, #fbf8ff 46%, #f7f8ff 100%);
+  border: 1px solid rgba(124, 58, 237, 0.14);
   border-radius: 28px;
   box-shadow:
     0 28px 80px rgba(37, 99, 235, 0.16),
@@ -203,7 +203,9 @@
 .hb-bmai-title strong {
   display: block;
   overflow: hidden;
-  font-size: 14px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -371,15 +373,17 @@
   align-self: flex-end;
   max-width: 82%;
   color: #4c1d95;
-  background: #ede9fe;
+  background: linear-gradient(180deg, #f5f0ff, #ede4ff);
+  border: 1px solid rgba(124, 58, 237, 0.12);
 }
 
 .hb-bmai-notice,
 .hb-bmai-assistant {
   align-self: flex-start;
   max-width: 92%;
-  border: 0;
-  background: rgba(248, 250, 252, 0.92);
+  border: 1px solid rgba(124, 58, 237, 0.08);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 6px 16px rgba(76, 29, 149, 0.05);
 }
 
 .hb-bmai-kicker {
@@ -496,6 +500,53 @@
   align-items: center;
   gap: 8px;
   padding: 12px 14px 8px;
+}
+
+.hb-bmai-attach {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  place-items: center;
+  border: 1px solid rgba(124, 58, 237, 0.22);
+  border-radius: 999px;
+  color: #6941c6;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.hb-bmai-attach:hover {
+  background: #f5f3ff;
+}
+
+.hb-bmai-attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 16px 8px;
+}
+
+.hb-bmai-attachment {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  color: #475467;
+  background: rgba(255, 255, 255, 0.85);
+  font-size: 11px;
+}
+
+.hb-bmai-attachment button {
+  display: grid;
+  place-items: center;
+  border: 0;
+  color: #6941c6;
+  background: transparent;
+}
+
+.hb-bmai-panel[data-dragging="true"] {
+  outline: 2px dashed rgba(124, 58, 237, 0.55);
+  outline-offset: -8px;
 }
 
 .hb-bmai-composer textarea {
