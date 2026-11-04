@@ -36,7 +36,9 @@ export function BeyondMasterAiLauncher({
         <span className="hb-bmai-launch-mark">
           <BeyondMasterIcon size={14} />
         </span>
-        {BEYOND_MASTER_LAUNCHER_LABEL}
+        <span className="notranslate" translate="no">
+          {BEYOND_MASTER_LAUNCHER_LABEL}
+        </span>
       </button>
     );
   }
@@ -55,7 +57,9 @@ export function BeyondMasterAiLauncher({
       <span className="hb-bmai-launch-mark">
         <BeyondMasterIcon size={compact ? 13 : 14} />
       </span>
-      <span>{BEYOND_MASTER_LAUNCHER_LABEL}</span>
+      <span className="notranslate" translate="no">
+        {BEYOND_MASTER_LAUNCHER_LABEL}
+      </span>
     </button>
   );
 }

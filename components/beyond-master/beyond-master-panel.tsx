@@ -173,7 +173,9 @@ export function BeyondMasterAiPanel() {
             <BeyondMasterIcon size={20} />
           </span>
           <div className="hb-bmai-title">
-            <strong id={titleId}>{BEYOND_MASTER_PANEL_TITLE}</strong>
+            <strong id={titleId} className="notranslate" translate="no">
+              {BEYOND_MASTER_PANEL_TITLE}
+            </strong>
             <span>{BEYOND_MASTER_TAGLINE}</span>
           </div>
           <button
@@ -512,7 +514,12 @@ export function BeyondMasterAiPanel() {
         {state.domainSuggestions?.length ? (
           <div className="hb-bmai-domains" aria-label="Domain suggestions">
             {state.domainSuggestions.map((row) => (
-              <a key={row.domain} className="hb-bmai-domain" href={row.href}>
+              <a
+                key={row.domain}
+                className="hb-bmai-domain notranslate"
+                href={row.href}
+                translate="no"
+              >
                 <span>
                   <strong>{row.domain}</strong>
                   <span>
@@ -578,7 +585,7 @@ export function BeyondMasterAiPanel() {
           </p>
         ) : null}
 
-        {messages.length > 0 ? (
+        {messages.length > 0 && (ticketRows.length > 0 || ticketNote) ? (
           <section className="hb-bmai-review" aria-label="Your support tickets">
             <h3>Your support tickets</h3>
             <div className="hb-bmai-review-actions">
