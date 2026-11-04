@@ -8,32 +8,63 @@
 }
 
 .hb-bmai-launch {
+  --bmai-ring: conic-gradient(
+    from 180deg,
+    #7c3aed,
+    #2563eb,
+    #22d3ee,
+    #a855f7,
+    #7c3aed
+  );
+  position: relative;
   display: inline-flex;
   height: 36px;
   max-width: none;
   align-items: center;
   gap: 8px;
-  padding: 0 12px 0 6px;
-  border: 1px solid rgba(124, 58, 237, 0.22);
+  padding: 0 14px 0 10px;
+  border: 0;
   border-radius: 999px;
-  color: #101828;
-  background: #fff;
+  color: #f8fafc;
+  background:
+    linear-gradient(#0b1224, #0b1224) padding-box,
+    var(--bmai-ring) border-box;
   box-shadow:
-    0 0 0 1px rgba(124, 58, 237, 0.06),
-    0 8px 18px rgba(79, 70, 229, 0.12);
+    0 8px 20px rgba(37, 99, 235, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 650;
   letter-spacing: 0.01em;
+  isolation: isolate;
   transition:
     transform 180ms ease,
     box-shadow 180ms ease;
 }
 
-.hb-bmai-launch:hover {
+.hb-bmai-launch::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: var(--bmai-ring);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.hb-bmai-launch:hover,
+.hb-bmai-launch[data-open="true"] {
   transform: translateY(-1px);
   box-shadow:
-    0 0 0 1px rgba(124, 58, 237, 0.16),
-    0 12px 24px rgba(79, 70, 229, 0.18);
+    0 12px 26px rgba(124, 58, 237, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 .hb-bmai-launch:focus-visible {
@@ -42,9 +73,9 @@
 }
 
 .hb-bmai-launch-compact {
-  height: 34px;
-  padding: 0 10px 0 5px;
-  font-size: 12px;
+  height: 36px;
+  padding: 0 12px 0 8px;
+  font-size: 13px;
 }
 
 .hb-bmai-launch-menu {
@@ -57,15 +88,11 @@
 
 .hb-bmai-launch-mark {
   display: grid;
-  width: 24px;
-  height: 24px;
+  width: 18px;
+  height: 18px;
   flex: none;
   place-items: center;
-  border-radius: 999px;
   color: #fff;
-  background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 55%, #22d3ee 130%);
-  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
-  animation: hb-bmai-glow 2.8s ease-in-out infinite;
 }
 
 .hb-bmai-backdrop {
@@ -73,30 +100,46 @@
   inset: 0;
   z-index: 70;
   border: 0;
-  background: rgba(15, 23, 42, 0.28);
+  background: rgba(11, 18, 36, 0.18);
 }
 
 .hb-bmai-panel {
   position: fixed;
-  top: 72px;
-  right: 16px;
+  top: 12px;
+  right: 12px;
   z-index: 71;
   display: flex;
-  width: min(400px, calc(100vw - 24px));
-  height: min(640px, calc(100dvh - 96px));
+  width: min(420px, calc(100vw - 24px));
+  height: calc(100dvh - 24px);
+  max-height: calc(100dvh - 24px);
   flex-direction: column;
   overflow: hidden;
   color: var(--bmai-ink);
-  background: #fff;
-  border: 1px solid var(--bmai-line);
-  border-radius: 24px;
-  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.18);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.9) 0%,
+      rgba(244, 247, 255, 0.82) 100%
+    ),
+    radial-gradient(
+      120% 80% at 100% 0%,
+      rgba(124, 58, 237, 0.14),
+      transparent 46%
+    ),
+    radial-gradient(90% 60% at 0% 100%, rgba(37, 99, 235, 0.1), transparent 42%);
+  border: 1px solid rgba(124, 58, 237, 0.16);
+  border-radius: 28px;
+  box-shadow:
+    0 28px 80px rgba(37, 99, 235, 0.16),
+    0 8px 24px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(22px) saturate(1.35);
   opacity: 0;
-  transform: translateY(-10px) scale(0.98);
+  transform: translateX(18px);
   transform-origin: top right;
   transition:
-    transform 220ms ease,
-    opacity 220ms ease;
+    transform 240ms ease,
+    opacity 240ms ease;
 }
 
 .hb-bmai-panel[data-open="false"] {
@@ -125,13 +168,14 @@
 
 .hb-bmai-mark {
   display: grid;
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   flex: none;
   place-items: center;
   border-radius: 12px;
   color: #fff;
-  background: linear-gradient(135deg, #7c3aed 0%, #2563eb 58%, #22d3ee 140%);
+  background: linear-gradient(145deg, #7c3aed 0%, #4f46e5 48%, #2563eb 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
 
 .hb-bmai-title {
@@ -200,14 +244,22 @@
 
 .hb-bmai-hero-mark {
   display: grid;
-  width: 84px;
-  height: 84px;
+  width: 88px;
+  height: 88px;
   place-items: center;
   margin-bottom: 18px;
   border-radius: 28px;
-  color: #64748b;
-  background: radial-gradient(circle at 50% 30%, #f8fafc, #e2e8f0);
-  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.08);
+  color: #fff;
+  background:
+    radial-gradient(
+      circle at 50% 28%,
+      rgba(255, 255, 255, 0.28),
+      transparent 46%
+    ),
+    linear-gradient(145deg, #7c3aed 0%, #4f46e5 52%, #2563eb 100%);
+  box-shadow:
+    0 18px 36px rgba(79, 70, 229, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
   animation: hb-bmai-float 3.6s ease-in-out infinite;
 }
 
@@ -300,15 +352,17 @@
 
 .hb-bmai-user {
   align-self: flex-end;
-  color: #fff;
-  background: #7c3aed;
+  max-width: 82%;
+  color: #4c1d95;
+  background: #ede9fe;
 }
 
 .hb-bmai-notice,
 .hb-bmai-assistant {
   align-self: flex-start;
-  border: 1px solid var(--bmai-line);
-  background: #f8fafc;
+  max-width: 92%;
+  border: 0;
+  background: rgba(248, 250, 252, 0.92);
 }
 
 .hb-bmai-kicker {
@@ -342,7 +396,7 @@
 
 .hb-bmai-user .hb-bmai-meta,
 .hb-bmai-user .hb-bmai-text-btn {
-  color: rgba(255, 255, 255, 0.82);
+  color: #7c3aed;
 }
 
 .hb-bmai-text-btn {
@@ -428,15 +482,15 @@
 }
 
 .hb-bmai-composer textarea {
-  min-height: 44px;
+  min-height: 46px;
   max-height: 140px;
   flex: 1;
   resize: none;
-  border: 1px solid #d6bbfb;
+  border: 1px solid rgba(124, 58, 237, 0.28);
   border-radius: 999px;
-  padding: 11px 16px;
+  padding: 12px 16px;
   color: var(--bmai-ink);
-  background: #fff;
+  background: rgba(255, 255, 255, 0.78);
   font: inherit;
   font-size: 14px;
   line-height: 1.4;
@@ -455,7 +509,8 @@
   border: 0;
   border-radius: 999px;
   color: white;
-  background: #7c3aed;
+  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  box-shadow: 0 8px 16px rgba(124, 58, 237, 0.28);
 }
 
 .hb-bmai-send:disabled {

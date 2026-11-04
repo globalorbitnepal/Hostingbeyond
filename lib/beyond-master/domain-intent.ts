@@ -38,6 +38,15 @@ const STOP = new Set([
   "that",
 ]);
 
+const GREETING =
+  /^(hi+|h+e+y+|h+e+l+o+|hola|namaste|नमस्ते|हाइ|हेलो)([!?.\s]*)$/i;
+
+export function isAgentGreeting(message: string): boolean {
+  const text = message.trim();
+  if (!text || text.length > 24) return false;
+  return GREETING.test(text);
+}
+
 export function wantsDomainHelp(message: string): boolean {
   return DOMAIN_HELP.test(message.toLowerCase()) || FQDN.test(message);
 }

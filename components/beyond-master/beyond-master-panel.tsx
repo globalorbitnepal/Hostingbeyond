@@ -1,8 +1,8 @@
 "use client";
 
-import { FormEvent, useEffect, useId, useRef, useState } from "react";
+import { FormEvent, useEffect, useId, useRef } from "react";
 import { createPortal } from "react-dom";
-import { Clock3, Plus, Send, X } from "lucide-react";
+import { ArrowUp, Clock3, Plus, X } from "lucide-react";
 
 import {
   BEYOND_MASTER_DISCLAIMER,
@@ -33,6 +33,8 @@ import {
   useBeyondMasterAi,
 } from "@/lib/beyond-master/ui-store";
 
+import { isAgentGreeting } from "@/lib/beyond-master/domain-intent";
+
 import "@/styles/beyond-master.css";
 import { BeyondMasterIcon } from "./beyond-master-icon";
 
@@ -56,67 +58,12 @@ export function BeyondMasterAiPanel() {
     (item) => item.id === state.activeId,
   );
   const messages = conversation?.messages ?? [];
-  const [ticketQuery, setTicketQuery] = useState("");
-  const [ticketStatus, setTicketStatus] = useState("");
-  const [ticketRows, setTicketRows] = useState<
-    { reference: string; status: string; subject: string; updatedAt: string }[]
-  >([]);
-  const [ticketNote, setTicketNote] = useState("");
-  const [replyReference, setReplyReference] = useState("");
-  const [replyBody, setReplyBody] = useState("");
-
-  async function loadTickets() {
-    const params = new URLSearchParams();
-    if (ticketStatus) params.set("status", ticketStatus);
-    if (ticketQuery.trim()) params.set("q", ticketQuery.trim());
-    const response = await fetch(
-      `/api/beyond-master/tickets?${params.toString()}`,
-    );
-    const payload = (await response.json().catch(() => null)) as {
-      error?: string;
-      tickets?: {
-        reference: string;
-        status: string;
-        subject: string;
-        updatedAt: string;
-      }[];
-    } | null;
-    if (!response.ok) {
-      setTicketNote(payload?.error ?? "Tickets could not be loaded.");
-      setTicketRows([]);
-      return;
-    }
-    setTicketNote("");
-    setTicketRows(payload?.tickets ?? []);
-  }
-
-  async function sendTicketReply() {
-    if (
-      !/^BM-[0-9]+$/.test(replyReference.trim()) ||
-      replyBody.trim().length < 2
-    ) {
-      setTicketNote("Choose one of your ticket references and write a reply.");
-      return;
-    }
-    const response = await fetch(
-      `/api/beyond-master/tickets/${encodeURIComponent(replyReference.trim())}/replies`,
-      {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ body: replyBody }),
-      },
-    );
-    const payload = (await response.json().catch(() => null)) as {
-      error?: string;
-    } | null;
-    if (!response.ok) {
-      setTicketNote(payload?.error ?? "The reply was not saved.");
-      return;
-    }
-    setReplyBody("");
-    setTicketNote(`Reply saved on ${replyReference.trim()}.`);
-    await loadTickets();
-  }
+  const lastUser = [...messages]
+    .reverse()
+    .find((message) => message.role === "user");
+  const showFollowUps = Boolean(
+    lastUser && isAgentGreeting(lastUser.body) && !state.checking,
+  );
 
   useEffect(() => {
     hydrateBeyondMasterAi();
@@ -279,30 +226,12 @@ export function BeyondMasterAiPanel() {
                         >
                           Retry
                         </button>
-                      ) : (
-                        <span>
-                          {message.status === "pending" ? "Sending" : "Sent"}
-                        </span>
-                      )}
+                      ) : null}
                     </div>
                   </article>
                 ) : message.role === "assistant" ? (
                   <article key={message.id} className="hb-bmai-assistant">
                     <p>{message.body}</p>
-                    <div className="hb-bmai-meta">
-                      <time dateTime={message.createdAt}>
-                        {formatStamp(message.createdAt)}
-                      </time>
-                      <button
-                        type="button"
-                        className="hb-bmai-text-btn"
-                        onClick={() =>
-                          void copyBeyondMasterMessage(message.id, message.body)
-                        }
-                      >
-                        {state.copiedId === message.id ? "Copied" : "Copy"}
-                      </button>
-                    </div>
                   </article>
                 ) : (
                   <article key={message.id} className="hb-bmai-notice">
@@ -332,16 +261,30 @@ export function BeyondMasterAiPanel() {
                     <i />
                     <i />
                   </span>
-                  {state.streaming
-                    ? "Agent is writing…"
-                    : "Agent is looking that up…"}
+                  <span className="sr-only">Agent is writing</span>
+                </div>
+              ) : null}
+              {showFollowUps ? (
+                <div className="hb-bmai-actions">
+                  {BEYOND_MASTER_QUICK_ACTIONS.map((action) => (
+                    <button
+                      key={action.id}
+                      type="button"
+                      className="hb-bmai-action"
+                      onClick={() =>
+                        void sendBeyondMasterMessage(action.prompt)
+                      }
+                    >
+                      <strong>{action.label}</strong>
+                    </button>
+                  ))}
                 </div>
               ) : null}
             </div>
           )}
         </div>
 
-        {state.dnsCard ? (
+        {state.dnsCard && state.dnsCard.state !== "loading" ? (
           <section className="hb-bmai-review" aria-label="DNS review">
             <h3>Review Changes</h3>
             {state.dnsCard.state === "loading" ||
@@ -585,66 +528,6 @@ export function BeyondMasterAiPanel() {
           </p>
         ) : null}
 
-        {messages.length > 0 && (ticketRows.length > 0 || ticketNote) ? (
-          <section className="hb-bmai-review" aria-label="Your support tickets">
-            <h3>Your support tickets</h3>
-            <div className="hb-bmai-review-actions">
-              <input
-                aria-label="Search tickets"
-                value={ticketQuery}
-                onChange={(event) => setTicketQuery(event.target.value)}
-                placeholder="Search reference or subject"
-              />
-              <select
-                aria-label="Filter by status"
-                value={ticketStatus}
-                onChange={(event) => setTicketStatus(event.target.value)}
-              >
-                <option value="">All statuses</option>
-                <option value="open">Open</option>
-                <option value="in_progress">In progress</option>
-                <option value="waiting_customer">Waiting for customer</option>
-                <option value="waiting_support">Waiting for support</option>
-                <option value="resolved">Resolved</option>
-                <option value="closed">Closed</option>
-              </select>
-              <button type="button" onClick={() => void loadTickets()}>
-                Search
-              </button>
-            </div>
-            {ticketNote ? <p>{ticketNote}</p> : null}
-            <ul>
-              {ticketRows.map((ticket) => (
-                <li key={ticket.reference}>
-                  <button
-                    type="button"
-                    onClick={() => setReplyReference(ticket.reference)}
-                  >
-                    {ticket.reference} · {ticket.status} · {ticket.subject}
-                  </button>
-                </li>
-              ))}
-            </ul>
-            <div className="hb-bmai-review-actions">
-              <input
-                aria-label="Ticket reference"
-                value={replyReference}
-                onChange={(event) => setReplyReference(event.target.value)}
-                placeholder="BM-1000"
-              />
-              <input
-                aria-label="Reply"
-                value={replyBody}
-                onChange={(event) => setReplyBody(event.target.value)}
-                placeholder="Reply"
-              />
-              <button type="button" onClick={() => void sendTicketReply()}>
-                Reply
-              </button>
-            </div>
-          </section>
-        ) : null}
-
         <form className="hb-bmai-composer" onSubmit={onSubmit}>
           <label className="sr-only" htmlFor="beyond-master-ai-input">
             Message {BEYOND_MASTER_LAUNCHER_LABEL}
@@ -670,7 +553,7 @@ export function BeyondMasterAiPanel() {
             aria-label={state.checking ? "Sending" : "Send"}
             disabled={state.checking || state.draft.trim().length === 0}
           >
-            <Send className="size-4" />
+            <ArrowUp className="size-4" />
           </button>
         </form>
         <p className="hb-bmai-foot">{BEYOND_MASTER_DISCLAIMER}</p>

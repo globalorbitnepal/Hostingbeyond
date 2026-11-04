@@ -270,7 +270,7 @@ export async function sendBeyondMasterMessage(text?: string) {
     checking: true,
     accountCards: null,
     domainSuggestions: null,
-    dnsCard: { state: "loading", proposal: null, message: null, records: null },
+    dnsCard: null,
     activeId: withUser.id,
     conversations: upsertConversation(ensured.state.conversations, withUser),
   });

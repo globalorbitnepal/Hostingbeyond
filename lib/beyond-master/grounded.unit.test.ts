@@ -56,6 +56,12 @@ describe("beyond master grounded replies", () => {
     assert.equal(reply.domains[0]?.domain, "bakery.com");
   });
 
+  it("greets short hellos instead of dumping product lists", async () => {
+    const reply = await groundedBeyondMasterReply("helo");
+    assert.match(reply.text, /Hi! Tell me what you'd like to get started/);
+    assert.equal(reply.text.includes("/web-hosting"), false);
+  });
+
   it("answers DNS from customer help, not a provider notice", async () => {
     const reply = await groundedBeyondMasterReply("Help me with DNS");
     assert.match(reply.text, /account\/my-domains/);

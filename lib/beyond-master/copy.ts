@@ -18,8 +18,10 @@ export const BEYOND_MASTER_PRIMARY_TITLE = "Help me find what I need";
 export const BEYOND_MASTER_PRIMARY_BODY =
   "Tell me what you are trying to do and I will point you in the right direction.";
 
-export const BEYOND_MASTER_INPUT_PLACEHOLDER =
-  "Ask anything about HostingBeyond...";
+export const BEYOND_MASTER_INPUT_PLACEHOLDER = "Message HostingBeyond Agent...";
+
+export const BEYOND_MASTER_GREETING_REPLY =
+  "Hi! Tell me what you'd like to get started with — a domain, hosting, business email, or your website — or describe it in your own words.";
 
 export const BEYOND_MASTER_DISCLAIMER =
   "AI can make mistakes. Double-check replies.";

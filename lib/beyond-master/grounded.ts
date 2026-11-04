@@ -1,7 +1,9 @@
 import { catalogIntent } from "@/lib/beyond-master/knowledge/catalog";
 import { retrieveBeyondMasterKnowledge } from "@/lib/beyond-master/knowledge/retrieve";
+import { BEYOND_MASTER_GREETING_REPLY } from "@/lib/beyond-master/copy";
 import {
   extractDomainQuery,
+  isAgentGreeting,
   wantsDomainHelp,
 } from "@/lib/beyond-master/domain-intent";
 import {
@@ -23,7 +25,7 @@ const CUSTOMER_GUIDES: Array<{ test: RegExp; text: string }> = [
   },
   {
     test: /hosting|wordpress|vps|website|plan|price|cost|compare/,
-    text: `Public hosting pages:\n• Web Hosting — /web-hosting\n• WordPress — /web-hosting/wordpress\n• eCommerce — /web-hosting/ecommerce\n• Business / cloud — /cloud-hosting\n• VPS — /kvm-vps, /nvme-vps, /linux-vps, /managed-vps\n• Pricing overview — /pricing\nTell me the stack (WordPress, Node.js, a shop, or a VPS) and I will narrow this.`,
+    text: `I can help you pick HostingBeyond hosting for a site, WordPress, a shop, or a VPS.\nStart here:\n• Web Hosting — /web-hosting\n• WordPress — /web-hosting/wordpress\n• eCommerce — /web-hosting/ecommerce\n• VPS — /kvm-vps\n• All plans — /pricing\nTell me what you are building and I will point to the matching plan. I will not guess a price unless the live catalog lists it.`,
   },
   {
     test: /email|mailbox|webmail|mx/,
@@ -48,6 +50,9 @@ export async function groundedBeyondMasterReply(
   search: (query: string) => Promise<AgentDomainSearch> = searchDomainsForAgent,
 ): Promise<GroundedReply> {
   const text = question.trim();
+  if (isAgentGreeting(text)) {
+    return { text: BEYOND_MASTER_GREETING_REPLY, domains: [] };
+  }
   if (wantsDomainHelp(text)) {
     const query = extractDomainQuery(text);
     if (!query) {

@@ -2,6 +2,7 @@
 
 import { BEYOND_MASTER_LAUNCHER_LABEL } from "@/lib/beyond-master/copy";
 import {
+  closeBeyondMasterAi,
   openBeyondMasterAi,
   useBeyondMasterAi,
 } from "@/lib/beyond-master/ui-store";
@@ -19,8 +20,9 @@ export function BeyondMasterAiLauncher({
   onOpen?: () => void;
 }) {
   const { open } = useBeyondMasterAi();
-  const openPanel = () => {
-    openBeyondMasterAi();
+  const togglePanel = () => {
+    if (open) closeBeyondMasterAi();
+    else openBeyondMasterAi();
     onOpen?.();
   };
 
@@ -31,10 +33,11 @@ export function BeyondMasterAiLauncher({
         className="hb-bmai-launch hb-bmai-launch-menu"
         aria-expanded={open}
         aria-controls="beyond-master-ai-panel"
-        onClick={openPanel}
+        data-open={open ? "true" : "false"}
+        onClick={togglePanel}
       >
         <span className="hb-bmai-launch-mark">
-          <BeyondMasterIcon size={14} />
+          <BeyondMasterIcon size={15} />
         </span>
         <span className="notranslate" translate="no">
           {BEYOND_MASTER_LAUNCHER_LABEL}
@@ -52,10 +55,11 @@ export function BeyondMasterAiLauncher({
       aria-expanded={open}
       aria-controls="beyond-master-ai-panel"
       aria-label={BEYOND_MASTER_LAUNCHER_LABEL}
-      onClick={openPanel}
+      data-open={open ? "true" : "false"}
+      onClick={togglePanel}
     >
       <span className="hb-bmai-launch-mark">
-        <BeyondMasterIcon size={compact ? 13 : 14} />
+        <BeyondMasterIcon size={15} />
       </span>
       <span className="notranslate" translate="no">
         {BEYOND_MASTER_LAUNCHER_LABEL}
