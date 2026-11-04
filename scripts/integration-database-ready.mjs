@@ -1,42 +1,26 @@
 #!/usr/bin/env node
 /**
- * Returns 0 when DATABASE_URL targets the isolated integration database
- * and TCP to the host:port succeeds. Does not run Prisma, migrations, SQL,
- * or credential checks — a listening non-CI Postgres on 5432 can still pass TCP.
+ * Returns 0 when DATABASE_URL is an isolated integration target (local host,
+ * expected database name, non-production role) and TCP to the host:port succeeds.
+ * Does not run Prisma, migrations, or SQL.
  */
 import net from "node:net";
 
-const REQUIRED_DB = "hostingbeyond_integration_test";
-const ALLOWED_HOSTS = new Set(["127.0.0.1", "localhost", "::1"]);
+import { checkIsolatedIntegrationDatabaseUrl } from "./isolated-database-policy.mjs";
 
 function fail(message) {
   console.error(`INTEGRATION_DB_NOT_READY: ${message}`);
   process.exit(1);
 }
 
-const raw = process.env.DATABASE_URL?.trim();
-if (!raw) {
-  fail("DATABASE_URL is not set");
+const result = checkIsolatedIntegrationDatabaseUrl(process.env.DATABASE_URL);
+if (!result.ok) {
+  fail(result.reason);
 }
 
-let url;
-try {
-  url = new URL(raw);
-} catch {
-  fail("DATABASE_URL is not a valid URL");
-}
-
-if (!ALLOWED_HOSTS.has(url.hostname)) {
-  fail("host must be local (127.0.0.1, localhost, or ::1)");
-}
-
-const db = url.pathname.replace(/^\//, "").split("?")[0];
-if (db !== REQUIRED_DB) {
-  fail(`database must be ${REQUIRED_DB}`);
-}
-
-const port = Number(url.port || "5432");
-const host = url.hostname === "localhost" ? "127.0.0.1" : url.hostname;
+const { host: rawHost, port: portText, database: db } = result.meta;
+const port = Number(portText || "5432");
+const host = rawHost === "localhost" ? "127.0.0.1" : rawHost;
 
 await new Promise((resolve, reject) => {
   const socket = net.connect({ host, port, timeout: 2000 }, () => {

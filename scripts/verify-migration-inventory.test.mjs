@@ -19,7 +19,7 @@ describe("verify-migration-inventory", () => {
     const inventory = loadCommittedInventory();
     const result = compareMigrationInventory(inventory, folders);
     assert.equal(result.ok, true, JSON.stringify(result));
-    assert.equal(folders.length, 21);
+    assert.equal(folders.length, 25);
     for (const name of REQUIRED_PHASE2) {
       assert.ok(folders.includes(name), name);
     }
@@ -28,7 +28,10 @@ describe("verify-migration-inventory", () => {
   it("detects folders missing from inventory", () => {
     const result = compareMigrationInventory(
       ["20260829120000_orbit_cms_init"],
-      ["20260829120000_orbit_cms_init", "20261025120000_namesilo_pricing_provider"],
+      [
+        "20260829120000_orbit_cms_init",
+        "20261025120000_namesilo_pricing_provider",
+      ],
     );
     assert.equal(result.ok, false);
     assert.deepEqual(result.missingFromInventory, [
@@ -42,7 +45,9 @@ describe("verify-migration-inventory", () => {
       ["20260829120000_orbit_cms_init"],
     );
     assert.equal(result.ok, false);
-    assert.deepEqual(result.extraInInventory, ["20990101000000_does_not_exist"]);
+    assert.deepEqual(result.extraInInventory, [
+      "20990101000000_does_not_exist",
+    ]);
   });
 
   it("detects duplicate inventory entries", () => {
@@ -62,7 +67,10 @@ describe("verify-migration-inventory", () => {
   });
 
   it("keeps the production preflight runbook free of a stale folder count", () => {
-    const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+    const root = path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+      "..",
+    );
     const runbook = fs.readFileSync(
       path.join(root, "docs/PRODUCTION-PREFLIGHT-RUNBOOK.md"),
       "utf8",

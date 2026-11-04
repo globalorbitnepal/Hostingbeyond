@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
-import type { BeyondAiPlanId } from "@/config/beyond-ai-product";
 import { getPlanConfig } from "@/config/beyond-ai-product";
+import {
+  parseBeyondAiBillingInterval,
+  parseBeyondAiPlanId,
+} from "@/lib/beyond-ai/checkout-request";
 import { createBeyondAiCheckout } from "@/lib/beyond-ai/payments";
 import {
   activateFreePlan,
@@ -27,11 +30,30 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const body = (await request.json()) as {
-    planId?: string;
-    billingInterval?: "monthly" | "yearly";
-  };
-  const planId = (body.planId ?? "pro") as BeyondAiPlanId;
+  const body = (await request.json().catch(() => null)) as {
+    planId?: unknown;
+    billingInterval?: unknown;
+  } | null;
+
+  const planId = parseBeyondAiPlanId(body?.planId);
+  if (!planId) {
+    return NextResponse.json(
+      { error: "Choose a valid Beyond AI plan.", code: "invalid_plan" },
+      { status: 400 },
+    );
+  }
+
+  const billingInterval = parseBeyondAiBillingInterval(body?.billingInterval);
+  if (!billingInterval) {
+    return NextResponse.json(
+      {
+        error: "Choose a monthly or yearly billing interval.",
+        code: "invalid_billing_interval",
+      },
+      { status: 400 },
+    );
+  }
+
   const plan = getPlanConfig(planId);
 
   if (plan.priceMonthly === 0) {
@@ -56,7 +78,7 @@ export async function POST(request: NextRequest) {
     const subscription = await activatePaidPlan(
       user.id,
       planId,
-      body.billingInterval ?? "monthly",
+      billingInterval,
     );
     return NextResponse.json({
       ok: true,

@@ -19,12 +19,30 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = (await request.json()) as { enable?: boolean };
-  await setOnDemandEnabled(user.id, Boolean(body.enable));
+  const body = (await request.json().catch(() => null)) as {
+    enable?: unknown;
+  } | null;
+  if (typeof body?.enable !== "boolean") {
+    return NextResponse.json(
+      { error: "enable must be a boolean." },
+      { status: 400 },
+    );
+  }
+
+  const updated = await setOnDemandEnabled(user.id, body.enable);
+  if (!updated) {
+    return NextResponse.json(
+      {
+        error: "Choose a Beyond AI plan before enabling on-demand usage.",
+        code: "subscription_required",
+      },
+      { status: 409 },
+    );
+  }
 
   return NextResponse.json({
     ok: true,
-    onDemandEnabled: Boolean(body.enable),
+    onDemandEnabled: body.enable,
     estimateUsd: beyondAiOnDemandConfig.defaultEstimateUsd,
   });
 }

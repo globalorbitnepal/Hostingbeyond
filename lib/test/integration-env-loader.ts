@@ -1,9 +1,11 @@
 import { existsSync, readFileSync } from "node:fs";
 
+import { isForbiddenProductionRole } from "@/lib/test/isolated-database-policy";
+
 const INTEGRATION_ENV = ".env.integration.local";
 export const INTEGRATION_DATABASE_NAME = "hostingbeyond_integration_test";
 
-/** Validates integration test DATABASE_URL (host + database name only). */
+/** Host + database name only; role checks use checkIsolatedIntegrationDatabaseUrl. */
 export function assertIntegrationDatabaseUrl(url: string): void {
   const parsed = new URL(url);
   const host = parsed.hostname;
@@ -30,8 +32,14 @@ if (existsSync(INTEGRATION_ENV)) {
       url = url.slice(1, -1);
     }
     assertIntegrationDatabaseUrl(url);
-    // Do not override CI/shell DATABASE_URL (e.g. GitHub Actions service).
-    if (!process.env.DATABASE_URL?.trim()) {
+    let role = "";
+    try {
+      role = decodeURIComponent(new URL(url).username || "");
+    } catch {
+      role = "";
+    }
+    // Do not auto-load the production application role into test processes.
+    if (!isForbiddenProductionRole(role) && !process.env.DATABASE_URL?.trim()) {
       process.env.DATABASE_URL = url;
     }
   }

@@ -34,4 +34,22 @@ describe("transactional mail contract", () => {
     });
     assert.deepEqual(result, { ok: false, reason: "not_configured" });
   });
+
+  it("rejects header-injection recipients", () => {
+    const injected = validateTransactionalMail({
+      to: "victim@example.com\nBcc: other@example.com",
+      template: "order-paid",
+      vars: { orderPublicId: "ord_1" },
+    });
+    assert.deepEqual(injected, { ok: false, reason: "invalid_recipient" });
+  });
+
+  it("rejects unsafe template variables", () => {
+    const unsafe = validateTransactionalMail({
+      to: "user@example.com",
+      template: "support-ticket-received",
+      vars: { ticketPublicId: "id\nBcc: evil@example.com" },
+    });
+    assert.deepEqual(unsafe, { ok: false, reason: "unsafe_template_vars" });
+  });
 });

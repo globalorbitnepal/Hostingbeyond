@@ -59,15 +59,30 @@ export type TransactionalMailMessage = {
 };
 
 export type TransactionalMailResult =
-  { ok: true } | { ok: false; reason: "not_configured" | "invalid_recipient" };
+  | { ok: true }
+  | {
+      ok: false;
+      reason:
+        | "not_configured"
+        | "invalid_recipient"
+        | "invalid_template_vars"
+        | "unsafe_template_vars"
+        | "provider_failed";
+    };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function validateTransactionalMail(
   message: TransactionalMailMessage,
 ): TransactionalMailResult {
-  if (!EMAIL_RE.test(message.to.trim())) {
+  const to = message.to.trim();
+  if (/[\r\n]/.test(message.to) || !EMAIL_RE.test(to)) {
     return { ok: false, reason: "invalid_recipient" };
+  }
+  for (const value of Object.values(message.vars)) {
+    if (typeof value !== "string" || /[\r\n<>]/.test(value)) {
+      return { ok: false, reason: "unsafe_template_vars" };
+    }
   }
   return { ok: false, reason: "not_configured" };
 }

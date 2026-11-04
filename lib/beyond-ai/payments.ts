@@ -11,12 +11,25 @@ export type CheckoutResult =
   | { ok: false; code: "auth_required"; message: string };
 
 /**
+ * Dev-only activation bypass. Refuses to be enabled when the process is a
+ * production build, so a stray `BEYOND_AI_DEV_ACTIVATE_PAID=true` in a real
+ * environment cannot grant paid plans for free.
+ */
+export function isBeyondAiDevActivationAllowed(
+  env: Record<string, string | undefined> = process.env,
+): boolean {
+  if (env.NODE_ENV === "production") return false;
+  return env.BEYOND_AI_DEV_ACTIVATE_PAID === "true";
+}
+
+/**
  * Stripe Checkout is not installed in this repo yet.
  * When STRIPE_SECRET_KEY and price IDs exist, create a session here.
  */
 export async function createBeyondAiCheckout(
   _userId: string,
   planId: BeyondAiPlanId,
+  env: Record<string, string | undefined> = process.env,
 ): Promise<CheckoutResult> {
   if (planId === "free") {
     return {
@@ -26,9 +39,9 @@ export async function createBeyondAiCheckout(
     };
   }
 
-  const stripeKey = process.env.STRIPE_SECRET_KEY?.trim();
+  const stripeKey = env.STRIPE_SECRET_KEY?.trim();
   if (!stripeKey) {
-    if (process.env.BEYOND_AI_DEV_ACTIVATE_PAID === "true") {
+    if (isBeyondAiDevActivationAllowed(env)) {
       return {
         ok: true,
         mode: "dev_activated",

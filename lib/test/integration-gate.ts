@@ -1,6 +1,10 @@
 import { assertIntegrationDatabaseUrl } from "@/lib/test/integration-env-loader";
+import { checkIsolatedIntegrationDatabaseUrl } from "@/lib/test/isolated-database-policy";
 
-/** True when DATABASE_URL targets the isolated integration database on localhost. */
+/**
+ * Host + database name only. Not credential isolation — the production
+ * application role can still satisfy this check.
+ */
 export function isIntegrationDatabaseConfigured(): boolean {
   const url = process.env.DATABASE_URL?.trim();
   if (!url) return false;
@@ -12,6 +16,16 @@ export function isIntegrationDatabaseConfigured(): boolean {
   }
 }
 
+/** True only when host, database name, and role are all integration-safe. */
+export function isIntegrationCredentialIsolated(): boolean {
+  return checkIsolatedIntegrationDatabaseUrl(process.env.DATABASE_URL).ok;
+}
+
+/** Skip/run guard for suites that write to PostgreSQL. */
+export function shouldRunDatabaseIntegrationTests(): boolean {
+  return isIntegrationCredentialIsolated();
+}
+
 /** Call before destructive integration setup; throws if target is not approved. */
 export function assertIntegrationDatabaseTarget(): void {
   const url = process.env.DATABASE_URL?.trim();
@@ -19,4 +33,8 @@ export function assertIntegrationDatabaseTarget(): void {
     throw new Error("integration gate: DATABASE_URL is not set");
   }
   assertIntegrationDatabaseUrl(url);
+  const isolated = checkIsolatedIntegrationDatabaseUrl(url);
+  if (!isolated.ok) {
+    throw new Error(`integration gate: ${isolated.reason}`);
+  }
 }
