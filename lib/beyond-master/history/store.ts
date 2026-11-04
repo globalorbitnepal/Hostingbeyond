@@ -78,13 +78,19 @@ export async function addThreadAttachments(input: {
   customerUserId: string | null;
   title: string;
   files: { fileName: string; contentType: string; data: Buffer }[];
-}): Promise<{ saved: number; errors: string[] }> {
+}): Promise<{
+  saved: number;
+  errors: string[];
+  files: { id: string; fileName: string; sizeBytes: number }[];
+}> {
   const id = input.threadId.trim();
   const errors: string[] = [];
+  const stored: { id: string; fileName: string; sizeBytes: number }[] = [];
   if (!/^[A-Za-z0-9-]{8,64}$/.test(id)) {
-    return { saved: 0, errors: ["Invalid conversation."] };
+    return { saved: 0, errors: ["Invalid conversation."], files: [] };
   }
-  if (input.files.length === 0) return { saved: 0, errors: ["No file sent."] };
+  if (input.files.length === 0)
+    return { saved: 0, errors: ["No file sent."], files: [] };
   const existing = await prisma.beyondMasterChatAttachment.count({
     where: { threadId: id },
   });
@@ -92,6 +98,7 @@ export async function addThreadAttachments(input: {
     return {
       saved: 0,
       errors: ["This conversation already has the maximum number of files."],
+      files: [],
     };
   }
   let saved = 0;
@@ -117,7 +124,7 @@ export async function addThreadAttachments(input: {
       },
       update: { updatedAt: new Date() },
     });
-    await prisma.beyondMasterChatAttachment.create({
+    const created = await prisma.beyondMasterChatAttachment.create({
       data: {
         threadId: id,
         fileName: file.fileName.slice(0, 160) || "attachment",
@@ -125,10 +132,12 @@ export async function addThreadAttachments(input: {
         sizeBytes: file.data.byteLength,
         data: new Uint8Array(file.data),
       },
+      select: { id: true, fileName: true, sizeBytes: true },
     });
+    stored.push(created);
     saved += 1;
   }
-  return { saved, errors };
+  return { saved, errors, files: stored };
 }
 
 export async function listChatThreads(options?: {

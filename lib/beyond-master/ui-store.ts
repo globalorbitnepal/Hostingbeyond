@@ -283,12 +283,15 @@ export async function uploadBeyondMasterAttachments(files: File[]) {
     return;
   }
   const ensured = ensureActive(snapshot);
+  const priorSaved = ensured.state.attachments.filter(
+    (file) => !file.id.startsWith("pending-"),
+  );
   emit({
     ...ensured.state,
     uploading: true,
     error: null,
     attachments: [
-      ...snapshot.attachments,
+      ...priorSaved,
       ...files.map((file) => ({
         id: `pending-${file.name}-${file.size}-${Date.now()}`,
         name: file.name,
@@ -307,6 +310,7 @@ export async function uploadBeyondMasterAttachments(files: File[]) {
     const payload = (await response.json().catch(() => null)) as {
       error?: string;
       saved?: number;
+      files?: { id: string; fileName: string; sizeBytes: number }[];
     } | null;
     if (!response.ok) {
       emit({
@@ -320,7 +324,14 @@ export async function uploadBeyondMasterAttachments(files: File[]) {
     emit({
       ...snapshot,
       uploading: false,
-      attachments: [],
+      attachments: [
+        ...priorSaved,
+        ...(payload?.files ?? []).map((file) => ({
+          id: file.id,
+          name: file.fileName,
+          sizeBytes: file.sizeBytes,
+        })),
+      ],
     });
   } catch {
     emit({
@@ -394,6 +405,7 @@ export async function sendBeyondMasterMessage(text?: string) {
     accountCards: null,
     domainSuggestions: null,
     dnsCard: null,
+    attachments: [],
     activeId: withUser.id,
     conversations: upsertConversation(ensured.state.conversations, withUser),
   });
