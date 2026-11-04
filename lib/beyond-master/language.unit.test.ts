@@ -14,6 +14,17 @@ describe("agent language detection", () => {
     assert.equal(detectAgentLanguage("मुझे होस्टिंग चाहिए"), "hi");
   });
 
+  it("keeps Hindi questions out of the Nepali branch", () => {
+    assert.equal(detectAgentLanguage("invoice कहाँ देखूँ?"), "hi");
+    assert.equal(detectAgentLanguage("वेब होस्टिंग कैसे खरीदूँ?"), "hi");
+    assert.equal(detectAgentLanguage("बिलिंग कहाँ है?"), "hi");
+  });
+
+  it("keeps Nepali questions out of the Hindi branch", () => {
+    assert.equal(detectAgentLanguage("इनभ्वाइस कहाँ हेर्ने?"), "ne");
+    assert.equal(detectAgentLanguage("होस्टिङ कसरी किन्ने?"), "ne");
+  });
+
   it("detects romanised Hindi and Nepali", () => {
     assert.equal(detectAgentLanguage("hosting ka price kya hai"), "hi");
     assert.equal(detectAgentLanguage("domain ko price kati huncha"), "ne");
