@@ -63,6 +63,39 @@ export function BeyondMasterAiPanel() {
   const [ticketNote, setTicketNote] = useState("");
   const [replyReference, setReplyReference] = useState("");
   const [replyBody, setReplyBody] = useState("");
+  const [modelNote, setModelNote] = useState(
+    "Checking which AI models are configured…",
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetch("/api/beyond-master/models")
+      .then(async (response) => {
+        const payload = (await response.json().catch(() => null)) as {
+          configured?: boolean;
+          models?: { id: string; provider: string; available: boolean }[];
+        } | null;
+        if (cancelled) return;
+        const model = payload?.models?.[0];
+        if (!payload?.configured || !model?.available) {
+          setModelNote(
+            "No live AI model is configured. Chat still opens knowledge, tickets, and DNS help.",
+          );
+          return;
+        }
+        setModelNote(
+          `Configured model: ${model.provider}/${model.id}. It is not marked live-verified until a provider request succeeds.`,
+        );
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setModelNote("Model status could not be loaded.");
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function loadTickets() {
     const params = new URLSearchParams();
@@ -232,6 +265,7 @@ export function BeyondMasterAiPanel() {
               </div>
               <h2>{BEYOND_MASTER_WELCOME_HEADING}</h2>
               <p>{BEYOND_MASTER_WELCOME_BODY}</p>
+              <p className="text-sm text-[#b7c3de]">{modelNote}</p>
               <button
                 type="button"
                 className="hb-bmai-primary"

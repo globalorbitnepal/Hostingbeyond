@@ -1,5 +1,59 @@
 # Migration history repair — `beyond_ai` ordering
 
+## Production evidence (re-verified 2026-11-04, read-only)
+
+Live `hostingbeyond_db` on `127.0.0.1:5432` as `hostingbeyond_user` currently has **three** `_prisma_migrations` rows for Beyond AI. This is **not** the 1-old / 0-new state the UPDATE runbook below was written for.
+
+| id                                     | name                       | finished   | rolled_back        | checksum             | applied_steps |
+| -------------------------------------- | -------------------------- | ---------- | ------------------ | -------------------- | ------------- |
+| `6225b909-e0fc-4c1a-b4bc-54457c3ad806` | `20250924190000_beyond_ai` | 2026-10-04 | no                 | `3db9c110…d37249c6`  | 1             |
+| `23991111-7f32-40e9-bc4b-edf71eec14a2` | `20260913120000_beyond_ai` | no         | 2026-10-28 (42P07) | `3db9c110…d37249c6`  | 0             |
+| `8ac4ddd3-c258-434c-b2f7-4ab77ff1cd8d` | `20260913120000_beyond_ai` | 2026-10-28 | no                 | `caa6208f…bb9dd7219` | 1             |
+
+**Canonical keep:** `8ac4ddd3-…`. It is the only finished row whose checksum matches the current file:
+
+`prisma/migrations/20260913120000_beyond_ai/migration.sql` SHA-256  
+`caa6208f264a70c4e3106fb3f9c0e38d8fe40627c27f11248d52bcebb9dd7219`
+
+That file is **not** unchanged from the original folder. Git:
+
+- `d7e12d5` created `20250924190000_beyond_ai` (hash `3db9c110…`)
+- `d391ba7` renamed the folder; SQL bytes unchanged
+- `a853e45` made SQL idempotent (`IF NOT EXISTS` / `duplicate_object`); hash became `caa6208f…`
+
+Live tables `BeyondAiSubscription` and `BeyondAiProject` exist with PK, unique `userId`, indexes, and FKs to `CustomerUser` ON DELETE CASCADE. Beyond Master tables are **not** present.
+
+### Do not run
+
+- The **UPDATE rename** in this document (pre-checks expect `20260913` row count **0**; production has **2**).
+- `prisma migrate resolve --rolled-back 20260913120000_beyond_ai` (duplicate names; one row is the canonical finished apply).
+- Any DELETE/INSERT until the owner approves the exact statement below.
+
+### Proposed repair (history-only, not executed)
+
+Durable snapshot (not a TEMP table): CSV + SHA-256 under  
+`/home/sysadmin/.local/state/hostingbeyond-ops/beyond-ai-history/`  
+mode `0700`. Lab recovery of those three rows into `127.0.0.1:55433` / `hostingbeyond_restore_test` **PASS** (3 rows, `ON CONFLICT (id) DO NOTHING` stayed at 3).
+
+After owner approval, in one transaction, DELETE leftover **ids** only:
+
+- remove `6225b909-…` and `23991111-…`
+- keep `8ac4ddd3-…`
+
+Precondition: re-SELECT still matches the three ids, checksums, finished/rolled_back flags, and both Beyond AI tables exist. Expected after: exactly one `beyond_ai` history row. `ROLLBACK` before COMMIT restores history. After COMMIT, re-insert from the durable CSV (same ids) or restore a database backup. Prisma will not reverse Beyond Master table creates.
+
+### Documentation mismatches (this file vs repo)
+
+| Claim in older sections below             | Actual                                            |
+| ----------------------------------------- | ------------------------------------------------- |
+| `migration.sql` unchanged after rename    | Unchanged at `d391ba7`; **changed** at `a853e45`  |
+| Expected checksum `3db9c110…`             | Current file and canonical DB row are `caa6208f…` |
+| Repair = UPDATE old name → new name       | Unsafe while both names exist                     |
+| Production state unknown                  | Re-verified 2026-11-04; 1 old + 2 new             |
+| Isolated verify expects **15** migrations | Repo now has **25** folders                       |
+
+---
+
 ## Problem
 
 `beyond_ai` originally lived at `20250924190000_beyond_ai`, which sorts **before** `20260912120000_customer_auth` even though its SQL adds foreign keys to `"CustomerUser"`. Fresh `npx prisma migrate deploy` on an empty database therefore failed.
@@ -378,6 +432,6 @@ SQL
 npx prisma migrate deploy
 ```
 
-Expect **15** migrations, no errors, including `20261016140000_domain_renew_inflight_unique`.
+Expect **25** migrations on a greenfield database (including the four Beyond Master folders), no errors.
 
 Do **not** run the `DROP SCHEMA` step against `hostingbeyond_db` or production.

@@ -11,7 +11,7 @@ const MAX_TOTAL_CHARS = 24_000;
 export function parseBeyondMasterChatRequest(
   raw: unknown,
 ):
-  | { ok: true; messages: BeyondMasterChatTurn[] }
+  | { ok: true; messages: BeyondMasterChatTurn[]; model: string | null }
   | { ok: false; error: string } {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
     return { ok: false, error: "Send a JSON object with a messages array." };
@@ -62,5 +62,16 @@ export function parseBeyondMasterChatRequest(
       error: "The latest message must be from the customer.",
     };
   }
-  return { ok: true, messages };
+  let model: string | null = null;
+  if ("model" in record) {
+    if (typeof record.model !== "string" || !record.model.trim()) {
+      return { ok: false, error: "Model must be a non-empty string." };
+    }
+    const requested = record.model.trim();
+    if (!/^[A-Za-z0-9._:/-]{1,80}$/.test(requested)) {
+      return { ok: false, error: "That model is not available." };
+    }
+    model = requested;
+  }
+  return { ok: true, messages, model };
 }

@@ -110,7 +110,17 @@ test("workflow: documents no automatic schema rollback after migrate", () => {
 
 test("workflow: normal migrate approval does not resolve beyond_ai", () => {
   assert.match(workflowYaml, /HOSTINGBEYOND_BEYOND_AI_HISTORY_REPAIR_APPROVED/);
-  assert.match(workflowYaml, /--backup-evidence absent/);
+  assert.match(workflowYaml, /backup-evidence-verify\.mjs --print-flag/);
+  assert.match(workflowYaml, /BACKUP_EVIDENCE_FLAG=absent/);
+  assert.match(
+    workflowYaml,
+    /--backup-evidence "\$\{BACKUP_EVIDENCE_FLAG:-absent\}"/,
+  );
+  assert.doesNotMatch(
+    workflowYaml,
+    /--backup-evidence verified/,
+    "workflow must not hardcode verified backup evidence",
+  );
   assert.doesNotMatch(
     workflowYaml,
     /RUN_PRISMA_MIGRATE_DEPLOY:-0\}" = "1"[\s\S]*migrate resolve --rolled-back/,

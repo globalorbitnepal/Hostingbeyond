@@ -287,8 +287,13 @@ jobs:
           STATUS_FILE="$(mktemp)"
           printf '%s\n' "${MIGRATE_STATUS_OUT}" > "${STATUS_FILE}"
           unset MIGRATE_STATUS_OUT
+          BACKUP_EVIDENCE_FLAG="$(node ops/ci/backup-evidence-verify.mjs --print-flag || true)"
+          if [ "${BACKUP_EVIDENCE_FLAG}" != "verified" ]; then
+            BACKUP_EVIDENCE_FLAG=absent
+          fi
+          echo "BACKUP_EVIDENCE_FLAG=${BACKUP_EVIDENCE_FLAG}"
           set +e
-          GATE_OUT="$(node ops/ci/pending-migrations-gate.mjs --approved "${RUN_PRISMA_MIGRATE_DEPLOY:-0}" --repair-approved "${RUN_BEYOND_AI_HISTORY_REPAIR:-0}" --backup-evidence absent --status-exit "${MIGRATE_STATUS_RC}" --status-file "${STATUS_FILE}")"
+          GATE_OUT="$(node ops/ci/pending-migrations-gate.mjs --approved "${RUN_PRISMA_MIGRATE_DEPLOY:-0}" --repair-approved "${RUN_BEYOND_AI_HISTORY_REPAIR:-0}" --backup-evidence "${BACKUP_EVIDENCE_FLAG:-absent}" --status-exit "${MIGRATE_STATUS_RC}" --status-file "${STATUS_FILE}")"
           GATE_RC=$?
           set -e
           rm -f -- "${STATUS_FILE}"

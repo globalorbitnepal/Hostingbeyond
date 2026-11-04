@@ -25,8 +25,19 @@ describe("beyond master request validation", () => {
       messages: [{ role: "user", content: "  How do I add an A record?  " }],
     });
     assert.equal(parsed.ok, true);
-    if (parsed.ok)
+    if (parsed.ok) {
       assert.equal(parsed.messages[0]?.content, "How do I add an A record?");
+      assert.equal(parsed.model, null);
+    }
+  });
+
+  it("parses an optional model name without accepting client ids", () => {
+    const parsed = parseBeyondMasterChatRequest({
+      model: "gpt-test",
+      messages: [{ role: "user", content: "Hello" }],
+    });
+    assert.equal(parsed.ok, true);
+    if (parsed.ok) assert.equal(parsed.model, "gpt-test");
   });
 });
 

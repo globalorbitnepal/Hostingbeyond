@@ -15,6 +15,7 @@ import {
 } from "@/lib/beyond-master/providers/stream";
 import { allowBeyondMasterChat } from "@/lib/beyond-master/rate-limit";
 import { parseBeyondMasterChatRequest } from "@/lib/beyond-master/request";
+import { authorizeBeyondMasterModel } from "@/lib/beyond-master/model-registry";
 import { readBeyondMasterRuntimeConfig } from "@/lib/beyond-master/settings";
 import { recordBeyondMasterUsage } from "@/lib/beyond-master/usage";
 import {
@@ -49,6 +50,10 @@ export async function POST(request: Request) {
   const parsed = parseBeyondMasterChatRequest(payload);
   if (!parsed.ok)
     return Response.json({ error: parsed.error }, { status: 400 });
+  const modelChoice = authorizeBeyondMasterModel(parsed.model);
+  if (parsed.model && !modelChoice.ok) {
+    return Response.json({ error: modelChoice.error }, { status: 403 });
+  }
   if (!allowBeyondMasterChat(request)) {
     await recordBeyondMasterUsage({
       provider: "none",

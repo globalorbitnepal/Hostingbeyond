@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { beyondMasterAdminStatus } from "@/lib/beyond-master/settings";
+import { beyondMasterOrbitModelStatus } from "@/lib/beyond-master/model-registry";
 import { requireOrbitAdmin, unauthorizedJson } from "@/lib/orbit/api";
 
 export const runtime = "nodejs";
@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const admin = await requireOrbitAdmin();
   if (!admin) return unauthorizedJson();
-  return NextResponse.json(beyondMasterAdminStatus(), {
+  return NextResponse.json(beyondMasterOrbitModelStatus(), {
     headers: { "cache-control": "no-store" },
   });
 }
