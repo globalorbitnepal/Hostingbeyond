@@ -3,6 +3,7 @@ import type { AgentLanguage } from "@/lib/beyond-master/language";
 import type { BeyondMasterChatTurn } from "@/lib/beyond-master/request";
 import type { BeyondMasterRuntimeConfig } from "@/lib/beyond-master/settings";
 import {
+  classifyGeminiErrorBody,
   geminiEventsFromFrame,
   geminiHeaders,
   geminiPayload,
@@ -22,7 +23,8 @@ export class BeyondMasterProviderError extends Error {
     | "rate_limited"
     | "upstream"
     | "empty"
-    | "aborted";
+    | "aborted"
+    | "unavailable";
 
   constructor(
     code:
@@ -31,7 +33,8 @@ export class BeyondMasterProviderError extends Error {
       | "rate_limited"
       | "upstream"
       | "empty"
-      | "aborted",
+      | "aborted"
+      | "unavailable",
     message: string,
   ) {
     super(message);
@@ -76,6 +79,13 @@ export function publicProviderError(
       if (lang === "hi") return "अनुरोध रद्द कर दिया गया।";
       if (lang === "ne") return "अनुरोध रद्द गरियो।";
       return "The request was cancelled.";
+    }
+    if (error.code === "unavailable") {
+      if (lang === "hi")
+        return "AI सहायता इस क्षेत्र या बिलिंग सेटअप के कारण उपलब्ध नहीं है। Google AI Studio में बिलिंग जांचें।";
+      if (lang === "ne")
+        return "AI सहयोग यस क्षेत्र वा बिलिङ सेटअपका कारण उपलब्ध छैन। Google AI Studio मा बिलिङ जाँच गर्नुहोस्।";
+      return "AI support is unavailable for this region or billing setup. Check billing in Google AI Studio.";
     }
   }
   if (lang === "hi")
@@ -177,14 +187,9 @@ async function* streamOnce(
         );
       }
       const bodyText = await response.text();
-      if (/api.?key|permission|invalid/i.test(bodyText)) {
-        throw new BeyondMasterProviderError(
-          "unauthorized",
-          "Provider rejected credentials.",
-        );
-      }
+      const kind = classifyGeminiErrorBody(bodyText);
       throw new BeyondMasterProviderError(
-        "upstream",
+        kind,
         `Provider status ${response.status}.`,
       );
     }

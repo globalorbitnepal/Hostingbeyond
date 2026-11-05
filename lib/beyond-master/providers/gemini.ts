@@ -35,8 +35,29 @@ export function geminiPayload(
     contents,
     generationConfig: {
       maxOutputTokens: config.maxOutputTokens,
+      thinkingConfig: { thinkingBudget: 0 },
     },
   };
+}
+
+export function classifyGeminiErrorBody(
+  bodyText: string,
+): "unauthorized" | "rate_limited" | "unavailable" | "upstream" {
+  const text = bodyText.toLowerCase();
+  if (/api.?key|api_key_invalid|permission|forbidden/.test(text)) {
+    return "unauthorized";
+  }
+  if (/resource_exhausted|rate.?limit|quota/.test(text)) {
+    return "rate_limited";
+  }
+  if (
+    /failed_precondition|free tier|not available in your country|enable billing|billing on your project/.test(
+      text,
+    )
+  ) {
+    return "unavailable";
+  }
+  return "upstream";
 }
 
 export function geminiEventsFromFrame(
@@ -51,17 +72,22 @@ export function geminiEventsFromFrame(
   }
   if (!parsed || typeof parsed !== "object") return [];
   const row = parsed as {
+    error?: { message?: unknown };
     candidates?: {
-      content?: { parts?: { text?: unknown }[] };
+      content?: { parts?: { text?: unknown; thought?: unknown }[] };
     }[];
     usageMetadata?: {
       promptTokenCount?: unknown;
       candidatesTokenCount?: unknown;
     };
   };
+  if (row.error && typeof row.error.message === "string" && row.error.message) {
+    return [];
+  }
   const events: ProviderStreamEvent[] = [];
   const parts = row.candidates?.[0]?.content?.parts ?? [];
   for (const part of parts) {
+    if (part.thought === true) continue;
     if (typeof part.text === "string" && part.text) {
       events.push({ type: "delta", text: part.text });
     }
