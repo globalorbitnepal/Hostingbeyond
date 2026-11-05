@@ -4,13 +4,62 @@ import type { SseFrame } from "@/lib/beyond-master/providers/sse";
 import type { ProviderStreamEvent } from "@/lib/beyond-master/providers/sse";
 
 export type GeminiFailureCode =
-  "unauthorized" | "rate_limited" | "upstream" | "empty" | "unavailable";
+  | "unauthorized"
+  | "rate_limited"
+  | "upstream"
+  | "empty"
+  | "unavailable"
+  | "model_unavailable";
 
 export const GEMINI_API_BASE =
   "https://generativelanguage.googleapis.com/v1beta";
 
-/** Default Flash model on the Gemini free tier (override with BEYOND_MASTER_AI_MODEL). */
-export const GEMINI_DEFAULT_MODEL = "gemini-2.5-flash";
+/** Default Gemini Free Tier model (override with BEYOND_MASTER_AI_MODEL). */
+export const GEMINI_DEFAULT_MODEL = "gemini-flash-lite-latest";
+
+export function classifyGeminiErrorBody(bodyText: string): GeminiFailureCode {
+  const text = bodyText.toLowerCase();
+  if (/api.?key|api_key_invalid|permission|forbidden/.test(text)) {
+    return "unauthorized";
+  }
+  if (/resource_exhausted|rate.?limit|quota/.test(text)) {
+    return "rate_limited";
+  }
+  if (/not_found|no longer available|is not found|was not found/.test(text)) {
+    return "model_unavailable";
+  }
+  if (
+    /failed_precondition|free tier|not available in your country|enable billing|billing on your project/.test(
+      text,
+    )
+  ) {
+    return "unavailable";
+  }
+  return "upstream";
+}
+
+/** Maps HTTP status + body to a failure code without calling another model. */
+export function classifyGeminiHttpStatus(
+  status: number,
+  bodyText: string,
+): GeminiFailureCode {
+  if (status === 429) return "rate_limited";
+  if (status === 404) return "model_unavailable";
+  if (status === 401 || status === 403) return "unauthorized";
+  if (status >= 500) return "upstream";
+  if (status === 400) return classifyGeminiErrorBody(bodyText);
+  if (!bodyText.trim()) {
+    if (status >= 400 && status < 500) return "upstream";
+    return "upstream";
+  }
+  return classifyGeminiErrorBody(bodyText);
+}
+
+export function shouldAttemptGeminiGenerateFallback(
+  code: GeminiFailureCode,
+): boolean {
+  return code === "upstream" || code === "empty";
+}
 
 export function geminiGenerateUrl(config: BeyondMasterRuntimeConfig): string {
   const model = encodeURIComponent(config.model!);
@@ -47,24 +96,6 @@ export function geminiPayload(
   };
 }
 
-export function classifyGeminiErrorBody(bodyText: string): GeminiFailureCode {
-  const text = bodyText.toLowerCase();
-  if (/api.?key|api_key_invalid|permission|forbidden/.test(text)) {
-    return "unauthorized";
-  }
-  if (/resource_exhausted|rate.?limit|quota/.test(text)) {
-    return "rate_limited";
-  }
-  if (
-    /failed_precondition|free tier|not available in your country|enable billing|billing on your project/.test(
-      text,
-    )
-  ) {
-    return "unavailable";
-  }
-  return "upstream";
-}
-
 export async function geminiGenerateOnce(
   config: BeyondMasterRuntimeConfig,
   messages: BeyondMasterChatTurn[],
@@ -86,7 +117,10 @@ export async function geminiGenerateOnce(
   });
   const bodyText = await response.text();
   if (!response.ok) {
-    return { ok: false, code: classifyGeminiErrorBody(bodyText) };
+    return {
+      ok: false,
+      code: classifyGeminiHttpStatus(response.status, bodyText),
+    };
   }
   let parsed: unknown;
   try {

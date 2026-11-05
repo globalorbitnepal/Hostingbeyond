@@ -88,9 +88,32 @@ export function readBeyondMasterRuntimeConfig(
   const provider = PROVIDERS.has(providerRaw as BeyondMasterProviderId)
     ? (providerRaw as BeyondMasterProviderId)
     : null;
+
+  const sharedLimits = {
+    timeoutMs,
+    maxOutputTokens,
+    rateLimit,
+    rateWindowMs,
+  };
+
+  if (provider && provider !== "google") {
+    return {
+      configured: false,
+      provider,
+      model: sanitizeModelName(env.BEYOND_MASTER_AI_MODEL),
+      baseUrl: null,
+      apiKey: null,
+      ...sharedLimits,
+      configurationError: "provider",
+    };
+  }
+
   let model = sanitizeModelName(env.BEYOND_MASTER_AI_MODEL);
   if (provider === "google" && !model) model = GEMINI_DEFAULT_MODEL;
-  const apiKey = env.BEYOND_MASTER_AI_API_KEY?.trim() || geminiKey || null;
+  const apiKey =
+    provider === "google"
+      ? geminiKey
+      : env.BEYOND_MASTER_AI_API_KEY?.trim() || geminiKey || null;
   const baseUrl =
     provider === "google"
       ? "https://generativelanguage.googleapis.com/v1beta"
@@ -138,6 +161,7 @@ export function beyondMasterAdminStatus(
     configured: config.configured,
     provider: config.provider,
     model: config.model,
+    geminiFreeTierDefaultModel: GEMINI_DEFAULT_MODEL,
     credentialsPresent: Boolean(
       env.BEYOND_MASTER_AI_API_KEY?.trim() || env.GEMINI_API_KEY?.trim(),
     ),

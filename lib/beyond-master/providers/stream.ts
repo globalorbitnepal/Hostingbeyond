@@ -1,14 +1,17 @@
 import { BEYOND_MASTER_SYSTEM_PROMPT } from "@/lib/beyond-master/prompt";
-import type { AgentLanguage } from "@/lib/beyond-master/language";
+import type { ConversationLocale } from "@/lib/beyond-master/locale";
+import { localizedProviderError } from "@/lib/beyond-master/messages/provider-errors";
 import type { BeyondMasterChatTurn } from "@/lib/beyond-master/request";
 import type { BeyondMasterRuntimeConfig } from "@/lib/beyond-master/settings";
 import {
   classifyGeminiErrorBody,
+  classifyGeminiHttpStatus,
   geminiEventsFromFrame,
   geminiGenerateOnce,
   geminiHeaders,
   geminiPayload,
   geminiStreamUrl,
+  shouldAttemptGeminiGenerateFallback,
 } from "@/lib/beyond-master/providers/gemini";
 import {
   anthropicEventsFromFrame,
@@ -25,7 +28,8 @@ export class BeyondMasterProviderError extends Error {
     | "upstream"
     | "empty"
     | "aborted"
-    | "unavailable";
+    | "unavailable"
+    | "model_unavailable";
 
   constructor(
     code:
@@ -35,7 +39,8 @@ export class BeyondMasterProviderError extends Error {
       | "upstream"
       | "empty"
       | "aborted"
-      | "unavailable",
+      | "unavailable"
+      | "model_unavailable",
     message: string,
   ) {
     super(message);
@@ -46,54 +51,9 @@ export class BeyondMasterProviderError extends Error {
 
 export function publicProviderError(
   error: unknown,
-  customerLanguage?: AgentLanguage,
+  customerLocale?: ConversationLocale | null,
 ): string {
-  const lang = customerLanguage ?? "en";
-  if (error instanceof BeyondMasterProviderError) {
-    if (error.code === "timeout") {
-      if (lang === "hi")
-        return "AI प्रदाता ने समय पर जवाब नहीं दिया। थोड़ी देर बाद फिर कोशिश करें।";
-      if (lang === "ne")
-        return "AI प्रदायकले समयमै जवाफ दिएन। केही बेरपछि फेरि प्रयास गर्नुहोस्।";
-      return "The AI provider did not answer in time. Please try again shortly.";
-    }
-    if (error.code === "unauthorized") {
-      if (lang === "hi")
-        return "AI सहायता अस्थायी रूप से उपलब्ध नहीं है। हमारी सपोर्ट टीम से संपर्क करें।";
-      if (lang === "ne")
-        return "AI सहयोग अस्थायी रूपमा उपलब्ध छैन। कृपया सहयोग टोलीसँग सम्पर्क गर्नुहोस्।";
-      return "AI support is temporarily unavailable. Please contact our support team.";
-    }
-    if (error.code === "rate_limited") {
-      if (lang === "hi")
-        return "AI सहायता अभी व्यस्त है। कुछ देर बाद फिर कोशिश करें, या सपोर्ट टिकट खोलें।";
-      if (lang === "ne")
-        return "AI सहयोग अहिले व्यस्त छ। केही बेरपछि फेरि प्रयास गर्नुहोस्, वा सहयोग टिकट खोल्नुहोस्।";
-      return "AI support is busy right now. Try again shortly, or open a support ticket.";
-    }
-    if (error.code === "empty") {
-      if (lang === "hi") return "AI से खाली जवाब मिला। फिर से भेजें।";
-      if (lang === "ne") return "AI बाट खाली जवाफ आयो। फेरि पठाउनुहोस्।";
-      return "The AI returned an empty reply. Please send your message again.";
-    }
-    if (error.code === "aborted") {
-      if (lang === "hi") return "अनुरोध रद्द कर दिया गया।";
-      if (lang === "ne") return "अनुरोध रद्द गरियो।";
-      return "The request was cancelled.";
-    }
-    if (error.code === "unavailable") {
-      if (lang === "hi")
-        return "AI सहायता इस क्षेत्र या बिलिंग सेटअप के कारण उपलब्ध नहीं है। Google AI Studio में बिलिंग जांचें।";
-      if (lang === "ne")
-        return "AI सहयोग यस क्षेत्र वा बिलिङ सेटअपका कारण उपलब्ध छैन। Google AI Studio मा बिलिङ जाँच गर्नुहोस्।";
-      return "AI support is unavailable for this region or billing setup. Check billing in Google AI Studio.";
-    }
-  }
-  if (lang === "hi")
-    return "AI जवाब पूरा नहीं हो सका। फिर कोशिश करें या सपोर्ट से संपर्क करें।";
-  if (lang === "ne")
-    return "AI जवाफ पूरा हुन सकेन। फेरि प्रयास गर्नुहोस् वा सहयोगमा सम्पर्क गर्नुहोस्।";
-  return "The AI could not complete this reply. Try again or contact support.";
+  return localizedProviderError(error, customerLocale);
 }
 
 type StreamInput = {
@@ -141,11 +101,17 @@ async function* streamGoogleProvider(
   try {
     yield* streamOnce(input);
   } catch (error) {
+    if (!(error instanceof BeyondMasterProviderError)) {
+      throw error;
+    }
     if (
-      !(error instanceof BeyondMasterProviderError) ||
       error.code === "aborted" ||
       error.code === "unauthorized" ||
-      error.code === "unavailable"
+      error.code === "unavailable" ||
+      error.code === "rate_limited" ||
+      error.code === "model_unavailable" ||
+      error.code === "timeout" ||
+      !shouldAttemptGeminiGenerateFallback(error.code)
     ) {
       throw error;
     }
@@ -228,6 +194,14 @@ async function* streamOnce(
       }
       const bodyText = await response.text();
       const kind = classifyGeminiErrorBody(bodyText);
+      throw new BeyondMasterProviderError(
+        kind,
+        `Provider status ${response.status}.`,
+      );
+    }
+    if (config.provider === "google" && (!response.ok || !response.body)) {
+      const bodyText = await response.text();
+      const kind = classifyGeminiHttpStatus(response.status, bodyText);
       throw new BeyondMasterProviderError(
         kind,
         `Provider status ${response.status}.`,

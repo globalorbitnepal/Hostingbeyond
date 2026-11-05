@@ -21,12 +21,11 @@ const pendingFacts: OverviewFacts = {
 
 describe("beyond master orbit overview", () => {
   it("hides the API key and does not invent usage while migrations are pending", () => {
-    const secret = "sk-orbit-overview-secret";
+    const secret = "gemini-orbit-overview-secret";
     const overview = buildBeyondMasterOverview(
       {
-        BEYOND_MASTER_AI_PROVIDER: "openai",
-        BEYOND_MASTER_AI_MODEL: "gpt-test",
-        BEYOND_MASTER_AI_API_KEY: secret,
+        GEMINI_API_KEY: secret,
+        BEYOND_MASTER_AI_MODEL: "gemini-flash-lite-latest",
       },
       pendingFacts,
     );
@@ -34,7 +33,7 @@ describe("beyond master orbit overview", () => {
     assert.equal(encoded.includes(secret), false);
     assert.equal(encoded.includes('"apiKey"'), false);
     assert.equal(overview.ai.apiKeyConfigured, "Yes");
-    assert.equal(overview.ai.provider, "openai");
+    assert.equal(overview.ai.provider, "google");
     assert.equal(overview.usage.available, false);
     if (!overview.usage.available)
       assert.equal(overview.usage.message, USAGE_MIGRATION_MESSAGE);
@@ -107,13 +106,12 @@ describe("beyond master orbit overview", () => {
   });
 
   it("returns the mocked summary for an authenticated admin", async () => {
-    const secret = "sk-admin-response-secret";
+    const secret = "gemini-admin-response-secret";
     const response = await respondToBeyondMasterOverview({
       admin: { id: "admin-1" },
       env: {
-        BEYOND_MASTER_AI_PROVIDER: "openai",
-        BEYOND_MASTER_AI_MODEL: "gpt-test",
-        BEYOND_MASTER_AI_API_KEY: secret,
+        GEMINI_API_KEY: secret,
+        BEYOND_MASTER_AI_MODEL: "gemini-flash-lite-latest",
       },
       loadFacts: async () => pendingFacts,
     });
