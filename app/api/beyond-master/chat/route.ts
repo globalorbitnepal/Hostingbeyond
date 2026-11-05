@@ -15,6 +15,10 @@ import {
 } from "@/lib/beyond-master/domain-search";
 import { groundedBeyondMasterReply } from "@/lib/beyond-master/grounded";
 import { customerFirstName } from "@/lib/beyond-master/customer-name";
+import {
+  conversationLanguagePromptBlock,
+  resolveConversationLanguage,
+} from "@/lib/beyond-master/language";
 import { buildBeyondMasterSystemPrompt } from "@/lib/beyond-master/knowledge/build";
 import { getBeyondMasterChatTestOverride } from "@/lib/beyond-master/chat-test-hook";
 import {
@@ -162,9 +166,11 @@ export async function POST(request: Request) {
         let produced = false;
         const systemPrompt = `${await buildBeyondMasterSystemPrompt(
           lastMessage,
-        )}${account?.prompt ? `\n\n${account.prompt}` : ""}${
-          dns ? `\n\n${dnsPromptBlock(dns)}` : ""
-        }${domainSearch ? `\n\n${formatDomainSearchForPrompt(domainSearch)}` : ""}`;
+        )}\n\n${conversationLanguagePromptBlock(parsed.messages)}${
+          account?.prompt ? `\n\n${account.prompt}` : ""
+        }${dns ? `\n\n${dnsPromptBlock(dns)}` : ""}${
+          domainSearch ? `\n\n${formatDomainSearchForPrompt(domainSearch)}` : ""
+        }`;
         const source = override
           ? override({ messages: parsed.messages, systemPrompt })
           : streamBeyondMasterProvider({
@@ -226,7 +232,12 @@ export async function POST(request: Request) {
           latencyMs: Date.now() - started,
           errorCode: code,
         });
-        send("error", { message: publicProviderError(error) });
+        send("error", {
+          message: publicProviderError(
+            error,
+            resolveConversationLanguage(parsed.messages),
+          ),
+        });
       } finally {
         controller.close();
       }

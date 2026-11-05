@@ -1,7 +1,8 @@
 import { BEYOND_MASTER_PROVIDER_NOTICE } from "@/lib/beyond-master/copy";
+import { GEMINI_DEFAULT_MODEL } from "@/lib/beyond-master/providers/gemini";
 
 export type BeyondMasterProviderId =
-  "openai" | "anthropic" | "openai-compatible";
+  "openai" | "anthropic" | "openai-compatible" | "google";
 
 export type BeyondMasterRuntimeConfig = {
   configured: boolean;
@@ -20,6 +21,7 @@ const PROVIDERS = new Set<BeyondMasterProviderId>([
   "openai",
   "anthropic",
   "openai-compatible",
+  "google",
 ]);
 
 function positiveInt(value: string | undefined, fallback: number, max: number) {
@@ -80,15 +82,21 @@ export function readBeyondMasterRuntimeConfig(
     600_000,
     3_600_000,
   );
-  const providerRaw = env.BEYOND_MASTER_AI_PROVIDER?.trim().toLowerCase() ?? "";
+  const geminiKey = env.GEMINI_API_KEY?.trim() || null;
+  let providerRaw = env.BEYOND_MASTER_AI_PROVIDER?.trim().toLowerCase() ?? "";
+  if (!providerRaw && geminiKey) providerRaw = "google";
   const provider = PROVIDERS.has(providerRaw as BeyondMasterProviderId)
     ? (providerRaw as BeyondMasterProviderId)
     : null;
-  const model = sanitizeModelName(env.BEYOND_MASTER_AI_MODEL);
-  const apiKey = env.BEYOND_MASTER_AI_API_KEY?.trim() || null;
-  const baseUrl = provider
-    ? sanitizeProviderBaseUrl(env.BEYOND_MASTER_AI_BASE_URL, provider)
-    : null;
+  let model = sanitizeModelName(env.BEYOND_MASTER_AI_MODEL);
+  if (provider === "google" && !model) model = GEMINI_DEFAULT_MODEL;
+  const apiKey = env.BEYOND_MASTER_AI_API_KEY?.trim() || geminiKey || null;
+  const baseUrl =
+    provider === "google"
+      ? "https://generativelanguage.googleapis.com/v1beta"
+      : provider
+        ? sanitizeProviderBaseUrl(env.BEYOND_MASTER_AI_BASE_URL, provider)
+        : null;
 
   let configurationError: BeyondMasterRuntimeConfig["configurationError"] =
     null;
@@ -130,7 +138,9 @@ export function beyondMasterAdminStatus(
     configured: config.configured,
     provider: config.provider,
     model: config.model,
-    credentialsPresent: Boolean(env.BEYOND_MASTER_AI_API_KEY?.trim()),
+    credentialsPresent: Boolean(
+      env.BEYOND_MASTER_AI_API_KEY?.trim() || env.GEMINI_API_KEY?.trim(),
+    ),
     streaming: true,
     baseUrlHost,
     configurationError: config.configurationError,

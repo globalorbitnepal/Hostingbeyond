@@ -7,6 +7,7 @@ import {
   BEYOND_MASTER_STORAGE_KEY,
 } from "@/lib/beyond-master/copy";
 import { createSseParser } from "@/lib/beyond-master/providers/sse";
+import { detectAgentLanguage } from "@/lib/beyond-master/language";
 import {
   appendProviderNotice,
   appendUserMessage,
@@ -395,7 +396,10 @@ export async function sendBeyondMasterMessage(text?: string) {
     createdAt,
     status: "pending" as const,
   };
-  const withUser = appendUserMessage(ensured.conversation, userMessage);
+  const withUser = {
+    ...appendUserMessage(ensured.conversation, userMessage),
+    preferredLanguage: detectAgentLanguage(validated.body),
+  };
   emit({
     ...ensured.state,
     view: "chat",

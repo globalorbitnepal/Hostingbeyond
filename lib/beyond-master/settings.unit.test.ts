@@ -42,4 +42,18 @@ describe("beyond master settings", () => {
     assert.equal(config.configured, false);
     assert.equal(config.configurationError, "base_url");
   });
+
+  it("auto-configures Google Gemini when GEMINI_API_KEY is present", () => {
+    const config = readBeyondMasterRuntimeConfig({
+      GEMINI_API_KEY: "gemini-test-key",
+    });
+    assert.equal(config.configured, true);
+    assert.equal(config.provider, "google");
+    assert.equal(config.model, "gemini-2.5-flash");
+    assert.equal(config.apiKey, "gemini-test-key");
+    assert.equal(
+      config.baseUrl,
+      "https://generativelanguage.googleapis.com/v1beta",
+    );
+  });
 });

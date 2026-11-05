@@ -203,6 +203,12 @@ export function parseStoredConversations(
       title: row.title.slice(0, 80),
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
+      preferredLanguage:
+        row.preferredLanguage === "hi" ||
+        row.preferredLanguage === "ne" ||
+        row.preferredLanguage === "en"
+          ? row.preferredLanguage
+          : undefined,
       messages,
     });
   }

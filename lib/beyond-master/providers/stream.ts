@@ -1,6 +1,13 @@
 import { BEYOND_MASTER_SYSTEM_PROMPT } from "@/lib/beyond-master/prompt";
+import type { AgentLanguage } from "@/lib/beyond-master/language";
 import type { BeyondMasterChatTurn } from "@/lib/beyond-master/request";
 import type { BeyondMasterRuntimeConfig } from "@/lib/beyond-master/settings";
+import {
+  geminiEventsFromFrame,
+  geminiHeaders,
+  geminiPayload,
+  geminiStreamUrl,
+} from "@/lib/beyond-master/providers/gemini";
 import {
   anthropicEventsFromFrame,
   createSseParser,
@@ -33,19 +40,49 @@ export class BeyondMasterProviderError extends Error {
   }
 }
 
-export function publicProviderError(error: unknown): string {
+export function publicProviderError(
+  error: unknown,
+  customerLanguage?: AgentLanguage,
+): string {
+  const lang = customerLanguage ?? "en";
   if (error instanceof BeyondMasterProviderError) {
-    if (error.code === "timeout")
-      return "The AI provider did not answer in time.";
-    if (error.code === "unauthorized")
-      return "The AI provider rejected the server credentials.";
-    if (error.code === "rate_limited")
-      return "The AI provider is busy. Try again shortly.";
-    if (error.code === "empty")
-      return "The AI provider returned an empty reply.";
-    if (error.code === "aborted") return "The request was cancelled.";
+    if (error.code === "timeout") {
+      if (lang === "hi")
+        return "AI प्रदाता ने समय पर जवाब नहीं दिया। थोड़ी देर बाद फिर कोशिश करें।";
+      if (lang === "ne")
+        return "AI प्रदायकले समयमै जवाफ दिएन। केही बेरपछि फेरि प्रयास गर्नुहोस्।";
+      return "The AI provider did not answer in time. Please try again shortly.";
+    }
+    if (error.code === "unauthorized") {
+      if (lang === "hi")
+        return "AI सहायता अस्थायी रूप से उपलब्ध नहीं है। हमारी सपोर्ट टीम से संपर्क करें।";
+      if (lang === "ne")
+        return "AI सहयोग अस्थायी रूपमा उपलब्ध छैन। कृपया सहयोग टोलीसँग सम्पर्क गर्नुहोस्।";
+      return "AI support is temporarily unavailable. Please contact our support team.";
+    }
+    if (error.code === "rate_limited") {
+      if (lang === "hi")
+        return "AI सहायता अभी व्यस्त है। कुछ देर बाद फिर कोशिश करें, या सपोर्ट टिकट खोलें।";
+      if (lang === "ne")
+        return "AI सहयोग अहिले व्यस्त छ। केही बेरपछि फेरि प्रयास गर्नुहोस्, वा सहयोग टिकट खोल्नुहोस्।";
+      return "AI support is busy right now. Try again shortly, or open a support ticket.";
+    }
+    if (error.code === "empty") {
+      if (lang === "hi") return "AI से खाली जवाब मिला। फिर से भेजें।";
+      if (lang === "ne") return "AI बाट खाली जवाफ आयो। फेरि पठाउनुहोस्।";
+      return "The AI returned an empty reply. Please send your message again.";
+    }
+    if (error.code === "aborted") {
+      if (lang === "hi") return "अनुरोध रद्द कर दिया गया।";
+      if (lang === "ne") return "अनुरोध रद्द गरियो।";
+      return "The request was cancelled.";
+    }
   }
-  return "The AI provider could not complete this reply.";
+  if (lang === "hi")
+    return "AI जवाब पूरा नहीं हो सका। फिर कोशिश करें या सपोर्ट से संपर्क करें।";
+  if (lang === "ne")
+    return "AI जवाफ पूरा हुन सकेन। फेरि प्रयास गर्नुहोस् वा सहयोगमा सम्पर्क गर्नुहोस्।";
+  return "The AI could not complete this reply. Try again or contact support.";
 }
 
 type StreamInput = {
@@ -109,16 +146,46 @@ async function* streamOnce(
   const onAbort = () => timeout.abort();
   input.signal.addEventListener("abort", onAbort, { once: true });
   try {
-    const response = await fetchImpl(endpoint(config), {
+    const url =
+      config.provider === "google" ? geminiStreamUrl(config) : endpoint(config);
+    const response = await fetchImpl(url, {
       method: "POST",
-      headers: headers(config),
-      body: JSON.stringify(payload(config, input.messages, input.systemPrompt)),
+      headers:
+        config.provider === "google"
+          ? geminiHeaders(config.apiKey!)
+          : headers(config),
+      body: JSON.stringify(
+        config.provider === "google"
+          ? geminiPayload(
+              config,
+              input.messages,
+              input.systemPrompt ?? BEYOND_MASTER_SYSTEM_PROMPT,
+            )
+          : payload(config, input.messages, input.systemPrompt),
+      ),
       signal: timeout.signal,
     });
-    if (response.status === 401 || response.status === 403) {
+    if (
+      response.status === 401 ||
+      response.status === 403 ||
+      (config.provider === "google" && response.status === 400)
+    ) {
+      if (config.provider !== "google" || response.status !== 400) {
+        throw new BeyondMasterProviderError(
+          "unauthorized",
+          "Provider rejected credentials.",
+        );
+      }
+      const bodyText = await response.text();
+      if (/api.?key|permission|invalid/i.test(bodyText)) {
+        throw new BeyondMasterProviderError(
+          "unauthorized",
+          "Provider rejected credentials.",
+        );
+      }
       throw new BeyondMasterProviderError(
-        "unauthorized",
-        "Provider rejected credentials.",
+        "upstream",
+        `Provider status ${response.status}.`,
       );
     }
     if (response.status === 429) {
@@ -139,7 +206,9 @@ async function* streamOnce(
     const map =
       config.provider === "anthropic"
         ? anthropicEventsFromFrame
-        : openAiEventsFromFrame;
+        : config.provider === "google"
+          ? geminiEventsFromFrame
+          : openAiEventsFromFrame;
     let produced = false;
     while (true) {
       const chunk = await reader.read();
