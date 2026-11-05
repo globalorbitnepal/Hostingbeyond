@@ -7,7 +7,7 @@ import {
   BEYOND_MASTER_STORAGE_KEY,
 } from "@/lib/beyond-master/copy";
 import { createSseParser } from "@/lib/beyond-master/providers/sse";
-import { detectAgentLanguage } from "@/lib/beyond-master/language";
+import { detectMessageLocale } from "@/lib/beyond-master/language";
 import {
   appendProviderNotice,
   appendUserMessage,
@@ -26,6 +26,7 @@ import type {
   BeyondMasterDomainSuggestion,
 } from "@/lib/beyond-master/types";
 import type { AccountCard } from "@/lib/beyond-master/account/types";
+import type { CommerceProposalView } from "@/lib/beyond-master/commerce/types";
 import type { DnsProposalView } from "@/lib/beyond-master/dns/workflow";
 
 export type BeyondMasterView = "chat" | "history";
@@ -75,6 +76,19 @@ export type PendingAttachment = {
 
 export const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024;
 
+type CommerceCardState = {
+  state:
+    | "confirmation_required"
+    | "executing"
+    | "executed"
+    | "failed"
+    | "cancelled"
+    | "notice";
+  proposal: CommerceProposalView | null;
+  message: string | null;
+  checkoutUrl: string | null;
+};
+
 type Snapshot = {
   open: boolean;
   view: BeyondMasterView;
@@ -88,6 +102,7 @@ type Snapshot = {
   supportCard: SupportCard | null;
   accountCards: AccountCard[] | null;
   dnsCard: DnsCardState | null;
+  commerceCard: CommerceCardState | null;
   domainSuggestions: BeyondMasterDomainSuggestion[] | null;
   attachments: PendingAttachment[];
   uploading: boolean;
@@ -106,6 +121,7 @@ const serverSnapshot: Snapshot = {
   supportCard: null,
   accountCards: null,
   dnsCard: null,
+  commerceCard: null,
   domainSuggestions: null,
   attachments: [],
   uploading: false,
@@ -398,7 +414,7 @@ export async function sendBeyondMasterMessage(text?: string) {
   };
   const withUser = {
     ...appendUserMessage(ensured.conversation, userMessage),
-    preferredLanguage: detectAgentLanguage(validated.body),
+    preferredLanguage: detectMessageLocale(validated.body),
   };
   emit({
     ...ensured.state,
@@ -409,6 +425,7 @@ export async function sendBeyondMasterMessage(text?: string) {
     accountCards: null,
     domainSuggestions: null,
     dnsCard: null,
+    commerceCard: null,
     attachments: [],
     activeId: withUser.id,
     conversations: upsertConversation(ensured.state.conversations, withUser),
@@ -419,7 +436,10 @@ export async function sendBeyondMasterMessage(text?: string) {
     const response = await fetch("/api/beyond-master/chat", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ messages: chatContext(withUser.messages) }),
+      body: JSON.stringify({
+        messages: chatContext(withUser.messages),
+        preferredLocale: withUser.preferredLanguage ?? null,
+      }),
       signal: controller.signal,
     });
     if (sendController !== controller) return;
@@ -487,7 +507,7 @@ export async function sendBeyondMasterMessage(text?: string) {
             value: string;
             ttl: number;
           }[];
-          proposal?: DnsProposalView;
+          proposal?: DnsProposalView | CommerceProposalView;
           results?: BeyondMasterDomainSuggestion[];
         };
         if (
@@ -527,9 +547,34 @@ export async function sendBeyondMasterMessage(text?: string) {
             ...snapshot,
             dnsCard: {
               state: "confirmation_required",
-              proposal: data.proposal,
+              proposal: data.proposal as DnsProposalView,
               message: null,
               records: null,
+            },
+          });
+        }
+        if (frame.event === "commerce" && data.kind === "notice") {
+          emit({
+            ...snapshot,
+            commerceCard: {
+              state: "notice",
+              proposal: null,
+              message: data.message ?? "Action could not be prepared.",
+              checkoutUrl: null,
+            },
+          });
+        } else if (
+          frame.event === "commerce" &&
+          data.kind === "proposal" &&
+          data.proposal
+        ) {
+          emit({
+            ...snapshot,
+            commerceCard: {
+              state: "confirmation_required",
+              proposal: data.proposal as CommerceProposalView,
+              message: null,
+              checkoutUrl: null,
             },
           });
         }
@@ -817,6 +862,98 @@ export async function cancelBeyondMasterDns() {
       ...card,
       state: "cancelled",
       message: "The DNS proposal was cancelled. No change was made.",
+    },
+  });
+}
+
+let commerceConfirmInFlight = false;
+
+export async function confirmBeyondMasterCommerce() {
+  if (commerceConfirmInFlight) return;
+  const card = snapshot.commerceCard;
+  if (!card?.proposal || card.state !== "confirmation_required") return;
+  commerceConfirmInFlight = true;
+  emit({ ...snapshot, commerceCard: { ...card, state: "executing" } });
+  try {
+    const response = await fetch("/api/beyond-master/commerce/confirm", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ proposalId: card.proposal.publicId }),
+    });
+    const payload = (await response.json().catch(() => null)) as {
+      error?: string;
+      proposal?: CommerceProposalView;
+      checkoutUrl?: string | null;
+    } | null;
+    if (!response.ok || !payload?.proposal) {
+      emit({
+        ...snapshot,
+        commerceCard: {
+          ...card,
+          state: "failed",
+          message: payload?.error ?? "The action was not completed.",
+          checkoutUrl: null,
+        },
+      });
+      return;
+    }
+    const proposal = payload.proposal;
+    const state: CommerceCardState["state"] =
+      proposal.status === "cancelled"
+        ? "cancelled"
+        : proposal.status === "failed"
+          ? "failed"
+          : proposal.verified === true
+            ? "executed"
+            : "executed";
+    if (payload.checkoutUrl) {
+      window.open(payload.checkoutUrl, "_blank", "noopener,noreferrer");
+    }
+    emit({
+      ...snapshot,
+      commerceCard: {
+        state,
+        proposal,
+        message: proposal.resultMessage ?? null,
+        checkoutUrl: payload.checkoutUrl ?? null,
+      },
+    });
+  } finally {
+    commerceConfirmInFlight = false;
+  }
+}
+
+export async function cancelBeyondMasterCommerce() {
+  const card = snapshot.commerceCard;
+  if (!card?.proposal) return;
+  const response = await fetch("/api/beyond-master/commerce/cancel", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ proposalId: card.proposal.publicId }),
+  });
+  const payload = (await response.json().catch(() => null)) as {
+    error?: string;
+    proposal?: CommerceProposalView;
+  } | null;
+  if (!response.ok) {
+    emit({
+      ...snapshot,
+      commerceCard: {
+        ...card,
+        state: "failed",
+        message: payload?.error ?? "The proposal was not cancelled.",
+        checkoutUrl: null,
+      },
+    });
+    return;
+  }
+  emit({
+    ...snapshot,
+    commerceCard: {
+      state: "cancelled",
+      proposal: payload?.proposal ?? card.proposal,
+      message: "Cancelled. No charge or change was made.",
+      checkoutUrl: null,
     },
   });
 }

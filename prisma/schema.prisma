@@ -250,6 +250,7 @@ model CustomerUser {
   beyondMasterTicketDrafts BeyondMasterTicketDraft[]
   beyondMasterChatThreads BeyondMasterChatThread[]
   beyondMasterDnsProposals BeyondMasterDnsProposal[]
+  beyondMasterCommerceProposals BeyondMasterCommerceProposal[]
 }
 
 enum HostingOrderCheckoutStatus {
@@ -608,6 +609,28 @@ model BeyondMasterDnsProposal {
 
   @@index([customerUserId, status])
   @@index([domain])
+  @@index([expiresAt])
+}
+
+/// Pending commerce action (domain register, nameservers, hosting checkout). Confirm executes through existing services.
+model BeyondMasterCommerceProposal {
+  id                 String       @id @default(cuid())
+  publicId           String       @unique
+  customerUserId     String
+  customer           CustomerUser @relation(fields: [customerUserId], references: [id], onDelete: Cascade)
+  idempotencyKey     String       @unique
+  kind               String
+  payload            Json
+  status             String
+  expiresAt          DateTime
+  claimToken         String?
+  resultMessage      String?
+  verified           Boolean?
+  executionErrorCode String?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  @@index([customerUserId, status])
   @@index([expiresAt])
 }
 
