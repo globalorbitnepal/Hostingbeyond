@@ -8,6 +8,7 @@ import { prismaAccountReader } from "@/lib/beyond-master/account/prisma-reader";
 import { isAccountQuestion } from "@/lib/beyond-master/account/intent";
 import type { AccountRead } from "@/lib/beyond-master/account/types";
 import { recordBeyondMasterUsage } from "@/lib/beyond-master/usage";
+import { setBeyondMasterToolReadersForTests } from "@/lib/beyond-master/tools/handlers";
 
 let readerOverride: AccountReader | null = null;
 
@@ -16,6 +17,7 @@ export function setBeyondMasterAccountReaderForTests(
 ) {
   if (process.env.NODE_ENV === "production") return;
   readerOverride = reader;
+  setBeyondMasterToolReadersForTests({ account: reader });
 }
 
 export async function accountEventForChat(
