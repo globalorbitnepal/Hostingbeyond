@@ -5,6 +5,7 @@ import type { BeyondMasterRuntimeConfig } from "@/lib/beyond-master/settings";
 import {
   classifyGeminiErrorBody,
   geminiEventsFromFrame,
+  geminiGenerateOnce,
   geminiHeaders,
   geminiPayload,
   geminiStreamUrl,
@@ -107,6 +108,10 @@ type StreamInput = {
 export async function* streamBeyondMasterProvider(
   input: StreamInput,
 ): AsyncGenerator<ProviderStreamEvent> {
+  if (input.config.provider === "google") {
+    yield* streamGoogleProvider(input);
+    return;
+  }
   const run = () => streamOnce(input);
   try {
     const iterator = run();
@@ -128,6 +133,41 @@ function isRetryable(error: unknown) {
     error instanceof BeyondMasterProviderError &&
     (error.code === "upstream" || error.code === "rate_limited")
   );
+}
+
+async function* streamGoogleProvider(
+  input: StreamInput,
+): AsyncGenerator<ProviderStreamEvent> {
+  try {
+    yield* streamOnce(input);
+  } catch (error) {
+    if (
+      !(error instanceof BeyondMasterProviderError) ||
+      error.code === "aborted" ||
+      error.code === "unauthorized" ||
+      error.code === "unavailable"
+    ) {
+      throw error;
+    }
+    const fallback = await geminiGenerateOnce(
+      input.config,
+      input.messages,
+      input.systemPrompt ?? BEYOND_MASTER_SYSTEM_PROMPT,
+      input.fetchImpl,
+    );
+    if (!fallback.ok) {
+      throw new BeyondMasterProviderError(
+        fallback.code,
+        "Gemini request failed.",
+      );
+    }
+    yield { type: "delta", text: fallback.text };
+    yield {
+      type: "usage",
+      promptTokens: fallback.promptTokens,
+      completionTokens: fallback.completionTokens,
+    };
+  }
 }
 
 async function* streamOnce(
