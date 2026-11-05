@@ -33,7 +33,46 @@ function sseBody(text: string) {
   });
 }
 
+const googleConfig: BeyondMasterRuntimeConfig = {
+  configured: true,
+  provider: "google",
+  model: "gemini-2.5-flash",
+  baseUrl: "https://generativelanguage.googleapis.com/v1beta",
+  apiKey: "gemini-test-key",
+  timeoutMs: 30,
+  maxOutputTokens: 32,
+  rateLimit: 5,
+  rateWindowMs: 60_000,
+  configurationError: null,
+};
+
 describe("beyond master provider stream", () => {
+  it("assembles streamed Gemini deltas without echoing the key", async () => {
+    let apiKeyHeader = "";
+    const chunks: string[] = [];
+    for await (const event of streamBeyondMasterProvider({
+      config: googleConfig,
+      messages: [{ role: "user", content: "Hello" }],
+      signal: new AbortController().signal,
+      fetchImpl: async (url, init) => {
+        apiKeyHeader = new Headers(init?.headers).get("x-goog-api-key") ?? "";
+        assert.match(String(url), /streamGenerateContent\?alt=sse/);
+        return new Response(
+          sseBody(
+            'data: {"candidates":[{"content":{"parts":[{"text":"Namaste "}]}}]}\n\n' +
+              'data: {"candidates":[{"content":{"parts":[{"text":"from AI Agent."}]}}],"usageMetadata":{"promptTokenCount":3,"candidatesTokenCount":5}}\n\n',
+          ),
+          { status: 200 },
+        );
+      },
+    })) {
+      if (event.type === "delta") chunks.push(event.text);
+    }
+    assert.equal(chunks.join(""), "Namaste from AI Agent.");
+    assert.equal(apiKeyHeader, "gemini-test-key");
+    assert.equal(chunks.join("").includes("gemini-test"), false);
+  });
+
   it("assembles streamed OpenAI deltas and does not echo the key", async () => {
     let authorization = "";
     const chunks: string[] = [];

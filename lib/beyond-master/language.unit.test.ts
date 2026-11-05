@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { detectAgentLanguage } from "@/lib/beyond-master/language";
+import {
+  detectAgentLanguage,
+  resolveConversationLanguage,
+} from "@/lib/beyond-master/language";
 import {
   isAgentGreeting,
   wantsBulkDomainSearch,
@@ -32,6 +35,29 @@ describe("agent language detection", () => {
 
   it("defaults to English", () => {
     assert.equal(detectAgentLanguage("How much is web hosting?"), "en");
+  });
+
+  it("detects Hinglish domain and hosting phrases", () => {
+    assert.equal(
+      detectAgentLanguage("Mujhe apni website ke liye hosting chahiye."),
+      "hi",
+    );
+    assert.equal(
+      detectAgentLanguage("Mero domain connect nahi ho raha, please help."),
+      "ne",
+    );
+  });
+
+  it("tracks conversation language across switches", () => {
+    const messages = [
+      { role: "user" as const, content: "I want to register a domain." },
+      { role: "assistant" as const, content: "Which name?" },
+      {
+        role: "user" as const,
+        content: "मुझे होस्टिंग चाहिए",
+      },
+    ];
+    assert.equal(resolveConversationLanguage(messages), "hi");
   });
 
   it("recognises Nepali and Hindi greetings", () => {
