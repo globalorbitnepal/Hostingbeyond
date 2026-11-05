@@ -43,7 +43,6 @@ export function geminiPayload(
     contents,
     generationConfig: {
       maxOutputTokens: config.maxOutputTokens,
-      thinkingConfig: { thinkingBudget: 0 },
     },
   };
 }
