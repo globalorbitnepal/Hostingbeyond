@@ -346,20 +346,20 @@ export function SiteHeader({
         <div className="relative">
           <div
             className={cn(
-              "mx-auto flex h-[56px] w-full min-w-0 items-center gap-1.5 rounded-full border border-white/90 bg-white/[0.92] px-2.5 shadow-[0_12px_40px_rgba(15,23,42,0.14),inset_0_1px_0_rgba(255,255,255,1)] backdrop-blur-md backdrop-saturate-150 sm:h-[70px] sm:gap-3 sm:px-5 sm:backdrop-blur-2xl lg:grid lg:grid-cols-[minmax(0,auto)_minmax(0,1fr)_auto] lg:items-center lg:gap-3 lg:px-6 xl:gap-4",
+              "mx-auto flex h-[56px] w-full min-w-0 items-center gap-1.5 rounded-full border border-white/90 bg-white/[0.92] px-2.5 shadow-[0_12px_40px_rgba(15,23,42,0.14),inset_0_1px_0_rgba(255,255,255,1)] backdrop-blur-md backdrop-saturate-150 sm:h-[70px] sm:gap-3 sm:px-5 sm:backdrop-blur-2xl lg:grid lg:grid-cols-[minmax(0,auto)_minmax(0,1fr)_auto] lg:items-center lg:gap-3 lg:pr-2 lg:pl-6 xl:gap-4",
               checkoutBar && "lg:gap-2 xl:gap-3",
             )}
           >
             <div
               className={cn(
-                "relative z-10 max-w-[46%] min-w-0 shrink-0 sm:max-w-none lg:max-w-[min(240px,30vw)] xl:max-w-[min(280px,32vw)]",
+                "relative z-10 max-w-[42%] min-w-0 shrink-0 sm:max-w-none lg:max-w-[min(240px,30vw)] xl:max-w-[min(280px,32vw)]",
                 !checkoutBar && "flex-1 lg:flex-none",
               )}
             >
               <Logo
                 src={CANONICAL_HEADER_LOGO_SRC}
                 variant="image"
-                className="max-w-[min(42vw,150px)] sm:max-w-[220px] lg:max-w-full xl:max-w-[280px]"
+                className="max-w-[120px] min-[375px]:max-w-[140px] sm:max-w-[220px] lg:max-w-full xl:max-w-[280px]"
               />
             </div>
 
@@ -406,7 +406,9 @@ export function SiteHeader({
             </nav>
 
             <div className="relative z-10 hidden shrink-0 items-center justify-end gap-1 lg:flex xl:gap-2">
-              <BeyondMasterHeaderLauncher checkout={checkoutBar} />
+              <span className="lg:ml-2">
+                <BeyondMasterHeaderLauncher checkout={checkoutBar} />
+              </span>
               <DomainCartHeaderLink />
               <CurrencySelector tone="light" />
               <CountryLanguageSelector tone="light" className="shrink-0" />
@@ -420,24 +422,28 @@ export function SiteHeader({
               />
             </div>
 
-            <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-1.5 lg:hidden">
+            <div className="ml-auto flex min-w-0 shrink-0 items-center gap-2 sm:gap-2.5 lg:hidden">
               <BeyondMasterHeaderLauncher checkout={checkoutBar} compact />
-              <CurrencySelector compact tone="light" />
-              <DomainCartHeaderLink compact />
-              <button
-                type="button"
-                className="inline-flex size-9 touch-manipulation items-center justify-center rounded-full border border-slate-200 bg-white text-slate-800 shadow-sm sm:size-10"
-                aria-expanded={open}
-                aria-controls="hb-mobile-nav"
-                aria-label={open ? "Close menu" : "Open menu"}
-                onClick={() => setOpen((v) => !v)}
-              >
-                {open ? (
-                  <X className="size-[18px]" />
-                ) : (
-                  <Menu className="size-[18px]" />
-                )}
-              </button>
+              <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
+                <span className="hidden sm:block">
+                  <CurrencySelector compact tone="light" />
+                </span>
+                <DomainCartHeaderLink compact />
+                <button
+                  type="button"
+                  className="inline-flex size-9 touch-manipulation items-center justify-center rounded-full border border-slate-200 bg-white text-slate-800 shadow-sm sm:size-10"
+                  aria-expanded={open}
+                  aria-controls="hb-mobile-nav"
+                  aria-label={open ? "Close menu" : "Open menu"}
+                  onClick={() => setOpen((v) => !v)}
+                >
+                  {open ? (
+                    <X className="size-[18px]" />
+                  ) : (
+                    <Menu className="size-[18px]" />
+                  )}
+                </button>
+              </div>
             </div>
           </div>
 

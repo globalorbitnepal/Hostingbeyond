@@ -29,7 +29,6 @@ import {
   defaultFooterSection,
   defaultGrowStorySection,
   defaultHomeFaqsSection,
-  defaultHeroFeatureBar,
   defaultJourneySection,
   defaultPowerTilesSection,
   defaultProofSection,
@@ -39,7 +38,6 @@ import {
   type CmsHomeSections,
   type CmsHostingGuarantee,
   type CmsHostingTypeCard,
-  type CmsHeroFeatureBar,
   type CmsLoginFeature,
   type CmsLoginPage,
   type CmsProductOffer,
@@ -495,33 +493,6 @@ export default function OrbitContentPage() {
             }
           />
         </div>
-      </section>
-
-      {/* HERO FEATURE BAR */}
-      <section className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-        <div>
-          <h2 className="font-semibold">Hero feature bar</h2>
-          <p className="mt-0.5 text-xs text-[var(--hb-muted)]">
-            Special offer, cPanel / WordPress / SSL icons, and View Plans CTA.
-          </p>
-        </div>
-        <HeroFeatureBarEditor
-          bar={sections.hero.featureBar ?? defaultHeroFeatureBar()}
-          onChange={(featureBar) =>
-            setSections({
-              ...sections,
-              hero: { ...sections.hero, featureBar },
-            })
-          }
-          onPersist={(featureBar) => {
-            const current = sectionsRef.current;
-            if (!current) return;
-            commitHome({
-              ...current,
-              hero: { ...current.hero, featureBar },
-            });
-          }}
-        />
       </section>
 
       {/* TRUST + STATS */}
@@ -1991,98 +1962,6 @@ function HostingTypeCardEditor({
         onChange={(url) => onChange({ imageUrl: url })}
         onCommit={onImageCommit}
       />
-    </div>
-  );
-}
-
-function HeroFeatureBarEditor({
-  bar,
-  onChange,
-  onPersist,
-}: {
-  bar: CmsHeroFeatureBar;
-  onChange: (bar: CmsHeroFeatureBar) => void;
-  onPersist?: (bar: CmsHeroFeatureBar) => void;
-}) {
-  const items = [...(bar.items ?? [])].sort((a, b) => a.order - b.order);
-  const updateItem = (
-    index: number,
-    patch: Partial<(typeof items)[number]>,
-    persist = false,
-  ) => {
-    const next = items.map((item, i) =>
-      i === index ? { ...item, ...patch } : item,
-    );
-    const merged = {
-      ...bar,
-      items: next.map((item, order) => ({ ...item, order })),
-    };
-    onChange(merged);
-    if (persist) onPersist?.(merged);
-  };
-
-  return (
-    <div className="space-y-4">
-      <div className="grid gap-3 md:grid-cols-2">
-        <Field
-          label="Offer eyebrow"
-          value={bar.offerEyebrow}
-          onChange={(value) => onChange({ ...bar, offerEyebrow: value })}
-        />
-        <Field
-          label="Offer title"
-          value={bar.offerTitle}
-          onChange={(value) => onChange({ ...bar, offerTitle: value })}
-        />
-        <Field
-          label="Offer highlight (e.g. 70%)"
-          value={bar.offerHighlight}
-          onChange={(value) => onChange({ ...bar, offerHighlight: value })}
-        />
-        <Field
-          label="CTA text"
-          value={bar.ctaLabel}
-          onChange={(value) => onChange({ ...bar, ctaLabel: value })}
-        />
-        <Field
-          label="CTA link"
-          value={bar.ctaHref}
-          onChange={(value) => onChange({ ...bar, ctaHref: value })}
-        />
-      </div>
-      {items.map((item, index) => (
-        <div
-          key={item.id}
-          className="space-y-3 rounded-xl border border-white/10 p-3"
-        >
-          <label className="flex items-center gap-2 text-xs text-[var(--hb-muted)]">
-            <input
-              type="checkbox"
-              checked={item.visible !== false}
-              onChange={(e) => updateItem(index, { visible: e.target.checked })}
-            />
-            Visible — {item.id}
-          </label>
-          <div className="grid gap-3 md:grid-cols-2">
-            <Field
-              label="Title"
-              value={item.title}
-              onChange={(value) => updateItem(index, { title: value })}
-            />
-            <Field
-              label="Subtitle"
-              value={item.subtitle}
-              onChange={(value) => updateItem(index, { subtitle: value })}
-            />
-          </div>
-          <OrbitImageField
-            label="Icon image"
-            value={item.iconUrl}
-            onChange={(url) => updateItem(index, { iconUrl: url })}
-            onCommit={(url) => updateItem(index, { iconUrl: url }, true)}
-          />
-        </div>
-      ))}
     </div>
   );
 }

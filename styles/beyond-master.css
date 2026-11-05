@@ -47,6 +47,7 @@
   display: inline-flex;
   max-width: 100%;
   height: 40px;
+  flex: 0 0 auto;
   overflow: hidden;
   border-radius: 999px;
   animation: hb-ai-neon 2.4s ease-in-out infinite;
@@ -77,11 +78,21 @@
 }
 
 .hb-ai-badge-compact {
-  height: 32px;
+  height: 30px;
 }
 
 .hb-ai-badge-compact img {
-  height: 32px;
+  height: 30px;
+}
+
+@media (max-width: 374px) {
+  .hb-ai-badge-compact {
+    height: 26px;
+  }
+
+  .hb-ai-badge-compact img {
+    height: 26px;
+  }
 }
 
 .hb-ai-badge-panel {

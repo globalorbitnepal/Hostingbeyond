@@ -83,26 +83,6 @@ export type CmsHeroContent = {
   domainPricing?: CmsDomainTld[];
   /** Technology / trust strip logos */
   technologyPartners?: CmsTechPartner[];
-  /** Slim feature bar under the hero (offer + icons + CTA) */
-  featureBar?: CmsHeroFeatureBar;
-};
-
-export type CmsHeroFeatureItem = {
-  id: string;
-  visible: boolean;
-  order: number;
-  title: string;
-  subtitle: string;
-  iconUrl: string;
-};
-
-export type CmsHeroFeatureBar = {
-  offerEyebrow: string;
-  offerTitle: string;
-  offerHighlight: string;
-  ctaLabel: string;
-  ctaHref: string;
-  items: CmsHeroFeatureItem[];
 };
 
 export type CmsProductOffer = {
@@ -2416,58 +2396,6 @@ export function defaultTechnologyPartners(): CmsTechPartner[] {
   ];
 }
 
-export function defaultHeroFeatureBar(): CmsHeroFeatureBar {
-  return {
-    offerEyebrow: "Special Offer",
-    offerTitle: "Save Up to",
-    offerHighlight: "70%",
-    ctaLabel: "View Plans",
-    ctaHref: routes.hosting,
-    items: [
-      {
-        id: "cpanel",
-        visible: true,
-        order: 0,
-        title: "One Click",
-        subtitle: "cPanel Access",
-        iconUrl: "/images/feature-marks/cpanel-user.png",
-      },
-      {
-        id: "wordpress",
-        visible: true,
-        order: 1,
-        title: "One Click",
-        subtitle: "WordPress Install",
-        iconUrl: "/images/feature-marks/wordpress-w.svg",
-      },
-      {
-        id: "builder",
-        visible: true,
-        order: 2,
-        title: "One Click",
-        subtitle: "Website Create",
-        iconUrl: "/images/feature-marks/website-create.svg",
-      },
-      {
-        id: "email",
-        visible: true,
-        order: 3,
-        title: "Business Email",
-        subtitle: "Professional Mail",
-        iconUrl: "",
-      },
-      {
-        id: "ssl",
-        visible: true,
-        order: 4,
-        title: "Free SSL",
-        subtitle: "With All Plans",
-        iconUrl: "",
-      },
-    ],
-  };
-}
-
 export function defaultJourneySection(): CmsJourneyContent {
   return {
     visible: true,
@@ -2790,7 +2718,6 @@ export function defaultHomeSections(): CmsHomeSections {
         { tld: ".dev", priceLabel: "$3.99/yr", visible: true },
       ],
       technologyPartners: defaultTechnologyPartners(),
-      featureBar: defaultHeroFeatureBar(),
       trustItems: [
         {
           title: "99.99% Uptime",
@@ -4095,34 +4022,6 @@ export function mergeHomeSections(
       })),
   ].sort((a, b) => a.order - b.order);
 
-  const storedFeatureBar = storedHero.featureBar;
-  const defaultBar = defaultHeroFeatureBar();
-  const storedFeatureItems = Array.isArray(storedFeatureBar?.items)
-    ? storedFeatureBar.items
-    : [];
-  const featureBar: CmsHeroFeatureBar = {
-    ...defaultBar,
-    ...storedFeatureBar,
-    items: [
-      ...defaultBar.items.map((fallback) => {
-        const match = storedFeatureItems.find(
-          (item) => item.id === fallback.id,
-        );
-        return match
-          ? {
-              ...fallback,
-              ...match,
-              iconUrl: typeof match.iconUrl === "string" ? match.iconUrl : "",
-              visible: match.visible !== false,
-            }
-          : fallback;
-      }),
-      ...storedFeatureItems.filter(
-        (item) => !defaultBar.items.some((d) => d.id === item.id),
-      ),
-    ].sort((a, b) => a.order - b.order),
-  };
-
   const storedPricing = Array.isArray(storedHero.domainPricing)
     ? storedHero.domainPricing.filter(
         (item) => typeof item?.tld === "string" && item.tld.trim(),
@@ -4160,7 +4059,6 @@ export function mergeHomeSections(
         }))
       : defaults.hero.domainPricing,
     technologyPartners,
-    featureBar,
   };
 
   const storedNav = stored.navigation;

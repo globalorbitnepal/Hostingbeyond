@@ -6,8 +6,6 @@ import { cn } from "@/lib/utils";
 /** Single canonical header wordmark — never swap after hydration. */
 export const CANONICAL_HEADER_LOGO_SRC = "/logo/hostingbeyond-logo-v6.png";
 
-const LOGO_ASPECT = 981 / 182;
-
 type LogoProps = {
   className?: string;
   href?: string;
@@ -49,13 +47,9 @@ export function Logo({
     ) : (
       <span
         className={cn(
-          "relative inline-flex shrink-0 items-center justify-start leading-none",
+          "relative inline-flex h-[22px] max-w-full min-w-0 items-center justify-start leading-none min-[375px]:h-[26px] sm:h-[32px] lg:h-[34px] xl:h-[38px]",
           className,
         )}
-        style={{
-          aspectRatio: `${LOGO_ASPECT}`,
-          minHeight: "26px",
-        }}
       >
         <Image
           src={resolvedSrc}
@@ -65,7 +59,7 @@ export function Logo({
           priority
           fetchPriority="high"
           unoptimized
-          className="m-0 block h-[26px] w-auto max-w-full bg-transparent object-contain object-left sm:h-[32px] lg:h-[34px] xl:h-[38px]"
+          className="m-0 block h-full w-auto max-w-[108px] bg-transparent object-contain object-left min-[375px]:max-w-[132px] sm:max-w-[200px] lg:max-w-[240px] xl:max-w-[280px]"
         />
       </span>
     );
@@ -75,7 +69,7 @@ export function Logo({
   return (
     <Link
       href={href}
-      className="relative inline-flex shrink-0 items-center justify-start leading-none outline-none focus-visible:ring-2 focus-visible:ring-[var(--hb-purple)]/60"
+      className="relative inline-flex max-w-full min-w-0 shrink-0 items-center justify-start leading-none outline-none focus-visible:ring-2 focus-visible:ring-[var(--hb-purple)]/60"
       aria-label="HostingBeyond home"
     >
       {content}

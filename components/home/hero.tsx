@@ -8,7 +8,6 @@ import { motion, useReducedMotion } from "framer-motion";
 import { CatalogPrice } from "@/components/i18n/localized-text";
 import { heroTldOptions } from "@/config/domain-teasers";
 import { routes } from "@/config/routes";
-import { HeroFeatureBar } from "@/components/home/hero-feature-bar";
 import { cn } from "@/lib/utils";
 import type { CmsHeroContent } from "@/lib/orbit/defaults";
 
@@ -140,6 +139,29 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
         className="pointer-events-none absolute inset-y-0 left-0 z-[1] hidden w-[58%] bg-gradient-to-r from-[#3c1178]/55 via-[#4c1d95]/18 to-transparent lg:block"
       />
 
+      {/* Mobile speaker — a photo band under the search card, the desktop hero paints it as its background */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-[44%] overflow-hidden lg:hidden"
+        style={{
+          WebkitMaskImage:
+            "linear-gradient(to bottom, transparent 0%, #000 24%, #000 100%)",
+          maskImage:
+            "linear-gradient(to bottom, transparent 0%, #000 24%, #000 100%)",
+        }}
+      >
+        <Image
+          src={speakerSrc}
+          alt=""
+          fill
+          priority
+          unoptimized
+          sizes="100vw"
+          className="object-cover object-[84%_6%]"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#4c1d95]/65 via-[#3b1780]/10 to-[#2f1c6a]/55" />
+      </div>
+
       <div className="hb-shell relative z-20 grid w-full flex-1 grid-cols-1 overflow-visible pt-3 pb-3 sm:pt-2 lg:grid-cols-[minmax(0,0.48fr)_minmax(0,0.52fr)] lg:items-center lg:gap-4 lg:pb-2 xl:grid-cols-[minmax(0,0.46fr)_minmax(0,0.54fr)]">
         <div className="relative z-30 w-full min-w-0 self-center overflow-visible lg:max-w-none lg:pb-6">
           <motion.p
@@ -174,7 +196,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
             initial={reduceMotion ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.12 }}
-            className="relative z-30 mt-6 flex w-full max-w-none flex-col gap-2 rounded-[28px] border border-white/40 bg-white/22 p-2.5 shadow-[0_22px_60px_rgba(15,23,42,0.24)] backdrop-blur-2xl sm:flex-row sm:items-center sm:gap-2 sm:rounded-full sm:p-2 lg:w-[min(158%,54rem)] xl:w-[min(170%,58rem)]"
+            className="relative z-30 mt-3 flex w-full max-w-none flex-col gap-2 rounded-[28px] border border-white/40 bg-white/22 p-2.5 shadow-[0_22px_60px_rgba(15,23,42,0.24)] backdrop-blur-2xl sm:flex-row sm:items-center sm:gap-2 sm:rounded-full sm:p-2 lg:mt-6 lg:w-[min(158%,54rem)] xl:w-[min(170%,58rem)]"
           >
             <div className="flex min-w-0 flex-1 items-center gap-2.5 px-3 sm:px-4">
               <Search className="size-5 shrink-0 text-white/80" aria-hidden />
@@ -186,13 +208,13 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
                 className="min-w-0 flex-1 bg-transparent py-2.5 text-[15px] text-white outline-none placeholder:text-white/70 sm:py-1 sm:text-[16px]"
               />
             </div>
-            <div className="flex items-center gap-2">
-              <label className="relative min-w-0 flex-1 sm:flex-none">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <label className="relative min-w-0 flex-none">
                 <span className="sr-only">Domain extension</span>
                 <select
                   value={tld}
                   onChange={(e) => setTld(e.target.value)}
-                  className="h-12 w-full appearance-none rounded-full border border-white/20 bg-white py-0 pr-9 pl-4 text-[14px] font-semibold text-slate-800 outline-none sm:h-12 sm:w-auto"
+                  className="h-12 w-full min-w-[92px] appearance-none rounded-full border border-white/20 bg-white py-0 pr-8 pl-3.5 text-[14px] font-semibold text-slate-800 outline-none sm:h-12 sm:w-auto sm:pr-9 sm:pl-4"
                 >
                   {tldChoices.map((option) => (
                     <option key={option} value={option}>
@@ -207,7 +229,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
               </label>
               <button
                 type="submit"
-                className="inline-flex h-12 flex-1 items-center justify-center gap-1.5 rounded-full bg-white px-5 text-[14.5px] font-bold text-slate-950 shadow-[0_10px_24px_rgba(15,23,42,0.18)] transition hover:bg-white/90 sm:flex-none sm:px-6"
+                className="inline-flex h-12 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full bg-white px-3 text-[13px] font-bold whitespace-nowrap text-slate-950 shadow-[0_10px_24px_rgba(15,23,42,0.18)] transition hover:bg-white/90 sm:flex-none sm:px-6 sm:text-[14.5px]"
               >
                 {searchButtonLabel}
                 <ArrowRight className="size-4" aria-hidden />
@@ -219,7 +241,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
             initial={reduceMotion ? false : { opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.16 }}
-            className="mt-3 flex w-full [scrollbar-width:none] flex-nowrap items-center gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden"
+            className="relative z-30 mt-3 flex w-full [scrollbar-width:none] flex-nowrap items-center gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden"
           >
             {teasers.map((item) => {
               const value = item.tld.startsWith(".")
@@ -267,48 +289,6 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
               );
             })}
           </motion.div>
-        </div>
-
-        {/* Mobile speaker — the desktop hero paints this photo as its background */}
-        <motion.div
-          initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.14 }}
-          className="relative mt-4 -mr-[var(--hb-shell-pad)] -ml-[var(--hb-shell-pad)] aspect-[3/2] w-[calc(100%+2*var(--hb-shell-pad))] lg:hidden"
-          aria-hidden
-          style={{
-            WebkitMaskImage:
-              "linear-gradient(to bottom, transparent 0%, #000 10%, #000 90%, transparent 100%)",
-            maskImage:
-              "linear-gradient(to bottom, transparent 0%, #000 10%, #000 90%, transparent 100%)",
-          }}
-        >
-          <Image
-            src={speakerSrc}
-            alt=""
-            fill
-            priority
-            unoptimized
-            sizes="100vw"
-            className="object-cover object-[100%_45%]"
-          />
-        </motion.div>
-      </div>
-
-      {/* Slim feature glass bar */}
-      <div className="relative z-30 mt-auto shrink-0 pt-1 pb-4 sm:pb-4">
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-[#5025d1] to-transparent" />
-        <div className="pointer-events-none absolute inset-x-0 -top-6 h-6 bg-gradient-to-b from-transparent to-[#5025d1]/20" />
-        <div className="hb-shell">
-          <div className="relative w-full overflow-hidden rounded-[22px] border border-white/25 bg-white/92 shadow-[0_8px_24px_rgba(15,23,42,0.18)] backdrop-blur-xl lg:rounded-full">
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 rounded-[22px] bg-[radial-gradient(ellipse_at_50%_0%,rgba(103,61,230,0.08),transparent_58%)] lg:rounded-full"
-            />
-            <div className="relative">
-              <HeroFeatureBar bar={content?.featureBar} />
-            </div>
-          </div>
         </div>
       </div>
     </section>
