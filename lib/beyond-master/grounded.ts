@@ -17,15 +17,15 @@ import {
   type AgentDomainSuggestion,
 } from "@/lib/beyond-master/domain-search";
 import {
-  detectAgentLanguage,
-  type AgentLanguage,
-} from "@/lib/beyond-master/language";
-import { agentCopy } from "@/lib/beyond-master/replies";
+  detectMessageLocale,
+  type ConversationLocale,
+} from "@/lib/beyond-master/locale";
+import { agentCopyForLocale } from "@/lib/beyond-master/replies";
 
 export type GroundedReply = {
   text: string;
   domains: AgentDomainSuggestion[];
-  language: AgentLanguage;
+  language: ConversationLocale;
 };
 
 type Topic =
@@ -68,6 +68,10 @@ function detectTopic(text: string): Topic | null {
   return TOPIC_TESTS.find((row) => row.test.test(text))?.topic ?? null;
 }
 
+export function detectGroundedTopic(text: string): Topic | null {
+  return detectTopic(text);
+}
+
 export function formatPlansForAgent(plans: AgentHostingPlan[]): string {
   return plans
     .slice(0, 6)
@@ -95,8 +99,8 @@ export async function groundedBeyondMasterReply(
   firstName?: string | null,
 ): Promise<GroundedReply> {
   const text = question.trim();
-  const language = detectAgentLanguage(text);
-  const copy = agentCopy(language);
+  const language = detectMessageLocale(text);
+  const copy = agentCopyForLocale(language);
   const who = firstName?.trim() || null;
 
   if (isAgentGreeting(text)) {

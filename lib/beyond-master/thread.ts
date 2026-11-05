@@ -3,6 +3,7 @@ import {
   BEYOND_MASTER_MAX_MESSAGE_LENGTH,
   BEYOND_MASTER_PROVIDER_NOTICE,
 } from "@/lib/beyond-master/copy";
+import { normalizeBcp47Locale } from "@/lib/beyond-master/locale";
 import type {
   BeyondMasterConversation,
   BeyondMasterMessage,
@@ -204,11 +205,7 @@ export function parseStoredConversations(
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
       preferredLanguage:
-        row.preferredLanguage === "hi" ||
-        row.preferredLanguage === "ne" ||
-        row.preferredLanguage === "en"
-          ? row.preferredLanguage
-          : undefined,
+        normalizeBcp47Locale(row.preferredLanguage) ?? undefined,
       messages,
     });
   }

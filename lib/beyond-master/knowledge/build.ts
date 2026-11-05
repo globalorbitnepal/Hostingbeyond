@@ -113,6 +113,36 @@ export function composeBeyondMasterSystemPrompt(input: {
 async function readDatabaseArticles(): Promise<
   BeyondMasterKnowledgeArticle[] | null
 > {
+  const cached = readCachedPublicArticles();
+  if (cached !== undefined) return cached;
+  return loadDatabaseArticlesUncached();
+}
+
+const PUBLIC_ARTICLE_CACHE_MS = 5 * 60 * 1000;
+let publicArticleCache:
+  | { expiresAt: number; value: BeyondMasterKnowledgeArticle[] | null }
+  | undefined;
+
+function readCachedPublicArticles():
+  BeyondMasterKnowledgeArticle[] | null | undefined {
+  if (!publicArticleCache) return undefined;
+  if (Date.now() > publicArticleCache.expiresAt) {
+    publicArticleCache = undefined;
+    return undefined;
+  }
+  return publicArticleCache.value;
+}
+
+function storePublicArticleCache(value: BeyondMasterKnowledgeArticle[] | null) {
+  publicArticleCache = {
+    expiresAt: Date.now() + PUBLIC_ARTICLE_CACHE_MS,
+    value,
+  };
+}
+
+async function loadDatabaseArticlesUncached(): Promise<
+  BeyondMasterKnowledgeArticle[] | null
+> {
   try {
     const rows = await prisma.beyondMasterKnowledgeArticle.findMany({
       select: {
@@ -124,17 +154,21 @@ async function readDatabaseArticles(): Promise<
         published: true,
       },
     });
-    return rows.flatMap((row) => {
+    const articles = rows.flatMap((row) => {
       const article = databaseArticle(row);
       return article ? [article] : [];
     });
+    storePublicArticleCache(articles);
+    return articles;
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
       (error.code === "P2021" || error.code === "P2022")
     ) {
+      storePublicArticleCache(null);
       return null;
     }
+    storePublicArticleCache(null);
     return null;
   }
 }

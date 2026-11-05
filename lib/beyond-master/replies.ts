@@ -1,3 +1,7 @@
+import {
+  primaryLanguageSubtag,
+  type ConversationLocale,
+} from "@/lib/beyond-master/locale";
 import type { AgentLanguage } from "@/lib/beyond-master/language";
 
 type Copy = {
@@ -162,14 +166,96 @@ const NE: Copy = {
   languageName: "नेपाली",
 };
 
+const ES: Copy = {
+  ...EN,
+  greeting: (name) =>
+    `${name ? `Hola ${name}.` : "Hola."} Dígame si quiere empezar con un dominio, hosting, correo profesional o su sitio web.`,
+  askDomainName:
+    "Indique el nombre que desea comprobar, por ejemplo bakery.com o bakery, y consultaré la disponibilidad en vivo.",
+  domainHeading: (query) => `Comprobación en vivo para ${query}:`,
+  domainFailed:
+    "No pude contactar con el verificador de dominios. Inténtelo de nuevo o abra /domain-name-search.",
+  hostingHeading: "Estos son los planes HostingBeyond en vivo:",
+  billing:
+    "Facturas y pagos están en su cuenta después de iniciar sesión. No inventaré saldos ni números de factura.",
+  support:
+    "Puedo preparar una solicitud de soporte; usted la envía con la tarjeta de ticket. No inventaré números de ticket.",
+  fallback: (name) =>
+    `${name ? `${name}, puedo` : "Puedo"} comprobar dominios, comparar hosting, correo, DNS o SSL. Dígame qué necesita o envíe un nombre como example.com.`,
+  languageName: "Español",
+};
+
+const FR: Copy = {
+  ...EN,
+  greeting: (name) =>
+    `${name ? `Bonjour ${name}.` : "Bonjour."} Dites-moi si vous voulez un domaine, un hébergement, un e-mail pro ou un site web.`,
+  domainHeading: (query) => `Vérification en direct pour ${query} :`,
+  domainFailed:
+    "Le vérificateur de domaines est indisponible pour le moment. Réessayez ou ouvrez /domain-name-search.",
+  hostingHeading: "Voici les offres HostingBeyond en direct :",
+  billing:
+    "Factures et paiements sont dans votre compte après connexion. Je n'inventerai pas de solde ni de numéro de facture.",
+  fallback: (name) =>
+    `${name ? `${name}, je peux` : "Je peux"} vérifier un domaine, comparer l'hébergement, l'e-mail, le DNS ou le SSL. Dites-moi ce qu'il vous faut.`,
+  languageName: "Français",
+};
+
+const AR: Copy = {
+  ...EN,
+  greeting: (name) =>
+    `${name ? `مرحبًا ${name}.` : "مرحبًا."} أخبرني إن كنت تريد نطاقًا أو استضافة أو بريدًا مهنيًا أو موقعًا.`,
+  domainHeading: (query) => `فحص مباشر لـ ${query}:`,
+  domainFailed:
+    "تعذّر الاتصال بفاحص النطاقات الآن. حاول لاحقًا أو افتح /domain-name-search.",
+  hostingHeading: "خطط HostingBeyond الحية:",
+  billing:
+    "الفواتير والمدفوعات في حسابك بعد تسجيل الدخول. لن أختلق أرقام فواتير أو أرصدة.",
+  fallback: (name) =>
+    `${name ? `${name}، يمكنني` : "يمكنني"} فحص نطاق أو مقارنة الاستضافة أو البريد أو DNS. أرسل اسمًا مثل example.com.`,
+  languageName: "العربية",
+};
+
+const BN: Copy = {
+  ...EN,
+  greeting: (name) =>
+    `${name ? `নমস্কার ${name}.` : "নমস্কার."} ডোমেইন, হোস্টিং, ব্যবসায়িক ইমেইল বা ওয়েবসাইট — কী দিয়ে শুরু করতে চান বলুন।`,
+  domainHeading: (query) => `${query} এর লাইভ যাচাই:`,
+  domainFailed:
+    "এখন ডোমেইন চেকারের সাথে যোগাযোগ হয়নি। কিছুক্ষণ পর আবার চেষ্টা করুন বা /domain-name-search খুলুন।",
+  hostingHeading: "এগুলো HostingBeyond-এর লাইভ প্ল্যান:",
+  billing:
+    "ইনভয়েস ও পেমেন্ট সাইন-ইনের পর আপনার অ্যাকাউন্টে আছে। আমি ভুয়া ব্যালান্স বা ইনভয়েস নম্বর বলব না।",
+  fallback: (name) =>
+    `${name ? `${name}, আমি` : "আমি"} ডোমেইন চেক, হোস্টিং তুলনা, ইমেইল, DNS বা SSL সাহায্য করতে পারি। example.com এর মতো নাম পাঠান।`,
+  languageName: "বাংলা",
+};
+
 const BY_LANGUAGE: Record<AgentLanguage, Copy> = { en: EN, hi: HI, ne: NE };
 
 export function agentCopy(language: AgentLanguage): Copy {
   return BY_LANGUAGE[language] ?? EN;
 }
 
-export function statusLabel(language: AgentLanguage, status: string): string {
-  const copy = agentCopy(language);
+/** Locale-aware grounded copy with primary-language fallbacks. */
+export function agentCopyForLocale(locale: ConversationLocale): Copy {
+  const primary = primaryLanguageSubtag(locale);
+  if (primary === "hi") return HI;
+  if (primary === "ne") return NE;
+  if (primary === "es") return ES;
+  if (primary === "fr") return FR;
+  if (primary === "ar") return AR;
+  if (primary === "bn") return BN;
+  return EN;
+}
+
+export function statusLabel(
+  locale: ConversationLocale | AgentLanguage,
+  status: string,
+): string {
+  const copy =
+    typeof locale === "string" && locale.includes("-")
+      ? agentCopyForLocale(locale)
+      : agentCopy(locale as AgentLanguage);
   if (status === "available") return copy.statusAvailable;
   if (status === "taken") return copy.statusTaken;
   if (status === "premium") return copy.statusPremium;

@@ -1,4 +1,5 @@
 import { BEYOND_MASTER_MAX_MESSAGE_LENGTH } from "@/lib/beyond-master/copy";
+import { normalizeBcp47Locale } from "@/lib/beyond-master/locale";
 
 export type BeyondMasterChatTurn = {
   role: "user" | "assistant";
@@ -8,10 +9,24 @@ export type BeyondMasterChatTurn = {
 const MAX_TURNS = 16;
 const MAX_TOTAL_CHARS = 24_000;
 
-export function parseBeyondMasterChatRequest(
-  raw: unknown,
-):
-  | { ok: true; messages: BeyondMasterChatTurn[]; model: string | null }
+/** Recent turns sent to the language model (full thread may be longer client-side). */
+export const BEYOND_MASTER_PROVIDER_CONTEXT_TURNS = 12;
+
+export function trimBeyondMasterProviderContext(
+  messages: BeyondMasterChatTurn[],
+  maxTurns = BEYOND_MASTER_PROVIDER_CONTEXT_TURNS,
+): BeyondMasterChatTurn[] {
+  if (messages.length <= maxTurns) return messages;
+  return messages.slice(-maxTurns);
+}
+
+export function parseBeyondMasterChatRequest(raw: unknown):
+  | {
+      ok: true;
+      messages: BeyondMasterChatTurn[];
+      model: string | null;
+      preferredLocale: string | null;
+    }
   | { ok: false; error: string } {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
     return { ok: false, error: "Send a JSON object with a messages array." };
@@ -73,5 +88,18 @@ export function parseBeyondMasterChatRequest(
     }
     model = requested;
   }
-  return { ok: true, messages, model };
+  let preferredLocale: string | null = null;
+  if ("preferredLocale" in record || "preferredLanguage" in record) {
+    const raw =
+      typeof record.preferredLocale === "string"
+        ? record.preferredLocale
+        : typeof record.preferredLanguage === "string"
+          ? record.preferredLanguage
+          : null;
+    preferredLocale = normalizeBcp47Locale(raw);
+    if (raw && !preferredLocale) {
+      return { ok: false, error: "That locale value is not accepted." };
+    }
+  }
+  return { ok: true, messages, model, preferredLocale };
 }

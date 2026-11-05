@@ -28,7 +28,17 @@ describe("beyond master request validation", () => {
     if (parsed.ok) {
       assert.equal(parsed.messages[0]?.content, "How do I add an A record?");
       assert.equal(parsed.model, null);
+      assert.equal(parsed.preferredLocale, null);
     }
+  });
+
+  it("accepts an optional BCP-47 preferred locale", () => {
+    const parsed = parseBeyondMasterChatRequest({
+      preferredLocale: "es-419",
+      messages: [{ role: "user", content: "Hola" }],
+    });
+    assert.equal(parsed.ok, true);
+    if (parsed.ok) assert.equal(parsed.preferredLocale, "es-419");
   });
 
   it("parses an optional model name without accepting client ids", () => {
