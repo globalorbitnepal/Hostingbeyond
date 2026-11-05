@@ -71,6 +71,8 @@ describe("beyond master chat route", () => {
       assert.match(text, /event: delta/);
       assert.match(text, /Check the A record/);
       assert.match(text, /event: done/);
+      assert.match(systemPrompt, /Conversation language:/);
+      assert.match(systemPrompt, /AI Agent/);
       assert.match(systemPrompt, /A, AAAA, CNAME, MX, TXT, NS, and SRV/);
       assert.equal(systemPrompt.includes("Category billing"), false);
       assert.equal(systemPrompt.includes("sk-"), false);

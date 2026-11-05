@@ -10,7 +10,8 @@ export const BEYOND_MASTER_BRAND_NAME = "AI Agent";
 
 export const BEYOND_MASTER_PANEL_TITLE = BEYOND_MASTER_BRAND_NAME;
 
-export const BEYOND_MASTER_TAGLINE = "Your hosting and business assistant";
+export const BEYOND_MASTER_TAGLINE =
+  "Your HostingBeyond hosting and business assistant.";
 
 export const BEYOND_MASTER_WELCOME_HEADING = "Hi! How can I help you today?";
 
@@ -31,9 +32,9 @@ export const BEYOND_MASTER_DISCLAIMER =
 
 export const BEYOND_MASTER_STORAGE_KEY = "hb-beyond-master-ai-v1";
 
-/** Shown only in Orbit status. Public chat answers from catalog, search, and articles. */
+/** Shown only in Orbit status when no language model credentials are configured. */
 export const BEYOND_MASTER_PROVIDER_NOTICE =
-  "Beyond Master AI is not connected to a language model yet. This message is a status notice, not an AI answer. Nothing was checked or changed on your domains, DNS, hosting, email, or billing.";
+  "AI Agent is not connected to a language model yet. This is a status notice, not an AI answer. Nothing was checked or changed on your domains, DNS, hosting, email, or billing. Set GEMINI_API_KEY on the server to enable live AI replies.";
 
 export const BEYOND_MASTER_QUICK_ACTIONS: readonly BeyondMasterQuickAction[] = [
   {

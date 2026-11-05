@@ -20,6 +20,8 @@ export type BeyondMasterConversation = {
   title: string;
   createdAt: string;
   updatedAt: string;
+  /** Last detected reply language for this tab session (not sent to the model as authority). */
+  preferredLanguage?: "en" | "hi" | "ne";
   messages: BeyondMasterMessage[];
 };
 

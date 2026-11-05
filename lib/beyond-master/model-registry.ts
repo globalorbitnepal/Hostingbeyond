@@ -13,6 +13,11 @@ export type BeyondMasterCatalogAdapter = {
 /** Adapter families the app can speak. Not a claim that a model is live. */
 export const BEYOND_MASTER_ADAPTERS: readonly BeyondMasterCatalogAdapter[] = [
   {
+    provider: "google",
+    protocol: "openai-compatible",
+    defaultBaseUrl: "https://generativelanguage.googleapis.com/v1beta",
+  },
+  {
     provider: "openai",
     protocol: "openai-compatible",
     defaultBaseUrl: "https://api.openai.com/v1",
@@ -84,7 +89,7 @@ export function authorizeBeyondMasterModel(
     if (!configured?.available) {
       return {
         ok: false,
-        error: "No AI model is configured for Beyond Master.",
+        error: "No AI model is configured for AI Agent.",
       };
     }
     return { ok: true, model: configured.id };
