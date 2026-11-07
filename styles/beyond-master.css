@@ -41,7 +41,12 @@
 
 .hb-bmai-dock-bubble {
   display: inline-flex;
-  max-width: min(190px, calc(100vw - 108px));
+  /* Fixed box: prompt text rotates every 3.2s, and a width change would shift
+     the dock plus page layout (CLS). Text is clipped inside a stable pill. */
+  width: 188px;
+  max-width: calc(100vw - 108px);
+  justify-content: center;
+  box-sizing: border-box;
   padding: 9px 13px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.7);
@@ -69,6 +74,11 @@
 }
 
 .hb-bmai-dock-hello {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   animation: hb-bmai-hello-in 380ms ease;
 }
 

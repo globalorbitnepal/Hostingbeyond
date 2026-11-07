@@ -186,9 +186,11 @@ export function CurrencySelector({
       : cn("h-[38px] rounded-full text-[12px]", !fill && "w-[4.85rem]"),
   );
 
+  // SSR placeholder — reserves the exact live chip box so hydration cannot
+  // shift the header (a 0.02 CLS source before this fix).
   if (!mounted) {
     return (
-      <span className={cn(chipClass, className)} translate="no">
+      <span className={cn(chipClass, className)} translate="no" aria-hidden>
         USD
       </span>
     );

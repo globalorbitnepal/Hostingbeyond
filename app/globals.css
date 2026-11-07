@@ -97,6 +97,25 @@
     box-sizing: border-box;
   }
 
+  /**
+   * Header glass surface.
+   * Solid white base + a whisper-thin tint so the hero photo can never bleed a
+   * horizontal seam through the pill. No backdrop-filter: it produced a blurred
+   * band across the middle of the bar on large viewports.
+   */
+  .hb-header-bar {
+    background-color: #fff;
+    background-image: linear-gradient(
+      180deg,
+      #ffffff 0%,
+      #fdfdff 62%,
+      #fafbff 100%
+    );
+    border-color: rgba(255, 255, 255, 0.96);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
   /* Homepage chapters — Hostinger-tight, one continuous canvas */
   .hb-home-section {
     position: relative;
