@@ -4,6 +4,7 @@ import { describe, it } from "node:test";
 import {
   actualCentsFromTokenUsage,
   beyondMasterBudgetLockKey,
+  beyondMasterPaidAiBudgetEnabled,
   currentBudgetMonthKey,
 } from "@/lib/beyond-master/ai-budget";
 
@@ -25,5 +26,15 @@ describe("beyond master ai budget", () => {
 
   it("uses a single budget advisory key shape for reserve and reconcile", () => {
     assert.equal(beyondMasterBudgetLockKey("2026-11"), "budget:2026-11");
+  });
+
+  it("keeps the paid USD ledger off unless explicitly enabled", () => {
+    assert.equal(beyondMasterPaidAiBudgetEnabled({}), false);
+    assert.equal(
+      beyondMasterPaidAiBudgetEnabled({
+        BEYOND_MASTER_AI_PAID_BUDGET_ENABLED: "true",
+      }),
+      true,
+    );
   });
 });

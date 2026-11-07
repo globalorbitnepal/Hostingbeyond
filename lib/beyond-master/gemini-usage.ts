@@ -1,7 +1,10 @@
 import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
-import { currentBudgetMonthKey } from "@/lib/beyond-master/ai-budget";
+import {
+  beyondMasterPaidAiBudgetEnabled,
+  currentBudgetMonthKey,
+} from "@/lib/beyond-master/ai-budget";
 import {
   BEYOND_MASTER_AI_RATE_LIMIT,
   BEYOND_MASTER_AI_RATE_WINDOW_MS,
@@ -30,6 +33,9 @@ export type GeminiUsageSnapshot = {
   model: string | null;
   credentialsPresent: boolean;
   monthKey: string;
+  billingPlan: "google_ai_studio_free" | "paid_app_cap";
+  paidBudgetEnabled: boolean;
+  billedCents: number;
   applicationCapCents: number;
   applicationSpentCents: number;
   applicationReservedCents: number;
@@ -95,6 +101,7 @@ export async function readGeminiUsageSnapshot(
   }
   const spent = budget?.spentCents ?? 0;
   const reserved = budget?.reservedCents ?? 0;
+  const paidBudgetEnabled = beyondMasterPaidAiBudgetEnabled(env);
 
   return {
     recorded: true,
@@ -102,13 +109,17 @@ export async function readGeminiUsageSnapshot(
     model: status.model,
     credentialsPresent: status.credentialsPresent,
     monthKey,
-    applicationCapCents: BEYOND_MASTER_MONTHLY_CAP_CENTS,
-    applicationSpentCents: spent,
-    applicationReservedCents: reserved,
-    applicationRemainingCents: Math.max(
-      0,
-      BEYOND_MASTER_MONTHLY_CAP_CENTS - spent - reserved,
-    ),
+    billingPlan: paidBudgetEnabled ? "paid_app_cap" : "google_ai_studio_free",
+    paidBudgetEnabled,
+    billedCents: 0,
+    applicationCapCents: paidBudgetEnabled
+      ? BEYOND_MASTER_MONTHLY_CAP_CENTS
+      : 0,
+    applicationSpentCents: paidBudgetEnabled ? spent : 0,
+    applicationReservedCents: paidBudgetEnabled ? reserved : 0,
+    applicationRemainingCents: paidBudgetEnabled
+      ? Math.max(0, BEYOND_MASTER_MONTHLY_CAP_CENTS - spent - reserved)
+      : 0,
     appRateLimit: `${status.rateLimit || BEYOND_MASTER_AI_RATE_LIMIT} requests / ${Math.round((status.rateWindowMs || BEYOND_MASTER_AI_RATE_WINDOW_MS) / 1000)} seconds`,
     published: GEMINI_FREE_TIER_PUBLISHED,
     today: {
@@ -121,6 +132,8 @@ export async function readGeminiUsageSnapshot(
       totalTokens: promptTokens + completionTokens,
     },
     lastMinute: { geminiRequests: minuteCount },
-    note: "Request and token counts are recorded from live Gemini responses stored in HostingBeyond. Google does not return remaining free-tier quota on this API key, so the published RPM/RPD/TPM numbers are Google's documented ceilings, not a live Google bill.",
+    note: paidBudgetEnabled
+      ? "Request and token counts are recorded from live Gemini responses. The dollar figures are HostingBeyond's internal paid-budget ledger, not a Google invoice."
+      : "Gemini is on the Google AI Studio free plan. HostingBeyond is not charging for these chats. Limits below are Google's published free-tier RPM/RPD/TPM ceilings, not a bill.",
   };
 }

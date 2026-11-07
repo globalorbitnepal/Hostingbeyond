@@ -33,6 +33,7 @@ import {
 } from "@/lib/beyond-master/agent-guest";
 import {
   actualCentsFromTokenUsage,
+  beyondMasterPaidAiBudgetEnabled,
   reconcilePaidAiBudget,
   reserveCentsForAiCall,
   reservePaidAiBudget,
@@ -440,8 +441,9 @@ export async function POST(request: Request) {
         let completionTokens: number | undefined;
         let produced = false;
         const budgetRequestId = randomUUID();
+        const paidBudget = beyondMasterPaidAiBudgetEnabled();
         const reserveCents = reserveCentsForAiCall(process.env);
-        if (!override && runtimeConfig.configured) {
+        if (!override && runtimeConfig.configured && paidBudget) {
           const gate = await reservePaidAiBudget({
             requestId: budgetRequestId,
             customerUserId,
@@ -525,7 +527,7 @@ export async function POST(request: Request) {
           promptTokens,
           completionTokens,
         });
-        if (!override && runtimeConfig.configured) {
+        if (!override && runtimeConfig.configured && paidBudget) {
           await reconcilePaidAiBudget({
             requestId: budgetRequestId,
             actualCents,
