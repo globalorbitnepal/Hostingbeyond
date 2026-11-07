@@ -17,7 +17,10 @@ describe("POST /api/auth/change-password validation", () => {
     const res = await POST(
       new Request("http://localhost/api/auth/change-password", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: {
+          "content-type": "application/json",
+          referer: "http://localhost/account",
+        },
         body: JSON.stringify({
           newPassword: "newpassword1",
           confirmPassword: "newpassword1",
@@ -31,7 +34,10 @@ describe("POST /api/auth/change-password validation", () => {
     const res = await POST(
       new Request("http://localhost/api/auth/change-password", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: {
+          "content-type": "application/json",
+          referer: "http://localhost/account",
+        },
         body: JSON.stringify({
           newPassword: "short",
           confirmPassword: "short",
