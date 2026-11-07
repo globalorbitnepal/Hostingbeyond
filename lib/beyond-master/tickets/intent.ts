@@ -13,6 +13,13 @@ const EXPLICIT =
 const HANDOFF =
   /speak to a human|human assistance|connect me with support|forward my complaint|i need (a )?human/i;
 
+/** Ask a specialist to continue this chat — not a ticket-review form. */
+export function wantsHumanStaff(message: string): boolean {
+  return /talk to (a )?human|speak to (a )?human|human support|live (support|agent|person)|real person|need (a )?human|human assistance|queue this conversation for staff|connect me with (a )?(human|person|agent|staff)/i.test(
+    message.trim(),
+  );
+}
+
 const PROBLEM =
   /website is down|domain is not connecting|email is not working|billing problem|not connecting|not working/i;
 

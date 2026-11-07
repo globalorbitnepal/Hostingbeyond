@@ -12,7 +12,10 @@ import {
   isRateLimitMemoryFallbackError,
   shouldUsePostgresRateLimitStore,
 } from "@/lib/beyond-master/rate-limit";
-import { classifySupportIntent } from "@/lib/beyond-master/tickets/intent";
+import {
+  classifySupportIntent,
+  wantsHumanStaff,
+} from "@/lib/beyond-master/tickets/intent";
 import { enqueueThreadForHumanSupport } from "@/lib/beyond-master/human-support";
 
 type EnqueueHumanSupport = typeof enqueueThreadForHumanSupport;
@@ -53,9 +56,6 @@ import { prisma } from "@/lib/prisma";
 export type TicketCustomer = { customerUserId: string; email: string | null };
 
 let customerOverride: TicketCustomer | null = null;
-
-const TALK_HUMAN_EXPLICIT =
-  /talk to (a )?human|speak to (a )?human|human support|live (support|agent|person)|real person/i;
 
 export function setBeyondMasterTicketCustomerForTests(
   customer: TicketCustomer | null,
@@ -147,8 +147,7 @@ export async function supportEventForChat(
   customerUserId: string | null,
   options?: { threadId?: string | null; guestCapabilityToken?: string | null },
 ) {
-  const intent = classifySupportIntent(message);
-  if (intent.kind === "none" && TALK_HUMAN_EXPLICIT.test(message.trim())) {
+  if (wantsHumanStaff(message)) {
     const threadId = options?.threadId?.trim() ?? "";
     let issuedGuestToken: string | undefined;
     let queued = false;
@@ -172,12 +171,13 @@ export async function supportEventForChat(
       queued,
       message: queued
         ? customerUserId
-          ? "Your conversation is queued for staff in Orbit. Replies will appear in this chat."
-          : "Your conversation is queued for staff in Orbit. Sign in to open a tracked ticket; guests cannot access account data here."
-        : "I could not place this conversation in the staff queue automatically. Sign in and submit a support ticket so a person can pick it up; guests cannot access account data here.",
+          ? "I've asked a HostingBeyond specialist to continue this chat. Keep writing here — their reply will appear in this conversation."
+          : "I've asked a specialist to continue this chat. Keep writing here; their reply will appear in this same conversation. Sign in if you also want a tracked ticket."
+        : "I couldn't reach the support queue just now. Tell me what you need and I'll keep helping, or sign in and open a ticket from your account.",
       ...(issuedGuestToken ? { guestCapabilityToken: issuedGuestToken } : {}),
     };
   }
+  const intent = classifySupportIntent(message);
   if (intent.kind === "none") return null;
   if (!customerUserId) {
     return {

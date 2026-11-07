@@ -13,19 +13,20 @@ export const BEYOND_MASTER_PANEL_TITLE = BEYOND_MASTER_BRAND_NAME;
 export const BEYOND_MASTER_TAGLINE =
   "Your HostingBeyond hosting and business assistant.";
 
-export const BEYOND_MASTER_WELCOME_HEADING = "Hi! How can I help you today?";
+export const BEYOND_MASTER_WELCOME_HEADING = "Hi — how can I help?";
 
-export const BEYOND_MASTER_WELCOME_BODY = "";
+export const BEYOND_MASTER_WELCOME_BODY =
+  "Ask about a domain, hosting, email, or your website. Type a message or tap the mic and speak in your language.";
 
-export const BEYOND_MASTER_PRIMARY_TITLE = "Help me find what I need";
+export const BEYOND_MASTER_PRIMARY_TITLE = "Help me get started";
 
 export const BEYOND_MASTER_PRIMARY_BODY =
-  "Tell me what you are trying to do and I will point you in the right direction.";
+  "Tell me what you need and I’ll find the right next step.";
 
-export const BEYOND_MASTER_INPUT_PLACEHOLDER = "Message AI Agent...";
+export const BEYOND_MASTER_INPUT_PLACEHOLDER = "Ask anything, or tap the mic";
 
 export const BEYOND_MASTER_GREETING_REPLY =
-  "Hi! Tell me what you'd like to get started with — a domain, hosting, business email, or your website — or describe it in your own words.";
+  "Hi! I can help with a domain, hosting, business email, or your website. Tell me what you need in your own words — type or tap the mic.";
 
 export const BEYOND_MASTER_DISCLAIMER =
   "AI can make mistakes. Double-check replies.";
@@ -38,19 +39,13 @@ export const BEYOND_MASTER_PROVIDER_NOTICE =
 
 export const BEYOND_MASTER_QUICK_ACTIONS: readonly BeyondMasterQuickAction[] = [
   {
-    id: "human-support",
-    label: "Talk to Human",
-    prompt:
-      "I want to speak to a human for support. Please queue this conversation for staff.",
-  },
-  {
     id: "find-domain",
-    label: "Search and register a domain",
+    label: "Find a domain",
     prompt: "Help me find and register a domain.",
   },
   {
     id: "hosting",
-    label: "Compare hosting plans and prices",
+    label: "Compare hosting plans",
     prompt: "Show me your hosting plans and prices.",
   },
   {

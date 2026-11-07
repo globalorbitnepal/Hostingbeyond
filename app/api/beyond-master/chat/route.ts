@@ -150,6 +150,20 @@ export async function POST(request: Request) {
           },
         );
         if (support) send("support", support);
+        if (support?.kind === "human_queue") {
+          send("delta", { text: support.message });
+          await recordBeyondMasterUsage({
+            provider: "grounded",
+            model: "hostingbeyond-agent",
+            status: "success",
+            customerUserId,
+            ip,
+            latencyMs: Date.now() - started,
+            errorCode: support.queued ? "human_queue" : "human_queue_failed",
+          });
+          send("done", {});
+          return;
+        }
         const override = getBeyondMasterChatTestOverride();
         runtimeConfig = readBeyondMasterRuntimeConfig();
         lastMessage =

@@ -3,7 +3,10 @@ import { describe, it, afterEach } from "node:test";
 
 import { POST as chatPost } from "@/app/api/beyond-master/chat/route";
 import { setBeyondMasterChatTestOverride } from "@/lib/beyond-master/chat-test-hook";
-import { classifySupportIntent } from "@/lib/beyond-master/tickets/intent";
+import {
+  classifySupportIntent,
+  wantsHumanStaff,
+} from "@/lib/beyond-master/tickets/intent";
 import {
   adminListTickets,
   adminNote,
@@ -45,6 +48,19 @@ describe("beyond master tickets", () => {
     setBeyondMasterTicketRepositoryForTests(null);
     setBeyondMasterChatTestOverride(null);
     setEnqueueHumanSupportForTests(null);
+  });
+
+  it("treats speak-to-human phrasing as staff queue, not a ticket draft", () => {
+    assert.equal(
+      wantsHumanStaff(
+        "I want to speak to a human for support. Please queue this conversation for staff.",
+      ),
+      true,
+    );
+    assert.equal(
+      wantsHumanStaff("Show me your hosting plans and prices."),
+      false,
+    );
   });
 
   it("does not create a ticket from a problem mention or a natural-language yes", async () => {
@@ -416,10 +432,10 @@ describe("beyond master tickets", () => {
     );
     assert.match(
       String((notQueued as { message?: string }).message),
-      /could not place this conversation/i,
+      /couldn't reach the support queue/i,
     );
     assert.equal(
-      /queued for staff/i.test(
+      /queued for staff|review your support request/i.test(
         String((notQueued as { message?: string }).message),
       ),
       false,
@@ -447,7 +463,7 @@ describe("beyond master tickets", () => {
     assert.equal(seen[0]?.guest, null);
     assert.match(
       String((event as { message?: string }).message),
-      /replies will appear/i,
+      /specialist to continue this chat/i,
     );
   });
 
@@ -488,7 +504,19 @@ describe("beyond master tickets", () => {
     assert.equal((event as { queued?: boolean }).queued, false);
     assert.match(
       String((event as { message?: string }).message),
-      /could not place/i,
+      /couldn't reach the support queue/i,
     );
+  });
+
+  it("queues speak-to-human requests instead of opening a ticket review card", async () => {
+    setEnqueueHumanSupportForTests(async () => ({ ok: true }));
+    const event = await supportEventForChat(
+      "I want to speak to a human for support. Please queue this conversation for staff.",
+      "customer-a",
+      { threadId: "thread-customer-03" },
+    );
+    assert.equal(event?.kind, "human_queue");
+    assert.equal((event as { queued?: boolean }).queued, true);
+    assert.equal(event?.kind === "review", false);
   });
 });
