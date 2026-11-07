@@ -7,7 +7,13 @@ import {
   clientKeyFromRequest,
   rateLimitResponse,
 } from "@/lib/http/fixed-window-rate-limit";
+import { consumePrismaRateLimit } from "@/lib/beyond-master/postgres-rate-limit";
+import {
+  isRateLimitMemoryFallbackError,
+  shouldUsePostgresRateLimitStore,
+} from "@/lib/beyond-master/rate-limit";
 import { classifySupportIntent } from "@/lib/beyond-master/tickets/intent";
+import { enqueueThreadForHumanSupport } from "@/lib/beyond-master/human-support";
 import { getBeyondMasterTicketRepository } from "@/lib/beyond-master/tickets/repository";
 import {
   draftIdempotencyKey,
@@ -29,6 +35,9 @@ import { prisma } from "@/lib/prisma";
 export type TicketCustomer = { customerUserId: string; email: string | null };
 
 let customerOverride: TicketCustomer | null = null;
+
+const TALK_HUMAN_EXPLICIT =
+  /talk to (a )?human|speak to (a )?human|human support|live (support|agent|person)|real person/i;
 
 export function setBeyondMasterTicketCustomerForTests(
   customer: TicketCustomer | null,
@@ -88,9 +97,24 @@ export function crossSitePost(request: Request) {
   return !expected || host !== expected;
 }
 
-function limited(request: Request, customerUserId: string) {
+async function limited(request: Request, customerUserId: string) {
   const key = `beyond-master-ticket:${customerUserId}:${clientKeyFromRequest(request)}`;
-  return consumeRateLimit(key, 8, 10 * 60 * 1000);
+  const env = process.env;
+  if (!shouldUsePostgresRateLimitStore(env)) {
+    return consumeRateLimit(key, 8, 10 * 60 * 1000);
+  }
+  try {
+    return await consumePrismaRateLimit({
+      bucketKey: key,
+      maxRequests: 8,
+      windowMs: 10 * 60 * 1000,
+    });
+  } catch (error) {
+    if (isRateLimitMemoryFallbackError(error)) {
+      return consumeRateLimit(key, 8, 10 * 60 * 1000);
+    }
+    return false;
+  }
 }
 
 function statusFilter(value: string | null): TicketStatus | null {
@@ -103,8 +127,30 @@ function statusFilter(value: string | null): TicketStatus | null {
 export async function supportEventForChat(
   message: string,
   customerUserId: string | null,
+  options?: { threadId?: string | null; guestCapabilityToken?: string | null },
 ) {
   const intent = classifySupportIntent(message);
+  if (intent.kind === "none" && TALK_HUMAN_EXPLICIT.test(message.trim())) {
+    const threadId = options?.threadId?.trim() ?? "";
+    let issuedGuestToken: string | undefined;
+    if (threadId && /^[A-Za-z0-9-]{8,64}$/.test(threadId)) {
+      const enq = await enqueueThreadForHumanSupport({
+        threadId,
+        customerUserId: null,
+        ticketReference: null,
+        guestCapabilityToken: options?.guestCapabilityToken ?? null,
+      });
+      if (enq.ok && "guestCapabilityToken" in enq && enq.guestCapabilityToken) {
+        issuedGuestToken = enq.guestCapabilityToken;
+      }
+    }
+    return {
+      kind: "human_queue" as const,
+      message:
+        "Your conversation is queued for staff in Orbit. Sign in to open a tracked ticket; guests cannot access account data here.",
+      ...(issuedGuestToken ? { guestCapabilityToken: issuedGuestToken } : {}),
+    };
+  }
   if (intent.kind === "none") return null;
   if (!customerUserId) {
     return {
@@ -129,6 +175,15 @@ export async function supportEventForChat(
       message:
         "I can prepare a support request, but I will not create a ticket until you press Submit Ticket. Include the domain and say that you want technical support.",
     };
+  }
+  const threadId = options?.threadId?.trim() ?? "";
+  if (intent.handoff && threadId && /^[A-Za-z0-9-]{8,64}$/.test(threadId)) {
+    await enqueueThreadForHumanSupport({
+      threadId,
+      customerUserId,
+      ticketReference: null,
+      guestCapabilityToken: options?.guestCapabilityToken ?? null,
+    });
   }
   const draft = {
     category: intent.category,
@@ -178,7 +233,7 @@ export async function postTicketDraft(request: Request) {
       { status: 401 },
     );
   }
-  if (!limited(request, customer.customerUserId)) {
+  if (!(await limited(request, customer.customerUserId))) {
     return Response.json(rateLimitResponse(), { status: 429 });
   }
   let payload: unknown;
@@ -225,7 +280,7 @@ export async function postTicketSubmit(request: Request) {
       { error: "Sign in to submit a ticket.", loginPath: "/login" },
       { status: 401 },
     );
-  if (!limited(request, customer.customerUserId))
+  if (!(await limited(request, customer.customerUserId)))
     return Response.json(rateLimitResponse(), { status: 429 });
   let payload: unknown;
   try {
@@ -239,6 +294,11 @@ export async function postTicketSubmit(request: Request) {
       { status: 400 },
     );
   }
+  const threadIdRaw = (payload as { threadId?: unknown }).threadId;
+  const threadId =
+    typeof threadIdRaw === "string" && /^[A-Za-z0-9-]{8,64}$/.test(threadIdRaw)
+      ? threadIdRaw
+      : null;
   const confirmationId = (payload as { confirmationId?: unknown })
     .confirmationId;
   if (
@@ -261,6 +321,15 @@ export async function postTicketSubmit(request: Request) {
       { error: submitted.error },
       { status: submitted.status },
     );
+  if (threadId) {
+    await prisma.beyondMasterChatThread.updateMany({
+      where: { id: threadId, customerUserId: customer.customerUserId },
+      data: {
+        supportTicketReference: submitted.ticket.reference,
+        updatedAt: new Date(),
+      },
+    });
+  }
   return Response.json({
     reference: submitted.ticket.reference,
     status: submitted.ticket.status,
@@ -355,7 +424,7 @@ export async function postCustomerReply(request: Request, reference: string) {
   const customer = await ticketCustomerFromRequest(request);
   if (!customer)
     return Response.json({ error: "Sign in to reply." }, { status: 401 });
-  if (!limited(request, customer.customerUserId))
+  if (!(await limited(request, customer.customerUserId)))
     return Response.json(rateLimitResponse(), { status: 429 });
   let payload: unknown;
   try {

@@ -93,6 +93,25 @@ const NEPALI_MARKERS = [
   "बुझ्ने",
   "पाउने",
   "दिनुहोस्",
+  "होइन",
+  "होला",
+  "भन्ने",
+  "गर्नुपर्छ",
+  "हुनुपर्छ",
+];
+
+/**
+ * Multi-character Nepali phrases scored with extra weight. Hindi shares many
+ * single-word Devanagari tokens with Nepali (e.g. "के"), so a bare marker count
+ * can tie. These phrases only occur in Nepali and break the tie correctly.
+ */
+const NEPALI_STRONG_MARKERS = [
+  "के हो",
+  "के छ",
+  "हुन्छ?",
+  "गर्नुपर्छ",
+  "हुनुपर्छ",
+  "कसरी किन्ने",
 ];
 
 const HINDI_MARKERS = [
@@ -137,11 +156,13 @@ const LATIN_HINTS: Array<{ lang: SupportedPrimary; re: RegExp }> = [
   },
   {
     lang: "fr",
-    re: /\b(bonjour|merci|domaine|hébergement|hebergement|prix|facture|commande|email|aide|disponible|je veux|j'ai besoin)\b/i,
+    // "email" and "aide" are deliberately excluded: they are ordinary English
+    // words, and matching them made "What is business email?" resolve to French.
+    re: /\b(bonjour|merci|domaine|hébergement|hebergement|prix|facture|commande|professionnel|qu'est|besoin|français)\b/i,
   },
   {
     lang: "de",
-    re: /\b(hallo|danke|preis|rechnung|bestellung|hilfe|verfügbar|ich brauche|ich möchte|guten tag)\b/i,
+    re: /\b(hallo|danke|preis|rechnung|bestellung|hilfe|verfügbar|ich brauche|ich möchte|guten tag|geschäftlich|was ist|wie viel|brauche ich)\b/i,
   },
   {
     lang: "pt",
@@ -173,6 +194,11 @@ function score(text: string, markers: readonly string[]): number {
   return total;
 }
 
+/** Strong (script-specific) markers count double to break Hindi/Nepali ties. */
+function weightedNepaliScore(text: string): number {
+  return score(text, NEPALI_MARKERS) + 2 * score(text, NEPALI_STRONG_MARKERS);
+}
+
 function isMeaningfulUserMessage(text: string): boolean {
   const trimmed = text.trim();
   if (trimmed.length < 2) return false;
@@ -183,7 +209,7 @@ function detectFromScript(text: string): ConversationLocale | null {
   if (/[\u0600-\u06FF]/.test(text)) return "ar";
   if (/[\u0980-\u09FF]/.test(text)) return "bn";
   if (/[\u0900-\u097F]/.test(text)) {
-    const nepali = score(text, NEPALI_MARKERS);
+    const nepali = weightedNepaliScore(text);
     const hindi = score(text, HINDI_MARKERS);
     if (nepali > hindi) return "ne";
     if (hindi > nepali) return "hi";
@@ -214,7 +240,9 @@ function detectLatinLocale(text: string): ConversationLocale {
     }
   }
   const englishScore = text.match(ENGLISH_LATIN)?.length ?? 0;
-  if (englishScore > bestScore) return "en";
+  // English wins ties: Latin-script foreign markers are generic, so a single
+  // coincidental hit must never outrank ordinary English phrasing.
+  if (englishScore >= bestScore && englishScore > 0) return "en";
   if (bestScore > 0) return best;
   return "en";
 }

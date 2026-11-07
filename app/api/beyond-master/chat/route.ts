@@ -26,7 +26,20 @@ import {
   conversationLanguagePromptBlock,
   resolveConversationLocale,
 } from "@/lib/beyond-master/language";
+import { agentCopyForLocale } from "@/lib/beyond-master/replies";
+import {
+  shouldSkipGeminiForAuthenticatedTopic,
+  shouldSkipGeminiForGuest,
+} from "@/lib/beyond-master/agent-guest";
+import {
+  actualCentsFromTokenUsage,
+  reconcilePaidAiBudget,
+  reserveCentsForAiCall,
+  reservePaidAiBudget,
+} from "@/lib/beyond-master/ai-budget";
+import { toolResultPromptLines } from "@/lib/beyond-master/tools/handlers";
 import { runReadOnlyAgentTools } from "@/lib/beyond-master/tools/run";
+import { isGuestAllowedReadOnlyTool } from "@/lib/beyond-master/tools/types";
 import { buildBeyondMasterSystemPrompt } from "@/lib/beyond-master/knowledge/build";
 import { getBeyondMasterChatTestOverride } from "@/lib/beyond-master/chat-test-hook";
 import {
@@ -42,10 +55,14 @@ import {
 import { authorizeBeyondMasterModel } from "@/lib/beyond-master/model-registry";
 import { readBeyondMasterRuntimeConfig } from "@/lib/beyond-master/settings";
 import { recordBeyondMasterUsage } from "@/lib/beyond-master/usage";
+import { principalForPublicBeyondMasterChat } from "@/lib/beyond-master/authorization";
 import {
   CUSTOMER_SESSION_COOKIE,
   verifyCustomerJwt,
 } from "@/lib/customer/session";
+import { getSessionAdmin, ORBIT_SESSION_COOKIE } from "@/lib/orbit/session";
+import { orbitAccessForAdmin } from "@/lib/orbit/staff-access";
+import { randomUUID } from "crypto";
 import {
   clientKeyFromRequest,
   rateLimitResponse,
@@ -78,7 +95,27 @@ export async function POST(request: Request) {
   if (parsed.model && !modelChoice.ok) {
     return Response.json({ error: modelChoice.error }, { status: 403 });
   }
-  if (!allowBeyondMasterChat(request)) {
+  const overrideCustomer = beyondMasterTicketCustomerOverride();
+  const verified = overrideCustomer
+    ? { customerUserId: overrideCustomer.customerUserId }
+    : await verifyCustomerJwt(cookieValue(request, CUSTOMER_SESSION_COOKIE));
+  const customerUserId = verified?.customerUserId ?? null;
+  let orbitAdmin: Awaited<ReturnType<typeof getSessionAdmin>> = null;
+  if (!customerUserId) {
+    const orbitToken = cookieValue(request, ORBIT_SESSION_COOKIE);
+    orbitAdmin = await getSessionAdmin(orbitToken);
+  }
+  const orbitAccessMode = orbitAdmin
+    ? orbitAccessForAdmin(orbitAdmin.id)
+    : null;
+  const chatPrincipal = principalForPublicBeyondMasterChat({
+    customerUserId,
+    orbitAdmin,
+    orbitAccessMode,
+  });
+  const ip = clientKeyFromRequest(request);
+
+  if (!(await allowBeyondMasterChat(request, process.env, customerUserId))) {
     await recordBeyondMasterUsage({
       provider: "none",
       model: "none",
@@ -88,13 +125,6 @@ export async function POST(request: Request) {
     });
     return Response.json(rateLimitResponse(), { status: 429 });
   }
-
-  const overrideCustomer = beyondMasterTicketCustomerOverride();
-  const verified = overrideCustomer
-    ? { customerUserId: overrideCustomer.customerUserId }
-    : await verifyCustomerJwt(cookieValue(request, CUSTOMER_SESSION_COOKIE));
-  const customerUserId = verified?.customerUserId ?? null;
-  const ip = clientKeyFromRequest(request);
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
@@ -107,10 +137,17 @@ export async function POST(request: Request) {
       let runtimeConfig = readBeyondMasterRuntimeConfig();
       let lastMessage = "";
       let accountPromptUsed = false;
+      let budgetRequestIdForReconcile: string | null = null;
       try {
         const support = await supportEventForChat(
           parsed.messages[parsed.messages.length - 1]?.content ?? "",
           customerUserId,
+          {
+            threadId: parsed.threadId,
+            guestCapabilityToken: customerUserId
+              ? null
+              : (parsed.guestCapabilityToken ?? null),
+          },
         );
         if (support) send("support", support);
         const override = getBeyondMasterChatTestOverride();
@@ -120,7 +157,7 @@ export async function POST(request: Request) {
         const firstName = await customerFirstName(customerUserId);
         const toolRun = await runReadOnlyAgentTools({
           message: lastMessage,
-          ctx: { customerUserId, ip },
+          ctx: { customerUserId, ip, chatPrincipal },
         });
         if (toolRun.calls.length) {
           send("tools", {
@@ -148,7 +185,7 @@ export async function POST(request: Request) {
             cards: toolRun.accountCards,
             signInRequired: !customerUserId,
           });
-        } else {
+        } else if (customerUserId || !isAccountQuestion(lastMessage)) {
           const account = await accountEventForChat(
             lastMessage,
             customerUserId,
@@ -199,6 +236,27 @@ export async function POST(request: Request) {
           parsed.messages,
           parsed.preferredLocale,
         );
+        if (
+          !customerUserId &&
+          isAccountQuestion(lastMessage) &&
+          !toolsCoverAccountReads(toolRun.calls)
+        ) {
+          const guestCopy = agentCopyForLocale(
+            parsed.preferredLocale ?? conversationLocale,
+          );
+          send("delta", { text: guestCopy.guestSignInForAccount });
+          await recordBeyondMasterUsage({
+            provider: "grounded",
+            model: "hostingbeyond-agent",
+            status: "success",
+            customerUserId,
+            ip,
+            latencyMs: Date.now() - started,
+            errorCode: "guest_account_guidance",
+          });
+          send("done", {});
+          return;
+        }
         const domainQuery =
           wantsDomainHelp(lastMessage) &&
           !/\bbulk\b/i.test(lastMessage) &&
@@ -245,9 +303,123 @@ export async function POST(request: Request) {
           send("done", {});
           return;
         }
+
+        const groundedPreview = await groundedBeyondMasterReply(
+          lastMessage,
+          () =>
+            Promise.resolve(
+              domainSearch ?? {
+                query: domainQuery ?? lastMessage,
+                error: null,
+                results: [],
+              },
+            ),
+          firstName,
+        );
+        const guestSkipDeterministic =
+          !customerUserId &&
+          !override &&
+          runtimeConfig.configured &&
+          shouldSkipGeminiForGuest({
+            lastMessage,
+            toolCalls: toolRun.calls,
+            toolResults: toolRun.results,
+            domainResultCount: domainSearch?.results.length ?? 0,
+            hasCommerceProposal: Boolean(operations.proposal),
+            hasCommerceNotice: Boolean(operations.notice),
+            grounded: groundedPreview,
+          });
+        const authTopicSkip =
+          Boolean(customerUserId) &&
+          !override &&
+          runtimeConfig.configured &&
+          shouldSkipGeminiForAuthenticatedTopic({
+            lastMessage,
+            toolCalls: toolRun.calls,
+            hasCommerceProposal: Boolean(operations.proposal),
+            hasCommerceNotice: Boolean(operations.notice),
+            hasDnsPrompt: Boolean(dns),
+            accountPromptUsed,
+          });
+        if (guestSkipDeterministic || authTopicSkip) {
+          let replyText = groundedPreview.text;
+          if (
+            guestSkipDeterministic &&
+            toolRun.calls.length > 0 &&
+            toolRun.calls.every((c) => isGuestAllowedReadOnlyTool(c.tool)) &&
+            toolRun.results.some((row) => row.ok)
+          ) {
+            replyText = toolRun.results
+              .filter((row) => row.ok)
+              .flatMap((row) => toolResultPromptLines(row))
+              .join("\n");
+          }
+          if (
+            groundedPreview.domains.length &&
+            !toolRun.results.some(
+              (row) => row.ok && row.tool === "search_domain",
+            )
+          ) {
+            send("domains", { results: groundedPreview.domains });
+          }
+          send("delta", { text: replyText });
+          await recordBeyondMasterUsage({
+            provider: "grounded",
+            model: "hostingbeyond-agent",
+            status: "success",
+            customerUserId,
+            ip,
+            latencyMs: Date.now() - started,
+            errorCode: guestSkipDeterministic
+              ? "guest_deterministic"
+              : "auth_topic_deterministic",
+          });
+          send("done", {});
+          return;
+        }
         let promptTokens: number | undefined;
         let completionTokens: number | undefined;
         let produced = false;
+        const budgetRequestId = randomUUID();
+        const reserveCents = reserveCentsForAiCall(process.env);
+        if (!override && runtimeConfig.configured) {
+          const gate = await reservePaidAiBudget({
+            requestId: budgetRequestId,
+            customerUserId,
+            reserveCents,
+          });
+          if (!gate.ok && gate.code === "hard_stop") {
+            send("delta", {
+              text:
+                gate.message ||
+                "Monthly AI usage cap reached. This is an application limit and does not replace provider billing alerts.",
+            });
+            send("budget", {
+              level: "hard_stop",
+              spentPlusReservedCents: gate.spentPlusReservedCents,
+            });
+            await recordBeyondMasterUsage({
+              provider: runtimeConfig.provider ?? "none",
+              model: runtimeConfig.model ?? "none",
+              status: "error",
+              customerUserId,
+              ip,
+              latencyMs: Date.now() - started,
+              errorCode: "budget_hard_stop",
+            });
+            send("done", {});
+            return;
+          }
+          if (gate.ok) {
+            budgetRequestIdForReconcile = budgetRequestId;
+          }
+          if (gate.ok && (gate.level === "warn" || gate.level === "critical")) {
+            send("budget", {
+              level: gate.level,
+              spentPlusReservedCents: gate.spentPlusReservedCents,
+            });
+          }
+        }
         const systemPrompt = `${await buildBeyondMasterSystemPrompt(
           lastMessage,
         )}\n\n${conversationLanguagePromptBlock(
@@ -286,6 +458,16 @@ export async function POST(request: Request) {
             "Provider returned no text.",
           );
         }
+        const actualCents = actualCentsFromTokenUsage({
+          promptTokens,
+          completionTokens,
+        });
+        if (!override && runtimeConfig.configured) {
+          await reconcilePaidAiBudget({
+            requestId: budgetRequestId,
+            actualCents,
+          });
+        }
         await recordBeyondMasterUsage({
           provider: runtimeConfig.provider ?? "test",
           model: runtimeConfig.model ?? "test",
@@ -298,6 +480,12 @@ export async function POST(request: Request) {
         });
         send("done", {});
       } catch (error) {
+        if (budgetRequestIdForReconcile) {
+          await reconcilePaidAiBudget({
+            requestId: budgetRequestIdForReconcile,
+            actualCents: 0,
+          });
+        }
         if (
           error instanceof BeyondMasterProviderError &&
           error.code === "aborted"

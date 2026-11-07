@@ -30,6 +30,8 @@ enum ActivityAction {
   WALLET_TRANSACTION
   INVOICE_VOID
   INVOICE_CREDIT_NOTE
+  BEYOND_MASTER_SUPPORT_QUEUE
+  BEYOND_MASTER_SUPPORT_MESSAGE
 }
 
 enum InvoiceStatus {
@@ -117,6 +119,7 @@ enum WalletPaymentStatus {
   REFUNDED
 }
 
+
 enum DomainProviderLogLevel {
   INFO
   WARN
@@ -132,6 +135,7 @@ model AdminUser {
   sessions     AdminSession[]
   activityLogs ActivityLog[]
   assignedBeyondMasterTickets BeyondMasterTicket[]
+  assignedBeyondMasterChatThreads BeyondMasterChatThread[]
 }
 
 model WebAuthnCredential {
@@ -251,6 +255,7 @@ model CustomerUser {
   beyondMasterChatThreads BeyondMasterChatThread[]
   beyondMasterDnsProposals BeyondMasterDnsProposal[]
   beyondMasterCommerceProposals BeyondMasterCommerceProposal[]
+  beyondMasterAiCustomerMonthSpends BeyondMasterAiCustomerMonthSpend[]
 }
 
 enum HostingOrderCheckoutStatus {
@@ -413,6 +418,57 @@ model BeyondMasterUsage {
   @@index([status])
 }
 
+/// Fixed-window rate limit counters in PostgreSQL (shared across PM2 workers).
+model BeyondMasterRateLimitBucket {
+  id          String   @id @default(cuid())
+  bucketKey   String   @unique @db.VarChar(200)
+  windowStart DateTime
+  count       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([windowStart])
+}
+
+/// Global monthly paid AI budget (application cap in USD cents; not a substitute for provider billing limits).
+model BeyondMasterAiBudgetMonth {
+  id            String   @id @default(cuid())
+  monthKey      String   @unique @db.VarChar(12)
+  spentCents    Int      @default(0)
+  reservedCents Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+/// Reservation row for atomic cap checks before a paid provider call; reconciled after usage is known.
+model BeyondMasterAiBudgetReservation {
+  id             String    @id @default(cuid())
+  requestId      String    @unique
+  monthKey       String
+  customerUserId String?
+  reservedCents  Int
+  actualCents    Int?
+  reconciledAt   DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([monthKey])
+  @@index([customerUserId])
+}
+
+/// Per-customer paid AI spend within a month (for reporting; global cap uses BeyondMasterAiBudgetMonth).
+model BeyondMasterAiCustomerMonthSpend {
+  id             String   @id @default(cuid())
+  monthKey       String
+  customerUserId String
+  spentCents     Int      @default(0)
+  customer       CustomerUser @relation(fields: [customerUserId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([monthKey, customerUserId])
+  @@index([monthKey])
+}
+
 /// Operator-managed Beyond Master articles. No customer records and no secrets.
 /// Built-in articles still answer when this table has not been migrated.
 model BeyondMasterKnowledgeArticle {
@@ -548,6 +604,10 @@ model BeyondMasterChatThread {
   guestKey       String?
   title          String   @default("New conversation")
   status         String   @default("open")
+  supportQueueStatus   String?
+  supportAssignedAdminId String?
+  supportAssignedAdmin   AdminUser? @relation(fields: [supportAssignedAdminId], references: [id], onDelete: SetNull)
+  supportTicketReference String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -556,6 +616,8 @@ model BeyondMasterChatThread {
 
   @@index([customerUserId, updatedAt])
   @@index([updatedAt])
+  @@index([supportQueueStatus])
+  @@index([supportAssignedAdminId])
 }
 
 model BeyondMasterChatMessage {
@@ -966,6 +1028,7 @@ model WalletPayment {
   @@index([status])
   @@index([createdAt])
 }
+
 
 model InvoiceSequence {
   year      Int @id

@@ -140,6 +140,15 @@ function storePublicArticleCache(value: BeyondMasterKnowledgeArticle[] | null) {
   };
 }
 
+/**
+ * Drops the published-article cache so the next prompt build observes an admin
+ * create/update immediately. Without this, a newly published article (or one
+ * unpublished for correction) stays invisible to the agent for up to 5 minutes.
+ */
+export function invalidateBeyondMasterKnowledgeCache(): void {
+  publicArticleCache = undefined;
+}
+
 async function loadDatabaseArticlesUncached(): Promise<
   BeyondMasterKnowledgeArticle[] | null
 > {

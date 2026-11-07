@@ -14,6 +14,18 @@ export const READ_ONLY_AGENT_TOOLS = [
 
 export type ReadOnlyAgentTool = (typeof READ_ONLY_AGENT_TOOLS)[number];
 
+/** Tools that never require sign-in — public catalog and domain lookup only. */
+export const GUEST_ALLOWED_READ_ONLY_TOOLS: ReadOnlyAgentTool[] = [
+  "search_domain",
+  "check_domain_availability",
+  "get_domain_pricing",
+  "get_hosting_plans",
+];
+
+export function isGuestAllowedReadOnlyTool(tool: ReadOnlyAgentTool): boolean {
+  return GUEST_ALLOWED_READ_ONLY_TOOLS.includes(tool);
+}
+
 export type AgentToolCall = {
   tool: ReadOnlyAgentTool;
   args: Record<string, unknown>;

@@ -199,6 +199,11 @@ export function parseStoredConversations(
         code: entry.role === "notice" ? "provider_not_configured" : undefined,
       });
     }
+    const guestTok =
+      typeof row.guestCapabilityToken === "string" &&
+      row.guestCapabilityToken.length >= 32
+        ? row.guestCapabilityToken
+        : undefined;
     safe.push({
       id: row.id,
       title: row.title.slice(0, 80),
@@ -206,6 +211,7 @@ export function parseStoredConversations(
       updatedAt: row.updatedAt,
       preferredLanguage:
         normalizeBcp47Locale(row.preferredLanguage) ?? undefined,
+      ...(guestTok ? { guestCapabilityToken: guestTok } : {}),
       messages,
     });
   }

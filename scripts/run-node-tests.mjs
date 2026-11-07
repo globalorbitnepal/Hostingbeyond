@@ -58,6 +58,7 @@ const UNIT_GLOBS = [
 const INTEGRATION_GLOBS = [
   "lib/domains/**/*.integration.test.ts",
   "lib/orbit/**/*.integration.test.ts",
+  "lib/beyond-master/**/*.integration.test.ts",
   "lib/payments/**/*.integration.test.ts",
   "lib/billing/**/*.integration.test.ts",
   "lib/hosting/**/*.integration.test.ts",

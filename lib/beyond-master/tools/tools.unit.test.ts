@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { planReadOnlyTools } from "@/lib/beyond-master/tools/intent";
+import {
+  planReadOnlyTools,
+  planReadOnlyToolsForSession,
+} from "@/lib/beyond-master/tools/intent";
 import {
   executeReadOnlyTool,
   setBeyondMasterToolReadersForTests,
@@ -14,6 +17,22 @@ describe("read-only agent tools", () => {
     assert.ok(search.some((row) => row.tool === "search_domain"));
     const plans = planReadOnlyTools("Compare hosting plan prices");
     assert.ok(plans.some((row) => row.tool === "get_hosting_plans"));
+  });
+
+  it("does not schedule private account tools for guests", () => {
+    const guest = planReadOnlyToolsForSession({
+      message: "Show my invoices",
+      customerUserId: null,
+    });
+    assert.equal(
+      guest.some((row) => row.tool === "get_my_invoices"),
+      false,
+    );
+    const signedIn = planReadOnlyToolsForSession({
+      message: "Show my invoices",
+      customerUserId: "user-1",
+    });
+    assert.ok(signedIn.some((row) => row.tool === "get_my_invoices"));
   });
 
   it("requires sign-in for private account tools", async () => {

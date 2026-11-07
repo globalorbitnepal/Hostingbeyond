@@ -1,4 +1,8 @@
-import { saveChatSnapshot } from "@/lib/beyond-master/history/store";
+import {
+  readCustomerChatThread,
+  readGuestChatThread,
+  saveChatSnapshot,
+} from "@/lib/beyond-master/history/store";
 import {
   CUSTOMER_SESSION_COOKIE,
   verifyCustomerJwt,
@@ -27,6 +31,7 @@ export async function POST(request: Request) {
   const body = payload as {
     threadId?: unknown;
     title?: unknown;
+    guestCapabilityToken?: unknown;
     messages?: { role?: unknown; body?: unknown; createdAt?: unknown }[];
   };
   if (typeof body.threadId !== "string" || !Array.isArray(body.messages)) {
@@ -58,15 +63,45 @@ export async function POST(request: Request) {
       },
     ];
   });
+  const guestTok =
+    typeof body.guestCapabilityToken === "string"
+      ? body.guestCapabilityToken.trim()
+      : undefined;
   const result = await saveChatSnapshot({
     threadId: body.threadId,
     customerUserId: verified?.customerUserId ?? null,
     title: typeof body.title === "string" ? body.title : "New conversation",
     messages,
+    guestCapabilityToken: verified ? undefined : (guestTok ?? null),
   });
   return Response.json(result, { status: result.saved ? 200 : 400 });
 }
 
-export async function GET() {
-  return Response.json({ ok: true });
+export async function GET(request: Request) {
+  const verified = await verifyCustomerJwt(
+    cookieValue(request, CUSTOMER_SESSION_COOKIE),
+  );
+  const url = new URL(request.url);
+  const id = url.searchParams.get("id");
+  if (!id || !/^[A-Za-z0-9-]{8,64}$/.test(id)) {
+    return Response.json(
+      { error: "Missing conversation id." },
+      { status: 400 },
+    );
+  }
+  if (verified) {
+    const thread = await readCustomerChatThread(id, verified.customerUserId);
+    if (!thread) return Response.json({ error: "Not found." }, { status: 404 });
+    return Response.json({ thread });
+  }
+  const guestToken = request.headers.get("x-beyond-master-guest-token")?.trim();
+  if (!guestToken) {
+    return Response.json(
+      { error: "Sign in to load conversations." },
+      { status: 401 },
+    );
+  }
+  const thread = await readGuestChatThread(id, guestToken);
+  if (!thread) return Response.json({ error: "Not found." }, { status: 404 });
+  return Response.json({ thread });
 }

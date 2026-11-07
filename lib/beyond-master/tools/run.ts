@@ -1,5 +1,9 @@
-import { consumeRateLimit } from "@/lib/http/fixed-window-rate-limit";
 import { recordBeyondMasterUsage } from "@/lib/beyond-master/usage";
+import { allowBeyondMasterTools } from "@/lib/beyond-master/rate-limit";
+import {
+  canExecuteReadOnlyTool,
+  principalFromSession,
+} from "@/lib/beyond-master/authorization";
 import {
   type AgentToolContext,
   logAgentToolOutcome,
@@ -10,7 +14,7 @@ import {
   executeReadOnlyTool,
   toolResultPromptLines,
 } from "@/lib/beyond-master/tools/handlers";
-import { planReadOnlyTools } from "@/lib/beyond-master/tools/intent";
+import { planReadOnlyToolsForSession } from "@/lib/beyond-master/tools/intent";
 import type {
   AgentToolCall,
   AgentToolResult,
@@ -21,7 +25,16 @@ export async function runReadOnlyAgentTools(input: {
   message: string;
   ctx: AgentToolContext;
 }): Promise<AgentToolRunSummary> {
-  const calls = planReadOnlyTools(input.message);
+  const principal =
+    input.ctx.chatPrincipal ??
+    principalFromSession({
+      customerUserId: input.ctx.customerUserId,
+      orbitAdmin: null,
+    });
+  const calls = planReadOnlyToolsForSession({
+    message: input.message,
+    customerUserId: input.ctx.customerUserId,
+  }).filter((call) => canExecuteReadOnlyTool(principal, call.tool));
   if (calls.length === 0) {
     return {
       calls: [],
@@ -34,11 +47,7 @@ export async function runReadOnlyAgentTools(input: {
   }
   if (
     input.ctx.customerUserId &&
-    !consumeRateLimit(
-      `beyond-master-tools:${input.ctx.customerUserId}`,
-      30,
-      10 * 60 * 1000,
-    )
+    !(await allowBeyondMasterTools(input.ctx.customerUserId))
   ) {
     return {
       calls,

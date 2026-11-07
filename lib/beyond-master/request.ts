@@ -26,6 +26,8 @@ export function parseBeyondMasterChatRequest(raw: unknown):
       messages: BeyondMasterChatTurn[];
       model: string | null;
       preferredLocale: string | null;
+      threadId: string | null;
+      guestCapabilityToken: string | null;
     }
   | { ok: false; error: string } {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
@@ -101,5 +103,29 @@ export function parseBeyondMasterChatRequest(raw: unknown):
       return { ok: false, error: "That locale value is not accepted." };
     }
   }
-  return { ok: true, messages, model, preferredLocale };
+  let threadId: string | null = null;
+  if ("threadId" in record) {
+    const rawThread =
+      typeof record.threadId === "string" ? record.threadId.trim() : "";
+    if (rawThread && !/^[A-Za-z0-9-]{8,64}$/.test(rawThread)) {
+      return { ok: false, error: "That conversation id is not accepted." };
+    }
+    threadId = rawThread || null;
+  }
+  let guestCapabilityToken: string | null = null;
+  if ("guestCapabilityToken" in record) {
+    const raw =
+      typeof record.guestCapabilityToken === "string"
+        ? record.guestCapabilityToken.trim()
+        : "";
+    guestCapabilityToken = raw || null;
+  }
+  return {
+    ok: true,
+    messages,
+    model,
+    preferredLocale,
+    threadId,
+    guestCapabilityToken,
+  };
 }

@@ -28,8 +28,22 @@ import type {
 import type { AccountCard } from "@/lib/beyond-master/account/types";
 import type { CommerceProposalView } from "@/lib/beyond-master/commerce/types";
 import type { DnsProposalView } from "@/lib/beyond-master/dns/workflow";
+import { CUSTOMER_SESSION_COOKIE } from "@/lib/customer/session";
 
 export type BeyondMasterView = "chat" | "history";
+
+function beyondMasterGuestClient(): boolean {
+  if (typeof document === "undefined") return false;
+  return !document.cookie
+    .split(";")
+    .some((part) => part.trim().startsWith(`${CUSTOMER_SESSION_COOKIE}=`));
+}
+
+function guestCapabilityForConversation(
+  conversation: BeyondMasterConversation,
+): string | undefined {
+  return conversation.guestCapabilityToken?.trim() || undefined;
+}
 
 type SupportCard =
   | {
@@ -42,6 +56,7 @@ type SupportCard =
       description: string;
       handoff: boolean;
     }
+  | { kind: "human_queue"; message: string; guestCapabilityToken?: string }
   | { kind: "details" | "signin" | "unavailable"; message: string }
   | {
       kind: "created";
@@ -106,6 +121,10 @@ type Snapshot = {
   domainSuggestions: BeyondMasterDomainSuggestion[] | null;
   attachments: PendingAttachment[];
   uploading: boolean;
+  /** Poll staff replies when the human queue is active (signed-in customers). */
+  humanSupportPollThreadId: string | null;
+  /** Header value for guest thread reads while polling (never logged server-side as a cookie). */
+  humanSupportPollGuestToken: string | null;
 };
 
 const serverSnapshot: Snapshot = {
@@ -125,6 +144,8 @@ const serverSnapshot: Snapshot = {
   domainSuggestions: null,
   attachments: [],
   uploading: false,
+  humanSupportPollThreadId: null,
+  humanSupportPollGuestToken: null,
 };
 
 let snapshot: Snapshot = serverSnapshot;
@@ -132,8 +153,97 @@ const listeners = new Set<() => void>();
 let hydrated = false;
 let sendController: AbortController | null = null;
 let copyTimer: ReturnType<typeof setTimeout> | null = null;
+let humanSupportPollTimer: ReturnType<typeof setInterval> | null = null;
+
+function stopHumanSupportPoll() {
+  if (humanSupportPollTimer) {
+    clearInterval(humanSupportPollTimer);
+    humanSupportPollTimer = null;
+  }
+}
+
+function startHumanSupportPoll(threadId: string, guestToken: string | null) {
+  if (typeof window === "undefined") return;
+  stopHumanSupportPoll();
+  const seenStaffIds = new Set<string>();
+  humanSupportPollTimer = setInterval(async () => {
+    try {
+      const headers: Record<string, string> = {};
+      if (guestToken) {
+        headers["x-beyond-master-guest-token"] = guestToken;
+      }
+      const res = await fetch(
+        `/api/beyond-master/threads?id=${encodeURIComponent(threadId)}`,
+        { credentials: "include", cache: "no-store", headers },
+      );
+      if (!res.ok) return;
+      const payload = (await res.json()) as {
+        thread?: {
+          messages: {
+            id: string;
+            role: string;
+            body: string;
+            createdAt: string;
+          }[];
+        };
+      };
+      const messages = payload.thread?.messages ?? [];
+      const conversation = snapshot.conversations.find(
+        (item) => item.id === threadId,
+      );
+      if (!conversation) return;
+      const merged = [...conversation.messages];
+      for (const row of messages) {
+        if (
+          row.role !== "notice" ||
+          !row.body.startsWith("[staff] ") ||
+          seenStaffIds.has(row.id)
+        ) {
+          continue;
+        }
+        seenStaffIds.add(row.id);
+        const body = row.body.replace(/^\[staff\]\s*/, "");
+        merged.push({
+          id: row.id,
+          role: "notice",
+          body,
+          createdAt: row.createdAt,
+          status: "sent",
+        });
+      }
+      merged.sort(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      );
+      if (merged.length === conversation.messages.length) return;
+      emit({
+        ...snapshot,
+        conversations: upsertConversation(snapshot.conversations, {
+          ...conversation,
+          messages: merged,
+          updatedAt: new Date().toISOString(),
+        }),
+      });
+    } catch {
+      /* ignore */
+    }
+  }, 3000);
+}
 
 function emit(next: Snapshot) {
+  if (
+    snapshot.humanSupportPollThreadId !== next.humanSupportPollThreadId ||
+    snapshot.humanSupportPollGuestToken !== next.humanSupportPollGuestToken
+  ) {
+    if (next.humanSupportPollThreadId) {
+      startHumanSupportPoll(
+        next.humanSupportPollThreadId,
+        next.humanSupportPollGuestToken,
+      );
+    } else {
+      stopHumanSupportPoll();
+    }
+  }
   snapshot = next;
   if (hydrated && typeof window !== "undefined") {
     try {
@@ -235,6 +345,7 @@ export function openBeyondMasterAi() {
 export function closeBeyondMasterAi() {
   sendController?.abort();
   sendController = null;
+  stopHumanSupportPoll();
   const conversation = activeConversation(snapshot);
   void persistActiveThread(snapshot);
   emit({
@@ -242,6 +353,8 @@ export function closeBeyondMasterAi() {
     open: false,
     checking: false,
     streaming: false,
+    humanSupportPollThreadId: null,
+    humanSupportPollGuestToken: null,
     attachments: [],
     activeId: "",
     conversations: conversation
@@ -253,33 +366,46 @@ export function closeBeyondMasterAi() {
 function persistActiveThread(state: Snapshot) {
   const conversation = activeConversation(state);
   if (!conversation || conversation.messages.length === 0) return;
+  const guestTok = beyondMasterGuestClient()
+    ? guestCapabilityForConversation(conversation)
+    : undefined;
   const payload = JSON.stringify({
     threadId: conversation.id,
     title: conversation.title,
+    ...(guestTok ? { guestCapabilityToken: guestTok } : {}),
     messages: conversation.messages.map((message) => ({
       role: message.role,
       body: message.body,
       createdAt: message.createdAt,
     })),
   });
-  try {
-    const body =
-      typeof navigator !== "undefined" &&
-      typeof navigator.sendBeacon === "function"
-        ? new Blob([payload], { type: "application/json" })
-        : null;
-    if (body && navigator.sendBeacon("/api/beyond-master/threads", body)) {
-      return;
-    }
-  } catch {
-    /* fall through to fetch */
-  }
+
+  // `sendBeacon` cannot read the response, and the server issues the guest
+  // capability token on the FIRST save. Using beacon here meant the token was
+  // never stored, so every later save failed with `guest_capability_required`.
+  // A normal fetch keeps the issued token so multi-turn guest threads persist.
   void fetch("/api/beyond-master/threads", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: payload,
     keepalive: true,
-  }).catch(() => undefined);
+  })
+    .then(async (res) => {
+      const json = (await res.json().catch(() => null)) as {
+        guestCapabilityToken?: string;
+      } | null;
+      if (!json?.guestCapabilityToken) return;
+      const current = activeConversation(snapshot);
+      if (!current || current.id !== conversation.id) return;
+      emit({
+        ...snapshot,
+        conversations: upsertConversation(snapshot.conversations, {
+          ...current,
+          guestCapabilityToken: json.guestCapabilityToken,
+        }),
+      });
+    })
+    .catch(() => undefined);
 }
 
 export function removeBeyondMasterAttachment(id: string) {
@@ -318,6 +444,10 @@ export async function uploadBeyondMasterAttachments(files: File[]) {
   });
   const form = new FormData();
   form.set("title", ensured.conversation.title);
+  const gTok = beyondMasterGuestClient()
+    ? guestCapabilityForConversation(ensured.conversation)
+    : undefined;
+  if (gTok) form.set("guestCapabilityToken", gTok);
   for (const file of files) form.append("files", file);
   try {
     const response = await fetch(
@@ -433,12 +563,17 @@ export async function sendBeyondMasterMessage(text?: string) {
 
   try {
     const startedAt = Date.now();
+    const guestTok = beyondMasterGuestClient()
+      ? guestCapabilityForConversation(withUser)
+      : undefined;
     const response = await fetch("/api/beyond-master/chat", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         messages: chatContext(withUser.messages),
         preferredLocale: withUser.preferredLanguage ?? null,
+        threadId: withUser.id,
+        ...(guestTok ? { guestCapabilityToken: guestTok } : {}),
       }),
       signal: controller.signal,
     });
@@ -492,6 +627,9 @@ export async function sendBeyondMasterMessage(text?: string) {
           body?: string;
           text?: string;
           message?: string;
+          guestCapabilityToken?: string;
+          level?: string;
+          spentPlusReservedCents?: number;
           kind?: string;
           confirmationId?: string;
           category?: string;
@@ -594,6 +732,32 @@ export async function sendBeyondMasterMessage(text?: string) {
             ),
           });
         }
+        if (frame.event === "support" && data.kind === "human_queue") {
+          const queueMessage =
+            typeof data.message === "string"
+              ? data.message
+              : "Queued for staff.";
+          const issuedTok =
+            typeof data.guestCapabilityToken === "string"
+              ? data.guestCapabilityToken
+              : undefined;
+          const base = activeConversation(snapshot) ?? withUser;
+          const merged = issuedTok
+            ? { ...base, guestCapabilityToken: issuedTok }
+            : base;
+          emit({
+            ...snapshot,
+            conversations: upsertConversation(snapshot.conversations, merged),
+            activeId: merged.id,
+            supportCard: {
+              kind: "human_queue",
+              message: queueMessage,
+            },
+            humanSupportPollThreadId: merged.id,
+            humanSupportPollGuestToken:
+              beyondMasterGuestClient() && issuedTok ? issuedTok : null,
+          });
+        }
         if (
           frame.event === "support" &&
           data.kind === "review" &&
@@ -611,6 +775,14 @@ export async function sendBeyondMasterMessage(text?: string) {
               description: data.description ?? "",
               handoff: data.handoff === true,
             },
+            humanSupportPollThreadId:
+              data.handoff === true
+                ? withUser.id
+                : snapshot.humanSupportPollThreadId,
+            humanSupportPollGuestToken:
+              data.handoff === true && beyondMasterGuestClient()
+                ? (guestCapabilityForConversation(withUser) ?? null)
+                : snapshot.humanSupportPollGuestToken,
           });
         } else if (
           frame.event === "support" &&
@@ -624,6 +796,19 @@ export async function sendBeyondMasterMessage(text?: string) {
               kind: data.kind,
               message: data.message ?? "A support ticket was not created.",
             },
+          });
+        }
+        if (frame.event === "budget" && data.level === "warn") {
+          emit({
+            ...snapshot,
+            error:
+              "Notice: monthly AI budget is above $3 (application cap, not provider billing).",
+          });
+        } else if (frame.event === "budget" && data.level === "critical") {
+          emit({
+            ...snapshot,
+            error:
+              "Warning: monthly AI budget is above $4. Requests may stop soon.",
           });
         }
         const current = activeConversation(snapshot) ?? withUser;
@@ -962,10 +1147,16 @@ export async function submitBeyondMasterTicket() {
   const card = snapshot.supportCard;
   if (!card || card.kind !== "review") return;
   emit({ ...snapshot, error: null });
+  const threadId = activeConversation(snapshot)?.id ?? "";
   const response = await fetch("/api/beyond-master/tickets", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ confirmationId: card.confirmationId }),
+    body: JSON.stringify({
+      confirmationId: card.confirmationId,
+      ...(threadId && /^[A-Za-z0-9-]{8,64}$/.test(threadId)
+        ? { threadId }
+        : {}),
+    }),
   });
   const payload = (await response.json().catch(() => null)) as {
     error?: string;

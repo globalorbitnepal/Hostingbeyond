@@ -60,11 +60,13 @@ export async function POST(
   const verified = await verifyCustomerJwt(
     cookieValue(request, CUSTOMER_SESSION_COOKIE),
   );
+  const guestTok = String(form.get("guestCapabilityToken") ?? "").trim();
   const result = await addThreadAttachments({
     threadId,
     customerUserId: verified?.customerUserId ?? null,
     title,
     files,
+    guestCapabilityToken: verified ? undefined : guestTok || null,
   });
   if (result.saved === 0) {
     return Response.json(

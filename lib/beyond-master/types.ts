@@ -22,6 +22,8 @@ export type BeyondMasterConversation = {
   updatedAt: string;
   /** BCP-47 locale persisted for this browser conversation tab. */
   preferredLanguage?: string;
+  /** Server-issued secret for guest-owned threads (sessionStorage backup). */
+  guestCapabilityToken?: string;
   messages: BeyondMasterMessage[];
 };
 

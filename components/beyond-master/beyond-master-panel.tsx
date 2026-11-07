@@ -40,6 +40,7 @@ import { isAgentGreeting } from "@/lib/beyond-master/domain-intent";
 
 import "@/styles/beyond-master.css";
 import { AiAgentBadge } from "./ai-agent-badge";
+import { BeyondMasterVoiceBar } from "./voice-bar";
 
 function formatStamp(iso: string) {
   const date = new Date(iso);
@@ -578,6 +579,11 @@ export function BeyondMasterAiPanel() {
           </p>
         ) : null}
 
+        {state.supportCard?.kind === "human_queue" ? (
+          <p className="hb-bmai-review-note" role="status">
+            {state.supportCard.message}
+          </p>
+        ) : null}
         {state.supportCard?.kind === "review" ? (
           <section
             className="hb-bmai-review"
@@ -646,6 +652,7 @@ export function BeyondMasterAiPanel() {
           </div>
         ) : null}
 
+        <BeyondMasterVoiceBar />
         <form className="hb-bmai-composer" onSubmit={onSubmit}>
           <label className="sr-only" htmlFor="beyond-master-ai-input">
             Message {BEYOND_MASTER_LAUNCHER_LABEL}

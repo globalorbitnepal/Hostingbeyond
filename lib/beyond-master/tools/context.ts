@@ -2,10 +2,13 @@ import type {
   ReadOnlyAgentTool,
   AgentToolResult,
 } from "@/lib/beyond-master/tools/types";
+import type { AiPrincipal } from "@/lib/beyond-master/authorization";
 
 export type AgentToolContext = {
   customerUserId: string | null;
   ip: string;
+  /** From {@link principalForPublicBeyondMasterChat}; server-side only, never from the client. */
+  chatPrincipal?: AiPrincipal;
 };
 
 export function logAgentToolOutcome(

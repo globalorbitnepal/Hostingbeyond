@@ -33,6 +33,10 @@ import type {
   AgentToolResult,
   ReadOnlyAgentTool,
 } from "@/lib/beyond-master/tools/types";
+import {
+  canExecuteReadOnlyTool,
+  principalFromSession,
+} from "@/lib/beyond-master/authorization";
 
 let accountReaderOverride: typeof prismaAccountReader | null = null;
 let ticketRepoOverride: ReturnType<
@@ -358,6 +362,15 @@ export async function executeReadOnlyTool(
   ctx: AgentToolContext,
   call: AgentToolCall,
 ): Promise<AgentToolResult> {
+  const principal =
+    ctx.chatPrincipal ??
+    principalFromSession({
+      customerUserId: ctx.customerUserId,
+      orbitAdmin: null,
+    });
+  if (!canExecuteReadOnlyTool(principal, call.tool)) {
+    return signInRequiredResult(call.tool);
+  }
   switch (call.tool) {
     case "search_domain":
       return runSearchDomain(call.args);

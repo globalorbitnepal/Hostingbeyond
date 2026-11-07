@@ -7,6 +7,7 @@ import type {
   AgentToolCall,
   ReadOnlyAgentTool,
 } from "@/lib/beyond-master/tools/types";
+import { isGuestAllowedReadOnlyTool } from "@/lib/beyond-master/tools/types";
 
 const PERSONAL =
   /\b(my|mine|i own|i have|do i have|mes|mis|mon|ma|mi|mein|meine|mijn|мои|мой|моя|我的|私の|내|আমার|میرا|मेरा|मेरी|मेरो)\b|मेरा|मेरी|मेरो|আমার|میرا/i;
@@ -44,7 +45,7 @@ function pushUnique(
   calls.push({ tool, args });
 }
 
-export function planReadOnlyTools(message: string): AgentToolCall[] {
+function planReadOnlyToolsInner(message: string): AgentToolCall[] {
   const text = message.trim();
   if (!text) return [];
   const calls: AgentToolCall[] = [];
@@ -119,4 +120,20 @@ export function planReadOnlyTools(message: string): AgentToolCall[] {
   }
 
   return calls;
+}
+
+export function planReadOnlyTools(message: string): AgentToolCall[] {
+  return planReadOnlyToolsInner(message);
+}
+
+/**
+ * Guests never schedule tenant-scoped tools; only public catalog and domain lookup.
+ */
+export function planReadOnlyToolsForSession(input: {
+  message: string;
+  customerUserId: string | null;
+}): AgentToolCall[] {
+  const planned = planReadOnlyToolsInner(input.message);
+  if (input.customerUserId) return planned;
+  return planned.filter((call) => isGuestAllowedReadOnlyTool(call.tool));
 }
