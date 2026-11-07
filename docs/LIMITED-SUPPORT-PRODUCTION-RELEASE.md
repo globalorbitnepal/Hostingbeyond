@@ -223,21 +223,27 @@ Procedure: `docs/ORBIT-STAFF-ACCESS.md`.
 
 ## 6. Database migrations
 
-Required, additive, not applied by this preparation:
+Required for production `prisma migrate deploy` (additive; not applied during
+this audit), **timestamp order**:
 
-1. `20261104233000_beyond_master_chat_history`  
-   New thread, message, attachment tables.
-2. `20261106200000_beyond_master_ai_rate_budget_support_queue`  
-   Rate-limit and budget tables; support-queue columns on chat threads;
-   activity enum values.
+1. `20261104233000_beyond_master_chat_history` — thread, message, attachment tables.
+2. `20261106010000_beyond_master_commerce_proposal` — `BeyondMasterCommerceProposal`
+   table (committed `schema.prisma`; commerce **execution** remains capability-gated).
+3. `20261106200000_beyond_master_ai_rate_budget_support_queue` — rate-limit and
+   budget tables; support-queue columns on `BeyondMasterChatThread`; activity enum
+   values.
 
-Not required:
+**Excluded from this release** (do not commit, deploy, or apply):
 
-- `20261106010000_beyond_master_commerce_proposal`
-- `20261107120000_stripe_webhook_event_ledger`
+- `20261107120000_stripe_webhook_event_ledger` — Stripe ledger WIP; keep
+  `STRIPE_WEBHOOK_EVENT_LEDGER_ENABLED` unset.
 
-Dependencies: the support-queue migration alters `BeyondMasterChatThread`, so
-the chat-history migration must run first. Prisma order is timestamp order.
+Dependencies: `20261106200000` alters `BeyondMasterChatThread`, so
+`20261104233000` must run first. Prisma applies folder names in lexicographic
+(timestamp) order. `INVENTORY.txt` must list migrations in the same order.
+
+Cross-check: `scripts/verify-migration-inventory.mjs`
+(`BEYOND_MASTER_RELEASE_MIGRATIONS`) and migration inventory unit tests.
 
 Compatibility: additive (new tables / nullable columns / indexes). Existing
 rows keep working. The app can run during deploy if the new code is not

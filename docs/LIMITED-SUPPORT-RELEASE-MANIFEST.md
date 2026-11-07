@@ -75,18 +75,19 @@ provider stays **off** behind `lib/beyond-master/capabilities.ts`.
 
 ## 3. Category B — required dependencies
 
-| File                                                                                                         | Required by                               |
-| ------------------------------------------------------------------------------------------------------------ | ----------------------------------------- |
-| `lib/orbit/session.ts`                                                                                       | Orbit auth for support queue              |
-| `lib/orbit/domain-pricing-auth.ts`                                                                           | Full-admin gating used by Orbit routes    |
-| `lib/customer/session.ts`, `safe-redirect.ts`, `site-origin.ts`                                              | Customer identity + OAuth redirects       |
-| `lib/domains/require-customer.ts`, `require-domain-ownership.ts`                                             | Ownership checks for tools                |
-| `lib/prisma.ts`                                                                                              | DB client                                 |
-| `lib/test/integration-*`, `lib/test/orbit-admin-session-test-control.ts`, `customer-session-test-control.ts` | Test harness for the suites below         |
-| `prisma/schema.prisma`                                                                                       | Models for threads, rate limit, budget    |
-| `prisma/migrations/20261104233000_beyond_master_chat_history`                                                | Thread + message + attachment tables      |
-| `prisma/migrations/20261106200000_beyond_master_ai_rate_budget_support_queue`                                | Rate-limit, budget, support-queue columns |
-| `scripts/run-node-tests.mjs`, `scripts/test-runner-lib.mjs`                                                  | Test runner used by all commands          |
+| File                                                                                                         | Required by                                       |
+| ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------- |
+| `lib/orbit/session.ts`                                                                                       | Orbit auth for support queue                      |
+| `lib/orbit/domain-pricing-auth.ts`                                                                           | Full-admin gating used by Orbit routes            |
+| `lib/customer/session.ts`, `safe-redirect.ts`, `site-origin.ts`                                              | Customer identity + OAuth redirects               |
+| `lib/domains/require-customer.ts`, `require-domain-ownership.ts`                                             | Ownership checks for tools                        |
+| `lib/prisma.ts`                                                                                              | DB client                                         |
+| `lib/test/integration-*`, `lib/test/orbit-admin-session-test-control.ts`, `customer-session-test-control.ts` | Test harness for the suites below                 |
+| `prisma/schema.prisma`                                                                                       | Models for threads, rate limit, budget            |
+| `prisma/migrations/20261104233000_beyond_master_chat_history`                                                | Thread + message + attachment tables              |
+| `prisma/migrations/20261106010000_beyond_master_commerce_proposal`                                           | Commerce proposal table (schema; execution gated) |
+| `prisma/migrations/20261106200000_beyond_master_ai_rate_budget_support_queue`                                | Rate-limit, budget, support-queue columns         |
+| `scripts/run-node-tests.mjs`, `scripts/test-runner-lib.mjs`                                                  | Test runner used by all commands                  |
 
 ## 4. Category C — unrelated HostingBeyond work (exclude)
 
@@ -119,15 +120,21 @@ Scanned all changed paths for `.env`, `*.pem`, `*.key`, `credential`, `*.dump`,
 
 ## 8. Migrations
 
-| Migration                                                   | Needed by limited release?                          |
-| ----------------------------------------------------------- | --------------------------------------------------- |
-| `20261104233000_beyond_master_chat_history`                 | **Yes** — threads, messages, attachments            |
-| `20261106200000_beyond_master_ai_rate_budget_support_queue` | **Yes** — rate limit, budget, support-queue columns |
-| `20261107120000_stripe_webhook_event_ledger`                | **No** — keep out; inert table                      |
-| `20261106010000_beyond_master_commerce_proposal`            | **No** — proposals disabled                         |
+| Migration                                                   | Production `migrate deploy`?                                 | Feature enabled?                         |
+| ----------------------------------------------------------- | ------------------------------------------------------------ | ---------------------------------------- |
+| `20261104233000_beyond_master_chat_history`                 | **Yes** — threads, messages, attachments                     | Yes (chat)                               |
+| `20261106010000_beyond_master_commerce_proposal`            | **Yes** — `BeyondMasterCommerceProposal` in committed schema | **No** — all `BEYOND_MASTER_ALLOW_*` off |
+| `20261106200000_beyond_master_ai_rate_budget_support_queue` | **Yes** — rate limit, budget, support-queue columns          | Yes (limits + queue)                     |
+| `20261107120000_stripe_webhook_event_ledger`                | **Excluded** — not on release branch                         | **No** — flag off                        |
 
-**Production schema change required:** yes, the two migrations above. Both are
-additive (new tables / new nullable columns + indexes).
+**Production schema change required:** all three Beyond Master release migrations
+above, in timestamp order (`chat_history` → `commerce_proposal` →
+`ai_rate_budget_support_queue`). They are additive (new tables / nullable
+columns + indexes). Commerce capability flags stay off; the commerce migration
+only prevents Prisma/schema drift.
+
+Authoritative list: `BEYOND_MASTER_RELEASE_MIGRATIONS` in
+`scripts/verify-migration-inventory.mjs` and `prisma/migrations/INVENTORY.txt`.
 
 ## 9. UNRESOLVED DEPENDENCY — Orbit role lockout risk
 

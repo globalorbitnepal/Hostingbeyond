@@ -43,9 +43,12 @@ Beyond Master migrations, in order:
 6. `20261106010000_beyond_master_commerce_proposal`
 7. `20261106200000_beyond_master_ai_rate_budget_support_queue`
 
-`prisma/migrations/INVENTORY.txt` lists 28 entries and matches the committed
-folders. The migration-inventory test (`scripts/verify-migration-inventory.test.mjs`)
-passes on a clean checkout.
+`prisma/migrations/INVENTORY.txt` lists 28 entries in chronological (timestamp)
+order and must match git-tracked migration folders. Automated checks live in
+`scripts/verify-migration-inventory.mjs` (`BEYOND_MASTER_RELEASE_MIGRATIONS`
+for the three production tail migrations). A clean worktree also matches
+on-disk folders; local untracked WIP (for example the Stripe ledger folder) may
+fail the on-disk inventory test until removed or ignored.
 
 ### Required vs optional for this release
 

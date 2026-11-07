@@ -2,6 +2,7 @@
  * Compare prisma/migrations folders to the committed inventory file.
  * Does not connect to a database.
  */
+import { execSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -12,6 +13,29 @@ export const INVENTORY_FILE = path.join(MIGRATIONS_DIR, "INVENTORY.txt");
 export const REQUIRED_PHASE2 = [
   "20261025120000_namesilo_pricing_provider",
   "20261025130000_transfer_registrar_wallet",
+];
+
+/**
+ * Beyond Master limited-release tail (timestamp order). Apply on production when
+ * promoting PR #15 — commerce table is required by committed schema even though
+ * execution stays capability-gated.
+ */
+export const BEYOND_MASTER_RELEASE_MIGRATIONS = [
+  "20261104233000_beyond_master_chat_history",
+  "20261106010000_beyond_master_commerce_proposal",
+  "20261106200000_beyond_master_ai_rate_budget_support_queue",
+];
+
+/** Local/WIP folders that must never ship on this release branch. */
+export const EXCLUDED_FROM_RELEASE_MIGRATIONS = [
+  "20261107120000_stripe_webhook_event_ledger",
+];
+
+export const RELEASE_MIGRATION_DOCS = [
+  "docs/BEYOND-MASTER-DATABASE.md",
+  "docs/BEYOND-MASTER-PRODUCTION-RELEASE.md",
+  "docs/LIMITED-SUPPORT-PRODUCTION-RELEASE.md",
+  "docs/LIMITED-SUPPORT-RELEASE-MANIFEST.md",
 ];
 
 /**
@@ -29,6 +53,12 @@ export function listMigrationFolders(migrationsDir) {
     .sort();
 }
 
+/** On-disk folders counted toward INVENTORY.txt (excludes release WIP such as Stripe). */
+export function listMigrationFoldersForInventory(migrationsDir = MIGRATIONS_DIR) {
+  const excluded = new Set(EXCLUDED_FROM_RELEASE_MIGRATIONS);
+  return listMigrationFolders(migrationsDir).filter((name) => !excluded.has(name));
+}
+
 /**
  * @param {string} text
  * @returns {string[]}
@@ -44,6 +74,34 @@ export function parseInventoryText(text) {
  * @param {string[]} expected
  * @param {string[]} actual
  */
+/**
+ * Migration folder names tracked in git (ignores untracked WIP such as Stripe ledger).
+ * @param {string} root
+ * @returns {string[]}
+ */
+export function listGitTrackedMigrationFolders(root = ROOT) {
+  let out = "";
+  try {
+    out = execSync("git ls-files prisma/migrations", {
+      cwd: root,
+      encoding: "utf8",
+    });
+  } catch {
+    return [];
+  }
+  const names = new Set();
+  for (const line of out.split(/\r?\n/)) {
+    const m = line.match(/^prisma\/migrations\/(\d{14}_[^/]+)\//);
+    if (m) names.add(m[1]);
+  }
+  return [...names].sort();
+}
+
+export function inventoryIsChronological(inventory) {
+  const sorted = [...inventory].sort();
+  return inventory.every((name, index) => name === sorted[index]);
+}
+
 export function compareMigrationInventory(expected, actual) {
   const expectedSet = new Set(expected);
   const actualSet = new Set(actual);
@@ -70,7 +128,7 @@ export function loadCommittedInventory(filePath = INVENTORY_FILE) {
 }
 
 function main(argv) {
-  const folders = listMigrationFolders(MIGRATIONS_DIR);
+  const folders = listMigrationFoldersForInventory(MIGRATIONS_DIR);
   if (argv.includes("--print")) {
     process.stdout.write(`${folders.join("\n")}\n`);
     process.exit(0);

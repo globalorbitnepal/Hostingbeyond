@@ -38,8 +38,9 @@ Apply, in order, with a verified backup:
 2. `20261106010000_beyond_master_commerce_proposal` (inert table; committed schema)
 3. `20261106200000_beyond_master_ai_rate_budget_support_queue`
 
-The Stripe ledger migration is **not** on this branch and must not be applied
-for this release.
+The migration `20261107120000_stripe_webhook_event_ledger` is **not** on this
+release branch and must not be applied. Keep `STRIPE_WEBHOOK_EVENT_LEDGER_ENABLED`
+unset.
 
 ## 4. Required production configuration
 
