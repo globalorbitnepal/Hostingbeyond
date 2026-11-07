@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 type Payload = {
   monthKey: string;
+  paidBudgetEnabled?: boolean;
   capCents: number;
   warnCents: number;
   criticalCents: number;
@@ -67,10 +68,9 @@ export default function OrbitBeyondMasterAiBudgetPage() {
       {data ? (
         <>
           <p className="text-sm text-slate-600">
-            Month <strong>{data.monthKey}</strong>: committed{" "}
-            {usd(data.committedCents)} of {usd(data.capCents)} cap · remaining{" "}
-            {usd(data.remainingCents)}. Warn at {usd(data.warnCents)}, critical
-            at {usd(data.criticalCents)}.
+            {data.paidBudgetEnabled === false
+              ? `Month ${data.monthKey}: Google AI Studio free plan is active. $0.00 billed.`
+              : `Month ${data.monthKey}: committed ${usd(data.committedCents)} of ${usd(data.capCents)} cap · remaining ${usd(data.remainingCents)}. Warn at ${usd(data.warnCents)}, critical at ${usd(data.criticalCents)}.`}
           </p>
           <p className="text-sm text-amber-900">{data.disclaimer}</p>
           <h2 className="text-sm font-semibold text-slate-900">

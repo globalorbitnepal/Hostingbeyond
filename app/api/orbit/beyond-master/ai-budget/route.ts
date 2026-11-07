@@ -3,6 +3,7 @@ import {
   BEYOND_MASTER_BUDGET_CRITICAL_CENTS,
   BEYOND_MASTER_BUDGET_WARN_CENTS,
   BEYOND_MASTER_MONTHLY_CAP_CENTS,
+  beyondMasterPaidAiBudgetEnabled,
   currentBudgetMonthKey,
 } from "@/lib/beyond-master/ai-budget";
 import { crossOriginBrowserMutationBlocked } from "@/lib/http/same-origin-mutation";
@@ -61,8 +62,10 @@ export async function GET() {
   const spent = month?.spentCents ?? 0;
   const reserved = month?.reservedCents ?? 0;
   const committed = spent + reserved;
+  const paidBudgetEnabled = beyondMasterPaidAiBudgetEnabled();
   return Response.json({
     monthKey,
+    paidBudgetEnabled,
     capCents: BEYOND_MASTER_MONTHLY_CAP_CENTS,
     warnCents: BEYOND_MASTER_BUDGET_WARN_CENTS,
     criticalCents: BEYOND_MASTER_BUDGET_CRITICAL_CENTS,
@@ -74,8 +77,9 @@ export async function GET() {
     unreconciledStaleReservationCount: staleReservationCount,
     recoveryNote:
       "Stale reservation recovery mutates the ledger. It runs only from an explicit full-admin POST here or from the npm script — not from background jobs unless BEYOND_MASTER_AI_BUDGET_RECOVERY_ENABLED=1 is set for that worker.",
-    disclaimer:
-      "Committed amounts include reserved capacity before reconciliation. Set provider-side budgets and alerts separately. Stale counts only reservations older than staleReservationThresholdMs so in-flight requests are excluded.",
+    disclaimer: paidBudgetEnabled
+      ? "Committed amounts include reserved capacity before reconciliation. Set provider-side budgets and alerts separately. Stale counts only reservations older than staleReservationThresholdMs so in-flight requests are excluded."
+      : "Paid AI budget is off. Gemini chats run on the Google AI Studio free plan and HostingBeyond is not charging for them. The $5 ledger is idle unless BEYOND_MASTER_AI_PAID_BUDGET_ENABLED is turned on.",
     topCustomers: perCustomer.map((row) => ({
       customerUserId: row.customerUserId,
       email: row.customer?.email ?? null,

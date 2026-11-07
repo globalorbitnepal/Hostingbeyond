@@ -22,6 +22,9 @@ type Usage = {
   model: string | null;
   credentialsPresent: boolean;
   monthKey: string;
+  billingPlan: "google_ai_studio_free" | "paid_app_cap";
+  paidBudgetEnabled: boolean;
+  billedCents: number;
   applicationCapCents: number;
   applicationSpentCents: number;
   applicationReservedCents: number;
@@ -111,7 +114,7 @@ export default function OrbitBeyondMasterControlsPage() {
     ? bar(usage.lastMinute.geminiRequests, usage.published.rpm)
     : 0;
   const tpm = usage ? bar(usage.today.totalTokens, usage.published.tpm) : 0;
-  const cap = usage
+  const cap = usage?.paidBudgetEnabled
     ? bar(
         usage.applicationSpentCents + usage.applicationReservedCents,
         usage.applicationCapCents,
@@ -166,8 +169,16 @@ export default function OrbitBeyondMasterControlsPage() {
               pct={tpm}
             />
             <Meter
-              label={`App monthly cap ${usd(usage.applicationCapCents)} (${usage.monthKey})`}
-              value={`${usd(usage.applicationSpentCents + usage.applicationReservedCents)} used · ${usd(usage.applicationRemainingCents)} left`}
+              label={
+                usage.paidBudgetEnabled
+                  ? `App monthly cap ${usd(usage.applicationCapCents)} (${usage.monthKey})`
+                  : `Billing plan (${usage.monthKey})`
+              }
+              value={
+                usage.paidBudgetEnabled
+                  ? `${usd(usage.applicationSpentCents + usage.applicationReservedCents)} used · ${usd(usage.applicationRemainingCents)} left`
+                  : "Google AI Studio free · $0.00 billed"
+              }
               pct={cap}
             />
           </div>

@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 
+import { isTruthyEnvFlag } from "@/lib/config/env-flags";
 import { prisma } from "@/lib/prisma";
 import {
   BEYOND_MASTER_BUDGET_CRITICAL_CENTS,
@@ -7,6 +8,16 @@ import {
   BEYOND_MASTER_DEFAULT_RESERVE_CENTS,
   BEYOND_MASTER_MONTHLY_CAP_CENTS,
 } from "@/lib/beyond-master/limits";
+
+/**
+ * Paid USD ledger. Default OFF so Gemini Flash-Lite stays on Google AI Studio
+ * free-tier quotas. Turn on only with an explicit env flag.
+ */
+export function beyondMasterPaidAiBudgetEnabled(
+  env: Record<string, string | undefined> = process.env,
+): boolean {
+  return isTruthyEnvFlag(env.BEYOND_MASTER_AI_PAID_BUDGET_ENABLED);
+}
 
 /** Application cap: USD 5.00 / month (not a substitute for provider billing alerts). */
 export {
