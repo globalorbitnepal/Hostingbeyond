@@ -32,6 +32,12 @@ describe("agent language detection", () => {
   it("detects romanised Hindi and Nepali", () => {
     assert.equal(detectAgentLanguage("hosting ka price kya hai"), "hi");
     assert.equal(detectAgentLanguage("domain ko price kati huncha"), "ne");
+    assert.equal(
+      detectAgentLanguage(
+        "kya aap mujhe mera ai website banane ke liye ek domain suggest kar sakte ho",
+      ),
+      "hi",
+    );
   });
 
   it("defaults to English", () => {

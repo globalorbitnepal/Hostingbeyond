@@ -2,13 +2,24 @@
 
 import { FormEvent, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowUp, Clock3, ImagePlus, Plus, X } from "lucide-react";
+import {
+  ArrowUp,
+  ArrowUpRight,
+  Clock3,
+  Globe,
+  ImagePlus,
+  Mail,
+  Plus,
+  Search,
+  Wrench,
+  X,
+} from "lucide-react";
 
 import {
-  BEYOND_MASTER_BRAND_NAME,
   BEYOND_MASTER_DISCLAIMER,
   BEYOND_MASTER_INPUT_PLACEHOLDER,
   BEYOND_MASTER_LAUNCHER_LABEL,
+  BEYOND_MASTER_PANEL_TITLE,
   BEYOND_MASTER_PRIMARY_BODY,
   BEYOND_MASTER_PRIMARY_TITLE,
   BEYOND_MASTER_QUICK_ACTIONS,
@@ -40,7 +51,7 @@ import {
 import { isAgentGreeting } from "@/lib/beyond-master/domain-intent";
 
 import "@/styles/beyond-master.css";
-import { AiAgentBadge } from "./ai-agent-badge";
+import { BeyondMasterIcon } from "./beyond-master-icon";
 import { BeyondMasterVoiceButton } from "./voice-bar";
 
 function formatStamp(iso: string) {
@@ -52,6 +63,17 @@ function formatStamp(iso: string) {
     hour: "numeric",
     minute: "2-digit",
   });
+}
+
+function QuickActionIcon({
+  icon,
+}: {
+  icon?: "domain" | "hosting" | "email" | "website";
+}) {
+  if (icon === "domain") return <Search className="size-4" aria-hidden />;
+  if (icon === "hosting") return <Globe className="size-4" aria-hidden />;
+  if (icon === "email") return <Mail className="size-4" aria-hidden />;
+  return <Wrench className="size-4" aria-hidden />;
 }
 
 export function BeyondMasterAiPanel() {
@@ -144,10 +166,12 @@ export function BeyondMasterAiPanel() {
       >
         <header className="hb-bmai-header">
           <div className="hb-bmai-header-brand">
-            <h2 id={titleId} className="sr-only">
-              {BEYOND_MASTER_BRAND_NAME}
-            </h2>
-            <AiAgentBadge variant="panel" />
+            <span className="hb-bmai-brand-mark" aria-hidden="true">
+              <BeyondMasterIcon size={22} />
+            </span>
+            <div className="hb-bmai-title">
+              <h2 id={titleId}>{BEYOND_MASTER_PANEL_TITLE}</h2>
+            </div>
           </div>
           <button
             type="button"
@@ -201,8 +225,13 @@ export function BeyondMasterAiPanel() {
         <div className="hb-bmai-scroll">
           {messages.length === 0 ? (
             <div className="hb-bmai-welcome">
+              <div className="hb-bmai-hero-mark" aria-hidden="true">
+                <BeyondMasterIcon size={78} />
+              </div>
               <h2>{BEYOND_MASTER_WELCOME_HEADING}</h2>
-              <p>{BEYOND_MASTER_WELCOME_BODY}</p>
+              {BEYOND_MASTER_WELCOME_BODY ? (
+                <p>{BEYOND_MASTER_WELCOME_BODY}</p>
+              ) : null}
               <button
                 type="button"
                 className="hb-bmai-primary"
@@ -211,8 +240,11 @@ export function BeyondMasterAiPanel() {
                   inputRef.current?.focus();
                 }}
               >
-                <strong>{BEYOND_MASTER_PRIMARY_TITLE}</strong>
-                <span>{BEYOND_MASTER_PRIMARY_BODY}</span>
+                <ArrowUpRight className="size-4" aria-hidden />
+                <span>
+                  <strong>{BEYOND_MASTER_PRIMARY_TITLE}</strong>
+                  <span>{BEYOND_MASTER_PRIMARY_BODY}</span>
+                </span>
               </button>
               <div className="hb-bmai-actions">
                 {BEYOND_MASTER_QUICK_ACTIONS.map((action) => (
@@ -223,6 +255,7 @@ export function BeyondMasterAiPanel() {
                     onClick={() => void sendBeyondMasterMessage(action.prompt)}
                     disabled={state.checking}
                   >
+                    <QuickActionIcon icon={action.icon} />
                     <strong>{action.label}</strong>
                   </button>
                 ))}
@@ -297,6 +330,7 @@ export function BeyondMasterAiPanel() {
                         void sendBeyondMasterMessage(action.prompt)
                       }
                     >
+                      <QuickActionIcon icon={action.icon} />
                       <strong>{action.label}</strong>
                     </button>
                   ))}
