@@ -363,7 +363,8 @@ export function CountryLanguageSelector({
     }
   };
 
-  // SSR placeholder
+  // SSR placeholder — must occupy exactly the same box as the live chip so the
+  // header never reflows when hydration swaps it (layout-shift source).
   if (!mounted) {
     return (
       <div
@@ -372,19 +373,22 @@ export function CountryLanguageSelector({
           light
             ? "border-slate-200/90 bg-white/80"
             : "border-white/[0.10] bg-white/[0.05]",
-          compact ? "h-8 rounded-full px-2" : "h-[38px] rounded-full px-2.5",
+          compact
+            ? "h-8 rounded-full py-0 pr-2 pl-1.5"
+            : "h-[38px] rounded-full py-0 pr-2.5 pl-2",
           className,
         )}
       >
         <span
           className={cn(
-            "inline-block size-5 rounded-full",
+            "inline-block shrink-0 rounded-full",
+            compact ? "size-[22px]" : "size-[26px]",
             light ? "bg-slate-200" : "bg-white/10",
           )}
         />
         <span
           className={cn(
-            "text-[11px] font-bold sm:text-[12px]",
+            "inline-flex min-w-[1.5rem] shrink-0 items-center justify-center text-center text-[11px] font-bold tracking-wide sm:text-[12px]",
             light ? "text-slate-900" : "text-white",
           )}
         >
@@ -448,7 +452,7 @@ export function CountryLanguageSelector({
         )}
         <span
           className={cn(
-            "inline-flex min-w-[1.5rem] items-center text-center text-[11px] font-bold tracking-wide sm:text-[12px]",
+            "inline-flex min-w-[1.5rem] shrink-0 items-center justify-center text-center text-[11px] font-bold tracking-wide sm:text-[12px]",
             light ? "text-slate-900" : "text-white",
           )}
         >
