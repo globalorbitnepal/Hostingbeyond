@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 
-import { requireOrbitAdmin, unauthorizedJson } from "@/lib/orbit/api";
+import { requireOrbitFullAdmin, unauthorizedJson } from "@/lib/orbit/api";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
 export async function GET() {
-  const admin = await requireOrbitAdmin();
+  const admin = await requireOrbitFullAdmin();
   if (!admin) return unauthorizedJson();
   const authors = await prisma.blogAuthor.findMany({
     orderBy: { name: "asc" },
@@ -15,7 +15,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const admin = await requireOrbitAdmin();
+  const admin = await requireOrbitFullAdmin();
   if (!admin) return unauthorizedJson();
   const body = (await request.json().catch(() => null)) as {
     id?: string;
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const admin = await requireOrbitAdmin();
+  const admin = await requireOrbitFullAdmin();
   if (!admin) return unauthorizedJson();
   const id = new URL(request.url).searchParams.get("id");
   if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });

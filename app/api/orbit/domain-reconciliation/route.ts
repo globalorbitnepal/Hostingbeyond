@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { orbitAdminMutationError } from "@/lib/http/safe-api-error";
+
 import {
   checkProviderStatusForOrder,
   finalizeReconciliationOrder,
@@ -7,12 +9,12 @@ import {
   rollbackReconciliationOrder,
 } from "@/lib/domains/reconciliation-service";
 import { prisma } from "@/lib/prisma";
-import { requireOrbitAdmin } from "@/lib/orbit/api";
+import { requireOrbitFullAdmin } from "@/lib/orbit/api";
 
 export const runtime = "nodejs";
 
 export async function GET() {
-  const admin = await requireOrbitAdmin();
+  const admin = await requireOrbitFullAdmin();
   if (!admin) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -36,7 +38,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const admin = await requireOrbitAdmin();
+  const admin = await requireOrbitFullAdmin();
   if (!admin) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -97,8 +99,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: true, order });
     }
   } catch (error) {
-    const code = error instanceof Error ? error.message : "reconcile_failed";
-    return NextResponse.json({ error: code }, { status: 400 });
+    const { error: message, status } = orbitAdminMutationError(error);
+    return NextResponse.json({ error: message }, { status });
   }
 
   return NextResponse.json({ error: "Unknown action." }, { status: 400 });

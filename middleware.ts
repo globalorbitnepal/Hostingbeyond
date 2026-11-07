@@ -35,17 +35,28 @@ import {
   type WebsiteLanguageCode,
 } from "@/lib/i18n/website-languages";
 import { ORBIT_SESSION_COOKIE, verifyOrbitJwt } from "@/lib/orbit/jwt";
+import {
+  orbitAccessForAdmin,
+  supportOnlyOrbitPathAllowed,
+} from "@/lib/orbit/staff-access";
 
 /**
  * Behind the reverse proxy Next derives request.url from the listening address,
  * so redirects must be rebuilt from the forwarded host to stay on the site.
  */
-function redirectToOrbit(request: NextRequest) {
+function redirectToOrbitPath(request: NextRequest, path: string) {
   const host =
     request.headers.get("x-forwarded-host") ?? request.headers.get("host");
-  const proto = request.headers.get("x-forwarded-proto") ?? "https";
+  const forwarded = request.headers.get("x-forwarded-proto");
+  const loopback =
+    host?.startsWith("127.0.0.1") || host?.startsWith("localhost") || false;
+  const proto = forwarded ?? (loopback ? "http" : "https");
   const base = host ? `${proto}://${host}` : request.url;
-  return NextResponse.redirect(new URL("/orbit", base));
+  return NextResponse.redirect(new URL(path, base));
+}
+
+function redirectToOrbit(request: NextRequest) {
+  return redirectToOrbitPath(request, "/orbit");
 }
 
 function mergeLocaleCookie(
@@ -161,6 +172,16 @@ export async function middleware(request: NextRequest) {
         return NextResponse.next();
       }
       return redirectToOrbit(request);
+    }
+
+    if (
+      orbitAccessForAdmin(verified.adminUserId) === "support_only" &&
+      !supportOnlyOrbitPathAllowed(pathname)
+    ) {
+      if (isOrbitApi) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+      return redirectToOrbitPath(request, "/orbit/beyond-master/support-queue");
     }
 
     return NextResponse.next();

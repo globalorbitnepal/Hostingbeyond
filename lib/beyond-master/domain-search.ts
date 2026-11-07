@@ -1,5 +1,5 @@
-import type { AgentLanguage } from "@/lib/beyond-master/language";
-import { agentCopy, statusLabel } from "@/lib/beyond-master/replies";
+import type { ConversationLocale } from "@/lib/beyond-master/locale";
+import { agentCopyForLocale, statusLabel } from "@/lib/beyond-master/replies";
 import type { BeyondMasterDomainSuggestion } from "@/lib/beyond-master/types";
 import type { DomainResult } from "@/lib/domains/availability";
 import { lookupDomainNames, lookupErrorMessage } from "@/lib/domains/lookup";
@@ -104,9 +104,9 @@ export function formatDomainSearchForPrompt(search: AgentDomainSearch): string {
 
 export function formatDomainSearchForCustomer(
   search: AgentDomainSearch,
-  language: AgentLanguage = "en",
+  language: ConversationLocale = "en",
 ): string {
-  const copy = agentCopy(language);
+  const copy = agentCopyForLocale(language);
   if (search.error && search.results.length === 0) {
     return copy.domainFailed;
   }

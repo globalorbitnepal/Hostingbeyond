@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
 
 import { voidInvoiceAsAdmin } from "@/lib/billing/admin-invoices";
-import { requireOrbitAdmin } from "@/lib/orbit/api";
+import { orbitAdminMutationError } from "@/lib/http/safe-api-error";
+import { requireOrbitFullAdmin } from "@/lib/orbit/api";
 
 export const runtime = "nodejs";
 
 type Params = { params: Promise<{ invoiceId: string }> };
 
 export async function POST(request: Request, context: Params) {
-  const admin = await requireOrbitAdmin();
+  const admin = await requireOrbitFullAdmin();
   if (!admin) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -38,7 +39,7 @@ export async function POST(request: Request, context: Params) {
       },
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "void_failed";
-    return NextResponse.json({ error: message }, { status: 400 });
+    const { error: message, status } = orbitAdminMutationError(error);
+    return NextResponse.json({ error: message }, { status });
   }
 }

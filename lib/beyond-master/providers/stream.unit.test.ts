@@ -36,7 +36,7 @@ function sseBody(text: string) {
 const googleConfig: BeyondMasterRuntimeConfig = {
   configured: true,
   provider: "google",
-  model: "gemini-2.5-flash",
+  model: "gemini-flash-lite-latest",
   baseUrl: "https://generativelanguage.googleapis.com/v1beta",
   apiKey: "gemini-test-key",
   timeoutMs: 30,

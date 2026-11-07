@@ -4,6 +4,7 @@ import {
   applyNameSiloSupplierSync,
   previewNameSiloSupplierSync,
 } from "@/lib/domains/namesilo-supplier-sync";
+import { orbitNamesiloActionError } from "@/lib/http/safe-api-error";
 import { authorizeDomainPricingAdmin } from "@/lib/orbit/domain-pricing-auth";
 
 export const runtime = "nodejs";
@@ -20,9 +21,10 @@ export async function GET(request: Request) {
     const preview = await previewNameSiloSupplierSync();
     return NextResponse.json(preview);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "namesilo_preview_failed";
-    const status = message === "namesilo_api_key_missing" ? 503 : 502;
+    const { error: message, status } = orbitNamesiloActionError(
+      error,
+      "namesilo_preview_failed",
+    );
     return NextResponse.json({ error: message }, { status });
   }
 }
@@ -50,8 +52,10 @@ export async function POST(request: Request) {
     const result = await applyNameSiloSupplierSync(admin.id);
     return NextResponse.json({ ok: true, ...result });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "namesilo_sync_failed";
-    return NextResponse.json({ error: message }, { status: 502 });
+    const { error: message, status } = orbitNamesiloActionError(
+      error,
+      "namesilo_sync_failed",
+    );
+    return NextResponse.json({ error: message }, { status });
   }
 }

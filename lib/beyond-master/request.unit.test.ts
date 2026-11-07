@@ -28,7 +28,17 @@ describe("beyond master request validation", () => {
     if (parsed.ok) {
       assert.equal(parsed.messages[0]?.content, "How do I add an A record?");
       assert.equal(parsed.model, null);
+      assert.equal(parsed.preferredLocale, null);
     }
+  });
+
+  it("accepts an optional BCP-47 preferred locale", () => {
+    const parsed = parseBeyondMasterChatRequest({
+      preferredLocale: "es-419",
+      messages: [{ role: "user", content: "Hola" }],
+    });
+    assert.equal(parsed.ok, true);
+    if (parsed.ok) assert.equal(parsed.preferredLocale, "es-419");
   });
 
   it("parses an optional model name without accepting client ids", () => {
@@ -39,10 +49,19 @@ describe("beyond master request validation", () => {
     assert.equal(parsed.ok, true);
     if (parsed.ok) assert.equal(parsed.model, "gpt-test");
   });
+
+  it("parses optional guestCapabilityToken", () => {
+    const parsed = parseBeyondMasterChatRequest({
+      messages: [{ role: "user", content: "Hello" }],
+      guestCapabilityToken: "a".repeat(40),
+    });
+    assert.equal(parsed.ok, true);
+    if (parsed.ok) assert.equal(parsed.guestCapabilityToken?.length, 40);
+  });
 });
 
 describe("beyond master rate limit", () => {
-  it("blocks the next request after the configured window is full", () => {
+  it("blocks the next request after the configured window is full", async () => {
     const env = {
       BEYOND_MASTER_AI_RATE_LIMIT: "2",
       BEYOND_MASTER_AI_RATE_WINDOW_MS: "60000",
@@ -51,8 +70,17 @@ describe("beyond master rate limit", () => {
       new Request("http://localhost/api/beyond-master/chat", {
         headers: { "x-real-ip": "203.0.113.10" },
       });
-    assert.equal(allowBeyondMasterChat(request(), env), true);
-    assert.equal(allowBeyondMasterChat(request(), env), true);
-    assert.equal(allowBeyondMasterChat(request(), env), false);
+    assert.equal(
+      await allowBeyondMasterChat(request(), env, "user-rate-test"),
+      true,
+    );
+    assert.equal(
+      await allowBeyondMasterChat(request(), env, "user-rate-test"),
+      true,
+    );
+    assert.equal(
+      await allowBeyondMasterChat(request(), env, "user-rate-test"),
+      false,
+    );
   });
 });

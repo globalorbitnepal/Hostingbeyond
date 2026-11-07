@@ -5,7 +5,7 @@ import {
   upsertBlogPost,
   type BlogPostWriteInput,
 } from "@/lib/blog/queries";
-import { requireOrbitAdmin, unauthorizedJson } from "@/lib/orbit/api";
+import { requireOrbitFullAdmin, unauthorizedJson } from "@/lib/orbit/api";
 import { logActivity } from "@/lib/orbit/session";
 import { prisma } from "@/lib/prisma";
 
@@ -14,7 +14,7 @@ export const runtime = "nodejs";
 type Params = { params: Promise<{ id: string }> };
 
 export async function GET(_request: Request, { params }: Params) {
-  const admin = await requireOrbitAdmin();
+  const admin = await requireOrbitFullAdmin();
   if (!admin) return unauthorizedJson();
   const { id } = await params;
   const post = await prisma.blogPost.findUnique({
@@ -32,7 +32,7 @@ export async function GET(_request: Request, { params }: Params) {
 }
 
 export async function PATCH(request: Request, { params }: Params) {
-  const admin = await requireOrbitAdmin();
+  const admin = await requireOrbitFullAdmin();
   if (!admin) return unauthorizedJson();
   const { id } = await params;
   const existing = await prisma.blogPost.findUnique({ where: { id } });
@@ -59,7 +59,7 @@ export async function PATCH(request: Request, { params }: Params) {
 }
 
 export async function DELETE(_request: Request, { params }: Params) {
-  const admin = await requireOrbitAdmin();
+  const admin = await requireOrbitFullAdmin();
   if (!admin) return unauthorizedJson();
   const { id } = await params;
   await prisma.blogPost.delete({ where: { id } });

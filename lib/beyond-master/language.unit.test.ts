@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 
 import {
   detectAgentLanguage,
+  detectMessageLocale,
   resolveConversationLanguage,
 } from "@/lib/beyond-master/language";
 import {
@@ -37,7 +38,12 @@ describe("agent language detection", () => {
     assert.equal(detectAgentLanguage("How much is web hosting?"), "en");
   });
 
-  it("detects Hinglish domain and hosting phrases", () => {
+  it("detects Spanish and mixed Roman Hindi", () => {
+    assert.equal(detectMessageLocale("Necesito hosting para mi empresa"), "es");
+    assert.equal(
+      detectMessageLocale("Mujhe apni website ke liye hosting chahiye."),
+      "hi-Latn",
+    );
     assert.equal(
       detectAgentLanguage("Mujhe apni website ke liye hosting chahiye."),
       "hi",

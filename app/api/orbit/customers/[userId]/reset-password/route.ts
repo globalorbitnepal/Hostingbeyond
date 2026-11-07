@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { requireOrbitAdmin } from "@/lib/orbit/api";
+import { requireOrbitFullAdmin } from "@/lib/orbit/api";
 import { orbitAdminResetCustomerPassword } from "@/lib/orbit/customer-directory";
 
 export const runtime = "nodejs";
@@ -9,7 +9,7 @@ export async function POST(
   request: Request,
   context: { params: Promise<{ userId: string }> },
 ) {
-  const admin = await requireOrbitAdmin();
+  const admin = await requireOrbitFullAdmin();
   if (!admin) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

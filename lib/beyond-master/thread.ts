@@ -3,6 +3,7 @@ import {
   BEYOND_MASTER_MAX_MESSAGE_LENGTH,
   BEYOND_MASTER_PROVIDER_NOTICE,
 } from "@/lib/beyond-master/copy";
+import { normalizeBcp47Locale } from "@/lib/beyond-master/locale";
 import type {
   BeyondMasterConversation,
   BeyondMasterMessage,
@@ -198,17 +199,19 @@ export function parseStoredConversations(
         code: entry.role === "notice" ? "provider_not_configured" : undefined,
       });
     }
+    const guestTok =
+      typeof row.guestCapabilityToken === "string" &&
+      row.guestCapabilityToken.length >= 32
+        ? row.guestCapabilityToken
+        : undefined;
     safe.push({
       id: row.id,
       title: row.title.slice(0, 80),
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
       preferredLanguage:
-        row.preferredLanguage === "hi" ||
-        row.preferredLanguage === "ne" ||
-        row.preferredLanguage === "en"
-          ? row.preferredLanguage
-          : undefined,
+        normalizeBcp47Locale(row.preferredLanguage) ?? undefined,
+      ...(guestTok ? { guestCapabilityToken: guestTok } : {}),
       messages,
     });
   }

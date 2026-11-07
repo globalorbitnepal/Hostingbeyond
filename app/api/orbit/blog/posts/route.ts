@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { BlogContentType, BlogPostStatus } from "@prisma/client";
 
 import { upsertBlogPost, type BlogPostWriteInput } from "@/lib/blog/queries";
-import { requireOrbitAdmin, unauthorizedJson } from "@/lib/orbit/api";
+import { requireOrbitFullAdmin, unauthorizedJson } from "@/lib/orbit/api";
 import { logActivity } from "@/lib/orbit/session";
 import { prisma } from "@/lib/prisma";
 
@@ -24,7 +24,7 @@ function parseOptionalEnum<T extends string>(
 }
 
 export async function GET(request: NextRequest) {
-  const admin = await requireOrbitAdmin();
+  const admin = await requireOrbitFullAdmin();
   if (!admin) return unauthorizedJson();
 
   const status = parseOptionalEnum(
@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: Request) {
-  const admin = await requireOrbitAdmin();
+  const admin = await requireOrbitFullAdmin();
   if (!admin) return unauthorizedJson();
 
   const body = (await request.json().catch(() => null)) as

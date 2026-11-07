@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 
-import { requireOrbitAdmin } from "@/lib/orbit/api";
+import { requireOrbitFullAdmin, forbiddenJson } from "@/lib/orbit/api";
+import { crossOriginBrowserMutationBlocked } from "@/lib/http/same-origin-mutation";
+import { orbitAdminMutationError } from "@/lib/http/safe-api-error";
 import {
   adminAdjustCustomerWallet,
   adminReverseWalletCredit,
@@ -19,9 +21,12 @@ type Body = {
 };
 
 export async function POST(request: Request) {
-  const admin = await requireOrbitAdmin();
+  const admin = await requireOrbitFullAdmin();
   if (!admin) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (crossOriginBrowserMutationBlocked(request)) {
+    return forbiddenJson("Cross-origin request blocked.");
   }
 
   const body = (await request.json().catch(() => null)) as Body | null;
@@ -73,11 +78,7 @@ export async function POST(request: Request) {
     });
     return NextResponse.json({ ok: true, transaction: tx });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "adjust_failed";
-    const status =
-      message === "insufficient_funds" || message === "invalid_amount"
-        ? 400
-        : 502;
+    const { error: message, status } = orbitAdminMutationError(error);
     return NextResponse.json({ error: message }, { status });
   }
 }

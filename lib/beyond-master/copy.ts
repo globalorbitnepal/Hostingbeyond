@@ -38,6 +38,12 @@ export const BEYOND_MASTER_PROVIDER_NOTICE =
 
 export const BEYOND_MASTER_QUICK_ACTIONS: readonly BeyondMasterQuickAction[] = [
   {
+    id: "human-support",
+    label: "Talk to Human",
+    prompt:
+      "I want to speak to a human for support. Please queue this conversation for staff.",
+  },
+  {
     id: "find-domain",
     label: "Search and register a domain",
     prompt: "Help me find and register a domain.",

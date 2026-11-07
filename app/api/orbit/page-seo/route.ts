@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 
-import { requireOrbitAdmin, unauthorizedJson } from "@/lib/orbit/api";
+import { requireOrbitFullAdmin, unauthorizedJson } from "@/lib/orbit/api";
 import { getOrbitPageInventory } from "@/lib/orbit/page-inventory";
 import { mergeStoredPageSeo, type StoredPageSeo } from "@/lib/orbit/page-seo";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath, revalidateTag } from "next/cache";
 
 export async function GET() {
-  const admin = await requireOrbitAdmin();
+  const admin = await requireOrbitFullAdmin();
   if (!admin) return unauthorizedJson();
 
   const rows = await prisma.pageContent.findMany({
@@ -25,7 +25,7 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
-  const admin = await requireOrbitAdmin();
+  const admin = await requireOrbitFullAdmin();
   if (!admin) return unauthorizedJson();
 
   const body = (await request.json()) as {

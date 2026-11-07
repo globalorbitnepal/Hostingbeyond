@@ -29,6 +29,8 @@ import {
   editBeyondMasterTicket,
   confirmBeyondMasterDns,
   cancelBeyondMasterDns,
+  confirmBeyondMasterCommerce,
+  cancelBeyondMasterCommerce,
   toggleBeyondMasterHistory,
   uploadBeyondMasterAttachments,
   useBeyondMasterAi,
@@ -38,6 +40,7 @@ import { isAgentGreeting } from "@/lib/beyond-master/domain-intent";
 
 import "@/styles/beyond-master.css";
 import { AiAgentBadge } from "./ai-agent-badge";
+import { BeyondMasterVoiceBar } from "./voice-bar";
 
 function formatStamp(iso: string) {
   const date = new Date(iso);
@@ -380,6 +383,89 @@ export function BeyondMasterAiPanel() {
           </section>
         ) : null}
 
+        {state.commerceCard ? (
+          <section className="hb-bmai-review" aria-label="Confirm action">
+            <h3>Confirm before we proceed</h3>
+            {state.commerceCard.message ? (
+              <p>{state.commerceCard.message}</p>
+            ) : null}
+            {state.commerceCard.proposal ? (
+              <>
+                <p>{state.commerceCard.proposal.summary}</p>
+                {state.commerceCard.proposal.domainRegister ? (
+                  <>
+                    <p>
+                      Domain:{" "}
+                      {state.commerceCard.proposal.domainRegister.domain}
+                    </p>
+                    <p>
+                      Register:{" "}
+                      {state.commerceCard.proposal.domainRegister.registerTotal}{" "}
+                      {state.commerceCard.proposal.domainRegister.currency}
+                    </p>
+                    <p>
+                      Renew:{" "}
+                      {state.commerceCard.proposal.domainRegister.renewPrice}{" "}
+                      {state.commerceCard.proposal.domainRegister.currency}/yr
+                    </p>
+                  </>
+                ) : null}
+                {state.commerceCard.proposal.nameserver ? (
+                  <>
+                    <p>
+                      Domain: {state.commerceCard.proposal.nameserver.domain}
+                    </p>
+                    <p>
+                      Current:{" "}
+                      {state.commerceCard.proposal.nameserver.current.join(
+                        ", ",
+                      ) || "none"}
+                    </p>
+                    <p>
+                      Proposed:{" "}
+                      {state.commerceCard.proposal.nameserver.proposed.join(
+                        ", ",
+                      )}
+                    </p>
+                  </>
+                ) : null}
+                {state.commerceCard.proposal.hostingCheckout ? (
+                  <>
+                    <p>
+                      Plan:{" "}
+                      {state.commerceCard.proposal.hostingCheckout.productSlug}{" "}
+                      / {state.commerceCard.proposal.hostingCheckout.planKey}
+                    </p>
+                    <p>
+                      Total: {state.commerceCard.proposal.hostingCheckout.total}{" "}
+                      {state.commerceCard.proposal.hostingCheckout.currency} (
+                      {state.commerceCard.proposal.hostingCheckout.billingCycle}
+                      )
+                    </p>
+                  </>
+                ) : null}
+              </>
+            ) : null}
+            {state.commerceCard.state === "confirmation_required" &&
+            state.commerceCard.proposal ? (
+              <div className="hb-bmai-review-actions">
+                <button
+                  type="button"
+                  onClick={() => void confirmBeyondMasterCommerce()}
+                >
+                  Confirm
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void cancelBeyondMasterCommerce()}
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : null}
+          </section>
+        ) : null}
+
         {state.accountCards?.length ? (
           <section className="hb-bmai-review" aria-label="Account records">
             <h3>From your account records</h3>
@@ -493,6 +579,11 @@ export function BeyondMasterAiPanel() {
           </p>
         ) : null}
 
+        {state.supportCard?.kind === "human_queue" ? (
+          <p className="hb-bmai-review-note" role="status">
+            {state.supportCard.message}
+          </p>
+        ) : null}
         {state.supportCard?.kind === "review" ? (
           <section
             className="hb-bmai-review"
@@ -561,6 +652,7 @@ export function BeyondMasterAiPanel() {
           </div>
         ) : null}
 
+        <BeyondMasterVoiceBar />
         <form className="hb-bmai-composer" onSubmit={onSubmit}>
           <label className="sr-only" htmlFor="beyond-master-ai-input">
             Message {BEYOND_MASTER_LAUNCHER_LABEL}

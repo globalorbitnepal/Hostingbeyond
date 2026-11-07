@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { requireOrbitAdmin, unauthorizedJson } from "@/lib/orbit/api";
+import { requireOrbitFullAdmin, unauthorizedJson } from "@/lib/orbit/api";
 import {
   embeddedSeoFromAboutSections,
   embeddedSeoFromContactSections,
@@ -13,7 +13,7 @@ import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 
 export async function GET() {
-  const admin = await requireOrbitAdmin();
+  const admin = await requireOrbitFullAdmin();
   if (!admin) return unauthorizedJson();
 
   const inventory = getOrbitPageInventory();

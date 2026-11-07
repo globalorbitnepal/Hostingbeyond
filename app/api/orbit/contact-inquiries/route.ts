@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { requireOrbitAdmin, unauthorizedJson } from "@/lib/orbit/api";
+import { requireOrbitFullAdmin, unauthorizedJson } from "@/lib/orbit/api";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -28,7 +28,7 @@ function readInquiries(sections: unknown): ContactInquiryRow[] {
 
 /** Contact form submissions captured by POST /api/contact. */
 export async function GET() {
-  const admin = await requireOrbitAdmin();
+  const admin = await requireOrbitFullAdmin();
   if (!admin) return unauthorizedJson();
 
   const row = await prisma.pageContent.findUnique({
@@ -45,7 +45,7 @@ export async function GET() {
 
 /** Deletes a single inquiry by id. */
 export async function DELETE(request: Request) {
-  const admin = await requireOrbitAdmin();
+  const admin = await requireOrbitFullAdmin();
   if (!admin) return unauthorizedJson();
 
   const body = (await request.json().catch(() => null)) as {

@@ -119,7 +119,9 @@ export function buildBeyondMasterOverview(
         status: status.configured ? "Configured" : "Not Configured",
         detail: status.configured
           ? "The server has a provider, model, and credential. This screen cannot change them."
-          : "A provider, model, or credential is missing. No sample provider is shown.",
+          : status.configurationError === "provider"
+            ? "Only Google Gemini is supported for the live AI Agent. A non-Google provider env will not activate paid fallback."
+            : "A provider, model, or credential is missing. No sample provider is shown.",
       },
       {
         name: "Knowledge Base",

@@ -20,8 +20,10 @@ export type BeyondMasterConversation = {
   title: string;
   createdAt: string;
   updatedAt: string;
-  /** Last detected reply language for this tab session (not sent to the model as authority). */
-  preferredLanguage?: "en" | "hi" | "ne";
+  /** BCP-47 locale persisted for this browser conversation tab. */
+  preferredLanguage?: string;
+  /** Server-issued secret for guest-owned threads (sessionStorage backup). */
+  guestCapabilityToken?: string;
   messages: BeyondMasterMessage[];
 };
 

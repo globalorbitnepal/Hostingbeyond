@@ -38,24 +38,31 @@ describe("/api/orbit/domain-pricing/namesilo", () => {
 
   it("POST apply-supplier-sync requires confirm even with an admin session", async () => {
     const now = new Date();
-    setOrbitAdminSessionTestOverride(async () => ({
-      id: "admin-test",
-      displayName: "Test Admin",
-      createdAt: now,
-      updatedAt: now,
-    }));
-    const res = await POST(
-      new Request(
-        "http://localhost/api/orbit/domain-pricing/namesilo?action=apply-supplier-sync",
-        {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ confirm: false }),
-        },
-      ),
-    );
-    assert.equal(res.status, 400);
-    const body = (await res.json()) as { error?: string };
-    assert.match(body.error ?? "", /confirm/i);
+    const prevFull = process.env.ORBIT_FULL_ADMIN_IDS;
+    process.env.ORBIT_FULL_ADMIN_IDS = "admin-test";
+    try {
+      setOrbitAdminSessionTestOverride(async () => ({
+        id: "admin-test",
+        displayName: "Test Admin",
+        createdAt: now,
+        updatedAt: now,
+      }));
+      const res = await POST(
+        new Request(
+          "http://localhost/api/orbit/domain-pricing/namesilo?action=apply-supplier-sync",
+          {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ confirm: false }),
+          },
+        ),
+      );
+      assert.equal(res.status, 400);
+      const body = (await res.json()) as { error?: string };
+      assert.match(body.error ?? "", /confirm/i);
+    } finally {
+      if (prevFull === undefined) delete process.env.ORBIT_FULL_ADMIN_IDS;
+      else process.env.ORBIT_FULL_ADMIN_IDS = prevFull;
+    }
   });
 });

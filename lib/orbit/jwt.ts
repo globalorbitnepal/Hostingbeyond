@@ -23,6 +23,7 @@ export async function signOrbitJwt(payload: {
   return new SignJWT({
     sid: payload.sid,
     sub: payload.adminUserId,
+    kind: "orbit",
   })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
@@ -37,6 +38,8 @@ export async function verifyOrbitJwt(token: string | undefined) {
     const sid = typeof payload.sid === "string" ? payload.sid : null;
     const sub = typeof payload.sub === "string" ? payload.sub : null;
     if (!sid || !sub) return null;
+    if (payload.kind === "customer") return null;
+    if (payload.kind != null && payload.kind !== "orbit") return null;
     return { sid, adminUserId: sub };
   } catch {
     return null;

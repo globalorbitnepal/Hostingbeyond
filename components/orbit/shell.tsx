@@ -33,9 +33,10 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Logo } from "@/components/shared/logo";
+import type { OrbitAccessMode } from "@/lib/orbit/staff-access";
 import { cn } from "@/lib/utils";
 
 type NavLeaf = { href: string; label: string; icon: React.ElementType };
@@ -62,7 +63,7 @@ const articlesChildren: NavLeaf[] = [
   { href: "/orbit/blog/seo", label: "SEO settings", icon: Search },
 ];
 
-const nav: NavGroup[] = [
+const fullNav: NavGroup[] = [
   { href: "/orbit", label: "Dashboard", icon: LayoutDashboard },
   {
     href: "/orbit/beyond-master",
@@ -198,19 +199,40 @@ const nav: NavGroup[] = [
   { href: "/orbit/settings", label: "Settings", icon: Settings },
 ];
 
+const supportOnlyNav: NavGroup[] = [
+  {
+    href: "/orbit/beyond-master/support-queue",
+    label: "Human support queue",
+    icon: MessageSquare,
+  },
+  {
+    href: "/orbit/beyond-master/conversations",
+    label: "Support conversations",
+    icon: MessageSquare,
+  },
+];
+
 export function OrbitShell({
   children,
   adminName,
+  orbitAccess = "full",
 }: {
   children: React.ReactNode;
   adminName: string;
+  orbitAccess?: OrbitAccessMode;
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const nav = useMemo(
+    () => (orbitAccess === "support_only" ? supportOnlyNav : fullNav),
+    [orbitAccess],
+  );
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
-    for (const item of nav) {
+    for (const item of orbitAccess === "support_only"
+      ? supportOnlyNav
+      : fullNav) {
       if (item.children?.length) {
         initial[item.href] =
           item.href === "/orbit/blog"
@@ -232,7 +254,7 @@ export function OrbitShell({
       }
       return next;
     });
-  }, [pathname]);
+  }, [pathname, nav]);
 
   async function logout() {
     await fetch("/api/orbit/auth/logout", { method: "POST" });
@@ -374,7 +396,9 @@ export function OrbitShell({
                 <Menu className="size-4" />
               </button>
               <div>
-                <p className="text-[11px] text-slate-500">Super Admin</p>
+                <p className="text-[11px] text-slate-500">
+                  {orbitAccess === "support_only" ? "Support" : "Super Admin"}
+                </p>
                 <p className="text-sm font-semibold">{adminName}</p>
               </div>
             </div>

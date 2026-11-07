@@ -14,6 +14,7 @@ import {
   postTicketDraft,
   postTicketSubmit,
   setBeyondMasterTicketCustomerForTests,
+  setEnqueueHumanSupportForTests,
   supportEventForChat,
 } from "@/lib/beyond-master/tickets/http";
 import { createMemoryTicketRepository } from "@/lib/beyond-master/tickets/memory";
@@ -43,6 +44,7 @@ describe("beyond master tickets", () => {
     setBeyondMasterTicketCustomerForTests(null);
     setBeyondMasterTicketRepositoryForTests(null);
     setBeyondMasterChatTestOverride(null);
+    setEnqueueHumanSupportForTests(null);
   });
 
   it("does not create a ticket from a problem mention or a natural-language yes", async () => {
@@ -394,6 +396,99 @@ describe("beyond master tickets", () => {
         sizeBytes: 12,
       }).ok,
       false,
+    );
+  });
+
+  it("does not claim a guest is queued when the enqueue fails", async () => {
+    // No thread id => the backend never attempts an enqueue, so the reply must
+    // not tell the guest their conversation is already in the staff queue.
+    const notQueued = await supportEventForChat(
+      "I want to talk to a human.",
+      null,
+      { threadId: null, guestCapabilityToken: null },
+    );
+    assert.equal(notQueued?.kind, "human_queue");
+    assert.equal("queued" in (notQueued ?? {}), true);
+    assert.equal(
+      (notQueued as { queued?: boolean }).queued,
+      false,
+      "must not report queued without a confirmed backend write",
+    );
+    assert.match(
+      String((notQueued as { message?: string }).message),
+      /could not place this conversation/i,
+    );
+    assert.equal(
+      /queued for staff/i.test(
+        String((notQueued as { message?: string }).message),
+      ),
+      false,
+    );
+  });
+
+  it("enqueues a signed-in customer with their verified id, not as a guest", async () => {
+    const seen: { customerUserId: string | null; guest: string | null }[] = [];
+    setEnqueueHumanSupportForTests(async (input) => {
+      seen.push({
+        customerUserId: input.customerUserId,
+        guest: input.guestCapabilityToken ?? null,
+      });
+      return { ok: true };
+    });
+    const event = await supportEventForChat(
+      "I want to talk to a human.",
+      "customer-a",
+      { threadId: "thread-customer-01", guestCapabilityToken: "stolen-guest" },
+    );
+    assert.equal(event?.kind, "human_queue");
+    assert.equal((event as { queued?: boolean }).queued, true);
+    assert.equal(seen.length, 1);
+    assert.equal(seen[0]?.customerUserId, "customer-a");
+    assert.equal(seen[0]?.guest, null);
+    assert.match(
+      String((event as { message?: string }).message),
+      /replies will appear/i,
+    );
+  });
+
+  it("enqueues a guest with their capability token and no customer id", async () => {
+    const seen: { customerUserId: string | null; guest: string | null }[] = [];
+    setEnqueueHumanSupportForTests(async (input) => {
+      seen.push({
+        customerUserId: input.customerUserId,
+        guest: input.guestCapabilityToken ?? null,
+      });
+      return { ok: true, guestCapabilityToken: "issued-token" };
+    });
+    const event = await supportEventForChat(
+      "I want to talk to a human.",
+      null,
+      { threadId: "thread-guest-0001", guestCapabilityToken: "guest-token" },
+    );
+    assert.equal(event?.kind, "human_queue");
+    assert.equal((event as { queued?: boolean }).queued, true);
+    assert.equal(seen[0]?.customerUserId, null);
+    assert.equal(seen[0]?.guest, "guest-token");
+    assert.equal(
+      (event as { guestCapabilityToken?: string }).guestCapabilityToken,
+      "issued-token",
+    );
+  });
+
+  it("does not claim success when the queue write fails", async () => {
+    setEnqueueHumanSupportForTests(async () => ({
+      ok: false,
+      reason: "forbidden",
+    }));
+    const event = await supportEventForChat(
+      "I want to talk to a human.",
+      "customer-a",
+      { threadId: "thread-customer-02" },
+    );
+    assert.equal((event as { queued?: boolean }).queued, false);
+    assert.match(
+      String((event as { message?: string }).message),
+      /could not place/i,
     );
   });
 });

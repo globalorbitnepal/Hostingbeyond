@@ -7,6 +7,7 @@ import {
   type BeyondMasterKnowledgeCategory,
 } from "@/lib/beyond-master/knowledge/categories";
 import { sanitizeKnowledgeText } from "@/lib/beyond-master/knowledge/sanitize";
+import { invalidateBeyondMasterKnowledgeCache } from "@/lib/beyond-master/knowledge/build";
 import { prisma } from "@/lib/prisma";
 
 export const KNOWLEDGE_MIGRATION_MESSAGE =
@@ -338,6 +339,7 @@ export async function adminCreateKnowledge(
   );
   if (!created.ok)
     return Response.json({ error: created.error }, { status: created.status });
+  invalidateBeyondMasterKnowledgeCache();
   return Response.json({ article: created.article }, { status: 201 });
 }
 
@@ -367,6 +369,7 @@ export async function adminUpdateKnowledge(
   );
   if (!updated.ok)
     return Response.json({ error: updated.error }, { status: updated.status });
+  invalidateBeyondMasterKnowledgeCache();
   return Response.json({ article: updated.article });
 }
 

@@ -5,6 +5,7 @@ import { hashPassword, verifyPassword } from "@/lib/customer/password";
 import { requireCustomerSession } from "@/lib/domains/require-customer";
 import { rateLimitResponse } from "@/lib/http/fixed-window-rate-limit";
 import { rateLimitAuthEndpoint } from "@/lib/http/public-endpoint-rate-limit";
+import { crossOriginBrowserMutationBlocked } from "@/lib/http/same-origin-mutation";
 import { prisma } from "@/lib/prisma";
 
 const schema = z
@@ -21,6 +22,9 @@ const schema = z
 export async function POST(request: Request) {
   if (!rateLimitAuthEndpoint(request)) {
     return NextResponse.json(rateLimitResponse(), { status: 429 });
+  }
+  if (crossOriginBrowserMutationBlocked(request, { strict: true })) {
+    return NextResponse.json({ error: "Forbidden." }, { status: 403 });
   }
 
   let body: unknown;

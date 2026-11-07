@@ -62,12 +62,26 @@ export default function OrbitBeyondMasterPage() {
           Read-only overview. Nothing on this screen changes provider settings,
           tickets, or DNS.
         </p>
-        <Link
-          href="/orbit/beyond-master/usage"
-          className="mt-3 inline-flex rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700"
-        >
-          Usage analytics
-        </Link>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Link
+            href="/orbit/beyond-master/usage"
+            className="inline-flex rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700"
+          >
+            Usage analytics
+          </Link>
+          <Link
+            href="/orbit/beyond-master/support-queue"
+            className="inline-flex rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700"
+          >
+            Live support queue
+          </Link>
+          <Link
+            href="/orbit/beyond-master/ai-budget"
+            className="inline-flex rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700"
+          >
+            AI budget ledger
+          </Link>
+        </div>
       </div>
 
       {loading ? (

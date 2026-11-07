@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { routes } from "@/config/routes";
-import { requireOrbitAdmin, unauthorizedJson } from "@/lib/orbit/api";
+import { requireOrbitFullAdmin, unauthorizedJson } from "@/lib/orbit/api";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -20,7 +20,7 @@ const STATIC_PAGES = [
 ];
 
 export async function GET(request: NextRequest) {
-  const admin = await requireOrbitAdmin();
+  const admin = await requireOrbitFullAdmin();
   if (!admin) return unauthorizedJson();
 
   const q = request.nextUrl.searchParams.get("q")?.trim().toLowerCase() ?? "";
