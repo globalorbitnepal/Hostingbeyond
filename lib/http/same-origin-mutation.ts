@@ -3,10 +3,9 @@
  * Browsers send `Origin` on cross-site POST; same-site / non-browser clients often omit it.
  * This is not a substitute for SameSite cookies; it adds defense in depth for sensitive routes.
  */
-export function isTruthyEnvFlag(raw: string | undefined): boolean {
-  const v = raw?.trim().toLowerCase();
-  return v === "1" || v === "true" || v === "yes";
-}
+import { isTruthyEnvFlag } from "@/lib/config/env-flags";
+
+export { isTruthyEnvFlag } from "@/lib/config/env-flags";
 
 const BROWSER_MUTATION_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 

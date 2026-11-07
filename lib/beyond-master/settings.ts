@@ -1,4 +1,10 @@
 import { BEYOND_MASTER_PROVIDER_NOTICE } from "@/lib/beyond-master/copy";
+import {
+  BEYOND_MASTER_AI_MAX_OUTPUT_TOKENS,
+  BEYOND_MASTER_AI_RATE_LIMIT,
+  BEYOND_MASTER_AI_RATE_WINDOW_MS,
+  BEYOND_MASTER_AI_TIMEOUT_MS,
+} from "@/lib/beyond-master/limits";
 import { GEMINI_DEFAULT_MODEL } from "@/lib/beyond-master/providers/gemini";
 
 export type BeyondMasterProviderId =
@@ -68,18 +74,22 @@ export function readBeyondMasterRuntimeConfig(
 ): BeyondMasterRuntimeConfig {
   const timeoutMs = positiveInt(
     env.BEYOND_MASTER_AI_TIMEOUT_MS,
-    45_000,
+    BEYOND_MASTER_AI_TIMEOUT_MS,
     120_000,
   );
   const maxOutputTokens = positiveInt(
     env.BEYOND_MASTER_AI_MAX_OUTPUT_TOKENS,
-    900,
+    BEYOND_MASTER_AI_MAX_OUTPUT_TOKENS,
     4_096,
   );
-  const rateLimit = positiveInt(env.BEYOND_MASTER_AI_RATE_LIMIT, 20, 200);
+  const rateLimit = positiveInt(
+    env.BEYOND_MASTER_AI_RATE_LIMIT,
+    BEYOND_MASTER_AI_RATE_LIMIT,
+    200,
+  );
   const rateWindowMs = positiveInt(
     env.BEYOND_MASTER_AI_RATE_WINDOW_MS,
-    600_000,
+    BEYOND_MASTER_AI_RATE_WINDOW_MS,
     3_600_000,
   );
   const geminiKey = env.GEMINI_API_KEY?.trim() || null;

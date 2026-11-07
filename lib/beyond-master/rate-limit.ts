@@ -5,12 +5,18 @@ import {
   consumeRateLimit,
 } from "@/lib/http/fixed-window-rate-limit";
 import { consumePrismaRateLimit } from "@/lib/beyond-master/postgres-rate-limit";
+import {
+  BEYOND_MASTER_GUEST_RATE_LIMIT,
+  BEYOND_MASTER_GUEST_RATE_WINDOW_MS,
+  BEYOND_MASTER_TOOLS_RATE_LIMIT,
+  BEYOND_MASTER_TOOLS_RATE_WINDOW_MS,
+} from "@/lib/beyond-master/limits";
 import { readBeyondMasterRuntimeConfig } from "@/lib/beyond-master/settings";
 
-const GUEST_CHAT_RATE_LIMIT = 15;
-const GUEST_CHAT_RATE_WINDOW_MS = 60 * 60 * 1000;
-const TOOLS_RATE_LIMIT = 30;
-const TOOLS_RATE_WINDOW_MS = 10 * 60 * 1000;
+const GUEST_CHAT_RATE_LIMIT = BEYOND_MASTER_GUEST_RATE_LIMIT;
+const GUEST_CHAT_RATE_WINDOW_MS = BEYOND_MASTER_GUEST_RATE_WINDOW_MS;
+const TOOLS_RATE_LIMIT = BEYOND_MASTER_TOOLS_RATE_LIMIT;
+const TOOLS_RATE_WINDOW_MS = BEYOND_MASTER_TOOLS_RATE_WINDOW_MS;
 
 export function shouldUsePostgresRateLimitStore(
   env: Record<string, string | undefined>,

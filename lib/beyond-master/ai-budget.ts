@@ -1,12 +1,19 @@
 import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
+import {
+  BEYOND_MASTER_BUDGET_CRITICAL_CENTS,
+  BEYOND_MASTER_BUDGET_WARN_CENTS,
+  BEYOND_MASTER_DEFAULT_RESERVE_CENTS,
+  BEYOND_MASTER_MONTHLY_CAP_CENTS,
+} from "@/lib/beyond-master/limits";
 
 /** Application cap: USD 5.00 / month (not a substitute for provider billing alerts). */
-export const BEYOND_MASTER_MONTHLY_CAP_CENTS = 500;
-
-export const BEYOND_MASTER_BUDGET_WARN_CENTS = 300;
-export const BEYOND_MASTER_BUDGET_CRITICAL_CENTS = 400;
+export {
+  BEYOND_MASTER_BUDGET_CRITICAL_CENTS,
+  BEYOND_MASTER_BUDGET_WARN_CENTS,
+  BEYOND_MASTER_MONTHLY_CAP_CENTS,
+} from "@/lib/beyond-master/limits";
 
 export type BudgetGateResult =
   | {
@@ -50,8 +57,8 @@ export function reserveCentsForAiCall(
   env: Record<string, string | undefined> = process.env,
 ): number {
   const raw = env.BEYOND_MASTER_AI_RESERVE_CENTS?.trim();
-  const n = raw ? Number(raw) : 25;
-  if (!Number.isFinite(n) || n < 1) return 25;
+  const n = raw ? Number(raw) : BEYOND_MASTER_DEFAULT_RESERVE_CENTS;
+  if (!Number.isFinite(n) || n < 1) return BEYOND_MASTER_DEFAULT_RESERVE_CENTS;
   return Math.min(Math.floor(n), BEYOND_MASTER_MONTHLY_CAP_CENTS);
 }
 

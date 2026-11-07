@@ -1,4 +1,4 @@
-import { isTruthyEnvFlag } from "@/lib/http/same-origin-mutation";
+import { isTruthyEnvFlag } from "@/lib/config/env-flags";
 
 /**
  * Release gate for consequential Beyond Master operations.
