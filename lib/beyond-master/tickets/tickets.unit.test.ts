@@ -517,6 +517,5 @@ describe("beyond master tickets", () => {
     );
     assert.equal(event?.kind, "human_queue");
     assert.equal((event as { queued?: boolean }).queued, true);
-    assert.equal(event?.kind === "review", false);
   });
 });
