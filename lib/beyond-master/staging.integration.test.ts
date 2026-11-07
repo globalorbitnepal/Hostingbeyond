@@ -75,11 +75,12 @@ describe(
   { skip: !shouldRunDatabaseIntegrationTests(), concurrency: 1 },
   () => {
     it("keeps customer, ticket, knowledge, and DNS data inside this database", async () => {
+      // Host/database/role isolation is enforced from DATABASE_URL before any write.
       assertIntegrationDatabaseTarget();
-      const port = await prisma.$queryRaw<
-        { port: number }[]
-      >`SELECT inet_server_port()::int AS port`;
-      assert.equal(port[0]?.port, 55432);
+      // Do not compare inet_server_port() with 55432: that is the host-published
+      // port (docker -p 55432:5432 / local CI mirror). Inside the PostgreSQL
+      // container the listener is 5432, so the comparison fails on GitHub Actions
+      // while still proving nothing extra about isolation.
       const database = await prisma.$queryRaw<
         { name: string }[]
       >`SELECT current_database() AS name`;
