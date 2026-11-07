@@ -8,9 +8,7 @@ import { setOrbitAdminSessionTestOverride } from "@/lib/test/orbit-admin-session
 function supportOnlyAdmin(): AdminUser {
   return {
     id: "orbit_wallet_support_test",
-    email: "support@test.local",
-    name: "Support",
-    passwordHash: null,
+    displayName: "Support",
     createdAt: new Date(),
     updatedAt: new Date(),
   };

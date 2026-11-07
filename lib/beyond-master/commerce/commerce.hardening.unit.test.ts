@@ -175,7 +175,7 @@ describe("hosting order customer visibility", () => {
       expiresAt: null,
       createdAt: new Date(),
       updatedAt: new Date(),
-    } as HostingOrder;
+    } as unknown as HostingOrder;
     const summary = toCustomerHostingOrderSummary(order);
     assert.match(summary.orderReference, /^HST-[A-F0-9]{10}$/);
     assert.equal(summary.isLive, false);
@@ -213,7 +213,7 @@ describe("hosting order customer visibility", () => {
       expiresAt: null,
       createdAt: new Date(),
       updatedAt: new Date(),
-    } as HostingOrder);
+    } as unknown as HostingOrder);
     assert.equal(paidPending.isLive, false);
     assert.match(paidPending.statusMessage, /not live/i);
   });

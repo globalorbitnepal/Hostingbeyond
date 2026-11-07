@@ -5,7 +5,6 @@ import {
   BEYOND_MASTER_MONTHLY_CAP_CENTS,
   currentBudgetMonthKey,
 } from "@/lib/beyond-master/ai-budget";
-import { staleReservationThresholdMs } from "@/lib/beyond-master/ai-budget-recovery";
 import { crossOriginBrowserMutationBlocked } from "@/lib/http/same-origin-mutation";
 import {
   forbiddenJson,
@@ -15,6 +14,17 @@ import {
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+const DEFAULT_STALE_MS = 600_000;
+
+function staleReservationThresholdMs(
+  env: Record<string, string | undefined> = process.env,
+): number {
+  const raw = env.BEYOND_MASTER_AI_RESERVATION_STALE_MS?.trim();
+  const n = raw ? Number(raw) : DEFAULT_STALE_MS;
+  if (!Number.isFinite(n) || n < 60_000) return DEFAULT_STALE_MS;
+  return Math.min(Math.floor(n), 86_400_000);
+}
 
 /**
  * Application-level monthly AI cap (USD 5). This does not replace billing alerts
@@ -81,14 +91,11 @@ export async function POST(request: Request) {
   if (crossOriginBrowserMutationBlocked(request)) {
     return forbiddenJson("Cross-origin request blocked.");
   }
-  const { recoverStaleAiBudgetReservations } =
-    await import("@/lib/beyond-master/ai-budget-recovery");
-  /** Explicit administrative recovery — bypasses env kill-switch for background callers. */
-  const result = await recoverStaleAiBudgetReservations({
-    bypassRecoveryEnabledGuard: true,
-  });
-  return Response.json({
-    ok: true,
-    ...result,
-  });
+  return Response.json(
+    {
+      error: "AI budget recovery is disabled for this release.",
+      code: "recovery_disabled",
+    },
+    { status: 403 },
+  );
 }

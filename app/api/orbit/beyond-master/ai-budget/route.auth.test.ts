@@ -15,9 +15,7 @@ import { setOrbitAdminSessionTestOverride } from "@/lib/test/orbit-admin-session
 function supportOnlyAdmin(): AdminUser {
   return {
     id: "orbit_support_only_test",
-    email: "support@test.local",
-    name: "Support",
-    passwordHash: null,
+    displayName: "Support",
     createdAt: new Date(),
     updatedAt: new Date(),
   };
