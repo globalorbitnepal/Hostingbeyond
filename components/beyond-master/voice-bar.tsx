@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { PointerEvent, useEffect, useRef, useState } from "react";
 import { Mic } from "lucide-react";
 
 import {
@@ -20,18 +20,20 @@ type WebSpeechCtor = new () => {
   maxAlternatives: number;
   start: () => void;
   stop: () => void;
+  abort?: () => void;
   onresult: ((ev: SpeechResultLike) => void) | null;
   onerror: (() => void) | null;
   onend: (() => void) | null;
 };
 
 function recognitionLanguage(): string {
+  if (typeof navigator !== "undefined") {
+    const fromNav = navigator.languages?.[0] || navigator.language;
+    if (fromNav) return fromNav;
+  }
   if (typeof document !== "undefined") {
     const htmlLang = document.documentElement.lang?.trim();
     if (htmlLang) return htmlLang;
-  }
-  if (typeof navigator !== "undefined" && navigator.language) {
-    return navigator.language;
   }
   return "en-US";
 }
@@ -41,7 +43,9 @@ export function BeyondMasterVoiceButton({
 }: {
   disabled?: boolean;
 }) {
-  const recRef = useRef<{ stop: () => void } | null>(null);
+  const recRef = useRef<{ stop: () => void; abort?: () => void } | null>(null);
+  const finalRef = useRef("");
+  const holdingRef = useRef(false);
   const [supported, setSupported] = useState(false);
   const [listening, setListening] = useState(false);
 
@@ -52,48 +56,76 @@ export function BeyondMasterVoiceButton({
       webkitSpeechRecognition?: WebSpeechCtor;
     };
     setSupported(Boolean(w.SpeechRecognition || w.webkitSpeechRecognition));
-    return () => recRef.current?.stop();
+    return () => recRef.current?.abort?.() ?? recRef.current?.stop();
   }, []);
 
-  function toggleListen() {
+  function stopAndSend() {
+    holdingRef.current = false;
+    if (recRef.current) {
+      recRef.current.stop();
+      return;
+    }
+    const spoken = finalRef.current.trim();
+    finalRef.current = "";
+    if (spoken) void sendBeyondMasterMessage(spoken);
+  }
+
+  function startListen(event: PointerEvent<HTMLButtonElement>) {
     if (disabled || typeof window === "undefined") return;
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
     const w = window as Window & {
       SpeechRecognition?: WebSpeechCtor;
       webkitSpeechRecognition?: WebSpeechCtor;
     };
     const Ctor = w.SpeechRecognition || w.webkitSpeechRecognition;
     if (!Ctor) return;
-    if (listening && recRef.current) {
-      recRef.current.stop();
-      setListening(false);
-      return;
-    }
+    recRef.current?.abort?.();
     const rec = new Ctor();
     rec.lang = recognitionLanguage();
-    rec.continuous = false;
+    rec.continuous = true;
     rec.interimResults = true;
     rec.maxAlternatives = 1;
-    let finalText = "";
-    rec.onresult = (event: SpeechResultLike) => {
+    finalRef.current = "";
+    holdingRef.current = true;
+    rec.onresult = (speechEvent: SpeechResultLike) => {
       let interim = "";
-      for (let i = event.resultIndex; i < event.results.length; i += 1) {
-        const row = event.results[i];
+      for (
+        let i = speechEvent.resultIndex;
+        i < speechEvent.results.length;
+        i += 1
+      ) {
+        const row = speechEvent.results[i];
         const alt = row?.[0]?.transcript ?? "";
-        if (row?.isFinal) finalText = `${finalText} ${alt}`.trim();
-        else interim += alt;
+        if (row?.isFinal) {
+          finalRef.current = `${finalRef.current} ${alt}`.trim();
+        } else {
+          interim += alt;
+        }
       }
-      setBeyondMasterDraft((finalText || interim).trim());
+      setBeyondMasterDraft((finalRef.current || interim).trim());
     };
-    rec.onerror = () => setListening(false);
+    rec.onerror = () => {
+      setListening(false);
+      holdingRef.current = false;
+    };
     rec.onend = () => {
       setListening(false);
       recRef.current = null;
-      const spoken = finalText.trim();
-      if (spoken) void sendBeyondMasterMessage(spoken);
+      const spoken = finalRef.current.trim();
+      finalRef.current = "";
+      if (!holdingRef.current && spoken) {
+        void sendBeyondMasterMessage(spoken);
+      }
     };
     recRef.current = rec;
     setListening(true);
-    rec.start();
+    try {
+      rec.start();
+    } catch {
+      setListening(false);
+      holdingRef.current = false;
+    }
   }
 
   if (!supported) return null;
@@ -104,9 +136,12 @@ export function BeyondMasterVoiceButton({
       className="hb-bmai-mic"
       data-listening={listening ? "true" : "false"}
       aria-pressed={listening}
-      aria-label={listening ? "Stop listening" : "Speak to AI Agent"}
+      aria-label={listening ? "Release to send your message" : "Hold to speak"}
       disabled={disabled}
-      onClick={toggleListen}
+      onPointerDown={startListen}
+      onPointerUp={stopAndSend}
+      onPointerCancel={stopAndSend}
+      onContextMenu={(event) => event.preventDefault()}
     >
       <Mic className="size-[18px]" aria-hidden />
     </button>

@@ -147,7 +147,7 @@ const HINDI_MARKERS = [
 const NEPALI_ROMAN =
   /\b(kasari|kati|chahincha|chahinchha|bhanne|bhaneko|garna|garnu|malai|tapai|huncha|bhayo|ramro|paisa|rakhna|sakchha|hunchha|gardai|mero|connect nahi)\b/i;
 const HINDI_ROMAN =
-  /\b(kaise|kya|kyu|kyun|kahan|kitna|kitne|chahiye|chaiye|batao|bataiye|karo|karna|kare|hai|hain|mujhe|mera|meri|aap|nahi|nahin|kaisa|kripya|mulya|daam|paisa|plz|register karna|website ke liye)\b/i;
+  /\b(kaise|kya|kyu|kyun|kahan|kitna|kitne|chahiye|chaiye|batao|bataiye|karo|karna|kare|hai|hain|mujhe|mera|meri|aap|nahi|nahin|kaisa|kripya|mulya|daam|paisa|plz|register karna|website ke liye|banane|suggest kar|domian|domain suggest)\b/i;
 
 const LATIN_HINTS: Array<{ lang: SupportedPrimary; re: RegExp }> = [
   {
@@ -296,6 +296,7 @@ export function conversationLanguagePromptBlock(
     "- Preserve domain names, email addresses, DNS hostnames, IP addresses, and numeric prices exactly as written.",
     "- Do not translate product names, code, or technical record values into another script.",
     "- If the customer asks to use another language, switch immediately and keep that choice until they change again.",
+    "- Keep a warm, friendly, customer-service tone. Help with HostingBeyond domain, hosting, email, website, and billing. Do not invent competitor promotions.",
   ];
   if (
     locale === "hi-Latn" ||

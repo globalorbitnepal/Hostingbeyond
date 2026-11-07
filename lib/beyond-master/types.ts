@@ -31,6 +31,7 @@ export type BeyondMasterQuickAction = {
   id: string;
   label: string;
   prompt: string;
+  icon?: "domain" | "hosting" | "email" | "website";
 };
 
 export type BeyondMasterDomainSuggestion = {
