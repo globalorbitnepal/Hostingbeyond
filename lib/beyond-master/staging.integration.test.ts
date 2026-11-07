@@ -484,15 +484,11 @@ describe(
             store: prismaDnsStore(),
           }),
         ]);
-        assert.equal(
-          confirmed.filter((result) => result.ok).length,
-          1,
-          JSON.stringify(
-            confirmed.map((result) =>
-              result.ok ? result.proposal.status : result.error,
-            ),
-          ),
-        );
+        // Concurrent confirm is claimed atomically: exactly one caller performs
+        // the provider write. The loser either sees "executing" (409 busy) or,
+        // if the winner already finished, receives the stored executed proposal
+        // as an idempotent replay. Both are safe, so assert the write count and
+        // that no caller reports an unexpected failure.
         assert.equal(
           writes,
           1,
@@ -502,6 +498,20 @@ describe(
             ),
           ),
         );
+        assert.ok(
+          confirmed.some((result) => result.ok),
+          JSON.stringify(
+            confirmed.map((result) => (result.ok ? "ok" : result.error)),
+          ),
+        );
+        for (const result of confirmed) {
+          if (result.ok) {
+            assert.equal(result.proposal.status, "executed");
+            continue;
+          }
+          assert.equal(result.status, 409);
+          assert.match(result.error, /already executing/i);
+        }
         let uncertainWrites = 0;
         const uncertainPorts = {
           ...ports,
