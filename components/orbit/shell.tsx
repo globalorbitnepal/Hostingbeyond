@@ -28,6 +28,7 @@ import {
   Search,
   Settings,
   ShieldCheck,
+  SlidersHorizontal,
   Sparkles,
   Tags,
   Users,
@@ -74,6 +75,11 @@ const fullNav: NavGroup[] = [
         href: "/orbit/beyond-master",
         label: "Overview",
         icon: LayoutDashboard,
+      },
+      {
+        href: "/orbit/beyond-master/controls",
+        label: "Gemini usage & controls",
+        icon: SlidersHorizontal,
       },
       {
         href: "/orbit/beyond-master/usage",

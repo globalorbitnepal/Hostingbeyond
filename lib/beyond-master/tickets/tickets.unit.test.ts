@@ -4,6 +4,10 @@ import { describe, it, afterEach } from "node:test";
 import { POST as chatPost } from "@/app/api/beyond-master/chat/route";
 import { setBeyondMasterChatTestOverride } from "@/lib/beyond-master/chat-test-hook";
 import {
+  DEFAULT_OPERATOR_FEATURES,
+  setOperatorFeaturesForTests,
+} from "@/lib/beyond-master/operator-features";
+import {
   classifySupportIntent,
   wantsHumanStaff,
 } from "@/lib/beyond-master/tickets/intent";
@@ -44,6 +48,7 @@ function jsonRequest(
 
 describe("beyond master tickets", () => {
   afterEach(() => {
+    setOperatorFeaturesForTests({ ...DEFAULT_OPERATOR_FEATURES });
     setBeyondMasterTicketCustomerForTests(null);
     setBeyondMasterTicketRepositoryForTests(null);
     setBeyondMasterChatTestOverride(null);

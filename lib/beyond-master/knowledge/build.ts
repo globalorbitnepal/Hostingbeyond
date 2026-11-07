@@ -34,13 +34,21 @@ const PATHS: Record<string, string> = {
 
 export async function buildBeyondMasterSystemPrompt(
   question: string,
+  options?: { includeKnowledge?: boolean; includeCatalog?: boolean },
 ): Promise<string> {
-  const articles = mergeKnowledgeArticles(await readDatabaseArticles());
+  const includeKnowledge = options?.includeKnowledge !== false;
+  const includeCatalog = options?.includeCatalog !== false;
+  const articles = includeKnowledge
+    ? mergeKnowledgeArticles(await readDatabaseArticles())
+    : [];
   const retrieval = retrieveBeyondMasterKnowledge(question, articles);
   const intent = catalogIntent(question);
   let catalog: string | null = null;
   let catalogUnavailable = false;
-  if (intent.hostingSlugs.length > 0 || intent.tlds.length > 0) {
+  if (
+    includeCatalog &&
+    (intent.hostingSlugs.length > 0 || intent.tlds.length > 0)
+  ) {
     try {
       const parts: string[] = [];
       if (intent.hostingSlugs.length > 0) {

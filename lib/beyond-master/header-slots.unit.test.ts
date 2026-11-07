@@ -5,7 +5,7 @@ import { describe, it } from "node:test";
 import { beyondMasterHeaderVisibility } from "@/lib/beyond-master/header-slots";
 
 describe("header assistant slots", () => {
-  it("shows the assistant on the public header and hides it during checkout", () => {
+  it("shows the assistant on the public site and hides it during checkout", () => {
     assert.deepEqual(beyondMasterHeaderVisibility(false), {
       launcher: true,
       panel: true,
@@ -16,23 +16,10 @@ describe("header assistant slots", () => {
     });
   });
 
-  it("keeps production navigation and mounts the assistant in desktop, mobile, and menu slots", () => {
+  it("keeps production navigation and mounts the assistant host without a header badge", () => {
     const source = readFileSync("components/layout/header.tsx", "utf8");
-    assert.equal(source.split("<BeyondMasterHeaderLauncher").length - 1, 3);
-    assert.equal(
-      source.includes("BeyondMasterHeaderLauncher checkout={checkoutBar} />"),
-      true,
-    );
-    assert.equal(
-      source.includes(
-        "<BeyondMasterHeaderLauncher checkout={checkoutBar} compact />",
-      ),
-      true,
-    );
-    assert.match(
-      source,
-      /<BeyondMasterHeaderLauncher\s+checkout=\{checkoutBar\}\s+menu/,
-    );
+    assert.equal(source.split("<BeyondMasterHeaderLauncher").length - 1, 0);
+    assert.equal(source.includes("BeyondMasterHeaderLauncher"), false);
     assert.equal(
       source.includes("<BeyondMasterHeaderHost checkout={checkoutBar} />"),
       true,
@@ -47,14 +34,20 @@ describe("header assistant slots", () => {
     assert.equal(source.includes("<DomainCartHeaderLink compact />"), true);
   });
 
-  it("labels the public launcher with the AI Agent badge", () => {
+  it("docks the public launcher as an orbit agent with Can I help you", () => {
     const launcher = readFileSync(
       "components/beyond-master/beyond-master-launcher.tsx",
       "utf8",
     );
     assert.equal(launcher.includes("BEYOND_MASTER_BRAND_NAME"), true);
-    assert.equal(launcher.includes("BEYOND_MASTER_LAUNCHER_LABEL"), false);
+    assert.equal(launcher.includes("BEYOND_MASTER_DOCK_PROMPT"), true);
+    assert.equal(launcher.includes("BEYOND_MASTER_DOCK_PROMPTS"), true);
+    assert.equal(launcher.includes("hb-bmai-dock-wait"), true);
+    assert.equal(launcher.includes("---"), true);
+    assert.equal(launcher.includes("BeyondMasterIcon"), true);
+    assert.equal(launcher.includes("BEYOND_MASTER_MASCOT_SRC"), false);
+    assert.equal(launcher.includes("Can I help you"), false);
     assert.equal(launcher.includes("Beyond Master AI"), false);
-    assert.equal(launcher.includes("AiAgentBadge"), true);
+    assert.equal(launcher.includes("AiAgentBadge"), false);
   });
 });

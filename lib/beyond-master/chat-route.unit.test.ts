@@ -1,11 +1,43 @@
 import assert from "node:assert/strict";
-import { describe, it } from "node:test";
+
+import { afterEach, beforeEach, describe, it } from "node:test";
 
 import { POST } from "@/app/api/beyond-master/chat/route";
 import { setBeyondMasterChatTestOverride } from "@/lib/beyond-master/chat-test-hook";
+import {
+  DEFAULT_OPERATOR_FEATURES,
+  setOperatorFeaturesForTests,
+} from "@/lib/beyond-master/operator-features";
 import { beyondMasterAdminStatus } from "@/lib/beyond-master/settings";
 
 describe("beyond master chat route", () => {
+  beforeEach(() => {
+    setOperatorFeaturesForTests({ ...DEFAULT_OPERATOR_FEATURES });
+  });
+  afterEach(() => {
+    setOperatorFeaturesForTests({ ...DEFAULT_OPERATOR_FEATURES });
+  });
+
+  it("returns 403 when public chat is turned off", async () => {
+    setOperatorFeaturesForTests({
+      ...DEFAULT_OPERATOR_FEATURES,
+      publicChat: false,
+    });
+    const response = await POST(
+      new Request("http://localhost/api/beyond-master/chat", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-real-ip": "198.51.100.88",
+        },
+        body: JSON.stringify({
+          messages: [{ role: "user", content: "Hello" }],
+        }),
+      }),
+    );
+    assert.equal(response.status, 403);
+  });
+
   it("answers from grounded Agent help when no language model is configured", async () => {
     const previous = {
       provider: process.env.BEYOND_MASTER_AI_PROVIDER,

@@ -145,9 +145,21 @@ function statusFilter(value: string | null): TicketStatus | null {
 export async function supportEventForChat(
   message: string,
   customerUserId: string | null,
-  options?: { threadId?: string | null; guestCapabilityToken?: string | null },
+  options?: {
+    threadId?: string | null;
+    guestCapabilityToken?: string | null;
+    humanQueue?: boolean;
+  },
 ) {
   if (wantsHumanStaff(message)) {
+    if (options?.humanQueue === false) {
+      return {
+        kind: "human_queue" as const,
+        queued: false,
+        message:
+          "Human support is turned off right now. I can keep helping here, or you can open a ticket from your account after you sign in.",
+      };
+    }
     const threadId = options?.threadId?.trim() ?? "";
     let issuedGuestToken: string | undefined;
     let queued = false;
