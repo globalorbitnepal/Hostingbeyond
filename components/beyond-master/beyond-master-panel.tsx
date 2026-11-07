@@ -12,6 +12,7 @@ import {
   BEYOND_MASTER_PRIMARY_BODY,
   BEYOND_MASTER_PRIMARY_TITLE,
   BEYOND_MASTER_QUICK_ACTIONS,
+  BEYOND_MASTER_WELCOME_BODY,
   BEYOND_MASTER_WELCOME_HEADING,
 } from "@/lib/beyond-master/copy";
 import {
@@ -40,7 +41,7 @@ import { isAgentGreeting } from "@/lib/beyond-master/domain-intent";
 
 import "@/styles/beyond-master.css";
 import { AiAgentBadge } from "./ai-agent-badge";
-import { BeyondMasterVoiceBar } from "./voice-bar";
+import { BeyondMasterVoiceButton } from "./voice-bar";
 
 function formatStamp(iso: string) {
   const date = new Date(iso);
@@ -201,6 +202,7 @@ export function BeyondMasterAiPanel() {
           {messages.length === 0 ? (
             <div className="hb-bmai-welcome">
               <h2>{BEYOND_MASTER_WELCOME_HEADING}</h2>
+              <p>{BEYOND_MASTER_WELCOME_BODY}</p>
               <button
                 type="button"
                 className="hb-bmai-primary"
@@ -580,7 +582,7 @@ export function BeyondMasterAiPanel() {
         ) : null}
 
         {state.supportCard?.kind === "human_queue" ? (
-          <p className="hb-bmai-review-note" role="status">
+          <p className="hb-bmai-status-chip" role="status">
             {state.supportCard.message}
           </p>
         ) : null}
@@ -621,7 +623,8 @@ export function BeyondMasterAiPanel() {
         ) : null}
         {state.supportCard &&
         state.supportCard.kind !== "review" &&
-        state.supportCard.kind !== "created" ? (
+        state.supportCard.kind !== "created" &&
+        state.supportCard.kind !== "human_queue" ? (
           <p className="hb-bmai-review-note">{state.supportCard.message}</p>
         ) : null}
         {state.supportCard?.kind === "created" ? (
@@ -652,7 +655,6 @@ export function BeyondMasterAiPanel() {
           </div>
         ) : null}
 
-        <BeyondMasterVoiceBar />
         <form className="hb-bmai-composer" onSubmit={onSubmit}>
           <label className="sr-only" htmlFor="beyond-master-ai-input">
             Message {BEYOND_MASTER_LAUNCHER_LABEL}
@@ -692,6 +694,7 @@ export function BeyondMasterAiPanel() {
               }
             }}
           />
+          <BeyondMasterVoiceButton disabled={state.checking} />
           <button
             type="submit"
             className="hb-bmai-send"
