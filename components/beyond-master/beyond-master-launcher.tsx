@@ -28,24 +28,25 @@ export function BeyondMasterAiLauncher({
 }) {
   const { open } = useBeyondMasterAi();
   const [line, setLine] = useState<string | null>(null);
+  const [cycling, setCycling] = useState(false);
 
   useEffect(() => {
-    const start = window.setTimeout(
-      () => setLine(BEYOND_MASTER_DOCK_PROMPTS[0]),
-      1200,
-    );
+    const start = window.setTimeout(() => {
+      setLine(BEYOND_MASTER_DOCK_PROMPTS[0]);
+      setCycling(true);
+    }, 1200);
     return () => window.clearTimeout(start);
   }, []);
 
   useEffect(() => {
-    if (line === null) return;
+    if (!cycling) return;
     let index = 0;
     const tick = window.setInterval(() => {
       index = (index + 1) % BEYOND_MASTER_DOCK_PROMPTS.length;
       setLine(BEYOND_MASTER_DOCK_PROMPTS[index]);
     }, 3200);
     return () => window.clearInterval(tick);
-  }, [line !== null]);
+  }, [cycling]);
 
   const togglePanel = () => {
     if (open) closeBeyondMasterAi();

@@ -503,6 +503,10 @@ export function setBeyondMasterDraft(draft: string) {
   emit({ ...snapshot, draft, error: null });
 }
 
+export function setBeyondMasterError(error: string | null) {
+  emit({ ...snapshot, error });
+}
+
 export function startBeyondMasterConversation() {
   sendController?.abort();
   sendController = null;
