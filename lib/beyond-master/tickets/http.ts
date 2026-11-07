@@ -133,6 +133,7 @@ export async function supportEventForChat(
   if (intent.kind === "none" && TALK_HUMAN_EXPLICIT.test(message.trim())) {
     const threadId = options?.threadId?.trim() ?? "";
     let issuedGuestToken: string | undefined;
+    let queued = false;
     if (threadId && /^[A-Za-z0-9-]{8,64}$/.test(threadId)) {
       const enq = await enqueueThreadForHumanSupport({
         threadId,
@@ -140,14 +141,18 @@ export async function supportEventForChat(
         ticketReference: null,
         guestCapabilityToken: options?.guestCapabilityToken ?? null,
       });
+      queued = enq.ok;
       if (enq.ok && "guestCapabilityToken" in enq && enq.guestCapabilityToken) {
         issuedGuestToken = enq.guestCapabilityToken;
       }
     }
+    // Never announce a queue placement that the backend did not confirm.
     return {
       kind: "human_queue" as const,
-      message:
-        "Your conversation is queued for staff in Orbit. Sign in to open a tracked ticket; guests cannot access account data here.",
+      queued,
+      message: queued
+        ? "Your conversation is queued for staff in Orbit. Sign in to open a tracked ticket; guests cannot access account data here."
+        : "I could not place this conversation in the staff queue automatically. Sign in and submit a support ticket so a person can pick it up; guests cannot access account data here.",
       ...(issuedGuestToken ? { guestCapabilityToken: issuedGuestToken } : {}),
     };
   }

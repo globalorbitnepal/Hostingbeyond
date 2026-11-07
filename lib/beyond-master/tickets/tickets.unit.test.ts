@@ -396,4 +396,31 @@ describe("beyond master tickets", () => {
       false,
     );
   });
+
+  it("does not claim a guest is queued when the enqueue fails", async () => {
+    // No thread id => the backend never attempts an enqueue, so the reply must
+    // not tell the guest their conversation is already in the staff queue.
+    const notQueued = await supportEventForChat(
+      "I want to talk to a human.",
+      null,
+      { threadId: null, guestCapabilityToken: null },
+    );
+    assert.equal(notQueued?.kind, "human_queue");
+    assert.equal("queued" in (notQueued ?? {}), true);
+    assert.equal(
+      (notQueued as { queued?: boolean }).queued,
+      false,
+      "must not report queued without a confirmed backend write",
+    );
+    assert.match(
+      String((notQueued as { message?: string }).message),
+      /could not place this conversation/i,
+    );
+    assert.equal(
+      /queued for staff/i.test(
+        String((notQueued as { message?: string }).message),
+      ),
+      false,
+    );
+  });
 });
