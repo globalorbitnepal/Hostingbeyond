@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
-import { requireOrbitAdmin, unauthorizedJson } from "@/lib/orbit/api";
+import { requireOrbitFullAdmin, unauthorizedJson } from "@/lib/orbit/api";
 import { logActivity } from "@/lib/orbit/session";
 import {
   describeUploadRejection,
@@ -19,7 +19,7 @@ export const runtime = "nodejs";
 const MAX_BYTES = 32 * 1024 * 1024;
 
 export async function GET(request: NextRequest) {
-  const admin = await requireOrbitAdmin();
+  const admin = await requireOrbitFullAdmin();
   if (!admin) return unauthorizedJson();
 
   const q = request.nextUrl.searchParams.get("q")?.trim().toLowerCase() ?? "";
@@ -144,7 +144,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const admin = await requireOrbitAdmin();
+  const admin = await requireOrbitFullAdmin();
   if (!admin) return unauthorizedJson();
 
   const form = await request.formData();

@@ -1,18 +1,26 @@
 import { NextResponse } from "next/server";
+import { DomainOrderStatus } from "@prisma/client";
 
+import { parseOptionalEnumParam } from "@/lib/http/enum-param";
 import { prisma } from "@/lib/prisma";
-import { requireOrbitAdmin } from "@/lib/orbit/api";
+import { requireOrbitFullAdmin } from "@/lib/orbit/api";
 
 export const runtime = "nodejs";
 
 export async function GET(request: Request) {
-  const admin = await requireOrbitAdmin();
+  const admin = await requireOrbitFullAdmin();
   if (!admin) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const status = new URL(request.url).searchParams.get("status");
+  const parsed = parseOptionalEnumParam(
+    new URL(request.url).searchParams.get("status"),
+    Object.values(DomainOrderStatus),
+  );
+  if (!parsed.ok) {
+    return NextResponse.json({ error: "Invalid status." }, { status: 400 });
+  }
   const rows = await prisma.domainOrder.findMany({
-    where: status ? { status: status as never } : undefined,
+    where: parsed.value ? { status: parsed.value } : undefined,
     orderBy: { createdAt: "desc" },
     take: 100,
     select: {

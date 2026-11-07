@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   Activity,
@@ -14,6 +15,7 @@ import {
 
 type DashboardData = {
   admin: { displayName: string };
+  orbitAccess?: "full" | "support_only";
   stats: {
     credentials: number;
     media: number;
@@ -69,6 +71,7 @@ const cmsAreas = [
 ] as const;
 
 export default function OrbitDashboardPage() {
+  const router = useRouter();
   const [data, setData] = useState<DashboardData | null>(null);
   const [error, setError] = useState("");
 
@@ -80,9 +83,13 @@ export default function OrbitDashboardPage() {
         setError(json.error || "Failed to load dashboard");
         return;
       }
+      if (json.orbitAccess === "support_only") {
+        router.replace("/orbit/beyond-master/support-queue");
+        return;
+      }
       setData(json);
     })();
-  }, []);
+  }, [router]);
 
   return (
     <div className="space-y-6">

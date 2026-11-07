@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 
 type ThreadSummary = {
   id: string;
@@ -38,6 +39,7 @@ function stamp(iso: string) {
 }
 
 export default function OrbitBeyondMasterConversationsPage() {
+  const searchParams = useSearchParams();
   const [query, setQuery] = useState("");
   const [threads, setThreads] = useState<ThreadSummary[]>([]);
   const [detail, setDetail] = useState<ThreadDetail | null>(null);
@@ -46,7 +48,7 @@ export default function OrbitBeyondMasterConversationsPage() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
 
-  async function load(search = query) {
+  const fetchThreads = useCallback(async (search: string) => {
     setLoading(true);
     setError("");
     try {
@@ -71,14 +73,9 @@ export default function OrbitBeyondMasterConversationsPage() {
     } finally {
       setLoading(false);
     }
-  }
-
-  useEffect(() => {
-    void load("");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function openThread(id: string) {
+  const openThread = useCallback(async (id: string) => {
     setBusy(true);
     setNotice("");
     try {
@@ -98,27 +95,39 @@ export default function OrbitBeyondMasterConversationsPage() {
     } finally {
       setBusy(false);
     }
-  }
+  }, []);
 
-  async function removeThread(id: string) {
-    setBusy(true);
-    setNotice("");
-    try {
-      const response = await fetch(
-        `/api/orbit/beyond-master/conversations?id=${encodeURIComponent(id)}`,
-        { method: "DELETE" },
-      );
-      if (!response.ok) {
-        setNotice("Conversation could not be removed.");
-        return;
+  const removeThread = useCallback(
+    async (id: string) => {
+      setBusy(true);
+      setNotice("");
+      try {
+        const response = await fetch(
+          `/api/orbit/beyond-master/conversations?id=${encodeURIComponent(id)}`,
+          { method: "DELETE" },
+        );
+        if (!response.ok) {
+          setNotice("Conversation could not be removed.");
+          return;
+        }
+        setDetail((current) => (current?.id === id ? null : current));
+        setNotice("Conversation removed.");
+        await fetchThreads("");
+      } finally {
+        setBusy(false);
       }
-      if (detail?.id === id) setDetail(null);
-      setNotice("Conversation removed.");
-      await load();
-    } finally {
-      setBusy(false);
-    }
-  }
+    },
+    [fetchThreads],
+  );
+
+  useEffect(() => {
+    void fetchThreads("");
+  }, [fetchThreads]);
+
+  useEffect(() => {
+    const id = searchParams.get("id")?.trim();
+    if (id) void openThread(id);
+  }, [searchParams, openThread]);
 
   return (
     <div className="space-y-5">
@@ -136,7 +145,7 @@ export default function OrbitBeyondMasterConversationsPage() {
           className="flex gap-2"
           onSubmit={(event) => {
             event.preventDefault();
-            void load();
+            void fetchThreads(query);
           }}
         >
           <input

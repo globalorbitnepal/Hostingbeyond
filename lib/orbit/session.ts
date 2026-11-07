@@ -147,7 +147,9 @@ export async function logActivity(input: {
     | "SETTINGS_UPDATE"
     | "NAV_UPDATE"
     | "SEO_UPDATE"
-    | "BLOG_UPDATE";
+    | "BLOG_UPDATE"
+    | "BEYOND_MASTER_SUPPORT_QUEUE"
+    | "BEYOND_MASTER_SUPPORT_MESSAGE";
   resource?: string;
   details?: string;
 }) {

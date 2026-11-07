@@ -5,7 +5,7 @@ import {
   saveDeveloperHostingContent,
 } from "@/lib/orbit/content";
 import { DEVELOPER_STACK_KEYS } from "@/lib/orbit/developer-hosting-content";
-import { requireOrbitAdmin, unauthorizedJson } from "@/lib/orbit/api";
+import { requireOrbitFullAdmin, unauthorizedJson } from "@/lib/orbit/api";
 import { logActivity } from "@/lib/orbit/session";
 import type { DeveloperStackKey } from "@/lib/orbit/developer-hosting-content";
 
@@ -19,7 +19,7 @@ function parseStack(value: string | null): DeveloperStackKey | null {
 }
 
 export async function GET(request: NextRequest) {
-  const admin = await requireOrbitAdmin();
+  const admin = await requireOrbitFullAdmin();
   if (!admin) return unauthorizedJson();
 
   const stack = parseStack(request.nextUrl.searchParams.get("stack"));
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const admin = await requireOrbitAdmin();
+  const admin = await requireOrbitFullAdmin();
   if (!admin) return unauthorizedJson();
 
   const body = (await request.json().catch(() => null)) as {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { requireOrbitAdmin, unauthorizedJson } from "@/lib/orbit/api";
+import { requireOrbitFullAdmin, unauthorizedJson } from "@/lib/orbit/api";
 import {
   ensureHomeSeeded,
   getSiteSettings,
@@ -12,7 +12,7 @@ import { logActivity } from "@/lib/orbit/session";
 export const runtime = "nodejs";
 
 export async function GET() {
-  const admin = await requireOrbitAdmin();
+  const admin = await requireOrbitFullAdmin();
   if (!admin) return unauthorizedJson();
   await ensureHomeSeeded();
   const settings = await getSiteSettings();
@@ -20,7 +20,7 @@ export async function GET() {
 }
 
 export async function PUT(request: NextRequest) {
-  const admin = await requireOrbitAdmin();
+  const admin = await requireOrbitFullAdmin();
   if (!admin) return unauthorizedJson();
 
   const body = (await request.json()) as { settings?: CmsSiteSettings };
