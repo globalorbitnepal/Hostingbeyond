@@ -2,27 +2,13 @@
 
 import { FormEvent, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import {
-  ArrowUp,
-  ArrowUpRight,
-  Clock3,
-  Globe,
-  ImagePlus,
-  Mail,
-  Plus,
-  Search,
-  Wrench,
-  X,
-} from "lucide-react";
+import { ArrowUp, Clock3, ImagePlus, Plus, X } from "lucide-react";
 
 import {
   BEYOND_MASTER_DISCLAIMER,
   BEYOND_MASTER_INPUT_PLACEHOLDER,
   BEYOND_MASTER_LAUNCHER_LABEL,
   BEYOND_MASTER_PANEL_TITLE,
-  BEYOND_MASTER_PRIMARY_BODY,
-  BEYOND_MASTER_PRIMARY_TITLE,
-  BEYOND_MASTER_QUICK_ACTIONS,
   BEYOND_MASTER_WELCOME_BODY,
   BEYOND_MASTER_WELCOME_HEADING,
 } from "@/lib/beyond-master/copy";
@@ -53,6 +39,7 @@ import { isAgentGreeting } from "@/lib/beyond-master/domain-intent";
 import "@/styles/beyond-master.css";
 import { BeyondMasterIcon } from "./beyond-master-icon";
 import { BeyondMasterVoiceButton } from "./voice-bar";
+import { BeyondMasterQuestionCard } from "./question-card";
 
 function formatStamp(iso: string) {
   const date = new Date(iso);
@@ -65,15 +52,13 @@ function formatStamp(iso: string) {
   });
 }
 
-function QuickActionIcon({
-  icon,
-}: {
-  icon?: "domain" | "hosting" | "email" | "website";
-}) {
-  if (icon === "domain") return <Search className="size-4" aria-hidden />;
-  if (icon === "hosting") return <Globe className="size-4" aria-hidden />;
-  if (icon === "email") return <Mail className="size-4" aria-hidden />;
-  return <Wrench className="size-4" aria-hidden />;
+function useClientLocale(): string {
+  const [locale, setLocale] = useState("");
+  useEffect(() => {
+    const htmlLang = document.documentElement.lang?.trim();
+    setLocale(htmlLang || navigator.language || "en");
+  }, []);
+  return locale || "en";
 }
 
 export function BeyondMasterAiPanel() {
@@ -87,12 +72,15 @@ export function BeyondMasterAiPanel() {
   const messages = conversation?.messages ?? [];
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
-  const lastUser = [...messages]
-    .reverse()
-    .find((message) => message.role === "user");
-  const showFollowUps = Boolean(
-    lastUser && isAgentGreeting(lastUser.body) && !state.checking,
-  );
+  const [questionsDone, setQuestionsDone] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const clientLocale = useClientLocale();
+  const lastMessage = messages[messages.length - 1];
+  const showQuestionInThread =
+    !questionsDone &&
+    !state.checking &&
+    lastMessage?.role === "assistant" &&
+    isAgentGreeting(lastMessage.body);
 
   useEffect(() => {
     hydrateBeyondMasterAi();
@@ -118,6 +106,17 @@ export function BeyondMasterAiPanel() {
       restoreFocus.current?.focus();
     };
   }, [state.open]);
+
+  useEffect(() => {
+    if (!state.open) return;
+    const node = scrollRef.current;
+    if (!node) return;
+    node.scrollTo({ top: node.scrollHeight, behavior: "smooth" });
+  }, [state.open, messages.length, state.checking]);
+
+  useEffect(() => {
+    setQuestionsDone(false);
+  }, [state.activeId]);
 
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -219,44 +218,35 @@ export function BeyondMasterAiPanel() {
           </div>
         ) : null}
 
-        <div className="hb-bmai-scroll">
+        <div className="hb-bmai-scroll" ref={scrollRef}>
           {messages.length === 0 ? (
             <div className="hb-bmai-welcome">
               <div className="hb-bmai-hero-mark" aria-hidden="true">
-                <BeyondMasterIcon size={78} />
+                <BeyondMasterIcon size={72} />
               </div>
               <h2>{BEYOND_MASTER_WELCOME_HEADING}</h2>
               {BEYOND_MASTER_WELCOME_BODY ? (
                 <p>{BEYOND_MASTER_WELCOME_BODY}</p>
               ) : null}
-              <button
-                type="button"
-                className="hb-bmai-primary"
-                onClick={() => {
-                  setBeyondMasterDraft(BEYOND_MASTER_PRIMARY_TITLE);
+              <div className="hb-bmai-welcome-body">
+                <p>
+                  Tell me what you need using the options below, or type your
+                  own answer.
+                </p>
+              </div>
+              <BeyondMasterQuestionCard
+                locale={clientLocale}
+                disabled={state.checking}
+                onAnswer={(prompt) => {
+                  setQuestionsDone(true);
+                  void sendBeyondMasterMessage(prompt);
+                }}
+                onSkip={() => {
+                  setQuestionsDone(true);
+                  setBeyondMasterDraft("");
                   inputRef.current?.focus();
                 }}
-              >
-                <ArrowUpRight className="size-4" aria-hidden />
-                <span>
-                  <strong>{BEYOND_MASTER_PRIMARY_TITLE}</strong>
-                  <span>{BEYOND_MASTER_PRIMARY_BODY}</span>
-                </span>
-              </button>
-              <div className="hb-bmai-actions">
-                {BEYOND_MASTER_QUICK_ACTIONS.map((action) => (
-                  <button
-                    key={action.id}
-                    type="button"
-                    className="hb-bmai-action"
-                    onClick={() => void sendBeyondMasterMessage(action.prompt)}
-                    disabled={state.checking}
-                  >
-                    <QuickActionIcon icon={action.icon} />
-                    <strong>{action.label}</strong>
-                  </button>
-                ))}
-              </div>
+              />
             </div>
           ) : (
             <div className="hb-bmai-thread" aria-live="polite">
@@ -316,22 +306,19 @@ export function BeyondMasterAiPanel() {
                   <span className="sr-only">Agent is writing</span>
                 </div>
               ) : null}
-              {showFollowUps ? (
-                <div className="hb-bmai-actions">
-                  {BEYOND_MASTER_QUICK_ACTIONS.map((action) => (
-                    <button
-                      key={action.id}
-                      type="button"
-                      className="hb-bmai-action"
-                      onClick={() =>
-                        void sendBeyondMasterMessage(action.prompt)
-                      }
-                    >
-                      <QuickActionIcon icon={action.icon} />
-                      <strong>{action.label}</strong>
-                    </button>
-                  ))}
-                </div>
+              {showQuestionInThread ? (
+                <BeyondMasterQuestionCard
+                  locale={clientLocale}
+                  disabled={state.checking}
+                  onAnswer={(prompt) => {
+                    setQuestionsDone(true);
+                    void sendBeyondMasterMessage(prompt);
+                  }}
+                  onSkip={() => {
+                    setQuestionsDone(true);
+                    inputRef.current?.focus();
+                  }}
+                />
               ) : null}
             </div>
           )}

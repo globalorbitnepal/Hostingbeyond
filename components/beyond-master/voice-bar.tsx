@@ -1,11 +1,12 @@
 "use client";
 
-import { PointerEvent, useEffect, useRef, useState } from "react";
-import { Mic } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Mic, Square } from "lucide-react";
 
 import {
   sendBeyondMasterMessage,
   setBeyondMasterDraft,
+  setBeyondMasterError,
 } from "@/lib/beyond-master/ui-store";
 
 type SpeechResultLike = {
@@ -22,7 +23,7 @@ type WebSpeechCtor = new () => {
   stop: () => void;
   abort?: () => void;
   onresult: ((ev: SpeechResultLike) => void) | null;
-  onerror: (() => void) | null;
+  onerror: ((ev?: { error?: string }) => void) | null;
   onend: (() => void) | null;
 };
 
@@ -43,9 +44,13 @@ export function BeyondMasterVoiceButton({
 }: {
   disabled?: boolean;
 }) {
-  const recRef = useRef<{ stop: () => void; abort?: () => void } | null>(null);
+  const recRef = useRef<{
+    stop: () => void;
+    abort?: () => void;
+  } | null>(null);
   const finalRef = useRef("");
-  const holdingRef = useRef(false);
+  const listeningRef = useRef(false);
+  const silenceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [supported, setSupported] = useState(false);
   const [listening, setListening] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(true);
@@ -66,38 +71,78 @@ export function BeyondMasterVoiceButton({
       webkitSpeechRecognition?: WebSpeechCtor;
     };
     setSupported(Boolean(w.SpeechRecognition || w.webkitSpeechRecognition));
-    return () => recRef.current?.abort?.() ?? recRef.current?.stop();
+    return () => {
+      if (silenceTimer.current) clearTimeout(silenceTimer.current);
+      const rec = recRef.current;
+      if (rec) {
+        if (rec.abort) rec.abort();
+        else rec.stop();
+      }
+    };
   }, []);
 
-  function stopAndSend() {
-    holdingRef.current = false;
-    if (recRef.current) {
-      recRef.current.stop();
-      return;
+  const clearSilenceTimer = useCallback(() => {
+    if (silenceTimer.current) {
+      clearTimeout(silenceTimer.current);
+      silenceTimer.current = null;
     }
-    const spoken = finalRef.current.trim();
-    finalRef.current = "";
-    if (spoken) void sendBeyondMasterMessage(spoken);
-  }
+  }, []);
 
-  function startListen(event: PointerEvent<HTMLButtonElement>) {
+  const finish = useCallback(
+    (send: boolean) => {
+      clearSilenceTimer();
+      listeningRef.current = false;
+      setListening(false);
+      const rec = recRef.current;
+      recRef.current = null;
+      if (rec) {
+        try {
+          rec.stop();
+        } catch {
+          /* already stopped */
+        }
+      }
+      const spoken = finalRef.current.trim();
+      finalRef.current = "";
+      if (send && spoken) {
+        void sendBeyondMasterMessage(spoken);
+      } else if (spoken) {
+        setBeyondMasterDraft(spoken);
+      }
+    },
+    [clearSilenceTimer],
+  );
+
+  const scheduleSilenceStop = useCallback(() => {
+    clearSilenceTimer();
+    silenceTimer.current = setTimeout(() => finish(true), 4500);
+  }, [clearSilenceTimer, finish]);
+
+  function startListening() {
     if (disabled || typeof window === "undefined") return;
-    event.preventDefault();
-    event.currentTarget.setPointerCapture(event.pointerId);
+    setBeyondMasterError(null);
     const w = window as Window & {
       SpeechRecognition?: WebSpeechCtor;
       webkitSpeechRecognition?: WebSpeechCtor;
     };
     const Ctor = w.SpeechRecognition || w.webkitSpeechRecognition;
-    if (!Ctor) return;
-    recRef.current?.abort?.();
+    if (!Ctor) {
+      setBeyondMasterError(
+        "Voice input is not supported in this browser. Type your message instead.",
+      );
+      return;
+    }
+    try {
+      recRef.current?.abort?.();
+    } catch {
+      /* ignore */
+    }
     const rec = new Ctor();
     rec.lang = recognitionLanguage();
     rec.continuous = true;
     rec.interimResults = true;
     rec.maxAlternatives = 1;
     finalRef.current = "";
-    holdingRef.current = true;
     rec.onresult = (speechEvent: SpeechResultLike) => {
       let interim = "";
       for (
@@ -114,31 +159,46 @@ export function BeyondMasterVoiceButton({
         }
       }
       setBeyondMasterDraft((finalRef.current || interim).trim());
+      scheduleSilenceStop();
     };
-    rec.onerror = () => {
-      setListening(false);
-      holdingRef.current = false;
+    rec.onerror = (event) => {
+      const code = event?.error ?? "";
+      if (code === "no-speech") return;
+      if (code === "not-allowed" || code === "service-not-allowed") {
+        setBeyondMasterError(
+          "Microphone permission was blocked. Allow the mic in your browser and tap again.",
+        );
+      } else if (code === "network") {
+        setBeyondMasterError("Voice needs an internet connection.");
+      }
+      finish(false);
     };
     rec.onend = () => {
-      setListening(false);
-      recRef.current = null;
-      const spoken = finalRef.current.trim();
-      finalRef.current = "";
-      if (!holdingRef.current && spoken) {
-        void sendBeyondMasterMessage(spoken);
-      }
+      if (listeningRef.current) finish(true);
     };
     recRef.current = rec;
+    listeningRef.current = true;
     setListening(true);
     try {
       rec.start();
+      scheduleSilenceStop();
     } catch {
+      listeningRef.current = false;
       setListening(false);
-      holdingRef.current = false;
+      recRef.current = null;
+      setBeyondMasterError("Voice could not start. Tap the mic again.");
     }
   }
 
-  if (!supported || !voiceEnabled) return null;
+  function toggle() {
+    if (listeningRef.current) {
+      finish(true);
+      return;
+    }
+    startListening();
+  }
+
+  if (!voiceEnabled) return null;
 
   return (
     <button
@@ -146,14 +206,22 @@ export function BeyondMasterVoiceButton({
       className="hb-bmai-mic"
       data-listening={listening ? "true" : "false"}
       aria-pressed={listening}
-      aria-label={listening ? "Release to send your message" : "Hold to speak"}
+      aria-label={listening ? "Stop listening and send" : "Speak your message"}
+      title={
+        supported
+          ? listening
+            ? "Tap to stop and send"
+            : "Tap and speak your message"
+          : "Voice input is not available in this browser"
+      }
       disabled={disabled}
-      onPointerDown={startListen}
-      onPointerUp={stopAndSend}
-      onPointerCancel={stopAndSend}
-      onContextMenu={(event) => event.preventDefault()}
+      onClick={toggle}
     >
-      <Mic className="size-[18px]" aria-hidden />
+      {listening ? (
+        <Square className="size-[15px] fill-current" aria-hidden />
+      ) : (
+        <Mic className="size-[18px]" aria-hidden />
+      )}
     </button>
   );
 }

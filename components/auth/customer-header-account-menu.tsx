@@ -11,7 +11,7 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
-import { KeyRound, LayoutDashboard, LogOut, User } from "lucide-react";
+import { KeyRound, LayoutDashboard, LogOut } from "lucide-react";
 
 import { routes } from "@/config/routes";
 import { cn } from "@/lib/utils";
@@ -62,10 +62,13 @@ function useCustomerSession() {
   const [ready, setReady] = useState(false);
 
   const refresh = useCallback(async () => {
+    const ac = new AbortController();
+    const timer = setTimeout(() => ac.abort(), 4000);
     try {
       const res = await fetch("/api/auth/me", {
         credentials: "include",
         cache: "no-store",
+        signal: ac.signal,
       });
       if (!res.ok) {
         setUser(null);
@@ -76,6 +79,7 @@ function useCustomerSession() {
     } catch {
       setUser(null);
     } finally {
+      clearTimeout(timer);
       setReady(true);
     }
   }, []);
@@ -86,6 +90,47 @@ function useCustomerSession() {
   }, [pathname, refresh]);
 
   return { user, ready, setUser, refresh };
+}
+
+function PremiumLoginMark({ gradientId }: { gradientId: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={26.5}
+      height={26.5}
+      className="h-[26.5px] w-[26.5px] shrink-0 drop-shadow-[0_1px_2px_rgba(91,77,255,0.35)]"
+      fill="none"
+      aria-hidden
+    >
+      <defs>
+        <linearGradient
+          id={gradientId}
+          x1="5"
+          y1="3"
+          x2="19"
+          y2="21"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop stopColor="#7a5cff" />
+          <stop offset="0.55" stopColor="#5b4dff" />
+          <stop offset="1" stopColor="#2563eb" />
+        </linearGradient>
+      </defs>
+      <circle
+        cx="12"
+        cy="8.1"
+        r="3.45"
+        stroke={`url(#${gradientId})`}
+        strokeWidth="1.75"
+      />
+      <path
+        d="M5.15 19.35c.85-3.55 3.45-5.45 6.85-5.45s6 1.9 6.85 5.45"
+        stroke={`url(#${gradientId})`}
+        strokeWidth="1.75"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
 }
 
 function AccountAvatar({
@@ -256,31 +301,23 @@ export function CustomerHeaderAccountMenu({
 
   const loginLinkClass =
     variant === "mobile"
-      ? "flex items-center justify-center gap-2 rounded-full border border-slate-200 px-3 py-2.5 text-[14px] font-semibold text-slate-800"
-      : "inline-flex h-[38px] items-center gap-2 rounded-full border border-slate-200/90 bg-white px-3.5 text-[13px] font-semibold text-slate-800 shadow-[0_4px_14px_rgba(15,23,42,0.06)] transition hover:border-slate-300 hover:bg-slate-50";
-
-  if (!ready) {
-    return (
-      <span
-        className={cn(
-          variant === "mobile" ? "block h-11" : "inline-flex size-10",
-          "animate-pulse rounded-full bg-slate-100",
-          className,
-        )}
-        aria-hidden
-      />
-    );
-  }
-
+      ? "inline-flex h-11 w-11 items-center justify-center rounded-full transition hover:bg-slate-50"
+      : "relative -ml-1.5 inline-flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md transition hover:opacity-90";
   if (!user) {
     return (
       <Link
         href={loginHref}
+        aria-label={loginLabel}
+        title={loginLabel}
         className={cn(loginLinkClass, className)}
         onClick={onNavigate}
+        aria-busy={!ready}
       >
-        <User className="size-4 text-slate-600" aria-hidden />
-        {loginLabel}
+        <PremiumLoginMark
+          gradientId={
+            variant === "mobile" ? "hb-login-grad-mobile" : "hb-login-grad"
+          }
+        />
       </Link>
     );
   }

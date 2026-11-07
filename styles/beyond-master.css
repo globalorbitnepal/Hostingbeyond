@@ -222,9 +222,9 @@
   color: var(--bmai-ink);
   background: linear-gradient(
     165deg,
-    rgba(255, 255, 255, 0.88) 0%,
-    rgba(237, 233, 254, 0.82) 46%,
-    rgba(239, 246, 255, 0.86) 100%
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(248, 246, 255, 0.97) 46%,
+    rgba(246, 250, 255, 0.98) 100%
   );
   border: 1px solid rgba(255, 255, 255, 0.62);
   border-radius: 28px;
@@ -357,6 +357,181 @@
   text-align: center;
 }
 
+.hb-bmai-welcome .hb-bmai-hero-mark {
+  width: 64px;
+  height: 64px;
+  margin: 2px 0 8px;
+}
+
+.hb-bmai-welcome-body {
+  margin-top: 6px;
+  max-width: 36ch;
+}
+
+.hb-bmai-welcome-body p {
+  margin: 0;
+  color: var(--bmai-muted);
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+
+/* Hostinger-style guided question card */
+.hb-bmai-qcard {
+  width: 100%;
+  margin-top: 14px;
+  border: 1px solid #eceff5;
+  border-radius: 20px;
+  padding: 14px 14px 12px;
+  text-align: left;
+  background: #fff;
+  box-shadow: 0 12px 30px rgba(16, 24, 40, 0.06);
+}
+
+.hb-bmai-qcard-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.hb-bmai-qcard-progress {
+  color: var(--bmai-muted);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.hb-bmai-qcard-skip {
+  border: 0;
+  padding: 2px 4px;
+  color: #6941c6;
+  background: transparent;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.hb-bmai-qcard-title {
+  margin: 8px 0 0;
+  color: #101828;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.hb-bmai-qcard-rule {
+  display: block;
+  width: 44px;
+  height: 3px;
+  margin: 8px 0 10px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #7c3aed, #6d28d9);
+}
+
+.hb-bmai-qcard-options {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hb-bmai-qoption {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 2px;
+  border: 0;
+  border-bottom: 1px solid #f1f4f8;
+  color: #101828;
+  text-align: left;
+  background: transparent;
+}
+
+.hb-bmai-qoption:last-child,
+.hb-bmai-qcard-options li:last-child .hb-bmai-qoption {
+  border-bottom: 0;
+}
+
+.hb-bmai-qoption:hover {
+  background: #faf8ff;
+}
+
+.hb-bmai-qoption:disabled {
+  opacity: 0.55;
+}
+
+.hb-bmai-qoption-icon {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  place-items: center;
+  border-radius: 10px;
+  color: #6941c6;
+  background: #f4f1ff;
+}
+
+.hb-bmai-qoption-label {
+  min-width: 0;
+  flex: 1;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.hb-bmai-qoption-radio {
+  width: 17px;
+  height: 17px;
+  flex: none;
+  border: 2px solid #d5d9e2;
+  border-radius: 999px;
+}
+
+.hb-bmai-qcustom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 4px 4px 4px 12px;
+  border: 1px solid #e4e9f2;
+  border-radius: 999px;
+  background: #fbfcfe;
+}
+
+.hb-bmai-qcustom input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  padding: 7px 0;
+  color: #101828;
+  background: transparent;
+  font-size: 13px;
+  outline: none;
+}
+
+.hb-bmai-qcustom input::placeholder {
+  color: #98a2b3;
+}
+
+.hb-bmai-qcustom-send {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  background: linear-gradient(180deg, #8b5cf6, #7c3aed);
+}
+
+.hb-bmai-qcustom-send:disabled {
+  opacity: 0.45;
+}
+
+.hb-bmai-qcard-hint {
+  display: none;
+}
+
 .hb-bmai-hero-mark {
   display: grid;
   width: 84px;
@@ -405,11 +580,11 @@
 
 .hb-bmai-welcome h2 {
   margin: 0;
-  max-width: 14ch;
-  font-size: 26px;
-  line-height: 1.15;
+  max-width: none;
+  font-size: 21px;
+  line-height: 1.2;
   font-weight: 800;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.035em;
   color: #101828;
 }
 

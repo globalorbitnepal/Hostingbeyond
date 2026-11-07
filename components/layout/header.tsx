@@ -582,7 +582,7 @@ export function SiteHeader({
                     </div>
                   );
                 })}
-                <div className="mt-3 flex flex-col gap-2 border-t border-slate-100 pt-3">
+                <div className="mt-3 flex items-center gap-2 border-t border-slate-100 pt-3">
                   <CustomerHeaderAccountMenu
                     variant="mobile"
                     loginHref={loginHref}
@@ -591,7 +591,7 @@ export function SiteHeader({
                   />
                   <Link
                     href={getStartedHref}
-                    className="flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#7c3aed] to-[#2563eb] px-3 py-2.5 text-[14px] font-semibold text-white shadow-[0_8px_24px_rgba(124,58,237,0.28)]"
+                    className="flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#7c3aed] to-[#2563eb] px-3 py-2.5 text-[14px] font-semibold text-white shadow-[0_8px_24px_rgba(124,58,237,0.28)]"
                     onClick={() => setOpen(false)}
                   >
                     {resolvedGetStarted}
