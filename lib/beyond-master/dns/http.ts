@@ -19,6 +19,10 @@ import {
   verifyCustomerJwt,
 } from "@/lib/customer/session";
 import { beyondMasterTicketCustomerOverride } from "@/lib/beyond-master/tickets/http";
+import {
+  beyondMasterCapabilityEnabled,
+  capabilityDisabledMessage,
+} from "@/lib/beyond-master/capabilities";
 
 let storeOverride: DnsStore | null = null;
 let portsOverride: DnsPorts | null = null;
@@ -128,6 +132,16 @@ export async function postDnsConfirm(request: Request) {
       { error: "Sign in to confirm a DNS change." },
       { status: 401 },
     );
+  // DNS writes are gated off for the limited support release.
+  if (!beyondMasterCapabilityEnabled("dns_write")) {
+    return Response.json(
+      {
+        error: capabilityDisabledMessage("dns_write"),
+        code: "capability_disabled",
+      },
+      { status: 503 },
+    );
+  }
   let body: unknown;
   try {
     body = await request.json();

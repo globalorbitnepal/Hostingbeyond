@@ -13,6 +13,10 @@ import {
 } from "@/lib/beyond-master/commerce/nameservers";
 import { commercePromptBlock } from "@/lib/beyond-master/commerce/view";
 import type { CommerceProposalView } from "@/lib/beyond-master/commerce/types";
+import {
+  beyondMasterCapabilityEnabled,
+  capabilityDisabledMessage,
+} from "@/lib/beyond-master/capabilities";
 
 export type CustomerOperationsRun = {
   proposal: CommerceProposalView | null;
@@ -40,6 +44,13 @@ export async function runCustomerOperationsForChat(input: {
   }
 
   if (wantsNameserverChange(input.message)) {
+    if (!beyondMasterCapabilityEnabled("nameserver_update")) {
+      return {
+        proposal: null,
+        notice: capabilityDisabledMessage("nameserver_update"),
+        promptBlock: "",
+      };
+    }
     const prepared = await prepareNameserverProposal({
       customerUserId: input.customerUserId,
       message: input.message,
@@ -55,6 +66,13 @@ export async function runCustomerOperationsForChat(input: {
   }
 
   if (wantsDomainRegistration(input.message)) {
+    if (!beyondMasterCapabilityEnabled("domain_register")) {
+      return {
+        proposal: null,
+        notice: capabilityDisabledMessage("domain_register"),
+        promptBlock: "",
+      };
+    }
     const domain =
       extractDomainQuery(input.message) ??
       input.message.match(
@@ -83,6 +101,13 @@ export async function runCustomerOperationsForChat(input: {
   }
 
   if (wantsHostingPurchase(input.message)) {
+    if (!beyondMasterCapabilityEnabled("hosting_checkout")) {
+      return {
+        proposal: null,
+        notice: capabilityDisabledMessage("hosting_checkout"),
+        promptBlock: "",
+      };
+    }
     const prepared = await prepareHostingCheckoutProposal({
       customerUserId: input.customerUserId,
       message: input.message,

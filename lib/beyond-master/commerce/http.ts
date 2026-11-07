@@ -9,6 +9,10 @@ import {
   verifyCustomerJwt,
 } from "@/lib/customer/session";
 import { beyondMasterTicketCustomerOverride } from "@/lib/beyond-master/tickets/http";
+import {
+  beyondMasterCapabilityEnabled,
+  capabilityDisabledMessage,
+} from "@/lib/beyond-master/capabilities";
 import { prisma } from "@/lib/prisma";
 
 function cookieValue(request: Request, name: string) {
@@ -68,6 +72,15 @@ export async function postCommerceConfirm(request: Request) {
     return Response.json({ error: "Proposal not found." }, { status: 404 });
   }
   if (proposal.kind === "domain_register") {
+    if (!beyondMasterCapabilityEnabled("domain_register")) {
+      return Response.json(
+        {
+          error: capabilityDisabledMessage("domain_register"),
+          code: "capability_disabled",
+        },
+        { status: 503 },
+      );
+    }
     const result = await confirmDomainRegistrationProposal({
       customerUserId: session.customerUserId,
       userEmail: session.email ?? "",
@@ -79,6 +92,15 @@ export async function postCommerceConfirm(request: Request) {
     return Response.json({ ok: true, proposal: result.view });
   }
   if (proposal.kind === "nameserver_update") {
+    if (!beyondMasterCapabilityEnabled("nameserver_update")) {
+      return Response.json(
+        {
+          error: capabilityDisabledMessage("nameserver_update"),
+          code: "capability_disabled",
+        },
+        { status: 503 },
+      );
+    }
     const result = await confirmNameserverProposal({
       customerUserId: session.customerUserId,
       publicId,
@@ -87,6 +109,24 @@ export async function postCommerceConfirm(request: Request) {
       return Response.json({ error: result.error }, { status: result.status });
     }
     return Response.json({ ok: true, proposal: result.view });
+  }
+  if (proposal.kind !== "hosting_checkout") {
+    return Response.json(
+      {
+        error: "This action is not available from the assistant yet.",
+        code: "capability_disabled",
+      },
+      { status: 503 },
+    );
+  }
+  if (!beyondMasterCapabilityEnabled("hosting_checkout")) {
+    return Response.json(
+      {
+        error: capabilityDisabledMessage("hosting_checkout"),
+        code: "capability_disabled",
+      },
+      { status: 503 },
+    );
   }
   const result = await confirmHostingCheckoutProposal({
     customerUserId: session.customerUserId,
