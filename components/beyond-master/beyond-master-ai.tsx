@@ -15,13 +15,26 @@ const BeyondMasterAiPanel = dynamic(
 export { BeyondMasterAiLauncher };
 
 export function BeyondMasterAiHost() {
-  const { open } = useBeyondMasterAi();
+  useBeyondMasterAi();
   const [mounted, setMounted] = useState(false);
+  const [publicChat, setPublicChat] = useState(true);
 
   useEffect(() => {
-    if (open) setMounted(true);
-  }, [open]);
+    setMounted(true);
+    void fetch("/api/beyond-master/features", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((payload: { publicChat?: boolean }) => {
+        if (payload.publicChat === false) setPublicChat(false);
+      })
+      .catch(() => undefined);
+  }, []);
 
-  if (!mounted) return null;
-  return <BeyondMasterAiPanel />;
+  if (!mounted || !publicChat) return null;
+
+  return (
+    <>
+      <BeyondMasterAiLauncher />
+      <BeyondMasterAiPanel />
+    </>
+  );
 }

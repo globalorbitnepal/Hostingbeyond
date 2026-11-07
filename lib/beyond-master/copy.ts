@@ -5,7 +5,17 @@ export const BEYOND_MASTER_NAME = "AI Agent";
 
 export const BEYOND_MASTER_LAUNCHER_LABEL = "AI Agent";
 
-/** Same brand on the header launcher and Orbit. The chat panel title is HostingBeyond Agent. */
+export const BEYOND_MASTER_DOCK_PROMPTS = [
+  "Can I help you?",
+  "Need a domain?",
+  "Compare hosting plans?",
+  "Set up business email?",
+  "Fix your website?",
+] as const;
+
+export const BEYOND_MASTER_DOCK_PROMPT = BEYOND_MASTER_DOCK_PROMPTS[0];
+
+/** Same brand in Orbit. The public chat lives in the bottom-right dock. */
 export const BEYOND_MASTER_BRAND_NAME = "AI Agent";
 
 export const BEYOND_MASTER_PANEL_TITLE = "HostingBeyond Agent";
@@ -22,8 +32,7 @@ export const BEYOND_MASTER_PRIMARY_TITLE = "Help me find what I need";
 export const BEYOND_MASTER_PRIMARY_BODY =
   "Tell me what you’re trying to do and I’ll point you in the right direction.";
 
-export const BEYOND_MASTER_INPUT_PLACEHOLDER =
-  "Ask anything about HostingBeyond…";
+export const BEYOND_MASTER_INPUT_PLACEHOLDER = "Ask anything…";
 
 export const BEYOND_MASTER_GREETING_REPLY =
   "Hi! I can help with a domain, hosting, business email, or your website. Tell me what you need in your own words — type, or hold the mic and speak.";

@@ -64,6 +64,12 @@ export default function OrbitBeyondMasterPage() {
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           <Link
+            href="/orbit/beyond-master/controls"
+            className="inline-flex rounded-xl border border-violet-200 bg-violet-50 px-3 py-2 text-sm font-semibold text-violet-900"
+          >
+            Gemini usage and feature controls
+          </Link>
+          <Link
             href="/orbit/beyond-master/usage"
             className="inline-flex rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700"
           >

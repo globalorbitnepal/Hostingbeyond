@@ -123,6 +123,18 @@ describe("orbit staff access", () => {
       supportOnlyOrbitPathAllowed("/orbit/beyond-master/ai-budget"),
       false,
     );
+    assert.equal(
+      supportOnlyOrbitPathAllowed("/orbit/beyond-master/controls"),
+      false,
+    );
+    assert.equal(
+      supportOnlyOrbitPathAllowed("/api/orbit/beyond-master/features"),
+      false,
+    );
+    assert.equal(
+      supportOnlyOrbitPathAllowed("/api/orbit/beyond-master/gemini-usage"),
+      false,
+    );
     assert.equal(supportOnlyOrbitPathAllowed("/api/orbit/wallets"), false);
     assert.equal(
       supportOnlyOrbitPathAllowed("/orbit/beyond-master/support-queue-extra"),

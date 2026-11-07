@@ -53,6 +53,7 @@ import {
   trimBeyondMasterProviderContext,
 } from "@/lib/beyond-master/request";
 import { authorizeBeyondMasterModel } from "@/lib/beyond-master/model-registry";
+import { readOperatorFeatures } from "@/lib/beyond-master/operator-features";
 import { readBeyondMasterRuntimeConfig } from "@/lib/beyond-master/settings";
 import { recordBeyondMasterUsage } from "@/lib/beyond-master/usage";
 import { principalForPublicBeyondMasterChat } from "@/lib/beyond-master/authorization";
@@ -114,6 +115,19 @@ export async function POST(request: Request) {
     orbitAccessMode,
   });
   const ip = clientKeyFromRequest(request);
+  const features = await readOperatorFeatures();
+  if (!features.publicChat) {
+    return Response.json(
+      { error: "The assistant is turned off." },
+      { status: 403 },
+    );
+  }
+  if (!customerUserId && !features.guestChat) {
+    return Response.json(
+      { error: "Guest chat is turned off. Sign in to continue." },
+      { status: 403 },
+    );
+  }
 
   if (!(await allowBeyondMasterChat(request, process.env, customerUserId))) {
     await recordBeyondMasterUsage({
@@ -147,10 +161,11 @@ export async function POST(request: Request) {
             guestCapabilityToken: customerUserId
               ? null
               : (parsed.guestCapabilityToken ?? null),
+            humanQueue: features.humanQueue,
           },
         );
         if (support) send("support", support);
-        if (support?.kind === "human_queue") {
+        if (support?.kind === "human_queue" && features.humanQueue) {
           send("delta", { text: support.message });
           await recordBeyondMasterUsage({
             provider: "grounded",
@@ -169,10 +184,19 @@ export async function POST(request: Request) {
         lastMessage =
           parsed.messages[parsed.messages.length - 1]?.content ?? "";
         const firstName = await customerFirstName(customerUserId);
-        const toolRun = await runReadOnlyAgentTools({
-          message: lastMessage,
-          ctx: { customerUserId, ip, chatPrincipal },
-        });
+        const toolRun = features.accountTools
+          ? await runReadOnlyAgentTools({
+              message: lastMessage,
+              ctx: { customerUserId, ip, chatPrincipal },
+            })
+          : {
+              calls: [],
+              results: [],
+              promptBlock: "",
+              domainResults: [],
+              accountCards: [],
+              dnsRecords: null,
+            };
         if (toolRun.calls.length) {
           send("tools", {
             tools: toolRun.calls.map((row) => row.tool),
@@ -272,6 +296,7 @@ export async function POST(request: Request) {
           return;
         }
         const domainQuery =
+          features.groundedCatalog &&
           wantsDomainHelp(lastMessage) &&
           !/\bbulk\b/i.test(lastMessage) &&
           !toolRun.results.some((row) => row.ok && row.tool === "search_domain")
@@ -290,6 +315,22 @@ export async function POST(request: Request) {
           send("domains", { results: domainSearch.results });
         }
         if (!override && !runtimeConfig.configured) {
+          if (!features.groundedCatalog) {
+            send("delta", {
+              text: "Catalog answers are turned off. Ask a HostingBeyond specialist from your account, or try again later.",
+            });
+            await recordBeyondMasterUsage({
+              provider: "none",
+              model: "none",
+              status: "success",
+              customerUserId,
+              ip,
+              latencyMs: Date.now() - started,
+              errorCode: "catalog_disabled",
+            });
+            send("done", {});
+            return;
+          }
           const grounded = await groundedBeyondMasterReply(
             lastMessage,
             () =>
@@ -318,19 +359,22 @@ export async function POST(request: Request) {
           return;
         }
 
-        const groundedPreview = await groundedBeyondMasterReply(
-          lastMessage,
-          () =>
-            Promise.resolve(
-              domainSearch ?? {
-                query: domainQuery ?? lastMessage,
-                error: null,
-                results: [],
-              },
-            ),
-          firstName,
-        );
+        const groundedPreview = features.groundedCatalog
+          ? await groundedBeyondMasterReply(
+              lastMessage,
+              () =>
+                Promise.resolve(
+                  domainSearch ?? {
+                    query: domainQuery ?? lastMessage,
+                    error: null,
+                    results: [],
+                  },
+                ),
+              firstName,
+            )
+          : { text: "", domains: [], language: "en" as const };
         const guestSkipDeterministic =
+          features.groundedCatalog &&
           !customerUserId &&
           !override &&
           runtimeConfig.configured &&
@@ -344,6 +388,7 @@ export async function POST(request: Request) {
             grounded: groundedPreview,
           });
         const authTopicSkip =
+          features.groundedCatalog &&
           Boolean(customerUserId) &&
           !override &&
           runtimeConfig.configured &&
@@ -436,6 +481,10 @@ export async function POST(request: Request) {
         }
         const systemPrompt = `${await buildBeyondMasterSystemPrompt(
           lastMessage,
+          {
+            includeKnowledge: features.knowledge,
+            includeCatalog: features.groundedCatalog,
+          },
         )}\n\n${conversationLanguagePromptBlock(
           parsed.messages,
           parsed.preferredLocale ?? conversationLocale,
@@ -525,6 +574,7 @@ export async function POST(request: Request) {
               : "error";
         if (
           code === "model_unavailable" &&
+          features.groundedCatalog &&
           detectGroundedTopic(lastMessage) &&
           !accountPromptUsed
         ) {

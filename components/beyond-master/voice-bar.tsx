@@ -48,6 +48,16 @@ export function BeyondMasterVoiceButton({
   const holdingRef = useRef(false);
   const [supported, setSupported] = useState(false);
   const [listening, setListening] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
+
+  useEffect(() => {
+    void fetch("/api/beyond-master/features", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((payload: { voiceInput?: boolean }) => {
+        if (payload.voiceInput === false) setVoiceEnabled(false);
+      })
+      .catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -128,7 +138,7 @@ export function BeyondMasterVoiceButton({
     }
   }
 
-  if (!supported) return null;
+  if (!supported || !voiceEnabled) return null;
 
   return (
     <button

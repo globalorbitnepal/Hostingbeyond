@@ -14,15 +14,31 @@ export function BeyondMasterIcon({
       focusable="false"
       className={className}
     >
-      <path
-        fill="currentColor"
-        d="M16 1.6c.9 6.4 4.2 9.8 10.4 11.2C20.2 14.2 16.9 17.6 16 24c-.9-6.4-4.2-9.8-10.4-11.2C11.8 11.4 15.1 8 16 1.6Z"
+      <ellipse
+        className="hb-bmai-orbit-a"
+        cx="16"
+        cy="16"
+        rx="13.6"
+        ry="5.2"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.55"
+        strokeLinecap="round"
       />
-      <path
-        fill="currentColor"
-        opacity="0.9"
-        d="M25.2 4.2c.35 2.2 1.45 3.4 3.6 3.9-2.15.5-3.25 1.7-3.6 3.9-.35-2.2-1.45-3.4-3.6-3.9 2.15-.5 3.25-1.7 3.6-3.9Z"
+      <ellipse
+        className="hb-bmai-orbit-b"
+        cx="16"
+        cy="16"
+        rx="13.6"
+        ry="5.2"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.35"
+        strokeLinecap="round"
+        opacity="0.62"
       />
+      <circle cx="16" cy="16" r="4.35" fill="currentColor" />
+      <circle cx="14.85" cy="14.7" r="1.45" fill="#fff" opacity="0.92" />
     </svg>
   );
 }

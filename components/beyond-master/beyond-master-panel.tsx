@@ -166,9 +166,6 @@ export function BeyondMasterAiPanel() {
       >
         <header className="hb-bmai-header">
           <div className="hb-bmai-header-brand">
-            <span className="hb-bmai-brand-mark" aria-hidden="true">
-              <BeyondMasterIcon size={22} />
-            </span>
             <div className="hb-bmai-title">
               <h2 id={titleId}>{BEYOND_MASTER_PANEL_TITLE}</h2>
             </div>
