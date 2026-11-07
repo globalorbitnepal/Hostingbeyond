@@ -24,6 +24,7 @@ export default function OrbitBeyondMasterSupportQueuePage() {
   const [replyBody, setReplyBody] = useState("");
   const [linkThread, setLinkThread] = useState<string | null>(null);
   const [linkRef, setLinkRef] = useState("");
+  const [canClaimOpen, setCanClaimOpen] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -35,14 +36,17 @@ export default function OrbitBeyondMasterSupportQueuePage() {
       );
       const payload = (await res.json().catch(() => null)) as {
         threads?: Row[];
+        canClaimOpen?: boolean;
         error?: string;
       } | null;
       if (!res.ok) {
         setError(payload?.error ?? "Queue could not be loaded.");
         setRows([]);
+        setCanClaimOpen(false);
         return;
       }
       setRows(payload?.threads ?? []);
+      setCanClaimOpen(payload?.canClaimOpen === true);
     } catch {
       setError("Queue could not be loaded.");
     } finally {
@@ -177,7 +181,7 @@ export default function OrbitBeyondMasterSupportQueuePage() {
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {row.queueStatus === "open" ? (
+                  {canClaimOpen && row.queueStatus === "open" ? (
                     <button
                       type="button"
                       className="rounded-full bg-violet-700 px-3 py-1 text-xs font-semibold text-white"
@@ -187,26 +191,35 @@ export default function OrbitBeyondMasterSupportQueuePage() {
                       Accept
                     </button>
                   ) : null}
+                  {!canClaimOpen && row.queueStatus === "open" ? (
+                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                      Waiting for a full admin to accept
+                    </span>
+                  ) : null}
                   <a
                     className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-800"
                     href={`/orbit/beyond-master/conversations?id=${encodeURIComponent(row.threadId)}`}
                   >
                     Open transcript
                   </a>
-                  <button
-                    type="button"
-                    className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-800"
-                    onClick={() => setReplyThread(row.threadId)}
-                  >
-                    Reply
-                  </button>
-                  <button
-                    type="button"
-                    className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-800"
-                    onClick={() => setLinkThread(row.threadId)}
-                  >
-                    Link ticket
-                  </button>
+                  {canClaimOpen || row.queueStatus !== "open" ? (
+                    <>
+                      <button
+                        type="button"
+                        className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-800"
+                        onClick={() => setReplyThread(row.threadId)}
+                      >
+                        Reply
+                      </button>
+                      <button
+                        type="button"
+                        className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-800"
+                        onClick={() => setLinkThread(row.threadId)}
+                      >
+                        Link ticket
+                      </button>
+                    </>
+                  ) : null}
                 </div>
               </div>
               {row.assigned ? (

@@ -168,9 +168,14 @@ function startHumanSupportPoll(threadId: string, guestToken: string | null) {
   const seenStaffIds = new Set<string>();
   humanSupportPollTimer = setInterval(async () => {
     try {
+      const conversation = snapshot.conversations.find(
+        (item) => item.id === threadId,
+      );
+      const token =
+        guestToken?.trim() || conversation?.guestCapabilityToken?.trim() || "";
       const headers: Record<string, string> = {};
-      if (guestToken) {
-        headers["x-beyond-master-guest-token"] = guestToken;
+      if (token) {
+        headers["x-beyond-master-guest-token"] = token;
       }
       const res = await fetch(
         `/api/beyond-master/threads?id=${encodeURIComponent(threadId)}`,
@@ -188,9 +193,6 @@ function startHumanSupportPoll(threadId: string, guestToken: string | null) {
         };
       };
       const messages = payload.thread?.messages ?? [];
-      const conversation = snapshot.conversations.find(
-        (item) => item.id === threadId,
-      );
       if (!conversation) return;
       const merged = [...conversation.messages];
       for (const row of messages) {
@@ -754,8 +756,9 @@ export async function sendBeyondMasterMessage(text?: string) {
               message: queueMessage,
             },
             humanSupportPollThreadId: merged.id,
-            humanSupportPollGuestToken:
-              beyondMasterGuestClient() && issuedTok ? issuedTok : null,
+            humanSupportPollGuestToken: beyondMasterGuestClient()
+              ? issuedTok || guestCapabilityForConversation(merged) || null
+              : null,
           });
         }
         if (

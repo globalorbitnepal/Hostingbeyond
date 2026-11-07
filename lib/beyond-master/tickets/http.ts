@@ -14,6 +14,24 @@ import {
 } from "@/lib/beyond-master/rate-limit";
 import { classifySupportIntent } from "@/lib/beyond-master/tickets/intent";
 import { enqueueThreadForHumanSupport } from "@/lib/beyond-master/human-support";
+
+type EnqueueHumanSupport = typeof enqueueThreadForHumanSupport;
+
+/** Tests only: replace the queue write so guest vs customer identity can be asserted. */
+let enqueueHumanSupportForTests: EnqueueHumanSupport | null = null;
+
+export function setEnqueueHumanSupportForTests(
+  fn: EnqueueHumanSupport | null,
+): void {
+  enqueueHumanSupportForTests = fn;
+}
+
+function enqueueHumanSupport(
+  input: Parameters<EnqueueHumanSupport>[0],
+): ReturnType<EnqueueHumanSupport> {
+  const fn = enqueueHumanSupportForTests ?? enqueueThreadForHumanSupport;
+  return fn(input);
+}
 import { getBeyondMasterTicketRepository } from "@/lib/beyond-master/tickets/repository";
 import {
   draftIdempotencyKey,
@@ -135,11 +153,13 @@ export async function supportEventForChat(
     let issuedGuestToken: string | undefined;
     let queued = false;
     if (threadId && /^[A-Za-z0-9-]{8,64}$/.test(threadId)) {
-      const enq = await enqueueThreadForHumanSupport({
+      const enq = await enqueueHumanSupport({
         threadId,
-        customerUserId: null,
+        customerUserId,
         ticketReference: null,
-        guestCapabilityToken: options?.guestCapabilityToken ?? null,
+        guestCapabilityToken: customerUserId
+          ? null
+          : (options?.guestCapabilityToken ?? null),
       });
       queued = enq.ok;
       if (enq.ok && "guestCapabilityToken" in enq && enq.guestCapabilityToken) {
@@ -151,7 +171,9 @@ export async function supportEventForChat(
       kind: "human_queue" as const,
       queued,
       message: queued
-        ? "Your conversation is queued for staff in Orbit. Sign in to open a tracked ticket; guests cannot access account data here."
+        ? customerUserId
+          ? "Your conversation is queued for staff in Orbit. Replies will appear in this chat."
+          : "Your conversation is queued for staff in Orbit. Sign in to open a tracked ticket; guests cannot access account data here."
         : "I could not place this conversation in the staff queue automatically. Sign in and submit a support ticket so a person can pick it up; guests cannot access account data here.",
       ...(issuedGuestToken ? { guestCapabilityToken: issuedGuestToken } : {}),
     };
@@ -183,7 +205,7 @@ export async function supportEventForChat(
   }
   const threadId = options?.threadId?.trim() ?? "";
   if (intent.handoff && threadId && /^[A-Za-z0-9-]{8,64}$/.test(threadId)) {
-    await enqueueThreadForHumanSupport({
+    await enqueueHumanSupport({
       threadId,
       customerUserId,
       ticketReference: null,

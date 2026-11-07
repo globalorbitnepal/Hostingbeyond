@@ -84,3 +84,24 @@ export function canOrbitBeyondMasterSupport(
   const m = orbitAccessForAdmin(adminId, env);
   return m === "full" || m === "support_only";
 }
+
+const SUPPORT_ONLY_ORBIT_PREFIXES = [
+  "/orbit/beyond-master/support-queue",
+  "/orbit/beyond-master/conversations",
+  "/api/orbit/beyond-master/support-queue",
+  "/api/orbit/beyond-master/conversations",
+  "/api/orbit/auth/",
+] as const;
+
+function orbitPathMatches(pathname: string, prefix: string): boolean {
+  if (prefix.endsWith("/")) return pathname.startsWith(prefix);
+  return pathname === prefix || pathname.startsWith(`${prefix}/`);
+}
+
+/** Pages and APIs a support-only Orbit session may open. Everything else stays full-admin. */
+export function supportOnlyOrbitPathAllowed(pathname: string): boolean {
+  if (pathname === "/orbit" || pathname === "/api/orbit/me") return true;
+  return SUPPORT_ONLY_ORBIT_PREFIXES.some((prefix) =>
+    orbitPathMatches(pathname, prefix),
+  );
+}

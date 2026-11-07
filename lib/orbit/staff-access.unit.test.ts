@@ -5,6 +5,7 @@ import {
   canOrbitBeyondMasterSupport,
   isOrbitFullAdmin,
   orbitAccessForAdmin,
+  supportOnlyOrbitPathAllowed,
 } from "@/lib/orbit/staff-access";
 
 describe("orbit staff access", () => {
@@ -101,5 +102,31 @@ describe("orbit staff access", () => {
     };
     assert.equal(orbitAccessForAdmin("s1", env), "support_only");
     assert.equal(orbitAccessForAdmin("unknown", env), "none");
+  });
+
+  it("limits support-only navigation to the support queue and assigned conversations", () => {
+    assert.equal(
+      supportOnlyOrbitPathAllowed("/orbit/beyond-master/support-queue"),
+      true,
+    );
+    assert.equal(
+      supportOnlyOrbitPathAllowed("/orbit/beyond-master/conversations"),
+      true,
+    );
+    assert.equal(supportOnlyOrbitPathAllowed("/api/orbit/me"), true);
+    assert.equal(supportOnlyOrbitPathAllowed("/api/orbit/auth/logout"), true);
+    assert.equal(supportOnlyOrbitPathAllowed("/orbit/wallets"), false);
+    assert.equal(supportOnlyOrbitPathAllowed("/orbit/content"), false);
+    assert.equal(supportOnlyOrbitPathAllowed("/orbit/settings"), false);
+    assert.equal(supportOnlyOrbitPathAllowed("/orbit/invoices"), false);
+    assert.equal(
+      supportOnlyOrbitPathAllowed("/orbit/beyond-master/ai-budget"),
+      false,
+    );
+    assert.equal(supportOnlyOrbitPathAllowed("/api/orbit/wallets"), false);
+    assert.equal(
+      supportOnlyOrbitPathAllowed("/orbit/beyond-master/support-queue-extra"),
+      false,
+    );
   });
 });

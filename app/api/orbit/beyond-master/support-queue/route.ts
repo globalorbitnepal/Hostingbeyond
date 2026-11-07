@@ -33,7 +33,10 @@ export async function GET(request: Request) {
       ? {}
       : { restrictToSupportViewerId: admin.id }),
   });
-  return Response.json({ threads });
+  return Response.json({
+    threads,
+    canClaimOpen: isOrbitFullAdmin(admin.id),
+  });
 }
 
 const postSchema = z.union([
