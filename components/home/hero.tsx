@@ -133,10 +133,11 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
     <section className="relative z-10 flex min-h-0 flex-1 flex-col">
       <link rel="preload" as="image" href={speakerSrc} fetchPriority="high" />
 
-      {/* Readability scrim over the empty left side of the hero photo */}
+      {/* Soft left fade only — a hard 58% cutoff plus backdrop-filter
+          painted a lighting seam through the search pill. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-y-0 left-0 z-[1] hidden w-[58%] bg-gradient-to-r from-[#3c1178]/55 via-[#4c1d95]/18 to-transparent lg:block"
+        className="pointer-events-none absolute inset-0 z-[1] hidden bg-gradient-to-r from-[#3c1178]/50 via-[#4c1d95]/12 via-42% to-transparent lg:block"
       />
 
       {/* Mobile speaker — a photo band under the search card, the desktop hero paints it as its background */}
@@ -196,7 +197,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
             initial={reduceMotion ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.12 }}
-            className="relative z-30 mt-3 flex w-full max-w-none flex-col gap-2 rounded-[28px] border border-white/40 bg-white/22 p-2.5 shadow-[0_22px_60px_rgba(15,23,42,0.24)] backdrop-blur-2xl sm:flex-row sm:items-center sm:gap-2 sm:rounded-full sm:p-2 lg:mt-6 lg:w-[min(158%,54rem)] xl:w-[min(170%,58rem)]"
+            className="hb-search-pill relative z-30 mt-3 flex w-full max-w-none flex-col gap-2 rounded-[28px] border border-white/35 p-2.5 shadow-[0_22px_60px_rgba(15,23,42,0.24)] sm:flex-row sm:items-center sm:gap-2 sm:rounded-full sm:p-2 lg:mt-6 lg:w-[min(158%,54rem)] xl:w-[min(170%,58rem)]"
           >
             <div className="flex min-w-0 flex-1 items-center gap-2.5 px-3 sm:px-4">
               <Search className="size-5 shrink-0 text-white/80" aria-hidden />
@@ -261,7 +262,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
                     "focus-visible:ring-2 focus-visible:ring-white/85 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
                     active
                       ? "border-white bg-white shadow-[0_12px_28px_rgba(49,16,107,0.32),inset_0_1px_0_#fff]"
-                      : "border-white/20 bg-white/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.22)] backdrop-blur-xl hover:border-white/40 hover:bg-white/[0.14]",
+                      : "border-white/20 bg-white/[0.12] shadow-[inset_0_1px_0_rgba(255,255,255,0.22)] hover:border-white/40 hover:bg-white/[0.18]",
                   )}
                 >
                   <span

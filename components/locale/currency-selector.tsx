@@ -176,7 +176,7 @@ export function CurrencySelector({
   }, [open, updateMenuPosition]);
 
   const chipClass = cn(
-    "inline-flex shrink-0 touch-manipulation items-center gap-0.5 border font-bold tracking-[0.06em] tabular-nums backdrop-blur-xl transition-colors duration-150 select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563eb]",
+    "inline-flex shrink-0 touch-manipulation items-center gap-0.5 border font-bold tracking-[0.06em] tabular-nums transition-colors duration-150 select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563eb]",
     light
       ? "border-slate-200/90 bg-white/85 text-slate-800 shadow-[0_4px_16px_rgba(15,23,42,0.06)] hover:bg-white"
       : "border-white/[0.12] bg-white/[0.06] text-white hover:bg-white/[0.09]",
