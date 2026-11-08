@@ -42,10 +42,10 @@
 .hb-bmai-dock-bubble {
   display: inline-flex;
   /* Fixed box: prompt text rotates every 3.2s, and a width change would shift
-     the dock plus page layout (CLS). Text is clipped inside a stable pill. */
-  width: 188px;
-  max-width: calc(100vw - 108px);
-  justify-content: center;
+     the dock plus page layout (CLS). Text sits left-aligned inside a stable pill. */
+  width: min(188px, calc(100vw - 108px));
+  justify-content: flex-start;
+  text-align: left;
   box-sizing: border-box;
   padding: 9px 13px;
   overflow: hidden;
@@ -77,6 +77,7 @@
   display: block;
   max-width: 100%;
   overflow: hidden;
+  text-align: left;
   text-overflow: ellipsis;
   white-space: nowrap;
   animation: hb-bmai-hello-in 380ms ease;
@@ -106,8 +107,9 @@
 
 .hb-bmai-agent {
   display: grid;
-  width: 68px;
-  height: 68px;
+  /* +10% over the previous 64px dock animation. */
+  width: 71px;
+  height: 71px;
   place-items: center;
   color: #ffffff;
   background: transparent;
@@ -116,6 +118,8 @@
 
 .hb-bmai-agent svg {
   display: block;
+  width: 100%;
+  height: 100%;
   overflow: visible;
   filter: drop-shadow(0 10px 18px rgba(15, 23, 42, 0.38))
     drop-shadow(0 0 10px rgba(165, 180, 252, 0.45));
@@ -1063,12 +1067,14 @@
   }
 
   .hb-bmai-agent {
-    width: 58px;
-    height: 58px;
+    /* +10% over the previous 58px mobile animation. */
+    width: 64px;
+    height: 64px;
   }
 
   .hb-bmai-dock-bubble {
-    max-width: min(168px, calc(100vw - 92px));
+    /* 176px keeps the longest prompt ("Compare hosting plans?") unclipped. */
+    width: min(176px, calc(100vw - 92px));
     font-size: 12px;
   }
 

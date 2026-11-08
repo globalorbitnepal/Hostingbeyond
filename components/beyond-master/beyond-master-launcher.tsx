@@ -80,7 +80,7 @@ export function BeyondMasterAiLauncher({
         </span>
       )}
       <span className="hb-bmai-agent" aria-hidden="true">
-        <BeyondMasterIcon size={64} />
+        <BeyondMasterIcon size={71} />
       </span>
     </button>
   );
