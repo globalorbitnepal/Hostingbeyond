@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Image from "next/image";
 import { createPortal } from "react-dom";
 
 import {
   BEYOND_MASTER_BRAND_NAME,
   BEYOND_MASTER_DOCK_PROMPT,
-  BEYOND_MASTER_DOCK_PROMPTS,
 } from "@/lib/beyond-master/copy";
 import {
   closeBeyondMasterAi,
@@ -15,7 +14,6 @@ import {
 } from "@/lib/beyond-master/ui-store";
 
 import "@/styles/beyond-master.css";
-import { BeyondMasterIcon } from "./beyond-master-icon";
 
 export function BeyondMasterAiLauncher({
   compact = false,
@@ -27,26 +25,6 @@ export function BeyondMasterAiLauncher({
   onOpen?: () => void;
 }) {
   const { open } = useBeyondMasterAi();
-  const [line, setLine] = useState<string | null>(null);
-  const [cycling, setCycling] = useState(false);
-
-  useEffect(() => {
-    const start = window.setTimeout(() => {
-      setLine(BEYOND_MASTER_DOCK_PROMPTS[0]);
-      setCycling(true);
-    }, 1200);
-    return () => window.clearTimeout(start);
-  }, []);
-
-  useEffect(() => {
-    if (!cycling) return;
-    let index = 0;
-    const tick = window.setInterval(() => {
-      index = (index + 1) % BEYOND_MASTER_DOCK_PROMPTS.length;
-      setLine(BEYOND_MASTER_DOCK_PROMPTS[index]);
-    }, 3200);
-    return () => window.clearInterval(tick);
-  }, [cycling]);
 
   const togglePanel = () => {
     if (open) closeBeyondMasterAi();
@@ -57,7 +35,7 @@ export function BeyondMasterAiLauncher({
   const dock = (
     <button
       type="button"
-      className="hb-bmai-launch"
+      className="hb-bmai-launch hb-bmai-launch--mascot"
       aria-expanded={open}
       aria-controls="beyond-master-ai-panel"
       aria-label={`${BEYOND_MASTER_BRAND_NAME}. ${BEYOND_MASTER_DOCK_PROMPT}`}
@@ -66,21 +44,16 @@ export function BeyondMasterAiLauncher({
       data-menu={menu ? "true" : "false"}
       onClick={togglePanel}
     >
-      {open ? null : (
-        <span className="hb-bmai-dock-bubble">
-          {line ? (
-            <span key={line} className="hb-bmai-dock-hello">
-              {line}
-            </span>
-          ) : (
-            <span className="hb-bmai-dock-wait" aria-hidden="true">
-              ---
-            </span>
-          )}
-        </span>
-      )}
       <span className="hb-bmai-agent" aria-hidden="true">
-        <BeyondMasterIcon size={71} />
+        <span className="hb-bmai-agent-ring" />
+        <Image
+          src="/brand/hostingbeyond-ai-robot.png"
+          alt=""
+          width={88}
+          height={88}
+          className="hb-bmai-agent-mascot"
+          priority
+        />
       </span>
     </button>
   );

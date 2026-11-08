@@ -2,15 +2,13 @@
 
 import { FormEvent, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowUp, Clock3, ImagePlus, Plus, X } from "lucide-react";
+import { Clock3, ImagePlus, Plus, Send, X } from "lucide-react";
 
 import {
   BEYOND_MASTER_DISCLAIMER,
   BEYOND_MASTER_INPUT_PLACEHOLDER,
   BEYOND_MASTER_LAUNCHER_LABEL,
   BEYOND_MASTER_PANEL_TITLE,
-  BEYOND_MASTER_WELCOME_BODY,
-  BEYOND_MASTER_WELCOME_HEADING,
 } from "@/lib/beyond-master/copy";
 import {
   closeBeyondMasterAi,
@@ -37,9 +35,9 @@ import {
 import { isAgentGreeting } from "@/lib/beyond-master/domain-intent";
 
 import "@/styles/beyond-master.css";
-import { BeyondMasterIcon } from "./beyond-master-icon";
 import { BeyondMasterVoiceButton } from "./voice-bar";
 import { BeyondMasterQuestionCard } from "./question-card";
+import { BeyondMasterWelcomePremium } from "./beyond-master-welcome-premium";
 
 function formatStamp(iso: string) {
   const date = new Date(iso);
@@ -141,7 +139,7 @@ export function BeyondMasterAiPanel() {
         aria-hidden={!state.open}
         data-open={state.open ? "true" : "false"}
         data-dragging={dragging ? "true" : "false"}
-        className="hb-bmai-panel"
+        className="hb-bmai-panel hb-bmai-panel--premium"
         inert={state.open ? undefined : true}
         onDragOver={(event) => {
           event.preventDefault();
@@ -220,34 +218,13 @@ export function BeyondMasterAiPanel() {
 
         <div className="hb-bmai-scroll" ref={scrollRef}>
           {messages.length === 0 ? (
-            <div className="hb-bmai-welcome">
-              <div className="hb-bmai-hero-mark" aria-hidden="true">
-                <BeyondMasterIcon size={72} />
-              </div>
-              <h2>{BEYOND_MASTER_WELCOME_HEADING}</h2>
-              {BEYOND_MASTER_WELCOME_BODY ? (
-                <p>{BEYOND_MASTER_WELCOME_BODY}</p>
-              ) : null}
-              <div className="hb-bmai-welcome-body">
-                <p>
-                  Tell me what you need using the options below, or type your
-                  own answer.
-                </p>
-              </div>
-              <BeyondMasterQuestionCard
-                locale={clientLocale}
-                disabled={state.checking}
-                onAnswer={(prompt) => {
-                  setQuestionsDone(true);
-                  void sendBeyondMasterMessage(prompt);
-                }}
-                onSkip={() => {
-                  setQuestionsDone(true);
-                  setBeyondMasterDraft("");
-                  inputRef.current?.focus();
-                }}
-              />
-            </div>
+            <BeyondMasterWelcomePremium
+              disabled={state.checking}
+              onPrompt={(prompt) => {
+                setQuestionsDone(true);
+                void sendBeyondMasterMessage(prompt);
+              }}
+            />
           ) : (
             <div className="hb-bmai-thread" aria-live="polite">
               {messages.map((message) =>
@@ -719,7 +696,7 @@ export function BeyondMasterAiPanel() {
             aria-label={state.checking ? "Sending" : "Send"}
             disabled={state.checking || state.draft.trim().length === 0}
           >
-            <ArrowUp className="size-4" />
+            <Send className="size-[15px]" />
           </button>
         </form>
         <p className="hb-bmai-foot">{BEYOND_MASTER_DISCLAIMER}</p>

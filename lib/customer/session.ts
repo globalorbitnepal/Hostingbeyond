@@ -4,7 +4,9 @@ import { SignJWT, jwtVerify } from "jose";
 import { prisma } from "@/lib/prisma";
 import { sessionSecret } from "@/lib/orbit/jwt";
 
-export const CUSTOMER_SESSION_COOKIE = "hb_customer_session";
+import { CUSTOMER_SESSION_COOKIE } from "@/lib/customer/session-cookie";
+
+export { CUSTOMER_SESSION_COOKIE };
 export const CUSTOMER_SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30;
 export const CUSTOMER_SESSION_SHORT_TTL_MS = 1000 * 60 * 60 * 12;
 

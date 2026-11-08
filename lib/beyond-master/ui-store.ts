@@ -28,7 +28,7 @@ import type {
 import type { AccountCard } from "@/lib/beyond-master/account/types";
 import type { CommerceProposalView } from "@/lib/beyond-master/commerce/types";
 import type { DnsProposalView } from "@/lib/beyond-master/dns/workflow";
-import { CUSTOMER_SESSION_COOKIE } from "@/lib/customer/session";
+import { CUSTOMER_SESSION_COOKIE } from "@/lib/customer/session-cookie";
 
 export type BeyondMasterView = "chat" | "history";
 
