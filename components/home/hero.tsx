@@ -20,7 +20,15 @@ import { routes } from "@/config/routes";
 import { cn } from "@/lib/utils";
 import type { CmsHeroContent } from "@/lib/orbit/defaults";
 
-const FALLBACK_TEASERS = [
+type HeroDomainTeaser = {
+  tld: string;
+  priceLabel: string;
+  usd?: number;
+  originalUsd?: number;
+  visible?: boolean;
+};
+
+const FALLBACK_TEASERS: HeroDomainTeaser[] = [
   {
     tld: ".com",
     priceLabel: "$9.99/yr",
@@ -49,7 +57,7 @@ const FALLBACK_TEASERS = [
     originalUsd: 18.99,
     visible: true,
   },
-] as const;
+];
 
 const OFFER_BY_TLD: Record<string, { usd: number; originalUsd: number }> = {
   ".com": { usd: 9.99, originalUsd: 17.99 },
@@ -131,7 +139,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
     "Reliable hosting, powerful infrastructure and the freedom to build what's next.";
   const searchButtonLabel = content?.searchButtonLabel || "Search";
 
-  const teasers = useMemo(() => {
+  const teasers = useMemo((): HeroDomainTeaser[] => {
     const fromCms = (content?.domainPricing ?? []).filter(
       (item) => item.visible !== false && item.tld.trim(),
     );
@@ -384,7 +392,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
                         <CatalogPrice usd={item.originalUsd} />
                       </span>
                     ) : null}
-                    {"usd" in item && typeof item.usd === "number" ? (
+                    {typeof item.usd === "number" ? (
                       <span>
                         <CatalogPrice usd={item.usd} />
                         <span className="ml-px hidden text-[0.88em] font-semibold tracking-normal opacity-70 sm:inline">
@@ -392,7 +400,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
                         </span>
                       </span>
                     ) : (
-                      item.priceLabel
+                      <span>{item.priceLabel}</span>
                     )}
                   </span>
                 </button>
