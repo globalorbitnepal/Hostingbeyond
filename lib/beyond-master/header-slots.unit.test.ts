@@ -51,6 +51,26 @@ describe("header assistant slots", () => {
     assert.equal(launcher.includes("AiAgentBadge"), false);
   });
 
+  it("keeps hero search chrome free of backdrop-filter lighting seams", () => {
+    const hero = readFileSync("components/home/hero.tsx", "utf8");
+    assert.equal(hero.includes("backdrop-blur"), false);
+    assert.equal(hero.includes("hb-search-pill"), true);
+    const css = readFileSync("app/globals.css", "utf8");
+    assert.equal(css.includes(".hb-search-pill"), true);
+    assert.equal(css.includes("background-attachment: fixed"), false);
+  });
+
+  it("keeps the Orbit chrome header opaque so scroll cannot band", () => {
+    const shell = readFileSync("components/orbit/shell.tsx", "utf8");
+    const headerLine = shell
+      .split("\n")
+      .find((line) => line.includes("sticky top-0"));
+    assert.ok(headerLine, "Orbit sticky header line must exist");
+    assert.equal(headerLine.includes("backdrop-blur"), false);
+    assert.equal(headerLine.includes("bg-white/70"), false);
+    assert.equal(headerLine.includes("bg-white"), true);
+  });
+
   it("keeps the header pill opaque with no backdrop blur banding", () => {
     const header = readFileSync("components/layout/header.tsx", "utf8");
     assert.equal(header.includes("hb-header-bar"), true);

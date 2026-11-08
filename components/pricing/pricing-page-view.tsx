@@ -349,7 +349,7 @@ export function PricingPageView({
 
           <div className="mt-8 flex justify-center pb-1">
             <div
-              className="sticky top-[4.25rem] z-30 w-full max-w-[min(100%,72rem)] rounded-[22px] border border-white/35 bg-white/12 px-2 py-2 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.45)] backdrop-blur-xl sm:px-3"
+              className="sticky top-[4.25rem] z-30 w-full max-w-[min(100%,72rem)] rounded-[22px] border border-white/25 bg-[#3b1d8f]/92 px-2 py-2 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.45)] sm:px-3"
               role="tablist"
               aria-label="Pricing categories"
             >
