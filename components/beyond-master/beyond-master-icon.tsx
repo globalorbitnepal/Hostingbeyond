@@ -21,7 +21,7 @@ export function BeyondMasterIcon({
         rx="13.6"
         ry="5.2"
         fill="none"
-        stroke="currentColor"
+        stroke="#a855f7"
         strokeWidth="1.55"
         strokeLinecap="round"
       />
@@ -32,12 +32,12 @@ export function BeyondMasterIcon({
         rx="13.6"
         ry="5.2"
         fill="none"
-        stroke="currentColor"
+        stroke="#ffffff"
         strokeWidth="1.35"
         strokeLinecap="round"
-        opacity="0.62"
+        opacity="0.92"
       />
-      <circle cx="16" cy="16" r="4.35" fill="currentColor" />
+      <circle cx="16" cy="16" r="4.35" fill="#ffffff" />
       <circle cx="14.85" cy="14.7" r="1.45" fill="#fff" opacity="0.92" />
     </svg>
   );

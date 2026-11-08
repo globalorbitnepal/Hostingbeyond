@@ -2,7 +2,16 @@
 
 import { type FormEvent, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { ArrowRight, ChevronDown, Search } from "lucide-react";
+import {
+  ArrowRight,
+  ChevronDown,
+  Code2,
+  Crown,
+  Globe,
+  Link2,
+  Search,
+  Users,
+} from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 
 import { CatalogPrice } from "@/components/i18n/localized-text";
@@ -12,11 +21,42 @@ import { cn } from "@/lib/utils";
 import type { CmsHeroContent } from "@/lib/orbit/defaults";
 
 const FALLBACK_TEASERS = [
-  { tld: ".com", priceLabel: "$7.99/yr", usd: 7.99, visible: true },
-  { tld: ".net", priceLabel: "$6.99/yr", usd: 6.99, visible: true },
-  { tld: ".org", priceLabel: "$5.99/yr", usd: 5.99, visible: true },
-  { tld: ".dev", priceLabel: "$3.99/yr", usd: 3.99, visible: true },
+  {
+    tld: ".com",
+    priceLabel: "$9.99/yr",
+    usd: 9.99,
+    originalUsd: 17.99,
+    visible: true,
+  },
+  {
+    tld: ".net",
+    priceLabel: "$11.99/yr",
+    usd: 11.99,
+    originalUsd: 17.49,
+    visible: true,
+  },
+  {
+    tld: ".org",
+    priceLabel: "$7.99/yr",
+    usd: 7.99,
+    originalUsd: 17.99,
+    visible: true,
+  },
+  {
+    tld: ".dev",
+    priceLabel: "$8.99/yr",
+    usd: 8.99,
+    originalUsd: 18.99,
+    visible: true,
+  },
 ] as const;
+
+const OFFER_BY_TLD: Record<string, { usd: number; originalUsd: number }> = {
+  ".com": { usd: 9.99, originalUsd: 17.99 },
+  ".net": { usd: 11.99, originalUsd: 17.49 },
+  ".org": { usd: 7.99, originalUsd: 17.99 },
+  ".dev": { usd: 8.99, originalUsd: 18.99 },
+};
 
 function usdFromPriceLabel(label: string): number | undefined {
   if (!/\$|USD/i.test(label)) return undefined;
@@ -28,6 +68,15 @@ function usdFromPriceLabel(label: string): number | undefined {
 
 const SCENE_FALLBACK = "/images/hero-speaker-v6.webp";
 const TYPING_COPY = "Find the perfect domain for your brand";
+
+function tldMark(tld: string) {
+  const key = tld.replace(/^\./, "").toLowerCase();
+  if (key === "com") return Globe;
+  if (key === "net") return Link2;
+  if (key === "org") return Users;
+  if (key === "dev") return Code2;
+  return Globe;
+}
 
 function useTypedPlaceholder(active: boolean, reduce: boolean | null) {
   const [text, setText] = useState(reduce ? TYPING_COPY : "");
@@ -89,13 +138,16 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
     if (fromCms.length) {
       return fromCms.map((item) => {
         const tld = item.tld.startsWith(".") ? item.tld : `.${item.tld}`;
+        const offer = OFFER_BY_TLD[tld.toLowerCase()];
         const fallbackUsd = FALLBACK_TEASERS.find(
           (row) => row.tld === tld,
         )?.usd;
         return {
           ...item,
           tld,
-          usd: usdFromPriceLabel(item.priceLabel) ?? fallbackUsd,
+          usd: offer?.usd ?? usdFromPriceLabel(item.priceLabel) ?? fallbackUsd,
+          originalUsd: offer?.originalUsd,
+          priceLabel: offer ? `$${offer.usd}/yr` : item.priceLabel,
         };
       });
     }
@@ -197,16 +249,18 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
             initial={reduceMotion ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.12 }}
-            className="hb-search-pill relative z-30 mt-3 flex w-full max-w-none flex-col gap-2 rounded-[28px] border border-white/35 p-2.5 shadow-[0_22px_60px_rgba(15,23,42,0.24)] sm:flex-row sm:items-center sm:gap-2 sm:rounded-full sm:p-2 lg:mt-6 lg:w-[min(158%,54rem)] xl:w-[min(170%,58rem)]"
+            className="hb-search-pill relative z-30 mt-3 flex w-full max-w-none flex-col gap-2 rounded-[28px] p-2.5 sm:flex-row sm:items-center sm:gap-2 sm:rounded-full sm:p-1.5 lg:mt-6 lg:w-[min(158%,54rem)] xl:w-[min(170%,58rem)]"
           >
-            <div className="flex min-w-0 flex-1 items-center gap-2.5 px-3 sm:px-4">
-              <Search className="size-5 shrink-0 text-white/80" aria-hidden />
+            <div className="flex min-w-0 flex-1 items-center gap-2.5 px-2.5 sm:px-3">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white/12 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.28)]">
+                <Search className="size-4" aria-hidden />
+              </span>
               <input
                 value={domain}
                 onChange={(e) => setDomain(e.target.value)}
                 placeholder={reduceMotion ? TYPING_COPY : `${typed}|`}
                 aria-label={TYPING_COPY}
-                className="min-w-0 flex-1 bg-transparent py-2.5 text-[15px] text-white outline-none placeholder:text-white/70 sm:py-1 sm:text-[16px]"
+                className="min-w-0 flex-1 bg-transparent py-2.5 text-[15px] text-white outline-none placeholder:text-[#d7c6ff] sm:py-1 sm:text-[16px]"
               />
             </div>
             <div className="flex items-center gap-1.5 sm:gap-2">
@@ -230,7 +284,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
               </label>
               <button
                 type="submit"
-                className="inline-flex h-12 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full bg-white px-3 text-[13px] font-bold whitespace-nowrap text-slate-950 shadow-[0_10px_24px_rgba(15,23,42,0.18)] transition hover:bg-white/90 sm:flex-none sm:px-6 sm:text-[14.5px]"
+                className="hb-search-cta inline-flex h-12 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-[13px] font-extrabold whitespace-nowrap transition sm:flex-none sm:px-6 sm:text-[14.5px]"
               >
                 {searchButtonLabel}
                 <ArrowRight className="size-4" aria-hidden />
@@ -244,13 +298,23 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
             transition={{ delay: 0.16 }}
             role="group"
             aria-label="Popular domain extensions"
-            className="relative z-30 mt-4 grid w-full grid-cols-4 gap-1.5 sm:flex sm:w-auto sm:flex-nowrap sm:items-center sm:gap-2.5"
+            className="relative z-30 mt-7 grid w-full grid-cols-2 gap-x-2 gap-y-5 sm:mt-8 sm:flex sm:flex-nowrap sm:items-center sm:gap-3 lg:w-[min(158%,54rem)] xl:w-[min(170%,58rem)]"
           >
-            {teasers.map((item) => {
+            {teasers.map((item, index) => {
               const value = item.tld.startsWith(".")
                 ? item.tld
                 : `.${item.tld}`;
               const active = value === tld;
+              const popular =
+                value.toLowerCase() === ".com" ||
+                (index === 0 &&
+                  !teasers.some((row) => {
+                    const tldValue = row.tld.startsWith(".")
+                      ? row.tld
+                      : `.${row.tld}`;
+                    return tldValue.toLowerCase() === ".com";
+                  }));
+              const Icon = tldMark(value);
               return (
                 <button
                   key={item.tld}
@@ -258,22 +322,37 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
                   aria-pressed={active}
                   onClick={() => setTld(value)}
                   className={cn(
-                    "group relative isolate flex min-w-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-[16px] border px-1.5 py-2 transition-[background-color,border-color,box-shadow,transform] duration-200 ease-out outline-none sm:h-10 sm:flex-row sm:gap-0 sm:rounded-full sm:px-4 sm:py-0",
-                    "focus-visible:ring-2 focus-visible:ring-white/85 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
-                    active
-                      ? "border-white bg-white shadow-[0_12px_28px_rgba(49,16,107,0.32),inset_0_1px_0_#fff]"
-                      : "border-white/20 bg-white/[0.12] shadow-[inset_0_1px_0_rgba(255,255,255,0.22)] hover:border-white/40 hover:bg-white/[0.18]",
+                    "hb-tld-chip group relative isolate flex h-auto min-h-[52px] w-full shrink-0 flex-col items-center justify-center gap-1 overflow-visible rounded-[22px] px-2.5 py-2 whitespace-nowrap transition-[transform,box-shadow] duration-200 ease-out outline-none sm:h-[52px] sm:w-auto sm:flex-none sm:flex-row sm:justify-start sm:gap-2 sm:rounded-full sm:px-4 sm:py-0",
+                    "focus-visible:ring-2 focus-visible:ring-violet-200/90 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
+                    popular
+                      ? "hb-tld-chip--popular"
+                      : active
+                        ? "hb-tld-chip--glass hb-tld-chip--active"
+                        : "hb-tld-chip--glass",
                   )}
                 >
-                  <span
-                    aria-hidden
-                    className="pointer-events-none absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-white/70 to-transparent sm:inset-x-4"
-                  />
+                  {popular ? (
+                    <span className="hb-tld-chip-badge absolute -top-3.5 left-1/2 z-10 inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full px-3 py-1 text-[10.5px] font-extrabold tracking-[0.07em] text-[#faf5ff] uppercase antialiased sm:text-[11.5px]">
+                      <Crown
+                        className="size-3 shrink-0 text-[#faf5ff]"
+                        fill="currentColor"
+                        aria-hidden
+                      />
+                      Most Popular
+                    </span>
+                  ) : null}
                   <span
                     className={cn(
-                      "truncate text-[13px] leading-none font-extrabold tracking-[-0.03em] sm:text-[14px]",
-                      active ? "text-[#4c1d95]" : "text-white",
+                      "hidden size-8 shrink-0 items-center justify-center rounded-full sm:flex",
+                      popular
+                        ? "hb-tld-chip-icon--popular"
+                        : "bg-white/12 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.28)]",
                     )}
+                  >
+                    <Icon className="size-3.5" aria-hidden />
+                  </span>
+                  <span
+                    className="text-[13px] leading-none font-extrabold tracking-[-0.03em] text-white sm:text-[15px]"
                     translate="no"
                   >
                     {value}
@@ -281,24 +360,37 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
                   <span
                     aria-hidden
                     className={cn(
-                      "mx-2.5 hidden h-3 w-px shrink-0 sm:block",
-                      active ? "bg-[#4c1d95]/18" : "bg-white/25",
+                      "hidden h-3.5 w-px shrink-0 sm:block",
+                      popular ? "bg-violet-200/50" : "bg-white/22",
                     )}
                   />
                   <span
                     className={cn(
-                      "truncate text-[11px] leading-none font-semibold tracking-[-0.01em] tabular-nums sm:text-[12.5px]",
-                      active ? "text-slate-500" : "text-white/78",
+                      "inline-flex items-baseline gap-1 text-[11.5px] leading-none font-bold tracking-[-0.01em] tabular-nums sm:gap-1.5 sm:text-[13.5px]",
+                      popular ? "text-[#ede9fe]" : "text-[#d7c6ff]",
                     )}
                     translate="no"
                   >
+                    {"originalUsd" in item &&
+                    typeof item.originalUsd === "number" ? (
+                      <span
+                        className={cn(
+                          "text-[10px] font-semibold line-through decoration-[1.5px] sm:text-[11.5px]",
+                          popular
+                            ? "text-violet-100/55 decoration-violet-100/65"
+                            : "text-white/45 decoration-white/50",
+                        )}
+                      >
+                        <CatalogPrice usd={item.originalUsd} />
+                      </span>
+                    ) : null}
                     {"usd" in item && typeof item.usd === "number" ? (
-                      <>
+                      <span>
                         <CatalogPrice usd={item.usd} />
-                        <span className="ml-px text-[0.88em] font-medium tracking-normal opacity-65">
+                        <span className="ml-px hidden text-[0.88em] font-semibold tracking-normal opacity-70 sm:inline">
                           /yr
                         </span>
-                      </>
+                      </span>
                     ) : (
                       item.priceLabel
                     )}

@@ -3,10 +3,10 @@
  * Live values come from Orbit CMS (`hero.domainPricing`) when available.
  */
 export const heroDomainTeasers = [
-  { tld: ".com", priceLabel: "$7.99/yr", usd: 7.99 },
-  { tld: ".net", priceLabel: "$6.99/yr", usd: 6.99 },
-  { tld: ".org", priceLabel: "$5.99/yr", usd: 5.99 },
-  { tld: ".dev", priceLabel: "$3.99/yr", usd: 3.99 },
+  { tld: ".com", priceLabel: "$9.99/yr", usd: 9.99, originalUsd: 17.99 },
+  { tld: ".net", priceLabel: "$11.99/yr", usd: 11.99, originalUsd: 17.49 },
+  { tld: ".org", priceLabel: "$7.99/yr", usd: 7.99, originalUsd: 17.99 },
+  { tld: ".dev", priceLabel: "$8.99/yr", usd: 8.99, originalUsd: 18.99 },
 ] as const;
 
 export const heroTldOptions = [
