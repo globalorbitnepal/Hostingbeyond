@@ -241,7 +241,9 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
             initial={reduceMotion ? false : { opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.16 }}
-            className="relative z-30 mt-3 flex w-full [scrollbar-width:none] flex-nowrap items-center gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden"
+            role="group"
+            aria-label="Popular domain extensions"
+            className="relative z-30 mt-4 grid w-full grid-cols-4 gap-1.5 sm:flex sm:w-auto sm:flex-nowrap sm:items-center sm:gap-2.5"
           >
             {teasers.map((item) => {
               const value = item.tld.startsWith(".")
@@ -252,34 +254,49 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
                 <button
                   key={item.tld}
                   type="button"
+                  aria-pressed={active}
                   onClick={() => setTld(value)}
                   className={cn(
-                    "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12.5px] shadow-[0_4px_14px_rgba(15,23,42,0.04)] transition sm:px-3.5 sm:text-[13px]",
+                    "group relative isolate flex min-w-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-[16px] border px-1.5 py-2 transition-[background-color,border-color,box-shadow,transform] duration-200 ease-out outline-none sm:h-10 sm:flex-row sm:gap-0 sm:rounded-full sm:px-4 sm:py-0",
+                    "focus-visible:ring-2 focus-visible:ring-white/85 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
                     active
-                      ? "border-white bg-white"
-                      : "border-white/25 bg-white/10 hover:bg-white/20",
+                      ? "border-white bg-white shadow-[0_12px_28px_rgba(49,16,107,0.32),inset_0_1px_0_#fff]"
+                      : "border-white/20 bg-white/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.22)] backdrop-blur-xl hover:border-white/40 hover:bg-white/[0.14]",
                   )}
                 >
                   <span
+                    aria-hidden
+                    className="pointer-events-none absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-white/70 to-transparent sm:inset-x-4"
+                  />
+                  <span
                     className={cn(
-                      "font-extrabold",
-                      active ? "text-[#673de6]" : "text-white",
+                      "truncate text-[13px] leading-none font-extrabold tracking-[-0.03em] sm:text-[14px]",
+                      active ? "text-[#4c1d95]" : "text-white",
                     )}
                     translate="no"
                   >
                     {value}
                   </span>
                   <span
+                    aria-hidden
                     className={cn(
-                      "font-bold",
-                      active ? "text-slate-700" : "text-white/80",
+                      "mx-2.5 hidden h-3 w-px shrink-0 sm:block",
+                      active ? "bg-[#4c1d95]/18" : "bg-white/25",
+                    )}
+                  />
+                  <span
+                    className={cn(
+                      "truncate text-[11px] leading-none font-semibold tracking-[-0.01em] tabular-nums sm:text-[12.5px]",
+                      active ? "text-slate-500" : "text-white/78",
                     )}
                     translate="no"
                   >
                     {"usd" in item && typeof item.usd === "number" ? (
                       <>
                         <CatalogPrice usd={item.usd} />
-                        /yr
+                        <span className="ml-px text-[0.88em] font-medium tracking-normal opacity-65">
+                          /yr
+                        </span>
                       </>
                     ) : (
                       item.priceLabel
