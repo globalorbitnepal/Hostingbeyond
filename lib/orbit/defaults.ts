@@ -2712,10 +2712,10 @@ export function defaultHomeSections(): CmsHomeSections {
       glassPanelLeft: "Ideas\nHost\nGrow\nBeyond",
       glassPanelRight: "Global Infrastructure for a Brighter Tomorrow",
       domainPricing: [
-        { tld: ".com", priceLabel: "$7.99/yr", visible: true },
-        { tld: ".net", priceLabel: "$6.99/yr", visible: true },
-        { tld: ".org", priceLabel: "$5.99/yr", visible: true },
-        { tld: ".dev", priceLabel: "$3.99/yr", visible: true },
+        { tld: ".com", priceLabel: "$9.99/yr", visible: true },
+        { tld: ".net", priceLabel: "$11.99/yr", visible: true },
+        { tld: ".org", priceLabel: "$7.99/yr", visible: true },
+        { tld: ".dev", priceLabel: "$8.99/yr", visible: true },
       ],
       technologyPartners: defaultTechnologyPartners(),
       trustItems: [
