@@ -189,7 +189,6 @@ export function PanelHeader({
 
   return (
     <header className="hb-panel-mega" data-panel-chrome-theme={theme}>
-      <div className="hb-panel-mega__logo-light" aria-hidden />
       <div className="hb-panel-mega__shimmer" aria-hidden />
       <div
         className="hb-panel-mega__percent hb-panel-mega__percent--a"
@@ -218,8 +217,8 @@ export function PanelHeader({
           <Image
             src={PANEL_MEGA_HEADER_LOGO_SRC}
             alt="HostingBeyond"
-            width={981}
-            height={182}
+            width={1024}
+            height={341}
             priority
             unoptimized
             className="hb-panel-mega-logo__img"
