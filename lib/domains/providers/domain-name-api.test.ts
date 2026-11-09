@@ -223,7 +223,7 @@ describe("Retail pricing mapping", () => {
     assert.ok(result);
     assert.equal(result.register, 9.99);
     assert.equal(result.renew, 17.99);
-    assert.equal(result.transfer, 12.99);
+    assert.equal(result.transfer, 14.99);
     assert.notEqual(result.register, 10.81);
   });
 
