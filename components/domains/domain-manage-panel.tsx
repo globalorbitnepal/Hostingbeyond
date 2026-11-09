@@ -60,13 +60,15 @@ function formatMoney(amount: number, currency: string) {
 export function DomainManagePanel({
   registrationId,
   domainName,
+  initialTab = "overview",
 }: {
   registrationId: string;
   domainName: string;
+  initialTab?: Tab;
 }) {
   const [detail, setDetail] = useState<DomainDetail | null>(null);
   const [loadError, setLoadError] = useState("");
-  const [tab, setTab] = useState<Tab>("overview");
+  const [tab, setTab] = useState<Tab>(initialTab);
   const [nsInput, setNsInput] = useState("");
   const [authCode, setAuthCode] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);

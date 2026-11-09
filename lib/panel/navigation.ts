@@ -8,6 +8,8 @@ export type PanelNavItem = {
   soon?: boolean;
   /** Indented child of the previous top-level item. */
   child?: boolean;
+  /** Rounded parent pill (Hostinger-style section header). */
+  hub?: boolean;
   /** Small tag next to the label, e.g. Beta. */
   tag?: string;
 };
@@ -33,18 +35,43 @@ export const PANEL_NAV: PanelNavSection[] = [
   },
   {
     id: "domains",
-    label: "Domains",
+    label: "",
     items: [
-      { id: "my-domains", label: "Domain portfolio", href: routes.myDomains },
+      {
+        id: "domains-hub",
+        label: "Domains",
+        href: routes.accountDomainFind,
+        hub: true,
+      },
+      {
+        id: "my-domains",
+        label: "Domain portfolio",
+        href: routes.myDomains,
+        child: true,
+      },
       {
         id: "register",
         label: "Domain search",
         href: routes.accountDomainFind,
+        child: true,
       },
       {
         id: "transfer",
         label: "Transfers",
         href: routes.accountDomainTransfer,
+        child: true,
+      },
+      {
+        id: "dns",
+        label: "DNS",
+        href: routes.accountDomainDns,
+        child: true,
+      },
+      {
+        id: "contacts",
+        label: "Contact profiles",
+        href: routes.accountDomainContacts,
+        child: true,
       },
     ],
   },
@@ -112,6 +139,8 @@ function pathMatchesNavItem(pathname: string, href: string) {
 const EXACT_TITLES: Array<[string, string]> = [
   ["/account/domains/find", "Domain search"],
   ["/account/domains/transfer", "Transfers"],
+  ["/account/domains/dns", "DNS"],
+  ["/account/domains/contacts", "Contact profiles"],
   ["/account/hosting-orders", "Hosting orders"],
   ["/account/my-domains/", "Domain details"],
   ["/account/orders/", "Order details"],
