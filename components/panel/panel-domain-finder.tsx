@@ -19,7 +19,9 @@ import { CatalogPrice } from "@/components/i18n/localized-text";
 import { routes } from "@/config/routes";
 import { DEFAULT_DOMAIN_PROTECTION_USD } from "@/lib/domains/domain-extras";
 import type { DomainResult } from "@/lib/domains/availability";
-import type { FeaturedDomainTld } from "@/lib/panel/featured-domain-tld-types";
+import { PanelTldCatalog } from "@/components/panel/panel-tld-catalog";
+import { PanelTldSalePrice } from "@/components/panel/panel-tld-sale-price";
+import type { LiveDomainTld } from "@/lib/panel/featured-domain-tld-types";
 import { formatMoney } from "@/lib/panel/format-money";
 import { cn } from "@/lib/utils";
 
@@ -56,8 +58,10 @@ function statusTone(status: DomainResult["status"]) {
 
 export function PanelDomainFinder({
   featuredTlds,
+  liveTlds,
 }: {
-  featuredTlds: FeaturedDomainTld[];
+  featuredTlds: LiveDomainTld[];
+  liveTlds: LiveDomainTld[];
 }) {
   const router = useRouter();
   const params = useSearchParams();
@@ -238,15 +242,12 @@ export function PanelDomainFinder({
               data-active={tld === item.tld ? "true" : "false"}
               onClick={() => chooseTld(item.tld)}
             >
-              <span className="text-sm font-bold">{item.tld}</span>
-              <span className="text-lg font-extrabold">
-                <CatalogPrice usd={item.register} />
-              </span>
               {item.isPromo ? (
-                <span className="text-[10px] font-bold tracking-wide text-[#7c3aed] uppercase">
-                  Promo
-                </span>
+                <span className="hb-ds-sale-badge">SALE</span>
               ) : null}
+              <span className="text-sm font-bold">{item.tld}</span>
+              <PanelTldSalePrice register={item.register} renew={item.renew} />
+              <span className="hb-ds-tld__hint">1st yr · then renewal</span>
             </button>
           ))}
         </div>
@@ -297,10 +298,15 @@ export function PanelDomainFinder({
                     </p>
                   </div>
                   {row.register != null ? (
-                    <span className="text-sm font-extrabold">
-                      <CatalogPrice usd={row.register} />
-                      <span className="ml-1 text-xs font-medium text-[var(--hb-p-muted)]">
-                        / 1st yr
+                    <span className="text-right">
+                      <PanelTldSalePrice
+                        register={row.register}
+                        renew={row.renew}
+                        compact
+                      />
+                      <span className="mt-0.5 block text-[11px] font-medium text-[var(--hb-p-muted)]">
+                        1st yr
+                        {row.renew != null ? " · renews after" : ""}
                       </span>
                     </span>
                   ) : null}
@@ -450,8 +456,10 @@ export function PanelDomainFinder({
         >
           <p className="font-heading text-3xl font-black">9M+</p>
           <p className="text-sm text-white/85">domains registered</p>
-          <p className="font-heading mt-6 text-3xl font-black">400+</p>
-          <p className="text-sm text-white/85">domain extensions</p>
+          <p className="font-heading mt-6 text-3xl font-black">
+            {liveTlds.length}+
+          </p>
+          <p className="text-sm text-white/85">live domain extensions</p>
         </div>
         <Link
           href={routes.accountDomainTransfer}
@@ -471,6 +479,13 @@ export function PanelDomainFinder({
           </p>
         </Link>
       </div>
+
+      <PanelTldCatalog
+        liveTlds={liveTlds}
+        previewLimit={12}
+        onPickTld={chooseTld}
+        heading="All live domain extensions"
+      />
     </div>
   );
 }

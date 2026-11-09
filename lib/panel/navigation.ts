@@ -72,6 +72,12 @@ export const PANEL_NAV: PanelNavSection[] = [
         href: routes.accountDomainContacts,
         child: true,
       },
+      {
+        id: "tlds",
+        label: "TLD list",
+        href: routes.accountDomainTlds,
+        child: true,
+      },
     ],
   },
   {
@@ -153,6 +159,7 @@ const EXACT_TITLES: Array<[string, string]> = [
   ["/account/domains/transfer", "Transfers"],
   ["/account/domains/dns", "DNS"],
   ["/account/domains/contacts", "Contact profiles"],
+  ["/account/domains/tlds", "TLD list"],
   ["/account/hosting-orders", "Hosting orders"],
   ["/account/my-domains/", "Domain details"],
   ["/account/orders/", "Order details"],

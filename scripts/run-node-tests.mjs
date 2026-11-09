@@ -46,6 +46,7 @@ const UNIT_GLOBS = [
   "lib/readiness/**/*.test.ts",
   "lib/integrations/**/*.test.ts",
   "lib/config/**/*.test.ts",
+  "lib/panel/**/*.test.ts",
   "lib/test/**/*.test.ts",
   "app/api/**/*.test.ts",
   "ops/backup/**/*.test.mjs",

@@ -39,6 +39,7 @@ describe("panel navigation", () => {
       panelTitleForPath("/account/domains/contacts"),
       "Contact profiles",
     );
+    assert.equal(panelTitleForPath("/account/domains/tlds"), "TLD list");
     assert.equal(panelTitleForPath("/account/hosting"), "Hosting plans");
     assert.equal(panelTitleForPath("/account/email"), "Business email");
     assert.equal(panelTitleForPath("/account/support"), "Support");
@@ -52,6 +53,7 @@ describe("panel navigation", () => {
     assert.ok(
       domains.items.some((item) => item.id === "contacts" && item.child),
     );
+    assert.ok(domains.items.some((item) => item.id === "tlds" && item.child));
   });
 
   it("nests hosting tools under a Hosting hub", () => {
