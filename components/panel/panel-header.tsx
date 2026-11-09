@@ -129,6 +129,18 @@ export function PanelHeader({
   const [notifyOpen, setNotifyOpen] = useState(false);
 
   const allTargets = useMemo(searchTargets, []);
+  const quickPicks = useMemo(
+    () =>
+      [
+        allTargets.find((t) => t.href === routes.account),
+        allTargets.find((t) => t.href === routes.accountDomainFind),
+        allTargets.find((t) => t.href === routes.myDomains),
+        allTargets.find((t) => t.href === routes.accountWallet),
+        allTargets.find((t) => t.href === routes.accountSecurity),
+        allTargets.find((t) => t.href === routes.accountSupport),
+      ].filter(Boolean) as SearchTarget[],
+    [allTargets],
+  );
   const results = useMemo(() => {
     const needle = query.trim().toLowerCase();
     if (!needle) return [];
@@ -136,6 +148,7 @@ export function PanelHeader({
       .filter((t) => t.label.toLowerCase().includes(needle))
       .slice(0, 8);
   }, [allTargets, query]);
+  const searchHits = results.length > 0 ? results : quickPicks;
 
   useEffect(() => {
     if (!menuOpen && !notifyOpen) return;
@@ -157,6 +170,8 @@ export function PanelHeader({
     const needle = query.trim();
     if (results[0]) {
       router.push(results[0].href);
+    } else if (!needle && quickPicks[0]) {
+      router.push(quickPicks[0].href);
     } else if (needle) {
       const exact = allTargets.find(
         (t) => t.label.toLowerCase() === needle.toLowerCase(),
@@ -173,7 +188,8 @@ export function PanelHeader({
   }
 
   return (
-    <header className="hb-panel-mega">
+    <header className="hb-panel-mega" data-panel-chrome-theme={theme}>
+      <div className="hb-panel-mega__logo-light" aria-hidden />
       <div className="hb-panel-mega__shimmer" aria-hidden />
       <div
         className="hb-panel-mega__percent hb-panel-mega__percent--a"
@@ -223,7 +239,7 @@ export function PanelHeader({
           className="hb-panel-mega-search"
           role="search"
         >
-          <Search className="h-4 w-4 shrink-0 opacity-75" aria-hidden />
+          <Search className="hb-panel-mega-search__icon" aria-hidden />
           <input
             ref={inputRef}
             value={query}
@@ -235,14 +251,22 @@ export function PanelHeader({
             onBlur={() => window.setTimeout(() => setSearchOpen(false), 140)}
             placeholder="Search domains, hosting, billing…"
             aria-label="Search your account"
-            className="min-w-0 flex-1 bg-transparent text-sm font-medium text-white outline-none placeholder:text-white/55"
+            className="hb-panel-mega-search__input"
+            autoComplete="off"
+            spellCheck={false}
           />
-          {searchOpen && results.length > 0 ? (
-            <ul className="hb-panel-mega-search-drop">
-              {results.map((result) => (
+          {searchOpen && searchHits.length > 0 ? (
+            <ul className="hb-panel-mega-search-drop" role="listbox">
+              {!query.trim() ? (
+                <li className="hb-panel-mega-search-drop__label" aria-hidden>
+                  Quick links
+                </li>
+              ) : null}
+              {searchHits.map((result) => (
                 <li key={result.href + result.label}>
                   <Link
                     href={result.href}
+                    role="option"
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => {
                       setSearchOpen(false);

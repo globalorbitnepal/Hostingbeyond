@@ -7,7 +7,8 @@ import { cn } from "@/lib/utils";
 export const CANONICAL_HEADER_LOGO_SRC = "/logo/hostingbeyond-logo-v6.png";
 
 /** Customer panel mega bar — light wordmark for dark purple chrome. */
-export const PANEL_MEGA_HEADER_LOGO_SRC = "/logo/hostingbeyond-logo-v5.png";
+export const PANEL_MEGA_HEADER_LOGO_SRC =
+  "/logo/hostingbeyond-logo-panel-bar.png";
 
 type LogoProps = {
   className?: string;
