@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { KeyRound } from "lucide-react";
+import { KeyRound, ShieldCheck } from "lucide-react";
+
+import {
+  requiresCurrentPassword as currentPasswordRequired,
+  validateNewPassword,
+} from "@/lib/customer/password-policy";
 
 type Props = {
   email: string;
@@ -39,16 +44,27 @@ export function AccountSecurityPanel({
 
   const inputClass = "hb-input h-11";
 
+  /**
+   * OAuth-only accounts have no password to confirm — asking for a "current
+   * password" there would block the one thing they came to do.
+   */
+  const requiresCurrentPassword = currentPasswordRequired({
+    hasPassword,
+    oauthLinked: hasOauth,
+  });
+  const creating = !hasPassword;
+  const providerLabel = providerLabels(providers) || "a social account";
+
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
     setError(null);
     setSuccess(false);
-    if (newPassword.length < 8) {
-      setError("Use at least 8 characters for your new password.");
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      setError("New password and confirmation do not match.");
+    const validation = validateNewPassword({
+      newPassword,
+      confirmPassword,
+    });
+    if (!validation.ok) {
+      setError(validation.error);
       return;
     }
     setSubmitting(true);
@@ -58,7 +74,9 @@ export function AccountSecurityPanel({
         headers: { "content-type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          currentPassword: hasPassword ? currentPassword : undefined,
+          currentPassword: requiresCurrentPassword
+            ? currentPassword
+            : undefined,
           newPassword,
           confirmPassword,
         }),
@@ -74,6 +92,8 @@ export function AccountSecurityPanel({
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
+    } catch {
+      setError("Network error. Check your connection and try again.");
     } finally {
       setSubmitting(false);
     }
@@ -89,20 +109,20 @@ export function AccountSecurityPanel({
         <KeyRound className="mt-0.5 size-5 shrink-0 text-[var(--hb-p-primary)]" />
         <div className="hb-muted min-w-0 text-sm leading-relaxed">
           <p className="hb-text font-bold">
-            {hasPassword ? "Change password" : "Set a password"}
+            {creating ? "Create a password" : "Change password"}
           </p>
           <p className="mt-1">
             Signed in as <span className="hb-text font-semibold">{email}</span>.
-            {hasPassword
-              ? " Enter your current password, then choose a new one."
+            {creating
+              ? ` You signed in with ${providerLabel}, so there is no password to confirm. Choose one below and you can sign in with your email and this password too — ${providerLabel} keeps working.`
               : hasOauth
-                ? ` You signed in with ${providerLabels(providers) || "a social account"} — set a password to sign in with email too. Your social sign-in keeps working.`
-                : " Choose a password so you can sign in with email as well."}
+                ? ` Choose a new password. You stay signed in with ${providerLabel} as well.`
+                : " Enter your current password, then choose a new one."}
           </p>
         </div>
       </div>
 
-      {hasPassword ? (
+      {requiresCurrentPassword ? (
         <label className="block">
           <span className="hb-label">Current password</span>
           <input
@@ -129,6 +149,9 @@ export function AccountSecurityPanel({
           minLength={8}
           required
         />
+        <span className="hb-muted mt-1 block text-xs">
+          At least 8 characters. Use something you do not reuse elsewhere.
+        </span>
       </label>
 
       <label className="block">
@@ -152,9 +175,16 @@ export function AccountSecurityPanel({
         </p>
       ) : null}
       {success ? (
-        <p className="hb-pill hb-pill-ok inline-flex" role="status">
-          Your password has been updated. Use it the next time you sign in with
-          email.
+        <p
+          className="hb-pill hb-pill-ok inline-flex items-start gap-1.5"
+          role="status"
+        >
+          <ShieldCheck className="mt-0.5 size-3.5 shrink-0" />
+          {creating
+            ? "Password created. You can now sign in with your email and this password — and " +
+              providerLabel +
+              " still works."
+            : "Password updated. Use it the next time you sign in with email."}
         </p>
       ) : null}
 
@@ -165,9 +195,9 @@ export function AccountSecurityPanel({
       >
         {submitting
           ? "Saving…"
-          : hasPassword
-            ? "Update password"
-            : "Set password"}
+          : creating
+            ? "Create password"
+            : "Update password"}
       </button>
     </form>
   );

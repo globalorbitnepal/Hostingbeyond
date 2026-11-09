@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { hashPassword, verifyPassword } from "@/lib/customer/password";
+import { requiresCurrentPassword } from "@/lib/customer/password-policy";
 import { requireCustomerSession } from "@/lib/domains/require-customer";
 import { rateLimitResponse } from "@/lib/http/fixed-window-rate-limit";
 import { rateLimitAuthEndpoint } from "@/lib/http/public-endpoint-rate-limit";
 import { crossOriginBrowserMutationBlocked } from "@/lib/http/same-origin-mutation";
 import { prisma } from "@/lib/prisma";
-
 const schema = z
   .object({
     currentPassword: z.string().max(200).optional(),
@@ -49,13 +49,29 @@ export async function POST(request: Request) {
 
   const user = await prisma.customerUser.findUnique({
     where: { id: sessionUser.id },
-    select: { id: true, passwordHash: true },
+    select: {
+      id: true,
+      passwordHash: true,
+      accounts: { select: { provider: true }, take: 1 },
+    },
   });
   if (!user) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
-  if (user.passwordHash) {
+  /**
+   * A customer who created the account with Google (or another OAuth provider)
+   * never chose a password, so there is nothing to verify. They are already
+   * authenticated by the provider-backed session, and this only ever *adds* an
+   * email login — it cannot be used to take over someone else's account.
+   */
+  const oauthLinked = user.accounts.length > 0;
+  const needsCurrentPassword = requiresCurrentPassword({
+    hasPassword: Boolean(user.passwordHash),
+    oauthLinked,
+  });
+
+  if (needsCurrentPassword) {
     const current = parsed.data.currentPassword?.trim() ?? "";
     if (!current) {
       return NextResponse.json(
@@ -63,7 +79,7 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
-    const valid = await verifyPassword(current, user.passwordHash);
+    const valid = await verifyPassword(current, user.passwordHash!);
     if (!valid) {
       return NextResponse.json(
         { error: "Current password is incorrect." },
@@ -73,10 +89,25 @@ export async function POST(request: Request) {
   }
 
   const passwordHash = await hashPassword(parsed.data.newPassword);
-  await prisma.customerUser.update({
-    where: { id: user.id },
-    data: { passwordHash },
-  });
+  await prisma.$transaction([
+    prisma.customerUser.update({
+      where: { id: user.id },
+      data: { passwordHash },
+    }),
+    prisma.activityLog.create({
+      data: {
+        action: "SETTINGS_UPDATE",
+        resource: `CustomerUser:${user.id}`,
+        details: JSON.stringify({
+          kind: user.passwordHash
+            ? "customer_password_change"
+            : "customer_password_set",
+          verifiedWithCurrentPassword: needsCurrentPassword,
+          oauthLinked,
+        }),
+      },
+    }),
+  ]);
 
   return NextResponse.json({ ok: true });
 }
