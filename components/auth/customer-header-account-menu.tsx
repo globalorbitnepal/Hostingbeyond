@@ -149,6 +149,7 @@ function AccountAvatar({
         width={size}
         height={size}
         className="size-full rounded-full object-cover"
+        referrerPolicy="no-referrer"
       />
     );
   }
@@ -229,6 +230,7 @@ export function CustomerHeaderAccountMenu({
   className?: string;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, ready, setUser } = useCustomerSession();
   const [open, setOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
@@ -293,16 +295,38 @@ export function CustomerHeaderAccountMenu({
       setUser(null);
       closeMenu();
       onNavigate?.();
+      if (pathname.startsWith("/account")) {
+        window.location.assign(routes.home);
+        return;
+      }
       router.refresh();
     } finally {
       setSigningOut(false);
     }
-  }, [closeMenu, onNavigate, router, setUser]);
+  }, [closeMenu, onNavigate, pathname, router, setUser]);
 
   const loginLinkClass =
     variant === "mobile"
       ? "inline-flex h-11 w-11 items-center justify-center rounded-full transition hover:bg-slate-50"
       : "relative -ml-1.5 inline-flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md transition hover:opacity-90";
+
+  const sessionShellClass =
+    variant === "mobile"
+      ? "inline-flex h-11 w-11 items-center justify-center"
+      : "inline-flex h-9 w-9 shrink-0 items-center justify-center";
+
+  if (!ready) {
+    return (
+      <span
+        className={cn(sessionShellClass, className)}
+        aria-hidden
+        role="presentation"
+      >
+        <span className="size-8 animate-pulse rounded-full bg-slate-200/80" />
+      </span>
+    );
+  }
+
   if (!user) {
     return (
       <Link
@@ -311,7 +335,6 @@ export function CustomerHeaderAccountMenu({
         title={loginLabel}
         className={cn(loginLinkClass, className)}
         onClick={onNavigate}
-        aria-busy={!ready}
       >
         <PremiumLoginMark
           gradientId={

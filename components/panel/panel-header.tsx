@@ -24,7 +24,7 @@ import {
 
 import { routes } from "@/config/routes";
 import { openBeyondMasterAi } from "@/lib/beyond-master/ui-store";
-import { CANONICAL_HEADER_LOGO_SRC } from "@/components/shared/logo";
+import { PANEL_MEGA_HEADER_LOGO_SRC } from "@/components/shared/logo";
 import { getPanelNav } from "@/lib/panel/navigation";
 
 type PanelUser = {
@@ -149,7 +149,7 @@ export function PanelHeader({
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
-    window.location.assign("/login");
+    window.location.assign(routes.home);
   }
 
   function goSearch(event: React.FormEvent) {
@@ -200,7 +200,7 @@ export function PanelHeader({
 
         <Link href={routes.account} className="hb-panel-mega-logo">
           <Image
-            src={CANONICAL_HEADER_LOGO_SRC}
+            src={PANEL_MEGA_HEADER_LOGO_SRC}
             alt="HostingBeyond"
             width={981}
             height={182}
