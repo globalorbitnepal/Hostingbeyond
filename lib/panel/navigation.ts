@@ -40,7 +40,6 @@ export const PANEL_NAV: PanelNavSection[] = [
       {
         id: "domains-hub",
         label: "Domains",
-        href: routes.accountDomainFind,
         hub: true,
       },
       {

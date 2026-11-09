@@ -457,6 +457,12 @@ html[data-hb-theme="light"] {
     0 10px 24px -18px rgba(124, 58, 237, 0.9);
 }
 
+.hb-panel-nav-children {
+  margin: 0.15rem 0 0.35rem;
+  padding: 0;
+  list-style: none;
+}
+
 .hb-panel-nav-child {
   padding-left: 2.35rem;
   font-size: 0.8125rem;

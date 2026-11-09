@@ -9,6 +9,8 @@ describe("panel navigation", () => {
       for (const item of section.items) {
         if (item.soon) {
           assert.equal(item.href, undefined);
+        } else if (item.hub && !item.href) {
+          assert.ok(true);
         } else {
           assert.ok(item.href);
         }
