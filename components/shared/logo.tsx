@@ -6,6 +6,9 @@ import { cn } from "@/lib/utils";
 /** Single canonical header wordmark — never swap after hydration. */
 export const CANONICAL_HEADER_LOGO_SRC = "/logo/hostingbeyond-logo-v6.png";
 
+/** Customer panel mega bar — light wordmark for dark purple chrome. */
+export const PANEL_MEGA_HEADER_LOGO_SRC = "/logo/hostingbeyond-logo-v5.png";
+
 type LogoProps = {
   className?: string;
   href?: string;
