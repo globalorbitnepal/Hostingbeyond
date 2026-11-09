@@ -520,18 +520,16 @@ html[data-hb-theme="light"] {
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   background:
     radial-gradient(
-      52% 130% at 0% 50%,
-      rgba(255, 252, 255, 0.94) 0%,
-      rgba(245, 237, 255, 0.62) 24%,
-      rgba(221, 208, 255, 0.28) 46%,
-      transparent 74%
+      36% 105% at 0% 50%,
+      rgba(255, 252, 255, 0.38) 0%,
+      rgba(243, 236, 255, 0.2) 28%,
+      transparent 66%
     ),
     radial-gradient(
-      40% 120% at 100% 50%,
-      rgba(250, 246, 255, 0.68) 0%,
-      rgba(228, 219, 255, 0.36) 24%,
-      rgba(165, 180, 252, 0.14) 48%,
-      transparent 74%
+      32% 100% at 100% 50%,
+      rgba(248, 244, 255, 0.3) 0%,
+      rgba(228, 219, 255, 0.14) 26%,
+      transparent 64%
     ),
     radial-gradient(
       120% 220% at 12% -40%,
@@ -552,31 +550,6 @@ html[data-hb-theme="light"] {
   --hb-mega-search-bg: rgba(7, 5, 15, 0.38);
   --hb-mega-search-border: rgba(255, 255, 255, 0.26);
   border-bottom-color: rgba(167, 139, 250, 0.18);
-}
-
-.hb-panel-mega__logo-light {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: min(22rem, 38vw);
-  pointer-events: none;
-  background: radial-gradient(
-    90% 115% at 8% 50%,
-    rgba(255, 255, 255, 0.82) 0%,
-    rgba(249, 244, 255, 0.45) 38%,
-    transparent 72%
-  );
-  z-index: 0;
-}
-
-.hb-panel[data-theme="dark"] .hb-panel-mega__logo-light {
-  background: radial-gradient(
-    88% 115% at 8% 50%,
-    rgba(255, 255, 255, 0.62) 0%,
-    rgba(236, 224, 255, 0.34) 36%,
-    transparent 72%
-  );
 }
 
 .hb-panel-mega__shimmer {
@@ -650,10 +623,41 @@ html[data-hb-theme="light"] {
   display: inline-flex;
   flex-shrink: 0;
   align-items: center;
-  padding: 0.1rem 0.15rem 0.1rem 0;
+  padding: 0.12rem 0.2rem 0.12rem 0;
   background: transparent;
   border: 0;
   box-shadow: none;
+}
+
+/* Soft contrast shelf for brand wordmark — fades before “Beyond”, not a white pill */
+.hb-panel-mega-logo::before {
+  content: "";
+  position: absolute;
+  left: -0.15rem;
+  top: 50%;
+  z-index: -1;
+  width: min(14.5rem, 46vw);
+  height: 130%;
+  transform: translateY(-50%);
+  border-radius: 0.65rem;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.32) 42%,
+    rgba(255, 255, 255, 0.08) 68%,
+    transparent 100%
+  );
+}
+
+.hb-panel[data-theme="dark"] .hb-panel-mega-logo::before {
+  background: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0.42) 0%,
+    rgba(255, 255, 255, 0.22) 44%,
+    rgba(255, 255, 255, 0.06) 70%,
+    transparent 100%
+  );
 }
 
 .hb-panel-mega-logo__img {
@@ -663,9 +667,11 @@ html[data-hb-theme="light"] {
   max-width: min(54vw, 280px);
   object-fit: contain;
   object-position: left center;
-  image-rendering: -webkit-optimize-contrast;
-  filter: drop-shadow(0 1px 0 rgba(91, 33, 182, 0.22))
-    drop-shadow(0 2px 10px rgba(15, 23, 42, 0.28));
+  image-rendering: auto;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  filter: drop-shadow(0 0 0.45px rgba(255, 255, 255, 0.85))
+    drop-shadow(0 1px 3px rgba(46, 16, 101, 0.35));
 }
 
 @media (min-width: 640px) {
