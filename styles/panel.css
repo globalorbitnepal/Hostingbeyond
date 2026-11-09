@@ -520,16 +520,16 @@ html[data-hb-theme="light"] {
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   background:
     radial-gradient(
-      36% 105% at 0% 50%,
-      rgba(255, 252, 255, 0.38) 0%,
-      rgba(243, 236, 255, 0.2) 28%,
-      transparent 66%
+      24% 88% at 0% 50%,
+      rgba(255, 252, 255, 0.2) 0%,
+      rgba(243, 236, 255, 0.08) 32%,
+      transparent 58%
     ),
     radial-gradient(
-      32% 100% at 100% 50%,
-      rgba(248, 244, 255, 0.3) 0%,
-      rgba(228, 219, 255, 0.14) 26%,
-      transparent 64%
+      22% 86% at 100% 50%,
+      rgba(248, 244, 255, 0.16) 0%,
+      rgba(228, 219, 255, 0.07) 30%,
+      transparent 56%
     ),
     radial-gradient(
       120% 220% at 12% -40%,
@@ -623,68 +623,36 @@ html[data-hb-theme="light"] {
   display: inline-flex;
   flex-shrink: 0;
   align-items: center;
-  padding: 0.12rem 0.2rem 0.12rem 0;
+  padding: 0;
   background: transparent;
   border: 0;
   box-shadow: none;
 }
 
-/* Soft contrast shelf for brand wordmark — fades before “Beyond”, not a white pill */
-.hb-panel-mega-logo::before {
-  content: "";
-  position: absolute;
-  left: -0.15rem;
-  top: 50%;
-  z-index: -1;
-  width: min(14.5rem, 46vw);
-  height: 130%;
-  transform: translateY(-50%);
-  border-radius: 0.65rem;
-  pointer-events: none;
-  background: linear-gradient(
-    100deg,
-    rgba(255, 255, 255, 0.55) 0%,
-    rgba(255, 255, 255, 0.32) 42%,
-    rgba(255, 255, 255, 0.08) 68%,
-    transparent 100%
-  );
-}
-
-.hb-panel[data-theme="dark"] .hb-panel-mega-logo::before {
-  background: linear-gradient(
-    100deg,
-    rgba(255, 255, 255, 0.42) 0%,
-    rgba(255, 255, 255, 0.22) 44%,
-    rgba(255, 255, 255, 0.06) 70%,
-    transparent 100%
-  );
-}
-
 .hb-panel-mega-logo__img {
   display: block;
-  height: 2rem;
+  height: 2.35rem;
   width: auto;
-  max-width: min(54vw, 280px);
+  max-width: min(58vw, 320px);
   object-fit: contain;
   object-position: left center;
-  image-rendering: auto;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  filter: drop-shadow(0 0 0.45px rgba(255, 255, 255, 0.85))
-    drop-shadow(0 1px 3px rgba(46, 16, 101, 0.35));
+  filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.45))
+    drop-shadow(0 0 12px rgba(255, 255, 255, 0.12));
 }
 
 @media (min-width: 640px) {
   .hb-panel-mega-logo__img {
-    height: 2.25rem;
-    max-width: 310px;
+    height: 2.65rem;
+    max-width: 360px;
   }
 }
 
 @media (min-width: 1280px) {
   .hb-panel-mega-logo__img {
-    height: 2.5rem;
-    max-width: 360px;
+    height: 2.85rem;
+    max-width: 400px;
   }
 }
 
