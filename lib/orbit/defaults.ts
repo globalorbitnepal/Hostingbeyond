@@ -2705,7 +2705,7 @@ export function defaultHomeSections(): CmsHomeSections {
       description:
         "Reliable hosting, powerful infrastructure and the freedom to build what's next.",
       searchPlaceholder: "Find your perfect domain name...",
-      searchButtonLabel: "Search",
+      searchButtonLabel: "Search Domain",
       bulkSearchLabel: "Bulk Search",
       backgroundImage: "/images/hero-speaker-v6.webp",
       speakerImage: "/images/hero-speaker-v6.webp",
@@ -2715,7 +2715,8 @@ export function defaultHomeSections(): CmsHomeSections {
         { tld: ".com", priceLabel: "$9.99/yr", visible: true },
         { tld: ".net", priceLabel: "$11.99/yr", visible: true },
         { tld: ".org", priceLabel: "$7.99/yr", visible: true },
-        { tld: ".dev", priceLabel: "$8.99/yr", visible: true },
+        { tld: ".online", priceLabel: "$0.99/yr", visible: true },
+        { tld: ".shop", priceLabel: "$0.99/yr", visible: true },
       ],
       technologyPartners: defaultTechnologyPartners(),
       trustItems: [

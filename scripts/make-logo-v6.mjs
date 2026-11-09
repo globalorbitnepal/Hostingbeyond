@@ -90,11 +90,45 @@ for (let p = 0; p < width * height; p += 1) {
   out[o + 3] = Math.round(alpha * 255);
 }
 
+const CANVAS_W = 981;
+const CANVAS_H = 182;
+
 await mkdir(path.dirname(OUT), { recursive: true });
-await sharp(out, { raw: { width, height, channels: 4 } })
+const trimmed = await sharp(out, { raw: { width, height, channels: 4 } })
   .trim({ threshold: 1 })
   .png({ compressionLevel: 9, palette: false })
-  .toFile(OUT);
+  .toBuffer();
+
+const trimMeta = await sharp(trimmed).metadata();
+const scaledH = Math.round(trimMeta.height * (CANVAS_W / trimMeta.width));
+let pipeline = sharp(trimmed).resize({
+  width: CANVAS_W,
+  height: scaledH,
+  fit: "fill",
+});
+
+const cropTop = Math.max(0, Math.floor((scaledH - CANVAS_H) / 2));
+pipeline = pipeline.extract({
+  left: 0,
+  top: cropTop,
+  width: CANVAS_W,
+  height: Math.min(CANVAS_H, scaledH),
+});
+
+if (scaledH < CANVAS_H) {
+  const padTop = Math.floor((CANVAS_H - scaledH) / 2);
+  const padBottom = CANVAS_H - scaledH - padTop;
+  const cropped = await pipeline.png().toBuffer();
+  pipeline = sharp(cropped).extend({
+    top: padTop,
+    bottom: padBottom,
+    left: 0,
+    right: 0,
+    background: { r: 0, g: 0, b: 0, alpha: 0 },
+  });
+}
+
+await pipeline.png({ compressionLevel: 9, palette: false }).toFile(OUT);
 
 const meta = await sharp(OUT).metadata();
 console.log(

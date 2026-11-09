@@ -343,7 +343,7 @@ export function SiteHeader({
         <div className="relative">
           <div
             className={cn(
-              "hb-header-bar mx-auto flex h-[56px] w-full min-w-0 items-center gap-1.5 rounded-full border px-2.5 shadow-[0_12px_40px_rgba(15,23,42,0.14),inset_0_1px_0_rgba(255,255,255,1)] sm:h-[70px] sm:gap-3 sm:px-5 lg:grid lg:grid-cols-[minmax(0,auto)_minmax(0,1fr)_auto] lg:items-center lg:gap-3 lg:pr-2 lg:pl-6 xl:gap-4",
+              "hb-header-bar mx-auto flex h-[56px] w-full min-w-0 items-center gap-1.5 rounded-full border px-2.5 sm:h-[70px] sm:gap-3 sm:px-5 lg:grid lg:grid-cols-[minmax(0,auto)_minmax(0,1fr)_auto] lg:items-center lg:gap-3 lg:pr-2 lg:pl-6 xl:gap-4",
               checkoutBar && "lg:gap-2 xl:gap-3",
             )}
           >

@@ -2,16 +2,7 @@
 
 import { type FormEvent, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import {
-  ArrowRight,
-  ChevronDown,
-  Code2,
-  Crown,
-  Globe,
-  Link2,
-  Search,
-  Users,
-} from "lucide-react";
+import { ArrowRight, ChevronDown, Crown, Search } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 
 import { CatalogPrice } from "@/components/i18n/localized-text";
@@ -51,10 +42,17 @@ const FALLBACK_TEASERS: HeroDomainTeaser[] = [
     visible: true,
   },
   {
-    tld: ".dev",
-    priceLabel: "$8.99/yr",
-    usd: 8.99,
-    originalUsd: 18.99,
+    tld: ".online",
+    priceLabel: "$0.99/yr",
+    usd: 0.99,
+    originalUsd: 8.99,
+    visible: true,
+  },
+  {
+    tld: ".shop",
+    priceLabel: "$0.99/yr",
+    usd: 0.99,
+    originalUsd: 8.99,
     visible: true,
   },
 ];
@@ -63,8 +61,17 @@ const OFFER_BY_TLD: Record<string, { usd: number; originalUsd: number }> = {
   ".com": { usd: 9.99, originalUsd: 17.99 },
   ".net": { usd: 11.99, originalUsd: 17.49 },
   ".org": { usd: 7.99, originalUsd: 17.99 },
-  ".dev": { usd: 8.99, originalUsd: 18.99 },
+  ".online": { usd: 0.99, originalUsd: 8.99 },
+  ".shop": { usd: 0.99, originalUsd: 8.99 },
 };
+
+const SAVE_BADGE_TONE: Record<string, "purple" | "green" | "rose" | "violet"> =
+  {
+    ".net": "purple",
+    ".org": "green",
+    ".online": "rose",
+    ".shop": "violet",
+  };
 
 function usdFromPriceLabel(label: string): number | undefined {
   if (!/\$|USD/i.test(label)) return undefined;
@@ -74,16 +81,43 @@ function usdFromPriceLabel(label: string): number | undefined {
   return Number.isFinite(amount) ? amount : undefined;
 }
 
+function savePercent(original: number, sale: number) {
+  if (original <= 0) return 0;
+  return Math.max(1, Math.round(((original - sale) / original) * 100));
+}
+
 const SCENE_FALLBACK = "/images/hero-speaker-v6.webp";
 const TYPING_COPY = "Find the perfect domain for your brand";
 
-function tldMark(tld: string) {
-  const key = tld.replace(/^\./, "").toLowerCase();
-  if (key === "com") return Globe;
-  if (key === "net") return Link2;
-  if (key === "org") return Users;
-  if (key === "dev") return Code2;
-  return Globe;
+function AccentGoldSwoosh({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 300 14"
+      className={cn(
+        "mt-1 block h-[10px] w-[min(100%,18rem)] min-[375px]:w-[min(100%,21.5rem)] sm:mt-1.5 sm:h-[11px] sm:w-[min(100%,24.5rem)] lg:w-[min(100%,27.5rem)]",
+        className,
+      )}
+      aria-hidden
+      preserveAspectRatio="none"
+    >
+      <defs>
+        <linearGradient id="hb-accent-swoosh" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#e8b84a" stopOpacity="0.35" />
+          <stop offset="12%" stopColor="#f0cc5c" />
+          <stop offset="50%" stopColor="#f7dc6e" />
+          <stop offset="88%" stopColor="#f2c24a" />
+          <stop offset="100%" stopColor="#dea035" stopOpacity="0.45" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M4 11.5 C 56 3, 118 12.5, 178 5.5 S 246 2.5, 296 9.5"
+        fill="none"
+        stroke="url(#hb-accent-swoosh)"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
 }
 
 function useTypedPlaceholder(active: boolean, reduce: boolean | null) {
@@ -137,7 +171,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
   const description =
     content?.description ||
     "Reliable hosting, powerful infrastructure and the freedom to build what's next.";
-  const searchButtonLabel = content?.searchButtonLabel || "Search";
+  const searchButtonLabel = content?.searchButtonLabel || "Search Domain";
 
   const teasers = useMemo((): HeroDomainTeaser[] => {
     const fromCms = (content?.domainPricing ?? []).filter(
@@ -162,8 +196,30 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
     return [...FALLBACK_TEASERS];
   }, [content?.domainPricing]);
 
+  const displayTeasers = useMemo(() => {
+    const order = [".com", ".net", ".org", ".online", ".shop"];
+    const rows = [...teasers];
+    for (const tld of order) {
+      if (!rows.some((r) => r.tld.toLowerCase() === tld)) {
+        const fallback = FALLBACK_TEASERS.find((f) => f.tld === tld);
+        if (fallback) rows.push(fallback);
+      }
+    }
+    return rows
+      .filter((row, index, list) => {
+        const key = row.tld.toLowerCase();
+        return list.findIndex((x) => x.tld.toLowerCase() === key) === index;
+      })
+      .sort((a, b) => {
+        const ai = order.indexOf(a.tld.toLowerCase());
+        const bi = order.indexOf(b.tld.toLowerCase());
+        return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+      })
+      .slice(0, 5);
+  }, [teasers]);
+
   const tldChoices = useMemo(() => {
-    const fromTeasers = teasers.map((item) =>
+    const fromTeasers = displayTeasers.map((item) =>
       item.tld.startsWith(".") ? item.tld : `.${item.tld}`,
     );
     const merged = [...fromTeasers];
@@ -171,7 +227,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
       if (!merged.includes(option)) merged.push(option);
     }
     return merged;
-  }, [teasers]);
+  }, [displayTeasers]);
 
   const [tld, setTld] = useState(tldChoices[0] || ".com");
 
@@ -189,18 +245,27 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
     content?.backgroundImage?.trim() ||
     SCENE_FALLBACK;
 
+  const accentParts = useMemo(() => {
+    const trimmed = accent.trim();
+    const match = trimmed.match(/^(\S+)\s+(.+)$/);
+    if (!match)
+      return { split: false as const, leading: "", trailing: trimmed };
+    const [first, rest] = [match[1], match[2]];
+    if (first.toLowerCase() === "beyond") {
+      return { split: true as const, leading: first, trailing: rest };
+    }
+    return { split: false as const, leading: "", trailing: trimmed };
+  }, [accent]);
+
   return (
     <section className="relative z-10 flex min-h-0 flex-1 flex-col">
       <link rel="preload" as="image" href={speakerSrc} fetchPriority="high" />
 
-      {/* Soft left fade only — a hard 58% cutoff plus backdrop-filter
-          painted a lighting seam through the search pill. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-[1] hidden bg-gradient-to-r from-[#3c1178]/50 via-[#4c1d95]/12 via-42% to-transparent lg:block"
+        className="pointer-events-none absolute inset-0 z-[1] hidden bg-gradient-to-r from-[#5b21b6]/55 via-[#5b21b6]/12 via-38% to-transparent lg:block"
       />
 
-      {/* Mobile speaker — a photo band under the search card, the desktop hero paints it as its background */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-[44%] overflow-hidden lg:hidden"
@@ -220,15 +285,15 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
           sizes="100vw"
           className="object-cover object-[84%_6%]"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#4c1d95]/65 via-[#3b1780]/10 to-[#2f1c6a]/55" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#5b21b6]/70 via-[#4c1d95]/15 to-[#2f1c6a]/50" />
       </div>
 
-      <div className="hb-shell relative z-20 grid w-full flex-1 grid-cols-1 overflow-visible pt-3 pb-3 sm:pt-2 lg:grid-cols-[minmax(0,0.48fr)_minmax(0,0.52fr)] lg:items-center lg:gap-4 lg:pb-2 xl:grid-cols-[minmax(0,0.46fr)_minmax(0,0.54fr)]">
-        <div className="relative z-30 w-full min-w-0 self-center overflow-visible lg:max-w-none lg:pb-6">
+      <div className="hb-shell relative z-20 grid w-full flex-1 grid-cols-1 overflow-visible pt-4 pb-7 sm:pt-3 sm:pb-8 lg:grid-cols-[minmax(0,0.54fr)_minmax(0,0.46fr)] lg:items-center lg:gap-4 lg:pb-9">
+        <div className="relative z-30 w-full min-w-0 self-center overflow-visible lg:max-w-[50rem] xl:max-w-[54rem]">
           <motion.p
             initial={reduceMotion ? false : { opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-[10px] font-bold tracking-[0.2em] text-white/70 uppercase sm:text-[12px]"
+            className="text-[11px] font-bold tracking-[0.22em] text-white/75 uppercase sm:text-[12px]"
           >
             {eyebrow}
           </motion.p>
@@ -237,17 +302,34 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
             initial={reduceMotion ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.04 }}
-            className="font-heading mt-2 text-[clamp(1.7rem,4.2vw,4.25rem)] leading-[1.08] font-extrabold tracking-[-0.04em] text-white"
+            className="font-heading mt-2 text-[clamp(2rem,4.75vw,4.05rem)] leading-[1.05] font-extrabold tracking-[-0.045em] text-white"
           >
             <span className="block">{headline}</span>
-            <span className="mt-0.5 block text-white/90">{accent}</span>
+            <span className="mt-1.5 block max-w-full sm:mt-2">
+              {accentParts.split ? (
+                <span className="inline-block max-w-full">
+                  <span className="inline-block max-w-full">
+                    <span className="hb-hero-accent-beyond">
+                      {accentParts.leading}
+                    </span>
+                    <span className="hb-hero-accent-gold">
+                      {" "}
+                      {accentParts.trailing}
+                    </span>
+                  </span>
+                  <AccentGoldSwoosh className="max-w-full" />
+                </span>
+              ) : (
+                <span className="text-white">{accentParts.trailing}</span>
+              )}
+            </span>
           </motion.h1>
 
           <motion.p
             initial={reduceMotion ? false : { opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.08 }}
-            className="mt-3 w-full text-[14px] leading-relaxed text-white/78 sm:text-[15.5px] xl:text-[16.5px]"
+            className="mt-2.5 max-w-[46ch] text-[14px] leading-relaxed text-white/88 sm:text-[15px] lg:text-[16px]"
           >
             {description}
           </motion.p>
@@ -257,27 +339,34 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
             initial={reduceMotion ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.12 }}
-            className="hb-search-pill relative z-30 mt-3 flex w-full max-w-none flex-col gap-2 rounded-[28px] p-2.5 sm:flex-row sm:items-center sm:gap-2 sm:rounded-full sm:p-1.5 lg:mt-6 lg:w-[min(158%,54rem)] xl:w-[min(170%,58rem)]"
+            className="hb-search-pill relative z-30 mt-4 flex w-full max-w-full flex-col gap-2 rounded-[26px] p-2 sm:mt-5 sm:flex-row sm:items-center sm:gap-2 sm:rounded-full sm:p-1.5 sm:pr-1.5 lg:mt-6 lg:min-h-[54px] lg:max-w-[min(100%,52rem)] lg:py-1.5"
           >
-            <div className="flex min-w-0 flex-1 items-center gap-2.5 px-2.5 sm:px-3">
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white/12 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.28)]">
-                <Search className="size-4" aria-hidden />
+            <div className="flex min-w-0 flex-1 items-center gap-2 px-2 sm:gap-2.5 sm:px-3 lg:px-3.5">
+              <span className="hb-search-pill-icon flex size-10 shrink-0 items-center justify-center rounded-full sm:size-11 lg:size-12">
+                <Search
+                  className="size-[18px] text-[#6d28d9] sm:size-5"
+                  aria-hidden
+                />
               </span>
               <input
                 value={domain}
                 onChange={(e) => setDomain(e.target.value)}
                 placeholder={reduceMotion ? TYPING_COPY : `${typed}|`}
                 aria-label={TYPING_COPY}
-                className="min-w-0 flex-1 bg-transparent py-2.5 text-[15px] text-white outline-none placeholder:text-[#d7c6ff] sm:py-1 sm:text-[16px]"
+                className="min-w-0 flex-1 bg-transparent py-2.5 text-[14px] text-slate-900 outline-none placeholder:text-slate-400 sm:py-2 sm:text-[15px] lg:min-w-[12rem] lg:py-2.5 lg:text-[16px] xl:min-w-[16rem]"
               />
             </div>
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <label className="relative min-w-0 flex-none">
+            <span
+              aria-hidden
+              className="hb-search-pill-divider mx-1 hidden h-9 w-px shrink-0 sm:block lg:h-10"
+            />
+            <div className="flex items-center gap-1.5 sm:gap-2 sm:pr-0.5">
+              <label className="relative min-w-0 flex-1 sm:flex-none">
                 <span className="sr-only">Domain extension</span>
                 <select
                   value={tld}
                   onChange={(e) => setTld(e.target.value)}
-                  className="h-12 w-full min-w-[92px] appearance-none rounded-full border border-white/20 bg-white py-0 pr-8 pl-3.5 text-[14px] font-semibold text-slate-800 outline-none sm:h-12 sm:w-auto sm:pr-9 sm:pl-4"
+                  className="h-11 w-full min-w-0 appearance-none rounded-full border border-slate-200 bg-white py-0 pr-8 pl-3.5 text-[14px] font-bold text-slate-800 outline-none sm:h-12 sm:min-w-[96px] sm:pl-4 sm:text-[15px]"
                 >
                   {tldChoices.map((option) => (
                     <option key={option} value={option}>
@@ -286,13 +375,13 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
                   ))}
                 </select>
                 <ChevronDown
-                  className="pointer-events-none absolute top-1/2 right-3 size-3.5 -translate-y-1/2 text-slate-400"
+                  className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-slate-400"
                   aria-hidden
                 />
               </label>
               <button
                 type="submit"
-                className="hb-search-cta inline-flex h-12 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-[13px] font-extrabold whitespace-nowrap transition sm:flex-none sm:px-6 sm:text-[14.5px]"
+                className="hb-search-cta inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full px-4 text-[13px] font-extrabold tracking-[-0.01em] whitespace-nowrap sm:h-12 sm:flex-none sm:px-5 sm:text-[14px] lg:px-6 lg:text-[15px]"
               >
                 {searchButtonLabel}
                 <ArrowRight className="size-4" aria-hidden />
@@ -306,23 +395,25 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
             transition={{ delay: 0.16 }}
             role="group"
             aria-label="Popular domain extensions"
-            className="relative z-30 mt-7 grid w-full grid-cols-2 gap-x-2 gap-y-5 sm:mt-8 sm:flex sm:flex-nowrap sm:items-center sm:gap-3 lg:w-[min(158%,54rem)] xl:w-[min(170%,58rem)]"
+            className="hb-hero-offer-scroll relative z-30 mt-6 flex w-full snap-x snap-mandatory gap-2.5 overflow-x-auto overscroll-x-contain pt-3 pb-0.5 [-webkit-overflow-scrolling:touch] sm:mt-7 sm:grid sm:grid-cols-3 sm:gap-3 sm:overflow-visible sm:pt-4 lg:mt-8 lg:max-w-[min(100%,52rem)] lg:grid-cols-5 lg:gap-3.5"
           >
-            {teasers.map((item, index) => {
+            {displayTeasers.map((item) => {
               const value = item.tld.startsWith(".")
                 ? item.tld
                 : `.${item.tld}`;
               const active = value === tld;
-              const popular =
-                value.toLowerCase() === ".com" ||
-                (index === 0 &&
-                  !teasers.some((row) => {
-                    const tldValue = row.tld.startsWith(".")
-                      ? row.tld
-                      : `.${row.tld}`;
-                    return tldValue.toLowerCase() === ".com";
-                  }));
-              const Icon = tldMark(value);
+              const popular = value.toLowerCase() === ".com";
+              const sale = typeof item.usd === "number" ? item.usd : undefined;
+              const original =
+                typeof item.originalUsd === "number"
+                  ? item.originalUsd
+                  : undefined;
+              const saveTone = SAVE_BADGE_TONE[value.toLowerCase()];
+              const saveLabel =
+                !popular && sale != null && original != null
+                  ? `Save ${savePercent(original, sale)}%`
+                  : null;
+
               return (
                 <button
                   key={item.tld}
@@ -330,79 +421,66 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
                   aria-pressed={active}
                   onClick={() => setTld(value)}
                   className={cn(
-                    "hb-tld-chip group relative isolate flex h-auto min-h-[52px] w-full shrink-0 flex-col items-center justify-center gap-1 overflow-visible rounded-[22px] px-2.5 py-2 whitespace-nowrap transition-[transform,box-shadow] duration-200 ease-out outline-none sm:h-[52px] sm:w-auto sm:flex-none sm:flex-row sm:justify-start sm:gap-2 sm:rounded-full sm:px-4 sm:py-0",
-                    "focus-visible:ring-2 focus-visible:ring-violet-200/90 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
-                    popular
-                      ? "hb-tld-chip--popular"
-                      : active
-                        ? "hb-tld-chip--glass hb-tld-chip--active"
-                        : "hb-tld-chip--glass",
+                    "hb-tld-offer group relative flex min-h-[108px] w-[calc(50%-0.35rem)] shrink-0 snap-start flex-col items-start justify-end gap-0.5 overflow-visible rounded-[22px] px-3.5 pt-8 pb-4 text-left transition duration-200 outline-none",
+                    "min-[400px]:w-[calc(44%-0.35rem)] sm:min-h-[116px] sm:w-auto sm:min-w-0 sm:rounded-[24px] sm:px-4 sm:pt-9 sm:pb-4 lg:min-h-[124px]",
+                    "focus-visible:ring-2 focus-visible:ring-violet-300 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
+                    popular && "hb-tld-offer--popular",
+                    active &&
+                      !popular &&
+                      "shadow-[0_0_0_1px_rgba(167,139,250,0.35),0_0_22px_rgba(129,140,248,0.22)] ring-2 ring-violet-300/90",
                   )}
                 >
                   {popular ? (
-                    <span className="hb-tld-chip-badge absolute -top-3.5 left-1/2 z-10 inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full px-3 py-1 text-[10.5px] font-extrabold tracking-[0.07em] text-[#faf5ff] uppercase antialiased sm:text-[11.5px]">
+                    <span className="hb-tld-offer-popular-badge absolute -top-2.5 left-2.5 z-10 inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[9px] font-extrabold tracking-[0.02em] sm:left-3 sm:px-2.5 sm:py-1 sm:text-[10px]">
                       <Crown
-                        className="size-3 shrink-0 text-[#faf5ff]"
+                        className="size-2.5 shrink-0 text-[#8a5a12] sm:size-3"
                         fill="currentColor"
                         aria-hidden
                       />
                       Most Popular
                     </span>
+                  ) : saveLabel && saveTone ? (
+                    <span
+                      className={cn(
+                        "absolute -top-2 right-2 z-10 rounded-full px-1.5 py-0.5 text-[9px] font-bold tracking-[-0.01em] whitespace-nowrap sm:-top-2.5 sm:right-2.5 sm:px-2 sm:text-[10px]",
+                        saveTone === "purple" && "hb-tld-offer-save--purple",
+                        saveTone === "green" && "hb-tld-offer-save--green",
+                        saveTone === "rose" && "hb-tld-offer-save--rose",
+                        saveTone === "violet" && "hb-tld-offer-save--violet",
+                      )}
+                    >
+                      {saveLabel}
+                    </span>
                   ) : null}
                   <span
-                    className={cn(
-                      "hidden size-8 shrink-0 items-center justify-center rounded-full sm:flex",
-                      popular
-                        ? "hb-tld-chip-icon--popular"
-                        : "bg-white/12 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.28)]",
-                    )}
-                  >
-                    <Icon className="size-3.5" aria-hidden />
-                  </span>
-                  <span
-                    className="text-[13px] leading-none font-extrabold tracking-[-0.03em] text-white sm:text-[15px]"
+                    className="hb-tld-offer-tld relative z-[1] text-[1.08rem] leading-none font-extrabold tracking-[-0.04em] sm:text-[1.18rem] lg:text-[1.22rem]"
                     translate="no"
                   >
                     {value}
                   </span>
-                  <span
-                    aria-hidden
-                    className={cn(
-                      "hidden h-3.5 w-px shrink-0 sm:block",
-                      popular ? "bg-violet-200/50" : "bg-white/22",
-                    )}
-                  />
-                  <span
-                    className={cn(
-                      "inline-flex items-baseline gap-1 text-[11.5px] leading-none font-bold tracking-[-0.01em] tabular-nums sm:gap-1.5 sm:text-[13.5px]",
-                      popular ? "text-[#ede9fe]" : "text-[#d7c6ff]",
-                    )}
-                    translate="no"
-                  >
-                    {"originalUsd" in item &&
-                    typeof item.originalUsd === "number" ? (
-                      <span
-                        className={cn(
-                          "text-[10px] font-semibold line-through decoration-[1.5px] sm:text-[11.5px]",
-                          popular
-                            ? "text-violet-100/55 decoration-violet-100/65"
-                            : "text-white/45 decoration-white/50",
-                        )}
-                      >
-                        <CatalogPrice usd={item.originalUsd} />
+                  {original != null ? (
+                    <span
+                      className="relative z-[1] text-[11.5px] font-medium text-[#9ca8b8] line-through decoration-[#9ca8b8] sm:text-[12px]"
+                      translate="no"
+                    >
+                      <CatalogPrice usd={original} />
+                    </span>
+                  ) : null}
+                  {sale != null ? (
+                    <span
+                      className="hb-tld-offer-price relative z-[1] text-[1.38rem] leading-none font-extrabold tracking-[-0.04em] whitespace-nowrap sm:text-[1.48rem] lg:text-[1.58rem]"
+                      translate="no"
+                    >
+                      <CatalogPrice usd={sale} />
+                      <span className="ml-0.5 align-baseline text-[0.55em] font-extrabold">
+                        /yr
                       </span>
-                    ) : null}
-                    {typeof item.usd === "number" ? (
-                      <span>
-                        <CatalogPrice usd={item.usd} />
-                        <span className="ml-px hidden text-[0.88em] font-semibold tracking-normal opacity-70 sm:inline">
-                          /yr
-                        </span>
-                      </span>
-                    ) : (
-                      <span>{item.priceLabel}</span>
-                    )}
-                  </span>
+                    </span>
+                  ) : (
+                    <span className="hb-tld-offer-price text-[1.25rem] font-extrabold sm:text-[1.35rem]">
+                      {item.priceLabel}
+                    </span>
+                  )}
                 </button>
               );
             })}

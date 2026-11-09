@@ -98,22 +98,67 @@
   }
 
   /**
-   * Header glass surface.
-   * Solid white base + a whisper-thin tint so the hero photo can never bleed a
-   * horizontal seam through the pill. No backdrop-filter: it produced a blurred
-   * band across the middle of the bar on large viewports.
+   * Header glass — same frost recipe as hero TLD cards (opaque; no backdrop-filter).
    */
   .hb-header-bar {
-    background-color: #fff;
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    contain: paint;
+    background-color: #ffffff;
     background-image: linear-gradient(
-      180deg,
+      152deg,
       #ffffff 0%,
-      #fdfdff 62%,
-      #fafbff 100%
+      #faf8ff 32%,
+      #f5f3ff 52%,
+      #f2f6ff 74%,
+      #ffffff 100%
     );
-    border-color: rgba(255, 255, 255, 0.96);
+    border-color: rgba(255, 255, 255, 0.78);
+    box-shadow:
+      0 0 0 1px rgba(167, 139, 250, 0.24),
+      0 18px 46px rgba(49, 16, 107, 0.18),
+      0 8px 22px rgba(59, 130, 246, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.98),
+      inset 0 -14px 28px rgba(109, 40, 217, 0.055);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
+  }
+
+  .hb-header-bar::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      125deg,
+      rgba(147, 197, 253, 0.12) 0%,
+      transparent 40%,
+      rgba(167, 139, 250, 0.12) 100%
+    );
+  }
+
+  .hb-header-bar::after {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.72) 0%,
+      rgba(224, 231, 255, 0.12) 38%,
+      transparent 56%
+    );
+    opacity: 0.92;
+  }
+
+  .hb-header-bar > * {
+    position: relative;
+    z-index: 1;
   }
 
   /**
@@ -124,129 +169,257 @@
     isolation: isolate;
     background: linear-gradient(
       180deg,
-      rgba(108, 58, 198, 0.62) 0%,
-      rgba(52, 22, 118, 0.82) 100%
+      rgba(255, 255, 255, 0.99) 0%,
+      rgba(255, 255, 255, 0.96) 100%
     );
-    border: 1px solid rgba(196, 164, 255, 0.42);
+    border: 1px solid rgba(255, 255, 255, 0.98);
     box-shadow:
-      0 16px 40px rgba(18, 6, 48, 0.32),
-      0 0 28px rgba(168, 85, 247, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.28);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
+      0 22px 56px rgba(46, 16, 101, 0.3),
+      0 8px 22px rgba(91, 33, 182, 0.14),
+      0 0 0 1px rgba(255, 255, 255, 0.55),
+      inset 0 1px 0 rgba(255, 255, 255, 1),
+      inset 0 -1px 0 rgba(241, 245, 249, 0.85);
     transform: translateZ(0);
   }
 
   .hb-search-pill:focus-within {
-    border-color: rgba(216, 180, 254, 0.82);
+    border-color: rgba(196, 181, 253, 0.95);
     box-shadow:
       0 0 0 3px rgba(168, 85, 247, 0.24),
-      0 16px 40px rgba(18, 6, 48, 0.34),
-      0 0 28px rgba(139, 92, 246, 0.34),
-      inset 0 1px 0 rgba(237, 233, 254, 0.32);
+      0 24px 60px rgba(46, 16, 101, 0.34),
+      0 8px 22px rgba(91, 33, 182, 0.16),
+      inset 0 1px 0 rgba(255, 255, 255, 1);
+  }
+
+  .hb-search-pill-icon {
+    background: linear-gradient(180deg, #faf8ff 0%, #ebe4ff 100%);
+    color: #6d28d9;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.95),
+      0 2px 8px rgba(109, 40, 217, 0.12);
   }
 
   .hb-search-cta {
-    background: linear-gradient(
-      180deg,
-      #f3e8ff 0%,
-      #d8b4fe 18%,
-      #a855f7 58%,
-      #7c3aed 100%
-    );
-    color: #fff;
-    text-shadow: 0 1px 0 rgba(76, 29, 149, 0.35);
+    background: linear-gradient(180deg, #fde68a 0%, #fbbf24 48%, #f59e0b 100%);
+    color: #1a1035;
     box-shadow:
-      0 10px 26px rgba(124, 58, 237, 0.45),
-      0 0 22px rgba(168, 85, 247, 0.32),
-      inset 0 1px 0 rgba(255, 255, 255, 0.42);
+      0 10px 22px rgba(245, 158, 11, 0.42),
+      inset 0 1px 0 rgba(255, 255, 255, 0.55);
   }
 
   .hb-search-cta:hover {
-    background: linear-gradient(
-      180deg,
-      #faf5ff 0%,
-      #e9d5ff 16%,
-      #c084fc 52%,
-      #9333ea 100%
-    );
+    background: linear-gradient(180deg, #fef3c7 0%, #fcd34d 45%, #f59e0b 100%);
   }
 
-  .hb-tld-chip {
+  .hb-hero-accent-beyond {
+    background: linear-gradient(180deg, #ffffff 0%, #ffffff 70%, #efe9df 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hb-hero-accent-gold {
+    background: linear-gradient(
+      180deg,
+      #fff8dc 0%,
+      #fde96a 18%,
+      #f5cc4a 48%,
+      #e8ad38 78%,
+      #d99228 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hb-hero-offer-scroll {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .hb-hero-offer-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hb-tld-offer {
     isolation: isolate;
     transform: translateZ(0);
-  }
-
-  .hb-tld-chip--glass {
-    background: linear-gradient(
-      180deg,
-      rgba(108, 58, 198, 0.62) 0%,
-      rgba(52, 22, 118, 0.78) 100%
-    );
-    border: 1px solid rgba(196, 164, 255, 0.38);
-    box-shadow:
-      0 10px 24px rgba(18, 6, 48, 0.28),
-      inset 0 1px 0 rgba(255, 255, 255, 0.22);
-  }
-
-  .hb-tld-chip--glass:hover {
-    border-color: rgba(220, 198, 255, 0.55);
-    box-shadow:
-      0 12px 28px rgba(18, 6, 48, 0.34),
-      0 0 18px rgba(168, 85, 247, 0.22),
-      inset 0 1px 0 rgba(255, 255, 255, 0.28);
-  }
-
-  .hb-tld-chip--active {
-    border-color: rgba(255, 255, 255, 0.62);
-    box-shadow:
-      0 0 0 1px rgba(255, 255, 255, 0.28),
-      0 12px 28px rgba(18, 6, 48, 0.34),
-      inset 0 1px 0 rgba(255, 255, 255, 0.32);
-  }
-
-  .hb-tld-chip--popular {
-    background: linear-gradient(
-      180deg,
-      rgba(124, 58, 237, 0.94) 0%,
-      rgba(76, 29, 149, 0.96) 52%,
-      rgba(46, 16, 98, 0.98) 100%
-    );
-    border: 1.5px solid rgba(216, 180, 254, 0.92);
-    box-shadow:
-      0 0 0 3px rgba(168, 85, 247, 0.28),
-      0 0 30px rgba(139, 92, 246, 0.58),
-      0 12px 28px rgba(24, 8, 52, 0.42),
-      inset 0 1px 0 rgba(237, 233, 254, 0.38);
-  }
-
-  .hb-tld-chip-badge {
-    background: linear-gradient(
-      180deg,
-      rgba(196, 181, 253, 0.92) 0%,
-      rgba(167, 139, 250, 0.86) 45%,
-      rgba(139, 92, 246, 0.8) 100%
-    );
-    border: 1px solid rgba(255, 255, 255, 0.48);
-    color: #faf5ff;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    text-shadow: 0 1px 0 rgba(76, 29, 149, 0.18);
-    backdrop-filter: blur(14px) saturate(1.5);
-    -webkit-backdrop-filter: blur(14px) saturate(1.5);
-    box-shadow:
-      0 8px 18px rgba(76, 29, 149, 0.26),
-      inset 0 1px 0 rgba(255, 255, 255, 0.72),
-      inset 0 -1px 0 rgba(91, 33, 182, 0.1);
-    white-space: nowrap;
   }
 
-  .hb-tld-chip-icon--popular {
-    background: linear-gradient(180deg, #ede9fe 0%, #c084fc 42%, #7c3aed 100%);
-    color: #fff;
+  /* Glass HD — purple / blue frost (non-.com cards) */
+  .hb-tld-offer:not(.hb-tld-offer--popular) {
+    backdrop-filter: blur(16px) saturate(1.28);
+    background: linear-gradient(
+      152deg,
+      rgba(255, 255, 255, 0.94) 0%,
+      rgba(248, 245, 255, 0.9) 34%,
+      rgba(240, 248, 255, 0.92) 68%,
+      rgba(255, 255, 255, 0.96) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.78);
     box-shadow:
-      0 6px 16px rgba(124, 58, 237, 0.42),
-      inset 0 1px 0 rgba(255, 255, 255, 0.45);
+      0 0 0 1px rgba(167, 139, 250, 0.26),
+      0 18px 46px rgba(49, 16, 107, 0.22),
+      0 8px 22px rgba(59, 130, 246, 0.14),
+      inset 0 1px 0 rgba(255, 255, 255, 0.98),
+      inset 0 -14px 28px rgba(109, 40, 217, 0.05);
+  }
+
+  .hb-tld-offer:not(.hb-tld-offer--popular)::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      125deg,
+      rgba(147, 197, 253, 0.14) 0%,
+      transparent 42%,
+      rgba(167, 139, 250, 0.1) 100%
+    );
+  }
+
+  .hb-tld-offer:not(.hb-tld-offer--popular)::after {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.72) 0%,
+      rgba(224, 231, 255, 0.1) 40%,
+      transparent 58%
+    );
+    opacity: 0.92;
+  }
+
+  .hb-tld-offer:not(.hb-tld-offer--popular):hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.92);
+    box-shadow:
+      0 0 0 1px rgba(167, 139, 250, 0.38),
+      0 0 28px rgba(129, 140, 248, 0.2),
+      0 24px 52px rgba(49, 16, 107, 0.24),
+      0 10px 24px rgba(59, 130, 246, 0.16),
+      inset 0 1px 0 rgba(255, 255, 255, 1);
+  }
+
+  .hb-tld-offer--popular {
+    backdrop-filter: none;
+    background: linear-gradient(168deg, #fffdf5 0%, #fff4d4 48%, #fff9ea 100%);
+    border: 2px solid #e9bc2f;
+    box-shadow:
+      0 0 0 1px rgba(239, 197, 49, 0.38),
+      0 0 32px rgba(245, 196, 58, 0.22),
+      0 18px 42px rgba(49, 16, 107, 0.14),
+      inset 0 1px 0 rgba(255, 255, 255, 0.88);
+  }
+
+  .hb-tld-offer--popular::after {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.55) 0%,
+      transparent 42%
+    );
+    opacity: 0.85;
+  }
+
+  .hb-tld-offer--popular:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 0 0 1px rgba(239, 197, 49, 0.45),
+      0 0 36px rgba(245, 196, 58, 0.28),
+      0 22px 48px rgba(49, 16, 107, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  }
+
+  .hb-tld-offer-popular-badge {
+    background: linear-gradient(180deg, #fae585 0%, #f3d35a 100%);
+    border: 1px solid rgba(186, 137, 24, 0.22);
+    color: #7a5410;
+    box-shadow:
+      0 6px 16px rgba(122, 84, 16, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  }
+
+  .hb-tld-offer-price {
+    color: #5b21b6;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+  }
+
+  .hb-tld-offer:not(.hb-tld-offer--popular) .hb-tld-offer-price {
+    color: #5925a5;
+    text-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.45),
+      0 0 20px rgba(109, 40, 217, 0.08);
+  }
+
+  .hb-tld-offer-tld {
+    color: #111827;
+    letter-spacing: -0.04em;
+  }
+
+  .hb-tld-offer:not(.hb-tld-offer--popular) .hb-tld-offer-tld {
+    color: #0f172a;
+  }
+
+  .hb-search-pill-divider {
+    background: linear-gradient(
+      180deg,
+      transparent,
+      rgba(203, 213, 225, 0.95) 20%,
+      rgba(203, 213, 225, 0.95) 80%,
+      transparent
+    );
+  }
+
+  .hb-tld-offer-save--purple {
+    background: linear-gradient(180deg, #f3efff 0%, #ebe4ff 100%);
+    color: #6d28d9;
+    border: 1px solid #ddd6fe;
+    box-shadow:
+      0 4px 12px rgba(109, 40, 217, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+
+  .hb-tld-offer-save--green {
+    background: linear-gradient(180deg, #e8faef 0%, #dcfce7 100%);
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+    box-shadow:
+      0 4px 12px rgba(21, 128, 61, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+
+  .hb-tld-offer-save--rose {
+    background: linear-gradient(180deg, #fff1f3 0%, #ffe4e6 100%);
+    color: #e11d48;
+    border: 1px solid #fecdd3;
+    box-shadow:
+      0 4px 12px rgba(225, 29, 72, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+
+  .hb-tld-offer-save--violet {
+    background: linear-gradient(180deg, #f8efff 0%, #f3e8ff 100%);
+    color: #7c3aed;
+    border: 1px solid #e9d5ff;
+    box-shadow:
+      0 4px 12px rgba(124, 58, 237, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.7);
   }
 
   /* Homepage chapters — Hostinger-tight, one continuous canvas */
@@ -369,6 +542,11 @@
         #5025d1 72%,
         #2f1c6a 100%
       );
+  }
+
+  .hb-hero-hostinger > * {
+    position: relative;
+    z-index: 1;
   }
 
   .hb-hero-continue,
@@ -771,15 +949,30 @@
   /* Desktop: the speaker plate is the hero background, so no photo frame shows. */
   @media (min-width: 1024px) {
     .hb-hero-hostinger {
-      background-color: #4c1d95;
+      background-color: #5b21b6;
       background-image: var(
         --hb-hero-photo,
         url("/images/hero-speaker-v6.webp")
       );
       background-repeat: no-repeat;
       background-size: cover;
-      /* Anchored right/top: any crop eats the empty purple, never the subject. */
-      background-position: right top;
+      background-position: 92% top;
+    }
+
+    .hb-hero-hostinger::after {
+      content: "";
+      pointer-events: none;
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background: linear-gradient(
+        95deg,
+        #5b21b6 0%,
+        #5b21b6 32%,
+        rgba(91, 33, 182, 0.55) 48%,
+        rgba(91, 33, 182, 0.12) 62%,
+        transparent 74%
+      );
     }
   }
 

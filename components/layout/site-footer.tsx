@@ -131,7 +131,7 @@ export function SiteFooter({
               {/* Native img — same file as the header, no Next crop in a shrinking grid. */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/logo/hostingbeyond-logo-v6.png"
+                src="/logo/hostingbeyond-logo-v6.png?v=brand9"
                 alt="HostingBeyond"
                 width={981}
                 height={182}
