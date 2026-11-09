@@ -592,23 +592,25 @@ html[data-hb-theme="light"] {
 
 .hb-panel-mega__edge--left {
   left: 0;
-  width: min(13.5rem, 30vw);
+  width: min(18rem, 42vw);
   background: linear-gradient(
     90deg,
     rgba(255, 252, 248, 0.94) 0%,
-    rgba(252, 244, 255, 0.55) 38%,
-    rgba(238, 228, 255, 0.2) 62%,
+    rgba(252, 244, 255, 0.62) 28%,
+    rgba(243, 236, 255, 0.38) 52%,
+    rgba(232, 224, 255, 0.16) 72%,
     transparent 100%
   );
 }
 
 .hb-panel-mega__edge--right {
   right: 0;
-  width: min(10rem, 20vw);
+  width: min(12rem, 24vw);
   background: linear-gradient(
     270deg,
-    rgba(252, 248, 255, 0.62) 0%,
-    rgba(236, 228, 255, 0.28) 42%,
+    rgba(252, 248, 255, 0.76) 0%,
+    rgba(240, 232, 255, 0.42) 38%,
+    rgba(224, 214, 255, 0.18) 62%,
     transparent 100%
   );
 }
@@ -617,8 +619,9 @@ html[data-hb-theme="light"] {
   background: linear-gradient(
     90deg,
     rgba(255, 252, 248, 0.82) 0%,
-    rgba(252, 244, 255, 0.46) 38%,
-    rgba(238, 228, 255, 0.16) 62%,
+    rgba(252, 244, 255, 0.52) 28%,
+    rgba(243, 236, 255, 0.3) 52%,
+    rgba(232, 224, 255, 0.12) 72%,
     transparent 100%
   );
 }
@@ -626,8 +629,9 @@ html[data-hb-theme="light"] {
 .hb-panel[data-theme="dark"] .hb-panel-mega__edge--right {
   background: linear-gradient(
     270deg,
-    rgba(252, 248, 255, 0.5) 0%,
-    rgba(236, 228, 255, 0.22) 42%,
+    rgba(252, 248, 255, 0.62) 0%,
+    rgba(240, 232, 255, 0.34) 38%,
+    rgba(224, 214, 255, 0.14) 62%,
     transparent 100%
   );
 }
@@ -712,9 +716,9 @@ html[data-hb-theme="light"] {
 
 .hb-panel-mega-logo__img {
   display: block;
-  height: 2.2rem;
+  height: 2.09rem;
   width: auto;
-  max-width: min(56vw, 300px);
+  max-width: min(56vw, 285px);
   object-fit: contain;
   object-position: left center;
   -webkit-backface-visibility: hidden;
@@ -724,22 +728,22 @@ html[data-hb-theme="light"] {
 
 @media (min-width: 640px) {
   .hb-panel-mega-logo__img {
-    height: 2.45rem;
-    max-width: 330px;
+    height: 2.33rem;
+    max-width: 314px;
   }
 }
 
 @media (min-width: 1024px) {
   .hb-panel-mega-logo__img {
-    height: 2.58rem;
-    max-width: 355px;
+    height: 2.45rem;
+    max-width: 337px;
   }
 }
 
 @media (min-width: 1280px) {
   .hb-panel-mega-logo__img {
-    height: 2.68rem;
-    max-width: 370px;
+    height: 2.55rem;
+    max-width: 352px;
   }
 }
 
