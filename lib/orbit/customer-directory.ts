@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 
 import { hashPassword } from "@/lib/customer/password";
+import { latestSignInByUserId } from "@/lib/customer/signin-activity";
 import { prisma } from "@/lib/prisma";
 
 export function resolveSignupMethods(input: {
@@ -43,9 +44,69 @@ export async function orbitCustomerDirectoryStats() {
   };
 }
 
+const countryDisplay = new Intl.DisplayNames(["en"], { type: "region" });
+
+/** Matches a search term against an ISO country code or its English name. */
+function countryMatches(term: string, code: string | null | undefined) {
+  if (!code) return false;
+  const needle = term.trim().toLowerCase();
+  if (!needle) return false;
+  if (code.toLowerCase() === needle) return true;
+  try {
+    return (countryDisplay.of(code) ?? "").toLowerCase().includes(needle);
+  } catch {
+    return false;
+  }
+}
+
+const customerInclude = {
+  wallet: true,
+  accounts: { select: { provider: true, createdAt: true } },
+  _count: {
+    select: {
+      sessions: true,
+      hostingOrders: true,
+      domainOrders: true,
+      walletPayments: true,
+    },
+  },
+} as const;
+
+/**
+ * Country lives in the sign-in audit trail (a JSON detail string), so it cannot
+ * be filtered in SQL against CustomerUser. We resolve matching customer ids from
+ * recent LOGIN rows and then load those customers.
+ */
+async function customerIdsByCountry(term: string, limit: number) {
+  const rows = await prisma.activityLog.findMany({
+    where: { action: "LOGIN" },
+    orderBy: { createdAt: "desc" },
+    take: 800,
+    select: { resource: true, details: true },
+  });
+  const ids: string[] = [];
+  for (const row of rows) {
+    const userId = row.resource?.replace("CustomerUser:", "");
+    if (!userId || ids.includes(userId)) continue;
+    let code: string | null = null;
+    try {
+      const parsed = row.details
+        ? (JSON.parse(row.details) as Record<string, unknown>)
+        : {};
+      code = typeof parsed.country === "string" ? parsed.country : null;
+    } catch {
+      code = null;
+    }
+    if (countryMatches(term, code)) ids.push(userId);
+    if (ids.length >= limit) break;
+  }
+  return ids;
+}
+
 export async function searchOrbitCustomers(query: string, limit = 40) {
   const q = query.trim();
-  return prisma.customerUser.findMany({
+
+  const rows = await prisma.customerUser.findMany({
     where: q
       ? {
           OR: [
@@ -56,19 +117,30 @@ export async function searchOrbitCustomers(query: string, limit = 40) {
       : undefined,
     take: limit,
     orderBy: { createdAt: "desc" },
-    include: {
-      wallet: true,
-      accounts: { select: { provider: true, createdAt: true } },
-      _count: {
-        select: {
-          sessions: true,
-          hostingOrders: true,
-          domainOrders: true,
-          walletPayments: true,
-        },
-      },
-    },
+    include: customerInclude,
   });
+
+  let merged = rows;
+  if (q) {
+    const countryIds = await customerIdsByCountry(q, limit);
+    const missing = countryIds.filter(
+      (id) => !rows.some((row) => row.id === id),
+    );
+    if (missing.length > 0) {
+      const extra = await prisma.customerUser.findMany({
+        where: { id: { in: missing } },
+        orderBy: { createdAt: "desc" },
+        include: customerInclude,
+      });
+      merged = [...rows, ...extra];
+    }
+  }
+
+  const signIns = await latestSignInByUserId(merged.map((row) => row.id));
+  return merged.map((row) => ({
+    ...row,
+    lastSignIn: signIns.get(row.id) ?? null,
+  }));
 }
 
 export async function getOrbitCustomerDetail(userId: string) {
@@ -126,13 +198,16 @@ export async function getOrbitCustomerDetail(userId: string) {
       },
       walletTransactions: {
         orderBy: { createdAt: "desc" },
-        take: 15,
+        take: 25,
         select: {
           id: true,
           amount: true,
           currency: true,
           type: true,
+          status: true,
+          balanceAfter: true,
           note: true,
+          referenceType: true,
           createdAt: true,
         },
       },
@@ -149,6 +224,8 @@ export async function getOrbitCustomerDetail(userId: string) {
 
   if (!user) return null;
 
+  const signIns = await latestSignInByUserId([userId]);
+
   const hostingSpend = user.hostingOrders.reduce(
     (sum, row) => sum + Number(row.total),
     0,
@@ -163,6 +240,7 @@ export async function getOrbitCustomerDetail(userId: string) {
 
   return {
     user,
+    lastSignIn: signIns.get(userId) ?? null,
     summary: {
       hostingSpend,
       domainSpend,

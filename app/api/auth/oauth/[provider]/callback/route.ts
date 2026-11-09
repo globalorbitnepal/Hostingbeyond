@@ -22,6 +22,8 @@ import {
   requestSiteOrigin,
 } from "@/lib/customer/site-origin";
 import { signOAuthEstablishToken } from "@/lib/customer/oauth-bridge";
+import { requestIp } from "@/lib/customer/request-country";
+import { recordCustomerSignInActivity } from "@/lib/customer/signin-activity";
 import { routes } from "@/config/routes";
 import { sessionSecret } from "@/lib/orbit/jwt";
 
@@ -172,6 +174,14 @@ export async function GET(
   const { token, expiresAt } = await createCustomerSession(user.id, {
     remember: true,
     userAgent: request.headers.get("user-agent"),
+    ipAddress: requestIp(request),
+  });
+
+  await recordCustomerSignInActivity({
+    userId: user.id,
+    email: user.email,
+    method: rawProvider,
+    request,
   });
 
   const response = NextResponse.redirect(

@@ -12,6 +12,7 @@ type PanelUser = {
   name: string | null;
   email: string;
   image: string | null;
+  hasPassword?: boolean;
 };
 
 type PanelTheme = "light" | "dark";

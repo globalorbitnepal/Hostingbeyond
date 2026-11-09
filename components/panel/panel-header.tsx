@@ -31,6 +31,7 @@ type PanelUser = {
   name: string | null;
   email: string;
   image: string | null;
+  hasPassword?: boolean;
 };
 
 type PanelTheme = "light" | "dark";
@@ -452,11 +453,14 @@ export function PanelHeader({
                     className="hb-panel-menu-item"
                   >
                     <KeyRound className="h-4 w-4" />
-                    Change password
+                    {user.hasPassword === false
+                      ? "Set password"
+                      : "Change password"}
                   </Link>
                   <p className="px-3 py-1.5 text-xs text-[var(--hb-p-muted)]">
-                    Two-factor authentication (Google Authenticator) — coming
-                    soon.
+                    {user.hasPassword === false
+                      ? "You signed in with Google — add a password to also sign in with email."
+                      : "Two-factor authentication (Google Authenticator) — coming soon."}
                   </p>
                 </nav>
                 <div className="hb-panel-menu-divider" />

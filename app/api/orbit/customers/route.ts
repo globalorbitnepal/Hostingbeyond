@@ -38,6 +38,7 @@ export async function GET(request: Request) {
         providers: row.accounts.map((a) => a.provider),
       }),
       oauthProviders: row.accounts.map((a) => a.provider),
+      lastSignIn: row.lastSignIn,
       counts: row._count,
     })),
   });

@@ -6,9 +6,30 @@ import { KeyRound } from "lucide-react";
 type Props = {
   email: string;
   hasPassword: boolean;
+  hasOauth?: boolean;
+  providers?: string[];
 };
 
-export function AccountSecurityPanel({ email, hasPassword }: Props) {
+function providerLabels(providers: string[]) {
+  return providers
+    .map((provider) =>
+      provider === "google"
+        ? "Google"
+        : provider === "github"
+          ? "GitHub"
+          : provider === "facebook"
+            ? "Facebook"
+            : provider,
+    )
+    .join(" or ");
+}
+
+export function AccountSecurityPanel({
+  email,
+  hasPassword,
+  hasOauth = false,
+  providers = [],
+}: Props) {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -74,7 +95,9 @@ export function AccountSecurityPanel({ email, hasPassword }: Props) {
             Signed in as <span className="hb-text font-semibold">{email}</span>.
             {hasPassword
               ? " Enter your current password, then choose a new one."
-              : " You signed in with Google, GitHub, or Facebook — add a password to sign in with email too."}
+              : hasOauth
+                ? ` You signed in with ${providerLabels(providers) || "a social account"} — set a password to sign in with email too. Your social sign-in keeps working.`
+                : " Choose a password so you can sign in with email as well."}
           </p>
         </div>
       </div>

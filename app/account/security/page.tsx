@@ -8,6 +8,7 @@ import {
   CUSTOMER_SESSION_COOKIE,
   getCustomerFromToken,
 } from "@/lib/customer/session";
+import { prisma } from "@/lib/prisma";
 
 export default async function AccountSecurityPage() {
   const jar = await cookies();
@@ -15,6 +16,12 @@ export default async function AccountSecurityPage() {
     jar.get(CUSTOMER_SESSION_COOKIE)?.value,
   );
   if (!user) redirect(routes.login);
+
+  const oauth = await prisma.customerOAuthAccount.findMany({
+    where: { userId: user.id },
+    select: { provider: true },
+    orderBy: { createdAt: "asc" },
+  });
 
   return (
     <div className="mx-auto w-full max-w-xl space-y-5">
@@ -27,6 +34,8 @@ export default async function AccountSecurityPage() {
         <AccountSecurityPanel
           email={user.email}
           hasPassword={Boolean(user.passwordHash)}
+          hasOauth={oauth.length > 0}
+          providers={oauth.map((row) => row.provider)}
         />
       </div>
     </div>

@@ -35,6 +35,17 @@ export function normalizeTopUpAmount(raw: number): number | null {
   return rounded;
 }
 
+/**
+ * Admin ledger adjustments are not customer top-ups: a goodwill credit of
+ * $1.50 or removing $0.40 is legitimate, so the $5 floor does not apply.
+ */
+export function normalizeAdminWalletAmount(raw: number): number | null {
+  if (!Number.isFinite(raw)) return null;
+  const rounded = Math.round(raw * 100) / 100;
+  if (rounded < 0.01 || rounded > 10_000) return null;
+  return rounded;
+}
+
 export function isPaymentProviderConfigured(): boolean {
   return isStripeConfigured() && Boolean(getStripeWebhookSecret());
 }
@@ -389,15 +400,17 @@ export async function getWalletPaymentForUser(
 
 export async function searchCustomersForWalletAdmin(query: string) {
   const q = query.trim();
-  if (!q) return [];
   return prisma.customerUser.findMany({
-    where: {
-      OR: [
-        { email: { contains: q, mode: "insensitive" } },
-        { name: { contains: q, mode: "insensitive" } },
-      ],
-    },
+    where: q
+      ? {
+          OR: [
+            { email: { contains: q, mode: "insensitive" } },
+            { name: { contains: q, mode: "insensitive" } },
+          ],
+        }
+      : undefined,
     take: 20,
+    orderBy: { createdAt: "desc" },
     include: { wallet: true },
   });
 }
@@ -410,7 +423,7 @@ export async function adminAdjustCustomerWallet(input: {
   reason: string;
   idempotencyKey: string;
 }) {
-  const amount = normalizeTopUpAmount(input.amount);
+  const amount = normalizeAdminWalletAmount(input.amount);
   if (amount == null) throw new Error("invalid_amount");
   if (!input.reason.trim()) throw new Error("reason_required");
 

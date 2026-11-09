@@ -43,6 +43,7 @@ export default async function AccountLayout({
           name: user.name,
           email: user.email,
           image: user.image,
+          hasPassword: Boolean(user.passwordHash),
         }}
       >
         {children}

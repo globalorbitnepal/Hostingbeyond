@@ -5,6 +5,8 @@ import { rateLimitResponse } from "@/lib/http/fixed-window-rate-limit";
 import { rateLimitAuthEndpoint } from "@/lib/http/public-endpoint-rate-limit";
 import { prisma } from "@/lib/prisma";
 import { hashPassword, normalizeEmail } from "@/lib/customer/password";
+import { requestIp } from "@/lib/customer/request-country";
+import { recordCustomerSignInActivity } from "@/lib/customer/signin-activity";
 import {
   createCustomerSession,
   customerCookieOptions,
@@ -56,6 +58,14 @@ export async function POST(request: Request) {
   const { token, expiresAt } = await createCustomerSession(user.id, {
     remember: true,
     userAgent: request.headers.get("user-agent"),
+    ipAddress: requestIp(request),
+  });
+
+  await recordCustomerSignInActivity({
+    userId: user.id,
+    email: user.email,
+    method: "signup",
+    request,
   });
 
   const response = NextResponse.json({

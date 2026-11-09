@@ -20,7 +20,7 @@ export async function GET(
     return NextResponse.json({ error: "Customer not found" }, { status: 404 });
   }
 
-  const { user, summary } = detail;
+  const { user, summary, lastSignIn } = detail;
 
   return NextResponse.json({
     customer: {
@@ -32,6 +32,7 @@ export async function GET(
       updatedAt: user.updatedAt.toISOString(),
       hasPassword: Boolean(user.passwordHash),
       signupMethods: summary.signupMethods,
+      lastSignIn,
       wallet: user.wallet
         ? {
             balance: Number(user.wallet.balance),
@@ -69,6 +70,7 @@ export async function GET(
       walletTransactions: user.walletTransactions.map((t) => ({
         ...t,
         amount: Number(t.amount),
+        balanceAfter: t.balanceAfter == null ? null : Number(t.balanceAfter),
         createdAt: t.createdAt.toISOString(),
       })),
       beyondAi: user.beyondAi,

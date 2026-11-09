@@ -32,6 +32,7 @@ import {
   Sparkles,
   Tags,
   Users,
+  Wallet,
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -115,8 +116,20 @@ const fullNav: NavGroup[] = [
   },
   { href: "/orbit/pages", label: "Pages", icon: FileText },
   { href: "/orbit/about", label: "About Page", icon: Building2 },
-  { href: "/orbit/users", label: "Users", icon: Users },
-  { href: "/orbit/customer-domains", label: "Customer domains", icon: Globe },
+  {
+    href: "/orbit/users",
+    label: "Customers",
+    icon: Users,
+    children: [
+      { href: "/orbit/users", label: "Users & wallets", icon: Users },
+      {
+        href: "/orbit/customer-domains",
+        label: "Customer domains",
+        icon: Globe,
+      },
+      { href: "/orbit/wallets", label: "Wallet ledger", icon: Wallet },
+    ],
+  },
   { href: "/orbit/contact", label: "Contact Page", icon: Mail },
   {
     href: "/orbit/blog",
@@ -160,7 +173,7 @@ const fullNav: NavGroup[] = [
     label: "Migration Requests",
     icon: ArrowLeftRight,
   },
-  { href: "/orbit/wallets", label: "Customer Wallets", icon: Tags },
+  { href: "/orbit/wallets", label: "Wallet ledger (all)", icon: Wallet },
   { href: "/orbit/pricing", label: "Pricing Page", icon: Tags },
   { href: "/orbit/beyond-ai", label: "Beyond AI Product", icon: Sparkles },
   { href: "/orbit/business-email", label: "Business Email", icon: Mail },

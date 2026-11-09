@@ -6,6 +6,8 @@ import {
   customerCookieOptions,
 } from "@/lib/customer/session";
 import { absoluteSiteUrl } from "@/lib/customer/site-origin";
+import { requestIp } from "@/lib/customer/request-country";
+import { recordCustomerSignInActivity } from "@/lib/customer/signin-activity";
 import { routes } from "@/config/routes";
 
 export async function GET(request: NextRequest) {
@@ -26,6 +28,13 @@ export async function GET(request: NextRequest) {
   const { token, expiresAt } = await createCustomerSession(verified.userId, {
     remember: true,
     userAgent: request.headers.get("user-agent"),
+    ipAddress: requestIp(request),
+  });
+
+  await recordCustomerSignInActivity({
+    userId: verified.userId,
+    method: "oauth",
+    request,
   });
 
   const response = NextResponse.redirect(
