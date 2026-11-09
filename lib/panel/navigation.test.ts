@@ -54,6 +54,18 @@ describe("panel navigation", () => {
     );
   });
 
+  it("nests hosting tools under a Hosting hub", () => {
+    const hosting = PANEL_NAV.find((section) => section.id === "hosting");
+    assert.ok(hosting);
+    assert.equal(hosting.items[0]?.hub, true);
+    assert.ok(
+      hosting.items.some((item) => item.id === "my-websites" && item.child),
+    );
+    assert.ok(
+      hosting.items.some((item) => item.id === "hosting-orders" && item.child),
+    );
+  });
+
   it("keeps every nav link inside the customer panel", () => {
     for (const section of PANEL_NAV) {
       for (const item of section.items) {

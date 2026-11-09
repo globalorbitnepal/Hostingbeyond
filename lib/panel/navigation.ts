@@ -79,14 +79,27 @@ export const PANEL_NAV: PanelNavSection[] = [
     label: "Hosting",
     items: [
       {
-        id: "web-hosting",
-        label: "Hosting plans",
+        id: "hosting-hub",
+        label: "Hosting",
+        hub: true,
+      },
+      {
+        id: "hosting-plans",
+        label: "Plans & pricing",
         href: routes.accountHosting,
+        child: true,
+      },
+      {
+        id: "my-websites",
+        label: "My websites",
+        href: routes.accountHostingWebsites,
+        child: true,
       },
       {
         id: "hosting-orders",
         label: "Hosting orders",
         href: routes.accountHostingOrders,
+        child: true,
       },
     ],
   },
@@ -144,6 +157,7 @@ const EXACT_TITLES: Array<[string, string]> = [
   ["/account/my-domains/", "Domain details"],
   ["/account/orders/", "Order details"],
   ["/account/invoices/", "Invoice details"],
+  ["/account/hosting/websites", "My websites"],
   ["/account/hosting", "Hosting plans"],
   ["/account/email", "Business email"],
   ["/account/support", "Support"],

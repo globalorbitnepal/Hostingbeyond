@@ -33,6 +33,7 @@ export const routes = {
   accountDomainDns: "/account/domains/dns",
   accountDomainContacts: "/account/domains/contacts",
   accountHosting: "/account/hosting",
+  accountHostingWebsites: "/account/hosting/websites",
   accountEmail: "/account/email",
   accountSupport: "/account/support",
   accountSecurity: "/account/security",

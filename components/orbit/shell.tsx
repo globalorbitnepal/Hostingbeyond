@@ -26,6 +26,7 @@ import {
   Navigation,
   PenLine,
   Search,
+  Server,
   Settings,
   ShieldCheck,
   SlidersHorizontal,
@@ -178,6 +179,11 @@ const fullNav: NavGroup[] = [
   { href: "/orbit/beyond-ai", label: "Beyond AI Product", icon: Sparkles },
   { href: "/orbit/business-email", label: "Business Email", icon: Mail },
   { href: "/orbit/hosting", label: "Web Hosting", icon: Globe },
+  {
+    href: "/orbit/hosting-orders",
+    label: "Hosting orders",
+    icon: Server,
+  },
   { href: "/orbit/ssl", label: "SSL Certificates", icon: ShieldCheck },
   {
     href: "/orbit/hosting-products",
