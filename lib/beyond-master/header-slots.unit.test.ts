@@ -34,19 +34,20 @@ describe("header assistant slots", () => {
     assert.equal(source.includes("<DomainCartHeaderLink compact />"), true);
   });
 
-  it("docks the public launcher as an orbit agent with Can I help you", () => {
+  it("docks the public launcher as a branded orb without a prompt bubble", () => {
     const launcher = readFileSync(
       "components/beyond-master/beyond-master-launcher.tsx",
       "utf8",
     );
     assert.equal(launcher.includes("BEYOND_MASTER_BRAND_NAME"), true);
-    assert.equal(launcher.includes("BEYOND_MASTER_DOCK_PROMPT"), true);
-    assert.equal(launcher.includes("BEYOND_MASTER_DOCK_PROMPTS"), true);
-    assert.equal(launcher.includes("hb-bmai-dock-wait"), true);
-    assert.equal(launcher.includes("---"), true);
-    assert.equal(launcher.includes("BeyondMasterIcon"), true);
-    assert.equal(launcher.includes("BEYOND_MASTER_MASCOT_SRC"), false);
+    assert.equal(launcher.includes("hostingbeyond-ai-robot.png"), true);
+    assert.equal(launcher.includes("hb-bmai-launch--mascot"), true);
+    // The old rotating prompt bubble leaked marketing copy onto dashboards.
+    assert.equal(launcher.includes("hb-bmai-dock-bubble"), false);
+    assert.equal(launcher.includes("BEYOND_MASTER_DOCK_PROMPTS"), false);
+    assert.equal(launcher.includes("hb-bmai-dock-wait"), false);
     assert.equal(launcher.includes("Can I help you"), false);
+    assert.equal(launcher.includes("Fix your website"), false);
     assert.equal(launcher.includes("Beyond Master AI"), false);
     assert.equal(launcher.includes("AiAgentBadge"), false);
   });
