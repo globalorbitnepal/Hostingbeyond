@@ -12,7 +12,7 @@ export function CheckoutCouponField({ className }: { className?: string }) {
       {!open ? (
         <button
           type="button"
-          className="text-[13px] font-semibold text-[var(--hb-co-primary)] hover:underline"
+          className="-mx-1 inline-flex min-h-9 items-center px-1 text-[13px] font-semibold text-[var(--hb-co-primary)] hover:underline"
           onClick={() => setOpen(true)}
         >
           Have a coupon code?

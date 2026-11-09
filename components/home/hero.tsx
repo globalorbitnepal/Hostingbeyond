@@ -450,6 +450,58 @@ export function HeroSection({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.16 }}
             role="group"
+            aria-label="Popular domain extension prices"
+            className="relative z-30 mt-4 grid w-full grid-cols-1 gap-1.5 md:hidden"
+          >
+            {displayTeasers.slice(0, 5).map((item) => {
+              const value = item.tld.startsWith(".")
+                ? item.tld
+                : `.${item.tld}`;
+              const active = value === tld;
+              return (
+                <button
+                  key={`m-${item.tld}`}
+                  type="button"
+                  onClick={() => setTld(value)}
+                  aria-pressed={active}
+                  className={cn(
+                    "flex items-center justify-between gap-2 rounded-xl border px-3 py-2 text-left transition",
+                    active
+                      ? "border-white/45 bg-white/20"
+                      : "border-white/20 bg-white/10",
+                  )}
+                >
+                  <span className="text-[13.5px] font-extrabold text-white">
+                    {value}
+                    {value === ".com" ? " · Most Popular" : ""}
+                  </span>
+                  <span className="flex items-baseline gap-1.5">
+                    {typeof item.originalUsd === "number" ? (
+                      <span className="text-[11.5px] font-semibold text-white/55 line-through">
+                        <CatalogPrice usd={item.originalUsd} />
+                      </span>
+                    ) : null}
+                    <span className="text-[13.5px] font-extrabold whitespace-nowrap text-white">
+                      {typeof item.usd === "number" ? (
+                        <>
+                          <CatalogPrice usd={item.usd} />
+                          <span className="text-[0.8em]">/yr</span>
+                        </>
+                      ) : (
+                        item.priceLabel
+                      )}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+          </motion.div>
+
+          <motion.div
+            initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.16 }}
+            role="group"
             aria-label="Popular domain extensions"
             className="hb-hero-offer-scroll relative z-30 mt-5 hidden w-full snap-x snap-mandatory gap-2.5 overflow-x-auto overscroll-x-contain pt-4 pb-1 [-webkit-overflow-scrolling:touch] md:mt-5 md:grid md:grid-cols-3 md:gap-2.5 md:overflow-visible md:pt-4 lg:mt-5 lg:grid-cols-5 lg:gap-2.5"
           >

@@ -37,6 +37,17 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      /** Orbit is the admin console; keep the familiar /admin entry working. */
+      {
+        source: "/admin",
+        destination: "/orbit",
+        permanent: false,
+      },
+      {
+        source: "/admin/:path*",
+        destination: "/orbit/:path*",
+        permanent: false,
+      },
       {
         source: "/domains",
         destination: "/domain-name-search",

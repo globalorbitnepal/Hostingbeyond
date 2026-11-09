@@ -990,7 +990,14 @@
   html {
     @apply scroll-smooth font-sans;
     overflow-x: clip;
-    scrollbar-gutter: stable;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Gutter reservation only where a real scrollbar exists — avoids mobile jank. */
+  @media (pointer: fine) and (min-width: 1024px) {
+    html {
+      scrollbar-gutter: stable;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {

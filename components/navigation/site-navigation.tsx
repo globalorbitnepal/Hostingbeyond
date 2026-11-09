@@ -38,8 +38,13 @@ function isInternalNavHref(href: string, pathname: string): boolean {
 
 function NavigationProgressBar() {
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
   const [phase, setPhase] = useState<"idle" | "active" | "done">("idle");
   const completeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     setPhase("done");
@@ -71,6 +76,10 @@ function NavigationProgressBar() {
     return () =>
       document.removeEventListener("pointerdown", onPointerDown, true);
   }, [pathname]);
+
+  // Rendered only after mount: keeps the server HTML free of a phase-dependent
+  // element so hydration can never mismatch on this tree.
+  if (!mounted) return null;
 
   return (
     <div

@@ -343,20 +343,20 @@ export function SiteHeader({
         <div className="relative">
           <div
             className={cn(
-              "hb-header-bar mx-auto flex h-[56px] w-full min-w-0 items-center gap-1.5 rounded-full border px-2.5 sm:h-[70px] sm:gap-3 sm:px-5 lg:grid lg:grid-cols-[minmax(0,auto)_minmax(0,1fr)_auto] lg:items-center lg:gap-3 lg:pr-2 lg:pl-6 xl:gap-4",
+              "hb-header-bar mx-auto flex h-[64px] w-full min-w-0 items-center gap-1.5 rounded-full border px-2.5 sm:h-[70px] sm:gap-3 sm:px-5 lg:grid lg:grid-cols-[minmax(0,auto)_minmax(0,1fr)_auto] lg:items-center lg:gap-3 lg:pr-2 lg:pl-6 xl:gap-4",
               checkoutBar && "lg:gap-2 xl:gap-3",
             )}
           >
             <div
               className={cn(
-                "relative z-10 max-w-[42%] min-w-0 shrink-0 sm:max-w-none lg:max-w-[min(240px,30vw)] xl:max-w-[min(280px,32vw)]",
+                "relative z-10 max-w-[66%] min-w-0 shrink-0 sm:max-w-none lg:max-w-[min(264px,32vw)] xl:max-w-[min(300px,34vw)]",
                 !checkoutBar && "flex-1 lg:flex-none",
               )}
             >
               <Logo
                 src={CANONICAL_HEADER_LOGO_SRC}
                 variant="image"
-                className="max-w-[120px] min-[375px]:max-w-[140px] sm:max-w-[220px] lg:max-w-full xl:max-w-[280px]"
+                className="max-w-[225px] min-[375px]:max-w-[255px] sm:max-w-[255px] lg:max-w-full xl:max-w-[300px]"
               />
             </div>
 
@@ -483,7 +483,7 @@ export function SiteHeader({
             transition={{ duration: 0.17 }}
             className="hb-shell mt-2 lg:hidden"
           >
-            <div className="max-h-[min(78dvh,640px)] w-full overflow-x-hidden overflow-y-auto overscroll-contain rounded-[22px] border border-slate-200/80 bg-white/95 shadow-[0_20px_56px_rgba(15,23,42,0.12)] backdrop-blur-md sm:backdrop-blur-2xl">
+            <div className="max-h-[min(78dvh,640px)] w-full overflow-x-hidden overflow-y-auto overscroll-contain rounded-[22px] border border-slate-200/80 bg-white shadow-[0_20px_56px_rgba(15,23,42,0.12)] sm:backdrop-blur-2xl">
               <nav
                 className="flex flex-col gap-0.5 p-4"
                 aria-label="Mobile navigation"

@@ -45,14 +45,14 @@ export function Logo({
         priority
         unoptimized
         className={cn(
-          "m-0 block h-[30px] w-auto max-w-[min(100%,250px)] bg-transparent object-contain object-left align-middle sm:h-[34px] sm:max-w-[280px] xl:h-[38px] xl:max-w-[310px]",
+          "m-0 block h-[40px] w-auto max-w-[min(100%,255px)] bg-transparent object-contain object-left align-middle sm:h-[44px] sm:max-w-[270px] xl:h-[48px] xl:max-w-[310px]",
           className,
         )}
       />
     ) : (
       <span
         className={cn(
-          "relative inline-flex h-[22px] max-w-full min-w-0 items-center justify-start leading-none min-[375px]:h-[26px] sm:h-[32px] lg:h-[34px] xl:h-[38px]",
+          "relative inline-flex h-[42px] max-w-full min-w-0 items-center justify-start leading-none min-[375px]:h-[48px] sm:h-[46px] lg:h-[47px] xl:h-[50px]",
           className,
         )}
       >
@@ -64,7 +64,7 @@ export function Logo({
           priority
           fetchPriority="high"
           unoptimized
-          className="m-0 block h-full w-auto max-w-[108px] bg-transparent object-contain object-left min-[375px]:max-w-[132px] sm:max-w-[200px] lg:max-w-[240px] xl:max-w-[280px]"
+          className="m-0 block h-full w-auto max-w-[225px] bg-transparent object-contain object-left min-[375px]:max-w-[255px] sm:max-w-[255px] lg:max-w-[270px] xl:max-w-[300px]"
         />
       </span>
     );
