@@ -73,7 +73,7 @@ describe("hosting plan catalog USD", () => {
       { priceMonthly: "$9.99", billedAnnually: "Billed $28.70 annually" },
       fallback,
     );
-    assert.deepEqual(merged, { monthlyUsd: 9.99, yearlyUsd: 28.8 });
+    assert.deepEqual(merged, { monthlyUsd: 9.99, yearlyUsd: 28.7 });
   });
 
   it("prefers explicit stored numeric amounts", () => {
