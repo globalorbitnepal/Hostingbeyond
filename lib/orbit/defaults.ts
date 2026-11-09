@@ -926,7 +926,7 @@ export function defaultHostingPlansSection(): CmsHostingPlansContent {
     uptimeHint: "Your website, always online",
     scaleLabel: "Easy Scalability",
     scaleHint: "Upgrade anytime, no downtime",
-    saveBadge: "Save 20%",
+    saveBadge: "Save 10%",
     annualToggleLabel: "Annually",
     monthlyToggleLabel: "Monthly",
     defaultBilling: "annually",

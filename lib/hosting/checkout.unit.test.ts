@@ -31,19 +31,19 @@ describe("plan booking href", () => {
   it("uses the product slug when the card passes one", () => {
     assert.equal(
       planBookingHref({
-        planId: "wp-business",
+        planId: "business",
         billing: "annually",
         productSlug: "wordpress-hosting",
         ctaHref: "/signup",
       }),
-      "/checkout/hosting?product=wordpress-hosting&plan=wp-business&billing=annually&step=plan",
+      "/checkout/hosting?product=wordpress-hosting&plan=business&billing=annually&step=plan",
     );
   });
 
   it("maps commerce and cloud CMS ids onto seeded plan keys", () => {
     assert.equal(
       resolveHostingPlanKey("ecommerce-hosting", "commerce-cloud"),
-      "store-pro",
+      "business",
     );
     assert.equal(
       resolveHostingPlanKey("business-hosting", "cloud-starter"),

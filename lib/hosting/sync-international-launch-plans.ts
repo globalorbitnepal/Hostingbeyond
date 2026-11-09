@@ -99,4 +99,9 @@ export async function syncInternationalLaunchPlans() {
     },
     data: { status: "INACTIVE" },
   });
+
+  await prisma.hostingProduct.updateMany({
+    where: { slug: { in: [...INTERNATIONAL_LAUNCH_PRODUCT_SLUGS] } },
+    data: { status: "ACTIVE", freeDomainAnnualEnabled: true },
+  });
 }

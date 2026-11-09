@@ -177,7 +177,9 @@ export async function ensureHostingProductsSeeded() {
         heroCtaHref: "#plans",
         secondaryCtaLabel: "Talk to sales",
         secondaryCtaHref: "/contact",
-        freeDomainAnnualEnabled: entry.slug === "web-hosting",
+        freeDomainAnnualEnabled: INTERNATIONAL_LAUNCH_PRODUCT_SLUGS.includes(
+          entry.slug as (typeof INTERNATIONAL_LAUNCH_PRODUCT_SLUGS)[number],
+        ),
         sectionFlags: entry.sectionFlags,
         specifications: isVps
           ? (defaultVpsSpecs(entry.slug) as Prisma.InputJsonValue)

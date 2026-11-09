@@ -16,6 +16,49 @@ const DEFAULT_BUSINESS_EMAIL_ADDON = {
   },
 };
 
+const DEFAULT_STORAGE_ADDONS = [
+  {
+    slug: "storage-10gb",
+    name: "Extra storage 10 GB",
+    description: "Add 10 GB NVMe without changing your hosting plan.",
+    type: "STORAGE" as const,
+    displayOrder: 20,
+    billingMode: "MONTHLY" as const,
+    pricingReference: "usd:1.50",
+    eligibility: { productCategories: ["WEBSITE", "DEVELOPER"] },
+  },
+  {
+    slug: "storage-25gb",
+    name: "Extra storage 25 GB",
+    description: "Add 25 GB NVMe without changing your hosting plan.",
+    type: "STORAGE" as const,
+    displayOrder: 21,
+    billingMode: "MONTHLY" as const,
+    pricingReference: "usd:3.00",
+    eligibility: { productCategories: ["WEBSITE", "DEVELOPER"] },
+  },
+  {
+    slug: "storage-50gb",
+    name: "Extra storage 50 GB",
+    description: "Add 50 GB NVMe without changing your hosting plan.",
+    type: "STORAGE" as const,
+    displayOrder: 22,
+    billingMode: "MONTHLY" as const,
+    pricingReference: "usd:5.00",
+    eligibility: { productCategories: ["WEBSITE", "DEVELOPER"] },
+  },
+  {
+    slug: "storage-100gb",
+    name: "Extra storage 100 GB",
+    description: "Add 100 GB NVMe without changing your hosting plan.",
+    type: "STORAGE" as const,
+    displayOrder: 23,
+    billingMode: "MONTHLY" as const,
+    pricingReference: "usd:9.00",
+    eligibility: { productCategories: ["WEBSITE", "DEVELOPER"] },
+  },
+];
+
 export async function ensureHostingAddonsSeeded() {
   try {
     await prisma.hostingAddon.findFirst();
@@ -34,6 +77,21 @@ export async function ensureHostingAddonsSeeded() {
         eligibility: DEFAULT_BUSINESS_EMAIL_ADDON.eligibility,
       },
     });
+  }
+
+  for (const addon of DEFAULT_STORAGE_ADDONS) {
+    const row = await prisma.hostingAddon.findUnique({
+      where: { slug: addon.slug },
+    });
+    if (!row) {
+      await prisma.hostingAddon.create({
+        data: {
+          ...addon,
+          active: true,
+          eligibility: addon.eligibility,
+        },
+      });
+    }
   }
 }
 

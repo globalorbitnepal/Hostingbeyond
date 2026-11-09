@@ -60,11 +60,11 @@ function PlanGlyph({ plan }: { plan: CmsHostingPlan }) {
   const Icon =
     plan.id === "professional"
       ? Rocket
-      : popular || plan.id === "business"
+      : plan.id === "business" || popular
         ? Crown
-        : plan.id === "starter"
-          ? Box
-          : Layers;
+        : plan.id === "growth"
+          ? Layers
+          : Box;
   return (
     <span className="inline-flex size-10 items-center justify-center rounded-full bg-white text-[#673de6] shadow-[0_10px_22px_-12px_rgba(47,28,106,0.45)] ring-1 ring-white">
       <Icon className="size-[18px]" strokeWidth={1.9} aria-hidden />

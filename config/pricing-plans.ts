@@ -109,7 +109,7 @@ export const ecommercePlanOverrides: Record<
   string,
   { tagline: string; extraFeatures: string[] }
 > = {
-  "store-starter": {
+  starter: {
     tagline: "Launch your first WooCommerce store.",
     extraFeatures: [
       "WooCommerce pre-optimized stack",
@@ -117,20 +117,28 @@ export const ecommercePlanOverrides: Record<
       "PCI-friendly hosting environment",
     ],
   },
-  "store-business": {
-    tagline: "Growing catalogs and multi-store brands.",
+  growth: {
+    tagline: "A second storefront plus staging.",
     extraFeatures: [
       "WooCommerce + staging-friendly resources",
       "Daily backups for orders & products",
       "Free migration for existing shops",
     ],
   },
-  "store-pro": {
-    tagline: "High-volume stores and serious sellers.",
+  business: {
+    tagline: "SSH, Git, and more catalog headroom.",
     extraFeatures: [
       "Priority support for peak sales events",
       "Higher RAM and CPU limits for checkout peaks",
       "Room to scale product catalogs",
+    ],
+  },
+  professional: {
+    tagline: "Serious shops with 8 GB RAM and 10 stores.",
+    extraFeatures: [
+      "Git deployment and SSH",
+      "Staging before you publish",
+      "120 GB NVMe for product media",
     ],
   },
 };

@@ -80,7 +80,7 @@ export function dbPlansToCmsHostingPlans(
           : discountPct > 0
             ? `Save ${discountPct}%`
             : "",
-      domainPerk: "",
+      domainPerk: "1 year free .com on annual plans",
       annualCredit: "",
       features: featureLines,
       ctaLabel: "Buy now",

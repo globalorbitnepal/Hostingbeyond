@@ -25,6 +25,19 @@ export async function resolveAddonPriceOptions(
       description: `${p.mailboxesLabel} · ${p.storageLabel}`,
     }));
   }
+  const usdMatch = addon.pricingReference.match(/^usd:(\d+(?:\.\d+)?)$/i);
+  if (usdMatch) {
+    const unitMonthlyPrice = Number(usdMatch[1]);
+    return [
+      {
+        id: addon.slug,
+        label: addon.name,
+        unitMonthlyPrice,
+        annualMonthlyPrice: roundMoney(unitMonthlyPrice * 0.9),
+        description: addon.description,
+      },
+    ];
+  }
   return [];
 }
 

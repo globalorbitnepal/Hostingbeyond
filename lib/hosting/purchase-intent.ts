@@ -5,6 +5,7 @@ import { getRegistryEntryBySlug } from "./products-registry";
 
 export const WEB_HOSTING_PLAN_KEYS = [
   "starter",
+  "growth",
   "business",
   "professional",
 ] as const;

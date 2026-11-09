@@ -26,7 +26,7 @@ export function internationalLaunchPlanToCms(
   const annualSavings = Math.round((monthly * 12 - yearly) * 100) / 100;
   const accent: CmsHostingPlan["accent"] = plan.popular
     ? "gradient"
-    : order === 2
+    : order === 3
       ? "purple"
       : "blue";
 
@@ -48,9 +48,7 @@ export function internationalLaunchPlanToCms(
     originalMonthly: "",
     billedMonthly: "Billed monthly",
     saveMonthly: "",
-    domainPerk:
-      options?.domainPerk ??
-      (productSlug === "web-hosting" ? "Domain — free for 1 year" : ""),
+    domainPerk: options?.domainPerk ?? "1 year free .com on annual plans",
     annualCredit: "",
     features: plan.features,
     ctaLabel: options?.ctaLabel ?? "Get Started",
