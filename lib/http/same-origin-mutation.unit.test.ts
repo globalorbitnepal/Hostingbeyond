@@ -118,6 +118,56 @@ describe("crossOriginBrowserMutationBlocked", () => {
     );
     assert.equal(requestCanonicalSiteUrl(req).hostname, "example.com");
   });
+
+  it("uses the proxy Host header when request.url is loopback", () => {
+    const req = new Request("http://127.0.0.1:3030/api/orbit/wallets/adjust", {
+      method: "POST",
+      headers: {
+        origin: "https://hosting.theglobalorbit.com",
+        host: "hosting.theglobalorbit.com",
+        "x-forwarded-proto": "https",
+      },
+    });
+    assert.equal(
+      requestCanonicalSiteUrl(req).origin,
+      "https://hosting.theglobalorbit.com",
+    );
+    assert.equal(
+      crossOriginBrowserMutationBlocked(req, { ignoreTestBypass: true }),
+      false,
+    );
+  });
+
+  it("still blocks a foreign Origin behind the proxy", () => {
+    const req = new Request("http://127.0.0.1:3030/api/orbit/wallets/adjust", {
+      method: "POST",
+      headers: {
+        origin: "https://evil.example",
+        host: "hosting.theglobalorbit.com",
+        "x-forwarded-proto": "https",
+      },
+    });
+    assert.equal(
+      crossOriginBrowserMutationBlocked(req, { ignoreTestBypass: true }),
+      true,
+    );
+  });
+
+  it("treats a TLS-terminated proxy request as HTTPS", () => {
+    const req = new Request("http://127.0.0.1:3030/api/orbit/wallets/adjust", {
+      method: "POST",
+      headers: {
+        origin: "https://hosting.theglobalorbit.com",
+        host: "hosting.theglobalorbit.com",
+        "x-forwarded-proto": "https",
+      },
+    });
+    assert.equal(requestCanonicalSiteUrl(req).protocol, "https:");
+    assert.equal(
+      crossOriginBrowserMutationBlocked(req, { ignoreTestBypass: true }),
+      false,
+    );
+  });
 });
 
 describe("CSRF_STRICT_ORIGIN", () => {

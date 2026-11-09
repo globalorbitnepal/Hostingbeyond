@@ -208,35 +208,40 @@ export function OrbitCustomerUsersAdmin() {
     void loadList("");
   }, [loadList]);
 
-  const loadDetail = useCallback(async (userId: string) => {
-    setSelectedId(userId);
-    setLoading(true);
-    setError(null);
-    setMessage(null);
-    setPasswordNotice(null);
-    setNewPassword("");
-    setConfirmPassword("");
-    try {
-      const res = await fetch(
-        `/api/orbit/customers/${encodeURIComponent(userId)}`,
-        { cache: "no-store" },
-      );
-      const json = (await res.json()) as {
-        customer?: CustomerDetail;
-        error?: string;
-      };
-      if (!res.ok) {
-        setError(json.error ?? "Failed to load customer");
-        setDetail(null);
-        return;
+  const loadDetail = useCallback(
+    async (userId: string, options?: { keepFeedback?: boolean }) => {
+      setSelectedId(userId);
+      setLoading(true);
+      setError(null);
+      if (!options?.keepFeedback) {
+        setMessage(null);
+        setPasswordNotice(null);
       }
-      setDetail(json.customer ?? null);
-    } catch {
-      setError("Network error while loading this customer.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+      setNewPassword("");
+      setConfirmPassword("");
+      try {
+        const res = await fetch(
+          `/api/orbit/customers/${encodeURIComponent(userId)}`,
+          { cache: "no-store" },
+        );
+        const json = (await res.json()) as {
+          customer?: CustomerDetail;
+          error?: string;
+        };
+        if (!res.ok) {
+          setError(json.error ?? "Failed to load customer");
+          setDetail(null);
+          return;
+        }
+        setDetail(json.customer ?? null);
+      } catch {
+        setError("Network error while loading this customer.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
 
   async function adjustWallet() {
     if (!detail) return;
@@ -270,7 +275,11 @@ export function OrbitCustomerUsersAdmin() {
         setError(
           json.error === "insufficient_funds"
             ? "Balance is lower than this debit — reduce the amount."
-            : (json.error ?? "Wallet adjustment failed"),
+            : res.status === 401
+              ? "Your Orbit session expired — sign in again, then retry."
+              : json.error === "Cross-origin request blocked."
+                ? "Security check rejected this request. Reload Orbit and retry."
+                : (json.error ?? `Wallet adjustment failed (${res.status}).`),
         );
         return;
       }
@@ -280,7 +289,8 @@ export function OrbitCustomerUsersAdmin() {
           : `Removed ${formatMoney(numeric, detail.wallet?.currency ?? "USD")} from the wallet.`,
       );
       setReason("");
-      await Promise.all([loadDetail(detail.id), loadList(query)]);
+      await loadDetail(detail.id, { keepFeedback: true });
+      void loadList(query);
     } catch {
       setError("Network error while updating the wallet.");
     } finally {
@@ -310,11 +320,18 @@ export function OrbitCustomerUsersAdmin() {
       });
       const json = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setError(json.error ?? "Reversal failed");
+        setError(
+          res.status === 401
+            ? "Your Orbit session expired — sign in again, then retry."
+            : (json.error ?? `Reversal failed (${res.status}).`),
+        );
         return;
       }
       setMessage("Credit reversed and recorded in the audit log.");
-      if (detail) await Promise.all([loadDetail(detail.id), loadList(query)]);
+      if (detail) {
+        await loadDetail(detail.id, { keepFeedback: true });
+        void loadList(query);
+      }
     } catch {
       setError("Network error while reversing the credit.");
     } finally {
@@ -355,7 +372,7 @@ export function OrbitCustomerUsersAdmin() {
       );
       setNewPassword("");
       setConfirmPassword("");
-      await loadDetail(detail.id);
+      await loadDetail(detail.id, { keepFeedback: true });
     } catch {
       setPasswordNotice("Network error while updating the password.");
     } finally {
@@ -643,7 +660,7 @@ export function OrbitCustomerUsersAdmin() {
                 <button
                   type="button"
                   onClick={() => void adjustWallet()}
-                  disabled={walletBusy || !reason.trim()}
+                  disabled={walletBusy}
                   className="mt-2 inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
                 >
                   <CreditCard className="size-4" />

@@ -19,12 +19,49 @@ function effectivePort(protocol: string, portField: string): number {
 }
 
 /**
- * Canonical public site URL for CSRF checks — taken only from `request.url` as seen by the app.
- * We do not trust `X-Forwarded-Host` here; mis-set forwarded headers must not widen same-origin.
- * Operators should configure the reverse proxy so `request.url` reflects the customer-facing host.
+ * Canonical public site URL for CSRF checks.
+ *
+ * Behind the reverse proxy Next derives `request.url` from the listening socket,
+ * so it can read `http://127.0.0.1:3030/...` while the browser sends
+ * `Origin: https://hosting.theglobalorbit.com`. Trusting that loopback URL made
+ * every Orbit wallet write fail with 403. We only substitute the proxy-supplied
+ * `Host` header when the request URL is actually loopback, so a public request
+ * URL is never widened by a forwarded header.
  */
 export function requestCanonicalSiteUrl(request: Request): URL {
-  return new URL(request.url);
+  const url = new URL(request.url);
+  const host = request.headers.get("host")?.trim();
+  const forwardedProto = request.headers
+    .get("x-forwarded-proto")
+    ?.split(",")[0]
+    ?.trim()
+    .toLowerCase();
+
+  /**
+   * Two proxy artefacts have to be repaired:
+   * 1. `request.url` may be loopback while `Host` is the public domain.
+   * 2. The socket is plain HTTP while the browser used HTTPS (TLS terminates at
+   *    nginx), so the scheme must come from `X-Forwarded-Proto`.
+   */
+  const protocol =
+    forwardedProto === "https" || forwardedProto === "http"
+      ? `${forwardedProto}:`
+      : url.protocol;
+
+  if (!host) {
+    if (protocol === url.protocol) return url;
+    try {
+      return new URL(`${protocol}//${url.host}${url.pathname}${url.search}`);
+    } catch {
+      return url;
+    }
+  }
+
+  try {
+    return new URL(`${protocol}//${host}${url.pathname}${url.search}`);
+  } catch {
+    return url;
+  }
 }
 
 function parseHttpUrl(raw: string): URL | null {
