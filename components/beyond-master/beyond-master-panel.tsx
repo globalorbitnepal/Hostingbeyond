@@ -218,13 +218,15 @@ export function BeyondMasterAiPanel() {
 
         <div className="hb-bmai-scroll" ref={scrollRef}>
           {messages.length === 0 ? (
-            <BeyondMasterWelcomePremium
-              disabled={state.checking}
-              onPrompt={(prompt) => {
-                setQuestionsDone(true);
-                void sendBeyondMasterMessage(prompt);
-              }}
-            />
+            <div className="hb-bmai-welcome-body contents">
+              <BeyondMasterWelcomePremium
+                disabled={state.checking}
+                onPrompt={(prompt) => {
+                  setQuestionsDone(true);
+                  void sendBeyondMasterMessage(prompt);
+                }}
+              />
+            </div>
           ) : (
             <div className="hb-bmai-thread" aria-live="polite">
               {messages.map((message) =>
