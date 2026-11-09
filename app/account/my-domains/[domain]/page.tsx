@@ -10,9 +10,15 @@ import {
 } from "@/lib/customer/session";
 import { prisma } from "@/lib/prisma";
 
-type Params = { params: Promise<{ domain: string }> };
+type Params = {
+  params: Promise<{ domain: string }>;
+  searchParams: Promise<{ tab?: string }>;
+};
 
-export default async function ManageDomainPage({ params }: Params) {
+export default async function ManageDomainPage({
+  params,
+  searchParams,
+}: Params) {
   const jar = await cookies();
   const user = await getCustomerFromToken(
     jar.get(CUSTOMER_SESSION_COOKIE)?.value,
@@ -20,7 +26,12 @@ export default async function ManageDomainPage({ params }: Params) {
   if (!user) redirect(routes.login);
 
   const { domain: domainParam } = await params;
+  const { tab } = await searchParams;
   const domain = decodeURIComponent(domainParam).toLowerCase();
+  const initialTab =
+    tab === "dns" || tab === "nameservers" || tab === "security"
+      ? tab
+      : "overview";
   const registration = await prisma.domainRegistration.findFirst({
     where: { userId: user.id, domain },
   });
@@ -42,6 +53,7 @@ export default async function ManageDomainPage({ params }: Params) {
       <DomainManagePanel
         registrationId={registration.id}
         domainName={registration.domain}
+        initialTab={initialTab}
       />
     </div>
   );

@@ -1,83 +1,149 @@
 "use client";
 
+import { FormEvent, useMemo, useState } from "react";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
-  AlertTriangle,
   ArrowRight,
+  ArrowUpRight,
   CheckCircle2,
   Globe,
   Loader2,
+  Percent,
   Search,
+  ShieldCheck,
+  Wallet,
 } from "lucide-react";
 
+import { CatalogPrice } from "@/components/i18n/localized-text";
 import { routes } from "@/config/routes";
+import { DEFAULT_DOMAIN_PROTECTION_USD } from "@/lib/domains/domain-extras";
+import type { DomainResult } from "@/lib/domains/availability";
+import type { FeaturedDomainTld } from "@/lib/panel/featured-domain-tld-types";
+import { formatMoney } from "@/lib/panel/format-money";
 import { cn } from "@/lib/utils";
 
-type Row = {
-  domain: string;
-  status: string;
-  register: number | null;
-  renew: number | null;
-  message?: string;
+type WalletSnapshot = { balance: number; currency: string };
+
+type SearchPayload = {
+  error?: string;
+  primary?: DomainResult | null;
+  recommendations?: DomainResult[];
+  results?: DomainResult[];
+  resultsCustomer?: DomainResult[];
 };
 
-const STATUS_COPY: Record<string, { label: string; pill: string }> = {
-  available: { label: "Available", pill: "hb-pill-ok" },
-  premium: { label: "Premium", pill: "hb-pill-info" },
-  taken: { label: "Taken", pill: "hb-pill-neutral" },
-  invalid: { label: "Invalid", pill: "hb-pill-danger" },
-  unknown: { label: "Check failed", pill: "hb-pill-warn" },
-};
+function asResults(data: SearchPayload): DomainResult[] {
+  const rows = data.resultsCustomer ??
+    data.results ?? [
+      ...(data.primary ? [data.primary] : []),
+      ...(data.recommendations ?? []),
+    ];
+  const seen = new Set<string>();
+  return rows.filter((row) => {
+    if (!row?.domain || seen.has(row.domain)) return false;
+    seen.add(row.domain);
+    return true;
+  });
+}
 
-export function PanelDomainFinder() {
-  const params = useSearchParams();
+function statusTone(status: DomainResult["status"]) {
+  if (status === "available") return "Available";
+  if (status === "premium") return "Premium";
+  if (status === "taken") return "Taken";
+  return "Check";
+}
+
+export function PanelDomainFinder({
+  featuredTlds,
+}: {
+  featuredTlds: FeaturedDomainTld[];
+}) {
   const router = useRouter();
-  const initial = params.get("q") ?? "";
-  const [query, setQuery] = useState(initial);
-  const [rows, setRows] = useState<Row[]>([]);
-  const [error, setError] = useState("");
+  const params = useSearchParams();
+  const [query, setQuery] = useState(params.get("q") ?? "");
+  const [tld, setTld] = useState(featuredTlds[0]?.tld ?? ".com");
   const [busy, setBusy] = useState(false);
-  const [adding, setAdding] = useState("");
+  const [error, setError] = useState("");
+  const [results, setResults] = useState<DomainResult[]>([]);
+  const [selected, setSelected] = useState<DomainResult | null>(null);
+  const [protect, setProtect] = useState(false);
+  const [wallet, setWallet] = useState<WalletSnapshot | null>(null);
+  const [paying, setPaying] = useState(false);
+  const [cartBusy, setCartBusy] = useState(false);
+  const [notice, setNotice] = useState("");
 
-  const search = useCallback(async (value: string) => {
-    const q = value.trim();
-    if (!q) return;
+  const due = useMemo(() => {
+    if (!selected || selected.register == null) return 0;
+    return (
+      Math.round(
+        (selected.register + (protect ? DEFAULT_DOMAIN_PROTECTION_USD : 0)) *
+          100,
+      ) / 100
+    );
+  }, [selected, protect]);
+
+  const funded = wallet != null && wallet.balance >= due;
+
+  async function loadWallet() {
+    const res = await fetch("/api/domains/wallet", { cache: "no-store" });
+    const data = (await res.json()) as WalletSnapshot & { error?: string };
+    if (!res.ok) throw new Error(data.error || "Wallet is unavailable.");
+    setWallet({ balance: data.balance, currency: data.currency || "USD" });
+  }
+
+  async function runSearch(event?: FormEvent) {
+    event?.preventDefault();
+    const raw = query.trim().toLowerCase();
+    if (!raw) {
+      setError("Type a name to search.");
+      return;
+    }
     setBusy(true);
     setError("");
-    setRows([]);
+    setNotice("");
+    setSelected(null);
     try {
       const res = await fetch("/api/domains/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: q, scope: "primary" }),
+        body: JSON.stringify({ query: raw, scope: "fast" }),
       });
-      const data = (await res.json()) as {
-        error?: string;
-        primary?: Row;
-        results?: Row[];
-      };
+      const data = (await res.json()) as SearchPayload;
       if (!res.ok) {
-        setError(data.error || "Search failed.");
+        setResults([]);
+        setError(data.error || "Search failed. Try another name.");
         return;
       }
-      const list = data.primary ? [data.primary] : (data.results ?? []);
-      setRows(list.slice(0, 8));
+      const rows = asResults(data);
+      setResults(rows);
+      const pick =
+        rows.find((row) => row.status === "available") ?? rows[0] ?? null;
+      setSelected(pick && pick.status === "available" ? pick : null);
+      if (pick && pick.status === "available") {
+        await loadWallet().catch(() => setWallet(null));
+      }
+      if (!rows.length) setError("No results for that name.");
     } catch {
-      setError("Search failed.");
+      setError("Search could not reach the domain API.");
     } finally {
       setBusy(false);
     }
-  }, []);
+  }
 
-  useEffect(() => {
-    if (initial) void search(initial);
-  }, [initial, search]);
+  function chooseTld(next: string) {
+    setTld(next);
+    const raw = query.trim();
+    if (!raw) return;
+    const name = raw.split(".")[0];
+    const nextQuery = `${name}${next}`;
+    setQuery(nextQuery);
+  }
 
   async function addToCart(domain: string) {
-    setAdding(domain);
+    setCartBusy(true);
     setError("");
+    setNotice("");
     try {
       const res = await fetch("/api/domains/cart", {
         method: "POST",
@@ -86,147 +152,325 @@ export function PanelDomainFinder() {
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setError(data.error || "Could not add this domain.");
+        setError(data.error || "Could not add that domain to your cart.");
         return;
       }
-      router.push(routes.domainCart);
+      setNotice(`${domain} is in your cart.`);
     } catch {
-      setError("Could not add this domain.");
+      setError("Could not add that domain to your cart.");
     } finally {
-      setAdding("");
+      setCartBusy(false);
+    }
+  }
+
+  async function buyNow() {
+    if (!selected?.domain) return;
+    setPaying(true);
+    setError("");
+    setNotice("");
+    try {
+      await loadWallet();
+      const res = await fetch("/api/domains/checkout/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          domain: selected.domain,
+          addDomainProtection: protect,
+          idempotencyKey:
+            typeof crypto !== "undefined" && "randomUUID" in crypto
+              ? crypto.randomUUID()
+              : `reg-${Date.now()}`,
+        }),
+      });
+      const data = (await res.json()) as {
+        error?: string;
+        order?: { domain?: string };
+      };
+      if (res.status === 402) {
+        setError(
+          data.error || "Wallet balance is too low. Top up, then buy again.",
+        );
+        return;
+      }
+      if (!res.ok) {
+        setError(data.error || "Registration could not be completed.");
+        return;
+      }
+      const domain = data.order?.domain || selected.domain;
+      router.push(`${routes.myDomains}/${encodeURIComponent(domain)}`);
+      router.refresh();
+    } catch {
+      setError("Registration could not reach the domain API.");
+    } finally {
+      setPaying(false);
     }
   }
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-5">
-      <section className="hb-panel-hero">
-        <p className="text-[11px] font-bold tracking-[0.18em] text-white/75 uppercase">
-          Domains
-        </p>
-        <h1 className="font-heading mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">
+    <div className="mx-auto w-full max-w-6xl space-y-5">
+      <section className="hb-ds-hero">
+        <h1 className="font-heading text-center text-3xl font-extrabold tracking-tight sm:text-4xl">
           Search for a domain name
         </h1>
-        <p className="mt-1 max-w-xl text-sm text-white/85">
-          Live registrar availability and pricing. Add a name to the cart, then
-          pay from your wallet.
-        </p>
-        <form
-          className="relative mt-5"
-          onSubmit={(event) => {
-            event.preventDefault();
-            void search(query);
-          }}
-        >
-          <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-violet-700" />
+        <form className="hb-ds-search" onSubmit={runSearch}>
+          <Search className="h-4 w-4 shrink-0 text-[var(--hb-p-muted)]" />
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="yourbrand.com"
-            className="hb-panel-search"
-            aria-label="Domain name"
+            placeholder="Type a domain or describe your idea"
+            aria-label="Domain search"
+            autoComplete="off"
           />
-          <button
-            type="submit"
-            disabled={busy}
-            className="absolute top-1/2 right-1.5 -translate-y-1/2 rounded-full bg-violet-700 px-4 py-1.5 text-xs font-bold text-white disabled:opacity-60"
-          >
-            {busy ? "Searching" : "Search"}
+          <button type="submit" disabled={busy} aria-label="Search domains">
+            {busy ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <ArrowRight className="h-4 w-4" />
+            )}
           </button>
         </form>
+        <div className="hb-ds-tlds">
+          {featuredTlds.map((item) => (
+            <button
+              key={item.tld}
+              type="button"
+              className="hb-ds-tld"
+              data-active={tld === item.tld ? "true" : "false"}
+              onClick={() => chooseTld(item.tld)}
+            >
+              <span className="text-sm font-bold">{item.tld}</span>
+              <span className="text-lg font-extrabold">
+                <CatalogPrice usd={item.register} />
+              </span>
+              {item.isPromo ? (
+                <span className="text-[10px] font-bold tracking-wide text-[#7c3aed] uppercase">
+                  Promo
+                </span>
+              ) : null}
+            </button>
+          ))}
+        </div>
       </section>
 
       {error ? (
-        <p className="hb-pill hb-pill-warn inline-flex">
-          <AlertTriangle className="size-3.5" />
+        <p className="rounded-2xl border border-[var(--hb-p-danger)]/30 bg-[var(--hb-p-danger-bg)] px-4 py-3 text-sm text-[var(--hb-p-danger)]">
           {error}
         </p>
       ) : null}
-
-      {busy && rows.length === 0 ? (
-        <div className="hb-panel-card hb-muted flex items-center gap-2 p-5 text-sm">
-          <Loader2 className="size-4 animate-spin" />
-          Checking the registry…
-        </div>
-      ) : null}
-
-      {rows.length > 0 ? (
-        <ul className="space-y-2">
-          {rows.map((row) => {
-            const meta = STATUS_COPY[row.status] ?? {
-              label: row.status,
-              pill: "hb-pill-neutral",
-            };
-            const canBuy =
-              row.status === "available" || row.status === "premium";
-            return (
-              <li
-                key={row.domain}
-                className="hb-panel-card flex flex-wrap items-center justify-between gap-3 p-4"
-              >
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Globe
-                      className="size-4 text-[var(--hb-p-primary)]"
-                      aria-hidden
-                    />
-                    <p className="hb-text truncate font-bold">{row.domain}</p>
-                    <span className={cn("hb-pill", meta.pill)}>
-                      {meta.label}
-                    </span>
-                  </div>
-                  <p className="hb-muted mt-1 text-xs">
-                    {row.register != null
-                      ? `$${row.register.toFixed(2)} first year`
-                      : (row.message ?? "Price unavailable")}
-                    {row.renew != null
-                      ? ` · renews at $${row.renew.toFixed(2)}`
-                      : ""}
-                  </p>
-                </div>
-                {canBuy ? (
-                  <button
-                    type="button"
-                    onClick={() => void addToCart(row.domain)}
-                    disabled={adding === row.domain}
-                    className="hb-btn hb-btn-primary"
-                  >
-                    {adding === row.domain ? (
-                      <Loader2 className="size-4 animate-spin" />
-                    ) : (
-                      <CheckCircle2 className="size-4" />
-                    )}
-                    Add and checkout
-                  </button>
-                ) : (
-                  <Link
-                    href={routes.accountDomainTransfer}
-                    className="hb-btn hb-btn-ghost"
-                  >
-                    Transfer it instead
-                    <ArrowRight className="size-3.5" />
-                  </Link>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      ) : null}
-
-      {!busy && rows.length === 0 && !error ? (
-        <div className="hb-panel-card p-5">
-          <h2 className="hb-h2">Need a name that is already registered?</h2>
-          <p className="hb-muted mt-1 text-sm">
-            You can transfer a domain in from another registrar and keep the
-            same website and email.
-          </p>
-          <Link
-            href={routes.accountDomainTransfer}
-            className="hb-btn hb-btn-ghost mt-3"
-          >
-            Start a transfer
+      {notice ? (
+        <p className="rounded-2xl border border-[var(--hb-p-ok)]/30 bg-[var(--hb-p-ok-bg)] px-4 py-3 text-sm text-[var(--hb-p-ok)]">
+          {notice}{" "}
+          <Link href={routes.domainCart} className="font-semibold underline">
+            Open cart
           </Link>
-        </div>
+        </p>
       ) : null}
+
+      {results.length > 0 ? (
+        <section className="hb-panel-card p-4 sm:p-5">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <h2 className="font-heading text-lg font-bold">Choose a domain</h2>
+            <p className="text-xs text-[var(--hb-p-muted)]">
+              Live availability from the registrar API
+            </p>
+          </div>
+          <ul className="space-y-2">
+            {results.map((row) => {
+              const available = row.status === "available";
+              const active = selected?.domain === row.domain;
+              return (
+                <li
+                  key={row.domain}
+                  className={cn(
+                    "flex flex-wrap items-center gap-3 rounded-2xl border px-4 py-3",
+                    active
+                      ? "border-[var(--hb-p-primary)] bg-[var(--hb-p-primary)]/6"
+                      : "border-[var(--hb-p-border)]",
+                  )}
+                >
+                  <Globe className="h-4 w-4 text-[var(--hb-p-primary)]" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-semibold">{row.domain}</p>
+                    <p className="text-xs text-[var(--hb-p-muted)]">
+                      {statusTone(row.status)}
+                      {row.message ? ` · ${row.message}` : ""}
+                    </p>
+                  </div>
+                  {row.register != null ? (
+                    <span className="text-sm font-extrabold">
+                      <CatalogPrice usd={row.register} />
+                      <span className="ml-1 text-xs font-medium text-[var(--hb-p-muted)]">
+                        / 1st yr
+                      </span>
+                    </span>
+                  ) : null}
+                  {available ? (
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        className="hb-btn hb-btn-ghost hb-btn-sm"
+                        disabled={cartBusy}
+                        onClick={() => void addToCart(row.domain)}
+                      >
+                        Add to cart
+                      </button>
+                      <button
+                        type="button"
+                        className="hb-btn hb-btn-primary hb-btn-sm"
+                        onClick={() => {
+                          setSelected(row);
+                          void loadWallet().catch(() => setWallet(null));
+                        }}
+                      >
+                        Buy
+                      </button>
+                    </div>
+                  ) : (
+                    <span className="text-xs font-semibold text-[var(--hb-p-muted)]">
+                      Not for sale
+                    </span>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ) : null}
+
+      {selected && selected.status === "available" ? (
+        <section className="hb-panel-card space-y-4 p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[11px] font-bold tracking-[0.16em] text-[var(--hb-p-muted)] uppercase">
+                Step 2 · Checkout
+              </p>
+              <h2 className="font-heading mt-1 text-xl font-bold">
+                Register {selected.domain}
+              </h2>
+              <p className="mt-1 text-sm text-[var(--hb-p-muted)]">
+                WHOIS privacy is included. Pay from your HostingBeyond wallet.
+              </p>
+            </div>
+            <CheckCircle2 className="h-6 w-6 text-[var(--hb-p-ok)]" />
+          </div>
+
+          <label className="flex items-start gap-3 rounded-2xl border border-[var(--hb-p-border)] p-4">
+            <input
+              type="checkbox"
+              className="mt-1"
+              checked={protect}
+              onChange={(event) => setProtect(event.target.checked)}
+            />
+            <span>
+              <span className="flex items-center gap-2 font-semibold">
+                <ShieldCheck className="h-4 w-4 text-[var(--hb-p-primary)]" />
+                Domain Protection
+              </span>
+              <span className="mt-1 block text-sm text-[var(--hb-p-muted)]">
+                Registry lock for one year —{" "}
+                <CatalogPrice usd={DEFAULT_DOMAIN_PROTECTION_USD} />
+              </span>
+            </span>
+          </label>
+
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[var(--hb-p-primary)]/6 px-4 py-3">
+            <div className="flex items-center gap-2 text-sm">
+              <Wallet className="h-4 w-4 text-[var(--hb-p-primary)]" />
+              <span>
+                Wallet{" "}
+                {wallet ? formatMoney(wallet.balance, wallet.currency) : "—"}
+              </span>
+            </div>
+            <p className="text-lg font-extrabold">
+              Due today <CatalogPrice usd={due} />
+            </p>
+          </div>
+
+          {!funded && wallet ? (
+            <p className="text-sm text-[var(--hb-p-warn)]">
+              Add funds to buy this domain.{" "}
+              <Link
+                href={routes.accountWallet}
+                className="font-semibold underline"
+              >
+                Top up wallet
+              </Link>
+            </p>
+          ) : null}
+
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              className="hb-btn hb-btn-primary"
+              disabled={paying || (wallet != null && !funded)}
+              onClick={() => void buyNow()}
+            >
+              {paying ? "Registering…" : "Pay with wallet"}
+            </button>
+            <Link href={routes.accountWallet} className="hb-btn hb-btn-ghost">
+              Wallet
+            </Link>
+            <button
+              type="button"
+              className="hb-btn hb-btn-ghost"
+              disabled={cartBusy}
+              onClick={() => void addToCart(selected.domain)}
+            >
+              Add to cart instead
+            </button>
+          </div>
+        </section>
+      ) : null}
+
+      <div className="hb-ds-promo">
+        <Link
+          href={routes.accountHosting}
+          className="hb-ds-promo-card"
+          style={{
+            background: "linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)",
+          }}
+        >
+          <span className="mb-4 grid size-10 place-items-center rounded-2xl bg-[#d9f99d] text-[#365314]">
+            <Percent className="h-5 w-5" />
+          </span>
+          <h3 className="font-heading text-2xl font-extrabold">
+            Get 1 month of free Unlimited hosting with your domain
+          </h3>
+          <p className="mt-3 text-sm text-white/80">
+            Register a domain for 2+ years, then turn it into a website in
+            minutes.
+          </p>
+        </Link>
+        <div
+          className="hb-ds-promo-card"
+          style={{
+            background:
+              "linear-gradient(160deg, rgba(37,99,235,.35), rgba(124,58,237,.55)), #1d4ed8",
+          }}
+        >
+          <p className="font-heading text-3xl font-black">9M+</p>
+          <p className="text-sm text-white/85">domains registered</p>
+          <p className="font-heading mt-6 text-3xl font-black">400+</p>
+          <p className="text-sm text-white/85">domain extensions</p>
+        </div>
+        <Link
+          href={routes.accountDomainTransfer}
+          className="hb-ds-promo-card"
+          style={{
+            background: "linear-gradient(135deg, #6d28d9 0%, #4c1d95 100%)",
+          }}
+        >
+          <span className="mb-8 grid size-10 place-items-center rounded-2xl bg-white/15">
+            <ArrowUpRight className="h-5 w-5" />
+          </span>
+          <h3 className="font-heading text-2xl font-extrabold">
+            Domain transfer
+          </h3>
+          <p className="mt-2 text-sm text-white/80">
+            Bring your domain over easily — .com from the live transfer price.
+          </p>
+        </Link>
+      </div>
     </div>
   );
 }

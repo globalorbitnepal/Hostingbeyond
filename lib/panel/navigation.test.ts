@@ -32,9 +32,24 @@ describe("panel navigation", () => {
     );
     assert.equal(panelTitleForPath("/account/domains/find"), "Domain search");
     assert.equal(panelTitleForPath("/account/domains/transfer"), "Transfers");
+    assert.equal(panelTitleForPath("/account/domains/dns"), "DNS");
+    assert.equal(
+      panelTitleForPath("/account/domains/contacts"),
+      "Contact profiles",
+    );
     assert.equal(panelTitleForPath("/account/hosting"), "Hosting plans");
     assert.equal(panelTitleForPath("/account/email"), "Business email");
     assert.equal(panelTitleForPath("/account/support"), "Support");
+  });
+
+  it("nests domain tools under a Domains hub", () => {
+    const domains = PANEL_NAV.find((section) => section.id === "domains");
+    assert.ok(domains);
+    assert.equal(domains.items[0]?.hub, true);
+    assert.ok(domains.items.some((item) => item.id === "dns" && item.child));
+    assert.ok(
+      domains.items.some((item) => item.id === "contacts" && item.child),
+    );
   });
 
   it("keeps every nav link inside the customer panel", () => {

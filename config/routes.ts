@@ -30,6 +30,8 @@ export const routes = {
   myDomains: "/account/my-domains",
   accountDomainFind: "/account/domains/find",
   accountDomainTransfer: "/account/domains/transfer",
+  accountDomainDns: "/account/domains/dns",
+  accountDomainContacts: "/account/domains/contacts",
   accountHosting: "/account/hosting",
   accountEmail: "/account/email",
   accountSupport: "/account/support",

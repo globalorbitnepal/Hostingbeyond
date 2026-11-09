@@ -14,26 +14,33 @@ const BeyondMasterAiPanel = dynamic(
 
 export { BeyondMasterAiLauncher };
 
-export function BeyondMasterAiHost() {
+export function BeyondMasterAiHost({
+  hideLauncher = false,
+  force = false,
+}: {
+  hideLauncher?: boolean;
+  force?: boolean;
+}) {
   useBeyondMasterAi();
   const [mounted, setMounted] = useState(false);
   const [publicChat, setPublicChat] = useState(true);
 
   useEffect(() => {
     setMounted(true);
+    if (force) return;
     void fetch("/api/beyond-master/features", { cache: "no-store" })
       .then((res) => res.json())
       .then((payload: { publicChat?: boolean }) => {
         if (payload.publicChat === false) setPublicChat(false);
       })
       .catch(() => undefined);
-  }, []);
+  }, [force]);
 
-  if (!mounted || !publicChat) return null;
+  if (!mounted || (!publicChat && !force)) return null;
 
   return (
     <>
-      <BeyondMasterAiLauncher />
+      {hideLauncher ? null : <BeyondMasterAiLauncher />}
       <BeyondMasterAiPanel />
     </>
   );
