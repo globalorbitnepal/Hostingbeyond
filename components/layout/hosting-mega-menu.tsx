@@ -1,22 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  ArrowRight,
   Check,
-  ChevronDown,
   ChevronRight,
-  Briefcase,
-  FileText,
   Globe,
-  HelpCircle,
-  Layers,
-  ServerCog,
-  ShieldCheck,
   ShoppingCart,
-  Users,
   type LucideIcon,
 } from "lucide-react";
 
@@ -31,13 +21,11 @@ type HostingItem = {
   logo?: string;
   logoAlt?: string;
   tile: string;
-  /** Brand logo presentation inside the 44px circle */
-  logoVariant?: "default" | "cpanel" | "linux" | "nvme";
   lucide?: LucideIcon;
   lucideClass?: string;
 };
 
-const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
+const FEATURED: Array<{ id: string; label: string; items: HostingItem[] }> = [
   {
     id: "website",
     label: "Website Hosting",
@@ -45,7 +33,7 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
       {
         href: routes.hosting,
         title: "Web Hosting",
-        description: "Simple and reliable hosting for websites.",
+        description: "Fast and reliable hosting for websites.",
         lucide: Globe,
         lucideClass: "text-[#2563eb]",
         tile: "bg-[#e8f1ff]",
@@ -53,7 +41,7 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
       {
         href: `${routes.hosting}/wordpress`,
         title: "WordPress Hosting",
-        description: "Optimized hosting for WordPress websites.",
+        description: "Optimized hosting for WordPress.",
         logo: "/images/nav-brands/wordpress.svg",
         logoAlt: "WordPress",
         tile: "bg-[#e8f4f8]",
@@ -61,189 +49,61 @@ const GROUPS: Array<{ id: string; label: string; items: HostingItem[] }> = [
       {
         href: `${routes.hosting}/ecommerce`,
         title: "eCommerce Hosting",
-        description: "Powerful hosting for online stores.",
+        description: "High-performance hosting for online stores.",
         lucide: ShoppingCart,
         lucideClass: "text-[#db2777]",
         tile: "bg-[#fce7f3]",
       },
-      {
-        href: routes.cloud,
-        title: "Business Hosting",
-        description: "More resources for growing businesses.",
-        lucide: Briefcase,
-        lucideClass: "text-[#2563eb]",
-        tile: "bg-[#e8f1ff]",
-      },
-      {
-        href: `${routes.hosting}/ssl`,
-        title: "SSL Certificates",
-        description: "Free HTTPS plus premium and wildcard SSL.",
-        lucide: ShieldCheck,
-        lucideClass: "text-[#0d9488]",
-        tile: "bg-[#ecfdf5]",
-      },
     ],
   },
   {
-    id: "developer",
-    label: "Developer Hosting",
+    id: "application",
+    label: "Application Hosting",
     items: [
       {
         href: "/nodejs-hosting",
         title: "Node.js Hosting",
-        description: "Deploy Node.js applications with high performance.",
+        description: "Deploy Node.js, NestJS and Next.js apps.",
         logo: "/images/nav-brands/nodedotjs.svg",
         logoAlt: "Node.js",
         tile: "bg-[#ecfdf3]",
       },
       {
-        href: `${routes.hosting}/python`,
-        title: "Python Hosting",
-        description:
-          "Run Python applications with support for modern frameworks.",
-        logo: "/images/nav-brands/python.svg",
-        logoAlt: "Python",
-        tile: "bg-[#eff6ff]",
-      },
-      {
         href: "/laravel-hosting",
-        title: "Laravel Hosting",
-        description: "Optimized hosting for Laravel projects.",
+        title: "PHP & Laravel Hosting",
+        description: "Powerful hosting for PHP and Laravel.",
         logo: "/images/nav-brands/laravel.svg",
         logoAlt: "Laravel",
         tile: "bg-[#fff1f2]",
-      },
-      {
-        href: "/django-hosting",
-        title: "Django Hosting",
-        description: "Hosting for Django applications.",
-        logo: "/images/nav-brands/django.svg",
-        logoAlt: "Django",
-        tile: "bg-[#ecfdf5]",
-      },
-      {
-        href: "/nestjs-hosting",
-        title: "NestJS Hosting",
-        description: "Deploy modern NestJS applications.",
-        logo: "/images/nav-brands/nestjs.svg",
-        logoAlt: "NestJS",
-        tile: "bg-[#fff1f2]",
-      },
-    ],
-  },
-  {
-    id: "vps",
-    label: "VPS Hosting",
-    items: [
-      {
-        href: "/kvm-vps",
-        title: "KVM VPS",
-        description: "Full root access with KVM virtualization.",
-        lucide: Layers,
-        lucideClass: "text-[#ea580c]",
-        tile: "bg-[#fff7ed]",
-      },
-      {
-        href: "/nvme-vps",
-        title: "NVMe VPS",
-        description: "High-speed NVMe VPS for demanding workloads.",
-        logo: "/images/nav-brands/nvme.svg",
-        logoAlt: "NVMe Express",
-        tile: "bg-[#0B1F33]",
-        logoVariant: "nvme",
-      },
-      {
-        href: "/linux-vps",
-        title: "Linux VPS",
-        description: "Ubuntu, Debian and other Linux distributions.",
-        logo: "/images/nav-brands/linux-mark.svg",
-        logoAlt: "Linux",
-        tile: "bg-[#f1f5f9]",
-        logoVariant: "linux",
-      },
-      {
-        href: "/managed-vps",
-        title: "Managed VPS",
-        description: "Managed updates, security and technical support.",
-        lucide: ServerCog,
-        lucideClass: "text-[#6366f1]",
-        tile: "bg-[#ede9fe]",
-      },
-    ],
-  },
-  {
-    id: "business",
-    label: "Business",
-    items: [
-      {
-        href: `${routes.hosting}/reseller`,
-        title: "Reseller Hosting",
-        description: "Start your own hosting business.",
-        logo: "/images/nav-brands/cpanel.svg",
-        logoAlt: "cPanel",
-        tile: "bg-[#fff7ed]",
-        logoVariant: "cpanel",
-      },
-      {
-        href: "/agency-hosting",
-        title: "Agency Hosting",
-        description: "Manage hosting for multiple clients.",
-        lucide: Users,
-        lucideClass: "text-[#7c3aed]",
-        tile: "bg-[#f3e8ff]",
       },
     ],
   },
 ];
 
 const PROMO_BENEFITS = [
-  "NVMe Storage",
+  "NVMe SSD",
   "Free SSL",
   "Automatic Backups",
   "24/7 Support",
 ] as const;
 
-const ICON_BOX =
-  "inline-flex size-11 shrink-0 items-center justify-center rounded-full p-1.5 shadow-[0_6px_14px_-8px_rgba(15,23,42,0.4)] ring-1 ring-slate-200/75";
-
-const LOGO_IMG_CLASS: Record<
-  NonNullable<HostingItem["logoVariant"]>,
-  string
-> = {
-  default: "h-[28px] w-[28px] max-h-[28px] max-w-[28px] object-contain",
-  cpanel:
-    "h-[42px] w-[83px] max-h-[42px] max-w-[83px] object-contain object-center",
-  linux:
-    "h-[33px] w-[31px] max-h-[33px] max-w-[31px] object-contain object-center",
-  nvme: "h-[36px] w-[36px] max-h-[36px] max-w-[36px] object-contain object-center",
-};
-
 function ItemIcon({ item }: { item: HostingItem }) {
   if (item.logo) {
-    const variant = item.logoVariant ?? "default";
-    const dimensions =
-      variant === "cpanel"
-        ? { width: 83, height: 42 }
-        : variant === "linux"
-          ? { width: 31, height: 33 }
-          : variant === "nvme"
-            ? { width: 36, height: 36 }
-            : { width: 28, height: 28 };
     return (
       <Image
         src={`${item.logo}?v=logo9`}
         alt={item.logoAlt ?? ""}
-        width={dimensions.width}
-        height={dimensions.height}
+        width={22}
+        height={22}
         unoptimized
-        className={LOGO_IMG_CLASS[variant]}
+        className="h-[22px] w-[22px] object-contain"
       />
     );
   }
   const Icon = item.lucide ?? Globe;
   return (
     <Icon
-      className={cn("size-[25px]", item.lucideClass ?? "text-[#4f46e5]")}
+      className={cn("size-[18px]", item.lucideClass ?? "text-[#4f46e5]")}
       strokeWidth={2}
       aria-hidden
     />
@@ -253,249 +113,142 @@ function ItemIcon({ item }: { item: HostingItem }) {
 function HostingNavLink({
   item,
   onNavigate,
-  compact,
 }: {
   item: HostingItem;
   onNavigate?: () => void;
-  compact?: boolean;
 }) {
   return (
     <Link
       href={item.href}
       onClick={onNavigate}
-      className={cn(
-        "group flex min-h-[50px] items-center gap-2.5 rounded-xl px-1.5 transition-[background] duration-150 hover:bg-slate-50/95",
-        compact ? "py-1" : "py-1.5",
-      )}
+      className="group flex items-center gap-3 rounded-2xl px-1.5 py-2 transition hover:bg-slate-50"
     >
       <span
         className={cn(
-          ICON_BOX,
+          "inline-flex size-10 shrink-0 items-center justify-center rounded-full",
           item.tile,
-          item.logoVariant === "cpanel" && "p-0.5",
-          "transition-transform duration-150 group-hover:scale-[1.02]",
         )}
       >
         <ItemIcon item={item} />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-[14px] leading-[1.2] font-semibold tracking-[-0.02em] text-slate-950 group-hover:text-[#1d4ed8]">
+        <span className="block text-[14.5px] leading-tight font-bold tracking-[-0.02em] text-slate-950">
           <LocalizedText text={item.title} />
         </span>
-        <span className="mt-0.5 line-clamp-2 text-[12px] leading-[1.35] text-slate-500">
+        <span className="mt-0.5 block text-[12.5px] leading-snug text-slate-500">
           <LocalizedText text={item.description} />
         </span>
       </span>
       <ChevronRight
-        className="size-3.5 shrink-0 text-slate-400/90 transition duration-150 group-hover:translate-x-0.5 group-hover:text-[#6366f1]"
+        className="size-4 shrink-0 text-slate-300 transition duration-150 group-hover:translate-x-0.5 group-hover:text-[#7c3aed]"
         aria-hidden
       />
     </Link>
   );
 }
 
-function CategoryColumn({
-  group,
-  onNavigate,
-}: {
-  group: (typeof GROUPS)[number];
-  onNavigate?: () => void;
-}) {
-  const compactItems = group.id === "developer";
+function ServerRacks() {
   return (
-    <div className="min-w-0">
-      <p className="mb-2 inline-flex h-[22px] items-center rounded-full border border-indigo-100 bg-indigo-50/90 px-2.5 py-0 text-[9px] font-extrabold tracking-[0.14em] text-[#4f46e5] uppercase">
-        <LocalizedText text={group.label} />
-      </p>
-      <ul className={cn("space-y-0", group.id === "business" && "space-y-1")}>
-        {group.items.map((item) => (
-          <li key={`${group.id}-${item.title}`}>
-            <HostingNavLink
-              item={item}
-              onNavigate={onNavigate}
-              compact={compactItems}
-            />
-          </li>
-        ))}
-      </ul>
-    </div>
+    <svg
+      viewBox="0 0 420 280"
+      className="absolute inset-y-0 right-0 h-full w-[70%] opacity-90"
+      aria-hidden
+      preserveAspectRatio="xMaxYMid slice"
+    >
+      <defs>
+        <linearGradient id="hb-rack-face" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#4c1d95" />
+          <stop offset="100%" stopColor="#1e1b4b" />
+        </linearGradient>
+      </defs>
+      {[0, 1, 2].map((col) => (
+        <g key={col} transform={`translate(${48 + col * 112} 22)`}>
+          <rect
+            x="0"
+            y="0"
+            width="92"
+            height="236"
+            rx="10"
+            fill="url(#hb-rack-face)"
+            opacity="0.92"
+          />
+          {Array.from({ length: 8 }).map((_, row) => (
+            <g key={row} transform={`translate(8 ${16 + row * 26})`}>
+              <rect
+                width="76"
+                height="17"
+                rx="3"
+                fill="#0f172a"
+                opacity="0.55"
+              />
+              <circle cx="11" cy="8.5" r="2.2" fill="#22d3ee" />
+              <circle
+                cx="21"
+                cy="8.5"
+                r="2"
+                fill={row % 2 === 0 ? "#34d399" : "#a78bfa"}
+              />
+              <rect
+                x="32"
+                y="5.5"
+                width="36"
+                height="5.5"
+                rx="1.5"
+                fill="#818cf8"
+                opacity="0.55"
+              />
+            </g>
+          ))}
+        </g>
+      ))}
+    </svg>
   );
 }
 
-function PromoPanel({
-  compact,
-  onNavigate,
-}: {
-  compact: boolean;
-  onNavigate?: () => void;
-}) {
+function PromoPanel({ compact }: { compact: boolean }) {
   return (
     <div
       className={cn(
-        "relative flex h-full flex-col overflow-hidden bg-[linear-gradient(155deg,#2563eb_0%,#4f46e5_50%,#7c3aed_100%)] text-white",
+        "relative isolate overflow-hidden bg-[linear-gradient(118deg,#3b0764_0%,#5b21b6_38%,#4c1d95_72%,#312e81_100%)] text-white",
         compact
-          ? "rounded-[18px] p-4"
-          : "rounded-[20px] p-4 lg:rounded-none lg:rounded-r-[24px] lg:p-4",
+          ? "min-h-[200px] rounded-[22px] p-5"
+          : "h-full min-h-[220px] rounded-[22px] p-5 lg:p-6",
       )}
     >
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-10 -right-6 size-32 rounded-full bg-white/12 blur-2xl"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_78%_48%,rgba(192,132,252,0.38),transparent_58%)]"
+      />
+      <ServerRacks />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#3b0764] via-[#4c1d95]/90 to-transparent"
       />
 
-      <div className="relative z-[1] flex h-full min-h-0 flex-col justify-center gap-2.5 px-0.5 py-2">
-        <p className="text-[9px] font-extrabold tracking-[0.16em] text-white/75 uppercase">
-          Reliable & scalable
+      <div className="relative z-[1] flex h-full max-w-[24rem] flex-col justify-center pr-4">
+        <p className="text-[10px] font-extrabold tracking-[0.2em] text-violet-200 uppercase">
+          Premium Hosting
         </p>
-        <p className="font-heading mt-1.5 text-[1.05rem] leading-[1.15] font-extrabold tracking-[-0.03em] lg:text-[1.12rem]">
-          Premium Hosting for Every Need
+        <p className="font-heading mt-2 text-[1.45rem] leading-[1.12] font-extrabold tracking-[-0.04em] sm:text-[1.65rem]">
+          Reliable & Scalable Hosting for Every Project
         </p>
-        <p className="mt-1.5 text-[11.5px] leading-snug text-white/88">
-          Fast, secure and scalable hosting for websites, applications and
-          businesses.
-        </p>
-        <ul className="space-y-1.5">
+        <ul className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1.5">
           {PROMO_BENEFITS.map((benefit) => (
             <li
               key={benefit}
-              className="flex items-center gap-2 text-[11.5px] font-medium text-white/95"
+              className="flex items-center gap-1.5 text-[12px] font-semibold text-white"
             >
               <span
-                className="inline-flex size-[18px] shrink-0 items-center justify-center rounded-full bg-emerald-400/95 text-white"
+                className="inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-emerald-400 text-[#064e3b]"
                 aria-hidden
               >
-                <Check className="size-2.5" strokeWidth={3} />
+                <Check className="size-2.5" strokeWidth={3.5} />
               </span>
               {benefit}
             </li>
           ))}
         </ul>
-        <Link
-          href={routes.pricing}
-          onClick={onNavigate}
-          className="relative z-[2] mt-1 inline-flex min-h-[40px] w-full shrink-0 items-center justify-center gap-1.5 rounded-full bg-white px-4 text-[12px] font-bold tracking-[-0.01em] text-[#3730a3] shadow-[0_10px_22px_rgba(15,23,42,0.18)] transition hover:bg-indigo-50"
-        >
-          <span className="truncate">View All Hosting Plans</span>
-          <ArrowRight className="size-3.5 shrink-0" aria-hidden />
-        </Link>
       </div>
-    </div>
-  );
-}
-
-function BottomActions({
-  onNavigate,
-  compact,
-}: {
-  onNavigate?: () => void;
-  compact?: boolean;
-}) {
-  const cards = [
-    {
-      href: routes.pricing,
-      title: "Compare Hosting Plans",
-      description: "Compare features and prices",
-      icon: FileText,
-      tone: "from-[#eff6ff] to-[#e0e7ff]",
-      iconTone: "bg-[#dbeafe] text-[#2563eb]",
-    },
-    {
-      href: `${routes.hosting}#plans`,
-      title: "Not sure which plan?",
-      description: "Find the right hosting",
-      icon: HelpCircle,
-      tone: "from-[#f5f3ff] to-[#ede9fe]",
-      iconTone: "bg-[#ede9fe] text-[#7c3aed]",
-    },
-  ] as const;
-
-  return (
-    <div
-      className={cn(
-        "grid gap-2 border-t border-slate-100/90 bg-slate-50/50",
-        compact ? "grid-cols-1 p-3" : "grid-cols-1 p-3 sm:grid-cols-2",
-      )}
-    >
-      {cards.map((card) => {
-        const Icon = card.icon;
-        return (
-          <Link
-            key={card.title}
-            href={card.href}
-            onClick={onNavigate}
-            className={cn(
-              "group flex min-h-[68px] items-center gap-2.5 rounded-xl border border-white/80 bg-gradient-to-br p-3 shadow-[0_6px_18px_-10px_rgba(15,23,42,0.12)] transition duration-150 hover:-translate-y-px hover:shadow-[0_12px_28px_-12px_rgba(79,70,229,0.18)]",
-              card.tone,
-            )}
-          >
-            <span
-              className={cn(
-                "inline-flex size-9 shrink-0 items-center justify-center rounded-lg",
-                card.iconTone,
-              )}
-            >
-              <Icon className="size-[18px]" strokeWidth={2} aria-hidden />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-[13px] font-bold text-slate-950">
-                {card.title}
-              </span>
-              <span className="mt-0.5 block text-[11.5px] text-slate-600">
-                {card.description}
-              </span>
-            </span>
-            <ArrowRight
-              className="size-3.5 shrink-0 text-slate-400 transition duration-150 group-hover:translate-x-0.5 group-hover:text-[#4f46e5]"
-              aria-hidden
-            />
-          </Link>
-        );
-      })}
-    </div>
-  );
-}
-
-function MobileCategoryAccordion({ onNavigate }: { onNavigate?: () => void }) {
-  const [openId, setOpenId] = useState<string | null>(GROUPS[0]?.id ?? null);
-
-  return (
-    <div className="space-y-1">
-      {GROUPS.map((group) => {
-        const expanded = openId === group.id;
-        return (
-          <div
-            key={group.id}
-            className="overflow-hidden rounded-2xl border border-slate-100 bg-white"
-          >
-            <button
-              type="button"
-              className="flex w-full items-center justify-between px-3 py-2.5 text-left"
-              aria-expanded={expanded}
-              onClick={() => setOpenId(expanded ? null : group.id)}
-            >
-              <span className="text-[12px] font-extrabold tracking-[0.06em] text-[#4f46e5] uppercase">
-                <LocalizedText text={group.label} />
-              </span>
-              <ChevronDown
-                className={cn(
-                  "size-4 text-slate-400 transition-transform duration-200",
-                  expanded && "rotate-180",
-                )}
-                aria-hidden
-              />
-            </button>
-            {expanded ? (
-              <ul className="border-t border-slate-100 px-0.5 pb-1.5">
-                {group.items.map((item) => (
-                  <li key={item.title}>
-                    <HostingNavLink item={item} onNavigate={onNavigate} />
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-          </div>
-        );
-      })}
     </div>
   );
 }
@@ -507,32 +260,37 @@ export function HostingMegaMenu({
   compact?: boolean;
   onNavigate?: () => void;
 }) {
-  if (compact) {
-    return (
-      <div className="space-y-2.5">
-        <MobileCategoryAccordion onNavigate={onNavigate} />
-        <PromoPanel compact onNavigate={onNavigate} />
-        <BottomActions compact onNavigate={onNavigate} />
-      </div>
-    );
-  }
-
   return (
-    <div className="max-w-full overflow-hidden rounded-[24px] border border-white/80 bg-white shadow-[0_22px_56px_-24px_rgba(37,80,130,0.42),0_10px_28px_-14px_rgba(15,23,42,0.1)]">
-      <div className="grid grid-cols-1 gap-3 p-3 sm:grid-cols-2 sm:p-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1.05fr)_minmax(0,1fr)_minmax(0,0.72fr)_minmax(200px,240px)] lg:items-start lg:gap-x-2 lg:gap-y-0 lg:pb-3">
-        {GROUPS.map((group) => (
-          <CategoryColumn
-            key={group.id}
-            group={group}
-            onNavigate={onNavigate}
-          />
+    <div
+      className={cn(
+        "relative overflow-hidden border border-white/80 bg-white shadow-[0_28px_70px_-28px_rgba(91,33,182,0.45),0_12px_32px_-18px_rgba(15,23,42,0.12)]",
+        compact ? "rounded-[22px]" : "rounded-[28px]",
+      )}
+    >
+      <div
+        className={cn(
+          "grid gap-5 p-4 sm:p-5",
+          compact
+            ? "grid-cols-1"
+            : "lg:grid-cols-[minmax(0,0.95fr)_minmax(0,0.95fr)_minmax(280px,1.2fr)] lg:items-stretch lg:gap-6",
+        )}
+      >
+        {FEATURED.map((group) => (
+          <div key={group.id} className="min-w-0">
+            <p className="mb-2.5 inline-flex rounded-full bg-[#efe7ff] px-2.5 py-1 text-[10px] font-extrabold tracking-[0.14em] text-[#6d28d9] uppercase">
+              <LocalizedText text={group.label} />
+            </p>
+            <ul className="space-y-0">
+              {group.items.map((item) => (
+                <li key={`${group.id}-${item.title}`}>
+                  <HostingNavLink item={item} onNavigate={onNavigate} />
+                </li>
+              ))}
+            </ul>
+          </div>
         ))}
-        <div className="min-h-0 sm:col-span-2 lg:col-span-1 lg:col-start-5 lg:row-start-1 lg:self-stretch">
-          <PromoPanel compact={false} onNavigate={onNavigate} />
-        </div>
+        <PromoPanel compact={compact} />
       </div>
-
-      <BottomActions onNavigate={onNavigate} />
     </div>
   );
 }

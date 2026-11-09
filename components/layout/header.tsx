@@ -462,7 +462,7 @@ export function SiteHeader({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 6 }}
                 transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute top-[calc(100%+2px)] right-0 left-0 z-40 hidden lg:block"
+                className="absolute top-[calc(100%-2px)] right-0 left-0 z-40 hidden pt-3 lg:block"
                 onMouseEnter={() => openMega("hosting")}
                 onMouseLeave={scheduleMegaClose}
               >
