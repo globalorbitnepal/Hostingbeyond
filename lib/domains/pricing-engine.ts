@@ -77,7 +77,6 @@ export async function getRetailQuoteForTld(
   const key = tld.startsWith(".") ? tld : `.${tld}`;
   const row = await prisma.domainTldPrice.findUnique({ where: { tld: key } });
   if (!row || !row.enabled) return null;
-  if (!isCustomerSellableNameSiloStatus(row.namesiloPriceStatus)) return null;
 
   const now = new Date();
   const promoActive =
@@ -115,11 +114,7 @@ export async function getRetailQuoteMapForTlds(
 
   await ensureDomainTldPricesSeeded();
   const rows = await prisma.domainTldPrice.findMany({
-    where: {
-      tld: { in: keys },
-      enabled: true,
-      namesiloPriceStatus: "verified",
-    },
+    where: { tld: { in: keys }, enabled: true },
   });
   const now = new Date();
   for (const row of rows) {
