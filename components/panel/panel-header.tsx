@@ -217,8 +217,8 @@ export function PanelHeader({
           <Image
             src={PANEL_MEGA_HEADER_LOGO_SRC}
             alt="HostingBeyond"
-            width={1024}
-            height={341}
+            width={996}
+            height={183}
             priority
             unoptimized
             className="hb-panel-mega-logo__img"
