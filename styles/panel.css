@@ -520,18 +520,19 @@ html[data-hb-theme="light"] {
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   background:
     radial-gradient(
-      42% 124% at 0% 50%,
-      rgba(255, 253, 255, 0.9) 0%,
-      rgba(248, 240, 255, 0.52) 18%,
-      rgba(234, 222, 255, 0.24) 36%,
-      transparent 62%
+      46% 128% at 0% 50%,
+      rgba(255, 252, 248, 0.98) 0%,
+      rgba(251, 244, 255, 0.58) 15%,
+      rgba(238, 228, 255, 0.3) 33%,
+      rgba(220, 208, 255, 0.12) 48%,
+      transparent 64%
     ),
     radial-gradient(
-      38% 118% at 100% 50%,
-      rgba(252, 248, 255, 0.66) 0%,
-      rgba(236, 226, 255, 0.34) 18%,
-      rgba(210, 198, 252, 0.12) 38%,
-      transparent 60%
+      42% 122% at 100% 50%,
+      rgba(253, 250, 255, 0.74) 0%,
+      rgba(240, 232, 255, 0.4) 16%,
+      rgba(216, 206, 252, 0.16) 36%,
+      transparent 62%
     ),
     radial-gradient(
       120% 220% at 12% -40%,
@@ -554,18 +555,19 @@ html[data-hb-theme="light"] {
   border-bottom-color: rgba(167, 139, 250, 0.18);
   background:
     radial-gradient(
-      42% 124% at 0% 50%,
-      rgba(255, 253, 255, 0.82) 0%,
-      rgba(248, 240, 255, 0.46) 18%,
-      rgba(234, 222, 255, 0.2) 36%,
-      transparent 62%
+      46% 128% at 0% 50%,
+      rgba(255, 252, 248, 0.9) 0%,
+      rgba(251, 244, 255, 0.52) 15%,
+      rgba(238, 228, 255, 0.26) 33%,
+      rgba(220, 208, 255, 0.1) 48%,
+      transparent 64%
     ),
     radial-gradient(
-      38% 118% at 100% 50%,
-      rgba(252, 248, 255, 0.56) 0%,
-      rgba(236, 226, 255, 0.28) 18%,
-      rgba(210, 198, 252, 0.1) 38%,
-      transparent 60%
+      42% 122% at 100% 50%,
+      rgba(253, 250, 255, 0.64) 0%,
+      rgba(240, 232, 255, 0.34) 16%,
+      rgba(216, 206, 252, 0.14) 36%,
+      transparent 62%
     ),
     radial-gradient(
       120% 220% at 12% -40%,
