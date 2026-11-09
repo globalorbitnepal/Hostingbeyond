@@ -517,22 +517,22 @@ html[data-hb-theme="light"] {
   z-index: 50;
   min-height: var(--hb-panel-mega-h);
   isolation: isolate;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
   background:
     radial-gradient(
-      46% 128% at 0% 50%,
-      rgba(255, 252, 248, 0.98) 0%,
-      rgba(251, 244, 255, 0.58) 15%,
-      rgba(238, 228, 255, 0.3) 33%,
-      rgba(220, 208, 255, 0.12) 48%,
-      transparent 64%
+      50% 132% at 0% 50%,
+      rgba(255, 251, 246, 1) 0%,
+      rgba(254, 247, 255, 0.68) 14%,
+      rgba(242, 232, 255, 0.36) 32%,
+      rgba(225, 214, 255, 0.14) 50%,
+      transparent 66%
     ),
     radial-gradient(
-      42% 122% at 100% 50%,
-      rgba(253, 250, 255, 0.74) 0%,
-      rgba(240, 232, 255, 0.4) 16%,
-      rgba(216, 206, 252, 0.16) 36%,
-      transparent 62%
+      46% 128% at 100% 50%,
+      rgba(254, 250, 255, 0.86) 0%,
+      rgba(244, 236, 255, 0.48) 15%,
+      rgba(222, 212, 252, 0.2) 34%,
+      transparent 64%
     ),
     radial-gradient(
       120% 220% at 12% -40%,
@@ -545,7 +545,9 @@ html[data-hb-theme="light"] {
       transparent 55%
     ),
     linear-gradient(90deg, #3b0764 0%, #5b21b6 38%, #4338ca 72%, #312e81 100%);
-  box-shadow: 0 18px 50px -28px rgba(46, 16, 101, 0.85);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 20px 48px -26px rgba(46, 16, 101, 0.82);
   color: var(--hb-mega-ink);
 }
 
@@ -592,25 +594,25 @@ html[data-hb-theme="light"] {
 
 .hb-panel-mega__edge--left {
   left: 0;
-  width: min(18rem, 42vw);
+  width: min(20rem, 46vw);
   background: linear-gradient(
     90deg,
-    rgba(255, 252, 248, 0.94) 0%,
-    rgba(252, 244, 255, 0.62) 28%,
-    rgba(243, 236, 255, 0.38) 52%,
-    rgba(232, 224, 255, 0.16) 72%,
+    rgba(255, 251, 246, 0.98) 0%,
+    rgba(255, 247, 254, 0.78) 20%,
+    rgba(248, 240, 255, 0.52) 44%,
+    rgba(236, 226, 255, 0.26) 68%,
     transparent 100%
   );
 }
 
 .hb-panel-mega__edge--right {
   right: 0;
-  width: min(12rem, 24vw);
+  width: min(14rem, 28vw);
   background: linear-gradient(
     270deg,
-    rgba(252, 248, 255, 0.76) 0%,
-    rgba(240, 232, 255, 0.42) 38%,
-    rgba(224, 214, 255, 0.18) 62%,
+    rgba(254, 250, 255, 0.88) 0%,
+    rgba(244, 236, 255, 0.5) 36%,
+    rgba(228, 218, 255, 0.24) 60%,
     transparent 100%
   );
 }
@@ -618,10 +620,10 @@ html[data-hb-theme="light"] {
 .hb-panel[data-theme="dark"] .hb-panel-mega__edge--left {
   background: linear-gradient(
     90deg,
-    rgba(255, 252, 248, 0.82) 0%,
-    rgba(252, 244, 255, 0.52) 28%,
-    rgba(243, 236, 255, 0.3) 52%,
-    rgba(232, 224, 255, 0.12) 72%,
+    rgba(255, 251, 246, 0.88) 0%,
+    rgba(255, 247, 254, 0.62) 20%,
+    rgba(248, 240, 255, 0.4) 44%,
+    rgba(236, 226, 255, 0.18) 68%,
     transparent 100%
   );
 }
@@ -629,9 +631,9 @@ html[data-hb-theme="light"] {
 .hb-panel[data-theme="dark"] .hb-panel-mega__edge--right {
   background: linear-gradient(
     270deg,
-    rgba(252, 248, 255, 0.62) 0%,
-    rgba(240, 232, 255, 0.34) 38%,
-    rgba(224, 214, 255, 0.14) 62%,
+    rgba(254, 250, 255, 0.72) 0%,
+    rgba(244, 236, 255, 0.4) 36%,
+    rgba(228, 218, 255, 0.18) 60%,
     transparent 100%
   );
 }
@@ -641,10 +643,11 @@ html[data-hb-theme="light"] {
   inset: 0;
   z-index: 0;
   background: linear-gradient(
-    105deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.07) 45%,
-    transparent 70%
+    180deg,
+    rgba(255, 255, 255, 0.14) 0%,
+    transparent 38%,
+    transparent 72%,
+    rgba(59, 130, 246, 0.06) 100%
   );
   pointer-events: none;
 }
