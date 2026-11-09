@@ -1,18 +1,24 @@
 import { normalizeDomainSearchInput } from "@/lib/domains/normalize";
-import { searchDomainsWithProvider } from "@/lib/domains/domain-service";
 import { isAvailabilityProviderConfigured } from "@/lib/domains/providers/index";
 import {
   resolveSearchRouteAvailabilityBackend,
   runWithSearchAvailabilityBackend,
 } from "@/lib/domains/search-availability-backend";
-import { routes } from "@/config/routes";
 import { checkTransferEligibility as legacyCheck } from "@/lib/domains/transfer";
 import type { TransferCheckResult } from "@/lib/domains/transfer";
 import {
   buildTransferCheckResult,
   getTransferRetailQuote,
-  transferCheckoutHref,
 } from "@/lib/domains/transfer-quote";
+import { lookupPublicWhois } from "@/lib/domains/public-whois";
+import { checkNameSiloTransferAvailability } from "@/lib/domains/providers/namesilo-registrar";
+import {
+  addYears,
+  buildTransferRequirements,
+  looksUnregistered,
+  transferBlockedSummary,
+  transferRequirementsReady,
+} from "@/lib/domains/transfer-requirements";
 import { prisma } from "@/lib/prisma";
 
 export async function checkTransferEligibilityAsync(
@@ -75,70 +81,73 @@ async function checkTransferEligibilityAsyncScoped(
   }
 
   try {
-    const { results } = await searchDomainsWithProvider([normalized.query]);
-    const row = results[0];
+    /**
+     * Real readiness: NameSilo confirms the domain is registered and
+     * transferable, public RDAP tells us the lock state and live expiry.
+     * Nothing here is guessed from our own catalogue.
+     */
+    const [availability, whois] = await Promise.all([
+      checkNameSiloTransferAvailability(normalized.query),
+      lookupPublicWhois(normalized.query).catch(() => null),
+    ]);
 
-    if (!row) {
+    const whoisRecord = whois && !("error" in whois) ? whois : null;
+
+    const requirements = buildTransferRequirements({
+      registrarAvailable: availability.ok,
+      registrarReason: availability.ok ? undefined : availability.reason,
+      registeredOn: whoisRecord?.registeredOn ?? null,
+      statuses: whoisRecord?.statuses ?? [],
+    });
+
+    const ready = transferRequirementsReady(requirements);
+    const expectedExpiresOn = addYears(whoisRecord?.expiresOn ?? null, 1);
+
+    const supplierTransfer = availability.ok
+      ? availability.supplierTransfer
+      : null;
+    const supplierRenew = availability.ok ? availability.supplierRenew : null;
+
+    if (!availability.ok) {
+      const registerable = looksUnregistered(availability.reason);
       return buildTransferCheckResult({
         domain: normalized.query,
-        status: "invalid",
+        status: registerable ? "available" : "invalid",
         eligible: false,
-        message:
-          "We couldn't verify transfer eligibility right now. Please try again.",
+        message: registerable
+          ? `${normalized.query} is not registered yet, so it cannot be transferred — you can register it instead.`
+          : availability.reason,
         transferPrice: quote.transfer,
         renewPrice: quote.renew,
         purchasable: false,
+        requirements,
+        currentRegistrar: whoisRecord?.registrar ?? null,
+        currentExpiresOn: whoisRecord?.expiresOn ?? null,
+        expectedExpiresOn,
       });
     }
 
-    if (row.status === "available" || row.status === "premium") {
-      return {
-        domain: row.domain,
-        status: "available",
-        eligible: false,
-        transferEligibilityConfirmed: false,
-        transferPrice: quote.transfer,
-        renewPrice: quote.renew,
-        message: `${row.domain} looks available to register — transfer is for domains you already own elsewhere.`,
-        checkoutHref: `${routes.domainCheckout}?domain=${encodeURIComponent(row.domain)}`,
-      };
-    }
-
-    if (row.status === "invalid") {
-      return buildTransferCheckResult({
-        domain: row.domain,
-        status: "invalid",
-        eligible: false,
-        message: row.message ?? "Enter a valid domain name.",
-        transferPrice: quote.transfer,
-        renewPrice: quote.renew,
-        purchasable: false,
-      });
-    }
-
-    if (row.status === "unknown") {
-      return buildTransferCheckResult({
-        domain: row.domain,
-        status: "invalid",
-        eligible: false,
-        message:
-          "We could not confirm registry status. Try again in a moment — we will not guess transfer eligibility.",
-        transferPrice: quote.transfer,
-        renewPrice: quote.renew,
-        purchasable: false,
-      });
-    }
+    const blocked = transferBlockedSummary(requirements);
+    const message = ready
+      ? `${availability.domain || normalized.query} passed our live registrar checks. Pay the transfer fee and we submit the move to the registry.`
+      : `${availability.domain || normalized.query} cannot be transferred yet: ${blocked.join("; ")}.`;
 
     return buildTransferCheckResult({
-      domain: row.domain,
-      status: "eligible",
-      eligible: true,
+      domain: availability.domain || normalized.query,
+      status: ready ? "eligible" : "invalid",
+      eligible: ready,
       transferPrice: quote.transfer,
       renewPrice: quote.renew,
-      purchasable: true,
-      registryCheckOnly: true,
-      transferEligibilityConfirmed: false,
-      message: `${row.domain} appears registered in our availability check — not a guarantee the registry will accept a transfer. Unlock the domain at your current registrar and enter your auth (EPP) code at checkout. Transfer fee is shown before you pay.`,
+      purchasable: ready,
+      registryCheckOnly: false,
+      transferEligibilityConfirmed: availability.ok && ready,
+      message,
+      requirements,
+      currentRegistrar: whoisRecord?.registrar ?? null,
+      currentExpiresOn: whoisRecord?.expiresOn ?? null,
+      expectedExpiresOn,
+      supplierTransfer,
+      supplierRenew,
     });
   } catch {
     return buildTransferCheckResult({

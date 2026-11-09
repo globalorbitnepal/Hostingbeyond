@@ -2,6 +2,7 @@ import { checkDomain } from "@/lib/domains/availability";
 import { transferCheckoutHref } from "@/lib/domains/transfer-quote";
 import { formatPrice } from "@/lib/domains/tlds";
 import { routes } from "@/config/routes";
+import type { TransferRequirement } from "@/lib/domains/transfer-requirements";
 
 export type TransferEligibilityStatus =
   "eligible" | "available" | "invalid" | "unsupported";
@@ -22,6 +23,17 @@ export type TransferCheckResult = {
   renewPrice: number | null;
   message: string;
   checkoutHref: string;
+  /** Live readiness checklist (registrar + public registry facts). */
+  requirements?: TransferRequirement[];
+  /** Current registrar holding the name, from public RDAP. */
+  currentRegistrar?: string | null;
+  /** Public registry expiry before the transfer. */
+  currentExpiresOn?: string | null;
+  /** Expiry the customer gets after a successful one-year transfer. */
+  expectedExpiresOn?: string | null;
+  /** NameSilo supplier quotes for internal reconciliation (never shown raw). */
+  supplierTransfer?: number | null;
+  supplierRenew?: number | null;
 };
 
 /**

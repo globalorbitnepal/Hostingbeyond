@@ -41,6 +41,35 @@ function billableBlocked(): void {
   );
 }
 
+/**
+ * Live transfer availability + supplier price. Read-only, so it works even when
+ * billable operations are still disabled — the customer must see real
+ * requirements before paying anything.
+ */
+export async function checkNameSiloTransferAvailability(
+  domain: string,
+): Promise<
+  import("@/lib/domains/transfer-requirements").NameSiloTransferAvailability
+> {
+  const { parseNameSiloTransferAvailability } =
+    await import("@/lib/domains/transfer-requirements");
+  try {
+    const reply = await namesiloRequest("checkTransferAvailability", {
+      domains: domain.trim().toLowerCase(),
+    });
+    return parseNameSiloTransferAvailability(reply, domain);
+  } catch (error) {
+    return {
+      ok: false,
+      domain: domain.trim().toLowerCase(),
+      reason:
+        error instanceof DomainProviderError && error.code === "timeout"
+          ? "The registrar timed out. Try the check again."
+          : "The registrar could not confirm this domain right now.",
+    };
+  }
+}
+
 async function namesiloRequest(
   operation: string,
   params: Record<string, string>,

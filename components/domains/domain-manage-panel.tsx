@@ -272,10 +272,12 @@ export function DomainManagePanel({
   const usesHostingBeyondNs = detail.nameservers.some(
     (ns) => /dnsowl\.com$/i.test(ns) || /hostingbeyond\.com$/i.test(ns),
   );
-  const recommendedNameservers =
-    detail.defaultNameservers?.length === 2
-      ? detail.defaultNameservers
-      : ["ns1.dnsowl.com", "ns2.dnsowl.com", "ns3.dnsowl.com"];
+  const deadNameservers = detail.nameservers.filter((ns) =>
+    /^ns[12]\.hostingbeyond\.com$/i.test(ns),
+  );
+  const recommendedNameservers = detail.defaultNameservers?.length
+    ? detail.defaultNameservers
+    : ["ns1.dnsowl.com", "ns2.dnsowl.com", "ns3.dnsowl.com"];
 
   return (
     <div className="space-y-5">
@@ -336,6 +338,30 @@ export function DomainManagePanel({
             <div className="mt-2">
               <DomainRenewButton domain={detail.domain} />
             </div>
+          </div>
+        </div>
+      ) : null}
+
+      {deadNameservers.length > 0 ? (
+        <div className="hb-panel-card flex items-start gap-3 border-[var(--hb-p-danger)]/40 p-4">
+          <AlertTriangle className="mt-0.5 size-4 shrink-0 text-[var(--hb-p-danger)]" />
+          <div className="min-w-0 text-sm">
+            <p className="hb-text font-bold">
+              This domain points at name servers that do not exist
+            </p>
+            <p className="hb-muted mt-1">
+              {deadNameservers.join(", ")} do not resolve, so the domain cannot
+              load anywhere. Set working name servers and the site will start
+              answering after propagation.
+            </p>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void applyNameservers(recommendedNameservers)}
+              className="hb-btn hb-btn-primary hb-btn-sm mt-2"
+            >
+              Fix name servers
+            </button>
           </div>
         </div>
       ) : null}

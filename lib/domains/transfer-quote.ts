@@ -1,4 +1,5 @@
 import { routes } from "@/config/routes";
+import type { TransferRequirement } from "@/lib/domains/transfer-requirements";
 import { getRetailQuoteForTld } from "@/lib/domains/pricing-engine";
 import type { TransferCheckResult } from "@/lib/domains/transfer";
 
@@ -28,6 +29,12 @@ export function buildTransferCheckResult(input: {
   purchasable: boolean;
   transferEligibilityConfirmed?: boolean;
   registryCheckOnly?: boolean;
+  requirements?: TransferRequirement[];
+  currentRegistrar?: string | null;
+  currentExpiresOn?: string | null;
+  expectedExpiresOn?: string | null;
+  supplierTransfer?: number | null;
+  supplierRenew?: number | null;
 }): TransferCheckResult {
   return {
     domain: input.domain,
@@ -39,5 +46,11 @@ export function buildTransferCheckResult(input: {
     renewPrice: input.renewPrice,
     message: input.message,
     checkoutHref: transferCheckoutHref(input.domain),
+    requirements: input.requirements,
+    currentRegistrar: input.currentRegistrar ?? null,
+    currentExpiresOn: input.currentExpiresOn ?? null,
+    expectedExpiresOn: input.expectedExpiresOn ?? null,
+    supplierTransfer: input.supplierTransfer ?? null,
+    supplierRenew: input.supplierRenew ?? null,
   };
 }

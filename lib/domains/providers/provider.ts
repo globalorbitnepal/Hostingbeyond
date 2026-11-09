@@ -18,8 +18,8 @@ export type ProviderDomainDetails = {
   expiresAt: string | null;
   nameservers: string[];
   transferLock: boolean;
-  /** Registrar WHOIS privacy (NameSilo includes this free on eligible TLDs). */
-  privacyEnabled?: boolean;
+  /** Registrar WHOIS privacy (free at NameSilo, included at DNA). */
+  privacyEnabled?: boolean | null;
 };
 
 export type ProviderRegisterInput = {

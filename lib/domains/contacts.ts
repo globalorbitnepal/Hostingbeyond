@@ -35,16 +35,26 @@ export function defaultRegistrationContacts() {
 /**
  * Nameservers used for new registrations.
  *
- * These MUST resolve publicly. The old `ns1.hostingbeyond.com` defaults did not
- * exist in DNS, so new domains were registered but never resolved. NameSilo's
- * dnsowl nameservers are live and keep registrar DNS editing working.
- * Override with DOMAIN_DEFAULT_NAMESERVERS once real HostingBeyond NS exist.
+ * Leave this unset unless `DOMAIN_DEFAULT_NAMESERVERS` points at nameservers
+ * that actually resolve. Hardcoding `ns1.hostingbeyond.com` registered domains
+ * that could never resolve, because those hosts do not exist in DNS.
+ *
+ * With no override the registrar applies its own working defaults, and the
+ * panel can then delegate to hosted DNS explicitly.
  */
 export function defaultNameservers(): string[] {
   const raw = process.env.DOMAIN_DEFAULT_NAMESERVERS?.trim();
-  if (raw) {
-    const parsed = raw.split(/[\s,]+/).filter(Boolean);
-    if (parsed.length) return parsed;
-  }
-  return ["ns1.dnsowl.com", "ns2.dnsowl.com", "ns3.dnsowl.com"];
+  if (!raw) return [];
+  return raw.split(/[\s,]+/).filter(Boolean);
+}
+
+/** Legacy rows may still hold the dead hosts; surface them as broken. */
+export const DEAD_LEGACY_NAMESERVERS = [
+  "ns1.hostingbeyond.com",
+  "ns2.hostingbeyond.com",
+] as const;
+
+export function isDeadLegacyNameserver(host: string): boolean {
+  const key = host.trim().toLowerCase().replace(/\.$/, "");
+  return DEAD_LEGACY_NAMESERVERS.some((dead) => dead === key);
 }

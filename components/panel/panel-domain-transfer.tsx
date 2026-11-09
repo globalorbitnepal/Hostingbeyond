@@ -4,6 +4,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
+  AlertTriangle,
   ArrowRight,
   CalendarClock,
   CheckCircle2,
@@ -24,6 +25,7 @@ import { routes } from "@/config/routes";
 import type { TransferCheckResult } from "@/lib/domains/transfer";
 import type { LiveDomainTld } from "@/lib/panel/featured-domain-tld-types";
 import { formatMoney } from "@/lib/panel/format-money";
+import { cn } from "@/lib/utils";
 
 type WalletSnapshot = { balance: number; currency: string };
 
@@ -305,6 +307,92 @@ export function PanelDomainTransfer({
             </>
           ) : null}
         </p>
+      ) : null}
+
+      {result && result.requirements?.length ? (
+        <section className="hb-panel-card space-y-4 p-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[11px] font-bold tracking-[0.16em] text-[var(--hb-p-muted)] uppercase">
+                Live registrar check
+              </p>
+              <h2 className="font-heading mt-1 text-xl font-bold">
+                {result.domain}
+              </h2>
+              <p className="mt-1 text-sm text-[var(--hb-p-muted)]">
+                {result.currentRegistrar
+                  ? `Currently at ${result.currentRegistrar}`
+                  : "Verified with the registry"}
+                {result.currentExpiresOn
+                  ? ` · expires ${result.currentExpiresOn}`
+                  : ""}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="font-heading text-2xl font-extrabold">
+                <CatalogPrice usd={result.transferPrice ?? 0} />
+              </p>
+              <span
+                className={cn(
+                  "mt-1 inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold",
+                  result.eligible
+                    ? "bg-[var(--hb-p-ok-bg)] text-[var(--hb-p-ok)]"
+                    : "bg-[var(--hb-p-warn-bg)] text-[var(--hb-p-warn)]",
+                )}
+              >
+                {result.eligible ? "Ready to transfer" : "Requirements not met"}
+              </span>
+            </div>
+          </div>
+
+          <ul className="space-y-2">
+            {result.requirements.map((req) => (
+              <li key={req.id} className="flex items-start gap-3">
+                {req.state === "pass" ? (
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--hb-p-ok)]" />
+                ) : req.state === "fail" ? (
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[var(--hb-p-danger)]" />
+                ) : (
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[var(--hb-p-warn)]" />
+                )}
+                <span className="min-w-0 text-sm">
+                  <span className="font-semibold">{req.label}</span>
+                  <span className="mt-0.5 block text-xs text-[var(--hb-p-muted)]">
+                    {req.detail}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+
+          {result.expectedExpiresOn ? (
+            <p className="rounded-2xl bg-[var(--hb-p-primary)]/6 px-4 py-3 text-xs text-[var(--hb-p-muted)]">
+              The price includes one year at the registry. After a successful
+              transfer your domain expires on{" "}
+              <strong className="hb-text">{result.expectedExpiresOn}</strong>.
+            </p>
+          ) : null}
+
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              className="hb-btn hb-btn-ghost hb-btn-sm"
+              disabled={busy}
+              onClick={() => void runCheck(result.domain)}
+            >
+              {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+              Check again
+            </button>
+            <Link
+              href={`https://www.whois.com/whois/${encodeURIComponent(result.domain)}`}
+              target="_blank"
+              rel="noreferrer"
+              className="hb-btn hb-btn-ghost hb-btn-sm"
+            >
+              Public WHOIS
+            </Link>
+          </div>
+        </section>
       ) : null}
 
       {result?.eligible && due != null ? (

@@ -12,12 +12,18 @@ import {
 } from "@/lib/domains/providers/types";
 import type {
   DomainRegistrarProvider,
+  ProviderDnsRecord,
   ProviderDomainDetails,
   ProviderRegisterInput,
   ProviderRegisterResult,
   ProviderTldPricing,
   ProviderTransferResult,
 } from "@/lib/domains/providers/provider";
+import type { ValidatedDnsRecord } from "@/lib/domains/providers/namesilo-dns";
+import {
+  dnaZonePayload,
+  parseDnaZoneRecords,
+} from "@/lib/domains/providers/dna-zones";
 import { defaultRegistrationContacts } from "@/lib/domains/contacts";
 import {
   createTldCataloguePageFetcher,
@@ -318,6 +324,18 @@ export function createDomainNameApiProvider(
   config: DomainNameApiConfig,
   fetchImpl: FetchLike = fetch,
 ): DomainRegistrarProvider {
+  async function listZones(domain: string): Promise<ProviderDnsRecord[]> {
+    const response = (await apiRequestWithTimeout(
+      config,
+      fetchImpl,
+      "GET",
+      "domains/zones",
+      { domainName: domain.toLowerCase() },
+      REQUEST_TIMEOUT_MS,
+    )) as unknown;
+    return parseDnaZoneRecords(response, domain);
+  }
+
   return {
     id: "domain-name-api",
 
@@ -523,9 +541,14 @@ export function createDomainNameApiProvider(
       const payload = {
         domainName: domain,
         period: input.periodYears,
-        nameServers: input.nameservers?.length
-          ? input.nameservers
-          : ["ns1.hostingbeyond.com", "ns2.hostingbeyond.com"],
+        /**
+         * Only send name servers we are sure resolve. An empty list lets the
+         * registrar apply its own working defaults instead of delegating to
+         * hosts that do not exist.
+         */
+        ...(input.nameservers?.length
+          ? { nameServers: input.nameservers }
+          : {}),
         contacts: buildContactPayload(input.contacts),
         tldAttributes: {} as Record<string, string>,
       };
@@ -642,12 +665,14 @@ export function createDomainNameApiProvider(
         fetchImpl,
         "GET",
         "domains/info",
-        { DomainName: domain.toLowerCase() },
+        { domainName: domain.toLowerCase() },
         REQUEST_TIMEOUT_MS,
       )) as Record<string, unknown>;
       const ns = Array.isArray(response.nameServers)
         ? (response.nameServers as string[])
-        : [];
+        : Array.isArray(response.nameservers)
+          ? (response.nameservers as string[])
+          : [];
       return {
         domain: String(response.domainName ?? domain),
         status: String(response.status ?? response.statusCode ?? "unknown"),
@@ -656,6 +681,10 @@ export function createDomainNameApiProvider(
           : null,
         nameservers: ns,
         transferLock: Boolean(response.lockStatus ?? response.isLocked),
+        privacyEnabled:
+          typeof response.privacyProtectionStatus === "boolean"
+            ? response.privacyProtectionStatus
+            : null,
       };
     },
 
@@ -663,11 +692,16 @@ export function createDomainNameApiProvider(
       domain: string,
       nameservers: string[],
     ): Promise<void> {
+      /**
+       * DNA's registry-level delegation endpoint. The older
+       * `domains/nameservers` path returns an empty body and changes nothing,
+       * which silently left customers on the wrong DNS.
+       */
       await apiRequestWithTimeout(
         config,
         fetchImpl,
         "PUT",
-        "domains/nameservers",
+        "domains/dns/name-server",
         { domainName: domain.toLowerCase(), nameServers: nameservers },
         REQUEST_TIMEOUT_MS,
       );
@@ -733,6 +767,86 @@ export function createDomainNameApiProvider(
     async getDomainStatus(domain: string): Promise<string> {
       const details = await this.getDomainDetails(domain);
       return details.status;
+    },
+
+    /**
+     * DNA hosts the zone when the domain is delegated to its nameservers.
+     * `[]` is not an error — it means no record set exists yet.
+     */
+    supportsDnsEditing() {
+      return true;
+    },
+
+    async listDnsRecords(domain: string): Promise<ProviderDnsRecord[]> {
+      return listZones(domain);
+    },
+
+    async addDnsRecord(domain: string, record: ValidatedDnsRecord) {
+      await apiRequestWithTimeout(
+        config,
+        fetchImpl,
+        "POST",
+        "domains/zones",
+        dnaZonePayload(domain, record),
+        REQUEST_TIMEOUT_MS,
+      );
+      const rows = await listZones(domain);
+      return (
+        rows.find(
+          (row) =>
+            row.type === record.type &&
+            row.host === record.host.toLowerCase() &&
+            row.value === record.value,
+        ) ?? {
+          recordId: `${record.type}:${record.host.toLowerCase()}`,
+          type: record.type,
+          host: record.host.toLowerCase(),
+          value: record.value,
+          ttl: record.ttl,
+          distance: record.distance ?? 0,
+        }
+      );
+    },
+
+    async updateDnsRecord(
+      domain: string,
+      record: ValidatedDnsRecord & { recordId: string },
+    ) {
+      /** DNA replaces whole record sets, so a new value replaces the old one. */
+      await apiRequestWithTimeout(
+        config,
+        fetchImpl,
+        "PUT",
+        "domains/zones",
+        dnaZonePayload(domain, record),
+        REQUEST_TIMEOUT_MS,
+      );
+    },
+
+    async deleteDnsRecord(domain: string, recordId: string) {
+      const [type, host] = recordId.split(":");
+      if (!type || !host) {
+        throw new DomainProviderError("provider_failure", "invalid_record_id");
+      }
+      const existing = await listZones(domain);
+      const match = existing.find(
+        (row) => row.type === type && row.host === host,
+      );
+      if (!match) return;
+      await apiRequestWithTimeout(
+        config,
+        fetchImpl,
+        "DELETE",
+        "domains/zones",
+        dnaZonePayload(domain, {
+          type: match.type,
+          host: match.host,
+          value: match.value,
+          ttl: match.ttl,
+          distance: match.distance,
+        }),
+        REQUEST_TIMEOUT_MS,
+      );
     },
   };
 }

@@ -28,6 +28,13 @@ import {
 } from "@/lib/domains/transfer-inflight";
 import { resolveTransferProviderAction } from "@/lib/domains/transfer-provider-outcome";
 import { internalTransferErrorNote } from "@/lib/domains/transfer-security";
+import { checkNameSiloTransferAvailability } from "@/lib/domains/providers/namesilo-registrar";
+import { lookupPublicWhois } from "@/lib/domains/public-whois";
+import {
+  buildTransferRequirements,
+  transferBlockedSummary,
+  transferRequirementsReady,
+} from "@/lib/domains/transfer-requirements";
 import { prisma } from "@/lib/prisma";
 
 /** Registry shows the name is active here — not inferred from HTTP success alone. */
@@ -111,6 +118,36 @@ export async function processDomainTransferCheckout(
         row.message ??
         "We could not confirm transfer eligibility. Please try again.",
       status: 400,
+    };
+  }
+
+  /**
+   * Server-side readiness gate: never charge the wallet for a domain the
+   * registry will reject (locked, too new, or not registered at all).
+   */
+  const [transferAvailability, transferWhois] = await Promise.all([
+    checkNameSiloTransferAvailability(normalized.query),
+    lookupPublicWhois(normalized.query).catch(() => null),
+  ]);
+  if (!transferAvailability.ok) {
+    return {
+      ok: false as const,
+      error: transferAvailability.reason,
+      status: 409,
+    };
+  }
+  const transferWhoisRecord =
+    transferWhois && !("error" in transferWhois) ? transferWhois : null;
+  const transferRequirements = buildTransferRequirements({
+    registrarAvailable: true,
+    registeredOn: transferWhoisRecord?.registeredOn ?? null,
+    statuses: transferWhoisRecord?.statuses ?? [],
+  });
+  if (!transferRequirementsReady(transferRequirements)) {
+    return {
+      ok: false as const,
+      error: `This domain cannot be transferred yet: ${transferBlockedSummary(transferRequirements).join("; ")}.`,
+      status: 409,
     };
   }
 
