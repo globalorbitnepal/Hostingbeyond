@@ -59,7 +59,11 @@ export function AccountSecurityPanel({ email, hasPassword }: Props) {
   }
 
   return (
-    <form className="mt-6 space-y-5" onSubmit={(e) => void onSubmit(e)}>
+    <form
+      id="password"
+      className="mt-6 scroll-mt-28 space-y-5"
+      onSubmit={(e) => void onSubmit(e)}
+    >
       <div className="hb-soft flex items-start gap-3 px-4 py-3">
         <KeyRound className="mt-0.5 size-5 shrink-0 text-[var(--hb-p-primary)]" />
         <div className="hb-muted min-w-0 text-sm leading-relaxed">
