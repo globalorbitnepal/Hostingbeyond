@@ -1,3 +1,4 @@
+import { isEnvStrictTrue } from "@/lib/integrations/env-flags";
 import { resolveLifecycleProvider } from "@/lib/domains/providers/index";
 import { getNameSiloLifecycleProvider } from "@/lib/domains/providers/namesilo-registrar";
 import type { DomainRegistrarProvider } from "@/lib/domains/providers/provider";
@@ -12,6 +13,37 @@ function providerById(id: RegistrarProviderId): DomainRegistrarProvider | null {
     return getNameSiloLifecycleProvider();
   }
   return resolveLifecycleProvider();
+}
+
+function namesiloBillableReady(): boolean {
+  return (
+    isEnvStrictTrue(process.env.NAMESILO_LIFECYCLE_ENABLED) &&
+    isEnvStrictTrue(process.env.NAMESILO_ALLOW_BILLABLE)
+  );
+}
+
+function dnaOrBlock(blockReason: string): {
+  provider: DomainRegistrarProvider | null;
+  blockReason?: string;
+} {
+  const dna = resolveLifecycleProvider();
+  return dna ? { provider: dna } : { provider: null, blockReason };
+}
+
+function namesiloOrDnaFallback(row: {
+  namesiloPriceStatus: string | null;
+  namesiloRegister: unknown;
+}): { provider: DomainRegistrarProvider | null; blockReason?: string } {
+  if (!namesiloBillableReady()) {
+    return dnaOrBlock("namesilo_lifecycle_not_enabled");
+  }
+  if (row.namesiloPriceStatus !== "verified" || row.namesiloRegister == null) {
+    return dnaOrBlock("namesilo_cost_unverified");
+  }
+  const ns = getNameSiloLifecycleProvider();
+  return ns
+    ? { provider: ns }
+    : { provider: null, blockReason: "namesilo_unavailable" };
 }
 
 /**
@@ -47,52 +79,19 @@ export async function resolveLifecycleProviderForNewRegistration(
   const namesiloKey = Boolean(process.env.NAMESILO_API_KEY?.trim());
   const explicitDna = configured === DEFAULT_LEGACY_PROVIDER;
   if (namesiloKey && !explicitDna) {
-    if (process.env.NAMESILO_LIFECYCLE_ENABLED !== "true") {
-      return {
-        provider: null,
-        blockReason: "namesilo_lifecycle_not_enabled",
-      };
-    }
-    if (
-      row?.namesiloPriceStatus !== "verified" ||
-      row.namesiloRegister == null
-    ) {
-      return {
-        provider: null,
-        blockReason: "namesilo_cost_unverified",
-      };
-    }
-    const ns = getNameSiloLifecycleProvider();
-    return ns
-      ? { provider: ns }
-      : { provider: null, blockReason: "namesilo_unavailable" };
+    return namesiloOrDnaFallback({
+      namesiloPriceStatus: row?.namesiloPriceStatus ?? null,
+      namesiloRegister: row?.namesiloRegister,
+    });
   }
   if (!configured || explicitDna) {
-    const dna = resolveLifecycleProvider();
-    return dna
-      ? { provider: dna }
-      : { provider: null, blockReason: "dna_unavailable" };
+    return dnaOrBlock("dna_unavailable");
   }
   if (configured === "namesilo") {
-    if (process.env.NAMESILO_LIFECYCLE_ENABLED !== "true") {
-      return {
-        provider: null,
-        blockReason: "namesilo_lifecycle_not_enabled",
-      };
-    }
-    if (
-      row?.namesiloPriceStatus !== "verified" ||
-      row.namesiloRegister == null
-    ) {
-      return {
-        provider: null,
-        blockReason: "namesilo_cost_unverified",
-      };
-    }
-    const ns = getNameSiloLifecycleProvider();
-    return ns
-      ? { provider: ns }
-      : { provider: null, blockReason: "namesilo_unavailable" };
+    return namesiloOrDnaFallback({
+      namesiloPriceStatus: row?.namesiloPriceStatus ?? null,
+      namesiloRegister: row?.namesiloRegister,
+    });
   }
   return { provider: null, blockReason: "unknown_lifecycle_provider" };
 }

@@ -315,6 +315,8 @@ export async function processDomainTransferCheckout(
 
     return { ok: true as const, transfer: submitted };
   } catch (error) {
+    const insufficient =
+      error instanceof Error && error.message === "insufficient_funds";
     if (reserveTxId) {
       await rollbackReserve({
         userId: input.userId,
@@ -328,11 +330,18 @@ export async function processDomainTransferCheckout(
       data: {
         status: "FAILED",
         errorMessageInternal: internalTransferErrorNote(
-          error instanceof Error ? error.name : null,
-          "transfer_checkout_failed",
+          error instanceof Error ? error.message : null,
+          insufficient ? "insufficient_funds" : "transfer_checkout_failed",
         ),
       },
     });
+    if (insufficient) {
+      return {
+        ok: false as const,
+        error: "Wallet balance is too low. Top up, then transfer again.",
+        status: 402,
+      };
+    }
     await notifyTransferFailed({
       email: input.userEmail,
       domain: normalized.query,

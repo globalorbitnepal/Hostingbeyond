@@ -17,6 +17,7 @@ import type {
   ProviderTransferResult,
 } from "@/lib/domains/providers/provider";
 import { ProviderMethodNotImplementedError } from "@/lib/domains/providers/provider";
+import { mapNameSiloTransferReply } from "@/lib/domains/providers/namesilo-transfer-parse";
 
 const API_BASE =
   process.env.NAMESILO_API_URL?.trim()?.replace(/\/$/, "") ||
@@ -134,17 +135,59 @@ function buildProvider(): DomainRegistrarProvider {
       return { expiresAt: null };
     },
 
-    async transferDomain(_input: {
+    async transferDomain(input: {
       domain: string;
       authCode: string;
       periodYears?: number;
     }): Promise<ProviderTransferResult> {
-      billableBlocked();
-      return {
-        outcome: "failed",
-        domain: _input.domain,
-        errorCode: "namesilo_billable_operations_disabled",
-      };
+      const domain = input.domain.trim().toLowerCase();
+      try {
+        assertNameSiloLifecycleEnabled();
+        billableBlocked();
+      } catch (error) {
+        const code =
+          error instanceof DomainProviderError
+            ? error.message
+            : "namesilo_billable_operations_disabled";
+        return {
+          outcome: "failed",
+          domain,
+          errorCode: code,
+          errorMessageInternal: code,
+        };
+      }
+
+      try {
+        const years =
+          input.periodYears != null && Number.isFinite(input.periodYears)
+            ? Math.min(Math.max(Math.trunc(input.periodYears), 1), 10)
+            : 1;
+        const reply = await namesiloRequest("transferDomain", {
+          domain,
+          auth: input.authCode.trim(),
+          years: String(years),
+        });
+        return mapNameSiloTransferReply(domain, reply);
+      } catch (error) {
+        if (error instanceof DomainProviderError && error.code === "timeout") {
+          return {
+            outcome: "unknown",
+            domain,
+            errorCode: "timeout",
+            errorMessageInternal: "Transfer request timed out",
+          };
+        }
+        const code =
+          error instanceof DomainProviderError
+            ? error.message || error.code
+            : "provider_failure";
+        return {
+          outcome: "failed",
+          domain,
+          errorCode: code,
+          errorMessageInternal: code,
+        };
+      }
     },
 
     async getDomainDetails(domain: string): Promise<ProviderDomainDetails> {
