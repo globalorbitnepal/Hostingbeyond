@@ -138,7 +138,7 @@ export function PanelSidebar({
       <aside
         className={cn(
           "hb-panel-sidebar hb-panel-sidebar--dock z-50 flex shrink-0 flex-col transition-[width,transform] duration-200",
-          "fixed left-0 lg:sticky lg:top-0 lg:max-h-full lg:self-stretch",
+          "fixed left-0 lg:relative lg:h-full lg:max-h-full lg:self-stretch",
           collapsed
             ? "w-[var(--hb-p-sidebar-collapsed)]"
             : "w-[var(--hb-p-sidebar-w)]",

@@ -75,7 +75,7 @@ export function PanelAccountChrome({
         onThemeChange={applyTheme}
         onOpenMobileNav={() => setMobileOpen(true)}
       />
-      <div className="flex min-h-0 flex-1">
+      <div className="hb-panel__shell flex min-h-0 flex-1">
         <PanelSidebar
           pathname={pathname}
           collapsed={collapsed}
@@ -84,7 +84,7 @@ export function PanelAccountChrome({
           onCloseMobile={() => setMobileOpen(false)}
         />
         <div className="hb-panel__main flex min-h-0 min-w-0 flex-1 flex-col">
-          <main className="flex-1 overflow-y-auto px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+          <main className="hb-panel__scroll flex-1 overflow-y-auto px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
             {children}
           </main>
           <div className="hb-ds-ask-dock">

@@ -39,7 +39,7 @@
 
   --hb-p-sidebar-w: 17.5rem;
   --hb-p-sidebar-collapsed: 4.5rem;
-  --hb-panel-mega-h: 3.75rem;
+  --hb-panel-mega-h: 4rem;
 
   min-height: 100dvh;
   color: var(--hb-p-text);
@@ -119,10 +119,29 @@ html[data-hb-theme="light"] {
   color-scheme: light;
 }
 
+.hb-panel.hb-panel--ultra {
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+
+.hb-panel__shell {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .hb-panel__main {
   flex: 1;
   min-width: 0;
+  min-height: 0;
   padding-bottom: 5.5rem;
+}
+
+.hb-panel__scroll {
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ------------------------------------------------------------------ */
@@ -518,9 +537,9 @@ html[data-hb-theme="light"] {
   --hb-mega-ink-soft: rgba(255, 255, 255, 0.86);
   --hb-mega-ink-muted: rgba(255, 255, 255, 0.72);
 
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 50;
+  flex-shrink: 0;
   min-height: var(--hb-panel-mega-h);
   isolation: isolate;
   border-bottom: 1px solid rgba(255, 255, 255, 0.16);
@@ -1055,12 +1074,15 @@ html[data-hb-theme="light"] {
 .hb-panel-sidebar--dock {
   top: var(--hb-panel-mega-h);
   height: calc(100dvh - var(--hb-panel-mega-h));
+  max-height: calc(100dvh - var(--hb-panel-mega-h));
 }
 
 @media (min-width: 1024px) {
   .hb-panel-sidebar--dock {
+    position: relative;
     top: auto;
-    height: auto;
+    height: 100%;
+    max-height: 100%;
     min-height: 0;
   }
 }
