@@ -39,7 +39,7 @@ describe("premium-cart-intent", () => {
       {
         kind: "hosting" as const,
         productSlug: "web-hosting",
-        planKey: "essential",
+        planKey: "starter",
         billing: "monthly" as const,
       },
     ];
@@ -71,7 +71,7 @@ describe("premium-cart-intent", () => {
       {
         kind: "hosting",
         productSlug: "web-hosting",
-        planKey: "essential",
+        planKey: "starter",
         billing: "monthly",
       },
       { kind: "business-email", planId: "starter", term: "monthly" },
@@ -81,7 +81,7 @@ describe("premium-cart-intent", () => {
     });
     assert.equal(
       href,
-      "/checkout/hosting?product=web-hosting&plan=essential&billing=monthly&step=addons",
+      "/checkout/hosting?product=web-hosting&plan=starter&billing=monthly&step=addons",
     );
     const stored = JSON.parse(
       sessionStorage.getItem(HOSTING_CART_STORAGE_KEY) ?? "{}",

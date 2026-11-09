@@ -246,7 +246,7 @@ export function defaultEmailCartConfiguration(intent: {
     hostingAddon: {
       enabled: false,
       productSlug: "web-hosting",
-      planKey: "essential",
+      planKey: "starter",
       billing: "monthly",
     },
   };

@@ -13,7 +13,7 @@ import { prisma } from "@/lib/prisma";
 
 const SEED_CART = {
   productSlug: "web-hosting",
-  planKey: "essential",
+  planKey: "starter",
   billingPeriod: "monthly" as const,
 };
 

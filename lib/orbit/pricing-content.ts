@@ -5,11 +5,12 @@ import {
   vpsPlans,
 } from "@/config/pricing-plans";
 import { routes } from "@/config/routes";
-import { hostingCheckoutHref } from "@/lib/hosting/checkout";
 import {
   attachControlledCatalogUsd,
   catalogUsdAfterCmsMerge,
 } from "@/lib/hosting/hosting-plan-catalog";
+import { catalogForSlug } from "@/lib/hosting/international-launch-catalog";
+import { internationalLaunchPlanToCms } from "@/lib/hosting/launch-plan-to-cms";
 
 import type { CmsFaqItem, CmsHostingPlan } from "./defaults";
 
@@ -110,7 +111,7 @@ const websiteFaqs = faqBlock("websites", [
   ],
   [
     "Can I host multiple websites on one plan?",
-    "Yes. Beyond Essential supports one site; Plus supports five; Pro and Ultimate support unlimited websites on a single account with isolated domains and SSL.",
+    "Yes. Starter supports one site; Business supports ten; Professional supports up to twenty-five websites on a single account with isolated domains and SSL.",
   ],
   [
     "Is WordPress included?",
@@ -781,151 +782,17 @@ function defaultCategories(): CmsPricingCategoryContent[] {
   }));
 }
 
-/** Ecommerce tiers modeled on Hostinger ecommerce promos at ~5% lower list prices. */
+/** Ecommerce tiers — international launch catalog (USD, 20% annual). */
 export function defaultEcommercePlans(): CmsHostingPlan[] {
-  const plans: CmsHostingPlan[] = [
-    {
-      id: "commerce-essential",
-      visible: true,
-      order: 0,
-      name: "Commerce Essential",
-      tagline: "Launch your first WooCommerce store.",
-      discountBadge: "5% BELOW MARKET",
-      popular: false,
-      popularLabel: "",
-      accent: "blue",
-      priceAnnually: "$3.79",
-      originalAnnually: "$7.99",
-      billedAnnually: "Billed $45.48 annually",
-      saveAnnually: "Save $50.40",
-      priceMonthly: "$7.99",
-      originalMonthly: "",
-      billedMonthly: "Billed monthly",
-      saveMonthly: "",
-      domainPerk: "Domain — free for 1 year",
-      annualCredit: "$3 Beyond AI Credit",
-      features: [
-        "1 Online store",
-        "100 products",
-        "WooCommerce optimized",
-        "Free SSL for checkout",
-        "10 GB NVMe storage",
-        "2 GB RAM",
-        "5 mailboxes",
-        "Weekly backups",
-        "24/7 support",
-      ],
-      ctaLabel: "Start store",
-      ctaHref: hostingCheckoutHref(
-        "ecommerce-hosting",
-        "essential",
-        "annually",
-      ),
-    },
-    {
-      id: "commerce-plus",
-      visible: true,
-      order: 1,
-      name: "Commerce Plus",
-      tagline: "Growing catalogs & paid campaigns.",
-      discountBadge: "5% BELOW MARKET",
-      popular: false,
-      popularLabel: "",
-      accent: "blue",
-      priceAnnually: "$6.64",
-      originalAnnually: "$13.99",
-      billedAnnually: "Billed $79.68 annually",
-      saveAnnually: "Save $88.20",
-      priceMonthly: "$13.99",
-      originalMonthly: "",
-      billedMonthly: "Billed monthly",
-      saveMonthly: "",
-      domainPerk: "Domain — free for 1 year",
-      annualCredit: "$5 Beyond AI Credit",
-      features: [
-        "3 Online stores",
-        "500 products",
-        "Abandoned cart emails",
-        "Free migration",
-        "20 GB NVMe storage",
-        "4 GB RAM",
-        "20 mailboxes",
-        "Daily backups",
-        "24/7 support",
-      ],
-      ctaLabel: "Start store",
-      ctaHref: hostingCheckoutHref("ecommerce-hosting", "plus", "annually"),
-    },
-    {
-      id: "commerce-cloud",
-      visible: true,
-      order: 2,
-      name: "Commerce Cloud",
-      tagline: "High-traffic shops & subscriptions.",
-      discountBadge: "5% BELOW MARKET",
-      popular: true,
-      popularLabel: "Most popular",
-      accent: "gradient",
-      priceAnnually: "$12.34",
-      originalAnnually: "$25.99",
-      billedAnnually: "Billed $148.08 annually",
-      saveAnnually: "Save $163.80",
-      priceMonthly: "$25.99",
-      originalMonthly: "",
-      billedMonthly: "Billed monthly",
-      saveMonthly: "",
-      domainPerk: "Domain — free for 1 year",
-      annualCredit: "$8 Beyond AI Credit",
-      features: [
-        "5 Online stores",
-        "Unlimited products",
-        "Priority support",
-        "Staging-friendly resources",
-        "40 GB NVMe storage",
-        "6 GB RAM",
-        "Unlimited mailboxes",
-        "Daily backups",
-        "PHP, Python & Node.js",
-      ],
-      ctaLabel: "Start store",
-      ctaHref: hostingCheckoutHref("ecommerce-hosting", "pro", "annually"),
-    },
-    {
-      id: "commerce-enterprise",
-      visible: true,
-      order: 3,
-      name: "Commerce Enterprise",
-      tagline: "Enterprise-grade commerce performance.",
-      discountBadge: "5% BELOW MARKET",
-      popular: false,
-      popularLabel: "",
-      accent: "purple",
-      priceAnnually: "$22.79",
-      originalAnnually: "$47.99",
-      billedAnnually: "Billed $273.48 annually",
-      saveAnnually: "Save $302.40",
-      priceMonthly: "$47.99",
-      originalMonthly: "",
-      billedMonthly: "Billed monthly",
-      saveMonthly: "",
-      domainPerk: "Domain — free for 1 year",
-      annualCredit: "$15 Beyond AI Credit",
-      features: [
-        "Unlimited stores",
-        "Unlimited products",
-        "Advanced performance (5×)",
-        "Dedicated resource headroom",
-        "60 GB NVMe storage",
-        "8 GB RAM",
-        "Unlimited mailboxes",
-        "Daily backups + snapshots",
-        "Priority support",
-      ],
-      ctaLabel: "Start store",
-      ctaHref: hostingCheckoutHref("ecommerce-hosting", "ultimate", "annually"),
-    },
-  ];
-  return plans.map(attachControlledCatalogUsd);
+  const product = catalogForSlug("ecommerce-hosting");
+  if (!product) return [];
+  return product.plans
+    .map((plan, index) =>
+      internationalLaunchPlanToCms(plan, "ecommerce-hosting", index, {
+        ctaLabel: "Start store",
+      }),
+    )
+    .map(attachControlledCatalogUsd);
 }
 
 function catalogFromConfig(): {

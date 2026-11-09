@@ -45,7 +45,7 @@ function reader(): AccountReader {
       userId: alice,
       productSlug: "web-hosting",
       productName: "Web Hosting",
-      planKey: "plus",
+      planKey: "business",
       planName: "Plus",
       status: "PAID",
       billingCycle: "yearly",

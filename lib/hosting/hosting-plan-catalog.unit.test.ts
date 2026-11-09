@@ -12,20 +12,20 @@ import type { CmsHostingPlan } from "@/lib/orbit/defaults";
 
 function plan(partial: Partial<CmsHostingPlan> = {}): CmsHostingPlan {
   return {
-    id: "essential",
+    id: "starter",
     visible: true,
     order: 0,
-    name: "Beyond Essential",
+    name: "Starter",
     tagline: "",
     discountBadge: "",
     popular: false,
     popularLabel: "",
     accent: "blue",
-    priceAnnually: "$2.40",
-    originalAnnually: "$7.99",
-    billedAnnually: "Billed $28.80 annually",
+    priceAnnually: "$2.39",
+    originalAnnually: "$2.99",
+    billedAnnually: "Billed $28.70 annually",
     saveAnnually: "",
-    priceMonthly: "$7.99",
+    priceMonthly: "$2.99",
     originalMonthly: "",
     billedMonthly: "Billed monthly",
     saveMonthly: "",
@@ -41,8 +41,8 @@ function plan(partial: Partial<CmsHostingPlan> = {}): CmsHostingPlan {
 describe("hosting plan catalog USD", () => {
   it("attaches numeric USD from controlled default strings", () => {
     const out = attachControlledCatalogUsd(plan());
-    assert.equal(out.monthlyUsd, 7.99);
-    assert.equal(out.yearlyUsd, 28.8);
+    assert.equal(out.monthlyUsd, 2.99);
+    assert.equal(out.yearlyUsd, 28.7);
   });
 
   it("does not resolve catalog USD from CMS strings alone", () => {
@@ -52,25 +52,25 @@ describe("hosting plan catalog USD", () => {
   it("keeps fallback numbers when Orbit copy still matches defaults", () => {
     const fallback = attachControlledCatalogUsd(plan());
     const merged = catalogUsdAfterCmsMerge(
-      { priceMonthly: "$7.99", billedAnnually: "Billed $28.80 annually" },
+      { priceMonthly: "$2.99", billedAnnually: "Billed $28.70 annually" },
       fallback,
     );
-    assert.deepEqual(merged, { monthlyUsd: 7.99, yearlyUsd: 28.8 });
+    assert.deepEqual(merged, { monthlyUsd: 2.99, yearlyUsd: 28.7 });
   });
 
   it("derives catalog USD when only annual per-month copy changed in Orbit", () => {
     const fallback = attachControlledCatalogUsd(plan());
     const merged = catalogUsdAfterCmsMerge(
-      { priceAnnually: "$19.99", priceMonthly: "$7.99" },
+      { priceAnnually: "$19.99", priceMonthly: "$2.99" },
       fallback,
     );
-    assert.deepEqual(merged, { monthlyUsd: 7.99, yearlyUsd: 239.88 });
+    assert.deepEqual(merged, { monthlyUsd: 2.99, yearlyUsd: 239.88 });
   });
 
   it("derives catalog USD when monthly copy changed", () => {
     const fallback = attachControlledCatalogUsd(plan());
     const merged = catalogUsdAfterCmsMerge(
-      { priceMonthly: "$9.99", billedAnnually: "Billed $28.80 annually" },
+      { priceMonthly: "$9.99", billedAnnually: "Billed $28.70 annually" },
       fallback,
     );
     assert.deepEqual(merged, { monthlyUsd: 9.99, yearlyUsd: 28.8 });
@@ -92,7 +92,7 @@ describe("hosting plan catalog USD", () => {
   it("omits Schema.org prices instead of inventing a fallback", () => {
     assert.equal(schemaOrgOfferPriceUsd(plan()), undefined);
     const priced = attachControlledCatalogUsd(plan());
-    assert.equal(schemaOrgOfferPriceUsd(priced, "annually"), "2.40");
-    assert.equal(schemaOrgOfferPriceUsd(priced, "monthly"), "7.99");
+    assert.equal(schemaOrgOfferPriceUsd(priced, "annually"), "2.39");
+    assert.equal(schemaOrgOfferPriceUsd(priced, "monthly"), "2.99");
   });
 });

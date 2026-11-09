@@ -109,15 +109,15 @@ export const ecommercePlanOverrides: Record<
   string,
   { tagline: string; extraFeatures: string[] }
 > = {
-  essential: {
-    tagline: "Launch your first online store.",
+  "store-starter": {
+    tagline: "Launch your first WooCommerce store.",
     extraFeatures: [
       "WooCommerce pre-optimized stack",
       "Free SSL for secure checkout",
       "PCI-friendly hosting environment",
     ],
   },
-  plus: {
+  "store-business": {
     tagline: "Growing catalogs and multi-store brands.",
     extraFeatures: [
       "WooCommerce + staging-friendly resources",
@@ -125,20 +125,12 @@ export const ecommercePlanOverrides: Record<
       "Free migration for existing shops",
     ],
   },
-  pro: {
+  "store-pro": {
     tagline: "High-volume stores and serious sellers.",
     extraFeatures: [
       "Priority support for peak sales events",
-      "PHP, Python & Node.js for custom checkout",
-      "Unlimited products & bandwidth headroom",
-    ],
-  },
-  ultimate: {
-    tagline: "Maximum throughput for busy storefronts.",
-    extraFeatures: [
-      "Advanced performance (5× faster)",
-      "Dedicated resource headroom for flash sales",
-      "Priority support & migration assistance",
+      "Higher RAM and CPU limits for checkout peaks",
+      "Room to scale product catalogs",
     ],
   },
 };

@@ -59,7 +59,7 @@ export default async function BusinessEmailCheckoutPage({
   let hostingOffer: EmailHostingAddonOffer | null = null;
   if (webHosting?.status === "ACTIVE") {
     const entryPlan =
-      webHosting.plans.find((p) => p.active && p.planKey === "essential") ??
+      webHosting.plans.find((p) => p.active && p.planKey === "starter") ??
       webHosting.plans.find((p) => p.active);
     if (entryPlan) {
       hostingOffer = {

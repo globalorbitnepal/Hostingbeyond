@@ -12,42 +12,42 @@ import {
 describe("plan booking href", () => {
   it("opens the four-step hosting checkout with step=plan", () => {
     assert.equal(
-      hostingCheckoutHref("web-hosting", "pro", "annually"),
-      "/checkout/hosting?product=web-hosting&plan=pro&billing=annually&step=plan",
+      hostingCheckoutHref("web-hosting", "professional", "annually"),
+      "/checkout/hosting?product=web-hosting&plan=professional&billing=annually&step=plan",
     );
   });
 
   it("rewrites signup Get Started on home web-hosting cards", () => {
     assert.equal(
       planBookingHref({
-        planId: "essential",
+        planId: "starter",
         billing: "monthly",
         ctaHref: "/signup",
       }),
-      "/checkout/hosting?product=web-hosting&plan=essential&billing=monthly&step=plan",
+      "/checkout/hosting?product=web-hosting&plan=starter&billing=monthly&step=plan",
     );
   });
 
   it("uses the product slug when the card passes one", () => {
     assert.equal(
       planBookingHref({
-        planId: "plus",
+        planId: "wp-business",
         billing: "annually",
         productSlug: "wordpress-hosting",
         ctaHref: "/signup",
       }),
-      "/checkout/hosting?product=wordpress-hosting&plan=plus&billing=annually&step=plan",
+      "/checkout/hosting?product=wordpress-hosting&plan=wp-business&billing=annually&step=plan",
     );
   });
 
   it("maps commerce and cloud CMS ids onto seeded plan keys", () => {
     assert.equal(
       resolveHostingPlanKey("ecommerce-hosting", "commerce-cloud"),
-      "pro",
+      "store-pro",
     );
     assert.equal(
       resolveHostingPlanKey("business-hosting", "cloud-starter"),
-      "essential",
+      "starter",
     );
     assert.deepEqual(inferHostingBookingTarget("vps-2"), {
       product: "kvm-vps",

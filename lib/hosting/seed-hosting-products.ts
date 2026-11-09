@@ -6,12 +6,37 @@ import { defaultHostingPageContent } from "@/lib/orbit/hosting-page-content";
 import { defaultPythonHostingPageContent } from "@/lib/orbit/python-hosting-page-content";
 import { prisma } from "@/lib/prisma";
 
+import {
+  catalogForSlug,
+  INTERNATIONAL_LAUNCH_PRODUCT_SLUGS,
+} from "./international-launch-catalog";
 import { parseUsdPrice } from "./parse-price";
 import {
   categoryToPrisma,
   HOSTING_PRODUCT_REGISTRY,
 } from "./products-registry";
 import type { HostingVpsSpecifications } from "./product-types";
+import { syncInternationalLaunchPlans } from "./sync-international-launch-plans";
+
+function launchCatalogPlanRows(slug: string) {
+  const product = catalogForSlug(slug);
+  if (!product) return null;
+  return product.plans.map((plan, index) => ({
+    planKey: plan.planKey,
+    planName: plan.planName,
+    monthlyPrice: plan.monthlyPrice,
+    yearlyPrice: plan.yearlyPrice,
+    tagline: plan.tagline,
+    popular: Boolean(plan.popular),
+    sortOrder: index,
+    features: plan.features,
+    storage: plan.storage,
+    websites: plan.websites,
+    databases: plan.databases,
+    ssl: plan.ssl,
+    backup: plan.backup,
+  }));
+}
 
 function sharedWebPlans() {
   return defaultHostingPlansSection().plans.map((plan, index) => ({
@@ -32,6 +57,13 @@ function sharedWebPlans() {
     backup: plan.features.find((f) => /backup/i.test(f)) ?? null,
     support: plan.features.find((f) => /support/i.test(f)) ?? null,
   }));
+}
+
+function planRowsForProduct(slug: string, isVps: boolean) {
+  if (isVps) return vpsPlanRows();
+  const launch = launchCatalogPlanRows(slug);
+  if (launch) return launch;
+  return sharedWebPlans();
 }
 
 function vpsPlanRows() {
@@ -156,7 +188,7 @@ export async function ensureHostingProductsSeeded() {
           { id: "nvme", label: "NVMe-powered infrastructure" },
         ],
         plans: {
-          create: (isVps ? vpsPlanRows() : sharedWebPlans()).map((row) => {
+          create: planRowsForProduct(entry.slug, isVps).map((row) => {
             const base = {
               planKey: row.planKey,
               planName: row.planName,
@@ -168,12 +200,15 @@ export async function ensureHostingProductsSeeded() {
               features: row.features,
             };
             if (isVps) return base;
-            const web = row as ReturnType<typeof sharedWebPlans>[number];
+            const web = row as ReturnType<typeof sharedWebPlans>[number] & {
+              databases?: string;
+            };
             return {
               ...base,
               storage: web.storage ?? undefined,
               bandwidth: web.bandwidth ?? undefined,
               websites: web.websites ?? undefined,
+              databases: web.databases ?? undefined,
               ssl: web.ssl ?? undefined,
               backup: web.backup ?? undefined,
               support: web.support ?? undefined,
@@ -181,6 +216,15 @@ export async function ensureHostingProductsSeeded() {
           }),
         },
       },
+    });
+  }
+
+  await syncInternationalLaunchPlans();
+
+  for (const slug of INTERNATIONAL_LAUNCH_PRODUCT_SLUGS) {
+    await prisma.hostingProduct.updateMany({
+      where: { slug },
+      data: { status: "ACTIVE" },
     });
   }
 }

@@ -4,10 +4,9 @@ import { routes } from "@/config/routes";
 import { getRegistryEntryBySlug } from "./products-registry";
 
 export const WEB_HOSTING_PLAN_KEYS = [
-  "essential",
-  "plus",
-  "pro",
-  "ultimate",
+  "starter",
+  "business",
+  "professional",
 ] as const;
 
 export type WebHostingPlanKey = (typeof WEB_HOSTING_PLAN_KEYS)[number];

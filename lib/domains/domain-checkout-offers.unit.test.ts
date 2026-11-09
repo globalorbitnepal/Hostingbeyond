@@ -9,13 +9,13 @@ describe("domain checkout service quotes", () => {
       {
         kind: "hosting",
         productSlug: "web-hosting",
-        planKey: "essential",
+        planKey: "starter",
         billing: "monthly",
       },
       {
         kind: "hosting",
         productSlug: "web-hosting",
-        planKey: "essential",
+        planKey: "starter",
         billing: "monthly",
       },
     ]);

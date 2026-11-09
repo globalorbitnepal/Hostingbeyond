@@ -108,7 +108,7 @@ export async function getDomainCheckoutOffers(): Promise<DomainCheckoutOffersPay
       ? (webHosting.plans ?? []).filter((p) => p.active)
       : [];
   const entryPlan =
-    activePlans.find((p) => p.planKey === "essential") ?? activePlans[0];
+    activePlans.find((p) => p.planKey === "starter") ?? activePlans[0];
   if (entryPlan && webHosting) {
     const monthly = Number(entryPlan.monthlyPrice);
     if (monthly > 0 && webHosting.billingMonthlyEnabled) {

@@ -6,16 +6,19 @@ import {
 } from "@/lib/hosting/purchase-intent";
 
 const COMMERCE_PLAN_MAP: Record<string, string> = {
-  "commerce-essential": "essential",
-  "commerce-plus": "plus",
-  "commerce-cloud": "pro",
-  "commerce-enterprise": "ultimate",
+  "commerce-essential": "store-starter",
+  "commerce-plus": "store-business",
+  "commerce-cloud": "store-pro",
+  "commerce-enterprise": "store-pro",
+  "store-starter": "store-starter",
+  "store-business": "store-business",
+  "store-pro": "store-pro",
 };
 
 const CLOUD_PLAN_MAP: Record<string, string> = {
-  "cloud-starter": "essential",
-  "cloud-business": "pro",
-  "cloud-pro": "ultimate",
+  "cloud-starter": "starter",
+  "cloud-business": "business",
+  "cloud-pro": "professional",
 };
 
 export function resolveHostingPlanKey(
