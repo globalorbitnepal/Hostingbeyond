@@ -189,6 +189,14 @@ export function PanelHeader({
 
   return (
     <header className="hb-panel-mega" data-panel-chrome-theme={theme}>
+      <div
+        className="hb-panel-mega__edge hb-panel-mega__edge--left"
+        aria-hidden
+      />
+      <div
+        className="hb-panel-mega__edge hb-panel-mega__edge--right"
+        aria-hidden
+      />
       <div className="hb-panel-mega__shimmer" aria-hidden />
       <div
         className="hb-panel-mega__percent hb-panel-mega__percent--a"

@@ -582,9 +582,60 @@ html[data-hb-theme="light"] {
     linear-gradient(90deg, #3b0764 0%, #5b21b6 38%, #4338ca 72%, #312e81 100%);
 }
 
+.hb-panel-mega__edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.hb-panel-mega__edge--left {
+  left: 0;
+  width: min(13.5rem, 30vw);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 252, 248, 0.94) 0%,
+    rgba(252, 244, 255, 0.55) 38%,
+    rgba(238, 228, 255, 0.2) 62%,
+    transparent 100%
+  );
+}
+
+.hb-panel-mega__edge--right {
+  right: 0;
+  width: min(10rem, 20vw);
+  background: linear-gradient(
+    270deg,
+    rgba(252, 248, 255, 0.62) 0%,
+    rgba(236, 228, 255, 0.28) 42%,
+    transparent 100%
+  );
+}
+
+.hb-panel[data-theme="dark"] .hb-panel-mega__edge--left {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 252, 248, 0.82) 0%,
+    rgba(252, 244, 255, 0.46) 38%,
+    rgba(238, 228, 255, 0.16) 62%,
+    transparent 100%
+  );
+}
+
+.hb-panel[data-theme="dark"] .hb-panel-mega__edge--right {
+  background: linear-gradient(
+    270deg,
+    rgba(252, 248, 255, 0.5) 0%,
+    rgba(236, 228, 255, 0.22) 42%,
+    transparent 100%
+  );
+}
+
 .hb-panel-mega__shimmer {
   position: absolute;
   inset: 0;
+  z-index: 0;
   background: linear-gradient(
     105deg,
     transparent 0%,
