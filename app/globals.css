@@ -161,6 +161,66 @@
     z-index: 1;
   }
 
+  /* Domains / Hosting mega menus — match header frost (opaque HD glass) */
+  .hb-mega-frost {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    contain: paint;
+    background-color: #ffffff;
+    background-image: linear-gradient(
+      152deg,
+      #ffffff 0%,
+      #faf8ff 32%,
+      #f5f3ff 52%,
+      #f2f6ff 74%,
+      #ffffff 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.78);
+    box-shadow:
+      0 0 0 1px rgba(167, 139, 250, 0.24),
+      0 22px 54px rgba(49, 16, 107, 0.16),
+      0 10px 28px rgba(59, 130, 246, 0.11),
+      inset 0 1px 0 rgba(255, 255, 255, 0.98),
+      inset 0 -14px 28px rgba(109, 40, 217, 0.05);
+  }
+
+  .hb-mega-frost::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      125deg,
+      rgba(147, 197, 253, 0.12) 0%,
+      transparent 40%,
+      rgba(167, 139, 250, 0.12) 100%
+    );
+  }
+
+  .hb-mega-frost::after {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.72) 0%,
+      rgba(224, 231, 255, 0.12) 38%,
+      transparent 56%
+    );
+    opacity: 0.92;
+  }
+
+  .hb-mega-frost > * {
+    position: relative;
+    z-index: 1;
+  }
+
   /**
    * Hero domain search pill. Uniform fill, no backdrop-filter: sampling the
    * photo and the left scrim in one blur layer drew a vertical lighting hang.

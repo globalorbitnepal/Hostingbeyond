@@ -131,7 +131,7 @@ export function DomainsMegaMenu({
   return (
     <div
       className={cn(
-        "relative overflow-hidden border border-white/80 bg-white shadow-[0_28px_70px_-28px_rgba(37,80,130,0.45),0_12px_32px_-18px_rgba(15,23,42,0.12)]",
+        "hb-mega-frost",
         compact ? "rounded-[22px]" : "rounded-[28px]",
       )}
     >
@@ -156,7 +156,7 @@ export function DomainsMegaMenu({
                     <Link
                       href={item.href}
                       onClick={onNavigate}
-                      className="group flex items-start gap-3 rounded-2xl px-2 py-2.5 transition hover:bg-slate-50"
+                      className="group flex items-start gap-3 rounded-2xl px-2 py-2.5 transition hover:bg-violet-50/75"
                     >
                       <span
                         className={cn(
