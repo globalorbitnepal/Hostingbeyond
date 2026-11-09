@@ -1,4 +1,7 @@
-import { DEFAULT_DOMAIN_PROTECTION_USD } from "@/lib/domains/domain-extras";
+import {
+  defaultDomainExtras,
+  protectionChargeUsd,
+} from "@/lib/domains/domain-extras";
 import { getEligibleAddonsForCheckout } from "@/lib/hosting/addons/for-cart";
 import { quoteAddonSelections } from "@/lib/hosting/addons/pricing";
 import type { CartAddonSelection } from "@/lib/hosting/addons/types";
@@ -284,13 +287,16 @@ export async function quoteHostingCart(
       });
     }
     if (configuration.domainProtection) {
-      lines.push({
-        id: "domain-protection",
-        label: "Domain protection",
-        amount: DEFAULT_DOMAIN_PROTECTION_USD,
-        kind: "addon",
-        note: "per year",
-      });
+      const protection = protectionChargeUsd(defaultDomainExtras());
+      if (protection > 0) {
+        lines.push({
+          id: "domain-protection",
+          label: "Domain protection",
+          amount: protection,
+          kind: "addon",
+          note: "per year",
+        });
+      }
     }
   }
 

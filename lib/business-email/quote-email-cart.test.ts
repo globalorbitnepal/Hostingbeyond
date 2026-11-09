@@ -42,21 +42,65 @@ describe("quoteEmailCart", () => {
     assert.match(quote.lines[0]?.note ?? "", /1 month free/i);
   });
 
-  it("includes domain protection when enabled on a registered domain", () => {
-    const configuration = {
-      ...defaultEmailCartConfiguration({ plan: "starter", term: "12" }),
-      domainChoice: "search" as const,
-      domainName: "brand.com",
-      domainRegisterUsd: 12.99,
-      domainProtection: true,
-    };
-    const quote = quoteEmailCart({
-      plan: samplePlan,
-      configuration,
-      extras: defaultDomainExtras(),
-      hostingOffer: null,
-    });
-    assert.ok(quote.lines.some((l) => l.id === "domain-protection"));
-    assert.ok(quote.total > 0);
+  it("includes domain protection only when the paid product is enabled", () => {
+    const prevEnabled = process.env.DOMAIN_PROTECTION_PAID_ENABLED;
+    const prevDefined = process.env.DOMAIN_PROTECTION_SERVICE_DEFINED;
+    process.env.DOMAIN_PROTECTION_PAID_ENABLED = "true";
+    process.env.DOMAIN_PROTECTION_SERVICE_DEFINED = "registry-lock-2026";
+    try {
+      const configuration = {
+        ...defaultEmailCartConfiguration({ plan: "starter", term: "12" }),
+        domainChoice: "search" as const,
+        domainName: "brand.com",
+        domainRegisterUsd: 12.99,
+        domainProtection: true,
+      };
+      const quote = quoteEmailCart({
+        plan: samplePlan,
+        configuration,
+        extras: defaultDomainExtras(),
+        hostingOffer: null,
+      });
+      assert.ok(quote.lines.some((l) => l.id === "domain-protection"));
+      assert.ok(quote.total > 0);
+    } finally {
+      if (prevEnabled === undefined)
+        delete process.env.DOMAIN_PROTECTION_PAID_ENABLED;
+      else process.env.DOMAIN_PROTECTION_PAID_ENABLED = prevEnabled;
+      if (prevDefined === undefined)
+        delete process.env.DOMAIN_PROTECTION_SERVICE_DEFINED;
+      else process.env.DOMAIN_PROTECTION_SERVICE_DEFINED = prevDefined;
+    }
+  });
+
+  it("never bills for WHOIS privacy the registrar gives free", () => {
+    const prevEnabled = process.env.DOMAIN_PROTECTION_PAID_ENABLED;
+    const prevDefined = process.env.DOMAIN_PROTECTION_SERVICE_DEFINED;
+    delete process.env.DOMAIN_PROTECTION_PAID_ENABLED;
+    delete process.env.DOMAIN_PROTECTION_SERVICE_DEFINED;
+    try {
+      const configuration = {
+        ...defaultEmailCartConfiguration({ plan: "starter", term: "12" }),
+        domainChoice: "search" as const,
+        domainName: "brand.com",
+        domainRegisterUsd: 12.99,
+        domainProtection: true,
+      };
+      const quote = quoteEmailCart({
+        plan: samplePlan,
+        configuration,
+        extras: defaultDomainExtras(),
+        hostingOffer: null,
+      });
+      assert.equal(
+        quote.lines.some((l) => l.id === "domain-protection"),
+        false,
+      );
+    } finally {
+      if (prevEnabled !== undefined)
+        process.env.DOMAIN_PROTECTION_PAID_ENABLED = prevEnabled;
+      if (prevDefined !== undefined)
+        process.env.DOMAIN_PROTECTION_SERVICE_DEFINED = prevDefined;
+    }
   });
 });
