@@ -87,6 +87,14 @@ describe("registration-term", () => {
     assert.equal(quote?.termYears, 1);
   });
 
+  it("quotes 2–10 years as 1st-year plus renewal for remaining years", () => {
+    const comCtx = ctx({ supplierMinRegistrationPeriod: 1 });
+    const two = buildStandardRegistrationQuote(comCtx, 2);
+    const ten = buildStandardRegistrationQuote(comCtx, 10);
+    assert.equal(two?.registerTotal, 27.98);
+    assert.equal(ten?.registerTotal, 171.9);
+  });
+
   it("requires verified supplier quote for premium", () => {
     const quote = buildPremiumRegistrationQuote(
       ctx({ supplierMinRegistrationPeriod: 1 }),

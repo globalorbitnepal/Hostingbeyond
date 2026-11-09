@@ -8,6 +8,13 @@ export type NameSiloOperationCosts = {
   transfer: number | null;
 };
 
+/** Customer search, hero chips, and checkout sell only verified NameSilo costs. */
+export function isCustomerSellableNameSiloStatus(
+  status: string | null | undefined,
+): boolean {
+  return status === "verified";
+}
+
 export function deriveNameSiloCatalogueStatus(
   costs: NameSiloOperationCosts,
   opts?: { hadInvalidField?: boolean; onApi?: boolean },

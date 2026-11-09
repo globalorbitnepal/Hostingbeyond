@@ -141,6 +141,20 @@ export function retailRegisterTotalForTerm(
   if (ctx.retailRegisterTermYears === termYears) {
     return ctx.retailRegister;
   }
+  const min = Math.max(1, ctx.supplierMinRegistrationPeriod);
+  if (
+    min === 1 &&
+    ctx.retailRegisterTermYears === 1 &&
+    termYears >= 2 &&
+    termYears <= 10 &&
+    ctx.retailRenew > 0
+  ) {
+    const first =
+      ctx.promoActive && ctx.promoRegister != null
+        ? ctx.promoRegister
+        : ctx.retailRegister;
+    return Math.round((first + ctx.retailRenew * (termYears - 1)) * 100) / 100;
+  }
   return null;
 }
 

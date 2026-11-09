@@ -43,16 +43,16 @@ const FALLBACK_TEASERS: HeroDomainTeaser[] = [
   },
   {
     tld: ".online",
-    priceLabel: "$0.99/yr",
-    usd: 0.99,
-    originalUsd: 8.99,
+    priceLabel: "$2.99/yr",
+    usd: 2.99,
+    originalUsd: 49.99,
     visible: true,
   },
   {
     tld: ".shop",
-    priceLabel: "$0.99/yr",
-    usd: 0.99,
-    originalUsd: 8.99,
+    priceLabel: "$2.99/yr",
+    usd: 2.99,
+    originalUsd: 49.99,
     visible: true,
   },
 ];
@@ -61,17 +61,49 @@ const OFFER_BY_TLD: Record<string, { usd: number; originalUsd: number }> = {
   ".com": { usd: 9.99, originalUsd: 17.99 },
   ".net": { usd: 11.99, originalUsd: 17.49 },
   ".org": { usd: 7.99, originalUsd: 17.99 },
-  ".online": { usd: 0.99, originalUsd: 8.99 },
-  ".shop": { usd: 0.99, originalUsd: 8.99 },
+  ".online": { usd: 2.99, originalUsd: 49.99 },
+  ".shop": { usd: 2.99, originalUsd: 49.99 },
 };
 
-const SAVE_BADGE_TONE: Record<string, "purple" | "green" | "rose" | "violet"> =
-  {
-    ".net": "purple",
-    ".org": "green",
-    ".online": "rose",
-    ".shop": "violet",
-  };
+export type HeroOrbitTldRate = {
+  tld: string;
+  /** Orbit 1st-year register (promo when active). */
+  register: number;
+  /** Orbit renewal — shown as the cut price. */
+  renew: number;
+};
+
+type TldOfferTone = "featured" | "violet" | "azure";
+
+const TLD_OFFER_TONE: Record<string, TldOfferTone> = {
+  ".com": "featured",
+  ".net": "violet",
+  ".org": "azure",
+  ".online": "violet",
+  ".shop": "azure",
+};
+
+function TldOfferWave() {
+  return (
+    <svg
+      className="hb-tld-offer-wave"
+      viewBox="0 0 220 72"
+      preserveAspectRatio="none"
+      aria-hidden
+    >
+      <path
+        d="M0 30 C 36 12, 72 50, 112 28 S 176 8, 220 32 L 220 72 L 0 72 Z"
+        fill="currentColor"
+        opacity="0.38"
+      />
+      <path
+        d="M0 44 C 48 26, 88 58, 136 40 S 188 24, 220 46 L 220 72 L 0 72 Z"
+        fill="currentColor"
+        opacity="0.28"
+      />
+    </svg>
+  );
+}
 
 function usdFromPriceLabel(label: string): number | undefined {
   if (!/\$|USD/i.test(label)) return undefined;
@@ -157,7 +189,13 @@ function useTypedPlaceholder(active: boolean, reduce: boolean | null) {
   return text;
 }
 
-export function HeroSection({ content }: { content?: CmsHeroContent }) {
+export function HeroSection({
+  content,
+  orbitTlds = [],
+}: {
+  content?: CmsHeroContent;
+  orbitTlds?: HeroOrbitTldRate[];
+}) {
   const reduceMotion = useReducedMotion();
   const [domain, setDomain] = useState("");
   const typed = useTypedPlaceholder(!domain.trim(), reduceMotion);
@@ -174,13 +212,28 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
   const searchButtonLabel = content?.searchButtonLabel || "Search Domain";
 
   const teasers = useMemo((): HeroDomainTeaser[] => {
+    const liveByTld = new Map(
+      orbitTlds.map((row) => {
+        const tld = row.tld.startsWith(".")
+          ? row.tld.toLowerCase()
+          : `.${row.tld.toLowerCase()}`;
+        return [tld, row] as const;
+      }),
+    );
+    const offerFor = (tld: string) => {
+      const live = liveByTld.get(tld.toLowerCase());
+      if (live && live.register > 0 && live.renew > 0) {
+        return { usd: live.register, originalUsd: live.renew };
+      }
+      return OFFER_BY_TLD[tld.toLowerCase()];
+    };
     const fromCms = (content?.domainPricing ?? []).filter(
       (item) => item.visible !== false && item.tld.trim(),
     );
     if (fromCms.length) {
       return fromCms.map((item) => {
         const tld = item.tld.startsWith(".") ? item.tld : `.${item.tld}`;
-        const offer = OFFER_BY_TLD[tld.toLowerCase()];
+        const offer = offerFor(tld);
         const fallbackUsd = FALLBACK_TEASERS.find(
           (row) => row.tld === tld,
         )?.usd;
@@ -193,8 +246,11 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
         };
       });
     }
-    return [...FALLBACK_TEASERS];
-  }, [content?.domainPricing]);
+    return FALLBACK_TEASERS.map((row) => {
+      const offer = offerFor(row.tld);
+      return offer ? { ...row, ...offer, priceLabel: `$${offer.usd}/yr` } : row;
+    });
+  }, [content?.domainPricing, orbitTlds]);
 
   const displayTeasers = useMemo(() => {
     const order = [".com", ".net", ".org", ".online", ".shop"];
@@ -339,7 +395,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
             initial={reduceMotion ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.12 }}
-            className="hb-search-pill relative z-30 mt-4 flex w-full max-w-full flex-col gap-2 rounded-[26px] p-2 sm:mt-5 sm:flex-row sm:items-center sm:gap-2 sm:rounded-full sm:p-1.5 sm:pr-1.5 lg:mt-6 lg:min-h-[54px] lg:max-w-[min(100%,52rem)] lg:py-1.5"
+            className="hb-search-pill relative z-30 mt-4 flex w-full max-w-full flex-col gap-2 rounded-[26px] p-2 sm:mt-5 sm:flex-row sm:items-center sm:gap-2 sm:rounded-full sm:p-1.5 sm:pr-1.5 lg:mt-6 lg:min-h-[56px] lg:py-1.5"
           >
             <div className="flex min-w-0 flex-1 items-center gap-2 px-2 sm:gap-2.5 sm:px-3 lg:px-3.5">
               <span className="hb-search-pill-icon flex size-10 shrink-0 items-center justify-center rounded-full sm:size-11 lg:size-12">
@@ -361,7 +417,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
               className="hb-search-pill-divider mx-1 hidden h-9 w-px shrink-0 sm:block lg:h-10"
             />
             <div className="flex items-center gap-1.5 sm:gap-2 sm:pr-0.5">
-              <label className="relative min-w-0 flex-1 sm:flex-none">
+              <label className="relative hidden min-w-0 flex-1 sm:block sm:flex-none">
                 <span className="sr-only">Domain extension</span>
                 <select
                   value={tld}
@@ -395,7 +451,7 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
             transition={{ delay: 0.16 }}
             role="group"
             aria-label="Popular domain extensions"
-            className="hb-hero-offer-scroll relative z-30 mt-6 flex w-full snap-x snap-mandatory gap-2.5 overflow-x-auto overscroll-x-contain pt-3 pb-0.5 [-webkit-overflow-scrolling:touch] sm:mt-7 sm:grid sm:grid-cols-3 sm:gap-3 sm:overflow-visible sm:pt-4 lg:mt-8 lg:max-w-[min(100%,52rem)] lg:grid-cols-5 lg:gap-3.5"
+            className="hb-hero-offer-scroll relative z-30 mt-5 hidden w-full snap-x snap-mandatory gap-2.5 overflow-x-auto overscroll-x-contain pt-4 pb-1 [-webkit-overflow-scrolling:touch] md:mt-5 md:grid md:grid-cols-3 md:gap-2.5 md:overflow-visible md:pt-4 lg:mt-5 lg:grid-cols-5 lg:gap-2.5"
           >
             {displayTeasers.map((item) => {
               const value = item.tld.startsWith(".")
@@ -403,12 +459,12 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
                 : `.${item.tld}`;
               const active = value === tld;
               const popular = value.toLowerCase() === ".com";
+              const tone = TLD_OFFER_TONE[value.toLowerCase()] ?? "violet";
               const sale = typeof item.usd === "number" ? item.usd : undefined;
               const original =
                 typeof item.originalUsd === "number"
                   ? item.originalUsd
                   : undefined;
-              const saveTone = SAVE_BADGE_TONE[value.toLowerCase()];
               const saveLabel =
                 !popular && sale != null && original != null
                   ? `Save ${savePercent(original, sale)}%`
@@ -421,66 +477,64 @@ export function HeroSection({ content }: { content?: CmsHeroContent }) {
                   aria-pressed={active}
                   onClick={() => setTld(value)}
                   className={cn(
-                    "hb-tld-offer group relative flex min-h-[108px] w-[calc(50%-0.35rem)] shrink-0 snap-start flex-col items-start justify-end gap-0.5 overflow-visible rounded-[22px] px-3.5 pt-8 pb-4 text-left transition duration-200 outline-none",
-                    "min-[400px]:w-[calc(44%-0.35rem)] sm:min-h-[116px] sm:w-auto sm:min-w-0 sm:rounded-[24px] sm:px-4 sm:pt-9 sm:pb-4 lg:min-h-[124px]",
-                    "focus-visible:ring-2 focus-visible:ring-violet-300 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
-                    popular && "hb-tld-offer--popular",
-                    active &&
-                      !popular &&
-                      "shadow-[0_0_0_1px_rgba(167,139,250,0.35),0_0_22px_rgba(129,140,248,0.22)] ring-2 ring-violet-300/90",
+                    "hb-tld-offer group relative flex h-[7.15rem] w-[9.6rem] shrink-0 snap-start flex-col overflow-visible rounded-[18px] text-left transition duration-200 outline-none",
+                    "sm:h-[7.35rem] sm:w-auto sm:min-w-0",
+                    "focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
+                    `hb-tld-offer--${tone}`,
+                    active && "hb-tld-offer--active",
                   )}
                 >
                   {popular ? (
-                    <span className="hb-tld-offer-popular-badge absolute -top-2.5 left-2.5 z-10 inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[9px] font-extrabold tracking-[0.02em] sm:left-3 sm:px-2.5 sm:py-1 sm:text-[10px]">
+                    <span className="hb-tld-offer-popular-badge absolute -top-2.5 left-1.5 z-20 inline-flex items-center gap-0.5 rounded-full px-2 py-[3px] text-[8.5px] font-extrabold tracking-[0.04em] whitespace-nowrap uppercase sm:px-2.5 sm:text-[9.5px]">
                       <Crown
-                        className="size-2.5 shrink-0 text-[#8a5a12] sm:size-3"
+                        className="size-2.5 shrink-0"
                         fill="currentColor"
                         aria-hidden
                       />
                       Most Popular
                     </span>
-                  ) : saveLabel && saveTone ? (
+                  ) : saveLabel ? (
                     <span
                       className={cn(
-                        "absolute -top-2 right-2 z-10 rounded-full px-1.5 py-0.5 text-[9px] font-bold tracking-[-0.01em] whitespace-nowrap sm:-top-2.5 sm:right-2.5 sm:px-2 sm:text-[10px]",
-                        saveTone === "purple" && "hb-tld-offer-save--purple",
-                        saveTone === "green" && "hb-tld-offer-save--green",
-                        saveTone === "rose" && "hb-tld-offer-save--rose",
-                        saveTone === "violet" && "hb-tld-offer-save--violet",
+                        "hb-tld-offer-save absolute -top-2.5 right-1.5 z-20 rounded-full px-2 py-[3px] text-[8.5px] font-extrabold whitespace-nowrap sm:px-2.5 sm:text-[9.5px]",
+                        `hb-tld-offer-save--${tone}`,
                       )}
                     >
                       {saveLabel}
                     </span>
                   ) : null}
-                  <span
-                    className="hb-tld-offer-tld relative z-[1] text-[1.08rem] leading-none font-extrabold tracking-[-0.04em] sm:text-[1.18rem] lg:text-[1.22rem]"
-                    translate="no"
-                  >
-                    {value}
-                  </span>
-                  {original != null ? (
+                  <span className="hb-tld-offer-face relative flex h-full w-full flex-col items-start overflow-hidden rounded-[18px] pt-3.5 pr-3 pb-2.5 pl-3">
                     <span
-                      className="relative z-[1] text-[11.5px] font-medium text-[#9ca8b8] line-through decoration-[#9ca8b8] sm:text-[12px]"
+                      className="hb-tld-offer-tld relative z-[2] text-[1.12rem] leading-none font-extrabold tracking-[-0.04em] sm:text-[1.18rem]"
                       translate="no"
                     >
-                      <CatalogPrice usd={original} />
+                      {value}
                     </span>
-                  ) : null}
-                  {sale != null ? (
-                    <span
-                      className="hb-tld-offer-price relative z-[1] text-[1.38rem] leading-none font-extrabold tracking-[-0.04em] whitespace-nowrap sm:text-[1.48rem] lg:text-[1.58rem]"
-                      translate="no"
-                    >
-                      <CatalogPrice usd={sale} />
-                      <span className="ml-0.5 align-baseline text-[0.55em] font-extrabold">
-                        /yr
+                    {original != null ? (
+                      <span
+                        className="hb-tld-offer-was relative z-[2] mt-1.5 text-[12px] font-bold line-through sm:text-[13px]"
+                        translate="no"
+                      >
+                        <CatalogPrice usd={original} />
                       </span>
-                    </span>
-                  ) : (
-                    <span className="hb-tld-offer-price text-[1.25rem] font-extrabold sm:text-[1.35rem]">
-                      {item.priceLabel}
-                    </span>
-                  )}
+                    ) : null}
+                    {sale != null ? (
+                      <span
+                        className="hb-tld-offer-price relative z-[2] mt-0.5 text-[1.22rem] leading-none font-extrabold tracking-[-0.04em] whitespace-nowrap sm:text-[1.28rem]"
+                        translate="no"
+                      >
+                        <CatalogPrice usd={sale} />
+                        <span className="ml-0.5 align-baseline text-[0.52em] font-extrabold">
+                          /yr
+                        </span>
+                      </span>
+                    ) : (
+                      <span className="hb-tld-offer-price relative z-[2] text-[1.15rem] font-extrabold">
+                        {item.priceLabel}
+                      </span>
+                    )}
+                    <TldOfferWave />
+                  </span>
                 </button>
               );
             })}

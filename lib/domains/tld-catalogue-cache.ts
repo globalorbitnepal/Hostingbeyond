@@ -39,7 +39,7 @@ async function loadCatalogueFromDatabase(): Promise<TldCatalogueSnapshot> {
     await ensureDomainTldPricesSeeded();
     const rows = await prisma.domainTldPrice.findMany({
       where: { supplierSyncedAt: { not: null } },
-      select: { tld: true, enabled: true },
+      select: { tld: true, enabled: true, namesiloPriceStatus: true },
       orderBy: { tld: "asc" },
     });
 
@@ -49,7 +49,7 @@ async function loadCatalogueFromDatabase(): Promise<TldCatalogueSnapshot> {
 
     const providerSupported = rows.map((r) => normalizeTld(r.tld));
     const searchable = rows
-      .filter((r) => r.enabled)
+      .filter((r) => r.enabled && r.namesiloPriceStatus === "verified")
       .map((r) => normalizeTld(r.tld));
 
     return {

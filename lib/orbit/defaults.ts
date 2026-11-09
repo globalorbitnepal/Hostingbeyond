@@ -2577,8 +2577,8 @@ export function defaultHomeSections(): CmsHomeSections {
         { tld: ".com", priceLabel: "$9.99/yr", visible: true },
         { tld: ".net", priceLabel: "$11.99/yr", visible: true },
         { tld: ".org", priceLabel: "$7.99/yr", visible: true },
-        { tld: ".online", priceLabel: "$0.99/yr", visible: true },
-        { tld: ".shop", priceLabel: "$0.99/yr", visible: true },
+        { tld: ".online", priceLabel: "$2.99/yr", visible: true },
+        { tld: ".shop", priceLabel: "$2.99/yr", visible: true },
       ],
       technologyPartners: defaultTechnologyPartners(),
       trustItems: [

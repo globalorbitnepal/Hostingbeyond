@@ -11,7 +11,7 @@ import {
   tldTermContextFromRow,
   type TldTermContext,
 } from "@/lib/domains/registration-term";
-import { getRetailPricesForTld } from "@/lib/domains/retail-pricing";
+import { isCustomerSellableNameSiloStatus } from "@/lib/domains/namesilo-price-status";
 import { splitDomain } from "@/lib/domains/tlds";
 import {
   searchCacheKey,
@@ -97,6 +97,7 @@ export async function buildRetailPricingContext(
   const now = new Date();
   for (const row of rows) {
     if (!row.enabled) continue;
+    if (!isCustomerSellableNameSiloStatus(row.namesiloPriceStatus)) continue;
     const termCtx = tldTermContextFromRow(row);
     termByTld.set(row.tld.toLowerCase(), termCtx);
     const promoActive =
@@ -132,6 +133,7 @@ async function termContextForTld(
     where: { tld: tldKey },
   });
   if (!row || !row.enabled) return null;
+  if (!isCustomerSellableNameSiloStatus(row.namesiloPriceStatus)) return null;
   return tldTermContextFromRow(row);
 }
 
@@ -148,31 +150,19 @@ export async function mapRowToCustomerResult(
   pricingCtx?: RetailPricingContext,
 ): Promise<DomainResult | null> {
   const tldKey = tldKeyFromRow(row);
-  let retail =
+  const retail =
     pricingCtx?.retailByTld.get(tldKey) ??
     (await getRetailQuoteForTld(tldKey).catch(() => null));
   if (!retail) {
-    const catalogue = getRetailPricesForTld(tldKey);
-    if (!catalogue) {
-      return {
-        domain: row.domain,
-        name: row.name,
-        tld: tldKey,
-        status: "invalid",
-        register: null,
-        renew: null,
-        transfer: null,
-        message: `We do not sell ${tldKey} yet — try another extension.`,
-      };
-    }
-    retail = {
+    return {
+      domain: row.domain,
+      name: row.name,
       tld: tldKey,
-      register: catalogue.register,
-      renew: catalogue.renew,
-      transfer: catalogue.transfer,
-      restore: null,
-      currency: "USD",
-      isPromo: false,
+      status: "invalid",
+      register: null,
+      renew: null,
+      transfer: null,
+      message: `We do not sell ${tldKey} yet — try another extension.`,
     };
   }
 

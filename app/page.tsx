@@ -21,6 +21,7 @@ import { buildPublicPageMetadata } from "@/lib/orbit/content";
 import { getPublicWebHostingPlans } from "@/lib/hosting/public-hosting-plans";
 import { BEYOND_AI_PUBLIC_ENABLED } from "@/config/beyond-ai-public";
 import { getLocalizedPublicChrome } from "@/lib/i18n/public-chrome";
+import { loadFeaturedDomainTlds } from "@/lib/panel/live-domain-tlds";
 
 export const dynamic = "force-dynamic";
 
@@ -34,10 +35,12 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const [{ sections, settings }, publicHostingPlans] = await Promise.all([
-    getLocalizedPublicChrome(),
-    getPublicWebHostingPlans(),
-  ]);
+  const [{ sections, settings }, publicHostingPlans, featuredTlds] =
+    await Promise.all([
+      getLocalizedPublicChrome(),
+      getPublicWebHostingPlans(),
+      loadFeaturedDomainTlds(),
+    ]);
   const heroPhoto =
     sections.hero.speakerImage?.trim() ||
     sections.hero.backgroundImage?.trim() ||
@@ -57,7 +60,16 @@ export default async function HomePage() {
           getStartedHref={settings.getStartedHref}
           logoPath={settings.logoPath}
         />
-        {sections.hero.visible ? <HeroSection content={sections.hero} /> : null}
+        {sections.hero.visible ? (
+          <HeroSection
+            content={sections.hero}
+            orbitTlds={featuredTlds.map((row) => ({
+              tld: row.tld,
+              register: row.register,
+              renew: row.renew,
+            }))}
+          />
+        ) : null}
       </div>
       {sections.journey?.visible !== false ? (
         <HeroJourneySlider content={sections.journey} />

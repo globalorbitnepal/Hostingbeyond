@@ -49,6 +49,7 @@ describe(
           retailRegisterTermYears: 1,
           supplierMinRegistrationPeriod: 2,
           supplierRegister: 199.8,
+          namesiloPriceStatus: "verified",
           enabled: true,
         },
         update: {
@@ -57,6 +58,7 @@ describe(
           retailRegisterTermYears: 1,
           supplierMinRegistrationPeriod: 2,
           supplierRegister: 199.8,
+          namesiloPriceStatus: "verified",
           enabled: true,
         },
       });
@@ -105,12 +107,14 @@ describe(
           retailRegisterTermYears: 1,
           supplierMinRegistrationPeriod: 1,
           supplierRegister: 11.31,
+          namesiloPriceStatus: "verified",
           enabled: true,
         },
         update: {
           retailRegister: 9.99,
           retailRenew: 17.99,
           supplierMinRegistrationPeriod: 1,
+          namesiloPriceStatus: "verified",
           enabled: true,
         },
       });
