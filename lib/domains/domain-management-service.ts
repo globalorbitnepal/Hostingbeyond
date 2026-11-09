@@ -1,3 +1,4 @@
+import { defaultNameservers } from "@/lib/domains/contacts";
 import { normalizeNameserverList } from "@/lib/domains/nameserver-host";
 import { DomainProviderError } from "@/lib/domains/providers/types";
 import { resolveLifecycleProviderForDomain } from "@/lib/domains/registrar-router";
@@ -48,6 +49,7 @@ export async function getCustomerDomainDetail(userId: string, domain: string) {
   let nameservers: string[] = [];
   let transferLock = registration.transferLock;
   let providerStatus: string | null = null;
+  let privacyEnabled: boolean | null = null;
 
   /**
    * Only live registrations have a provider record to query. Pending ones must
@@ -65,6 +67,10 @@ export async function getCustomerDomainDetail(userId: string, domain: string) {
       nameservers = details.nameservers;
       transferLock = details.transferLock;
       providerStatus = details.status;
+      privacyEnabled =
+        typeof details.privacyEnabled === "boolean"
+          ? details.privacyEnabled
+          : null;
       await prisma.domainRegistration.update({
         where: { id: registration.id },
         data: {
@@ -105,6 +111,9 @@ export async function getCustomerDomainDetail(userId: string, domain: string) {
       providerStatus,
       renewalPrice: retail?.renew ?? null,
       currency: retail?.currency ?? "USD",
+      defaultNameservers: defaultNameservers(),
+      privacyEnabled,
+      registrarProvider: registration.registrarProvider,
     },
   };
 }

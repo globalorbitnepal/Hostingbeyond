@@ -5,21 +5,50 @@ function dec(n: number) {
   return n;
 }
 
+/**
+ * Seeding 700+ TLD rows on every price read was a major panel stall.
+ * Run once per process, then reuse the promise; failures retry after a pause.
+ */
+let seedPromise: Promise<void> | null = null;
+let seedFailedAt = 0;
+const SEED_RETRY_MS = 5 * 60 * 1000;
+
 /** Ensures catalogue TLDs exist in DomainTldPrice without overwriting retail. */
 export async function ensureDomainTldPricesSeeded() {
-  for (const row of TLD_PRICES) {
-    await prisma.domainTldPrice.upsert({
-      where: { tld: row.tld },
-      create: {
-        tld: row.tld,
-        retailRegister: dec(row.register),
-        retailRenew: dec(row.renew),
-        retailTransfer: dec(row.transfer),
-        enabled: true,
-      },
-      update: {},
+  if (seedPromise) return seedPromise;
+  if (seedFailedAt && Date.now() - seedFailedAt < SEED_RETRY_MS) return;
+
+  seedPromise = (async () => {
+    for (const row of TLD_PRICES) {
+      await prisma.domainTldPrice.upsert({
+        where: { tld: row.tld },
+        create: {
+          tld: row.tld,
+          retailRegister: dec(row.register),
+          retailRenew: dec(row.renew),
+          retailTransfer: dec(row.transfer),
+          enabled: true,
+        },
+        update: {},
+      });
+    }
+  })()
+    .catch((error) => {
+      seedPromise = null;
+      seedFailedAt = Date.now();
+      throw error;
+    })
+    .then(() => {
+      seedFailedAt = 0;
     });
-  }
+
+  return seedPromise;
+}
+
+/** @internal test helper */
+export function resetDomainTldSeedCacheForTests() {
+  seedPromise = null;
+  seedFailedAt = 0;
 }
 
 export type RetailQuote = {
@@ -65,6 +94,44 @@ export async function getRetailQuoteForTld(
     currency: row.retailCurrency,
     isPromo: promoActive,
   };
+}
+
+/** One query for many TLDs — used by portfolio lists instead of N lookups. */
+export async function getRetailQuoteMapForTlds(
+  tlds: string[],
+): Promise<Map<string, RetailQuote>> {
+  const keys = [
+    ...new Set(
+      tlds.map((tld) => {
+        const key = tld.trim().toLowerCase();
+        return key.startsWith(".") ? key : `.${key}`;
+      }),
+    ),
+  ];
+  const out = new Map<string, RetailQuote>();
+  if (!keys.length) return out;
+
+  await ensureDomainTldPricesSeeded();
+  const rows = await prisma.domainTldPrice.findMany({
+    where: { tld: { in: keys }, enabled: true },
+  });
+  const now = new Date();
+  for (const row of rows) {
+    const promoActive =
+      row.promoRegister != null && (!row.promoEndsAt || row.promoEndsAt > now);
+    out.set(row.tld.toLowerCase(), {
+      tld: row.tld,
+      register: promoActive
+        ? toNumber(row.promoRegister)
+        : toNumber(row.retailRegister),
+      renew: toNumber(row.retailRenew),
+      transfer: toNumber(row.retailTransfer),
+      restore: row.retailRestore != null ? toNumber(row.retailRestore) : null,
+      currency: row.retailCurrency,
+      isPromo: promoActive,
+    });
+  }
+  return out;
 }
 
 export async function listRetailTldPrices() {

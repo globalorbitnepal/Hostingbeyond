@@ -8,13 +8,46 @@ import {
   protectionChargeUsd,
 } from "@/lib/domains/domain-extras";
 
+const FREE_ENV = {
+  DOMAIN_PROTECTION_PAID_ENABLED: process.env.DOMAIN_PROTECTION_PAID_ENABLED,
+  DOMAIN_PROTECTION_SERVICE_DEFINED:
+    process.env.DOMAIN_PROTECTION_SERVICE_DEFINED,
+};
+
+function restoreEnv() {
+  for (const [key, value] of Object.entries(FREE_ENV)) {
+    if (value === undefined) delete process.env[key];
+    else process.env[key] = value;
+  }
+}
+
 describe("domain extras", () => {
-  it("keeps WHOIS privacy free and Domain Protection at $9.99 by default", () => {
+  it("keeps WHOIS privacy free and Domain Protection at $9.99 in the catalogue", () => {
     const extras = mergeDomainExtras(null);
     assert.equal(extras.privacyFree, true);
     assert.equal(extras.protectionEnabled, true);
     assert.equal(extras.protectionPriceUsd, DEFAULT_DOMAIN_PROTECTION_USD);
-    assert.equal(protectionChargeUsd(extras), 9.99);
+  });
+
+  it("never charges for NameSilo's free privacy when no paid service exists", () => {
+    delete process.env.DOMAIN_PROTECTION_PAID_ENABLED;
+    delete process.env.DOMAIN_PROTECTION_SERVICE_DEFINED;
+    try {
+      const extras = mergeDomainExtras(null);
+      assert.equal(protectionChargeUsd(extras), 0);
+    } finally {
+      restoreEnv();
+    }
+  });
+
+  it("charges only when the paid product is explicitly enabled", () => {
+    process.env.DOMAIN_PROTECTION_PAID_ENABLED = "true";
+    process.env.DOMAIN_PROTECTION_SERVICE_DEFINED = "registry-lock-2026";
+    try {
+      assert.equal(protectionChargeUsd(mergeDomainExtras(null)), 9.99);
+    } finally {
+      restoreEnv();
+    }
   });
 
   it("never charges protection when disabled or zero", () => {

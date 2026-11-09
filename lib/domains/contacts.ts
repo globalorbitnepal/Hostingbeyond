@@ -32,10 +32,19 @@ export function defaultRegistrationContacts() {
   };
 }
 
+/**
+ * Nameservers used for new registrations.
+ *
+ * These MUST resolve publicly. The old `ns1.hostingbeyond.com` defaults did not
+ * exist in DNS, so new domains were registered but never resolved. NameSilo's
+ * dnsowl nameservers are live and keep registrar DNS editing working.
+ * Override with DOMAIN_DEFAULT_NAMESERVERS once real HostingBeyond NS exist.
+ */
 export function defaultNameservers(): string[] {
   const raw = process.env.DOMAIN_DEFAULT_NAMESERVERS?.trim();
   if (raw) {
-    return raw.split(/[\s,]+/).filter(Boolean);
+    const parsed = raw.split(/[\s,]+/).filter(Boolean);
+    if (parsed.length) return parsed;
   }
-  return ["ns1.hostingbeyond.com", "ns2.hostingbeyond.com"];
+  return ["ns1.dnsowl.com", "ns2.dnsowl.com", "ns3.dnsowl.com"];
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -17,7 +17,6 @@ import {
 
 import { CatalogPrice } from "@/components/i18n/localized-text";
 import { routes } from "@/config/routes";
-import { DEFAULT_DOMAIN_PROTECTION_USD } from "@/lib/domains/domain-extras";
 import type { DomainResult } from "@/lib/domains/availability";
 import { PanelTldCatalog } from "@/components/panel/panel-tld-catalog";
 import { PanelTldSalePrice } from "@/components/panel/panel-tld-sale-price";
@@ -72,20 +71,47 @@ export function PanelDomainFinder({
   const [results, setResults] = useState<DomainResult[]>([]);
   const [selected, setSelected] = useState<DomainResult | null>(null);
   const [protect, setProtect] = useState(false);
+  const [protectionPrice, setProtectionPrice] = useState<number | null>(null);
   const [wallet, setWallet] = useState<WalletSnapshot | null>(null);
   const [paying, setPaying] = useState(false);
   const [cartBusy, setCartBusy] = useState(false);
   const [notice, setNotice] = useState("");
 
+  useEffect(() => {
+    let cancelled = false;
+    void fetch("/api/domains/checkout/offers", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then(
+        (
+          payload: {
+            optional?: Array<{
+              kind?: string;
+              amount?: number;
+              label?: string;
+            }>;
+          } | null,
+        ) => {
+          if (cancelled || !payload?.optional) return;
+          const offer = payload.optional.find(
+            (item) =>
+              item.kind === "domain-protection" &&
+              typeof item.amount === "number" &&
+              item.amount > 0,
+          );
+          setProtectionPrice(offer?.amount ?? null);
+        },
+      )
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const due = useMemo(() => {
     if (!selected || selected.register == null) return 0;
-    return (
-      Math.round(
-        (selected.register + (protect ? DEFAULT_DOMAIN_PROTECTION_USD : 0)) *
-          100,
-      ) / 100
-    );
-  }, [selected, protect]);
+    const extra = protect && protectionPrice != null ? protectionPrice : 0;
+    return Math.round((selected.register + extra) * 100) / 100;
+  }, [selected, protect, protectionPrice]);
 
   const funded = wallet != null && wallet.balance >= due;
 
@@ -354,30 +380,38 @@ export function PanelDomainFinder({
                 Register {selected.domain}
               </h2>
               <p className="mt-1 text-sm text-[var(--hb-p-muted)]">
-                WHOIS privacy is included. Pay from your HostingBeyond wallet.
+                WHOIS privacy is included free. Pay from your HostingBeyond
+                wallet.
               </p>
             </div>
             <CheckCircle2 className="h-6 w-6 text-[var(--hb-p-ok)]" />
           </div>
 
-          <label className="flex items-start gap-3 rounded-2xl border border-[var(--hb-p-border)] p-4">
-            <input
-              type="checkbox"
-              className="mt-1"
-              checked={protect}
-              onChange={(event) => setProtect(event.target.checked)}
-            />
-            <span>
-              <span className="flex items-center gap-2 font-semibold">
-                <ShieldCheck className="h-4 w-4 text-[var(--hb-p-primary)]" />
-                Domain Protection
+          {protectionPrice != null ? (
+            <label className="flex items-start gap-3 rounded-2xl border border-[var(--hb-p-border)] p-4">
+              <input
+                type="checkbox"
+                className="mt-1"
+                checked={protect}
+                onChange={(event) => setProtect(event.target.checked)}
+              />
+              <span>
+                <span className="flex items-center gap-2 font-semibold">
+                  <ShieldCheck className="h-4 w-4 text-[var(--hb-p-primary)]" />
+                  Domain Protection
+                </span>
+                <span className="mt-1 block text-sm text-[var(--hb-p-muted)]">
+                  Extra protection service for one year —{" "}
+                  <CatalogPrice usd={protectionPrice} />
+                </span>
               </span>
-              <span className="mt-1 block text-sm text-[var(--hb-p-muted)]">
-                Registry lock for one year —{" "}
-                <CatalogPrice usd={DEFAULT_DOMAIN_PROTECTION_USD} />
-              </span>
-            </span>
-          </label>
+            </label>
+          ) : (
+            <p className="flex items-center gap-2 rounded-2xl bg-[var(--hb-p-primary)]/6 px-4 py-3 text-sm">
+              <ShieldCheck className="h-4 w-4 text-[var(--hb-p-primary)]" />
+              WHOIS privacy and DNS are included free with this domain.
+            </p>
+          )}
 
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[var(--hb-p-primary)]/6 px-4 py-3">
             <div className="flex items-center gap-2 text-sm">

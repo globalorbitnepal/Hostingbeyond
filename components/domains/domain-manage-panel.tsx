@@ -38,6 +38,9 @@ type DomainDetail = {
   transferLock: boolean;
   renewalPrice: number | null;
   currency: string;
+  defaultNameservers?: string[];
+  privacyEnabled?: boolean | null;
+  registrarProvider?: string;
 };
 
 type Tab = "overview" | "dns" | "nameservers" | "security";
@@ -266,9 +269,13 @@ export function DomainManagePanel({
   const tone = healthTone(health);
   const days = daysUntil(detail.expiresAt);
   const needsRenewal = days !== null && days <= 45;
-  const usesHostingBeyondNs = detail.nameservers.some((ns) =>
-    /ns1\.hostingbeyond\.com/i.test(ns),
+  const usesHostingBeyondNs = detail.nameservers.some(
+    (ns) => /dnsowl\.com$/i.test(ns) || /hostingbeyond\.com$/i.test(ns),
   );
+  const recommendedNameservers =
+    detail.defaultNameservers?.length === 2
+      ? detail.defaultNameservers
+      : ["ns1.dnsowl.com", "ns2.dnsowl.com", "ns3.dnsowl.com"];
 
   return (
     <div className="space-y-5">
@@ -479,21 +486,32 @@ export function DomainManagePanel({
         <div className="hb-panel-card p-5">
           <h3 className="hb-text text-sm font-bold">Nameservers</h3>
           <p className="hb-muted mt-1 text-xs">
-            One hostname per line. Most registrars require at least two.
+            One hostname per line. A registrar needs at least two live
+            nameservers — a domain pointed at nameservers that do not exist will
+            never resolve.
           </p>
+          <ol className="hb-muted mt-2 list-decimal space-y-1 pl-5 text-xs">
+            <li>
+              Keep our DNS so you can edit records here — click{" "}
+              <strong>Use HostingBeyond DNS</strong>.
+            </li>
+            <li>
+              Pointing at another host or Cloudflare? Paste that provider&apos;s
+              two nameservers, then save.
+            </li>
+            <li>
+              Wait for propagation (usually under an hour, up to 24 hours) and
+              then confirm with a DNS lookup.
+            </li>
+          </ol>
           <div className="mt-3 flex flex-wrap gap-2">
             <button
               type="button"
               disabled={busy}
-              onClick={() =>
-                void applyNameservers([
-                  "ns1.hostingbeyond.com",
-                  "ns2.hostingbeyond.com",
-                ])
-              }
+              onClick={() => void applyNameservers(recommendedNameservers)}
               className="hb-btn hb-btn-ghost hb-btn-sm"
             >
-              Use HostingBeyond nameservers
+              Use HostingBeyond DNS
             </button>
             <button
               type="button"
@@ -524,6 +542,37 @@ export function DomainManagePanel({
 
       {tab === "security" ? (
         <div className="space-y-3">
+          <div className="hb-panel-card p-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h3 className="hb-text flex items-center gap-2 text-sm font-bold">
+                  <ShieldCheck className="size-4 text-[var(--hb-p-primary)]" />
+                  WHOIS privacy{" "}
+                  {detail.privacyEnabled === true
+                    ? "active"
+                    : detail.privacyEnabled === false
+                      ? "off"
+                      : "managed by registrar"}
+                </h3>
+                <p className="hb-muted mt-1 max-w-lg text-xs">
+                  {detail.privacyEnabled === false
+                    ? "Your contact details are public right now. Turn privacy on at the registrar to hide your name, address, email and phone."
+                    : "Included free on eligible extensions. Your name, address, email and phone are hidden from public WHOIS lookups at no extra cost."}
+                </p>
+              </div>
+              <span
+                className={cn(
+                  "hb-pill",
+                  detail.privacyEnabled === false
+                    ? "hb-pill-warn"
+                    : "hb-pill-ok",
+                )}
+              >
+                {detail.privacyEnabled === false ? "Public" : "Free"}
+              </span>
+            </div>
+          </div>
+
           <div className="hb-panel-card p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">

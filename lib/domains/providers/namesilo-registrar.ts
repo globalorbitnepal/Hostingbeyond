@@ -1,4 +1,5 @@
 import { isEnvStrictTrue } from "@/lib/integrations/env-flags";
+import { defaultRegistrantContact } from "@/lib/domains/contacts";
 import {
   fetchNameSiloAccountPrices,
   toProviderTldPricing,
@@ -119,20 +120,113 @@ function buildProvider(): DomainRegistrarProvider {
     },
 
     async registerDomain(
-      _input: ProviderRegisterInput,
+      input: ProviderRegisterInput,
     ): Promise<ProviderRegisterResult> {
-      billableBlocked();
-      return {
-        outcome: "failed",
-        domain: _input.domain,
-        expiresAt: null,
-        errorCode: "namesilo_billable_operations_disabled",
+      const domain = input.domain.trim().toLowerCase();
+      try {
+        assertNameSiloLifecycleEnabled();
+        billableBlocked();
+      } catch (error) {
+        const code =
+          error instanceof DomainProviderError
+            ? error.message
+            : "namesilo_billable_operations_disabled";
+        return {
+          outcome: "failed",
+          domain,
+          expiresAt: null,
+          errorCode: code,
+          errorMessageInternal: code,
+        };
+      }
+
+      const years =
+        Number.isFinite(input.periodYears) && input.periodYears > 0
+          ? Math.min(Math.trunc(input.periodYears), 10)
+          : 1;
+      const contact = defaultRegistrantContact();
+      const params: Record<string, string> = {
+        domain,
+        years: String(years),
+        /**
+         * NameSilo includes WHOIS privacy at no extra cost. Turning it on at
+         * registration is what makes the "free privacy" promise true.
+         */
+        private: "1",
+        fn: contact.FirstName,
+        ln: contact.LastName,
+        cp: contact.Company,
+        ad: contact.AddressLine1,
+        cy: contact.City,
+        st: contact.State,
+        zp: contact.ZipCode,
+        ct: contact.Country,
+        em: contact.EMail,
+        ph: `${contact.PhoneCountryCode}${contact.Phone}`,
       };
+      const nameservers = (input.nameservers ?? [])
+        .map((ns) => ns.trim())
+        .filter(Boolean)
+        .slice(0, 13);
+      nameservers.forEach((ns, index) => {
+        params[`ns${index + 1}`] = ns;
+      });
+
+      try {
+        const reply = await namesiloRequest("registerDomain", params);
+        const orderId = reply.order_id ?? reply.orderId;
+        return {
+          outcome: "success",
+          domain,
+          providerOrderId:
+            orderId != null && String(orderId).trim()
+              ? String(orderId)
+              : undefined,
+          /**
+           * NameSilo does not return the new expiry here. Leave it null so the
+           * panel syncs the real date from getDomainInfo instead of inventing one.
+           */
+          expiresAt: null,
+        };
+      } catch (error) {
+        if (error instanceof DomainProviderError && error.code === "timeout") {
+          return {
+            outcome: "unknown",
+            domain,
+            expiresAt: null,
+            errorCode: "timeout",
+            errorMessageInternal: "Register request timed out",
+          };
+        }
+        const code =
+          error instanceof DomainProviderError
+            ? error.message || error.code
+            : "provider_failure";
+        return {
+          outcome: "failed",
+          domain,
+          expiresAt: null,
+          errorCode: code,
+          errorMessageInternal: code,
+        };
+      }
     },
 
-    async renewDomain(_domain: string, _periodYears: number) {
+    async renewDomain(domainInput: string, periodYears: number) {
+      const domain = domainInput.trim().toLowerCase();
+      assertNameSiloLifecycleEnabled();
       billableBlocked();
-      return { expiresAt: null };
+      const years =
+        Number.isFinite(periodYears) && periodYears > 0
+          ? Math.min(Math.trunc(periodYears), 10)
+          : 1;
+      await namesiloRequest("renewDomain", { domain, years: String(years) });
+      try {
+        const detail = await this.getDomainDetails(domain);
+        return { expiresAt: detail.expiresAt };
+      } catch {
+        return { expiresAt: null };
+      }
     },
 
     async transferDomain(input: {
@@ -166,6 +260,7 @@ function buildProvider(): DomainRegistrarProvider {
           domain,
           auth: input.authCode.trim(),
           years: String(years),
+          private: "1",
         });
         return mapNameSiloTransferReply(domain, reply);
       } catch (error) {
@@ -209,6 +304,7 @@ function buildProvider(): DomainRegistrarProvider {
         expiresAt: expires ? String(expires) : null,
         nameservers,
         transferLock: String(detail.locked ?? "1") !== "0",
+        privacyEnabled: String(detail.private ?? "0") === "1",
       };
     },
 

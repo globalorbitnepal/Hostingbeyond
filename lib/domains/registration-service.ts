@@ -11,7 +11,10 @@ import {
   notifyRegistrationReconciliation,
   notifyRegistrationSuccess,
 } from "@/lib/domains/notifications";
-import { getRetailQuoteForTld } from "@/lib/domains/pricing-engine";
+import {
+  getRetailQuoteForTld,
+  getRetailQuoteMapForTlds,
+} from "@/lib/domains/pricing-engine";
 import {
   assertTermAllowed,
   supplierQuoteCoversTerm,
@@ -366,6 +369,23 @@ export async function processDomainRegistrationCheckout(input: {
       ? new Date(registerOutcome.expiresAt)
       : null;
 
+    /**
+     * NameSilo does not return the expiry on register. Pull the real date and
+     * nameservers from the registrar so the panel never shows a blank expiry.
+     */
+    let confirmedExpiry = expiresAt;
+    let confirmedNameservers = defaultNameservers();
+    try {
+      const live = await provider.getDomainDetails(quote.domain);
+      if (live.expiresAt) {
+        const parsed = new Date(live.expiresAt);
+        if (!Number.isNaN(parsed.getTime())) confirmedExpiry = parsed;
+      }
+      if (live.nameservers.length) confirmedNameservers = live.nameservers;
+    } catch {
+      /* keep the defaults; the panel syncs again on first open */
+    }
+
     const completed = await prisma.$transaction(async (tx) => {
       const updatedOrder = await tx.domainOrder.update({
         where: { id: order.id },
@@ -387,7 +407,8 @@ export async function processDomainRegistrationCheckout(input: {
           orderId: order.id,
           providerDomainId: registerOutcome.providerOrderId,
           registeredAt: new Date(),
-          expiresAt,
+          expiresAt: confirmedExpiry,
+          nameservers: confirmedNameservers,
           autoRenew: true,
         },
         update: {
@@ -397,7 +418,8 @@ export async function processDomainRegistrationCheckout(input: {
           orderId: order.id,
           providerDomainId: registerOutcome.providerOrderId,
           registeredAt: new Date(),
-          expiresAt,
+          expiresAt: confirmedExpiry,
+          nameservers: confirmedNameservers,
         },
       });
       return updatedOrder;
@@ -415,6 +437,8 @@ export async function processDomainRegistrationCheckout(input: {
 
     return { ok: true as const, order: completed };
   } catch (error) {
+    const insufficient =
+      error instanceof Error && error.message === "insufficient_funds";
     if (reserveTxId) {
       await rollbackReserve({
         userId: input.userId,
@@ -429,9 +453,18 @@ export async function processDomainRegistrationCheckout(input: {
         status: "FAILED",
         errorMessageInternal:
           error instanceof Error ? error.message : "checkout_failed",
-        errorMessageCustomer: "Registration could not be completed.",
+        errorMessageCustomer: insufficient
+          ? "Wallet balance is too low."
+          : "Registration could not be completed.",
       },
     });
+    if (insufficient) {
+      return {
+        ok: false as const,
+        error: "Wallet balance is too low. Top up, then register again.",
+        status: 402,
+      };
+    }
     await notifyRegistrationFailed({
       email: input.userEmail,
       domain: quote.domain,
@@ -450,19 +483,17 @@ export async function listCustomerDomains(userId: string) {
     where: { userId },
     orderBy: { createdAt: "desc" },
   });
-  const enriched = await Promise.all(
-    rows.map(async (row) => {
-      const retail = await getRetailQuoteForTld(row.tld);
-      return {
-        domain: row.domain,
-        status: row.status,
-        registeredAt: row.registeredAt,
-        expiresAt: row.expiresAt,
-        autoRenew: row.autoRenew,
-        renewalPrice: retail?.renew ?? null,
-        currency: retail?.currency ?? "USD",
-      };
-    }),
-  );
-  return enriched;
+  const quotes = await getRetailQuoteMapForTlds(rows.map((row) => row.tld));
+  return rows.map((row) => {
+    const retail = quotes.get(row.tld.toLowerCase());
+    return {
+      domain: row.domain,
+      status: row.status,
+      registeredAt: row.registeredAt,
+      expiresAt: row.expiresAt,
+      autoRenew: row.autoRenew,
+      renewalPrice: retail?.renew ?? null,
+      currency: retail?.currency ?? "USD",
+    };
+  });
 }

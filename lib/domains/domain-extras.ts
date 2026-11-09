@@ -67,5 +67,12 @@ export function extrasFromSiteSettings(settings: {
 export function protectionChargeUsd(extras: DomainExtras): number {
   if (!extras.protectionEnabled) return 0;
   if (extras.protectionPriceUsd <= 0) return 0;
+  /**
+   * Only charge when a real HostingBeyond-managed protection service exists.
+   * NameSilo already gives free WHOIS privacy, so charging for the same
+   * capability would bill customers twice for one feature.
+   */
+  if (process.env.DOMAIN_PROTECTION_PAID_ENABLED !== "true") return 0;
+  if (!process.env.DOMAIN_PROTECTION_SERVICE_DEFINED?.trim()) return 0;
   return extras.protectionPriceUsd;
 }
