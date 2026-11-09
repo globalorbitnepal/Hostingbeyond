@@ -39,7 +39,7 @@
 
   --hb-p-sidebar-w: 17.5rem;
   --hb-p-sidebar-collapsed: 4.5rem;
-  --hb-panel-mega-h: 3.75rem;
+  --hb-panel-mega-h: 4rem;
 
   min-height: 100dvh;
   color: var(--hb-p-text);
@@ -520,16 +520,18 @@ html[data-hb-theme="light"] {
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   background:
     radial-gradient(
-      24% 88% at 0% 50%,
-      rgba(255, 252, 255, 0.2) 0%,
-      rgba(243, 236, 255, 0.08) 32%,
-      transparent 58%
+      38% 118% at 0% 50%,
+      rgba(252, 248, 255, 0.78) 0%,
+      rgba(241, 232, 255, 0.42) 20%,
+      rgba(224, 210, 255, 0.16) 40%,
+      transparent 66%
     ),
     radial-gradient(
-      22% 86% at 100% 50%,
-      rgba(248, 244, 255, 0.16) 0%,
-      rgba(228, 219, 255, 0.07) 30%,
-      transparent 56%
+      34% 112% at 100% 50%,
+      rgba(249, 245, 255, 0.58) 0%,
+      rgba(232, 222, 255, 0.3) 22%,
+      rgba(198, 186, 252, 0.1) 42%,
+      transparent 64%
     ),
     radial-gradient(
       120% 220% at 12% -40%,
@@ -550,6 +552,32 @@ html[data-hb-theme="light"] {
   --hb-mega-search-bg: rgba(7, 5, 15, 0.38);
   --hb-mega-search-border: rgba(255, 255, 255, 0.26);
   border-bottom-color: rgba(167, 139, 250, 0.18);
+  background:
+    radial-gradient(
+      38% 118% at 0% 50%,
+      rgba(252, 248, 255, 0.68) 0%,
+      rgba(241, 232, 255, 0.36) 20%,
+      rgba(224, 210, 255, 0.12) 40%,
+      transparent 66%
+    ),
+    radial-gradient(
+      34% 112% at 100% 50%,
+      rgba(249, 245, 255, 0.48) 0%,
+      rgba(232, 222, 255, 0.24) 22%,
+      rgba(198, 186, 252, 0.08) 42%,
+      transparent 64%
+    ),
+    radial-gradient(
+      120% 220% at 12% -40%,
+      rgba(167, 139, 250, 0.55),
+      transparent 58%
+    ),
+    radial-gradient(
+      90% 180% at 88% 120%,
+      rgba(59, 130, 246, 0.35),
+      transparent 55%
+    ),
+    linear-gradient(90deg, #3b0764 0%, #5b21b6 38%, #4338ca 72%, #312e81 100%);
 }
 
 .hb-panel-mega__shimmer {
@@ -631,28 +659,27 @@ html[data-hb-theme="light"] {
 
 .hb-panel-mega-logo__img {
   display: block;
-  height: 2.35rem;
+  height: 2.7rem;
   width: auto;
-  max-width: min(58vw, 320px);
+  max-width: min(62vw, 370px);
   object-fit: contain;
   object-position: left center;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.45))
-    drop-shadow(0 0 12px rgba(255, 255, 255, 0.12));
+  filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.4));
 }
 
 @media (min-width: 640px) {
   .hb-panel-mega-logo__img {
-    height: 2.65rem;
-    max-width: 360px;
+    height: 3.05rem;
+    max-width: 415px;
   }
 }
 
 @media (min-width: 1280px) {
   .hb-panel-mega-logo__img {
-    height: 2.85rem;
-    max-width: 400px;
+    height: 3.28rem;
+    max-width: 460px;
   }
 }
 
