@@ -5,10 +5,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
+  Activity,
   Bell,
   ChevronRight,
   CreditCard,
-  Headphones,
+  KeyRound,
   LogOut,
   Menu,
   Monitor,
@@ -59,9 +60,17 @@ function searchTargets(): SearchTarget[] {
       group: "Domains",
     },
     { label: "Hosting plans", href: routes.accountHosting, group: "Hosting" },
-    { label: "Wallet", href: routes.accountWallet, group: "Billing" },
+    { label: "Wallet & top up", href: routes.accountWallet, group: "Billing" },
+    { label: "Domain orders", href: routes.accountOrders, group: "Billing" },
+    { label: "Invoices", href: routes.accountInvoices, group: "Billing" },
+    { label: "Transactions", href: routes.accountBilling, group: "Billing" },
     { label: "Support", href: routes.accountSupport, group: "Support" },
     { label: "Security", href: routes.accountSecurity, group: "Account" },
+    {
+      label: "Change password",
+      href: `${routes.accountSecurity}#password`,
+      group: "Account",
+    },
   ];
   for (const section of getPanelNav()) {
     for (const item of section.items) {
@@ -77,6 +86,33 @@ function searchTargets(): SearchTarget[] {
   return targets;
 }
 
+function PanelUserAvatar({
+  image,
+  initial,
+}: {
+  image: string | null;
+  initial: string;
+}) {
+  if (image?.trim()) {
+    return (
+      <Image
+        src={image}
+        alt=""
+        width={34}
+        height={34}
+        unoptimized
+        referrerPolicy="no-referrer"
+        className="size-[34px] rounded-full object-cover"
+      />
+    );
+  }
+  return (
+    <span className="grid size-[34px] place-items-center rounded-full bg-white/20 text-xs font-black text-white">
+      {initial}
+    </span>
+  );
+}
+
 export function PanelHeader({
   user,
   theme,
@@ -90,6 +126,7 @@ export function PanelHeader({
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [notifyOpen, setNotifyOpen] = useState(false);
 
   const allTargets = useMemo(searchTargets, []);
   const results = useMemo(() => {
@@ -97,31 +134,42 @@ export function PanelHeader({
     if (!needle) return [];
     return allTargets
       .filter((t) => t.label.toLowerCase().includes(needle))
-      .slice(0, 6);
+      .slice(0, 8);
   }, [allTargets, query]);
 
   useEffect(() => {
-    if (!menuOpen) return;
-    const close = () => setMenuOpen(false);
+    if (!menuOpen && !notifyOpen) return;
+    const close = () => {
+      setMenuOpen(false);
+      setNotifyOpen(false);
+    };
     window.addEventListener("click", close);
     return () => window.removeEventListener("click", close);
-  }, [menuOpen]);
+  }, [menuOpen, notifyOpen]);
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
     window.location.assign("/login");
   }
 
-  function onSubmit(event: React.FormEvent) {
+  function goSearch(event: React.FormEvent) {
     event.preventDefault();
-    if (results[0]) router.push(results[0].href);
-    else if (query.trim()) {
-      router.push(
-        `${routes.accountDomainFind}?q=${encodeURIComponent(query.trim())}`,
+    const needle = query.trim();
+    if (results[0]) {
+      router.push(results[0].href);
+    } else if (needle) {
+      const exact = allTargets.find(
+        (t) => t.label.toLowerCase() === needle.toLowerCase(),
       );
+      if (exact) router.push(exact.href);
+      else
+        router.push(
+          `${routes.accountDomainFind}?q=${encodeURIComponent(needle)}`,
+        );
     }
     setSearchOpen(false);
     setQuery("");
+    inputRef.current?.blur();
   }
 
   return (
@@ -143,7 +191,7 @@ export function PanelHeader({
       <div className="hb-panel-mega__row">
         <button
           type="button"
-          className="hb-panel-mega-icon lg:hidden"
+          className="hb-panel-mega-icon hb-panel-mega-menu-mobile"
           onClick={onOpenMobileNav}
           aria-label="Open navigation"
         >
@@ -171,7 +219,7 @@ export function PanelHeader({
         </Link>
 
         <form
-          onSubmit={onSubmit}
+          onSubmit={goSearch}
           className="hb-panel-mega-search"
           role="search"
         >
@@ -184,9 +232,10 @@ export function PanelHeader({
               setSearchOpen(true);
             }}
             onFocus={() => setSearchOpen(true)}
-            onBlur={() => window.setTimeout(() => setSearchOpen(false), 120)}
-            placeholder="Search…"
-            className="min-w-0 flex-1 bg-transparent text-sm font-medium outline-none placeholder:text-white/55"
+            onBlur={() => window.setTimeout(() => setSearchOpen(false), 140)}
+            placeholder="Search domains, hosting, billing…"
+            aria-label="Search your account"
+            className="min-w-0 flex-1 bg-transparent text-sm font-medium text-white outline-none placeholder:text-white/55"
           />
           {searchOpen && results.length > 0 ? (
             <ul className="hb-panel-mega-search-drop">
@@ -194,12 +243,14 @@ export function PanelHeader({
                 <li key={result.href + result.label}>
                   <Link
                     href={result.href}
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => {
                       setSearchOpen(false);
                       setQuery("");
                     }}
                   >
-                    {result.label}
+                    <span>{result.label}</span>
+                    <span>{result.group}</span>
                   </Link>
                 </li>
               ))}
@@ -208,6 +259,40 @@ export function PanelHeader({
         </form>
 
         <div className="hb-panel-mega-actions">
+          <div className="hb-panel-mega-theme" role="group" aria-label="Theme">
+            <button
+              type="button"
+              data-active={theme === "light" ? "true" : "false"}
+              onClick={() => onThemeChange("light")}
+              aria-label="Light mode"
+              title="Light"
+            >
+              <Sun className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              data-active={theme === "dark" ? "true" : "false"}
+              onClick={() => onThemeChange("dark")}
+              aria-label="Dark mode"
+              title="Dark"
+            >
+              <Moon className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const dark = window.matchMedia(
+                  "(prefers-color-scheme: dark)",
+                ).matches;
+                onThemeChange(dark ? "dark" : "light");
+              }}
+              aria-label="Use system theme"
+              title="System"
+            >
+              <Monitor className="h-4 w-4" />
+            </button>
+          </div>
+
           <button
             type="button"
             className="hb-panel-mega-agent"
@@ -223,38 +308,78 @@ export function PanelHeader({
             <span>Agent</span>
           </button>
 
-          <button
-            type="button"
-            className="hb-panel-mega-icon"
-            aria-label="Notifications"
-          >
-            <Bell className="h-[18px] w-[18px]" />
-            <span className="hb-panel-mega-dot" />
-          </button>
+          <div className="relative">
+            <button
+              type="button"
+              className="hb-panel-mega-icon"
+              aria-label="Notifications"
+              aria-expanded={notifyOpen}
+              onClick={(e) => {
+                e.stopPropagation();
+                setNotifyOpen((v) => !v);
+                setMenuOpen(false);
+              }}
+            >
+              <Bell className="h-[18px] w-[18px]" />
+              <span className="hb-panel-mega-dot" aria-hidden />
+            </button>
+            {notifyOpen ? (
+              <div
+                className="hb-panel-notify-menu"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <p className="px-3 pb-2 text-sm font-bold text-[var(--hb-p-text)]">
+                  Notifications
+                </p>
+                <div className="hb-panel-menu-divider" />
+                <nav className="space-y-0.5 px-2 py-1">
+                  <Link
+                    href={routes.accountOrders}
+                    className="hb-panel-menu-item"
+                    onClick={() => setNotifyOpen(false)}
+                  >
+                    <Activity className="h-4 w-4" />
+                    Domain orders
+                  </Link>
+                  <Link
+                    href={routes.accountWallet}
+                    className="hb-panel-menu-item"
+                    onClick={() => setNotifyOpen(false)}
+                  >
+                    <Wallet className="h-4 w-4" />
+                    Wallet activity
+                  </Link>
+                  <Link
+                    href={routes.accountSecurity}
+                    className="hb-panel-menu-item"
+                    onClick={() => setNotifyOpen(false)}
+                  >
+                    <Shield className="h-4 w-4" />
+                    Security alerts
+                  </Link>
+                </nav>
+                <div className="hb-panel-menu-divider" />
+                <p className="px-3 py-2 text-xs text-[var(--hb-p-muted)]">
+                  Email and push alerts for orders will appear here as we roll
+                  them out.
+                </p>
+              </div>
+            ) : null}
+          </div>
 
           <div className="relative">
             <button
               type="button"
               className="hb-panel-mega-avatar"
               aria-expanded={menuOpen}
+              aria-label="My account"
               onClick={(e) => {
                 e.stopPropagation();
                 setMenuOpen((v) => !v);
+                setNotifyOpen(false);
               }}
             >
-              {user.image ? (
-                <Image
-                  src={user.image}
-                  alt=""
-                  width={34}
-                  height={34}
-                  className="size-[34px] rounded-full object-cover"
-                />
-              ) : (
-                <span className="grid size-[34px] place-items-center rounded-full bg-white/20 text-xs font-black text-white">
-                  {initial}
-                </span>
-              )}
+              <PanelUserAvatar image={user.image} initial={initial} />
             </button>
 
             {menuOpen ? (
@@ -273,26 +398,13 @@ export function PanelHeader({
                 </div>
                 <div className="hb-panel-menu-divider" />
                 <nav className="space-y-0.5 px-2 py-1">
-                  <Link
-                    href={routes.account}
-                    className="hb-panel-menu-item"
-                    role="menuitem"
-                  >
+                  <Link href={routes.account} className="hb-panel-menu-item">
                     <User className="h-4 w-4" />
-                    Dashboard
-                  </Link>
-                  <Link
-                    href={routes.accountWallet}
-                    className="hb-panel-menu-item"
-                    role="menuitem"
-                  >
-                    <Wallet className="h-4 w-4" />
-                    Wallet
+                    Account information
                   </Link>
                   <Link
                     href={routes.accountBilling}
                     className="hb-panel-menu-item"
-                    role="menuitem"
                   >
                     <CreditCard className="h-4 w-4" />
                     Billing
@@ -300,57 +412,22 @@ export function PanelHeader({
                   <Link
                     href={routes.accountSecurity}
                     className="hb-panel-menu-item"
-                    role="menuitem"
                   >
                     <Shield className="h-4 w-4" />
                     Security
                   </Link>
                   <Link
-                    href={routes.accountSupport}
+                    href={`${routes.accountSecurity}#password`}
                     className="hb-panel-menu-item"
-                    role="menuitem"
                   >
-                    <Headphones className="h-4 w-4" />
-                    Support
+                    <KeyRound className="h-4 w-4" />
+                    Change password
                   </Link>
-                </nav>
-                <div className="hb-panel-menu-divider" />
-                <div className="px-3 py-2">
-                  <p className="mb-2 text-[11px] font-bold tracking-wide text-[var(--hb-p-muted)] uppercase">
-                    Appearance
+                  <p className="px-3 py-1.5 text-xs text-[var(--hb-p-muted)]">
+                    Two-factor authentication (Google Authenticator) — coming
+                    soon.
                   </p>
-                  <div className="hb-panel-theme-pills" role="group">
-                    <button
-                      type="button"
-                      data-active={theme === "light" ? "true" : "false"}
-                      onClick={() => onThemeChange("light")}
-                    >
-                      <Sun className="h-3.5 w-3.5" />
-                      Light
-                    </button>
-                    <button
-                      type="button"
-                      data-active={theme === "dark" ? "true" : "false"}
-                      onClick={() => onThemeChange("dark")}
-                    >
-                      <Moon className="h-3.5 w-3.5" />
-                      Dark
-                    </button>
-                    <button
-                      type="button"
-                      data-active="false"
-                      onClick={() => {
-                        const dark = window.matchMedia(
-                          "(prefers-color-scheme: dark)",
-                        ).matches;
-                        onThemeChange(dark ? "dark" : "light");
-                      }}
-                    >
-                      <Monitor className="h-3.5 w-3.5" />
-                      System
-                    </button>
-                  </div>
-                </div>
+                </nav>
                 <div className="hb-panel-menu-divider" />
                 <div className="p-2">
                   <button
