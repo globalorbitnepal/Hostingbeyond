@@ -56,13 +56,26 @@ describe(
           BEYOND_MASTER_MONTHLY_CAP_CENTS,
       );
 
+      /**
+       * Which of the 12 concurrent requests was hard-stopped is nondeterministic,
+       * so reconciling a fixed `-0` request would silently no-op whenever that
+       * particular request was the one rejected. Read the reservation that
+       * actually exists instead.
+       */
+      const reserved = await prisma.beyondMasterAiBudgetReservation.findFirst({
+        where: { monthKey, reconciledAt: null },
+        orderBy: { createdAt: "asc" },
+      });
+      assert.ok(reserved, "at least one reservation should have succeeded");
+      const reconcileRequestId = reserved!.requestId;
+
       const reconcileRuns = await Promise.all([
         reconcilePaidAiBudget({
-          requestId: `req-${monthKey}-0`,
+          requestId: reconcileRequestId,
           actualCents: 40,
         }),
         reconcilePaidAiBudget({
-          requestId: `req-${monthKey}-0`,
+          requestId: reconcileRequestId,
           actualCents: 40,
         }),
       ]);
