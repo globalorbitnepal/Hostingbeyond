@@ -557,19 +557,19 @@ html[data-hb-theme="light"] {
   border-bottom-color: rgba(167, 139, 250, 0.18);
   background:
     radial-gradient(
-      46% 128% at 0% 50%,
-      rgba(255, 252, 248, 0.9) 0%,
-      rgba(251, 244, 255, 0.52) 15%,
-      rgba(238, 228, 255, 0.26) 33%,
-      rgba(220, 208, 255, 0.1) 48%,
-      transparent 64%
+      50% 132% at 0% 50%,
+      rgba(255, 251, 246, 0.92) 0%,
+      rgba(254, 247, 255, 0.58) 14%,
+      rgba(242, 232, 255, 0.3) 32%,
+      rgba(225, 214, 255, 0.12) 50%,
+      transparent 66%
     ),
     radial-gradient(
-      42% 122% at 100% 50%,
-      rgba(253, 250, 255, 0.64) 0%,
-      rgba(240, 232, 255, 0.34) 16%,
-      rgba(216, 206, 252, 0.14) 36%,
-      transparent 62%
+      46% 128% at 100% 50%,
+      rgba(254, 250, 255, 0.72) 0%,
+      rgba(244, 236, 255, 0.4) 15%,
+      rgba(222, 212, 252, 0.16) 34%,
+      transparent 64%
     ),
     radial-gradient(
       120% 220% at 12% -40%,
@@ -582,6 +582,9 @@ html[data-hb-theme="light"] {
       transparent 55%
     ),
     linear-gradient(90deg, #3b0764 0%, #5b21b6 38%, #4338ca 72%, #312e81 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 20px 48px -26px rgba(0, 0, 0, 0.55);
 }
 
 .hb-panel-mega__edge {
