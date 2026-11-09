@@ -44,6 +44,7 @@ function mockCheckoutDeps(
 ): ProcessDomainTransferCheckoutDeps {
   return {
     resolveTransferTargetRegistrar: async () => ({ provider }),
+    assertTransferReady: async () => ({ ok: true }),
     searchDomainsWithProvider: async () => ({
       results: [takenDomainResult(domain)],
       source: "registrar",

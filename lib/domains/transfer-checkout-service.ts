@@ -48,7 +48,40 @@ export type ProcessDomainTransferCheckoutDeps = {
   searchDomainsWithProvider?: typeof searchDomainsWithProvider;
   getTransferRetailQuote?: typeof getTransferRetailQuote;
   resolveTransferTargetRegistrar?: typeof resolveTransferTargetRegistrar;
+  /** Live readiness check; tests stub it so fake domains stay offline-free. */
+  assertTransferReady?: (
+    domain: string,
+  ) => Promise<{ ok: true } | { ok: false; error: string }>;
 };
+
+/**
+ * Registrar + registry readiness gate. Runs before any wallet movement so a
+ * domain the registry will reject never costs the customer money.
+ */
+async function defaultAssertTransferReady(
+  domain: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const [availability, whois] = await Promise.all([
+    checkNameSiloTransferAvailability(domain),
+    lookupPublicWhois(domain).catch(() => null),
+  ]);
+  if (!availability.ok) {
+    return { ok: false, error: availability.reason };
+  }
+  const record = whois && !("error" in whois) ? whois : null;
+  const requirements = buildTransferRequirements({
+    registrarAvailable: true,
+    registeredOn: record?.registeredOn ?? null,
+    statuses: record?.statuses ?? [],
+  });
+  if (!transferRequirementsReady(requirements)) {
+    return {
+      ok: false,
+      error: `This domain cannot be transferred yet: ${transferBlockedSummary(requirements).join("; ")}.`,
+    };
+  }
+  return { ok: true };
+}
 
 export type RefreshTransferStatusDeps = {
   resolveProviderForTransferRecord?: typeof resolveProviderForTransferRecord;
@@ -125,28 +158,12 @@ export async function processDomainTransferCheckout(
    * Server-side readiness gate: never charge the wallet for a domain the
    * registry will reject (locked, too new, or not registered at all).
    */
-  const [transferAvailability, transferWhois] = await Promise.all([
-    checkNameSiloTransferAvailability(normalized.query),
-    lookupPublicWhois(normalized.query).catch(() => null),
-  ]);
-  if (!transferAvailability.ok) {
+  const assertReady = deps.assertTransferReady ?? defaultAssertTransferReady;
+  const readiness = await assertReady(normalized.query);
+  if (!readiness.ok) {
     return {
       ok: false as const,
-      error: transferAvailability.reason,
-      status: 409,
-    };
-  }
-  const transferWhoisRecord =
-    transferWhois && !("error" in transferWhois) ? transferWhois : null;
-  const transferRequirements = buildTransferRequirements({
-    registrarAvailable: true,
-    registeredOn: transferWhoisRecord?.registeredOn ?? null,
-    statuses: transferWhoisRecord?.statuses ?? [],
-  });
-  if (!transferRequirementsReady(transferRequirements)) {
-    return {
-      ok: false as const,
-      error: `This domain cannot be transferred yet: ${transferBlockedSummary(transferRequirements).join("; ")}.`,
+      error: readiness.error,
       status: 409,
     };
   }
