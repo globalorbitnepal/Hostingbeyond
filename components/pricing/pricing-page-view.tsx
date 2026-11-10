@@ -12,6 +12,7 @@ import {
   ArrowRight,
   Bot,
   Check,
+  Code2,
   Globe2,
   Headphones,
   Lock,
@@ -32,9 +33,10 @@ import { PricingMotionStage } from "@/components/pricing/pricing-motion-stage";
 import { PricingPlanPanel } from "@/components/pricing/pricing-plan-panel";
 import { BEYOND_AI_PUBLIC_ENABLED } from "@/config/beyond-ai-public";
 import { rewriteDeadBookingCta } from "@/lib/hosting/checkout";
-import { useLocale } from "@/components/locale/locale-provider";
 import { routes } from "@/config/routes";
+import { CatalogPrice } from "@/components/i18n/localized-text";
 import { domainHighlights } from "@/config/pricing-plans";
+import type { PublicHostingCatalog } from "@/lib/hosting/public-hosting-plans";
 import type {
   CmsPricingPageContent,
   PricingCategoryId,
@@ -80,7 +82,6 @@ function visiblePricingCategoryIds(): PricingCategoryId[] {
     "ecommerce",
     "domains",
     "ai-builder",
-    "vps",
     "ai-agents",
     "business-email",
   ];
@@ -90,19 +91,8 @@ function visiblePricingCategoryIds(): PricingCategoryId[] {
   return ids;
 }
 
-function parseCategoryFromHash(): PricingCategoryId {
-  if (typeof window === "undefined") return "websites";
-  const raw = window.location.hash.replace(/^#/, "");
-  const ids = visiblePricingCategoryIds();
-  return ids.includes(raw as PricingCategoryId)
-    ? (raw as PricingCategoryId)
-    : "websites";
-}
-
 function DomainsPricingBlock() {
-  const { formatPrice } = useLocale();
   const [query, setQuery] = useState("");
-  const basePrice = formatPrice("domain_yearly");
 
   const onSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -118,18 +108,24 @@ function DomainsPricingBlock() {
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-md">
             <p className="text-[14px] font-extrabold tracking-wide text-[#673de6] uppercase">
-              Domains from
+              .com first year
             </p>
-            <p className="font-heading mt-2 text-[clamp(2.2rem,4vw,3rem)] font-extrabold tracking-tight text-[#2f1c6a]">
-              {basePrice}
-              <span className="text-[1.1rem] font-bold text-[#64748b]">
-                {" "}
+            <p className="mt-2 text-[15px] font-semibold text-[#94a3b8] line-through">
+              <CatalogPrice usd={17.99} />
+            </p>
+            <p className="font-heading mt-0.5 flex items-end gap-2 text-[clamp(2.2rem,4vw,3rem)] font-extrabold tracking-tight text-[#2f1c6a]">
+              <CatalogPrice usd={9.99} />
+              <span className="pb-1 text-[1.1rem] font-bold text-[#64748b]">
                 /year
+              </span>
+              <span className="mb-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[12px] font-extrabold text-emerald-700 ring-1 ring-emerald-200">
+                Save 44%
               </span>
             </p>
             <p className="mt-2 text-[16.5px] leading-relaxed text-[#475569]">
               Free privacy protection, DNS management, and 24/7 support on every
-              domain you register with HostingBeyond.
+              domain you register with HostingBeyond. Renewal is shown at
+              checkout.
             </p>
           </div>
           <form
@@ -177,6 +173,14 @@ function DomainsPricingBlock() {
             <p className="font-heading mt-3 text-[1.75rem] font-extrabold text-[#2f1c6a]">
               {item.tld}
             </p>
+            <p className="mt-2 text-[13px] font-semibold text-[#94a3b8] line-through">
+              <CatalogPrice usd={item.originalUsd} />
+              /yr
+            </p>
+            <p className="text-[1.45rem] font-extrabold tracking-tight text-[#673de6]">
+              <CatalogPrice usd={item.usd} />
+              <span className="text-[13px] font-bold text-[#64748b]"> /yr</span>
+            </p>
             <p className="mt-1 text-[13px] text-[#64748b]">{item.note}</p>
             <span className="mt-4 inline-flex items-center gap-1 text-[13px] font-bold text-[#2563eb]">
               Check availability
@@ -192,28 +196,127 @@ function DomainsPricingBlock() {
   );
 }
 
+type PricingTabId = PricingCategoryId | "wordpress" | "nodejs" | "laravel";
+
+const HOSTING_TAB_META: Array<{
+  id: PricingTabId;
+  label: string;
+  icon: typeof Globe2;
+  slug?: string;
+  headline: string;
+  description: string;
+}> = [
+  {
+    id: "websites",
+    label: "Web Hosting",
+    icon: Globe2,
+    slug: "web-hosting",
+    headline: "Web hosting built for speed",
+    description:
+      "NVMe storage, free SSL, and four plans from Starter to Professional. Annual billing is 10% off.",
+  },
+  {
+    id: "wordpress",
+    label: "WordPress",
+    icon: Globe2,
+    slug: "wordpress-hosting",
+    headline: "WordPress hosting, managed",
+    description:
+      "One-click WordPress, free SSL, and four plans. Annual billing is 10% off the monthly price.",
+  },
+  {
+    id: "ecommerce",
+    label: "eCommerce",
+    icon: ShoppingBag,
+    slug: "ecommerce-hosting",
+    headline: "Online stores that convert",
+    description:
+      "WooCommerce hosting with secure checkout. Four plans. Annual billing is 10% off.",
+  },
+  {
+    id: "nodejs",
+    label: "Node.js",
+    icon: Code2,
+    slug: "nodejs-hosting",
+    headline: "Node.js hosting on NVMe",
+    description:
+      "Node.js, Next.js, and Express with SSH and Git on every plan. Annual billing is 10% off.",
+  },
+  {
+    id: "laravel",
+    label: "Laravel",
+    icon: Code2,
+    slug: "laravel-hosting",
+    headline: "Laravel hosting for PHP apps",
+    description:
+      "Composer, cron, queues, and NVMe. Four plans. Annual billing is 10% off.",
+  },
+];
+
+function parseTabFromHash(): PricingTabId {
+  if (typeof window === "undefined") return "websites";
+  const raw = window.location.hash.replace(/^#/, "");
+  if (HOSTING_TAB_META.some((tab) => tab.id === raw)) {
+    return raw as PricingTabId;
+  }
+  const ids = visiblePricingCategoryIds();
+  return ids.includes(raw as PricingCategoryId)
+    ? (raw as PricingCategoryId)
+    : "websites";
+}
+
 export function PricingPageView({
   pricing,
   hostingPlans,
+  launchCatalog = [],
 }: {
   pricing: CmsPricingPageContent;
   hostingPlans: CmsHostingPlansContent;
+  launchCatalog?: PublicHostingCatalog[];
 }) {
   const reduceMotion = useReducedMotion();
-  const [active, setActive] = useState<PricingCategoryId>("websites");
+  const [active, setActive] = useState<PricingTabId>(parseTabFromHash);
   const [billing, setBilling] = useState<"annually" | "monthly">("annually");
 
-  const categories = useMemo(
+  const catalogBySlug = useMemo(() => {
+    const map = new Map(launchCatalog.map((row) => [row.slug, row]));
+    return map;
+  }, [launchCatalog]);
+
+  const extraCategories = useMemo(
     () =>
       [...pricing.categories]
-        .filter((c) => c.visible !== false)
+        .filter((c) => c.visible !== false && c.id !== "vps")
         .filter((c) => BEYOND_AI_PUBLIC_ENABLED || c.id !== "ai-builder")
+        .filter(
+          (c) =>
+            c.id === "domains" ||
+            c.id === "ai-agents" ||
+            c.id === "business-email" ||
+            c.id === "ai-builder",
+        )
         .sort((a, b) => a.order - b.order),
     [pricing.categories],
   );
 
+  const tabs = useMemo(
+    () => [
+      ...HOSTING_TAB_META.filter(
+        (tab) => !tab.slug || catalogBySlug.has(tab.slug),
+      ),
+      ...extraCategories.map((cat) => ({
+        id: cat.id as PricingTabId,
+        label: categoryTabLabel[cat.id],
+        icon: categoryIcons[cat.id],
+        headline: cat.headline,
+        description: cat.description,
+      })),
+    ],
+    [catalogBySlug, extraCategories],
+  );
+
   const syncFromHash = useCallback(() => {
-    setActive(parseCategoryFromHash());
+    setActive(parseTabFromHash());
   }, []);
 
   useEffect(() => {
@@ -222,7 +325,7 @@ export function PricingPageView({
     return () => window.removeEventListener("hashchange", syncFromHash);
   }, [syncFromHash]);
 
-  const selectCategory = (id: PricingCategoryId) => {
+  const selectCategory = (id: PricingTabId) => {
     setActive(id);
     window.history.replaceState(null, "", `#${id}`);
     document.getElementById("pricing-offers")?.scrollIntoView({
@@ -231,15 +334,23 @@ export function PricingPageView({
     });
   };
 
-  const activeMeta = getCategoryById(pricing, active);
+  const hostingTab = HOSTING_TAB_META.find((tab) => tab.id === active);
+  const cmsCategory =
+    active === "wordpress" || active === "nodejs" || active === "laravel"
+      ? null
+      : getCategoryById(pricing, active as PricingCategoryId);
+  const activeHeadline = hostingTab?.headline ?? cmsCategory?.headline ?? "";
+  const activeDescription =
+    hostingTab?.description ?? cmsCategory?.description ?? "";
+  const activeHighlights = cmsCategory?.highlights ?? [];
 
-  const websitePlans = useMemo(
-    () =>
-      [...(hostingPlans.plans ?? [])]
-        .filter((p) => p.visible !== false)
-        .sort((a, b) => a.order - b.order),
-    [hostingPlans.plans],
-  );
+  const plansForSlug = (slug: string) => {
+    const row = catalogBySlug.get(slug);
+    const source = row?.plans ?? (slug === "web-hosting" ? hostingPlans : null);
+    return [...(source?.plans ?? [])]
+      .filter((p) => p.visible !== false)
+      .sort((a, b) => a.order - b.order);
+  };
 
   const planPanelForCategory = (): {
     plans?: CmsHostingPlan[];
@@ -250,31 +361,24 @@ export function PricingPageView({
     ecommerce?: boolean;
     productCheckoutSlug?: string;
   } => {
+    if (hostingTab?.slug) {
+      const row = catalogBySlug.get(hostingTab.slug);
+      return {
+        hostingContent: row?.plans ?? hostingPlans,
+        plans: plansForSlug(hostingTab.slug),
+        columns: 4,
+        showBilling: true,
+        saveBadge: hostingPlans.saveBadge,
+        productCheckoutSlug: hostingTab.slug,
+      };
+    }
     switch (active) {
-      case "websites":
-        return {
-          hostingContent: hostingPlans,
-          plans: websitePlans,
-          columns: 4,
-          showBilling: true,
-          saveBadge: hostingPlans.saveBadge,
-          productCheckoutSlug: "web-hosting",
-        };
-      case "ecommerce":
-        return {
-          plans: pricing.ecommercePlans,
-          columns: 4,
-          showBilling: false,
-          saveBadge: activeMeta.saveBadge,
-          ecommerce: true,
-          productCheckoutSlug: "ecommerce-hosting",
-        };
       case "vps":
         return {
           plans: pricing.vpsPlans,
           columns: 4,
           showBilling: true,
-          saveBadge: activeMeta.saveBadge,
+          saveBadge: cmsCategory?.saveBadge,
           productCheckoutSlug: "kvm-vps",
         };
       case "ai-builder":
@@ -282,14 +386,14 @@ export function PricingPageView({
           plans: pricing.aiBuilderPlans,
           columns: 4,
           showBilling: true,
-          saveBadge: activeMeta.saveBadge,
+          saveBadge: cmsCategory?.saveBadge,
         };
       case "ai-agents":
         return {
           plans: pricing.aiAgentPlans,
           columns: 3,
           showBilling: true,
-          saveBadge: activeMeta.saveBadge,
+          saveBadge: cmsCategory?.saveBadge,
         };
       case "business-email":
         return {
@@ -354,10 +458,10 @@ export function PricingPageView({
               aria-label="Pricing categories"
             >
               <div className="flex [scrollbar-width:none] flex-nowrap items-center justify-center gap-1 overflow-x-auto [-ms-overflow-style:none] sm:gap-1.5 [&::-webkit-scrollbar]:hidden">
-                {categories.map((cat) => {
-                  const Icon = categoryIcons[cat.id];
+                {tabs.map((cat) => {
+                  const Icon = cat.icon;
                   const selected = active === cat.id;
-                  const tabLabel = categoryTabLabel[cat.id];
+                  const tabLabel = cat.label;
                   return (
                     <button
                       key={cat.id}
@@ -391,14 +495,16 @@ export function PricingPageView({
         <div className="hb-shell">
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="font-heading text-[clamp(1.9rem,3.6vw,2.75rem)] font-extrabold tracking-[-0.04em] text-[#2f1c6a]">
-              {activeMeta.headline}
+              {activeHeadline}
             </h2>
             <p className="mt-3 text-[16.5px] leading-relaxed font-medium text-slate-600 sm:text-[17px]">
-              {activeMeta.description}
+              {activeDescription}
             </p>
           </div>
 
-          <PricingHighlights highlights={activeMeta.highlights} />
+          {activeHighlights.length ? (
+            <PricingHighlights highlights={activeHighlights} />
+          ) : null}
 
           <div className="mt-12" role="tabpanel">
             {active === "domains" ? (
@@ -438,14 +544,16 @@ export function PricingPageView({
             ))}
           </ul>
 
-          <PricingMotionStage category={activeMeta} />
+          {cmsCategory ? <PricingMotionStage category={cmsCategory} /> : null}
         </div>
       </section>
 
       <PricingFaqsSection
         content={pricing}
-        activeCategoryId={active}
-        categories={categories}
+        activeCategoryId={(cmsCategory?.id ?? "websites") as PricingCategoryId}
+        categories={pricing.categories.filter(
+          (category) => category.visible !== false && category.id !== "vps",
+        )}
       />
 
       <section className="hb-band-purple relative overflow-hidden py-14 sm:py-16">

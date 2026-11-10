@@ -6,7 +6,10 @@ import {
   buildPublicPageMetadata,
   getPricingPageContent,
 } from "@/lib/orbit/content";
-import { getPublicWebHostingPlans } from "@/lib/hosting/public-hosting-plans";
+import {
+  getPublicLaunchHostingCatalog,
+  getPublicWebHostingPlans,
+} from "@/lib/hosting/public-hosting-plans";
 import {
   getLocalizedPublicChrome,
   localizeForPreferences,
@@ -16,21 +19,29 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPublicPageMetadata("pricing", "/pricing", {
-    title: "Hosting & Domain Pricing — Transparent Plans",
+    title: "Hosting Plans & Pricing | HostingBeyond",
     description:
-      "Compare HostingBeyond pricing for websites, ecommerce, domains, VPS and business email. Premium hosting with transparent plans and 24/7 support.",
+      "Compare web, WordPress, ecommerce, and Node.js hosting. Four plans on each product. Annual billing is 10% off the monthly price.",
     image: "/images/home/domains.webp",
   });
 }
 
 export default async function PricingPage() {
-  const [{ sections, settings, preferences }, rawPricing, publicHostingPlans] =
-    await Promise.all([
-      getLocalizedPublicChrome(),
-      getPricingPageContent(),
-      getPublicWebHostingPlans(),
-    ]);
+  const [
+    { sections, settings, preferences },
+    rawPricing,
+    publicHostingPlans,
+    launchCatalog,
+  ] = await Promise.all([
+    getLocalizedPublicChrome(),
+    getPricingPageContent(),
+    getPublicWebHostingPlans(),
+    getPublicLaunchHostingCatalog(),
+  ]);
   const pricing = localizeForPreferences(preferences, rawPricing);
+  pricing.categories = pricing.categories.filter(
+    (category) => category.id !== "vps",
+  );
   const hostingPlans = publicHostingPlans;
 
   return (
@@ -45,7 +56,11 @@ export default async function PricingPage() {
           logoPath={settings.logoPath}
         />
       </div>
-      <PricingPageView pricing={pricing} hostingPlans={hostingPlans} />
+      <PricingPageView
+        pricing={pricing}
+        hostingPlans={hostingPlans}
+        launchCatalog={launchCatalog}
+      />
       {sections.footer?.visible !== false ? (
         <SiteFooter content={sections.footer} logoPath={settings.logoPath} />
       ) : null}

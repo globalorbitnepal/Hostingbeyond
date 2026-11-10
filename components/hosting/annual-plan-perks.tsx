@@ -1,6 +1,5 @@
 import { Gift } from "lucide-react";
 
-import { BEYOND_AI_PUBLIC_ENABLED } from "@/config/beyond-ai-public";
 import type { CmsHostingPlan } from "@/lib/orbit/defaults";
 
 export function formatAnnualCreditLine(raw: string): string {
@@ -18,8 +17,6 @@ export function getAnnualPerkLines(
   const lines: string[] = [];
   const domain = plan.domainPerk?.trim();
   if (domain) lines.push(domain);
-  const credit = formatAnnualCreditLine(plan.annualCredit ?? "");
-  if (credit && BEYOND_AI_PUBLIC_ENABLED) lines.push(credit);
   return lines;
 }
 
@@ -30,7 +27,7 @@ export function filterPlanFeatures(
   const perkKeys = new Set(perkLines.map((line) => line.toLowerCase()));
   return features.filter((feature) => {
     const value = feature.toLowerCase();
-    if (!BEYOND_AI_PUBLIC_ENABLED && value.includes("beyond ai")) return false;
+    if (value.includes("beyond ai")) return false;
     if (perkKeys.has(value)) return false;
     return !(
       value.includes("beyond ai credit") ||

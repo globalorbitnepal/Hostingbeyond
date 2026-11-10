@@ -71,7 +71,7 @@ export function PricingPlanPanel({
               type="button"
               onClick={() => setBilling("monthly")}
               className={cn(
-                "rounded-full px-4 py-1.5 text-[13px] font-bold transition",
+                "min-h-11 touch-manipulation rounded-full px-4 py-2 text-[13px] font-bold transition",
                 billing === "monthly"
                   ? "bg-[#2f1c6a] text-white"
                   : "text-[#64748b] hover:text-[#2f1c6a]",
@@ -83,9 +83,9 @@ export function PricingPlanPanel({
               type="button"
               onClick={() => setBilling("annually")}
               className={cn(
-                "rounded-full px-4 py-1.5 text-[13px] font-bold transition",
+                "min-h-11 touch-manipulation rounded-full px-4 py-2 text-[13px] font-bold transition",
                 billing === "annually"
-                  ? "bg-emerald-500 text-white"
+                  ? "bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-white"
                   : "text-[#64748b] hover:text-[#2f1c6a]",
               )}
             >
@@ -93,7 +93,7 @@ export function PricingPlanPanel({
             </button>
           </div>
           {saveBadgeLabel ? (
-            <span className="rounded-full bg-emerald-100 px-3 py-1.5 text-[12px] font-extrabold text-emerald-800">
+            <span className="inline-flex min-h-11 items-center rounded-full bg-emerald-50 px-3 py-1.5 text-[12px] font-extrabold text-emerald-800 ring-1 ring-emerald-200">
               {saveBadgeLabel}
             </span>
           ) : null}

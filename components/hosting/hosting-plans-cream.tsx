@@ -234,7 +234,7 @@ export function HostingPlansCream({
               className={cn(
                 "min-h-11 touch-manipulation rounded-full px-5 py-2.5 text-[14px] font-extrabold transition-all duration-200 sm:px-6",
                 billing === "annually"
-                  ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-[0_6px_16px_-6px_rgba(16,185,129,0.55)]"
+                  ? "bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-white shadow-[0_6px_16px_-6px_rgba(103,61,230,0.55)]"
                   : "text-slate-600 hover:text-[#2f1c6a]",
               )}
             >
@@ -242,7 +242,7 @@ export function HostingPlansCream({
             </button>
           </div>
           {saveBadgeLabel ? (
-            <span className="inline-flex min-h-11 items-center rounded-full bg-emerald-100 px-4 py-2 text-[13px] font-extrabold text-emerald-800 ring-1 ring-emerald-200/80">
+            <span className="inline-flex min-h-11 items-center rounded-full bg-emerald-50 px-4 py-2 text-[13px] font-extrabold text-emerald-800 ring-1 ring-emerald-200">
               {saveBadgeLabel}
             </span>
           ) : null}

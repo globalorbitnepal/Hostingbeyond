@@ -53,7 +53,7 @@ export function BeyondMasterWelcomePremium({
         consultant.
       </h2>
       <p className="hb-bmai-premium-lead">
-        I can help with domains, hosting, VPS, and business email.
+        I can help with domains, hosting, and business email.
       </p>
       <div className="hb-bmai-premium-actions" role="list">
         {PREMIUM_ACTIONS.map(({ id, label, prompt, Icon }) => (

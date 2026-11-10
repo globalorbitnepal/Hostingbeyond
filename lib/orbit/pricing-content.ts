@@ -107,7 +107,7 @@ function faqBlock(
 const websiteFaqs = faqBlock("websites", [
   [
     "What is included in HostingBeyond website hosting?",
-    "Every Beyond plan includes NVMe storage, free SSL, managed WordPress, email accounts (tiered), backups, and 24/7 support. You also get Beyond AI credits on annual billing so you can publish pages faster without a separate builder subscription.",
+    "Every plan includes NVMe storage, free SSL, managed WordPress, email accounts (tiered), backups, and 24/7 support.",
   ],
   [
     "Can I host multiple websites on one plan?",
@@ -135,7 +135,7 @@ const websiteFaqs = faqBlock("websites", [
   ],
   [
     "Do you help with migration?",
-    "Plus, Pro, Ultimate, and ecommerce tiers include free website migration assistance from most popular hosts.",
+    "Growth, Business, and Professional include free website migration assistance from most popular hosts. Starter can add migration with support.",
   ],
   [
     "Is SSL really free?",
@@ -162,7 +162,7 @@ const ecommerceFaqs = faqBlock("ecommerce", [
   ],
   [
     "How many products can I list?",
-    "Commerce Essential supports growing catalogs; higher tiers add staging, priority support, and headroom for large SKU counts and traffic spikes.",
+    "Starter is one store. Growth, Business, and Professional add more stores, RAM, staging, and daily backups.",
   ],
   [
     "Is PCI compliance included?",
@@ -170,15 +170,15 @@ const ecommerceFaqs = faqBlock("ecommerce", [
   ],
   [
     "Can I migrate an existing store?",
-    "Commerce Plus and above include migration help for files, database, and DNS cutover to minimize downtime.",
+    "Growth, Business, and Professional include migration help for files, database, and DNS cutover.",
   ],
   [
     "Do ecommerce plans include email?",
     "Yes — branded mailboxes are included per tier so order notifications and support addresses match your domain.",
   ],
   [
-    "What makes HostingBeyond cheaper than other ecommerce hosts?",
-    "Our ecommerce list prices are set about 5% below comparable Hostinger-style promos while including NVMe, SSL, and AI credits on annual plans.",
+    "How does annual billing work?",
+    "Annual billing is 10% off the monthly price, paid for 12 months. Monthly billing is the full rate. The plan cards show both.",
   ],
   [
     "Can I use page builders with my store?",
@@ -186,7 +186,7 @@ const ecommerceFaqs = faqBlock("ecommerce", [
   ],
   [
     "Is there staging for my shop?",
-    "Commerce Cloud and Enterprise include staging-friendly resources and priority support for testing updates before peak sales.",
+    "Business and Professional include staging and more RAM so you can test updates before a sale.",
   ],
 ]);
 
@@ -240,7 +240,7 @@ const aiBuilderFaqs = faqBlock("ai-builder", [
   ],
   [
     "Do I need separate hosting for AI sites?",
-    "No on annual Beyond hosting plans — AI credits are included. Standalone Creator/Business tiers are available if you only need the builder.",
+    "Hosting plans do not include a separate website builder subscription. You can install WordPress in one click from the panel.",
   ],
   [
     "Can I edit AI-generated pages?",
@@ -259,8 +259,8 @@ const aiBuilderFaqs = faqBlock("ai-builder", [
     "Published sites receive free SSL when pointed to HostingBeyond hosting or builder hosting endpoints.",
   ],
   [
-    "How do AI credits work?",
-    "Annual website plans include monthly AI credits scaled to tier — shown on each hosting card.",
+    "How is Beyond AI billed?",
+    "Beyond AI is a separate product with its own plans. Hosting plans on this page do not include AI credit.",
   ],
   [
     "Can I connect my own domain?",
@@ -433,12 +433,12 @@ function defaultHighlights(id: PricingCategoryId): CmsPricingHighlight[] {
         icon: "globe",
       },
       {
-        id: "ai",
+        id: "email",
         visible: true,
         order: 3,
-        title: "Beyond AI credits",
-        description: "Publish faster with AI on annual plans.",
-        icon: "sparkles",
+        title: "Professional email",
+        description: "Add branded mailboxes on your domain.",
+        icon: "mail",
       },
     ],
     ecommerce: [
@@ -665,7 +665,7 @@ function defaultCategories(): CmsPricingCategoryContent[] {
         "Watch how HostingBeyond serves pages from NVMe with free SSL and managed WordPress — the same stack powering our homepage plans.",
       mediaSrc: "/images/home/wordpress.webp",
       mediaAlt: "WordPress website performance on HostingBeyond",
-      saveBadge: "Save 70%",
+      saveBadge: "Save 10%",
     },
     {
       id: "ecommerce",
@@ -675,13 +675,13 @@ function defaultCategories(): CmsPricingCategoryContent[] {
       shortLabel: "Stores",
       headline: "Online stores that convert",
       description:
-        "Hostinger-style ecommerce tiers, priced about 5% lower — WooCommerce, secure checkout, and room to grow.",
+        "WooCommerce hosting with secure checkout and room to grow. Annual billing is 10% off the monthly price.",
       showcaseTitle: "Checkout-ready WooCommerce hosting",
       showcaseBody:
-        "From first product to flash-sale traffic — commerce plans bundle SSL, backups, and AI credits without platform transaction fees.",
+        "From first product to flash-sale traffic — commerce plans bundle SSL and backups without platform transaction fees.",
       mediaSrc: "/images/hosting/ecommerce.jpg",
       mediaAlt: "Ecommerce dashboard and storefront",
-      saveBadge: "5% below typical promos",
+      saveBadge: "Save 10%",
     },
     {
       id: "domains",
@@ -717,7 +717,7 @@ function defaultCategories(): CmsPricingCategoryContent[] {
     },
     {
       id: "vps",
-      visible: true,
+      visible: false,
       order: 4,
       label: "VPS Hosting",
       shortLabel: "VPS",
@@ -782,7 +782,7 @@ function defaultCategories(): CmsPricingCategoryContent[] {
   }));
 }
 
-/** Ecommerce tiers — international launch catalog (USD, 20% annual). */
+/** Ecommerce tiers — international launch catalog (USD, 10% annual). */
 export function defaultEcommercePlans(): CmsHostingPlan[] {
   const product = catalogForSlug("ecommerce-hosting");
   if (!product) return [];
@@ -870,14 +870,13 @@ export function defaultPricingPageContent(): CmsPricingPageContent {
     heroTitle: "Everything you need to",
     heroTitleAccent: "grow online",
     heroDescription:
-      "Premium HostingBeyond pricing for websites, stores, domains, AI, VPS, agents, and mail — transparent, annual savings, and 24/7 humans behind the panel.",
+      "Compare web, WordPress, ecommerce, Node.js, and Laravel hosting. Four plans on each product. Annual billing is 10% off.",
     heroMediaSrc: "/images/home/ai-hosting-stage.png",
     heroMediaAlt: "HostingBeyond premium hosting platform",
     trustPills: [
       { id: "refund", visible: true, label: "30-day money-back" },
       { id: "support", visible: true, label: "24/7 expert support" },
       { id: "ssl", visible: true, label: "Free SSL on hosting" },
-      { id: "ai", visible: true, label: "Beyond AI included" },
     ],
     categories: defaultCategories(),
     ecommercePlans: defaultEcommercePlans(),
@@ -908,7 +907,17 @@ function mergeFaqs(
 ): CmsFaqItem[] {
   if (!stored?.length) return defaults;
   const byId = new Map(stored.map((item) => [item.id, item]));
-  return defaults.map((item) => ({ ...item, ...byId.get(item.id) }));
+  const stale =
+    /5%\s*(below|lower)|Hostinger|Commerce Plus|Commerce Cloud|Commerce Essential|Beyond Essential|Plus,\s*Pro/;
+  return defaults.map((item) => {
+    const storedItem = byId.get(item.id);
+    if (!storedItem) return item;
+    const answer =
+      storedItem.answer && stale.test(storedItem.answer)
+        ? item.answer
+        : storedItem.answer || item.answer;
+    return { ...item, ...storedItem, answer };
+  });
 }
 
 function mergePlansById(
@@ -939,20 +948,52 @@ export function mergePricingPageContent(
   const categories = defaults.categories.map((cat) => {
     const patch = stored.categories?.find((c) => c.id === cat.id);
     if (!patch) return cat;
+    const staleMarketing =
+      /Hostinger|5%\s*(below|lower)|Save 70%|Beyond Essential|Commerce Plus|Plus, Pro|AI credits/;
+    const description =
+      patch.description && staleMarketing.test(patch.description)
+        ? cat.description
+        : patch.description?.trim() || cat.description;
+    const showcaseBody =
+      patch.showcaseBody && staleMarketing.test(patch.showcaseBody)
+        ? cat.showcaseBody
+        : patch.showcaseBody?.trim() || cat.showcaseBody;
     return {
       ...cat,
       ...patch,
-      highlights: patch.highlights?.length ? patch.highlights : cat.highlights,
+      description,
+      showcaseBody,
+      visible: cat.id === "vps" ? false : patch.visible !== false,
+      saveBadge:
+        cat.id === "websites" || cat.id === "ecommerce"
+          ? "Save 10%"
+          : patch.saveBadge?.trim() || cat.saveBadge,
+      highlights: (patch.highlights?.length
+        ? patch.highlights
+        : cat.highlights
+      ).filter(
+        (item) =>
+          item.id !== "ai" &&
+          !/AI credit|Beyond AI/i.test(`${item.title} ${item.description}`),
+      ),
       faqs: mergeFaqs(cat.faqs, patch.faqs),
     };
   });
 
+  const heroDescription =
+    stored.heroDescription &&
+    /\bVPS\b|Hostinger|70%|AI, agents/.test(stored.heroDescription)
+      ? defaults.heroDescription
+      : stored.heroDescription?.trim() || defaults.heroDescription;
+
   return {
     ...defaults,
     ...stored,
-    trustPills: stored.trustPills?.length
+    heroDescription,
+    trustPills: (stored.trustPills?.length
       ? stored.trustPills
-      : defaults.trustPills,
+      : defaults.trustPills
+    ).filter((pill) => pill.id !== "ai" && !/Beyond AI/i.test(pill.label)),
     categories,
     ecommercePlans: mergePlansById(
       defaults.ecommercePlans,

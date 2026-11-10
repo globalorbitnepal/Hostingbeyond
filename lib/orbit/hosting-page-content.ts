@@ -62,6 +62,16 @@ function text(value: unknown, fallback: string) {
   return typeof value === "string" && value.trim() ? value : fallback;
 }
 
+/** Retired plan names (Plus / Pro / Ultimate / Beyond Essential) must not ship. */
+const STALE_PLAN_COPY =
+  /\b(Beyond Essential|Beyond Plus|Beyond Pro|Beyond Ultimate|Commerce Essential|Commerce Plus|Plus, Pro, and Ultimate|Plus plans)\b/;
+
+function currentPlanCopy(value: unknown, fallback: string) {
+  const stored = typeof value === "string" ? value.trim() : "";
+  if (!stored || STALE_PLAN_COPY.test(stored)) return fallback;
+  return stored;
+}
+
 function mergeStoredList<T extends { id: string; visible?: boolean }>(
   defaults: T[],
   stored: T[] | undefined | null,
@@ -151,14 +161,6 @@ export function defaultHostingPageContent(): CmsHostingPageContent {
           "Add mailboxes on your domain or connect HostingBeyond Mail in one account.",
         icon: "mail",
       },
-      {
-        id: "ai",
-        visible: true,
-        title: "Beyond AI credit",
-        description:
-          "Annual plans include AI credit to draft pages, copy, and automations.",
-        icon: "sparkles",
-      },
     ],
 
     wordpressHeading: "Built for WordPress & WooCommerce",
@@ -167,7 +169,7 @@ export function defaultHostingPageContent(): CmsHostingPageContent {
     wordpressBullets: [
       "One-click WordPress install",
       "Automatic security patches",
-      "Free migration on Plus plans and above",
+      "Free migration on Growth, Business, and Professional",
       "WooCommerce-ready PHP & MariaDB",
     ],
     wordpressCtaLabel: "Start with WordPress hosting",
@@ -214,14 +216,14 @@ export function defaultHostingPageContent(): CmsHostingPageContent {
         visible: true,
         question: "Can you migrate my existing website?",
         answer:
-          "Yes. Plus, Pro, and Ultimate plans include free website migration. Our team helps move files and databases with minimal downtime.",
+          "Yes. Growth, Business, and Professional include free website migration. Our team moves files and databases with minimal downtime. Starter can be migrated as a paid request.",
       },
       {
         id: "billing",
         visible: true,
         question: "Monthly vs annual billing?",
         answer:
-          "Annual billing offers the lowest effective monthly rate. You can view both prices on this page and switch before checkout.",
+          "Annual billing is 10% off the monthly price, paid upfront for 12 months. The cards show the equivalent monthly rate and the yearly total. Monthly billing has no discount.",
       },
       {
         id: "refund",
@@ -282,13 +284,14 @@ export function mergeHostingPageContent(
       defaults.featuresDescription,
     ),
     wordpressHeading: text(stored.wordpressHeading, defaults.wordpressHeading),
-    wordpressDescription: text(
+    wordpressDescription: currentPlanCopy(
       stored.wordpressDescription,
       defaults.wordpressDescription,
     ),
     wordpressBullets:
       stored.wordpressBullets?.length &&
-      stored.wordpressBullets.some((b) => b.trim())
+      stored.wordpressBullets.some((b) => b.trim()) &&
+      !stored.wordpressBullets.some((b) => STALE_PLAN_COPY.test(b))
         ? stored.wordpressBullets
         : defaults.wordpressBullets,
     wordpressCtaLabel: text(
@@ -325,11 +328,15 @@ export function mergeHostingPageContent(
         description: text(item.description, base.description),
         icon: (item.icon ?? base.icon) as CmsHostingPageFeature["icon"],
       }),
+    ).filter(
+      (item) =>
+        item.id !== "ai" &&
+        !/AI credit|Beyond AI/i.test(`${item.title} ${item.description}`),
     ),
     faqs: mergeStoredList(defaults.faqs, stored.faqs, (item, base) => ({
       ...base,
       question: text(item.question, base.question),
-      answer: text(item.answer, base.answer),
+      answer: currentPlanCopy(item.answer, base.answer),
     })),
   };
 }

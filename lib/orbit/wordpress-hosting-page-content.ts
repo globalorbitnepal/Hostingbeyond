@@ -87,7 +87,7 @@ export function defaultWordPressHostingPageContent(): CmsHostingPageContent {
     wordpressBullets: [
       "Staging-friendly file & database tools",
       "WooCommerce-optimized PHP",
-      "Free migration on Plus plans and above",
+      "Free migration on Growth, Business, and Professional",
       "Daily backups on higher tiers",
     ],
     wordpressCtaLabel: "Start your WordPress site",
@@ -127,7 +127,7 @@ export function defaultWordPressHostingPageContent(): CmsHostingPageContent {
         visible: true,
         question: "Will you migrate my WordPress site?",
         answer:
-          "Free assisted migration is included on Plus, Pro, and Ultimate plans. Share your current host details and we move files and database with minimal downtime.",
+          "Free assisted migration is included on Growth, Business, and Professional. Share your current host details and we move files and the database with minimal downtime.",
       },
       {
         id: "updates",
@@ -141,7 +141,7 @@ export function defaultWordPressHostingPageContent(): CmsHostingPageContent {
         visible: true,
         question: "Monthly vs annual billing?",
         answer:
-          "Annual billing gives the lowest effective monthly rate. Toggle prices on this page before checkout — renewal rates are always shown upfront.",
+          "Annual billing is 10% off the monthly price, paid for 12 months. Toggle the prices on this page before checkout. Monthly billing is the full rate.",
       },
     ],
 

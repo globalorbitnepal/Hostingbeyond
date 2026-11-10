@@ -1723,7 +1723,12 @@ export function defaultFooterSection(): CmsFooterContent {
             label: "WordPress Hosting",
             href: `${routes.hosting}/wordpress`,
           },
-          { id: "vps", label: "VPS Hosting", href: routes.vps },
+          {
+            id: "ecommerce",
+            label: "eCommerce Hosting",
+            href: `${routes.hosting}/ecommerce`,
+          },
+          { id: "nodejs", label: "Node.js Hosting", href: "/nodejs-hosting" },
           { id: "email", label: "Business Email", href: routes.businessEmail },
           { id: "domains", label: "Domain Names", href: routes.domains },
           {
@@ -3478,7 +3483,10 @@ function mergeFooterSection(
             visible: column.visible !== false,
             order: typeof column.order === "number" ? column.order : index,
             title: column.title || fallback.title,
-            links: mergeFooterLinks(column.links, fallback.links),
+            links: mergeFooterLinks(column.links, fallback.links).filter(
+              (link) =>
+                !/\/vps\b|kvm-vps/i.test(link.href) && link.id !== "vps",
+            ),
           };
         })
       : defaults.columns;
@@ -3851,6 +3859,9 @@ export function mergeHomeSections(
           } satisfies CmsSolutionProduct;
         })
       : defaultSolutionProducts;
+  const liveSolutionProducts = solutionProducts.filter(
+    (product) => product.id !== "vps",
+  );
 
   const storedHero: Partial<CmsHeroContent> = stored.hero ?? {};
   const storedPartners = Array.isArray(storedHero.technologyPartners)
@@ -3944,7 +3955,7 @@ export function mergeHomeSections(
         ...defaults.solutions,
         ...stored.solutions,
         visible: stored.solutions?.visible !== false,
-        products: solutionProducts.sort((a, b) => a.order - b.order),
+        products: liveSolutionProducts.sort((a, b) => a.order - b.order),
       },
       products: {
         ...defaults.products,
@@ -4008,9 +4019,13 @@ export function mergeHomeSections(
         scaleHint:
           stored.hostingPlans?.scaleHint?.trim() ||
           defaults.hostingPlans.scaleHint,
-        saveBadge:
-          stored.hostingPlans?.saveBadge?.trim() ||
-          defaults.hostingPlans.saveBadge,
+        saveBadge: (() => {
+          const raw =
+            stored.hostingPlans?.saveBadge?.trim() ||
+            defaults.hostingPlans.saveBadge;
+          // Annual prepaid is 10%. Drop retired "Save 70%" marketing copy.
+          return /(?<!1)0%|70%|50%|88%/.test(raw) ? "Save 10%" : raw;
+        })(),
         annualToggleLabel: /50%/.test(
           stored.hostingPlans?.annualToggleLabel || "",
         )
@@ -4069,7 +4084,14 @@ export function mergeHomeSections(
           (item) => item.label === "Domains",
         );
         return next.map((item) => {
-          if (!/^\/domains(\/|$)/.test(item.href)) return item;
+          const children = item.children?.filter(
+            (child) =>
+              !/\/vps\b|kvm-vps/i.test(child.href) &&
+              !/\bvps\b/i.test(child.label),
+          );
+          if (!/^\/domains(\/|$)/.test(item.href)) {
+            return children ? { ...item, children } : item;
+          }
           return {
             ...item,
             href: routes.domainSearch,

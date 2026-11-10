@@ -9,9 +9,9 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   return developerHostingMetadata("nodejs-hosting", {
-    title: "Node.js Hosting Plans | HostingBeyond",
+    title: "Node.js Hosting — Deploy Apps on NVMe | HostingBeyond",
     description:
-      "Host Node.js APIs and full-stack JavaScript apps with the Node.js runtime on Pro and above, npm over SSH, MySQL, NVMe storage and free automatic SSL.",
+      "Node.js, Next.js, and Express hosting with SSH and Git on Starter, Growth, Business, and Professional. Annual billing is 10% off.",
     image: "/images/hosting/cloud.jpg",
   });
 }

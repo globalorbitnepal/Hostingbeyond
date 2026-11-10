@@ -332,17 +332,17 @@ function nodejs(): CmsDeveloperHostingContent {
     pricingTitle: "Pick a plan with",
     pricingTitleAccent: "Node.js enabled",
     pricingDescription:
-      "Node.js runs on Pro, Ultimate, and Cloud plans. The same four web hosting plans power every site on your account, so you can host the API and the marketing site together.",
+      "Every Node.js plan — Starter, Growth, Business, and Professional — includes the Node.js runtime, SSH, and Git. Pick RAM and storage for the apps you run.",
     comparisonEyebrow: "Choosing a plan",
     comparisonHeading: "Which plan do you need?",
     comparisonDescription:
       "Start from the runtime requirement, then check storage and memory headroom for your build step.",
     comparisonBullets: [
-      "Node.js is not available on Beyond Essential or Beyond Plus — choose Pro or above.",
-      "Beyond Pro (40 GB NVMe, 6 GB memory) fits most single-service APIs.",
-      "Beyond Ultimate (60 GB NVMe, 8 GB memory) suits larger dependency trees and heavier builds.",
-      "Cloud hosting adds dedicated RAM and vCPU if you outgrow shared memory.",
-      "Upgrade any time; the plan change keeps your files, databases and domains.",
+      "Starter runs one Node.js app on 1 GB RAM and 10 GB NVMe.",
+      "Growth fits a few production apps on 2 GB RAM and 25 GB NVMe.",
+      "Business is the usual pick: more RAM, daily backups, and room for several apps.",
+      "Professional is for heavier builds — 4 GB RAM, 4 vCPU, and 100 GB NVMe.",
+      "Upgrade any time; the plan change keeps your files, databases, and domains.",
     ],
     faqHeading: "Node.js hosting questions",
     faqDescription:
@@ -353,28 +353,28 @@ function nodejs(): CmsDeveloperHostingContent {
         visible: true,
         question: "Which plan do I need to run Node.js?",
         answer:
-          "Node.js is enabled on Beyond Pro, Beyond Ultimate, and Cloud hosting. Beyond Essential and Beyond Plus are PHP-only, so choose Pro or higher for a Node.js application.",
+          "All four Node.js plans include the runtime: Starter, Growth, Business, and Professional. You do not need a separate VPS.",
       },
       {
         id: "deploy",
         visible: true,
         question: "How do I deploy my application?",
         answer:
-          "SSH into the account on Pro or above, clone or pull your repository, run npm install and your build command, then start the process. Automatic git push-to-deploy is not available today.",
+          "SSH into the account, clone or pull your repository, run npm install and your build, then start the process. Git deployment is included on every Node.js plan.",
       },
       {
         id: "process",
         visible: true,
         question: "Is there a Node.js process manager?",
         answer:
-          "Not currently. There is no platform-managed process supervisor for Node.js apps, so you start and restart your process over SSH. If you need managed process supervision today, a VPS or Cloud plan gives you full control of the runtime.",
+          "You start and restart the Node.js process over SSH on every plan. There is no separate VPS product — Professional is the highest shared Node.js tier.",
       },
       {
         id: "versions",
         visible: true,
         question: "Which Node.js versions can I run?",
         answer:
-          "The Node.js runtime is installed and selected through the hosting account on Pro and above. Confirm the exact version you need with support before you migrate a production app, since we will not promise a version we have not verified for your plan.",
+          "The Node.js runtime is installed on every Node.js plan. Confirm the exact version you need with support before you migrate a production app.",
       },
       {
         id: "ssl",
@@ -1301,6 +1301,15 @@ function text(value: unknown, fallback: string) {
   return typeof value === "string" && value.trim() ? value : fallback;
 }
 
+const STALE_PLAN_COPY =
+  /\b(Beyond Essential|Beyond Plus|Beyond Pro|Beyond Ultimate|Commerce Essential|Commerce Plus|Plus, Pro, and Ultimate)\b/;
+
+function currentPlanCopy(value: unknown, fallback: string) {
+  const stored = typeof value === "string" ? value.trim() : "";
+  if (!stored || STALE_PLAN_COPY.test(stored)) return fallback;
+  return stored;
+}
+
 function textList(value: unknown, fallback: string[]): string[] {
   if (!Array.isArray(value)) return fallback;
   const clean = value.filter(
@@ -1427,16 +1436,21 @@ export function mergeDeveloperHostingContent(
       stored.comparisonDescription,
       defaults.comparisonDescription,
     ),
-    comparisonBullets: textList(
-      stored.comparisonBullets,
-      defaults.comparisonBullets,
-    ),
+    comparisonBullets: (() => {
+      const storedBullets = textList(
+        stored.comparisonBullets,
+        defaults.comparisonBullets,
+      );
+      return storedBullets.some((line) => STALE_PLAN_COPY.test(line))
+        ? defaults.comparisonBullets
+        : storedBullets;
+    })(),
     faqHeading: text(stored.faqHeading, defaults.faqHeading),
     faqDescription: text(stored.faqDescription, defaults.faqDescription),
     faqs: mergeList(defaults.faqs, stored.faqs, (item, base) => ({
       ...base,
       question: text(item.question, base.question),
-      answer: text(item.answer, base.answer),
+      answer: currentPlanCopy(item.answer, base.answer),
       visible: item.visible !== false,
     })),
     closingHeading: text(stored.closingHeading, defaults.closingHeading),

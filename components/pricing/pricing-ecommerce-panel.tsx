@@ -35,9 +35,9 @@ export function PricingEcommercePanel({
     <div id="plan-selector" className="scroll-mt-28">
       <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
         <p className="text-center text-[13px] font-semibold text-[#475569] sm:text-left">
-          Select a commerce plan — prices shown{" "}
-          <span className="font-extrabold text-emerald-700">~5% below</span>{" "}
-          typical Hostinger-style promos.
+          Select a commerce plan. Annual billing is{" "}
+          <span className="font-extrabold text-emerald-700">10% off</span> the
+          monthly price.
         </p>
         <div className="inline-flex items-center rounded-full border border-[#e9e4ff] bg-white p-1 shadow-sm">
           <button
@@ -58,7 +58,7 @@ export function PricingEcommercePanel({
             className={cn(
               "rounded-full px-4 py-1.5 text-[13px] font-bold transition",
               billing === "annually"
-                ? "bg-emerald-500 text-white"
+                ? "bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-white"
                 : "text-[#64748b]",
             )}
           >
@@ -88,20 +88,26 @@ export function PricingEcommercePanel({
               viewport={{ once: true, margin: "-30px" }}
               transition={{ delay: index * 0.05, duration: 0.4 }}
               className={cn(
-                "relative flex h-full flex-col rounded-[26px] border p-5",
+                "relative flex h-full min-w-0 flex-col overflow-hidden rounded-[26px] border p-5 sm:p-6",
                 popular
-                  ? "z-10 border-[#7c3aed]/40 bg-[linear-gradient(180deg,#ffffff_0%,#f3edff_100%)] shadow-[0_28px_50px_-18px_rgba(103,61,230,0.45)] ring-2 ring-[#a78bfa]/60"
-                  : "border-[#e9e4ff] bg-white shadow-[0_20px_40px_-22px_rgba(47,28,106,0.2)]",
+                  ? "z-10 scale-[1.03] border-white bg-[linear-gradient(180deg,#ffffff_0%,#f4f0ff_42%,#e8eeff_100%)] pt-6 shadow-[0_36px_64px_-16px_rgba(47,28,106,0.58)] ring-[3px] ring-[#7c3aed]/55"
+                  : "border-[#ebe6ff] bg-[linear-gradient(180deg,#ffffff_0%,#fbf9ff_100%)] shadow-[0_20px_40px_-22px_rgba(47,28,106,0.28)]",
               )}
             >
+              {popular ? (
+                <div
+                  aria-hidden
+                  className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-[#2563eb] via-[#673de6] to-[#7c3aed]"
+                />
+              ) : null}
               <div className="flex flex-wrap items-center gap-2">
                 {plan.discountBadge && isAnnual ? (
-                  <span className="rounded-full bg-[#673de6] px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-white uppercase">
+                  <span className="rounded-full bg-emerald-500 px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-white uppercase shadow-[0_8px_16px_rgba(16,185,129,0.35)]">
                     {plan.discountBadge}
                   </span>
                 ) : null}
                 {popular && plan.popularLabel ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500 px-2.5 py-1 text-[10px] font-extrabold text-white uppercase">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-2.5 py-1 text-[10px] font-extrabold text-white uppercase">
                     <Star className="size-3 fill-current" aria-hidden />
                     {plan.popularLabel}
                   </span>
@@ -131,7 +137,7 @@ export function PricingEcommercePanel({
               <p className="mt-1 text-[12px] font-semibold text-[#475569]">
                 {billed}
                 {save && isAnnual ? (
-                  <span className="ml-2 font-extrabold text-emerald-600">
+                  <span className="ml-2 rounded-full bg-emerald-50 px-2 py-0.5 font-extrabold text-emerald-700 ring-1 ring-emerald-200">
                     {save}
                   </span>
                 ) : null}

@@ -24,18 +24,14 @@ import {
   type HostingSiteRecord,
 } from "@/lib/hosting/customer-hosting-sites";
 import { getHostingProductBySlug } from "@/lib/hosting/hosting-products";
+import { INTERNATIONAL_LAUNCH_PRODUCT_SLUGS } from "@/lib/hosting/international-launch-catalog";
 import { HOSTING_PRODUCT_REGISTRY } from "@/lib/hosting/products-registry";
 import { hostingCheckoutPath } from "@/lib/hosting/purchase-intent";
 import { formatMoney } from "@/lib/panel/format-money";
 import { cn } from "@/lib/utils";
 
-/** Products customers can actually buy from the panel, in display order. */
-const PURCHASABLE_PRODUCTS = [
-  "web-hosting",
-  "wordpress-hosting",
-  "ecommerce-hosting",
-  "business-hosting",
-] as const;
+/** Current catalogue — the five live products, not retired VPS or cloud tiers. */
+const PURCHASABLE_PRODUCTS = INTERNATIONAL_LAUNCH_PRODUCT_SLUGS;
 
 function siteStatusTone(site: HostingSiteRecord) {
   if (site.status === "live") return "hb-pill-ok";

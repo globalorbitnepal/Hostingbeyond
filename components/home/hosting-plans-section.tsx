@@ -116,16 +116,24 @@ export function PlanCard({
       viewport={{ once: true, margin: "-40px" }}
       transition={{ delay, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       className={cn(
-        "relative flex h-full flex-col overflow-hidden rounded-[26px] border p-5 transition duration-300 sm:p-5",
+        "relative flex h-full min-w-0 flex-col overflow-hidden rounded-[26px] border p-5 transition duration-300 sm:p-6",
+        popular && "pt-6",
         popular
-          ? "z-10 border-white bg-[linear-gradient(180deg,#ffffff_0%,#f4f0ff_100%)] shadow-[0_28px_50px_-18px_rgba(47,28,106,0.55)] ring-2 ring-[#a78bfa]/70 hover:-translate-y-1"
-          : "border-white/90 bg-[linear-gradient(180deg,#ffffff_0%,#f6f3ff_100%)] shadow-[0_22px_40px_-22px_rgba(47,28,106,0.45)] hover:-translate-y-0.5",
+          ? "z-10 scale-[1.03] border-white bg-[linear-gradient(180deg,#ffffff_0%,#f4f0ff_42%,#e8eeff_100%)] shadow-[0_36px_64px_-16px_rgba(47,28,106,0.58)] ring-[3px] ring-[#7c3aed]/55 hover:-translate-y-1.5"
+          : "border-[#ebe6ff] bg-[linear-gradient(180deg,#ffffff_0%,#fbf9ff_100%)] shadow-[0_22px_40px_-22px_rgba(47,28,106,0.45)] hover:-translate-y-0.5",
       )}
     >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent"
-      />
+      {popular ? (
+        <div
+          aria-hidden
+          className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-[#2563eb] via-[#673de6] to-[#7c3aed]"
+        />
+      ) : (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-[#c4b5fd] to-transparent"
+        />
+      )}
       <div
         aria-hidden
         className="pointer-events-none absolute -top-16 left-1/2 h-36 w-44 -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(196,181,253,0.45),transparent_70%)] blur-2xl"
@@ -133,7 +141,7 @@ export function PlanCard({
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-wrap items-center gap-1.5">
           {plan.discountBadge && isAnnual ? (
-            <span className="rounded-full bg-[#673de6] px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-white uppercase">
+            <span className="rounded-full bg-emerald-500 px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-white uppercase shadow-[0_8px_16px_rgba(16,185,129,0.35)]">
               {plan.discountBadge}
             </span>
           ) : null}
@@ -187,7 +195,9 @@ export function PlanCard({
             <span className="text-[#475569]">{billed}</span>
           ) : null}
           {save && isAnnual ? (
-            <span className="font-extrabold text-[#16a34a]">{save}</span>
+            <span className="rounded-full bg-emerald-50 px-2 py-0.5 font-extrabold text-emerald-700 ring-1 ring-emerald-200">
+              {save}
+            </span>
           ) : null}
         </div>
         {purchase ? (

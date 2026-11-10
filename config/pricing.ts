@@ -46,7 +46,7 @@ export type PriceBook = Record<ProductPriceId, number>;
 
 /** Base commercial book in USD */
 export const basePriceBookUsd: PriceBook = {
-  domain_yearly: 15,
+  domain_yearly: 9.99,
   email_monthly: 0.42,
   hosting_monthly: 1,
 };

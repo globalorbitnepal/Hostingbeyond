@@ -6,9 +6,9 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   return hostingProductMetadata("ecommerce-hosting", {
-    title: "Ecommerce Hosting — WooCommerce NVMe Stores",
+    title: "Ecommerce Hosting for WooCommerce | HostingBeyond",
     description:
-      "WooCommerce ecommerce hosting with NVMe, free SSL checkout, scalable store plans, and 24/7 commerce support on HostingBeyond.",
+      "WooCommerce hosting with free SSL checkout and NVMe storage. Four plans from Starter to Professional. Annual billing is 10% off.",
     image: "/images/hosting/ecommerce.jpg",
   });
 }

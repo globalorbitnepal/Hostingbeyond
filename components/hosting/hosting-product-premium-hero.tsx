@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Bot, Check } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 
 import { cn } from "@/lib/utils";
-import { BEYOND_AI_PUBLIC_ENABLED } from "@/config/beyond-ai-public";
 
 export type HostingProductPremiumHeroProps = {
   eyebrow: string;
@@ -21,7 +20,6 @@ export type HostingProductPremiumHeroProps = {
   highlights: string[];
   cardLine?: string;
   cardSubline?: string;
-  showAiCredit?: boolean;
 };
 
 const fadeUp = (reduce: boolean, delay = 0) =>
@@ -47,7 +45,6 @@ export function HostingProductPremiumHero({
   highlights,
   cardLine,
   cardSubline,
-  showAiCredit = BEYOND_AI_PUBLIC_ENABLED,
 }: HostingProductPremiumHeroProps) {
   const reduce = useReducedMotion();
 
@@ -150,12 +147,6 @@ export function HostingProductPremiumHero({
             <p className="mt-6 text-[14px] font-bold text-white/95">
               {cardLine}
             </p>
-          ) : null}
-          {showAiCredit ? (
-            <div className="mt-5 flex items-center gap-2 text-[13px] font-semibold text-white/80">
-              <Bot className="size-4 shrink-0 text-[#c4b5fd]" />
-              Beyond AI credit on annual plans
-            </div>
           ) : null}
           {cardSubline ? (
             <p className="mt-3 text-[13px] font-medium text-white/75">

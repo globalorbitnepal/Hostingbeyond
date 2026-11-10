@@ -83,7 +83,7 @@ export function defaultEcommerceHostingPageContent(): CmsHostingPageContent {
 
     wordpressHeading: "Payments, catalog & campaigns",
     wordpressDescription:
-      "Run WooCommerce or connect your stack — staging-friendly updates, daily backups on higher plans, and free migration on Commerce Plus and above.",
+      "Run WooCommerce or connect your stack — staging-friendly updates, daily backups on Business and Professional, and free migration on Growth and above.",
     wordpressBullets: [
       "Secure checkout with free SSL",
       "Product limits from 100 to unlimited",
@@ -96,7 +96,7 @@ export function defaultEcommerceHostingPageContent(): CmsHostingPageContent {
 
     compareHeading: "Why HostingBeyond for ecommerce?",
     compareDescription:
-      "Transparent store pricing with NVMe, SSL, and AI credits — not hidden checkout fees.",
+      "Transparent store pricing with NVMe and SSL — not hidden checkout fees.",
     compareBullets: [
       "WooCommerce-ready on every commerce tier",
       "NVMe storage — not legacy spinning disks",
@@ -127,14 +127,14 @@ export function defaultEcommerceHostingPageContent(): CmsHostingPageContent {
         visible: true,
         question: "Can you migrate my existing store?",
         answer:
-          "Free assisted migration is included on Commerce Plus, Cloud, and Enterprise. Share your current host access and we move files and database with minimal downtime.",
+          "Free assisted migration is included on Growth, Business, and Professional. Share your current host access and we move files and the database with minimal downtime.",
       },
       {
         id: "products",
         visible: true,
         question: "How many products can I list?",
         answer:
-          "Commerce Essential supports 100 products, Plus supports 500, and Cloud/Enterprise support unlimited products. Upgrade anytime from your panel.",
+          "Starter is one store. Growth, Business, and Professional add more stores, RAM, and daily backups — Business and Professional also include SSH and staging. Upgrade from your account whenever the catalog grows.",
       },
       {
         id: "email",

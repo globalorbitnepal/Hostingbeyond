@@ -134,7 +134,6 @@ export function DeveloperHostingPageView({
         cardEyebrow={`${stackLabel} on HostingBeyond`}
         highlights={content.heroHighlights}
         cardSubline="Capabilities reflect the current platform — anything not available yet is listed openly below."
-        showAiCredit={false}
       />
 
       <HostingPlansCream

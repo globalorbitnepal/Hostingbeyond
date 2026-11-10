@@ -325,7 +325,7 @@ const readPricingContent = nextCache(
       mergePricingPageContent(page.sections as Partial<CmsPricingPageContent>),
     );
   },
-  ["orbit-pricing-content"],
+  ["orbit-pricing-content-v5"],
   { tags: [CMS_TAG], revalidate: CMS_REVALIDATE },
 );
 
@@ -397,7 +397,7 @@ const readHostingPageContent = nextCache(
       page.sections as Partial<CmsHostingPageContent>,
     );
   },
-  ["orbit-hosting-page-content"],
+  ["orbit-hosting-page-content-v3"],
   { tags: [CMS_TAG], revalidate: CMS_REVALIDATE },
 );
 
@@ -665,7 +665,7 @@ const readWordPressHostingPageContent = nextCache(
       page.sections as Partial<CmsHostingPageContent>,
     );
   },
-  ["orbit-wordpress-hosting-page-content"],
+  ["orbit-wordpress-hosting-page-content-v2"],
   { tags: [CMS_TAG], revalidate: CMS_REVALIDATE },
 );
 
@@ -689,7 +689,7 @@ const readEcommerceHostingPageContent = nextCache(
       page.sections as Partial<CmsHostingPageContent>,
     );
   },
-  ["orbit-ecommerce-hosting-page-content"],
+  ["orbit-ecommerce-hosting-page-content-v2"],
   { tags: [CMS_TAG], revalidate: CMS_REVALIDATE },
 );
 

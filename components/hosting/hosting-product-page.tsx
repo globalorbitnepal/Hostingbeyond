@@ -38,7 +38,6 @@ export function HostingProductPage(props: HostingProductPageProps) {
           highlights={page.heroHighlights}
           cardLine={page.heroCardLine}
           cardSubline="Isolated resources — no noisy neighbours"
-          showAiCredit={false}
         />
         <CloudHostingPageView
           page={page}

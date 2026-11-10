@@ -77,11 +77,14 @@ export const PUBLIC_PAGE_SEO_REGISTRY: PublicPageSeoEntry[] = [
     path: "/pricing",
     editorHref: "/orbit/pricing",
     defaultSeo: {
+      metaTitle: "Hosting Plans & Pricing | HostingBeyond",
+      metaDescription:
+        "Compare web, WordPress, ecommerce, and Node.js hosting. Four plans on each page. Annual billing is 10% off the monthly price.",
       keywords:
-        "hosting pricing, web hosting plans, ecommerce hosting price, VPS pricing, domain prices",
-      ogTitle: "Hosting & Domain Pricing — Transparent Plans",
+        "hosting pricing, web hosting plans, WordPress hosting price, ecommerce hosting price, Node.js hosting price",
+      ogTitle: "Hosting Plans & Pricing — 10% Off Annual",
       ogDescription:
-        "Compare website, ecommerce, cloud, VPS, domains, and business email pricing with renewal rates shown upfront.",
+        "Compare website, WordPress, ecommerce, Node.js, domains, and business email. Annual hosting is 10% off.",
     },
   },
   {
@@ -90,11 +93,14 @@ export const PUBLIC_PAGE_SEO_REGISTRY: PublicPageSeoEntry[] = [
     path: "/web-hosting",
     editorHref: "/orbit/hosting",
     defaultSeo: {
+      metaTitle: "Web Hosting with NVMe SSD & Free SSL | HostingBeyond",
+      metaDescription:
+        "Compare Starter, Growth, Business, and Professional web hosting. NVMe storage, free SSL, and 10% off when you pay annually.",
       keywords:
-        "web hosting, shared hosting, NVMe hosting, WordPress hosting, free SSL, managed hosting",
-      ogTitle: "Web Hosting — Fast NVMe WordPress Hosting",
+        "web hosting, NVMe web hosting, cheap web hosting, free SSL hosting, Starter Growth Business Professional hosting",
+      ogTitle: "Web Hosting — NVMe, Free SSL, 10% Off Annual",
       ogDescription:
-        "Compare web hosting with free SSL, NVMe storage, managed WordPress, and 24/7 expert support.",
+        "Four web hosting plans with NVMe, free SSL, and backups. Annual billing is 10% off the monthly price.",
     },
   },
   {
@@ -103,11 +109,14 @@ export const PUBLIC_PAGE_SEO_REGISTRY: PublicPageSeoEntry[] = [
     path: "/web-hosting/wordpress",
     editorHref: "/orbit/hosting",
     defaultSeo: {
+      metaTitle: "WordPress Hosting — One-Click Install | HostingBeyond",
+      metaDescription:
+        "Managed WordPress hosting with one-click install, free SSL, and daily backups on Business and Professional. Annual billing is 10% off.",
       keywords:
-        "WordPress hosting, managed WordPress, WooCommerce hosting, one-click WordPress, WordPress SSL",
-      ogTitle: "WordPress Hosting — Managed & WooCommerce Ready",
+        "WordPress hosting, managed WordPress hosting, one-click WordPress, WooCommerce hosting, WordPress NVMe",
+      ogTitle: "WordPress Hosting — Managed, NVMe, 10% Off Annual",
       ogDescription:
-        "Managed WordPress on NVMe with one-click install, free SSL, updates, and 24/7 support.",
+        "Four WordPress plans from one site to thirty. Free SSL, one-click install, and 10% off annual billing.",
     },
   },
   {
@@ -116,11 +125,14 @@ export const PUBLIC_PAGE_SEO_REGISTRY: PublicPageSeoEntry[] = [
     path: "/web-hosting/ecommerce",
     editorHref: "/orbit/hosting",
     defaultSeo: {
+      metaTitle: "Ecommerce Hosting for WooCommerce | HostingBeyond",
+      metaDescription:
+        "WooCommerce hosting with free SSL checkout, NVMe storage, and SSH on Business and Professional. Annual billing is 10% off.",
       keywords:
-        "ecommerce hosting, WooCommerce hosting, online store hosting, secure checkout SSL, NVMe ecommerce",
-      ogTitle: "Ecommerce Hosting — WooCommerce NVMe Stores",
+        "ecommerce hosting, WooCommerce hosting, online store hosting, secure checkout hosting, NVMe ecommerce",
+      ogTitle: "Ecommerce Hosting — WooCommerce, SSL, 10% Off Annual",
       ogDescription:
-        "WooCommerce ecommerce hosting with NVMe, free SSL checkout, scalable store plans, and 24/7 commerce support.",
+        "Four ecommerce plans for WooCommerce stores. Free SSL, daily backups on higher tiers, and 10% off annual billing.",
       ogImage: "/images/hosting/ecommerce.jpg",
     },
   },
@@ -143,11 +155,14 @@ export const PUBLIC_PAGE_SEO_REGISTRY: PublicPageSeoEntry[] = [
     path: "/nodejs-hosting",
     editorHref: "/orbit/developer-hosting",
     defaultSeo: {
+      metaTitle: "Node.js Hosting — Deploy Apps on NVMe | HostingBeyond",
+      metaDescription:
+        "Node.js, Next.js, and Express hosting with SSH and Git on every plan. Starter through Professional. Annual billing is 10% off.",
       keywords:
-        "Node.js hosting, npm hosting, deploy Node app, Express hosting, NVMe Node.js",
-      ogTitle: "Node.js Hosting — Deploy Apps on NVMe",
+        "Node.js hosting, deploy Node.js app, Next.js hosting, Express hosting, npm hosting, NVMe Node.js",
+      ogTitle: "Node.js Hosting — SSH, Git, 10% Off Annual",
       ogDescription:
-        "Node.js hosting with npm, SSL, and scalable plans for APIs and full-stack apps.",
+        "Four Node.js plans with SSH, Git, SSL, and NVMe. Annual billing is 10% off the monthly price.",
     },
   },
   {

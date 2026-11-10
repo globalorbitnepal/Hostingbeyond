@@ -9,7 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const base = await hostingProductMetadata("web-hosting", {
     title: "Web Hosting with NVMe SSD & Free SSL | HostingBeyond",
     description:
-      "Fast and reliable web hosting with NVMe SSD storage, free SSL, backups and 24/7 support. Compare HostingBeyond web hosting plans and choose monthly or annual billing.",
+      "Compare Starter, Growth, Business, and Professional web hosting. NVMe storage, free SSL, and backups. Annual billing is 10% off the monthly price.",
     image: "/images/hosting/cloud.jpg",
   });
   return {

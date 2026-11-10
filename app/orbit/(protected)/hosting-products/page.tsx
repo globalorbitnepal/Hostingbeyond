@@ -20,6 +20,14 @@ type ProductRow = {
   updatedAt: string;
 };
 
+const CURRENT_PLAN_SLUGS = new Set([
+  "web-hosting",
+  "wordpress-hosting",
+  "ecommerce-hosting",
+  "nodejs-hosting",
+  "laravel-hosting",
+]);
+
 const CATEGORY_LABELS: Record<string, string> = {
   WEBSITE: "Website",
   DEVELOPER: "Developer",
@@ -60,6 +68,7 @@ export default function OrbitHostingProductsPage() {
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
     return rows.filter((row) => {
+      if (!CURRENT_PLAN_SLUGS.has(row.slug)) return false;
       if (category !== "ALL" && row.category !== category) return false;
       if (statusFilter !== "ALL" && row.status !== statusFilter) return false;
       if (!needle) return true;

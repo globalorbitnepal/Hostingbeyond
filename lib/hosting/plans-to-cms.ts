@@ -64,8 +64,11 @@ export function dbPlansToCmsHostingPlans(
       name: plan.planName,
       tagline: plan.tagline ?? "",
       discountBadge: discountPct >= 1 ? `${discountPct}% OFF` : "",
-      popular: plan.popular,
-      popularLabel: plan.popular ? "Most popular" : "",
+      popular: plan.popular || plan.planKey === "business" || index === 2,
+      popularLabel:
+        plan.popular || plan.planKey === "business" || index === 2
+          ? "Most popular"
+          : "",
       accent: accentForIndex(index),
       priceMonthly: money(monthly, plan.currency),
       originalMonthly: "",
