@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import {
+  emailPlanPriceCaption,
   emailPricePerMonthForTerm,
   emailPrepaidMonths,
   emailDueTodayForTerm,
@@ -36,6 +37,18 @@ describe("business-email-term-pricing", () => {
     const terms = availableEmailTermsForPlan(samplePlan);
     assert.ok(terms.includes("monthly"));
     assert.ok(terms.includes("48"));
+  });
+
+  it("describes prepaid terms with total due today, not a renewal rate", () => {
+    assert.equal(
+      emailPlanPriceCaption(samplePlan, "48"),
+      "Per mailbox · 48-month term · $17.76 billed today",
+    );
+    assert.equal(
+      emailPlanPriceCaption(samplePlan, "monthly"),
+      "Per mailbox · Billed monthly at $4.99/mo",
+    );
+    assert.ok(!emailPlanPriceCaption(samplePlan, "48").includes("Renews"));
   });
 
   it("charges the full prepaid term, not one month, when 12–48 months is selected", () => {

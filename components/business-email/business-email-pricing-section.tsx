@@ -17,14 +17,18 @@ import {
 
 import { CatalogPrice } from "@/components/i18n/localized-text";
 import { businessEmailBookingHref } from "@/lib/business-email/purchase-intent";
+import {
+  emailPlanPriceCaption,
+  emailPricePerMonthForTerm,
+  type EmailBillingTerm,
+} from "@/lib/hosting/business-email-term-pricing";
 import type {
   CmsBusinessEmailPageContent,
   CmsBusinessEmailPlan,
 } from "@/lib/orbit/business-email-page-content";
 import { cn } from "@/lib/utils";
 
-/** Monthly first — user picks term; 48 mo is not the default. */
-export type EmailBillingTerm = "monthly" | "12" | "24" | "36" | "48";
+export type { EmailBillingTerm };
 
 const TERM_OPTIONS: { value: EmailBillingTerm; label: string }[] = [
   { value: "monthly", label: "Monthly" },
@@ -46,46 +50,6 @@ const BOTTOM_HIGHLIGHTS = [
 function parseUsd(value: string): number {
   const n = parseFloat(value.replace(/[^0-9.]/g, ""));
   return Number.isFinite(n) ? n : 0;
-}
-
-function formatUsd(amount: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount);
-}
-
-function priceForTerm(
-  plan: CmsBusinessEmailPlan,
-  term: EmailBillingTerm,
-): string {
-  switch (term) {
-    case "monthly":
-      return plan.original;
-    case "12":
-      return plan.renew;
-    case "24":
-      return plan.price24;
-    case "48":
-      return plan.price;
-    case "36": {
-      const p24 = parseUsd(plan.price24);
-      const p48 = parseUsd(plan.price);
-      if (p24 > 0 && p48 > 0) {
-        return formatUsd(p24 + (p48 - p24) * 0.5);
-      }
-      return plan.price24;
-    }
-    default:
-      return plan.price;
-  }
-}
-
-function termLabel(term: EmailBillingTerm): string {
-  if (term === "monthly") return "Monthly";
-  return `${term}-month term`;
 }
 
 function planLines(plan: CmsBusinessEmailPlan) {
@@ -202,7 +166,8 @@ export function BusinessEmailPricingSection({
         <div className="mt-10 grid gap-4 lg:mt-12 lg:grid-cols-3 lg:gap-5">
           {plans.map((plan) => {
             const popular = Boolean(plan.popular);
-            const price = priceForTerm(plan, term);
+            const priceUsd = emailPricePerMonthForTerm(plan, term);
+            const priceCaption = emailPlanPriceCaption(plan, term);
             const lines = planLines(plan);
             const twoCol = lines.length > 5;
 
@@ -288,7 +253,7 @@ export function BusinessEmailPricingSection({
                         popular ? "text-white" : "text-[#0f172a]",
                       )}
                     >
-                      <CatalogPrice usd={parseUsd(price)} />
+                      <CatalogPrice usd={priceUsd} />
                     </span>
                     <span
                       className={cn(
@@ -306,8 +271,7 @@ export function BusinessEmailPricingSection({
                     popular ? "text-violet-100/85" : "text-slate-600",
                   )}
                 >
-                  Per mailbox · {termLabel(term)} · Renews at{" "}
-                  <span className="font-extrabold">{plan.renew}</span>/mo
+                  {priceCaption}
                 </p>
 
                 <ul

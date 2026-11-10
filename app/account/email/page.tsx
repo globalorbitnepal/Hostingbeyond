@@ -1,6 +1,10 @@
 import Link from "next/link";
 
 import { businessEmailBookingHref } from "@/lib/business-email/purchase-intent";
+import {
+  emailDueTodayForTerm,
+  formatEmailUsd,
+} from "@/lib/hosting/business-email-term-pricing";
 import { getBusinessEmailPageContent } from "@/lib/orbit/content";
 
 export default async function AccountEmailPage() {
@@ -45,7 +49,8 @@ export default async function AccountEmailPage() {
                 </span>
               </p>
               <p className="hb-muted text-xs">
-                {plan.storage} · renews at {plan.renew}
+                {plan.storage} · 48-month term{" "}
+                {formatEmailUsd(emailDueTodayForTerm(plan, "48"))} billed today
               </p>
               <ul className="hb-muted mt-3 space-y-1 text-xs">
                 {plan.features.slice(0, 5).map((feature) => (

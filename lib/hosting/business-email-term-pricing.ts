@@ -29,6 +29,29 @@ function roundMoney(n: number) {
   return Math.round(n * 100) / 100;
 }
 
+export function formatEmailUsd(amount: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
+/** Plan card / pricing copy under the per-month rate. */
+export function emailPlanPriceCaption(
+  plan: CmsBusinessEmailPlan,
+  term: EmailBillingTerm,
+): string {
+  if (term === "monthly") {
+    const monthly = emailPricePerMonthForTerm(plan, term);
+    return `Per mailbox · Billed monthly at ${formatEmailUsd(monthly)}/mo`;
+  }
+  const months = emailPrepaidMonths(term);
+  const due = emailDueTodayForTerm(plan, term);
+  return `Per mailbox · ${months}-month term · ${formatEmailUsd(due)} billed today`;
+}
+
 /** Amount due today for the selected prepaid term (not one month). */
 export function emailDueTodayForTerm(
   plan: CmsBusinessEmailPlan,
