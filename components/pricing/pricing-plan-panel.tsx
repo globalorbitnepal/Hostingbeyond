@@ -101,7 +101,10 @@ export function PricingPlanPanel({
       ) : null}
 
       <div
-        className={cn("grid grid-cols-1 items-stretch gap-5 py-3", gridClass)}
+        className={cn(
+          "isolate grid grid-cols-1 items-stretch gap-5",
+          gridClass,
+        )}
       >
         {cmsPlans.map((plan, index) => (
           <PlanCard

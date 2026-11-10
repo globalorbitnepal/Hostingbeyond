@@ -68,10 +68,10 @@ function PlanGlyph({ plan }: { plan: CmsHostingPlan }) {
   return (
     <span
       className={cn(
-        "inline-flex size-10 items-center justify-center rounded-full backdrop-blur-md",
+        "inline-flex size-10 items-center justify-center rounded-full",
         popular
-          ? "bg-white/80 text-[#673de6] shadow-[0_10px_22px_-10px_rgba(37,99,235,0.45)] ring-1 ring-[#c4b5fd]"
-          : "bg-white/70 text-[#673de6] shadow-[0_10px_22px_-12px_rgba(47,28,106,0.35)] ring-1 ring-white/90",
+          ? "bg-white text-[#673de6] shadow-[0_10px_22px_-10px_rgba(15,23,42,0.35)]"
+          : "bg-[#f4f0ff] text-[#673de6] ring-1 ring-[#e9e4ff]",
       )}
     >
       <Icon className="size-[18px]" strokeWidth={1.9} aria-hidden />
@@ -119,33 +119,16 @@ export function PlanCard({
   return (
     <motion.article
       initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       className={cn(
-        "relative flex h-full min-w-0 flex-col overflow-hidden rounded-[28px] p-5 transition duration-300 sm:p-6",
-        "border border-white/80 backdrop-blur-xl",
+        "relative isolate flex h-full min-w-0 flex-col overflow-hidden rounded-[28px] p-5 transition duration-300 sm:p-6",
         popular
-          ? "z-10 scale-[1.045] bg-[linear-gradient(165deg,rgba(255,255,255,0.88)_0%,rgba(248,250,255,0.78)_46%,rgba(239,246,255,0.7)_100%)] pt-6 shadow-[0_40px_72px_-22px_rgba(37,99,235,0.38),0_24px_48px_-24px_rgba(124,58,237,0.42)] ring-2 ring-[#7c3aed]/40 hover:-translate-y-1.5"
-          : "bg-white/60 shadow-[0_22px_40px_-24px_rgba(47,28,106,0.38)] ring-1 ring-[#ddd6fe]/80 hover:-translate-y-0.5",
+          ? "z-10 bg-[linear-gradient(165deg,#2563eb_0%,#4f46e5_48%,#7c3aed_100%)] pt-6 text-white shadow-[0_28px_48px_-16px_rgba(37,99,235,0.55)] ring-2 ring-white/40 hover:-translate-y-1"
+          : "bg-white text-[#2f1c6a] shadow-[0_20px_40px_-22px_rgba(15,23,42,0.35)] ring-1 ring-white hover:-translate-y-0.5",
       )}
     >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 rounded-[28px] bg-[linear-gradient(165deg,rgba(255,255,255,0.55),rgba(255,255,255,0.06)_42%,rgba(219,234,254,0.22))]"
-      />
-      {popular ? (
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -top-20 left-1/2 h-40 w-52 -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(96,165,250,0.28),rgba(167,139,250,0.2),transparent_70%)] blur-2xl"
-        />
-      ) : (
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -top-16 left-1/2 h-32 w-40 -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(196,181,253,0.28),transparent_70%)] blur-2xl"
-        />
-      )}
-      <div className="relative z-[1] flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-3">
         <div className="flex flex-wrap items-center gap-1.5">
           {plan.discountBadge && isAnnual ? (
             <span className="rounded-full bg-emerald-500 px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-white uppercase shadow-[0_8px_16px_rgba(16,185,129,0.35)]">
@@ -153,7 +136,7 @@ export function PlanCard({
             </span>
           ) : null}
           {popular && plan.popularLabel ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#673de6] px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-white uppercase shadow-[0_8px_16px_rgba(103,61,230,0.35)]">
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-white uppercase ring-1 ring-white/35">
               <Star className="size-3 fill-current" aria-hidden />
               {plan.popularLabel}
             </span>
@@ -162,20 +145,35 @@ export function PlanCard({
         <PlanGlyph plan={plan} />
       </div>
 
-      <h3 className="font-heading relative z-[1] mt-4 text-[1.4rem] font-extrabold tracking-[-0.03em] text-[#2f1c6a]">
+      <h3
+        className={cn(
+          "font-heading mt-4 text-[1.4rem] font-extrabold tracking-[-0.03em]",
+          popular ? "text-white" : "text-[#2f1c6a]",
+        )}
+      >
         {plan.name}
       </h3>
       {plan.tagline ? (
-        <p className="relative z-[1] mt-1 min-h-[2.5rem] text-[13px] leading-snug text-[#475569]">
+        <p
+          className={cn(
+            "mt-1 min-h-[2.5rem] text-[13px] leading-snug",
+            popular ? "text-white/80" : "text-[#475569]",
+          )}
+        >
           {plan.tagline}
         </p>
       ) : (
-        <div className="relative z-[1] min-h-[2.5rem]" />
+        <div className="min-h-[2.5rem]" />
       )}
 
-      <div className="relative z-[1] mt-3">
+      <div className="mt-3">
         {original ? (
-          <p className="text-[13px] font-semibold text-[#94a3b8] line-through">
+          <p
+            className={cn(
+              "text-[13px] font-semibold line-through",
+              popular ? "text-white/55" : "text-[#94a3b8]",
+            )}
+          >
             {original}
           </p>
         ) : (
@@ -185,21 +183,30 @@ export function PlanCard({
           <span
             className={cn(
               "text-[2.15rem] leading-none font-extrabold tracking-tight",
-              popular ? "text-[#1e1b4b]" : "text-[#673de6]",
+              popular ? "text-white" : "text-[#673de6]",
             )}
           >
             {purchase ? <CatalogPrice usd={purchase.displayAmount} /> : price}
           </span>
-          <span className="pb-1 text-[13px] font-bold text-[#64748b]">/mo</span>
+          <span
+            className={cn(
+              "pb-1 text-[13px] font-bold",
+              popular ? "text-white/75" : "text-[#64748b]",
+            )}
+          >
+            /mo
+          </span>
         </p>
         <div className="mt-2 flex min-h-[1.35rem] flex-wrap items-center gap-x-2 gap-y-1 text-[12px] font-semibold">
           {purchase ? (
-            <span className="text-[#475569]">
+            <span className={popular ? "text-white/80" : "text-[#475569]"}>
               Billed <CatalogPrice usd={purchase.billedAmount} />
               {purchase.billedPeriod === "year" ? "/yr" : "/mo"}
             </span>
           ) : billed ? (
-            <span className="text-[#475569]">{billed}</span>
+            <span className={popular ? "text-white/80" : "text-[#475569]"}>
+              {billed}
+            </span>
           ) : null}
           {save && isAnnual ? (
             <span className="rounded-full bg-emerald-50 px-2 py-0.5 font-extrabold text-emerald-700 ring-1 ring-emerald-200">
@@ -210,7 +217,10 @@ export function PlanCard({
         {purchase ? (
           <CheckoutNote
             text={checkoutNote}
-            className="mt-1 text-[11px] font-medium text-[#64748b]"
+            className={cn(
+              "mt-1 text-[11px] font-medium",
+              popular ? "text-white/70" : "text-[#64748b]",
+            )}
           />
         ) : null}
       </div>
@@ -218,27 +228,33 @@ export function PlanCard({
       <Link
         href={checkoutHref}
         className={cn(
-          "relative z-[1] mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full text-[14px] font-bold transition",
+          "mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full text-[14px] font-bold transition",
           popular
-            ? "bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-white shadow-[0_12px_24px_rgba(103,61,230,0.38)] hover:brightness-105"
-            : "bg-white/80 text-[#2f1c6a] shadow-[0_8px_18px_-10px_rgba(47,28,106,0.35)] ring-1 ring-white/80 backdrop-blur-md hover:text-[#673de6]",
+            ? "bg-white text-[#2f1c6a] shadow-[0_12px_24px_rgba(15,23,42,0.18)] hover:bg-white/95"
+            : "bg-[#f4f0ff] text-[#2f1c6a] ring-1 ring-[#e9e4ff] hover:text-[#673de6]",
         )}
       >
         {plan.ctaLabel || "Get Started"}
         <ArrowRight className="size-4" aria-hidden />
       </Link>
 
-      <div className="relative z-[1]">
-        <AnnualPlanPerks lines={annualPerks} />
-      </div>
+      <AnnualPlanPerks lines={annualPerks} />
 
-      <ul className="relative z-[1] mt-5 flex flex-1 flex-col gap-2.5">
+      <ul className="mt-5 flex flex-1 flex-col gap-2.5">
         {features.map((feature) => (
           <li
             key={feature}
-            className="flex items-start gap-2.5 text-[13px] leading-snug font-medium text-[#1e1b4b]"
+            className={cn(
+              "flex items-start gap-2.5 text-[13px] leading-snug font-medium",
+              popular ? "text-white" : "text-[#1e1b4b]",
+            )}
           >
-            <span className="mt-0.5 inline-flex size-[18px] shrink-0 items-center justify-center rounded-full bg-[#673de6] text-white">
+            <span
+              className={cn(
+                "mt-0.5 inline-flex size-[18px] shrink-0 items-center justify-center rounded-full",
+                popular ? "bg-white/20 text-white" : "bg-[#673de6] text-white",
+              )}
+            >
               <Check className="size-2.5" strokeWidth={3.2} aria-hidden />
             </span>
             <span>{feature}</span>
@@ -396,7 +412,7 @@ export function HostingPlansSection({
           </div>
         </div>
 
-        <div className="mt-7 grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-4 xl:gap-4">
+        <div className="isolate mt-7 grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-4 xl:gap-5">
           {plans.map((plan, index) => (
             <PlanCard
               key={plan.id}

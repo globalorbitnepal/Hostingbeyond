@@ -67,7 +67,7 @@ export function PricingEcommercePanel({
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2 xl:grid-cols-4">
+      <div className="isolate mt-6 grid grid-cols-1 items-stretch gap-5 lg:grid-cols-2 xl:grid-cols-4">
         {visible.map((plan, index) => {
           const popular = plan.popular;
           const isAnnual = billing === "annually";
@@ -84,61 +84,80 @@ export function PricingEcommercePanel({
             <motion.article
               key={plan.id}
               initial={reduceMotion ? false : { opacity: 0, y: 14 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-30px" }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05, duration: 0.4 }}
               className={cn(
-                "relative flex h-full min-w-0 flex-col overflow-hidden rounded-[28px] border border-white/80 p-5 backdrop-blur-xl sm:p-6",
+                "relative isolate flex h-full min-w-0 flex-col overflow-hidden rounded-[28px] p-5 sm:p-6",
                 popular
-                  ? "z-10 scale-[1.045] bg-[linear-gradient(165deg,rgba(255,255,255,0.88)_0%,rgba(248,250,255,0.78)_46%,rgba(239,246,255,0.7)_100%)] pt-6 shadow-[0_40px_72px_-22px_rgba(37,99,235,0.38),0_24px_48px_-24px_rgba(124,58,237,0.42)] ring-2 ring-[#7c3aed]/40"
-                  : "bg-white/60 shadow-[0_20px_40px_-24px_rgba(47,28,106,0.32)] ring-1 ring-[#ddd6fe]/80",
+                  ? "z-10 bg-[linear-gradient(165deg,#2563eb_0%,#4f46e5_48%,#7c3aed_100%)] pt-6 text-white shadow-[0_28px_48px_-16px_rgba(37,99,235,0.55)] ring-2 ring-white/40"
+                  : "bg-white text-[#2f1c6a] shadow-[0_20px_40px_-22px_rgba(15,23,42,0.32)] ring-1 ring-white",
               )}
             >
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-0 rounded-[28px] bg-[linear-gradient(165deg,rgba(255,255,255,0.55),rgba(255,255,255,0.06)_42%,rgba(219,234,254,0.22))]"
-              />
-              {popular ? (
-                <div
-                  aria-hidden
-                  className="pointer-events-none absolute -top-20 left-1/2 h-40 w-52 -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(96,165,250,0.28),rgba(167,139,250,0.2),transparent_70%)] blur-2xl"
-                />
-              ) : null}
-              <div className="relative z-[1] flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {plan.discountBadge && isAnnual ? (
                   <span className="rounded-full bg-emerald-500 px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-white uppercase shadow-[0_8px_16px_rgba(16,185,129,0.35)]">
                     {plan.discountBadge}
                   </span>
                 ) : null}
                 {popular && plan.popularLabel ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-2.5 py-1 text-[10px] font-extrabold text-white uppercase">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-[10px] font-extrabold text-white uppercase ring-1 ring-white/35">
                     <Star className="size-3 fill-current" aria-hidden />
                     {plan.popularLabel}
                   </span>
                 ) : null}
               </div>
 
-              <h3 className="font-heading relative z-[1] mt-4 text-[1.35rem] font-extrabold text-[#2f1c6a]">
+              <h3
+                className={cn(
+                  "font-heading mt-4 text-[1.35rem] font-extrabold",
+                  popular ? "text-white" : "text-[#2f1c6a]",
+                )}
+              >
                 {plan.name}
               </h3>
-              <p className="relative z-[1] mt-1 min-h-[2.5rem] text-[13px] text-[#64748b]">
+              <p
+                className={cn(
+                  "mt-1 min-h-[2.5rem] text-[13px]",
+                  popular ? "text-white/80" : "text-[#64748b]",
+                )}
+              >
                 {plan.tagline}
               </p>
 
               {original ? (
-                <p className="relative z-[1] mt-2 text-[13px] font-semibold text-[#94a3b8] line-through">
+                <p
+                  className={cn(
+                    "mt-2 text-[13px] font-semibold line-through",
+                    popular ? "text-white/55" : "text-[#94a3b8]",
+                  )}
+                >
                   {original}
                 </p>
               ) : null}
-              <p className="relative z-[1] mt-0.5 flex items-end gap-1">
-                <span className="text-[2rem] font-extrabold tracking-tight text-[#673de6]">
+              <p className="mt-0.5 flex items-end gap-1">
+                <span
+                  className={cn(
+                    "text-[2rem] font-extrabold tracking-tight",
+                    popular ? "text-white" : "text-[#673de6]",
+                  )}
+                >
                   {price}
                 </span>
-                <span className="pb-1 text-[13px] font-bold text-[#64748b]">
+                <span
+                  className={cn(
+                    "pb-1 text-[13px] font-bold",
+                    popular ? "text-white/75" : "text-[#64748b]",
+                  )}
+                >
                   /mo
                 </span>
               </p>
-              <p className="relative z-[1] mt-1 text-[12px] font-semibold text-[#475569]">
+              <p
+                className={cn(
+                  "mt-1 text-[12px] font-semibold",
+                  popular ? "text-white/80" : "text-[#475569]",
+                )}
+              >
                 {billed}
                 {save && isAnnual ? (
                   <span className="ml-2 rounded-full bg-emerald-50 px-2 py-0.5 font-extrabold text-emerald-700 ring-1 ring-emerald-200">
@@ -155,27 +174,38 @@ export function PricingEcommercePanel({
                   ctaHref: plan.ctaHref,
                 })}
                 className={cn(
-                  "relative z-[1] mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full text-[13px] font-bold",
+                  "mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full text-[13px] font-bold",
                   popular
-                    ? "bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-white shadow-lg"
-                    : "bg-white/80 text-[#2f1c6a] ring-1 ring-white/80 backdrop-blur-md hover:bg-[#f4f0ff]",
+                    ? "bg-white text-[#2f1c6a] shadow-lg"
+                    : "bg-[#f4f0ff] text-[#2f1c6a] ring-1 ring-[#e9e4ff] hover:bg-[#ebe4ff]",
                 )}
               >
                 {plan.ctaLabel}
                 <ArrowRight className="size-4" aria-hidden />
               </Link>
 
-              <div className="relative z-[1]">
-                <AnnualPlanPerks lines={annualPerks} />
-              </div>
+              <AnnualPlanPerks lines={annualPerks} />
 
-              <ul className="relative z-[1] mt-5 flex flex-1 flex-col gap-2 border-t border-[#eef2ff]/80 pt-4">
+              <ul
+                className={cn(
+                  "mt-5 flex flex-1 flex-col gap-2 border-t pt-4",
+                  popular ? "border-white/25" : "border-[#eef2ff]",
+                )}
+              >
                 {features.map((feature) => (
                   <li
                     key={feature}
-                    className="flex gap-2 text-[13px] text-[#334155]"
+                    className={cn(
+                      "flex gap-2 text-[13px]",
+                      popular ? "text-white" : "text-[#334155]",
+                    )}
                   >
-                    <Check className="mt-0.5 size-4 shrink-0 text-[#673de6]" />
+                    <Check
+                      className={cn(
+                        "mt-0.5 size-4 shrink-0",
+                        popular ? "text-white" : "text-[#673de6]",
+                      )}
+                    />
                     {feature}
                   </li>
                 ))}
