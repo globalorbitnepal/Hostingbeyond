@@ -126,7 +126,7 @@ export function BusinessEmailSection({
                 return (
                   <div
                     key={item.id}
-                    className="flex items-start gap-3 rounded-2xl border border-white/80 bg-white/70 px-3.5 py-3.5 backdrop-blur-xl"
+                    className="flex items-start gap-3 rounded-2xl bg-white px-3.5 py-3.5 shadow-[0_12px_28px_rgba(0,0,0,0.14)] ring-1 ring-white"
                   >
                     <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#eef2ff] text-[#673de6] shadow-[0_8px_18px_rgba(15,10,40,0.08)]">
                       <Icon className="size-[18px]" />
