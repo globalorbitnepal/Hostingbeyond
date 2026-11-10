@@ -64,7 +64,7 @@ function text(value: unknown, fallback: string) {
 
 /** Retired plan names (Plus / Pro / Ultimate / Beyond Essential) must not ship. */
 const STALE_PLAN_COPY =
-  /\b(Beyond Essential|Beyond Plus|Beyond Pro|Beyond Ultimate|Commerce Essential|Commerce Plus|Plus, Pro, and Ultimate|Plus plans)\b/;
+  /\b(Beyond Essential|Beyond Plus|Beyond Pro|Beyond Ultimate|Commerce Essential|Commerce Plus|Plus, Pro, and Ultimate|Plus plans)\b|AI credits?|Beyond AI credit/i;
 
 function currentPlanCopy(value: unknown, fallback: string) {
   const stored = typeof value === "string" ? value.trim() : "";

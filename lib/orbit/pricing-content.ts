@@ -904,6 +904,7 @@ export function defaultPricingPageContent(): CmsPricingPageContent {
 function mergeFaqs(
   defaults: CmsFaqItem[],
   stored?: CmsFaqItem[] | null,
+  extraStale?: RegExp,
 ): CmsFaqItem[] {
   if (!stored?.length) return defaults;
   const byId = new Map(stored.map((item) => [item.id, item]));
@@ -912,8 +913,9 @@ function mergeFaqs(
   return defaults.map((item) => {
     const storedItem = byId.get(item.id);
     if (!storedItem) return item;
+    const answerText = storedItem.answer || "";
     const answer =
-      storedItem.answer && stale.test(storedItem.answer)
+      answerText && (stale.test(answerText) || extraStale?.test(answerText))
         ? item.answer
         : storedItem.answer || item.answer;
     return { ...item, ...storedItem, answer };
@@ -976,7 +978,13 @@ export function mergePricingPageContent(
           item.id !== "ai" &&
           !/AI credit|Beyond AI/i.test(`${item.title} ${item.description}`),
       ),
-      faqs: mergeFaqs(cat.faqs, patch.faqs),
+      faqs: mergeFaqs(
+        cat.faqs,
+        patch.faqs,
+        cat.id === "websites" || cat.id === "ecommerce"
+          ? /AI credits?|Beyond AI credit/i
+          : undefined,
+      ),
     };
   });
 

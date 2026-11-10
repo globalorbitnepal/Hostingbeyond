@@ -1302,7 +1302,7 @@ function text(value: unknown, fallback: string) {
 }
 
 const STALE_PLAN_COPY =
-  /\b(Beyond Essential|Beyond Plus|Beyond Pro|Beyond Ultimate|Commerce Essential|Commerce Plus|Plus, Pro, and Ultimate)\b/;
+  /\b(Beyond Essential|Beyond Plus|Beyond Pro|Beyond Ultimate|Commerce Essential|Commerce Plus|Plus, Pro, and Ultimate)\b|AI credits?|Beyond AI credit/i;
 
 function currentPlanCopy(value: unknown, fallback: string) {
   const stored = typeof value === "string" ? value.trim() : "";
