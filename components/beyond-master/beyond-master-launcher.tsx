@@ -14,28 +14,46 @@ import {
 
 import "@/styles/beyond-master.css";
 
-const DOCK_PROMPTS = ["Hello", "Can I help you?"] as const;
+/** Greeting first, then the help offer — never shown on top of each other. */
+const DOCK_PROMPTS = ["Hi", "Can I help you?"] as const;
 
 function useDockTypewriter(active: boolean) {
   const reduceMotion = useReducedMotion();
   const [lineIndex, setLineIndex] = useState(0);
   const [text, setText] = useState("");
+  const [bubbleHidden, setBubbleHidden] = useState(false);
 
   useEffect(() => {
     if (!active) {
       setText("");
+      setBubbleHidden(false);
+      setLineIndex(0);
       return;
     }
 
     const full = DOCK_PROMPTS[lineIndex];
     if (reduceMotion) {
+      setBubbleHidden(false);
       setText(full);
-      const hold = window.setTimeout(() => {
-        setLineIndex((i) => (i + 1) % DOCK_PROMPTS.length);
-      }, 3200);
-      return () => window.clearTimeout(hold);
+      const hold = window.setTimeout(
+        () => {
+          setBubbleHidden(true);
+        },
+        lineIndex === 0 ? 2200 : 3000,
+      );
+      const next = window.setTimeout(
+        () => {
+          setLineIndex((i) => (i + 1) % DOCK_PROMPTS.length);
+        },
+        lineIndex === 0 ? 2480 : 3280,
+      );
+      return () => {
+        window.clearTimeout(hold);
+        window.clearTimeout(next);
+      };
     }
 
+    setBubbleHidden(false);
     setText("");
     let char = 0;
     const stepMs = full.length > 6 ? 48 : 72;
@@ -45,19 +63,30 @@ function useDockTypewriter(active: boolean) {
       if (char >= full.length) window.clearInterval(typeId);
     }, stepMs);
 
-    const holdMs = full.length * stepMs + (lineIndex === 0 ? 1400 : 2600);
+    const typeMs = full.length * stepMs;
+    const holdAfterTypeMs = lineIndex === 0 ? 1400 : 2200;
+    const fadeMs = 260;
 
-    const nextId = window.setTimeout(() => {
-      setLineIndex((i) => (i + 1) % DOCK_PROMPTS.length);
-    }, holdMs);
+    const hideId = window.setTimeout(() => {
+      setBubbleHidden(true);
+      setText("");
+    }, typeMs + holdAfterTypeMs);
+
+    const nextId = window.setTimeout(
+      () => {
+        setLineIndex((i) => (i + 1) % DOCK_PROMPTS.length);
+      },
+      typeMs + holdAfterTypeMs + fadeMs,
+    );
 
     return () => {
       window.clearInterval(typeId);
+      window.clearTimeout(hideId);
       window.clearTimeout(nextId);
     };
   }, [active, lineIndex, reduceMotion]);
 
-  return { text, lineIndex };
+  return { text, lineIndex, bubbleHidden };
 }
 
 /** Fixed bottom dock — mascot orb with a typewritten greeting bubble on the left. */
@@ -72,7 +101,7 @@ export function BeyondMasterAiLauncher({
 }) {
   const { open } = useBeyondMasterAi();
   const reduceMotion = useReducedMotion();
-  const { text, lineIndex } = useDockTypewriter(!open);
+  const { text, lineIndex, bubbleHidden } = useDockTypewriter(!open);
   const currentLine = DOCK_PROMPTS[lineIndex];
   const showCaret =
     !reduceMotion && text.length > 0 && text.length < currentLine.length;
@@ -95,9 +124,14 @@ export function BeyondMasterAiLauncher({
       data-menu={menu ? "true" : "false"}
       onClick={togglePanel}
     >
-      {!open ? (
-        <span className="hb-bmai-dock-bubble" aria-hidden>
-          <span key={lineIndex} className="hb-bmai-dock-hello">
+      {!open && !bubbleHidden ? (
+        <span
+          key={lineIndex}
+          className="hb-bmai-dock-bubble"
+          data-line={lineIndex === 0 ? "hi" : "help"}
+          aria-hidden
+        >
+          <span className="hb-bmai-dock-hello">
             {text}
             {showCaret ? (
               <span className="hb-bmai-dock-caret" aria-hidden>

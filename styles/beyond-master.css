@@ -109,8 +109,16 @@
   white-space: nowrap;
   animation: hb-bmai-bubble-in 420ms ease;
   transition:
-    width 160ms ease,
-    padding 160ms ease;
+    opacity 220ms ease,
+    transform 220ms ease;
+}
+
+.hb-bmai-dock-bubble[data-line="help"] {
+  z-index: 0;
+}
+
+.hb-bmai-dock-bubble[data-line="hi"] {
+  z-index: 1;
 }
 
 .hb-bmai-dock-caret {
