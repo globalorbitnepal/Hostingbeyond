@@ -342,7 +342,15 @@ export function PricingPageView({
   const activeHeadline = hostingTab?.headline ?? cmsCategory?.headline ?? "";
   const activeDescription =
     hostingTab?.description ?? cmsCategory?.description ?? "";
-  const activeHighlights = cmsCategory?.highlights ?? [];
+  const hostingHighlightSource =
+    cmsCategory ??
+    (hostingTab
+      ? getCategoryById(
+          pricing,
+          hostingTab.id === "ecommerce" ? "ecommerce" : "websites",
+        )
+      : null);
+  const activeHighlights = hostingHighlightSource?.highlights ?? [];
 
   const plansForSlug = (slug: string) => {
     const row = catalogBySlug.get(slug);

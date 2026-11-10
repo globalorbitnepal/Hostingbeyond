@@ -325,7 +325,7 @@ const readPricingContent = nextCache(
       mergePricingPageContent(page.sections as Partial<CmsPricingPageContent>),
     );
   },
-  ["orbit-pricing-content-v6"],
+  ["orbit-pricing-content-v7"],
   { tags: [CMS_TAG], revalidate: CMS_REVALIDATE },
 );
 

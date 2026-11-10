@@ -433,12 +433,13 @@ function defaultHighlights(id: PricingCategoryId): CmsPricingHighlight[] {
         icon: "globe",
       },
       {
-        id: "email",
+        id: "storage",
         visible: true,
         order: 3,
-        title: "Professional email",
-        description: "Add branded mailboxes on your domain.",
-        icon: "mail",
+        title: "Extra storage",
+        description:
+          "Need more space? Buy extra NVMe at checkout without changing your plan.",
+        icon: "server",
       },
     ],
     ecommerce: [
@@ -647,6 +648,35 @@ function defaultHighlights(id: PricingCategoryId): CmsPricingHighlight[] {
     ],
   };
   return map[id];
+}
+
+const EXTRA_STORAGE_HIGHLIGHT: CmsPricingHighlight = {
+  id: "storage",
+  visible: true,
+  order: 3,
+  title: "Extra storage",
+  description:
+    "Need more space? Buy extra NVMe at checkout without changing your plan.",
+  icon: "server",
+};
+
+function withExtraStorageHighlight(
+  categoryId: PricingCategoryId,
+  items: CmsPricingHighlight[],
+): CmsPricingHighlight[] {
+  if (categoryId !== "websites" && categoryId !== "ecommerce") return items;
+  const next = items.filter((item) => item.visible !== false);
+  if (next.length >= 4) return next;
+  if (
+    next.some(
+      (item) =>
+        item.id === "storage" ||
+        /extra storage/i.test(`${item.title} ${item.description}`),
+    )
+  ) {
+    return next;
+  }
+  return [...next, { ...EXTRA_STORAGE_HIGHLIGHT, order: next.length }];
 }
 
 function defaultCategories(): CmsPricingCategoryContent[] {
@@ -970,13 +1000,13 @@ export function mergePricingPageContent(
         cat.id === "websites" || cat.id === "ecommerce"
           ? "Save 10%"
           : patch.saveBadge?.trim() || cat.saveBadge,
-      highlights: (patch.highlights?.length
-        ? patch.highlights
-        : cat.highlights
-      ).filter(
-        (item) =>
-          item.id !== "ai" &&
-          !/AI credit|Beyond AI/i.test(`${item.title} ${item.description}`),
+      highlights: withExtraStorageHighlight(
+        cat.id,
+        (patch.highlights?.length ? patch.highlights : cat.highlights).filter(
+          (item) =>
+            item.id !== "ai" &&
+            !/AI credit|Beyond AI/i.test(`${item.title} ${item.description}`),
+        ),
       ),
       faqs: mergeFaqs(
         cat.faqs,

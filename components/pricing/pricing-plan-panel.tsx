@@ -63,7 +63,7 @@ export function PricingPlanPanel({
       : "sm:grid-cols-2 xl:grid-cols-4";
 
   return (
-    <div>
+    <div id="plan-selector" className="scroll-mt-28">
       {showBillingToggle ? (
         <div className="mb-6 flex flex-wrap items-center justify-center gap-2 sm:justify-end">
           <div className="inline-flex items-center rounded-full border border-[#e9e4ff] bg-white p-1 shadow-[0_8px_24px_-12px_rgba(47,28,106,0.25)]">
@@ -100,7 +100,9 @@ export function PricingPlanPanel({
         </div>
       ) : null}
 
-      <div className={cn("grid grid-cols-1 items-stretch gap-4", gridClass)}>
+      <div
+        className={cn("grid grid-cols-1 items-stretch gap-5 py-3", gridClass)}
+      >
         {cmsPlans.map((plan, index) => (
           <PlanCard
             key={plan.id}

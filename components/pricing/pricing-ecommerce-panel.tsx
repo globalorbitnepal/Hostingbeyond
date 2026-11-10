@@ -88,19 +88,23 @@ export function PricingEcommercePanel({
               viewport={{ once: true, margin: "-30px" }}
               transition={{ delay: index * 0.05, duration: 0.4 }}
               className={cn(
-                "relative flex h-full min-w-0 flex-col overflow-hidden rounded-[26px] border p-5 sm:p-6",
+                "relative flex h-full min-w-0 flex-col overflow-hidden rounded-[28px] border border-white/80 p-5 backdrop-blur-xl sm:p-6",
                 popular
-                  ? "z-10 scale-[1.03] border-white bg-[linear-gradient(180deg,#ffffff_0%,#f4f0ff_42%,#e8eeff_100%)] pt-6 shadow-[0_36px_64px_-16px_rgba(47,28,106,0.58)] ring-[3px] ring-[#7c3aed]/55"
-                  : "border-[#ebe6ff] bg-[linear-gradient(180deg,#ffffff_0%,#fbf9ff_100%)] shadow-[0_20px_40px_-22px_rgba(47,28,106,0.28)]",
+                  ? "z-10 scale-[1.045] bg-[linear-gradient(165deg,rgba(255,255,255,0.88)_0%,rgba(248,250,255,0.78)_46%,rgba(239,246,255,0.7)_100%)] pt-6 shadow-[0_40px_72px_-22px_rgba(37,99,235,0.38),0_24px_48px_-24px_rgba(124,58,237,0.42)] ring-2 ring-[#7c3aed]/40"
+                  : "bg-white/60 shadow-[0_20px_40px_-24px_rgba(47,28,106,0.32)] ring-1 ring-[#ddd6fe]/80",
               )}
             >
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 rounded-[28px] bg-[linear-gradient(165deg,rgba(255,255,255,0.55),rgba(255,255,255,0.06)_42%,rgba(219,234,254,0.22))]"
+              />
               {popular ? (
                 <div
                   aria-hidden
-                  className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-[#2563eb] via-[#673de6] to-[#7c3aed]"
+                  className="pointer-events-none absolute -top-20 left-1/2 h-40 w-52 -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(96,165,250,0.28),rgba(167,139,250,0.2),transparent_70%)] blur-2xl"
                 />
               ) : null}
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="relative z-[1] flex flex-wrap items-center gap-2">
                 {plan.discountBadge && isAnnual ? (
                   <span className="rounded-full bg-emerald-500 px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-white uppercase shadow-[0_8px_16px_rgba(16,185,129,0.35)]">
                     {plan.discountBadge}
@@ -114,19 +118,19 @@ export function PricingEcommercePanel({
                 ) : null}
               </div>
 
-              <h3 className="font-heading mt-4 text-[1.35rem] font-extrabold text-[#2f1c6a]">
+              <h3 className="font-heading relative z-[1] mt-4 text-[1.35rem] font-extrabold text-[#2f1c6a]">
                 {plan.name}
               </h3>
-              <p className="mt-1 min-h-[2.5rem] text-[13px] text-[#64748b]">
+              <p className="relative z-[1] mt-1 min-h-[2.5rem] text-[13px] text-[#64748b]">
                 {plan.tagline}
               </p>
 
               {original ? (
-                <p className="mt-2 text-[13px] font-semibold text-[#94a3b8] line-through">
+                <p className="relative z-[1] mt-2 text-[13px] font-semibold text-[#94a3b8] line-through">
                   {original}
                 </p>
               ) : null}
-              <p className="mt-0.5 flex items-end gap-1">
+              <p className="relative z-[1] mt-0.5 flex items-end gap-1">
                 <span className="text-[2rem] font-extrabold tracking-tight text-[#673de6]">
                   {price}
                 </span>
@@ -134,7 +138,7 @@ export function PricingEcommercePanel({
                   /mo
                 </span>
               </p>
-              <p className="mt-1 text-[12px] font-semibold text-[#475569]">
+              <p className="relative z-[1] mt-1 text-[12px] font-semibold text-[#475569]">
                 {billed}
                 {save && isAnnual ? (
                   <span className="ml-2 rounded-full bg-emerald-50 px-2 py-0.5 font-extrabold text-emerald-700 ring-1 ring-emerald-200">
@@ -151,19 +155,21 @@ export function PricingEcommercePanel({
                   ctaHref: plan.ctaHref,
                 })}
                 className={cn(
-                  "mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full text-[13px] font-bold",
+                  "relative z-[1] mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full text-[13px] font-bold",
                   popular
                     ? "bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-white shadow-lg"
-                    : "bg-[#f4f0ff] text-[#2f1c6a] hover:bg-[#ebe4ff]",
+                    : "bg-white/80 text-[#2f1c6a] ring-1 ring-white/80 backdrop-blur-md hover:bg-[#f4f0ff]",
                 )}
               >
                 {plan.ctaLabel}
                 <ArrowRight className="size-4" aria-hidden />
               </Link>
 
-              <AnnualPlanPerks lines={annualPerks} />
+              <div className="relative z-[1]">
+                <AnnualPlanPerks lines={annualPerks} />
+              </div>
 
-              <ul className="mt-5 flex flex-1 flex-col gap-2 border-t border-[#eef2ff] pt-4">
+              <ul className="relative z-[1] mt-5 flex flex-1 flex-col gap-2 border-t border-[#eef2ff]/80 pt-4">
                 {features.map((feature) => (
                   <li
                     key={feature}

@@ -250,7 +250,7 @@ export function HostingPlansCream({
 
         <div
           className={cn(
-            "mt-10 grid grid-cols-1 gap-4 sm:mt-12 md:grid-cols-2 xl:grid-cols-4 xl:gap-5",
+            "mt-10 grid grid-cols-1 gap-4 py-3 sm:mt-12 md:grid-cols-2 xl:grid-cols-4 xl:gap-5",
           )}
         >
           {plans.map((plan, index) => (
