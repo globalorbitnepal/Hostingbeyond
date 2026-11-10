@@ -303,108 +303,306 @@
     display: none;
   }
 
-  .hb-tld-offer {
+  /* Hero TLD cards — measured 1:1 from the reference art.
+     Card box 250x193 (ratio 250/193). All inner metrics in cqw
+     so every card scales with its own width, exactly like the mock. */
+  .hb-tld-card {
+    container-type: inline-size;
+    display: block;
+    width: 100%;
+    border: 0;
+    padding: 0;
+    background: none;
+    text-align: left;
+    /* Tone tokens live here so the featured (.com) modifiers can
+       override them by cascade; the box only inherits them. */
+    --tld-accent: #5e25ee;
+    --tld-navy: #191457;
+    --tld-wave: #ded1fc;
+    --tld-line: #ece7fa;
+    --tld-badge-bg: #efeaff;
+    --tld-badge-fg: #5e25ee;
+  }
+
+  /* Inner box carries the measured geometry. cqw resolves against
+     .hb-tld-card, so it must live on a descendant, never the container. */
+  .hb-tld-card-box {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 250 / 193;
+    border-radius: 10.4cqw;
+    transition:
+      transform 0.18s ease,
+      box-shadow 0.18s ease;
     isolation: isolate;
-    transform: translateZ(0);
-    --tld-price: #7c3aed;
-    --tld-wave: #a78bfa;
   }
 
-  .hb-tld-offer-face {
-    background: linear-gradient(180deg, #ffffff 0%, #f8f5ff 48%, #efe8ff 100%);
-    border: 1px solid rgba(167, 139, 250, 0.45);
-    box-shadow:
-      0 12px 28px rgba(91, 33, 182, 0.14),
-      0 2px 8px rgba(91, 33, 182, 0.08),
-      inset 0 1px 0 rgba(255, 255, 255, 0.98);
-  }
-
-  .hb-tld-offer:hover,
-  .hb-tld-offer--active {
+  .hb-tld-card:hover .hb-tld-card-box,
+  .hb-tld-card--active .hb-tld-card-box {
     transform: translateY(-2px);
   }
 
-  .hb-tld-offer--featured .hb-tld-offer-face {
-    background: linear-gradient(160deg, #9b6dff 0%, #7c3aed 36%, #5b21b6 100%);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    box-shadow:
-      0 16px 32px rgba(91, 33, 182, 0.38),
-      0 0 0 1px rgba(255, 255, 255, 0.08),
-      inset 0 1px 0 rgba(255, 255, 255, 0.28);
-  }
-
-  .hb-tld-offer--violet {
-    --tld-price: #7c3aed;
-    --tld-wave: #c4b5fd;
-  }
-
-  .hb-tld-offer--azure {
-    --tld-price: #2563eb;
-    --tld-wave: #93c5fd;
-  }
-
-  .hb-tld-offer--featured {
-    --tld-price: #f5c431;
-    --tld-wave: #e9d5ff;
-  }
-
-  .hb-tld-offer-wave {
+  .hb-tld-card-face {
     position: absolute;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 0;
-    height: 38%;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+    border-radius: inherit;
+    padding: 16.6cqw 9.8cqw 21.4cqw;
+    background: #ffffff;
+    border: 1px solid var(--tld-line);
+    box-shadow:
+      0 6.4cqw 13cqw rgba(76, 29, 149, 0.16),
+      0 1cqw 2.6cqw rgba(76, 29, 149, 0.08);
+  }
+
+  .hb-tld-card--violet {
+    --tld-accent: #5e25ee;
+    --tld-wave: #ded1fc;
+    --tld-line: #ece7fa;
+    --tld-badge-bg: #f1ecfe;
+    --tld-badge-fg: #5e25ee;
+  }
+
+  .hb-tld-card--mint {
+    --tld-accent: #01916d;
+    --tld-wave: #d8f6f1;
+    --tld-line: #ddf6f0;
+    --tld-badge-bg: #e2f8f2;
+    --tld-badge-fg: #01916d;
+  }
+
+  .hb-tld-card--peach {
+    --tld-accent: #df4603;
+    --tld-wave: #ffe6d4;
+    --tld-line: #ffe6d4;
+    --tld-badge-bg: #ffefe3;
+    --tld-badge-fg: #df4603;
+  }
+
+  /* Featured (.com) — deep violet face inside a gold ring */
+  .hb-tld-card--featured {
+    --tld-navy: #ffffff;
+    --tld-accent: #f7be0c;
+    --tld-wave: #6d3bd4;
+  }
+
+  .hb-tld-card--featured .hb-tld-card-box {
+    background: linear-gradient(
+      155deg,
+      #ffe089 0%,
+      #f9c92a 30%,
+      #eab112 58%,
+      #cf9408 100%
+    );
+    box-shadow:
+      0 6.4cqw 14cqw rgba(25, 20, 87, 0.32),
+      0 0 0 0.6cqw rgba(249, 201, 42, 0.18);
+  }
+
+  .hb-tld-card--featured .hb-tld-card-face {
+    /* Mock: the gold ring reads as ~2px on a 248px card, i.e. ≈0.8cqw. */
+    inset: 0.85cqw;
+    border-radius: 9.6cqw;
+    background:
+      radial-gradient(
+        ellipse 62% 74% at 78% 44%,
+        rgba(167, 139, 250, 0.6) 0%,
+        rgba(109, 40, 217, 0.28) 46%,
+        transparent 74%
+      ),
+      linear-gradient(160deg, #3f1a92 0%, #351687 44%, #2b1059 100%);
+    border: 0;
+    padding: 17.6cqw 10.6cqw 19.4cqw;
+    box-shadow: inset 0 0.3cqw 0 rgba(255, 255, 255, 0.14);
+  }
+
+  .hb-tld-card-head {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 2cqw;
+  }
+
+  .hb-tld-card-tld {
+    color: var(--tld-navy);
+    font-size: 17.4cqw;
+    font-weight: 800;
+    line-height: 0.96;
+    letter-spacing: -0.045em;
+  }
+
+  /* .com sits on the dark face — needs a soft dark shadow to read */
+  .hb-tld-card--featured .hb-tld-card-tld {
+    position: relative;
+    z-index: 3;
+    text-shadow:
+      0 0.5cqw 1.6cqw rgba(30, 10, 70, 0.55),
+      0 0.1cqw 0.3cqw rgba(30, 10, 70, 0.45);
+  }
+
+  .hb-tld-card-art {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    /* Measured from the mock: the icons are ~41px wide on a 250px card
+       (16.4%), so 17cqw keeps them the same scale as the reference.
+       The icon's ink right edge sits 18.8cqw in from the card edge and its
+       top sits 21.2cqw down, i.e. 2.4cqw below the TLD cap line — the face
+       padding is 9.8cqw / 16.6cqw, so margin-right 9.2cqw and margin-top
+       4.4cqw land the icon exactly there. */
+    width: 17cqw;
+    height: 17cqw;
+    margin-top: 4.4cqw;
+    margin-right: 9.2cqw;
+    color: var(--tld-accent);
+  }
+
+  .hb-tld-card-art svg {
     width: 100%;
-    pointer-events: none;
-    color: var(--tld-wave);
+    height: 100%;
+    overflow: visible;
   }
 
-  .hb-tld-offer-tld {
-    color: #1e1b4b;
+  /* .com globe: translucent wireframe sphere (mistake #1).
+     Derived from the mock's row profile: the rim runs x≈153→237 and starts
+     at y≈23 on a 248×173 card — diameter ≈34% of the card width, centred
+     at (78.6%, 37.6%) of the face. The SVG viewBox is 120 with an r=45
+     sphere (75% of the box), so the box is 34/0.75 ≈ 45cqw. Offsets are
+     relative to .hb-tld-card-head, whose origin inside the featured face
+     is (0.85+10.6, 0.85+17.6) = (11.45, 18.45)cqw; the card is
+     100 × 77.2cqw, so 37.6% down = 29cqw:
+       left = 78.6 - 22.5 - 11.45 = 44.65cqw
+       top  = 29   - 22.5 - 18.45 = -11.95cqw */
+  .hb-tld-card--featured .hb-tld-card-art {
+    position: absolute;
+    top: -11.95cqw;
+    left: 44.65cqw;
+    width: 45cqw;
+    height: 45cqw;
+    margin: 0;
+    color: #c6a8ff;
+    filter: drop-shadow(0 0 4cqw rgba(167, 139, 250, 0.45));
   }
 
-  .hb-tld-offer--featured .hb-tld-offer-tld {
-    color: #fff;
+  .hb-tld-card-price {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: baseline;
+    gap: 0.7cqw;
+    color: var(--tld-accent);
+    font-size: 15.2cqw;
+    font-weight: 800;
+    line-height: 1.02;
+    letter-spacing: -0.045em;
+    white-space: nowrap;
   }
 
-  .hb-tld-offer-was {
-    color: #64748b;
+  .hb-tld-card-per {
+    font-size: 0.34em;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .hb-tld-card-was {
+    margin-left: 0.9cqw;
+    color: #9295ad;
+    font-size: 0.47em;
+    font-weight: 500;
+    letter-spacing: -0.01em;
     text-decoration-line: line-through;
-    text-decoration-thickness: 1.6px;
-    text-decoration-color: #94a3b8;
+    text-decoration-thickness: 0.075em;
+    text-decoration-color: #9a9db4;
   }
 
-  .hb-tld-offer--featured .hb-tld-offer-was {
-    color: rgba(255, 255, 255, 0.82);
-    text-decoration-color: rgba(255, 255, 255, 0.7);
+  .hb-tld-card--featured .hb-tld-card-price {
+    gap: 1cqw;
   }
 
-  .hb-tld-offer-price {
-    color: var(--tld-price);
+  .hb-tld-card--featured .hb-tld-card-per {
+    color: #ffffff;
+    font-weight: 700;
   }
 
-  .hb-tld-offer-popular-badge {
-    background: linear-gradient(180deg, #ffe27a 0%, #f5c431 100%);
-    color: #6b4708;
-    box-shadow: 0 6px 14px rgba(92, 58, 8, 0.22);
+  .hb-tld-card--featured .hb-tld-card-was {
+    color: rgba(255, 255, 255, 0.58);
+    text-decoration-color: rgba(255, 255, 255, 0.5);
   }
 
-  .hb-tld-offer-save {
-    color: #fff;
-    box-shadow: 0 6px 14px rgba(76, 29, 149, 0.22);
+  .hb-tld-card-wave {
+    position: absolute;
+    right: -12%;
+    bottom: -10%;
+    z-index: 1;
+    width: 118%;
+    height: 62%;
+    color: var(--tld-wave);
+    pointer-events: none;
+    filter: blur(6px);
   }
 
-  .hb-tld-offer-save--featured {
-    background: linear-gradient(180deg, #f9a8d4 0%, #ec4899 100%);
+  .hb-tld-card--featured .hb-tld-card-wave {
+    height: 40%;
+    opacity: 0.5;
   }
 
-  .hb-tld-offer-save--violet {
-    background: linear-gradient(180deg, #c4b5fd 0%, #7c3aed 100%);
+  /* Save badge — pill inside the card, top right.
+     Measured on the mock: the pill's right edge sits 14.4cqw in from the
+     card edge and its top 3.6cqw down, at 38.8cqw × 10.8cqw. The label
+     ink is 27.2cqw wide with 5.8cqw of padding either side. */
+  .hb-tld-card-badge {
+    position: absolute;
+    top: 3.6cqw;
+    right: 14.4cqw;
+    z-index: 3;
+    padding: 1.9cqw 5.8cqw;
+    border-radius: 99px;
+    background: var(--tld-badge-bg);
+    color: var(--tld-badge-fg);
+    font-size: 5.5cqw;
+    font-weight: 800;
+    letter-spacing: -0.015em;
+    line-height: 1.35;
+    white-space: nowrap;
   }
 
-  .hb-tld-offer-save--azure {
-    background: linear-gradient(180deg, #67e8f9 0%, #06b6d4 100%);
+  .hb-tld-card--featured .hb-tld-card-badge {
+    right: 3.4cqw;
+    top: 3.4cqw;
+    padding: 1.2cqw 4cqw;
+  }
+
+  /* Most Popular ribbon — gold, flush to the top-left corner */
+  .hb-tld-card-ribbon {
+    position: absolute;
+    top: -1.2cqw;
+    left: -1cqw;
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    gap: 1.4cqw;
+    padding: 1.9cqw 4.4cqw 1.9cqw 3.2cqw;
+    border-radius: 99px;
+    background: linear-gradient(180deg, #ffd75c 0%, #f9c21c 60%, #eeb007 100%);
+    color: #3c2a02;
+    font-size: 8.4cqw;
+    font-weight: 800;
+    letter-spacing: -0.015em;
+    line-height: 1.35;
+    white-space: nowrap;
+    box-shadow: 0 1cqw 2.4cqw rgba(138, 92, 0, 0.25);
+  }
+
+  .hb-tld-card-ribbon svg {
+    width: 8.2cqw;
+    height: 8.2cqw;
   }
 
   .hb-search-pill-divider {

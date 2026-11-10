@@ -73,34 +73,231 @@ export type HeroOrbitTldRate = {
   renew: number;
 };
 
-type TldOfferTone = "featured" | "violet" | "azure";
+type TldOfferTone = "featured" | "violet" | "mint" | "peach";
 
 const TLD_OFFER_TONE: Record<string, TldOfferTone> = {
   ".com": "featured",
   ".net": "violet",
-  ".org": "azure",
-  ".online": "violet",
-  ".shop": "azure",
+  ".org": "mint",
+  ".shop": "peach",
 };
 
-function TldOfferWave() {
+const HERO_TLD_ORDER = [".com", ".net", ".org", ".shop"] as const;
+
+function TldOfferWave({ tone }: { tone: TldOfferTone }) {
+  const id = `hb-tld-wave-${tone}`;
   return (
     <svg
-      className="hb-tld-offer-wave"
-      viewBox="0 0 220 72"
+      className="hb-tld-card-wave"
+      viewBox="0 0 320 100"
       preserveAspectRatio="none"
       aria-hidden
     >
+      <defs>
+        <linearGradient id={id} x1="0.2" y1="0" x2="0.45" y2="1">
+          <stop offset="0%" stopColor="currentColor" stopOpacity="0" />
+          <stop offset="30%" stopColor="currentColor" stopOpacity="0.4" />
+          <stop offset="70%" stopColor="currentColor" stopOpacity="0.85" />
+          <stop offset="100%" stopColor="currentColor" stopOpacity="1" />
+        </linearGradient>
+      </defs>
       <path
-        d="M0 30 C 36 12, 72 50, 112 28 S 176 8, 220 32 L 220 72 L 0 72 Z"
-        fill="currentColor"
-        opacity="0.38"
+        d="M330 -6 C 268 22, 216 58, 150 74 S 58 96, -10 108 L -10 120 L 330 120 Z"
+        fill={`url(#${id})`}
       />
       <path
-        d="M0 44 C 48 26, 88 58, 136 40 S 188 24, 220 46 L 220 72 L 0 72 Z"
-        fill="currentColor"
-        opacity="0.28"
+        d="M330 34 C 258 56, 204 84, 140 96 S 52 108, -10 112 L -10 120 L 330 120 Z"
+        fill={`url(#${id})`}
+        opacity="0.6"
       />
+    </svg>
+  );
+}
+
+function TldOfferIcon({ tone }: { tone: TldOfferTone }) {
+  if (tone === "featured") {
+    return (
+      <svg viewBox="0 0 120 120" aria-hidden>
+        <defs>
+          <radialGradient id="hb-globe-haze" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#d8bcff" stopOpacity="0.7" />
+            <stop offset="48%" stopColor="#a875ff" stopOpacity="0.5" />
+            <stop offset="78%" stopColor="#7c3aed" stopOpacity="0.24" />
+            <stop offset="100%" stopColor="#6d28d9" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id="hb-globe-tint" cx="40%" cy="26%" r="84%">
+            <stop offset="0%" stopColor="#f3e6ff" stopOpacity="0.55" />
+            <stop offset="42%" stopColor="#b98cff" stopOpacity="0.42" />
+            <stop offset="72%" stopColor="#8b5cf6" stopOpacity="0.34" />
+            <stop offset="100%" stopColor="#4c1d95" stopOpacity="0.4" />
+          </radialGradient>
+          <clipPath id="hb-globe-clip">
+            <circle cx="60" cy="60" r="45" />
+          </clipPath>
+          <filter
+            id="hb-globe-soft"
+            x="-30%"
+            y="-30%"
+            width="160%"
+            height="160%"
+          >
+            <feGaussianBlur stdDeviation="1.6" />
+          </filter>
+        </defs>
+        {/* soft bloom behind the sphere */}
+        <circle cx="60" cy="60" r="62" fill="url(#hb-globe-haze)" />
+        {/* translucent glass sphere — never a solid disc */}
+        <circle cx="60" cy="60" r="45" fill="url(#hb-globe-tint)" />
+        <g clipPath="url(#hb-globe-clip)">
+          {/* continents — a stylised world map, soft lavender washes */}
+          <g
+            fill="rgba(226,203,255,0.5)"
+            stroke="rgba(255,255,255,0.22)"
+            strokeWidth="0.5"
+          >
+            {/* North America */}
+            <path d="M27 33 33 28 39 27 43 31 41 35 44 37 42 42 38 44 36 50 33 52 31 47 28 44 26 39Z" />
+            {/* Greenland */}
+            <path d="M46 24 52 22 55 26 50 31 45 29Z" />
+            {/* Central America */}
+            <path d="M34 52 38 53 39 57 35 58 33 55Z" />
+            {/* South America */}
+            <path d="M42 60 49 58 53 63 51 70 47 78 43 84 39 80 38 71 39 64Z" />
+            {/* Europe */}
+            <path d="M60 28 66 26 70 29 68 34 63 36 59 33Z" />
+            {/* Africa */}
+            <path d="M60 38 68 36 73 41 72 50 68 60 64 68 59 64 57 54 56 45Z" />
+            {/* Middle East / India */}
+            <path d="M73 38 79 36 82 42 78 50 74 46Z" />
+            {/* Asia */}
+            <path d="M72 26 82 22 92 24 97 30 93 37 86 40 80 36 75 33Z" />
+            {/* South-East Asia */}
+            <path d="M86 42 92 43 94 49 88 51 84 46Z" />
+            {/* Australia */}
+            <path d="M88 62 96 60 100 65 96 71 89 70 86 66Z" />
+            {/* New Zealand */}
+            <path d="M101 72 104 74 102 79 99 76Z" />
+          </g>
+          {/* wireframe latitude / longitude */}
+          <g
+            fill="none"
+            stroke="rgba(255,255,255,0.26)"
+            strokeWidth="0.6"
+            vectorEffect="non-scaling-stroke"
+          >
+            <ellipse cx="60" cy="60" rx="45" ry="11" />
+            <ellipse cx="60" cy="60" rx="45" ry="22" />
+            <ellipse cx="60" cy="60" rx="45" ry="33" />
+            <ellipse cx="60" cy="60" rx="9" ry="45" />
+            <ellipse cx="60" cy="60" rx="22" ry="45" />
+            <ellipse cx="60" cy="60" rx="34" ry="45" />
+          </g>
+        </g>
+        <circle
+          cx="60"
+          cy="60"
+          r="45"
+          fill="none"
+          stroke="rgba(255,255,255,0.42)"
+          strokeWidth="1"
+          vectorEffect="non-scaling-stroke"
+        />
+        {/* soft top-left rim light (the mock's glass highlight) */}
+        <circle
+          cx="60"
+          cy="60"
+          r="43.8"
+          fill="none"
+          stroke="rgba(246,238,255,0.5)"
+          strokeWidth="1.8"
+          strokeDasharray="58 200"
+          strokeDashoffset="118"
+          strokeLinecap="round"
+          vectorEffect="non-scaling-stroke"
+          filter="url(#hb-globe-soft)"
+        />
+      </svg>
+    );
+  }
+
+  if (tone === "violet") {
+    // Measured off the mock: the three isometric diamonds are 41px wide by
+    // 41px tall in total, and each diamond is ~16px tall, so the layers sit
+    // almost edge to edge — this is a square icon, not a wide one.
+    return (
+      <svg viewBox="0 0 34 34" aria-hidden>
+        {/* top diamond — the only solid layer */}
+        <path d="M17 0.8 33 6.3 17 11.8 1 6.3Z" fill="currentColor" />
+        {/* middle diamond — outline only */}
+        <path
+          d="M17 11.3 33 16.8 17 22.3 1 16.8Z"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.6"
+          strokeLinejoin="round"
+          opacity="0.78"
+        />
+        {/* bottom diamond — faded outline */}
+        <path
+          d="M17 21.8 33 27.3 17 32.8 1 27.3Z"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.6"
+          strokeLinejoin="round"
+          opacity="0.32"
+        />
+      </svg>
+    );
+  }
+
+  if (tone === "mint") {
+    return (
+      <svg
+        viewBox="0 0 52 52"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        <circle cx="26" cy="17" r="6" />
+        <path d="M15.6 39c.6-6 5-9.6 10.4-9.6S35.8 33 36.4 39" />
+        <circle cx="10.6" cy="21.5" r="4.4" />
+        <path d="M2.6 37.4c.6-4.4 3.6-7.2 7.2-7.2 1.6 0 3 .5 4.2 1.4" />
+        <circle cx="41.4" cy="21.5" r="4.4" />
+        <path d="M49.4 37.4c-.6-4.4-3.6-7.2-7.2-7.2-1.6 0-3 .5-4.2 1.4" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg
+      viewBox="0 0 26 26"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.1"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      {/* Every centerline below was traced off the reference crop: the mock's
+          stroke is ~3px on a 250px-wide card, i.e. 2.1 units here, and the
+          basket tapers instead of stepping. Ink lands at 25.4 × 23.2 units
+          (aspect ≈1.09). */}
+      {/* handle stub, dipping into the rail's left corner */}
+      <path d="M1.1 1.05H3.2L4.3 4.65" />
+      {/* top rail → front wall → basket floor → back wall */}
+      <path d="M4.3 4.65H24.5L21.9 16.6H7L4.3 4.65" />
+      {/* lightning bolt centred in the basket */}
+      <path
+        d="M15 6.2 11.2 10.5h2.7l-1.1 3.1 5.9-4.4h-2.9z"
+        fill="currentColor"
+        stroke="none"
+      />
+      {/* wheels */}
+      <circle cx="7.9" cy="20.9" r="2.3" fill="currentColor" stroke="none" />
+      <circle cx="20.9" cy="20.9" r="2.3" fill="currentColor" stroke="none" />
     </svg>
   );
 }
@@ -253,7 +450,7 @@ export function HeroSection({
   }, [content?.domainPricing, orbitTlds]);
 
   const displayTeasers = useMemo(() => {
-    const order = [".com", ".net", ".org", ".online", ".shop"];
+    const order: string[] = [...HERO_TLD_ORDER];
     const rows = [...teasers];
     for (const tld of order) {
       if (!rows.some((r) => r.tld.toLowerCase() === tld)) {
@@ -266,12 +463,13 @@ export function HeroSection({
         const key = row.tld.toLowerCase();
         return list.findIndex((x) => x.tld.toLowerCase() === key) === index;
       })
+      .filter((row) => order.includes(row.tld.toLowerCase()))
       .sort((a, b) => {
         const ai = order.indexOf(a.tld.toLowerCase());
         const bi = order.indexOf(b.tld.toLowerCase());
         return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
       })
-      .slice(0, 5);
+      .slice(0, 4);
   }, [teasers]);
 
   const tldChoices = useMemo(() => {
@@ -453,7 +651,7 @@ export function HeroSection({
             aria-label="Popular domain extension prices"
             className="relative z-30 mt-4 grid w-full grid-cols-1 gap-1.5 md:hidden"
           >
-            {displayTeasers.slice(0, 5).map((item) => {
+            {displayTeasers.slice(0, 4).map((item) => {
               const value = item.tld.startsWith(".")
                 ? item.tld
                 : `.${item.tld}`;
@@ -503,7 +701,7 @@ export function HeroSection({
             transition={{ delay: 0.16 }}
             role="group"
             aria-label="Popular domain extensions"
-            className="hb-hero-offer-scroll relative z-30 mt-5 hidden w-full snap-x snap-mandatory gap-2.5 overflow-x-auto overscroll-x-contain pt-4 pb-1 [-webkit-overflow-scrolling:touch] md:mt-5 md:grid md:grid-cols-3 md:gap-2.5 md:overflow-visible md:pt-4 lg:mt-5 lg:grid-cols-5 lg:gap-2.5"
+            className="hb-hero-offer-scroll relative z-30 mt-5 hidden w-full gap-1.5 pt-3 md:mt-5 md:grid md:grid-cols-4 md:gap-2 md:pt-3 lg:mt-5 lg:gap-[2%]"
           >
             {displayTeasers.map((item) => {
               const value = item.tld.startsWith(".")
@@ -529,63 +727,47 @@ export function HeroSection({
                   aria-pressed={active}
                   onClick={() => setTld(value)}
                   className={cn(
-                    "hb-tld-offer group relative flex h-[7.15rem] w-[9.6rem] shrink-0 snap-start flex-col overflow-visible rounded-[18px] text-left transition duration-200 outline-none",
-                    "sm:h-[7.35rem] sm:w-auto sm:min-w-0",
+                    "hb-tld-card group shrink-0 snap-start outline-none",
+                    `hb-tld-card--${tone}`,
+                    active && "hb-tld-card--active",
                     "focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
-                    `hb-tld-offer--${tone}`,
-                    active && "hb-tld-offer--active",
                   )}
                 >
-                  {popular ? (
-                    <span className="hb-tld-offer-popular-badge absolute -top-2.5 left-1.5 z-20 inline-flex items-center gap-0.5 rounded-full px-2 py-[3px] text-[8.5px] font-extrabold tracking-[0.04em] whitespace-nowrap uppercase sm:px-2.5 sm:text-[9.5px]">
-                      <Crown
-                        className="size-2.5 shrink-0"
-                        fill="currentColor"
-                        aria-hidden
-                      />
-                      Most Popular
-                    </span>
-                  ) : saveLabel ? (
-                    <span
-                      className={cn(
-                        "hb-tld-offer-save absolute -top-2.5 right-1.5 z-20 rounded-full px-2 py-[3px] text-[8.5px] font-extrabold whitespace-nowrap sm:px-2.5 sm:text-[9.5px]",
-                        `hb-tld-offer-save--${tone}`,
-                      )}
-                    >
-                      {saveLabel}
-                    </span>
-                  ) : null}
-                  <span className="hb-tld-offer-face relative flex h-full w-full flex-col items-start overflow-hidden rounded-[18px] pt-3.5 pr-3 pb-2.5 pl-3">
-                    <span
-                      className="hb-tld-offer-tld relative z-[2] text-[1.12rem] leading-none font-extrabold tracking-[-0.04em] sm:text-[1.18rem]"
-                      translate="no"
-                    >
-                      {value}
-                    </span>
-                    {original != null ? (
-                      <span
-                        className="hb-tld-offer-was relative z-[2] mt-1.5 text-[12px] font-bold line-through sm:text-[13px]"
-                        translate="no"
-                      >
-                        <CatalogPrice usd={original} />
+                  <span className="hb-tld-card-box">
+                    {popular ? (
+                      <span className="hb-tld-card-ribbon">
+                        <Crown fill="currentColor" aria-hidden />
+                        Most Popular
                       </span>
+                    ) : saveLabel ? (
+                      <span className="hb-tld-card-badge">{saveLabel}</span>
                     ) : null}
-                    {sale != null ? (
-                      <span
-                        className="hb-tld-offer-price relative z-[2] mt-0.5 text-[1.22rem] leading-none font-extrabold tracking-[-0.04em] whitespace-nowrap sm:text-[1.28rem]"
-                        translate="no"
-                      >
-                        <CatalogPrice usd={sale} />
-                        <span className="ml-0.5 align-baseline text-[0.52em] font-extrabold">
-                          /yr
+                    <span className="hb-tld-card-face">
+                      <span className="hb-tld-card-head">
+                        <span className="hb-tld-card-tld" translate="no">
+                          {value}
+                        </span>
+                        <span className="hb-tld-card-art">
+                          <TldOfferIcon tone={tone} />
                         </span>
                       </span>
-                    ) : (
-                      <span className="hb-tld-offer-price relative z-[2] text-[1.15rem] font-extrabold">
-                        {item.priceLabel}
+                      <span className="hb-tld-card-price" translate="no">
+                        {sale != null ? (
+                          <>
+                            <CatalogPrice usd={sale} />
+                            <span className="hb-tld-card-per">/yr</span>
+                          </>
+                        ) : (
+                          item.priceLabel
+                        )}
+                        {original != null ? (
+                          <span className="hb-tld-card-was">
+                            <CatalogPrice usd={original} />
+                          </span>
+                        ) : null}
                       </span>
-                    )}
-                    <TldOfferWave />
+                      <TldOfferWave tone={tone} />
+                    </span>
                   </span>
                 </button>
               );
