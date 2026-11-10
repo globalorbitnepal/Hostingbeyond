@@ -103,8 +103,7 @@
   .hb-header-bar {
     position: relative;
     isolation: isolate;
-    overflow: hidden;
-    contain: paint;
+    overflow: visible;
     background-color: #ffffff;
     background-image: linear-gradient(
       152deg,

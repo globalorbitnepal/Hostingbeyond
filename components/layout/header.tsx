@@ -197,9 +197,9 @@ function NavDropdown({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 3 }}
             transition={{ duration: 0.13, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute top-[calc(100%+12px)] left-1/2 z-50 min-w-[220px] -translate-x-1/2"
+            className="absolute top-[calc(100%+12px)] left-1/2 z-[80] min-w-[220px] -translate-x-1/2"
           >
-            <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 py-1.5 shadow-[0_18px_48px_rgba(15,23,42,0.12)] backdrop-blur-2xl">
+            <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white py-1.5 shadow-[0_18px_48px_rgba(15,23,42,0.16)]">
               {item.children.map((child) => (
                 <Link
                   key={child.href}
