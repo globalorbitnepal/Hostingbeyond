@@ -931,39 +931,46 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
               <ShoppingCart className="size-5" aria-hidden />
               Order summary
             </h2>
-            <p className="mt-1 text-[13px] text-[var(--hb-co-text-muted)]">
+            <p className="hb-checkout-summary__plan">
               {quote.planName} · {isAnnual ? "Annual" : "Monthly"}
             </p>
             <ul className="mt-5 space-y-3 text-[14px]">
-              {quote.lines.map((line) => (
-                <li
-                  key={line.id}
-                  className="flex min-w-0 justify-between gap-3"
-                >
-                  <span className="min-w-0 text-[var(--hb-co-text-muted)]">
-                    {line.label}
-                    {line.note ? (
-                      <span className="mt-0.5 block text-[12px] break-words">
-                        {line.note}
-                      </span>
-                    ) : null}
-                  </span>
-                  <span className="shrink-0 font-semibold text-[var(--hb-co-royal)]">
-                    {line.amount === 0 &&
-                    (line.kind === "domain" || line.id === "email-trial")
-                      ? "FREE"
-                      : formatQuoteAmount(line.amount)}
-                  </span>
-                </li>
-              ))}
+              {quote.lines.map((line) => {
+                const free =
+                  line.amount === 0 &&
+                  (line.kind === "domain" || line.id === "email-trial");
+                const saving = line.kind === "discount";
+                return (
+                  <li
+                    key={line.id}
+                    className="flex min-w-0 justify-between gap-3"
+                  >
+                    <span className="min-w-0 text-[#4a4463]">
+                      {line.label}
+                      {line.note ? (
+                        <span className="mt-0.5 block text-[12px] break-words">
+                          {line.note}
+                        </span>
+                      ) : null}
+                    </span>
+                    <span
+                      className={`shrink-0 font-semibold ${
+                        saving
+                          ? "hb-checkout-summary__row--saving"
+                          : free
+                            ? "hb-checkout-summary__row--free"
+                            : "text-[#1b1240]"
+                      }`}
+                    >
+                      {free ? "FREE" : formatQuoteAmount(line.amount)}
+                    </span>
+                  </li>
+                );
+              })}
             </ul>
-            <div className="mt-4 flex justify-between rounded-xl bg-[var(--hb-co-surface)] px-3 py-3">
-              <span className="text-[15px] font-bold text-[var(--hb-co-royal)]">
-                Total due today
-              </span>
-              <span className="text-[1.2rem] font-extrabold text-[var(--hb-co-primary)]">
-                {formatQuoteAmount(quote.total)}
-              </span>
+            <div className="hb-checkout-summary__total">
+              <span>Total due today</span>
+              <strong>{formatQuoteAmount(quote.total)}</strong>
             </div>
             {quote.renewalPrice != null ? (
               <p className="mt-2 px-1 text-[12px] leading-relaxed text-[var(--hb-co-text-muted)]">

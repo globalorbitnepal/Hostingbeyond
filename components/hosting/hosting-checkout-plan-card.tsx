@@ -7,12 +7,12 @@ import {
   Check,
   Code2,
   Cpu,
+  Crown,
   Database,
   FolderClosed,
   Globe2,
   Lock,
   RefreshCw,
-  Star,
   Terminal,
 } from "lucide-react";
 
@@ -94,7 +94,7 @@ export function HostingCheckoutPlanCard({
             </h1>
             {popular ? (
               <span className="hb-checkout-plan__popular">
-                <Star className="size-3.5 fill-current" aria-hidden />
+                <Crown className="fill-current" aria-hidden />
                 Most Popular
               </span>
             ) : null}
@@ -164,22 +164,31 @@ export function HostingCheckoutPlanCard({
       </div>
 
       {quote.features.length > 0 ? (
-        <ul className="hb-checkout-plan__features">
-          {quote.features.slice(0, 8).map((feature) => {
-            const { Icon, chip } = featureVisual(feature);
-            return (
-              <li key={feature}>
-                <span className="hb-checkout-plan__feat-icon">
-                  <Icon aria-hidden />
-                </span>
-                {chip ? (
-                  <span className="hb-checkout-plan__chip">{chip}</span>
-                ) : null}
-                <span>{feature}</span>
-              </li>
-            );
-          })}
-        </ul>
+        <div className="hb-checkout-plan__features">
+          {[0, 1].map((column) => (
+            <ul key={column}>
+              {quote.features
+                .slice(0, 8)
+                .filter((_, index) => index % 2 === column)
+                .map((feature) => {
+                  const { Icon, chip } = featureVisual(feature);
+                  return (
+                    <li key={feature}>
+                      <span className="hb-checkout-plan__feat-icon">
+                        <Icon aria-hidden />
+                      </span>
+                      {chip ? (
+                        <span className="hb-checkout-plan__chip">{chip}</span>
+                      ) : null}
+                      <span className="hb-checkout-plan__feat-text">
+                        {feature}
+                      </span>
+                    </li>
+                  );
+                })}
+            </ul>
+          ))}
+        </div>
       ) : null}
 
       <Link
