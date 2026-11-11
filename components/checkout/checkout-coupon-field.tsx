@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { TicketPercent } from "lucide-react";
 
 export function CheckoutCouponField({ className }: { className?: string }) {
   const [open, setOpen] = useState(false);
@@ -12,9 +13,10 @@ export function CheckoutCouponField({ className }: { className?: string }) {
       {!open ? (
         <button
           type="button"
-          className="-mx-1 inline-flex min-h-9 items-center px-1 text-[13px] font-semibold text-[var(--hb-co-primary)] hover:underline"
+          className="-mx-1 inline-flex min-h-9 items-center gap-1.5 px-1 text-[13px] font-semibold text-[var(--hb-co-primary)] hover:underline"
           onClick={() => setOpen(true)}
         >
+          <TicketPercent className="size-4" aria-hidden />
           Have a coupon code?
         </button>
       ) : (

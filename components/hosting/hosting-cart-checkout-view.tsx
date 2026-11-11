@@ -1,9 +1,15 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Check, Globe2, Loader2, Search, ShieldCheck } from "lucide-react";
+import {
+  ArrowRight,
+  Globe2,
+  Loader2,
+  Search,
+  ShieldCheck,
+  ShoppingCart,
+} from "lucide-react";
 
 import { SiteHeader } from "@/components/layout/header";
 import { CheckoutCouponField } from "@/components/checkout/checkout-coupon-field";
@@ -14,6 +20,7 @@ import {
   formatAddonsReviewSummary,
   HostingCartAddonCards,
 } from "@/components/hosting/hosting-cart-addon-cards";
+import { HostingCheckoutPlanCard } from "@/components/hosting/hosting-checkout-plan-card";
 import { CheckoutNote } from "@/components/i18n/checkout-note";
 import { routes } from "@/config/routes";
 import type { CartAddonUiModel } from "@/lib/hosting/addons/load-cart-ui";
@@ -505,97 +512,14 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
       <div className="relative z-10 mx-auto grid w-full max-w-[1180px] min-w-0 gap-6 px-4 pb-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
         <div className="min-w-0 space-y-5">
           {step === "plan" ? (
-            <section className="hb-checkout-premium__card p-5 sm:p-7">
-              <p className="text-[11px] font-bold tracking-[0.18em] text-[var(--hb-co-primary)] uppercase">
-                {quote.productName || "Web Hosting"}
-              </p>
-              <h1 className="font-heading mt-1 text-[1.7rem] font-extrabold tracking-tight text-[var(--hb-co-royal)] sm:text-4xl">
-                {quote.planName}
-              </h1>
-              {quote.monthlyEquivalent != null ? (
-                <p className="mt-4 text-[1.65rem] font-extrabold text-[var(--hb-co-primary)]">
-                  {formatQuoteAmount(quote.monthlyEquivalent)}
-                  <span className="ml-1 text-[15px] font-semibold text-[var(--hb-co-text-muted)]">
-                    /mo
-                  </span>
-                </p>
-              ) : null}
-              <p className="text-[14px] text-[var(--hb-co-text-muted)]">
-                Due today {formatQuoteAmount(quote.total)} · billed{" "}
-                {formatQuoteAmount(quote.billedAmount)}
-                {isAnnual ? "/year" : "/month"}
-              </p>
-              {quote.renewalPrice != null ? (
-                <p className="mt-1 text-[13px] text-[var(--hb-co-text-muted)]">
-                  Renews at {formatQuoteAmount(quote.renewalPrice)}
-                  {isAnnual ? "/year" : "/month"} at the standard rate.
-                </p>
-              ) : null}
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                {props.billingMonthlyEnabled ? (
-                  <button
-                    type="button"
-                    onClick={() => setBilling("monthly")}
-                    className={`min-h-[5.5rem] rounded-2xl border px-4 py-4 text-left ${
-                      !isAnnual
-                        ? "border-[var(--hb-co-primary)] bg-[var(--hb-co-surface)] ring-2 ring-[var(--hb-co-lavender)]/40"
-                        : "border-[var(--hb-co-border)] bg-white"
-                    }`}
-                  >
-                    <span className="text-[15px] font-bold text-[var(--hb-co-royal)]">
-                      Monthly
-                    </span>
-                    <p className="mt-1 text-[13px] text-[var(--hb-co-text-muted)]">
-                      No free domain. Buy a domain and email with this order.
-                    </p>
-                  </button>
-                ) : null}
-                {props.billingYearlyEnabled ? (
-                  <button
-                    type="button"
-                    onClick={() => setBilling("annually")}
-                    className={`min-h-[5.5rem] rounded-2xl border px-4 py-4 text-left ${
-                      isAnnual
-                        ? "border-[var(--hb-co-primary)] bg-[var(--hb-co-surface)] ring-2 ring-[var(--hb-co-lavender)]/40"
-                        : "border-[var(--hb-co-border)] bg-white"
-                    }`}
-                  >
-                    <span className="text-[15px] font-bold text-[var(--hb-co-royal)]">
-                      Annually
-                    </span>
-                    <p className="mt-1 text-[13px] text-[var(--hb-co-text-muted)]">
-                      {quote.freeDomainEligible
-                        ? "Optional: register a .com free for 1 year (.net, .org, etc. are billed). Skip and add from your dashboard anytime."
-                        : quote.discount > 0
-                          ? `Save ${formatQuoteAmount(quote.discount)} vs monthly`
-                          : "Best value when available"}
-                    </p>
-                  </button>
-                ) : null}
-              </div>
-              {quote.features.length > 0 ? (
-                <ul className="mt-6 grid gap-2 sm:grid-cols-2">
-                  {quote.features.slice(0, 8).map((f) => (
-                    <li
-                      key={f}
-                      className="flex min-w-0 items-start gap-2 rounded-xl bg-[var(--hb-co-bg-subtle)] px-3 py-2 text-[14px] text-[var(--hb-co-text)]"
-                    >
-                      <Check
-                        className="mt-0.5 size-4 shrink-0 text-[var(--hb-co-success)]"
-                        aria-hidden
-                      />
-                      <span className="min-w-0 break-words">{f}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-              <Link
-                href={`${routes.hosting}#plans`}
-                className="mt-5 inline-flex min-h-11 items-center text-[14px] font-semibold text-[var(--hb-co-primary)]"
-              >
-                Change plan
-              </Link>
-            </section>
+            <HostingCheckoutPlanCard
+              quote={quote}
+              isAnnual={isAnnual}
+              billingMonthlyEnabled={props.billingMonthlyEnabled}
+              billingYearlyEnabled={props.billingYearlyEnabled}
+              formatQuoteAmount={formatQuoteAmount}
+              onBilling={setBilling}
+            />
           ) : null}
 
           {step === "domain" ? (
@@ -1000,7 +924,8 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
 
         <aside className="min-w-0 lg:sticky lg:top-6">
           <div className="hb-checkout-premium__card p-5">
-            <h2 className="font-heading text-lg font-extrabold text-[var(--hb-co-royal)]">
+            <h2 className="hb-checkout-summary__title font-heading text-lg font-extrabold text-[var(--hb-co-royal)]">
+              <ShoppingCart className="size-5" aria-hidden />
               Order summary
             </h2>
             <p className="mt-1 text-[13px] text-[var(--hb-co-text-muted)]">
@@ -1058,7 +983,10 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
               {busy ? (
                 <Loader2 className="size-5 animate-spin" />
               ) : (
-                continueLabel
+                <>
+                  {continueLabel}
+                  <ArrowRight className="size-4" aria-hidden />
+                </>
               )}
             </button>
             {step !== "plan" ? (
@@ -1107,7 +1035,14 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
             onClick={() => handleContinue()}
             className="hb-checkout-premium__cta min-w-0 flex-1 disabled:opacity-50"
           >
-            {busy ? <Loader2 className="size-5 animate-spin" /> : continueLabel}
+            {busy ? (
+              <Loader2 className="size-5 animate-spin" />
+            ) : (
+              <>
+                {continueLabel}
+                <ArrowRight className="size-4" aria-hidden />
+              </>
+            )}
           </button>
         </div>
       </div>

@@ -119,7 +119,8 @@
 }
 
 .hb-checkout-premium {
-  overflow-x: clip;
+  overflow-x: hidden;
+  overflow-y: visible;
 }
 
 /* Domain checkout: globe-like rings (no photos) */
@@ -140,22 +141,325 @@
     linear-gradient(168deg, #f1ebff 0%, #eceafe 36%, #eef1ff 70%, #fff 100%);
 }
 
-/* Hosting checkout: server-grid geometry (no photos) */
+/* Hosting checkout: silk waves (no photos, no grid) */
+.hb-checkout-premium--hosting {
+  background: #f4f0ff;
+}
+
 .hb-checkout-premium--hosting .hb-checkout-premium__ambient {
+  overflow: hidden;
   background:
-    linear-gradient(rgb(103 61 230 / 5%) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(59 47 212 / 5%) 1px, transparent 1px),
     radial-gradient(
-      ellipse 70% 50% at 90% 0%,
-      rgb(59 47 212 / 16%),
-      transparent 55%
+      ellipse 48% 36% at 8% 0%,
+      rgb(216 180 254 / 70%),
+      transparent 58%
     ),
-    linear-gradient(165deg, #ebe8ff 0%, #eef1ff 45%, #fff 85%);
-  background-size:
-    28px 28px,
-    28px 28px,
-    auto,
-    auto;
+    radial-gradient(
+      ellipse 42% 34% at 96% -4%,
+      rgb(196 181 253 / 62%),
+      transparent 54%
+    ),
+    radial-gradient(
+      ellipse 46% 32% at 92% 108%,
+      rgb(167 139 250 / 38%),
+      transparent 56%
+    ),
+    linear-gradient(180deg, #f6f0ff 0%, #f3eeff 38%, #eef2ff 72%, #f8f7ff 100%);
+}
+
+.hb-checkout-premium--hosting .hb-checkout-premium__ambient::before,
+.hb-checkout-premium--hosting .hb-checkout-premium__ambient::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+.hb-checkout-premium--hosting .hb-checkout-premium__ambient::before {
+  top: -8%;
+  left: -12%;
+  width: 72vw;
+  height: 42vw;
+  min-height: 280px;
+  opacity: 0.9;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 400' preserveAspectRatio='none'><path d='M-40 220C80 40 220 320 380 150C520 10 680 240 840 80L840-20L-40-20Z' fill='%23d8b4fe' fill-opacity='0.45'/><path d='M-40 280C140 80 260 340 430 190C590 40 730 260 860 140L860 0L-40 0Z' fill='%23c4b5fd' fill-opacity='0.32'/></svg>");
+  filter: blur(2px);
+}
+
+.hb-checkout-premium--hosting .hb-checkout-premium__ambient::after {
+  right: -18%;
+  bottom: -12%;
+  width: 78vw;
+  height: 46vw;
+  min-height: 260px;
+  opacity: 0.85;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 400' preserveAspectRatio='none'><path d='M-40 80C120 260 260 20 420 180C560 320 700 40 860 210L860 420L-40 420Z' fill='%23c4b5fd' fill-opacity='0.4'/><path d='M-40 140C160 300 300 60 470 220C610 350 740 90 860 250L860 420L-40 420Z' fill='%23a5b4fc' fill-opacity='0.28'/></svg>");
+  filter: blur(2px);
+}
+
+.hb-checkout-premium--hosting .hb-checkout-premium__card {
+  border-radius: 28px;
+  border: 1px solid rgb(255 255 255 / 80%);
+  box-shadow:
+    0 28px 80px -36px rgb(76 29 149 / 42%),
+    0 8px 24px -16px rgb(91 33 182 / 18%);
+}
+
+.hb-checkout-plan {
+  padding: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .hb-checkout-plan {
+    padding: 1.75rem 2rem 1.5rem;
+  }
+}
+
+.hb-checkout-plan__hero {
+  display: grid;
+  gap: 1rem;
+  align-items: start;
+}
+
+@media (min-width: 768px) {
+  .hb-checkout-plan__hero {
+    grid-template-columns: minmax(0, 1fr) minmax(140px, 220px);
+    gap: 1.5rem;
+  }
+}
+
+.hb-checkout-plan__kicker {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--hb-co-primary);
+}
+
+.hb-checkout-plan__title {
+  font-family: inherit;
+  font-size: clamp(1.75rem, 4vw, 2.35rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  color: var(--hb-co-royal);
+}
+
+.hb-checkout-plan__popular {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 999px;
+  padding: 0.28rem 0.7rem;
+  font-size: 11px;
+  font-weight: 800;
+  color: #6d28d9;
+  background: #efe7ff;
+}
+
+.hb-checkout-plan__tagline {
+  margin-top: 0.45rem;
+  max-width: 34rem;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--hb-co-text-muted);
+}
+
+.hb-checkout-plan__price {
+  margin-top: 1rem;
+  font-size: clamp(1.7rem, 3vw, 2.05rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--hb-co-royal);
+}
+
+.hb-checkout-plan__price span {
+  margin-left: 0.3rem;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--hb-co-text-muted);
+}
+
+.hb-checkout-plan__meta {
+  margin-top: 0.2rem;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--hb-co-text-muted);
+}
+
+.hb-checkout-plan__art {
+  display: none;
+  justify-content: center;
+}
+
+@media (min-width: 768px) {
+  .hb-checkout-plan__art {
+    display: flex;
+  }
+}
+
+.hb-checkout-plan__billing {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.35rem;
+}
+
+@media (min-width: 640px) {
+  .hb-checkout-plan__billing {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.hb-checkout-plan__cycle {
+  display: flex;
+  min-height: 6.1rem;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border-radius: 18px;
+  border: 1.5px solid #ece8f5;
+  background: #fff;
+  padding: 1rem 1rem 1rem 0.95rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.hb-checkout-plan__cycle[data-active="true"] {
+  border-color: var(--hb-co-primary);
+  background: #faf7ff;
+  box-shadow: 0 0 0 3px rgb(124 58 237 / 12%);
+}
+
+.hb-checkout-plan__radio {
+  margin-top: 0.15rem;
+  width: 18px;
+  height: 18px;
+  flex: none;
+  border-radius: 999px;
+  border: 2px solid #d4d0e3;
+  background: #fff;
+}
+
+.hb-checkout-plan__cycle[data-active="true"] .hb-checkout-plan__radio {
+  border-color: var(--hb-co-primary);
+  box-shadow: inset 0 0 0 4px var(--hb-co-primary);
+}
+
+.hb-checkout-plan__cycle strong {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--hb-co-royal);
+}
+
+.hb-checkout-plan__cycle em {
+  display: block;
+  margin-top: 0.3rem;
+  font-style: normal;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--hb-co-text-muted);
+}
+
+.hb-checkout-plan__save {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+  font-size: 10.5px;
+  font-style: normal;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(180deg, #8b5cf6, #6d28d9);
+}
+
+.hb-checkout-plan__features {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 1.2rem;
+}
+
+@media (min-width: 640px) {
+  .hb-checkout-plan__features {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.hb-checkout-plan__features li {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 2.7rem;
+  border-radius: 999px;
+  background: #f7f4ff;
+  padding: 0.45rem 0.85rem 0.45rem 0.5rem;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--hb-co-text);
+}
+
+.hb-checkout-plan__feat-icon {
+  display: grid;
+  width: 1.7rem;
+  height: 1.7rem;
+  flex: none;
+  place-items: center;
+  border-radius: 999px;
+  color: #6d28d9;
+  background: #efe7ff;
+}
+
+.hb-checkout-plan__feat-icon svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.hb-checkout-plan__chip {
+  flex: none;
+  border-radius: 6px;
+  padding: 0.08rem 0.32rem;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(180deg, #8b5cf6, #4f46e5);
+}
+
+.hb-checkout-plan__change {
+  display: inline-flex;
+  min-height: 2.75rem;
+  margin-top: 1rem;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--hb-co-primary);
+}
+
+.hb-checkout-premium--hosting .hb-checkout-summary__title {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.hb-checkout-premium--hosting .hb-checkout-premium__cta {
+  gap: 0.4rem;
+}
+
+@media (max-width: 639px) {
+  .hb-checkout-premium--hosting .hb-checkout-premium__ambient::before,
+  .hb-checkout-premium--hosting .hb-checkout-premium__ambient::after {
+    min-height: 180px;
+    filter: blur(3px);
+  }
+
+  .hb-checkout-plan__features li {
+    font-size: 13px;
+  }
 }
 
 /* Email add-on emphasis (geometric envelope planes) */
@@ -305,8 +609,14 @@
   opacity: 1;
 }
 
+.hb-checkout-premium nav[aria-label="Checkout progress"] ol {
+  max-width: 28rem;
+  margin-inline: auto;
+}
+
 .hb-hosting-booking {
   min-height: 100dvh;
+  overflow-x: hidden;
   padding-bottom: max(5.5rem, env(safe-area-inset-bottom));
 }
 
