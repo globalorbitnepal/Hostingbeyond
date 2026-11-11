@@ -61,7 +61,7 @@ const EN: Copy = {
   email:
     "Business email on your own domain starts at /business-email. Pick a plan, connect a domain you already own or register one here, then choose the mailbox name. I will not invent mailbox prices or MX records.",
   dns: "You can edit A, AAAA, CNAME, MX, TXT, NS, and SRV records from the domain in /account/my-domains. The panel default TTL is 3600 seconds; MX and SRV also take a priority.\nTell me the domain, record type, host, and value if you want me to prepare a change for review.",
-  ssl: "SSL is included on the active HostingBeyond hosting plans that list it. Issue or renew it from the hosting service in your account after the domain points at our nameservers. I cannot switch SSL on from this chat.",
+  ssl: "Free AutoSSL is included with active HostingBeyond hosting. Renewal dates and premium NameSilo SSL (Positive SSL, Essential SSL, EV) are on /account/ssl. Tell me the domain if you want a DNS change reviewed in this chat — I cannot flip SSL on from here.",
   billing:
     "Invoices, wallet, and payment history are in your HostingBeyond account billing pages after you sign in. I will not invent a balance, invoice number, or refund.",
   support:
@@ -107,7 +107,7 @@ const HI: Copy = {
   email:
     "अपने डोमेन पर बिज़नेस ईमेल /business-email से शुरू होता है। प्लान चुनें, अपना डोमेन जोड़ें या यहीं रजिस्टर करें, फिर मेलबॉक्स नाम चुनें। मैं मेलबॉक्स कीमत या MX रिकॉर्ड अनुमान से नहीं बताऊँगा।",
   dns: "डोमेन पैनल में A, AAAA, CNAME, MX, TXT, NS और SRV रिकॉर्ड बदल सकते हैं (/account/my-domains)। पैनल का डिफ़ॉल्ट TTL 3600 सेकंड है; MX और SRV में प्राथमिकता भी होती है।\nबदलाव समीक्षा के लिए तैयार कराना हो तो डोमेन, रिकॉर्ड टाइप, होस्ट और वैल्यू बताइए।",
-  ssl: "SSL उन सक्रिय HostingBeyond होस्टिंग प्लान में शामिल है जिनमें लिखा है। डोमेन हमारे नेमसर्वर पर आने के बाद अकाउंट की होस्टिंग सेवा से SSL जारी या रिन्यू करें। इस चैट से SSL चालू नहीं हो सकता।",
+  ssl: "फ्री AutoSSL सक्रिय HostingBeyond होस्टिंग के साथ शामिल है। रिन्यूअल तारीख और प्रीमियम NameSilo SSL /account/ssl पर हैं। DNS बदलना हो तो डोमेन बताइए — इस चैट से SSL खुद चालू नहीं होता।",
   billing:
     "इनवॉइस, वॉलेट और भुगतान इतिहास लॉग इन करने के बाद आपके HostingBeyond अकाउंट के बिलिंग पेजों में हैं। मैं बैलेंस, इनवॉइस नंबर या रिफंड अनुमान से नहीं बताऊँगा।",
   support:

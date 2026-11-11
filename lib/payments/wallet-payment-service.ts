@@ -316,6 +316,19 @@ export async function handleCheckoutSessionCompleted(
     return handleHostingOrderCheckoutCompleted(session);
   }
 
+  if (session.metadata?.kind === "ssl_certificate") {
+    const { handleSslCheckoutCompleted } =
+      await import("@/lib/panel/ssl-checkout");
+    return handleSslCheckoutCompleted(session);
+  }
+
+  if (
+    session.mode === "setup" ||
+    session.metadata?.kind === "customer_card_setup"
+  ) {
+    return { ok: true, handled: true };
+  }
+
   const payment = await findPaymentBySession(session);
   if (!payment) {
     return { ok: false, error: "Unknown payment", status: 400 };

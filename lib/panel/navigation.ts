@@ -31,7 +31,15 @@ export const PANEL_NAV: PanelNavSection[] = [
   {
     id: "overview",
     label: "Overview",
-    items: [{ id: "dashboard", label: "Dashboard", href: routes.account }],
+    items: [
+      { id: "dashboard", label: "Dashboard", href: routes.account },
+      {
+        id: "ai-agent",
+        label: "AI Agent",
+        href: routes.accountAiAgent,
+        tag: "New",
+      },
+    ],
   },
   {
     id: "domains",
@@ -78,6 +86,12 @@ export const PANEL_NAV: PanelNavSection[] = [
         href: routes.accountDomainTlds,
         child: true,
       },
+      {
+        id: "ssl",
+        label: "SSL certificates",
+        href: routes.accountSsl,
+        child: true,
+      },
     ],
   },
   {
@@ -121,6 +135,11 @@ export const PANEL_NAV: PanelNavSection[] = [
     label: "Billing",
     items: [
       { id: "wallet", label: "Wallet", href: routes.accountWallet },
+      {
+        id: "payment-methods",
+        label: "Payment cards",
+        href: routes.accountPaymentMethods,
+      },
       {
         id: "transactions",
         label: "Transactions",
@@ -168,6 +187,9 @@ const EXACT_TITLES: Array<[string, string]> = [
   ["/account/hosting", "Hosting plans"],
   ["/account/email", "Business email"],
   ["/account/support", "Support"],
+  ["/account/ai-agent", "AI Agent"],
+  ["/account/ssl", "SSL certificates"],
+  ["/account/billing/cards", "Payment cards"],
 ];
 
 export function panelTitleForPath(pathname: string): string {

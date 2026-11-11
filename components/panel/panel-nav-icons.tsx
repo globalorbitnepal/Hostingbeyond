@@ -20,7 +20,9 @@ import {
   Server,
   Settings,
   Shield,
+  ShieldCheck,
   ShoppingCart,
+  Sparkles,
   User,
   Wallet,
   Wrench,
@@ -29,6 +31,8 @@ import {
 
 const ICONS: Record<string, LucideIcon> = {
   dashboard: LayoutDashboard,
+  "ai-agent": Sparkles,
+  ssl: ShieldCheck,
   notifications: Bell,
   activity: Activity,
   "my-websites": Monitor,

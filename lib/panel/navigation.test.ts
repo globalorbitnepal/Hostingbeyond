@@ -43,6 +43,9 @@ describe("panel navigation", () => {
     assert.equal(panelTitleForPath("/account/hosting"), "Hosting plans");
     assert.equal(panelTitleForPath("/account/email"), "Business email");
     assert.equal(panelTitleForPath("/account/support"), "Support");
+    assert.equal(panelTitleForPath("/account/ai-agent"), "AI Agent");
+    assert.equal(panelTitleForPath("/account/ssl"), "SSL certificates");
+    assert.equal(panelTitleForPath("/account/billing/cards"), "Payment cards");
   });
 
   it("nests domain tools under a Domains hub", () => {
@@ -54,6 +57,7 @@ describe("panel navigation", () => {
       domains.items.some((item) => item.id === "contacts" && item.child),
     );
     assert.ok(domains.items.some((item) => item.id === "tlds" && item.child));
+    assert.ok(domains.items.some((item) => item.id === "ssl" && item.child));
   });
 
   it("nests hosting tools under a Hosting hub", () => {

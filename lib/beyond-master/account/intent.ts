@@ -1,5 +1,12 @@
 const PERSONAL = /\b(my|mine|i own|i have|do i have)\b|मेरा|मेरी|मेरो|मेरी/i;
 
+/** Signed-in agent tasks — do not require the word "my". */
+const AGENT_TOPICS = {
+  domain: /set dns|dns set|update dns on/i,
+  hosting:
+    /install wordpress|wordpress install|manage (my )?hosting|hosting manage|change php version/i,
+} as const;
+
 const TOPICS = {
   domain: /domain|domains|expire|expiry|nameserver|nameservers|डोमेन|म्याद/i,
   hosting: /hosting plan|my hosting|hosting service|hosting status|होस्टिङ/i,
@@ -13,10 +20,15 @@ const TOPICS = {
 export type AccountTopic = keyof typeof TOPICS;
 
 export function accountTopics(message: string): AccountTopic[] {
-  if (!PERSONAL.test(message)) return [];
-  return (Object.keys(TOPICS) as AccountTopic[]).filter((topic) =>
-    TOPICS[topic].test(message),
-  );
+  const agentHits = (
+    Object.keys(AGENT_TOPICS) as Array<keyof typeof AGENT_TOPICS>
+  ).filter((topic) => AGENT_TOPICS[topic].test(message));
+  const personalHits = PERSONAL.test(message)
+    ? (Object.keys(TOPICS) as AccountTopic[]).filter((topic) =>
+        TOPICS[topic].test(message),
+      )
+    : [];
+  return [...new Set([...agentHits, ...personalHits])];
 }
 
 export function isAccountQuestion(message: string) {

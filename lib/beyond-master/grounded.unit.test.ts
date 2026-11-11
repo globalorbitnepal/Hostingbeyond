@@ -128,7 +128,7 @@ describe("beyond master grounded replies", () => {
 
     const ssl = await groundedBeyondMasterReply("Do you include SSL?");
     assert.equal(ssl.language, "en");
-    assert.match(ssl.text, /^SSL is included/);
+    assert.match(ssl.text, /\/account\/ssl/);
   });
 
   it("gives different answers for different topics", async () => {
