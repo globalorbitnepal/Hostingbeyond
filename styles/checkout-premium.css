@@ -360,13 +360,13 @@
 .hb-checkout-plan__art {
   display: flex;
   justify-content: center;
-  max-width: 132px;
+  max-width: 140px;
   margin-inline: auto;
 }
 
 @media (min-width: 768px) {
   .hb-checkout-plan__art {
-    max-width: 240px;
+    max-width: 260px;
     margin-inline: 0;
   }
 }
@@ -397,8 +397,9 @@
   cursor: pointer;
 }
 
+/* reserve the corner so the Save badge never sits on copy */
 .hb-checkout-plan__cycle:has(.hb-checkout-plan__save) {
-  padding-right: 5.5rem;
+  padding-right: 6rem;
 }
 
 .hb-checkout-plan__cycle[data-active="true"] {
@@ -536,6 +537,10 @@
   gap: 0.45rem;
 }
 
+.hb-checkout-premium--hosting .hb-checkout-summary__title svg {
+  color: #6d3df0;
+}
+
 .hb-checkout-premium--hosting .hb-checkout-premium__cta {
   gap: 0.4rem;
 }
@@ -550,12 +555,12 @@
   }
 
   .hb-checkout-plan__hero {
-    grid-template-columns: minmax(0, 1fr) 84px;
+    grid-template-columns: minmax(0, 1fr) 96px;
     gap: 0.5rem;
   }
 
   .hb-checkout-plan__art {
-    max-width: 84px;
+    max-width: 96px;
   }
 
   .hb-checkout-plan__title {
@@ -599,15 +604,14 @@
   }
 
   .hb-checkout-plan__save {
-    position: static;
-    align-self: flex-start;
-    margin-top: 0.05rem;
-    margin-left: 0.35rem;
-    flex: none;
+    top: 10px;
+    right: 10px;
+    padding: 0.18rem 0.5rem;
+    font-size: 10.5px;
   }
 
   .hb-checkout-plan__cycle:has(.hb-checkout-plan__save) {
-    padding-right: 1rem;
+    padding-right: 5.2rem;
   }
 }
 
@@ -785,6 +789,156 @@
 .hb-checkout-premium nav[aria-label="Checkout progress"] ol {
   max-width: 28rem;
   margin-inline: auto;
+}
+
+/* Checkout stepper: mock's light line + purple active pill */
+.hb-checkout-premium--hosting nav[aria-label="Checkout progress"] ol {
+  gap: 0.25rem;
+}
+
+.hb-checkout-premium--hosting nav[aria-label="Checkout progress"] li > div {
+  gap: 0.4rem;
+}
+
+.hb-checkout-premium--hosting
+  nav[aria-label="Checkout progress"]
+  li
+  > div
+  > span:first-child {
+  width: 2.1rem;
+  height: 2.1rem;
+  font-size: 12.5px;
+  font-weight: 800;
+}
+
+.hb-checkout-premium--hosting
+  nav[aria-label="Checkout progress"]
+  li
+  > div
+  > span:last-child {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  color: #6b6486;
+}
+
+.hb-checkout-premium--hosting
+  nav[aria-label="Checkout progress"]
+  li:has([aria-current="step"])
+  > div
+  > span:first-child {
+  background: linear-gradient(180deg, #7c4dff 0%, #5b21d6 100%);
+  box-shadow: 0 10px 20px -10px rgb(91 33 214 / 70%);
+}
+
+.hb-checkout-premium--hosting
+  nav[aria-label="Checkout progress"]
+  li:has([aria-current="step"])
+  > div
+  > span:last-child {
+  color: #3b1bb3;
+}
+
+.hb-checkout-premium--hosting nav[aria-label="Checkout progress"] li > span {
+  height: 1.5px;
+  border-radius: 999px;
+  background: #ded7f2;
+}
+
+@media (min-width: 640px) {
+  .hb-checkout-premium--hosting nav[aria-label="Checkout progress"] ol {
+    max-width: 32rem;
+  }
+}
+
+/* Other checkout steps: same premium card language as the plan step */
+.hb-checkout-premium--hosting .hb-checkout-premium__card {
+  -webkit-font-smoothing: antialiased;
+}
+
+.hb-checkout-premium--hosting .hb-checkout-premium__card h1 {
+  letter-spacing: -0.03em;
+  color: #160b3c;
+}
+
+.hb-checkout-premium--hosting .hb-checkout-premium__card p,
+.hb-checkout-premium--hosting .hb-checkout-premium__card li,
+.hb-checkout-premium--hosting .hb-checkout-premium__card dt,
+.hb-checkout-premium--hosting .hb-checkout-premium__card dd {
+  text-wrap: pretty;
+}
+
+.hb-checkout-premium--hosting .hb-checkout-premium__card input,
+.hb-checkout-premium--hosting .hb-checkout-premium__card select {
+  border-radius: 12px;
+  border-color: #e4dff3;
+  color: #171234;
+}
+
+.hb-checkout-premium--hosting .hb-checkout-premium__card input:focus-visible,
+.hb-checkout-premium--hosting .hb-checkout-premium__card select:focus-visible {
+  outline: 2px solid rgb(124 58 237 / 45%);
+  outline-offset: 1px;
+}
+
+.hb-checkout-premium--hosting .hb-checkout-premium__card .uppercase {
+  letter-spacing: 0.16em;
+}
+
+.hb-checkout-premium--hosting .hb-checkout-premium__stripe {
+  border-radius: 18px;
+  border-color: #ece7fa;
+  background: #fbfaff;
+}
+
+.hb-checkout-premium--hosting .hb-checkout-premium__offer-row--nested {
+  border-radius: 14px;
+  border-color: #ece7fa;
+}
+
+/* Add-on cards + review card share the plan step's surface language */
+.hb-checkout-premium--hosting .hb-checkout-premium__card h2.font-heading {
+  letter-spacing: -0.025em;
+  color: #160b3c;
+}
+
+.hb-checkout-premium--hosting
+  .hb-checkout-premium__card
+  > .flex.items-start
+  > span:first-child {
+  border-radius: 14px;
+  color: #fff;
+  background: linear-gradient(180deg, #8b6cff 0%, #6d3df0 100%);
+  box-shadow: 0 10px 20px -12px rgb(91 33 214 / 65%);
+  --tw-ring-shadow: 0 0 #0000;
+  --tw-ring-offset-shadow: 0 0 #0000;
+}
+
+.hb-checkout-premium--hosting .hb-checkout-premium__badge-free {
+  font-size: 11.5px;
+  letter-spacing: 0.01em;
+  color: #3f2a00;
+  background: linear-gradient(120deg, #fde68a 0%, #fcd34d 100%);
+}
+
+.hb-checkout-trust {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  border: 1px solid #ece7fa;
+  background: #faf8ff;
+  padding: 0.6rem 0.85rem;
+  font-size: 12px;
+  font-weight: 650;
+  color: #2b1361;
+}
+
+.hb-checkout-trust svg {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+  color: #6d3df0;
 }
 
 .hb-hosting-booking {

@@ -50,14 +50,8 @@ export function SecureCheckoutPanel({
       ) : null}
       <ul className="mt-6 grid gap-3 sm:grid-cols-3">
         {TRUST.map(({ icon: Icon, label }) => (
-          <li
-            key={label}
-            className="flex items-center gap-2 rounded-xl border border-[var(--hb-co-border)] bg-[var(--hb-co-bg-subtle)] px-3 py-2.5 text-[12px] font-semibold text-[var(--hb-co-royal)]"
-          >
-            <Icon
-              className="size-4 shrink-0 text-[var(--hb-co-primary)]"
-              aria-hidden
-            />
+          <li key={label} className="hb-checkout-trust">
+            <Icon aria-hidden />
             {label}
           </li>
         ))}
