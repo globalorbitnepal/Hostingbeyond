@@ -485,9 +485,10 @@ describe(
           }),
         ]);
         // Concurrent confirm is claimed atomically: exactly one caller performs
-        // the provider write. The loser either sees "executing" (409 busy) or,
-        // if the winner already finished, receives the stored executed proposal
-        // as an idempotent replay. Both are safe, so assert the write count and
+        // the provider write. The loser either sees "executing" (409 busy), a
+        // 409 because the live record moved before it claimed, or — if the
+        // winner already finished — the stored executed proposal as an
+        // idempotent replay. All three are safe. Assert the write count and
         // that no caller reports an unexpected failure.
         assert.equal(
           writes,
@@ -510,7 +511,7 @@ describe(
             continue;
           }
           assert.equal(result.status, 409);
-          assert.match(result.error, /already executing/i);
+          assert.match(result.error, /already executing|changed after review/i);
         }
         let uncertainWrites = 0;
         const uncertainPorts = {
