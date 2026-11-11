@@ -60,34 +60,30 @@ describe("panel navigation", () => {
     assert.ok(!domains.items.some((item) => item.id === "ssl"));
   });
 
-  it("places SSL and AI Agent after Domains and Hosting", () => {
+  it("keeps Hostinger-style primary links then SSL after Hosting", () => {
     const ids = PANEL_NAV.map((section) => section.id);
-    assert.deepEqual(ids.slice(0, 5), [
+    assert.deepEqual(ids.slice(0, 4), [
       "overview",
       "domains",
       "hosting",
       "ssl",
-      "ai-agent",
     ]);
+    const overview = PANEL_NAV.find((section) => section.id === "overview");
+    assert.ok(overview);
+    assert.ok(overview.items.some((item) => item.id === "dashboard"));
+    assert.ok(overview.items.some((item) => item.id === "ai-agent"));
+    assert.ok(overview.items.some((item) => item.id === "my-websites"));
+    assert.ok(overview.items.some((item) => item.id === "buy-email"));
     const ssl = PANEL_NAV.find((section) => section.id === "ssl");
     assert.ok(ssl);
     assert.equal(ssl.items[0]?.hub, true);
     assert.ok(ssl.items.some((item) => item.id === "ssl-buy" && item.child));
-    const overview = PANEL_NAV.find((section) => section.id === "overview");
-    assert.ok(overview);
-    assert.equal(
-      overview.items.some((item) => item.id === "ai-agent"),
-      false,
-    );
   });
 
   it("nests hosting tools under a Hosting hub", () => {
     const hosting = PANEL_NAV.find((section) => section.id === "hosting");
     assert.ok(hosting);
     assert.equal(hosting.items[0]?.hub, true);
-    assert.ok(
-      hosting.items.some((item) => item.id === "my-websites" && item.child),
-    );
     assert.ok(
       hosting.items.some((item) => item.id === "hosting-orders" && item.child),
     );

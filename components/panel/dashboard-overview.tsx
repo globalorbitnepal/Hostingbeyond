@@ -14,6 +14,7 @@ import {
   Search,
   Server,
   ShieldCheck,
+  Sparkles,
   Wallet,
 } from "lucide-react";
 
@@ -418,7 +419,7 @@ export function DashboardOverview({
       {/* Quick actions */}
       <section>
         <h3 className="hb-eyebrow mb-2">Quick actions</h3>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           <PanelQuickAction
             label="Register domain"
             hint="Live availability and pricing"
@@ -426,22 +427,34 @@ export function DashboardOverview({
             icon={Globe}
           />
           <PanelQuickAction
-            label="Transfer domain"
-            hint="Move a domain to HostingBeyond"
-            href={routes.accountDomainTransfer}
-            icon={RefreshCw}
+            label="AI Agent"
+            hint="DNS, WordPress, hosting in one search"
+            href={routes.accountAiAgent}
+            icon={Sparkles}
           />
           <PanelQuickAction
             label="Hosting plans"
-            hint="NVMe hosting with free SSL"
+            hint="NVMe hosting with free AutoSSL"
             href={routes.accountHosting}
             icon={Server}
+          />
+          <PanelQuickAction
+            label="SSL certificates"
+            hint="Renewal dates and NameSilo premium SSL"
+            href={routes.accountSsl}
+            icon={ShieldCheck}
           />
           <PanelQuickAction
             label="Business email"
             hint="yourname@yourdomain"
             href={routes.accountEmail}
             icon={Mail}
+          />
+          <PanelQuickAction
+            label="Transfer domain"
+            hint="Move a domain to HostingBeyond"
+            href={routes.accountDomainTransfer}
+            icon={RefreshCw}
           />
         </div>
       </section>

@@ -30,8 +30,22 @@ export type PanelNavSection = {
 export const PANEL_NAV: PanelNavSection[] = [
   {
     id: "overview",
-    label: "Overview",
-    items: [{ id: "dashboard", label: "Dashboard", href: routes.account }],
+    label: "",
+    items: [
+      { id: "dashboard", label: "Dashboard", href: routes.account },
+      {
+        id: "ai-agent",
+        label: "AI Agent",
+        href: routes.accountAiAgent,
+        tag: "New",
+      },
+      {
+        id: "my-websites",
+        label: "Websites",
+        href: routes.accountHostingWebsites,
+      },
+      { id: "buy-email", label: "Emails", href: routes.accountEmail },
+    ],
   },
   {
     id: "domains",
@@ -82,7 +96,7 @@ export const PANEL_NAV: PanelNavSection[] = [
   },
   {
     id: "hosting",
-    label: "Hosting",
+    label: "",
     items: [
       {
         id: "hosting-hub",
@@ -96,12 +110,6 @@ export const PANEL_NAV: PanelNavSection[] = [
         child: true,
       },
       {
-        id: "my-websites",
-        label: "My websites",
-        href: routes.accountHostingWebsites,
-        child: true,
-      },
-      {
         id: "hosting-orders",
         label: "Hosting orders",
         href: routes.accountHostingOrders,
@@ -111,7 +119,7 @@ export const PANEL_NAV: PanelNavSection[] = [
   },
   {
     id: "ssl",
-    label: "SSL",
+    label: "",
     items: [
       {
         id: "ssl-hub",
@@ -130,25 +138,6 @@ export const PANEL_NAV: PanelNavSection[] = [
         href: `${routes.accountSsl}#buy`,
         child: true,
       },
-    ],
-  },
-  {
-    id: "ai-agent",
-    label: "AI",
-    items: [
-      {
-        id: "ai-agent",
-        label: "AI Agent",
-        href: routes.accountAiAgent,
-        tag: "New",
-      },
-    ],
-  },
-  {
-    id: "email",
-    label: "Business Email",
-    items: [
-      { id: "buy-email", label: "Mailbox plans", href: routes.accountEmail },
     ],
   },
   {

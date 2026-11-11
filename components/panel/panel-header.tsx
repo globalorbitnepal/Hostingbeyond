@@ -24,7 +24,7 @@ import {
 
 import { routes } from "@/config/routes";
 import { openBeyondMasterAi } from "@/lib/beyond-master/ui-store";
-import { PANEL_MEGA_HEADER_LOGO_SRC } from "@/components/shared/logo";
+import { CANONICAL_HEADER_LOGO_SRC } from "@/components/shared/logo";
 import { getPanelNav } from "@/lib/panel/navigation";
 
 type PanelUser = {
@@ -224,7 +224,7 @@ export function PanelHeader({
 
         <Link href={routes.account} className="hb-panel-mega-logo">
           <Image
-            src={PANEL_MEGA_HEADER_LOGO_SRC}
+            src={CANONICAL_HEADER_LOGO_SRC}
             alt="HostingBeyond"
             width={996}
             height={183}

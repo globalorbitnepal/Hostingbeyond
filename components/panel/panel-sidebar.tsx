@@ -146,27 +146,7 @@ export function PanelSidebar({
         )}
         aria-label="Customer navigation"
       >
-        <div
-          className={cn(
-            "flex h-11 shrink-0 items-center border-b border-[var(--hb-p-border)] px-2",
-            collapsed ? "justify-center" : "justify-end",
-          )}
-        >
-          <button
-            type="button"
-            className="hb-icon-btn hidden lg:inline-flex"
-            onClick={onToggleCollapsed}
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {collapsed ? (
-              <ChevronRight className="h-4 w-4" />
-            ) : (
-              <ChevronLeft className="h-4 w-4" />
-            )}
-          </button>
-        </div>
-
-        <nav className="flex-1 overflow-y-auto px-2 py-4">
+        <nav className="flex-1 overflow-y-auto px-2.5 pt-3 pb-2">
           {getPanelNav().map((section) => {
             const { hub, children, rest, isHubSection } = splitHubSection(
               section.items,
@@ -175,9 +155,9 @@ export function PanelSidebar({
             const hubActive = sectionHasActiveChild(pathname, children);
 
             return (
-              <div key={section.id} className="mb-5">
+              <div key={section.id} className="hb-panel-nav-group">
                 {!collapsed && section.label ? (
-                  <p className="hb-eyebrow mb-2 px-2">{section.label}</p>
+                  <p className="hb-panel-nav-label">{section.label}</p>
                 ) : null}
                 <ul className="space-y-0.5">
                   {isHubSection && hub ? (
@@ -254,17 +234,29 @@ export function PanelSidebar({
           })}
         </nav>
 
-        {!collapsed ? (
-          <div className="border-t border-[var(--hb-p-border)] p-3">
+        <div className="border-t border-[var(--hb-p-border)] p-2.5">
+          {!collapsed ? (
             <Link
               href="/account/support"
-              className="hb-muted flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold hover:bg-[var(--hb-p-primary)]/10"
+              className="hb-muted mb-1 flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold hover:bg-[var(--hb-p-primary)]/10"
               onClick={onCloseMobile}
             >
               24/7 support — open a ticket
             </Link>
-          </div>
-        ) : null}
+          ) : null}
+          <button
+            type="button"
+            className="hb-icon-btn hidden lg:inline-flex"
+            onClick={onToggleCollapsed}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {collapsed ? (
+              <ChevronRight className="h-4 w-4" />
+            ) : (
+              <ChevronLeft className="h-4 w-4" />
+            )}
+          </button>
+        </div>
       </aside>
     </>
   );
