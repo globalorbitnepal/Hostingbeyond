@@ -148,7 +148,7 @@ export function PanelSidebar({
       />
       <aside
         className={cn(
-          "hb-panel-sidebar hb-panel-sidebar--dock z-50 flex shrink-0 flex-col transition-[width,transform] duration-200",
+          "hb-panel-sidebar hb-panel-sidebar--dock z-50 flex shrink-0 flex-col overflow-x-hidden transition-[width,transform] duration-200",
           "fixed left-0 lg:relative lg:h-full lg:max-h-full lg:self-stretch",
           collapsed
             ? "w-[var(--hb-p-sidebar-collapsed)]"
@@ -156,22 +156,9 @@ export function PanelSidebar({
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         )}
         aria-label="Customer navigation"
+        data-collapsed={collapsed ? "true" : "false"}
       >
-        <div className="hb-panel-sidebar__top">
-          <button
-            type="button"
-            className="hb-panel-collapse"
-            onClick={onToggleCollapsed}
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {collapsed ? (
-              <ChevronRight className="h-4 w-4" />
-            ) : (
-              <ChevronLeft className="h-4 w-4" />
-            )}
-          </button>
-        </div>
-        <nav className="flex-1 overflow-y-auto px-2.5 pt-1 pb-2">
+        <nav className="flex-1 overflow-y-auto px-2.5 pt-3 pb-2">
           {getPanelNav().map((section) => {
             const { hub, children, rest, isHubSection } = splitHubSection(
               section.items,
@@ -274,6 +261,18 @@ export function PanelSidebar({
             trustpilotUrl={trustpilotUrl}
             trustpilotLabel={trustpilotLabel}
           />
+          <button
+            type="button"
+            className="hb-panel-collapse"
+            onClick={onToggleCollapsed}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {collapsed ? (
+              <ChevronRight className="h-4 w-4" />
+            ) : (
+              <ChevronLeft className="h-4 w-4" />
+            )}
+          </button>
         </div>
       </aside>
     </>

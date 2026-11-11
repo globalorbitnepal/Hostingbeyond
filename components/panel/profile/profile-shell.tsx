@@ -36,7 +36,7 @@ export function ProfileShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() ?? routes.accountProfile;
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 lg:flex-row">
+    <div className="flex w-full flex-col gap-4 lg:flex-row lg:items-start lg:gap-6">
       <nav className="hb-profile-rail" aria-label="Profile">
         {ITEMS.map((item) => {
           const Icon = item.icon;
@@ -56,7 +56,7 @@ export function ProfileShell({ children }: { children: React.ReactNode }) {
           );
         })}
       </nav>
-      <div className="min-w-0 flex-1 space-y-5">{children}</div>
+      <div className="min-w-0 flex-1 space-y-5 lg:max-w-3xl">{children}</div>
     </div>
   );
 }

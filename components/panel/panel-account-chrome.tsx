@@ -18,6 +18,7 @@ type PanelUser = {
 type PanelTheme = "light" | "dark";
 
 const THEME_KEY = "hb-panel-theme";
+const SIDEBAR_KEY = "hb-panel-sidebar-collapsed";
 
 export function PanelAccountChrome({
   user,
@@ -32,6 +33,7 @@ export function PanelAccountChrome({
 }) {
   const pathname = usePathname() ?? "/account";
   const [collapsed, setCollapsed] = useState(false);
+  const [sidebarReady, setSidebarReady] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [theme, setTheme] = useState<PanelTheme>("light");
 
@@ -55,6 +57,16 @@ export function PanelAccountChrome({
     document.documentElement.dataset.hbTheme = theme;
     window.localStorage.setItem(THEME_KEY, theme);
   }, [theme]);
+
+  useEffect(() => {
+    setCollapsed(window.localStorage.getItem(SIDEBAR_KEY) === "1");
+    setSidebarReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (!sidebarReady) return;
+    window.localStorage.setItem(SIDEBAR_KEY, collapsed ? "1" : "0");
+  }, [collapsed, sidebarReady]);
 
   useEffect(() => {
     setMobileOpen(false);
@@ -91,7 +103,7 @@ export function PanelAccountChrome({
           trustpilotLabel={trustpilotLabel}
         />
         <div className="hb-panel__main flex min-h-0 min-w-0 flex-1 flex-col">
-          <main className="hb-panel__scroll flex-1 overflow-y-auto px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+          <main className="hb-panel__scroll flex-1 overflow-y-auto px-4 py-5 sm:px-5 lg:px-6 lg:py-6">
             {children}
           </main>
           <div className="hb-ds-ask-dock">
