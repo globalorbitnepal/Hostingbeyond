@@ -163,7 +163,16 @@ export const PANEL_NAV: PanelNavSection[] = [
     id: "account",
     label: "Account",
     items: [
-      { id: "security", label: "Security", href: routes.accountSecurity },
+      {
+        id: "profile",
+        label: "Account information",
+        href: routes.accountProfile,
+      },
+      {
+        id: "security",
+        label: "Security",
+        href: routes.accountProfileSecurity,
+      },
       {
         id: "notifications",
         label: "Notifications",
@@ -198,6 +207,12 @@ const EXACT_TITLES: Array<[string, string]> = [
   ["/account/email", "Business email"],
   ["/account/support", "Support"],
   ["/account/notifications", "Notifications"],
+  ["/account/profile/sharing", "Account sharing"],
+  ["/account/profile/security", "Security"],
+  ["/account/profile/activity", "Account activity"],
+  ["/account/profile/notifications", "Notification settings"],
+  ["/account/profile/ai-memory", "AI memory"],
+  ["/account/profile", "Account information"],
   ["/account/ai-agent", "AI Agent"],
   ["/account/ssl", "SSL certificates"],
   ["/account/billing/cards", "Payment cards"],

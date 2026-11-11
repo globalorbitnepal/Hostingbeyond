@@ -43,6 +43,7 @@ describe("panel navigation", () => {
     assert.equal(panelTitleForPath("/account/hosting"), "Hosting plans");
     assert.equal(panelTitleForPath("/account/email"), "Business email");
     assert.equal(panelTitleForPath("/account/support"), "Support");
+    assert.equal(panelTitleForPath("/account/profile"), "Account information");
     assert.equal(panelTitleForPath("/account/notifications"), "Notifications");
     assert.equal(panelTitleForPath("/account/ai-agent"), "AI Agent");
     assert.equal(panelTitleForPath("/account/ssl"), "SSL certificates");

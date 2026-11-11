@@ -10,7 +10,7 @@ export { CUSTOMER_SESSION_COOKIE };
 export const CUSTOMER_SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30;
 export const CUSTOMER_SESSION_SHORT_TTL_MS = 1000 * 60 * 60 * 12;
 
-function hashToken(token: string) {
+export function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
 }
 

@@ -17,6 +17,10 @@ export function customerMailStoreId(userId: string) {
   return `customer-mail:${userId}`;
 }
 
+export function customerProfileStoreId(userId: string) {
+  return `customer-profile:${userId}`;
+}
+
 export async function readCustomerJsonBag<T>(
   id: string,
   fallback: T,

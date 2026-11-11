@@ -67,10 +67,14 @@ function searchTargets(): SearchTarget[] {
     { label: "Invoices", href: routes.accountInvoices, group: "Billing" },
     { label: "Transactions", href: routes.accountBilling, group: "Billing" },
     { label: "Support", href: routes.accountSupport, group: "Support" },
-    { label: "Security", href: routes.accountSecurity, group: "Account" },
+    {
+      label: "Security",
+      href: routes.accountProfileSecurity,
+      group: "Account",
+    },
     {
       label: "Change password",
-      href: `${routes.accountSecurity}#password`,
+      href: `${routes.accountProfileSecurity}#password`,
       group: "Account",
     },
   ];
@@ -138,7 +142,7 @@ export function PanelHeader({
         allTargets.find((t) => t.href === routes.accountDomainFind),
         allTargets.find((t) => t.href === routes.myDomains),
         allTargets.find((t) => t.href === routes.accountWallet),
-        allTargets.find((t) => t.href === routes.accountSecurity),
+        allTargets.find((t) => t.href === routes.accountProfileSecurity),
         allTargets.find((t) => t.href === routes.accountSupport),
       ].filter(Boolean) as SearchTarget[],
     [allTargets],
@@ -383,7 +387,7 @@ export function PanelHeader({
                     Wallet activity
                   </Link>
                   <Link
-                    href={routes.accountSecurity}
+                    href={routes.accountProfileSecurity}
                     className="hb-panel-menu-item"
                     onClick={() => setNotifyOpen(false)}
                   >
@@ -431,7 +435,10 @@ export function PanelHeader({
                 </div>
                 <div className="hb-panel-menu-divider" />
                 <nav className="space-y-0.5 px-2 py-1">
-                  <Link href={routes.account} className="hb-panel-menu-item">
+                  <Link
+                    href={routes.accountProfile}
+                    className="hb-panel-menu-item"
+                  >
                     <User className="h-4 w-4" />
                     Account information
                   </Link>
@@ -443,14 +450,14 @@ export function PanelHeader({
                     Billing
                   </Link>
                   <Link
-                    href={routes.accountSecurity}
+                    href={routes.accountProfileSecurity}
                     className="hb-panel-menu-item"
                   >
                     <Shield className="h-4 w-4" />
                     Security
                   </Link>
                   <Link
-                    href={`${routes.accountSecurity}#password`}
+                    href={`${routes.accountProfileSecurity}#password`}
                     className="hb-panel-menu-item"
                   >
                     <KeyRound className="h-4 w-4" />
