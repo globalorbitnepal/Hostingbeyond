@@ -8,6 +8,8 @@ import {
   CUSTOMER_SESSION_COOKIE,
   getCustomerFromToken,
 } from "@/lib/customer/session";
+import { getSiteSettings } from "@/lib/orbit/content";
+import { sanitizeTrustpilotUrl } from "@/lib/panel/trustpilot";
 
 import "@/styles/panel.css";
 
@@ -35,6 +37,8 @@ export default async function AccountLayout({
   );
   if (!user) redirect(routes.login);
 
+  const settings = await getSiteSettings();
+
   return (
     <>
       <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
@@ -45,6 +49,8 @@ export default async function AccountLayout({
           image: user.image,
           hasPassword: Boolean(user.passwordHash),
         }}
+        trustpilotUrl={sanitizeTrustpilotUrl(settings.trustpilotUrl)}
+        trustpilotLabel={settings.trustpilotLabel}
       >
         {children}
       </PanelAccountChrome>

@@ -96,7 +96,7 @@ export function PanelEmailPlans({
                 "relative flex flex-col overflow-hidden rounded-[22px] border p-5 sm:p-6",
                 popular
                   ? "border-violet-300/70 bg-gradient-to-b from-[#5b21b6] to-[#2563eb] text-white shadow-[0_22px_50px_-24px_rgba(46,16,101,0.7)] ring-1 ring-white/20"
-                  : "border-[var(--hb-p-border)] bg-white text-[#0f172a] shadow-[0_16px_40px_-28px_rgba(46,16,101,0.4)]",
+                  : "border-[var(--hb-p-border)] bg-[var(--hb-p-card-solid)] text-[var(--hb-p-text)] shadow-[0_16px_40px_-28px_rgba(46,16,101,0.4)]",
               )}
             >
               {plan.off ? (
@@ -105,7 +105,7 @@ export function PanelEmailPlans({
                     "absolute top-4 right-4 rounded-full px-2 py-0.5 text-[10px] font-extrabold tracking-wide uppercase",
                     popular
                       ? "bg-white/15 text-white ring-1 ring-white/25"
-                      : "bg-violet-50 text-[#5b21b6]",
+                      : "bg-[color-mix(in_srgb,var(--hb-p-primary)_12%,transparent)] text-[var(--hb-p-primary-strong)]",
                   )}
                 >
                   {plan.off}
@@ -135,7 +135,7 @@ export function PanelEmailPlans({
                   <h3
                     className={cn(
                       "font-heading text-[1.45rem] leading-tight font-extrabold tracking-[-0.02em]",
-                      popular ? "text-white" : "text-[#0f172a]",
+                      popular ? "text-white" : "text-[var(--hb-p-text)]",
                     )}
                   >
                     {plan.name}
@@ -143,7 +143,9 @@ export function PanelEmailPlans({
                   <p
                     className={cn(
                       "mt-0.5 text-[13px] font-semibold",
-                      popular ? "text-violet-100/90" : "text-slate-600",
+                      popular
+                        ? "text-violet-100/90"
+                        : "text-[var(--hb-p-text-soft)]",
                     )}
                   >
                     Best for {plan.bestFor}
@@ -156,7 +158,9 @@ export function PanelEmailPlans({
                   <span
                     className={cn(
                       "text-[14px] font-bold line-through",
-                      popular ? "text-violet-200/70" : "text-slate-400",
+                      popular
+                        ? "text-violet-200/70"
+                        : "text-[var(--hb-p-faint)]",
                     )}
                   >
                     <CatalogPrice usd={parseUsd(plan.original)} />
@@ -166,7 +170,7 @@ export function PanelEmailPlans({
                   <span
                     className={cn(
                       "text-[clamp(1.9rem,3.4vw,2.4rem)] leading-none font-extrabold tracking-[-0.03em]",
-                      popular ? "text-white" : "text-[#0f172a]",
+                      popular ? "text-white" : "text-[var(--hb-p-text)]",
                     )}
                   >
                     <CatalogPrice usd={priceUsd} />
@@ -174,7 +178,9 @@ export function PanelEmailPlans({
                   <span
                     className={cn(
                       "pb-1 text-[14px] font-extrabold",
-                      popular ? "text-violet-100" : "text-slate-600",
+                      popular
+                        ? "text-violet-100"
+                        : "text-[var(--hb-p-text-soft)]",
                     )}
                   >
                     /mo
@@ -184,7 +190,9 @@ export function PanelEmailPlans({
               <p
                 className={cn(
                   "mt-2 text-[12px] leading-snug font-semibold",
-                  popular ? "text-violet-100/85" : "text-slate-600",
+                  popular
+                    ? "text-violet-100/85"
+                    : "text-[var(--hb-p-text-soft)]",
                 )}
               >
                 {caption}
@@ -196,13 +204,17 @@ export function PanelEmailPlans({
                     key={line}
                     className={cn(
                       "flex gap-2 text-[13px] leading-snug font-semibold",
-                      popular ? "text-white/92" : "text-slate-700",
+                      popular
+                        ? "text-white/92"
+                        : "text-[var(--hb-p-text-soft)]",
                     )}
                   >
                     <Check
                       className={cn(
                         "mt-0.5 size-3.5 shrink-0",
-                        popular ? "text-violet-100" : "text-[#5b21b6]",
+                        popular
+                          ? "text-violet-100"
+                          : "text-[var(--hb-p-primary)]",
                       )}
                       strokeWidth={2.5}
                     />

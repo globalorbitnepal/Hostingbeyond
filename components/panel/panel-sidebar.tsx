@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Star } from "lucide-react";
 
 import { getPanelNav, type PanelNavItem } from "@/lib/panel/navigation";
 import { panelNavIcon } from "@/components/panel/panel-nav-icons";
@@ -14,6 +14,8 @@ type Props = {
   onToggleCollapsed: () => void;
   mobileOpen: boolean;
   onCloseMobile: () => void;
+  trustpilotUrl?: string;
+  trustpilotLabel?: string;
 };
 
 function isActive(pathname: string, href: string) {
@@ -40,6 +42,8 @@ export function PanelSidebar({
   onToggleCollapsed,
   mobileOpen,
   onCloseMobile,
+  trustpilotUrl = "",
+  trustpilotLabel = "Reviews on Trustpilot",
 }: Props) {
   const [openHubs, setOpenHubs] = useState<Record<string, boolean>>({});
 
@@ -235,14 +239,29 @@ export function PanelSidebar({
         </nav>
 
         <div className="border-t border-[var(--hb-p-border)] p-2.5">
-          {!collapsed ? (
-            <Link
-              href="/account/support"
-              className="hb-muted mb-1 flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold hover:bg-[var(--hb-p-primary)]/10"
+          {trustpilotUrl ? (
+            <a
+              href={trustpilotUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hb-panel-feedback mb-2"
+              title={trustpilotLabel}
               onClick={onCloseMobile}
             >
-              24/7 support — open a ticket
-            </Link>
+              <span className="hb-panel-feedback__mark" aria-hidden>
+                <Star className="size-3.5" strokeWidth={2.4} />
+              </span>
+              {!collapsed ? (
+                <span className="min-w-0">
+                  <span className="block truncate text-[12px] font-extrabold tracking-tight">
+                    {trustpilotLabel}
+                  </span>
+                  <span className="hb-muted block truncate text-[11px] font-semibold">
+                    Leave a review
+                  </span>
+                </span>
+              ) : null}
+            </a>
           ) : null}
           <button
             type="button"

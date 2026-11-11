@@ -34,6 +34,12 @@ export type CmsSiteSettings = {
     linkedin: string;
     facebook: string;
   };
+  /**
+   * Customer-panel Trustpilot (or any reviews) URL. Empty = hide the sidebar
+   * reviews card. Set from /orbit/settings when the page is ready.
+   */
+  trustpilotUrl: string;
+  trustpilotLabel: string;
   /** WHOIS privacy is always free for customers. */
   domainPrivacyFree: boolean;
   /** Paid Domain Protection add-on (not WHOIS privacy). */
@@ -893,6 +899,8 @@ export function defaultSiteSettings(): CmsSiteSettings {
       linkedin: "",
       facebook: "",
     },
+    trustpilotUrl: "",
+    trustpilotLabel: "Reviews on Trustpilot",
     domainPrivacyFree: true,
     domainProtectionEnabled: true,
     domainProtectionPriceUsd: 9.99,

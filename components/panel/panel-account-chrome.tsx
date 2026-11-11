@@ -22,9 +22,13 @@ const THEME_KEY = "hb-panel-theme";
 export function PanelAccountChrome({
   user,
   children,
+  trustpilotUrl = "",
+  trustpilotLabel = "Reviews on Trustpilot",
 }: {
   user: PanelUser;
   children: React.ReactNode;
+  trustpilotUrl?: string;
+  trustpilotLabel?: string;
 }) {
   const pathname = usePathname() ?? "/account";
   const [collapsed, setCollapsed] = useState(false);
@@ -83,6 +87,8 @@ export function PanelAccountChrome({
           onToggleCollapsed={() => setCollapsed((c) => !c)}
           mobileOpen={mobileOpen}
           onCloseMobile={() => setMobileOpen(false)}
+          trustpilotUrl={trustpilotUrl}
+          trustpilotLabel={trustpilotLabel}
         />
         <div className="hb-panel__main flex min-h-0 min-w-0 flex-1 flex-col">
           <main className="hb-panel__scroll flex-1 overflow-y-auto px-4 py-6 sm:px-6 lg:px-8 lg:py-8">

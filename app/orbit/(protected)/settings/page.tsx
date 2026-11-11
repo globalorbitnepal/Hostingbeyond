@@ -168,6 +168,40 @@ export default function OrbitSettingsPage() {
         ))}
       </div>
 
+      <div className="grid gap-4 rounded-2xl border border-slate-200 p-5 md:grid-cols-2">
+        <div className="md:col-span-2">
+          <h2 className="text-sm font-bold text-slate-900">
+            Customer panel — Trustpilot
+          </h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Leave the URL empty until the Trustpilot page is ready. When you
+            save an https link, a reviews card appears at the bottom of the
+            customer sidebar (Hostinger-style feedback slot).
+          </p>
+        </div>
+        <label className="text-xs text-slate-500 uppercase">
+          Trustpilot URL
+          <input
+            value={settings.trustpilotUrl ?? ""}
+            onChange={(e) =>
+              setSettings({ ...settings, trustpilotUrl: e.target.value })
+            }
+            placeholder="https://www.trustpilot.com/review/…"
+            className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 normal-case"
+          />
+        </label>
+        <label className="text-xs text-slate-500 uppercase">
+          Sidebar label
+          <input
+            value={settings.trustpilotLabel ?? ""}
+            onChange={(e) =>
+              setSettings({ ...settings, trustpilotLabel: e.target.value })
+            }
+            className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 normal-case"
+          />
+        </label>
+      </div>
+
       <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900/90">
         Orbit opens with the server-side access key. The key is verified on the
         server and is not stored in the browser after login.

@@ -6,6 +6,7 @@ import {
 } from "next/cache";
 
 import { prisma } from "@/lib/prisma";
+import { sanitizeTrustpilotUrl } from "@/lib/panel/trustpilot";
 import { routes } from "@/config/routes";
 import {
   defaultDomainContent,
@@ -192,7 +193,17 @@ export const getSiteSettings = cache(async (): Promise<CmsSiteSettings> => {
 });
 
 export async function saveSiteSettings(data: CmsSiteSettings) {
-  const normalized: CmsSiteSettings = { ...defaultSiteSettings(), ...data };
+  const defaults = defaultSiteSettings();
+  const normalized: CmsSiteSettings = {
+    ...defaults,
+    ...data,
+    social: { ...defaults.social, ...data.social },
+    trustpilotUrl: sanitizeTrustpilotUrl(data.trustpilotUrl),
+    trustpilotLabel:
+      typeof data.trustpilotLabel === "string" && data.trustpilotLabel.trim()
+        ? data.trustpilotLabel.trim()
+        : defaults.trustpilotLabel,
+  };
   await prisma.siteSettings.upsert({
     where: { id: "default" },
     create: { id: "default", data: normalized },
@@ -204,6 +215,7 @@ export async function saveSiteSettings(data: CmsSiteSettings) {
   revalidatePath("/orbit/settings");
   revalidatePath("/orbit/currency-rates");
   revalidatePath("/orbit/languages");
+  revalidatePath("/account");
   return normalized;
 }
 

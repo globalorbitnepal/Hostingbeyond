@@ -115,6 +115,12 @@ export const PANEL_NAV: PanelNavSection[] = [
         href: routes.accountHostingOrders,
         child: true,
       },
+      {
+        id: "tickets",
+        label: "Open a ticket",
+        href: routes.accountSupport,
+        child: true,
+      },
     ],
   },
   {
@@ -160,11 +166,6 @@ export const PANEL_NAV: PanelNavSection[] = [
     ],
   },
   {
-    id: "support",
-    label: "Support",
-    items: [{ id: "tickets", label: "Support", href: routes.accountSupport }],
-  },
-  {
     id: "account",
     label: "Account",
     items: [
@@ -196,7 +197,7 @@ const EXACT_TITLES: Array<[string, string]> = [
   ["/account/hosting/websites", "My websites"],
   ["/account/hosting", "Hosting plans"],
   ["/account/email", "Business email"],
-  ["/account/support", "Support"],
+  ["/account/support", "Open a ticket"],
   ["/account/ai-agent", "AI Agent"],
   ["/account/ssl", "SSL certificates"],
   ["/account/billing/cards", "Payment cards"],
