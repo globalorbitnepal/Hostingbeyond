@@ -34,9 +34,7 @@ import {
 import { routes } from "@/config/routes";
 import { cn } from "@/lib/utils";
 
-import type { CmsBusinessEmailPlan } from "@/lib/orbit/business-email-page-content";
-
-import { PanelEmailPlans } from "./panel-email-plans";
+import { DashboardAgentSearch } from "./dashboard-agent-search";
 import {
   PanelCard,
   PanelCardTitle,
@@ -125,11 +123,9 @@ function DomainRow({ domain }: { domain: DashboardDomain }) {
 export function DashboardOverview({
   data,
   orderBannerId,
-  emailPlans = [],
 }: {
   data: DashboardOverview;
   orderBannerId?: string;
-  emailPlans?: CmsBusinessEmailPlan[];
 }) {
   const {
     user,
@@ -176,8 +172,7 @@ export function DashboardOverview({
               {firstName ? `Good to see you, ${firstName}` : "Good to see you"}
             </h2>
             <p className="mt-1.5 max-w-lg text-sm text-white/85">
-              Domains, hosting, wallet and support — every control below is
-              wired to the live registrar and billing systems.
+              Your domains, hosting, mail, and billing — live on this account.
             </p>
             <button
               type="button"
@@ -421,26 +416,34 @@ export function DashboardOverview({
         )}
       </PanelCard>
 
-      {emailPlans.length > 0 ? (
-        <section>
-          <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
-            <div>
-              <h3 className="hb-h2">Buy business email</h3>
-              <p className="hb-muted text-xs">
-                Monthly or yearly mailbox plans — checkout from this dashboard.
-              </p>
-            </div>
-            <Link
-              href={routes.accountEmail}
-              className="hb-btn hb-btn-ghost hb-btn-sm"
-            >
-              All mailbox details
-              <ArrowRight className="size-3.5" />
-            </Link>
-          </div>
-          <PanelEmailPlans plans={emailPlans} compact />
-        </section>
-      ) : null}
+      <section className="grid gap-3 md:grid-cols-3">
+        <Link href={routes.myDomains} className="hb-dash-work">
+          <Globe className="hb-dash-work__icon" />
+          <p className="hb-dash-work__label">Domains</p>
+          <p className="hb-dash-work__value">{domainSummary.total}</p>
+          <p className="hb-muted text-xs">
+            {nearestDomain
+              ? `Next: ${nearestDomain.domain}`
+              : "Search and register from the panel"}
+          </p>
+        </Link>
+        <Link href={routes.accountHostingWebsites} className="hb-dash-work">
+          <Server className="hb-dash-work__icon" />
+          <p className="hb-dash-work__label">Hosting</p>
+          <p className="hb-dash-work__value">{counts.hostingOrdersActive}</p>
+          <p className="hb-muted text-xs">
+            {counts.hostingOrdersActive > 0
+              ? "Active plans on this account"
+              : "No active hosting yet"}
+          </p>
+        </Link>
+        <Link href={routes.accountEmail} className="hb-dash-work">
+          <Mail className="hb-dash-work__icon" />
+          <p className="hb-dash-work__label">Email</p>
+          <p className="hb-dash-work__value">Open</p>
+          <p className="hb-muted text-xs">Mailboxes live on the Emails page</p>
+        </Link>
+      </section>
 
       {/* Quick actions */}
       <section>
@@ -459,9 +462,9 @@ export function DashboardOverview({
             icon={Sparkles}
           />
           <PanelQuickAction
-            label="Hosting plans"
-            hint="NVMe hosting with free AutoSSL"
-            href={routes.accountHosting}
+            label="My websites"
+            hint="Sites on your active hosting"
+            href={routes.accountHostingWebsites}
             icon={Server}
           />
           <PanelQuickAction
@@ -472,7 +475,7 @@ export function DashboardOverview({
           />
           <PanelQuickAction
             label="Business email"
-            hint="yourname@yourdomain"
+            hint="Mailboxes on your domain"
             href={routes.accountEmail}
             icon={Mail}
           />
@@ -590,6 +593,8 @@ export function DashboardOverview({
           </div>
         </PanelCard>
       </div>
+
+      <DashboardAgentSearch />
     </div>
   );
 }
