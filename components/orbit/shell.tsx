@@ -240,7 +240,6 @@ const supportOnlyNav: NavGroup[] = [
 
 export function OrbitShell({
   children,
-  adminName,
   orbitAccess = "full",
 }: {
   children: React.ReactNode;
@@ -288,10 +287,6 @@ export function OrbitShell({
     router.refresh();
   }
 
-  const roleLabel =
-    orbitAccess === "support_only" ? "Support staff" : "Super Admin";
-  const adminInitial = (adminName.trim()[0] || "A").toUpperCase();
-
   return (
     <div
       className="notranslate flex min-h-dvh flex-col bg-[#e8eeff] text-slate-900"
@@ -319,15 +314,7 @@ export function OrbitShell({
             />
           </Link>
           <span className="hb-orbit-mega-badge">Orbit</span>
-          <div className="hb-orbit-mega-identity">
-            <span className="hb-orbit-mega-avatar" aria-hidden>
-              {adminInitial}
-            </span>
-            <div className="min-w-0">
-              <p className="hb-orbit-mega-eyebrow">{roleLabel}</p>
-              <p className="hb-orbit-mega-name truncate">{adminName}</p>
-            </div>
-          </div>
+          <div className="min-w-0 flex-1" />
           <div className="hb-orbit-mega-actions">
             <Link
               href="/"

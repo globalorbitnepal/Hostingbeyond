@@ -218,3 +218,197 @@
 .hb-orbit-mega-pill--logout {
   color: var(--hb-orbit-ink);
 }
+
+.hb-orbit-ops {
+  display: flex;
+  flex-direction: column;
+  gap: 1.35rem;
+  color: #16102a;
+}
+
+.hb-orbit-ops__kicker {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #5b21b6;
+}
+
+.hb-orbit-ops h1 {
+  margin-top: 0.15rem;
+  font-size: 1.7rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.hb-orbit-ops__head p {
+  margin-top: 0.3rem;
+  max-width: 42rem;
+  font-size: 0.9rem;
+  color: #4c4568;
+}
+
+.hb-orbit-ops__section {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.65rem;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #3f355c;
+}
+
+.hb-orbit-stats {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(13.5rem, 1fr));
+}
+
+.hb-orbit-stat {
+  display: block;
+  border-radius: 18px;
+  border: 1px solid rgba(91, 33, 182, 0.12);
+  background: rgba(255, 255, 255, 0.86);
+  padding: 1rem 1.05rem 0.95rem;
+  box-shadow: 0 16px 36px -28px rgba(46, 16, 101, 0.45);
+  text-decoration: none;
+  color: inherit;
+}
+
+.hb-orbit-stat:hover {
+  border-color: rgba(91, 33, 182, 0.32);
+}
+
+.hb-orbit-stat__label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #5c5478;
+}
+
+.hb-orbit-stat__value {
+  margin-top: 0.35rem;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  word-break: break-word;
+}
+
+.hb-orbit-stat__hint {
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: #564e73;
+}
+
+.hb-orbit-apis {
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+}
+
+.hb-orbit-apis > div {
+  border-radius: 16px;
+  border: 1px solid rgba(91, 33, 182, 0.12);
+  background: #fff;
+  padding: 0.85rem 0.95rem;
+}
+
+.hb-orbit-apis > div[data-on="false"] {
+  opacity: 0.72;
+}
+
+.hb-orbit-apis strong {
+  display: block;
+  font-size: 0.9rem;
+}
+
+.hb-orbit-apis span {
+  display: inline-block;
+  margin-top: 0.2rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #067a52;
+}
+
+.hb-orbit-apis > div[data-on="false"] span {
+  color: #8a5300;
+}
+
+.hb-orbit-apis p {
+  margin-top: 0.35rem;
+  font-size: 0.78rem;
+  color: #564e73;
+}
+
+.hb-orbit-split {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+}
+
+.hb-orbit-panel {
+  border-radius: 18px;
+  border: 1px solid rgba(91, 33, 182, 0.12);
+  background: #fff;
+  padding: 1rem 1.05rem;
+}
+
+.hb-orbit-panel h2 {
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.hb-orbit-panel ul {
+  margin-top: 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.hb-orbit-panel a {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-radius: 12px;
+  padding: 0.45rem 0.2rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.hb-orbit-panel a:hover {
+  background: rgba(91, 33, 182, 0.05);
+}
+
+.hb-orbit-panel strong,
+.hb-orbit-panel em,
+.hb-orbit-panel b {
+  display: block;
+  font-style: normal;
+}
+
+.hb-orbit-panel strong {
+  font-size: 0.86rem;
+}
+
+.hb-orbit-panel em {
+  font-size: 0.72rem;
+  color: #564e73;
+}
+
+.hb-orbit-panel b {
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.hb-orbit-empty {
+  margin-top: 0.45rem;
+  font-size: 0.85rem;
+  color: #564e73;
+}
