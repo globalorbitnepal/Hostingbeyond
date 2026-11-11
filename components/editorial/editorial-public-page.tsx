@@ -1,5 +1,6 @@
 import Script from "next/script";
 
+import { AffiliatesPageView } from "@/components/editorial/affiliates-page-view";
 import { CareersPageView } from "@/components/editorial/careers-page-view";
 import { EditorialPageView } from "@/components/editorial/editorial-page-view";
 import { SiteFooter, SiteHeader } from "@/components/layout";
@@ -71,6 +72,8 @@ export async function EditorialPublicPage({ slug }: { slug: EditorialSlug }) {
       <main id="main-content">
         {slug === "careers" ? (
           <CareersPageView content={content} />
+        ) : slug === "affiliates" ? (
+          <AffiliatesPageView content={content} />
         ) : (
           <EditorialPageView content={content} />
         )}

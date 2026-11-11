@@ -316,53 +316,99 @@ const CATALOG: Record<EditorialSlug, CmsEditorialPageContent> = {
     ],
   }),
   affiliates: page({
-    seoTitle: "HostingBeyond Affiliate Program — Earn on Hosting & Domains",
+    seoTitle:
+      "HostingBeyond Affiliate Program — Web Hosting, Domains & Email Commissions",
     seoDescription:
-      "Recommend HostingBeyond web hosting, domains and business email. Honest commission rules, cookie window, and what you cannot promote.",
+      "Affiliate program for HostingBeyond web hosting, WordPress, domain registration, transfers and business email. Commission rules, cookie window, payouts and what you cannot promote.",
     keywords:
-      "hosting affiliate program, domain affiliate, HostingBeyond partners, web hosting referral",
-    eyebrow: "Affiliates",
+      "HostingBeyond affiliate program, web hosting affiliate, domain affiliate program, hosting referral commission, WordPress hosting affiliate, business email affiliate",
+    eyebrow: "Affiliate program",
     heroTitle: "Earn when someone buys hosting or a domain for real.",
     heroLead:
-      "The affiliate program pays on completed, paid orders — hosting plans, domain registrations, and business email. Refunds reverse the commission.",
+      "The HostingBeyond affiliate program pays on completed, paid orders — web hosting, WordPress, developer stacks, domain registrations, transfers and business email. Wallet top-ups, refunds and chargebacks do not keep commission. This page is the full program brief; rates are in the agreement we send after you apply, not invented here.",
     primaryCta: { label: "Apply as an affiliate", href: "/contact" },
     secondaryCta: { label: "See hosting plans", href: "/web-hosting" },
     sections: [
       {
-        id: "what",
-        title: "What counts",
-        body: "A referred customer who creates an account and pays for a HostingBeyond product through your link. Wallet top-ups that are later refunded do not stay as commission.",
+        id: "overview",
+        title: "Program overview",
+        body: "Affiliates recommend hosting.theglobalorbit.com with a tracking link. When a new customer signs up through that link and pays for an eligible product, you earn commission on that paid invoice after the product’s refund window. Renewals are not automatic commission unless your agreement says so. We track by account and invoice, not by a vague “lead form”.",
         bullets: [
-          "Web hosting, WordPress, eCommerce and developer plans.",
-          "Domain registrations and eligible transfers.",
-          "Business email mailboxes on a domain they own.",
+          "For creators, reviewers, educators and comparison sites — not coupon farms.",
+          "You must disclose that you may earn a commission (FTC-style).",
+          "Agencies reselling client sites should look at Partners, not this page.",
         ],
       },
       {
-        id: "rules",
-        title: "Rules that keep the program alive",
-        body: "No cookie stuffing, no bidding on “HostingBeyond” brand terms, no fake scarcity, no claiming we are Hostinger. We will close accounts that refund-cycle or self-refer.",
+        id: "eligible",
+        title: "Eligible products",
+        body: "Commission applies to catalog products sold on the live checkout: Starter through Professional web hosting, WordPress and eCommerce hosting, Python and Node developer plans, cloud and VPS where checkout is open, domain registrations and transfers we sell, SSL where it is a paid product, and business email mailboxes. Anything not sold on the site is not eligible.",
         bullets: [
-          "Disclose that you may earn a commission.",
-          "Use current prices from the live site, not screenshots from last year.",
-          "Payouts run after the refund window on the product.",
+          "Web hosting — monthly or annual billing.",
+          "Domain years paid at registration or transfer.",
+          "Business email on a domain the customer controls.",
+          "No commission on wallet credit alone if it is later refunded.",
+        ],
+      },
+      {
+        id: "not-eligible",
+        title: "What does not count",
+        body: "Self-referrals, your own company accounts, coupon-only traffic with no real customer, and orders that are fully refunded or charged back do not keep commission. We do not pay on typosquatting, forced clicks, or hidden iframes. Bidding on the HostingBeyond brand name in paid search is not allowed unless we agree in writing.",
+        bullets: [
+          "Existing customers who were already in the panel before your link.",
+          "Internal test accounts.",
+          "Orders cancelled before the refund window closes.",
+        ],
+      },
+      {
+        id: "tracking",
+        title: "Tracking and cookies",
+        body: "After approval you get a unique referral URL. A cookie records the last click before signup for a limited window. Last-click attribution wins when multiple affiliates touched the same visitor. If the customer clears cookies and returns without your link, we cannot invent the referral.",
+        bullets: [
+          "Use the link we give you — do not edit the parameter.",
+          "Deep-link to plan pages only if the link still carries the tag.",
+          "UTM labels for your analytics are fine; they must not strip the affiliate id.",
         ],
       },
       {
         id: "payout",
-        title: "How payout works",
-        body: "After you apply from the contact form we send a unique tracking link. Commission is calculated on paid invoices after the product refund window. Hosting annual plans pay once on the first invoice, not again on a later renewal unless the agreement says so. Domain years follow the same rule: the registration year that was paid through your link.",
+        title: "Payouts",
+        body: "Commission is calculated on the net paid amount on the invoice after tax and coupons, unless the agreement says otherwise. Payout runs after the refund period on that product. Hosting annual plans pay on the first paid invoice for that order. Domain commissions attach to the registration year paid through your link. Minimum payout threshold and payment method (bank, PayPal or similar) are in your agreement — this page does not publish a rate table.",
         bullets: [
-          "Minimum payout and method are in the affiliate agreement.",
-          "Self-referrals and your own company accounts are excluded.",
-          "We can pause a link if refund rates spike.",
+          "We can hold payout while refund rate is investigated.",
+          "Fraud or refund-cycling closes the affiliate account.",
+          "Tax forms or VAT details may be required before payout.",
         ],
       },
       {
         id: "creative",
-        title: "What you can say in ads",
-        body: "You may quote live plan names (Starter, Growth, Business, Professional) and the fact that annual billing is 10% off monthly. You may not invent datacenter maps, “unlimited” claims, or Hostinger comparisons that are not on this site. If a price on your landing page is older than the live catalog, take it down.",
-        bullets: [],
+        title: "Approved messaging",
+        body: "You may quote live plan names, NVMe storage where the plan page says it, free SSL on hosted sites, annual billing at 10% off monthly, and WHOIS privacy where the domain page says it applies. You may not claim unlimited bandwidth, fake uptime badges, worldwide datacenter maps, or “we are Hostinger” comparisons. Prices on your landing page must match the live catalog or link straight to our checkout.",
+        bullets: [
+          "Use screenshots from the current site, not last year’s pricing.",
+          "Say “affiliate link” or “I may earn a commission” near the CTA.",
+          "Do not promise support SLAs we do not publish.",
+        ],
+      },
+      {
+        id: "channels",
+        title: "Channels that work",
+        body: "Long-form YouTube reviews, course modules, migration guides, newsletter recommendations and honest comparison tables work. Spam comment drops, malware browser extensions and fake “HostingBeyond coupon” sites do not. If your entire channel is only discount codes with no content, we will decline or pause the account.",
+        bullets: [
+          "Blog posts that walk through DNS, SSL and first deploy.",
+          "Regional language content is welcome when disclosure is clear.",
+          "Paid ads on non-brand terms are allowed with honest copy.",
+        ],
+      },
+      {
+        id: "apply",
+        title: "How to apply",
+        body: "Use the contact page. Subject line: Affiliate application. Tell us your site or channel URL, audience geography, how you currently recommend hosting or domains, and whether you run paid ads. We reply with the agreement and your link when the fit is real. We do not auto-approve every application.",
+        bullets: [
+          "Include two examples of hosting or domain content you published.",
+          "Say if you also run an agency — we may route you to Partners.",
+          "We do not negotiate rates in the first email.",
+        ],
       },
     ],
     faqs: [
@@ -370,7 +416,49 @@ const CATALOG: Record<EditorialSlug, CmsEditorialPageContent> = {
         id: "cookie",
         question: "How long does the referral cookie last?",
         answer:
-          "Thirty days from the first click, last-click wins. Details are confirmed in the affiliate agreement we send after you apply.",
+          "Thirty days from the first qualifying click, last-click wins. Exact parameters are in the affiliate agreement we send after approval.",
+      },
+      {
+        id: "rate",
+        question: "What commission rate do affiliates get?",
+        answer:
+          "Rates are in your signed agreement. This public page does not list percentages because they can change by product and region. We will not ask you to promote a rate that is not in your agreement.",
+      },
+      {
+        id: "paypal",
+        question: "How are payouts sent?",
+        answer:
+          "Method and minimum threshold are in the agreement — commonly bank transfer or PayPal where supported. Payout is after the refund window on each product.",
+      },
+      {
+        id: "renewal",
+        question: "Do I earn on renewals?",
+        answer:
+          "Only if your agreement says so. Default is commission on the first paid invoice for the referred order, not every renewal year.",
+      },
+      {
+        id: "coupon",
+        question: "Can I share a private coupon code?",
+        answer:
+          "Only codes we issue to you for the program. Inventing “HOSTING50” style codes is not allowed. Public site pricing and official promos are what you should cite.",
+      },
+      {
+        id: "brand",
+        question: "Can I bid on “HostingBeyond” in Google Ads?",
+        answer:
+          "No, unless we agree in writing. You may bid on generic hosting and domain terms with honest copy and disclosure.",
+      },
+      {
+        id: "partner",
+        question: "Is this the same as the partner program?",
+        answer:
+          "No. Affiliates refer end customers with a link. Agencies and resellers who bill clients or need white-label setup should read the Partner page and contact us about reseller hosting.",
+      },
+      {
+        id: "decline",
+        question: "Why would an application be declined?",
+        answer:
+          "Coupon-only sites, brand-term bidding, missing disclosure, refund-cycling history, or an audience that does not match hosting and domains. A decline is not permanent — fix the channel and reapply.",
       },
     ],
   }),
