@@ -1,6 +1,7 @@
 import type { HostingBillingCycle } from "@/lib/hosting/purchase-intent";
 import { getBusinessEmailAddonPlans } from "@/lib/hosting/business-email-addon";
 
+import { EXTRA_STORAGE_SLUG, EXTRA_STORAGE_TIERS } from "./storage-tiers";
 import type {
   AddonPriceOption,
   AddonQuoteLine,
@@ -15,6 +16,17 @@ function roundMoney(n: number) {
 export async function resolveAddonPriceOptions(
   addon: ResolvedHostingAddon,
 ): Promise<AddonPriceOption[]> {
+  if (
+    addon.pricingReference === "storage-nvme-tiers" ||
+    addon.slug === EXTRA_STORAGE_SLUG
+  ) {
+    return EXTRA_STORAGE_TIERS.map((tier) => ({
+      id: tier.id,
+      label: tier.label,
+      unitMonthlyPrice: tier.unitMonthlyPrice,
+      annualMonthlyPrice: roundMoney(tier.unitMonthlyPrice * 0.9),
+    }));
+  }
   if (addon.pricingReference === "cms:business-email") {
     const plans = await getBusinessEmailAddonPlans();
     return plans.map((p) => ({
@@ -91,11 +103,21 @@ export async function quoteAddonSelections(
     }
 
     const qty = Math.min(50, Math.max(1, selection.quantity || 1));
-    const { mult, label } = periodMultiplier(addon.billingMode, hostingBilling);
+    const chosenCycle: HostingBillingCycle =
+      selection.billingPeriod === "annually" ||
+      selection.billingPeriod === "monthly"
+        ? selection.billingPeriod
+        : addon.type === "STORAGE"
+          ? "monthly"
+          : periodMultiplier(addon.billingMode, hostingBilling).label ===
+              "annual"
+            ? "annually"
+            : "monthly";
     const monthlyRate =
-      hostingBilling === "annually" && option.annualMonthlyPrice
+      chosenCycle === "annually" && option.annualMonthlyPrice
         ? option.annualMonthlyPrice
         : option.unitMonthlyPrice;
+    const mult = chosenCycle === "annually" ? 12 : 1;
     const amount = roundMoney(monthlyRate * qty * mult);
     total = roundMoney(total + amount);
 
@@ -105,7 +127,8 @@ export async function quoteAddonSelections(
       optionLabel: option.label,
       quantity: qty,
       amount,
-      billingLabel: label,
+      billingLabel:
+        chosenCycle === "annually" ? "annual" : "monthly auto-renew",
     });
   }
 

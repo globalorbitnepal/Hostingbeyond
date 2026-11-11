@@ -94,6 +94,13 @@ export function applyHostingBillingPeriod(
       domainRegisterUsd: isAnnual
         ? null
         : quote.configuration.domainRegisterUsd,
+      ...(isAnnual
+        ? {}
+        : {
+            domainChoice: "later" as const,
+            domainName: null,
+            domainProtection: false,
+          }),
     },
     lines,
     discount,

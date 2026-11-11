@@ -22,6 +22,8 @@ export type CartAddonSelection = {
   enabled: boolean;
   quantity: number;
   optionId: string | null;
+  /** Extra storage can be monthly (default, auto-renew) or annual. */
+  billingPeriod?: "monthly" | "annually" | null;
 };
 
 export type AddonPriceOption = {

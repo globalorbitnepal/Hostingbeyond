@@ -1,9 +1,10 @@
 "use client";
 
-import { Mail, Sparkles } from "lucide-react";
+import { HardDrive, Mail, Sparkles } from "lucide-react";
 
 import type { HostingCartConfiguration } from "@/lib/hosting/cart/types";
 import type { CartAddonUiModel } from "@/lib/hosting/addons/load-cart-ui";
+import { EXTRA_STORAGE_SLUG } from "@/lib/hosting/addons/storage-tiers";
 
 function money(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -24,6 +25,7 @@ function selectionFor(
       enabled: false,
       quantity: 1,
       optionId: null,
+      billingPeriod: slug === EXTRA_STORAGE_SLUG ? "monthly" : null,
     }
   );
 }
@@ -59,11 +61,18 @@ export function HostingCartAddonCards({
     <>
       {visible.map((addon) => {
         const sel = selectionFor(configuration, addon.slug);
-        const qtyLabel =
-          addon.slug === "business-email" ? "Mailboxes" : "Quantity";
-
-        const AddonIcon = addon.slug === "business-email" ? Mail : Sparkles;
+        const isStorage =
+          addon.type === "STORAGE" || addon.slug === EXTRA_STORAGE_SLUG;
+        const AddonIcon = isStorage
+          ? HardDrive
+          : addon.slug === "business-email"
+            ? Mail
+            : Sparkles;
         const first = addon.options[0];
+        const selectedOption =
+          addon.options.find((option) => option.id === sel.optionId) ?? first;
+        const storageCycle =
+          sel.billingPeriod === "annually" ? "annually" : "monthly";
 
         return (
           <section
@@ -82,10 +91,12 @@ export function HostingCartAddonCards({
                   Optional add-on
                 </p>
                 <h2 className="font-heading text-lg font-extrabold text-[var(--hb-co-royal)]">
-                  {addon.name}
+                  {isStorage ? "Extra NVMe storage" : addon.name}
                 </h2>
                 <p className="mt-1 text-[14px] leading-relaxed text-[var(--hb-co-text-muted)]">
-                  {addon.description}
+                  {isStorage
+                    ? "Choose 10–100 GB. Monthly auto-renews, or pay a year up front."
+                    : addon.description}
                 </p>
                 {addon.slug === "business-email" ? (
                   <p className="mt-2">
@@ -99,13 +110,90 @@ export function HostingCartAddonCards({
                         : "list rate"}
                     </span>
                   </p>
-                ) : first ? (
+                ) : selectedOption ? (
                   <p className="mt-2 text-[13px] font-semibold text-[var(--hb-co-text)]">
-                    From {money(first.unitMonthlyPrice)}/mo
+                    {storageCycle === "annually" &&
+                    selectedOption.annualMonthlyPrice
+                      ? `${money(selectedOption.annualMonthlyPrice * 12)}/year`
+                      : `${money(selectedOption.unitMonthlyPrice)}/mo · auto-renew`}
                   </p>
                 ) : null}
               </div>
             </div>
+
+            {isStorage ? (
+              <div className="mt-5 space-y-4">
+                <div>
+                  <p className="text-[13px] font-semibold text-[var(--hb-co-text)]">
+                    Storage size
+                  </p>
+                  <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    {addon.options.map((option) => {
+                      const active = (sel.optionId ?? first?.id) === option.id;
+                      return (
+                        <button
+                          key={option.id}
+                          type="button"
+                          onClick={() =>
+                            onChange(
+                              mergeAddon(configuration, addon.slug, {
+                                optionId: option.id,
+                                quantity: 1,
+                                billingPeriod: storageCycle,
+                                enabled: sel.enabled,
+                              }),
+                            )
+                          }
+                          className={`min-h-12 rounded-xl border px-3 text-[14px] font-bold ${
+                            active
+                              ? "border-[var(--hb-co-primary)] bg-[var(--hb-co-surface)] text-[var(--hb-co-royal)]"
+                              : "border-[var(--hb-co-border)] bg-white text-[var(--hb-co-text)]"
+                          }`}
+                        >
+                          {option.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[13px] font-semibold text-[var(--hb-co-text)]">
+                    Billing
+                  </p>
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    {(
+                      [
+                        ["monthly", "Monthly · auto-renew"],
+                        ["annually", "Annually"],
+                      ] as const
+                    ).map(([value, label]) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() =>
+                          onChange(
+                            mergeAddon(configuration, addon.slug, {
+                              billingPeriod: value,
+                              optionId: sel.optionId ?? first?.id ?? null,
+                              quantity: 1,
+                              enabled: sel.enabled,
+                            }),
+                          )
+                        }
+                        className={`min-h-12 rounded-xl border px-3 text-[13px] font-bold ${
+                          storageCycle === value
+                            ? "border-[var(--hb-co-primary)] bg-[var(--hb-co-surface)] text-[var(--hb-co-royal)]"
+                            : "border-[var(--hb-co-border)] bg-white text-[var(--hb-co-text)]"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
             <div className="mt-5 flex flex-wrap gap-2">
               {sel.enabled ? (
                 <button
@@ -115,7 +203,6 @@ export function HostingCartAddonCards({
                     onChange(
                       mergeAddon(configuration, addon.slug, {
                         enabled: false,
-                        optionId: null,
                       }),
                     )
                   }
@@ -131,6 +218,10 @@ export function HostingCartAddonCards({
                       mergeAddon(configuration, addon.slug, {
                         enabled: true,
                         optionId: sel.optionId ?? addon.options[0]?.id ?? null,
+                        quantity: isStorage ? 1 : sel.quantity,
+                        billingPeriod: isStorage
+                          ? storageCycle
+                          : sel.billingPeriod,
                       }),
                     )
                   }
@@ -139,7 +230,7 @@ export function HostingCartAddonCards({
                 </button>
               )}
             </div>
-            {sel.enabled ? (
+            {sel.enabled && !isStorage ? (
               <div className="mt-4 space-y-4 border-t border-[var(--hb-co-border)] pt-4">
                 <div>
                   <label
@@ -172,7 +263,7 @@ export function HostingCartAddonCards({
                     htmlFor={`addon-qty-${addon.slug}`}
                     className="text-[13px] font-semibold text-[var(--hb-co-text)]"
                   >
-                    {qtyLabel}
+                    {addon.slug === "business-email" ? "Mailboxes" : "Quantity"}
                   </label>
                   <input
                     id={`addon-qty-${addon.slug}`}
@@ -216,7 +307,13 @@ export function formatAddonsReviewSummary(
     const opt = meta?.options.find((o) => o.id === sel.optionId);
     const name = meta?.name ?? sel.addonSlug;
     const plan = opt?.label ?? "—";
-    parts.push(`${name} (${plan}, ${sel.quantity}×)`);
+    const cycle =
+      sel.billingPeriod === "annually" ? "annual" : "monthly auto-renew";
+    parts.push(
+      sel.addonSlug === EXTRA_STORAGE_SLUG
+        ? `${name} (${plan}, ${cycle})`
+        : `${name} (${plan}, ${sel.quantity}×)`,
+    );
   }
   return parts.length ? parts.join("; ") : "None";
 }

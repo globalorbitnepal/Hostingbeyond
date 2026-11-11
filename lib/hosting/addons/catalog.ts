@@ -16,47 +16,23 @@ const DEFAULT_BUSINESS_EMAIL_ADDON = {
   },
 };
 
-const DEFAULT_STORAGE_ADDONS = [
-  {
-    slug: "storage-10gb",
-    name: "Extra storage 10 GB",
-    description: "Add 10 GB NVMe without changing your hosting plan.",
-    type: "STORAGE" as const,
-    displayOrder: 20,
-    billingMode: "MONTHLY" as const,
-    pricingReference: "usd:1.50",
-    eligibility: { productCategories: ["WEBSITE", "DEVELOPER"] },
-  },
-  {
-    slug: "storage-25gb",
-    name: "Extra storage 25 GB",
-    description: "Add 25 GB NVMe without changing your hosting plan.",
-    type: "STORAGE" as const,
-    displayOrder: 21,
-    billingMode: "MONTHLY" as const,
-    pricingReference: "usd:3.00",
-    eligibility: { productCategories: ["WEBSITE", "DEVELOPER"] },
-  },
-  {
-    slug: "storage-50gb",
-    name: "Extra storage 50 GB",
-    description: "Add 50 GB NVMe without changing your hosting plan.",
-    type: "STORAGE" as const,
-    displayOrder: 22,
-    billingMode: "MONTHLY" as const,
-    pricingReference: "usd:5.00",
-    eligibility: { productCategories: ["WEBSITE", "DEVELOPER"] },
-  },
-  {
-    slug: "storage-100gb",
-    name: "Extra storage 100 GB",
-    description: "Add 100 GB NVMe without changing your hosting plan.",
-    type: "STORAGE" as const,
-    displayOrder: 23,
-    billingMode: "MONTHLY" as const,
-    pricingReference: "usd:9.00",
-    eligibility: { productCategories: ["WEBSITE", "DEVELOPER"] },
-  },
+const DEFAULT_STORAGE_ADDON = {
+  slug: "extra-storage",
+  name: "Extra NVMe storage",
+  description:
+    "Add 10–100 GB NVMe to this plan. Billed monthly with auto-renew, or pay annually.",
+  type: "STORAGE" as const,
+  displayOrder: 20,
+  billingMode: "MONTHLY" as const,
+  pricingReference: "storage-nvme-tiers",
+  eligibility: { productCategories: ["WEBSITE", "DEVELOPER"] },
+};
+
+const LEGACY_STORAGE_SLUGS = [
+  "storage-10gb",
+  "storage-25gb",
+  "storage-50gb",
+  "storage-100gb",
 ];
 
 export async function ensureHostingAddonsSeeded() {
@@ -79,20 +55,37 @@ export async function ensureHostingAddonsSeeded() {
     });
   }
 
-  for (const addon of DEFAULT_STORAGE_ADDONS) {
-    const row = await prisma.hostingAddon.findUnique({
-      where: { slug: addon.slug },
+  const storage = await prisma.hostingAddon.findUnique({
+    where: { slug: DEFAULT_STORAGE_ADDON.slug },
+  });
+  if (!storage) {
+    await prisma.hostingAddon.create({
+      data: {
+        ...DEFAULT_STORAGE_ADDON,
+        active: true,
+        eligibility: DEFAULT_STORAGE_ADDON.eligibility,
+      },
     });
-    if (!row) {
-      await prisma.hostingAddon.create({
-        data: {
-          ...addon,
-          active: true,
-          eligibility: addon.eligibility,
-        },
-      });
-    }
+  } else if (
+    !storage.active ||
+    storage.pricingReference !== "storage-nvme-tiers"
+  ) {
+    await prisma.hostingAddon.update({
+      where: { slug: DEFAULT_STORAGE_ADDON.slug },
+      data: {
+        active: true,
+        name: DEFAULT_STORAGE_ADDON.name,
+        description: DEFAULT_STORAGE_ADDON.description,
+        pricingReference: DEFAULT_STORAGE_ADDON.pricingReference,
+        billingMode: DEFAULT_STORAGE_ADDON.billingMode,
+      },
+    });
   }
+
+  await prisma.hostingAddon.updateMany({
+    where: { slug: { in: LEGACY_STORAGE_SLUGS } },
+    data: { active: false },
+  });
 }
 
 export async function listActiveHostingAddons(): Promise<

@@ -4,6 +4,10 @@ import {
 } from "@/lib/domains/domain-extras";
 import { getEligibleAddonsForCheckout } from "@/lib/hosting/addons/for-cart";
 import { quoteAddonSelections } from "@/lib/hosting/addons/pricing";
+import {
+  EXTRA_STORAGE_SLUG,
+  LEGACY_STORAGE_SLUGS,
+} from "@/lib/hosting/addons/storage-tiers";
 import type { CartAddonSelection } from "@/lib/hosting/addons/types";
 import { getBusinessEmailAddonPlans } from "@/lib/hosting/business-email-addon";
 import { getHostingProductBySlug } from "@/lib/hosting/hosting-products";
@@ -48,11 +52,16 @@ function parseAddonSelections(raw: unknown): CartAddonSelection[] {
     .filter((item) => item && typeof item === "object")
     .map((item) => {
       const o = item as Record<string, unknown>;
+      const billingPeriod =
+        o.billingPeriod === "monthly" || o.billingPeriod === "annually"
+          ? o.billingPeriod
+          : null;
       return {
         addonSlug: String(o.addonSlug ?? ""),
         enabled: Boolean(o.enabled),
         quantity: Math.min(50, Math.max(1, Number(o.quantity) || 1)),
         optionId: typeof o.optionId === "string" ? o.optionId : null,
+        billingPeriod,
       };
     })
     .filter((s) => s.addonSlug);
@@ -91,6 +100,26 @@ export function normalizeCartConfiguration(
   if (addons.length === 0 && rawInput.emailAddonEnabled) {
     addons = legacyEmailToAddons(rawInput);
   }
+
+  addons = addons.map((addon) => {
+    if ((LEGACY_STORAGE_SLUGS as readonly string[]).includes(addon.addonSlug)) {
+      return {
+        ...addon,
+        addonSlug: EXTRA_STORAGE_SLUG,
+        optionId: addon.optionId ?? addon.addonSlug,
+        quantity: 1,
+        billingPeriod: addon.billingPeriod ?? "monthly",
+      };
+    }
+    if (addon.addonSlug === EXTRA_STORAGE_SLUG) {
+      return {
+        ...addon,
+        quantity: 1,
+        billingPeriod: addon.billingPeriod ?? "monthly",
+      };
+    }
+    return addon;
+  });
 
   const allowed = new Set(eligibleSlugs);
   addons = addons

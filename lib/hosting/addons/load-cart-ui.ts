@@ -7,6 +7,7 @@ export type CartAddonUiModel = {
   name: string;
   description: string;
   billingMode: string;
+  type: string;
   options: AddonPriceOption[];
 };
 
@@ -25,6 +26,7 @@ export async function loadCartAddonUiModels(ctx: {
       name: addon.name,
       description: addon.description,
       billingMode: addon.billingMode,
+      type: addon.type,
       options,
     });
   }
