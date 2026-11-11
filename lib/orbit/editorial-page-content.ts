@@ -775,38 +775,110 @@ const CATALOG: Record<EditorialSlug, CmsEditorialPageContent> = {
     ],
   }),
   help: page({
-    seoTitle: "Help Center — Hosting, Domains, Email & Billing | HostingBeyond",
+    seoTitle:
+      "HostingBeyond Help Center — Hosting, DNS, SSL, Email & Billing Support",
     seoDescription:
-      "Get help with HostingBeyond hosting, domain DNS, SSL, business email, invoices and the customer panel. Guides, tickets and live chat.",
+      "Help Center for HostingBeyond customers: web hosting, WordPress, domain DNS, transfers, SSL, business email MX/SPF/DKIM, invoices, wallet and the customer panel. Guides, tickets and AI chat scope.",
     keywords:
-      "HostingBeyond help, hosting support, domain DNS help, SSL help, business email support",
+      "HostingBeyond help center, hosting support ticket, domain DNS help, SSL certificate help, business email MX setup, WordPress hosting support, billing and invoice help, customer panel login",
     eyebrow: "Help Center",
     heroTitle:
       "Start here when something on your site, domain or mail is stuck.",
     heroLead:
-      "Most issues are DNS, SSL, nameservers, or a checkout that did not finish. Use the guides below, then open a ticket if you still cannot move.",
+      "Most HostingBeyond support issues are DNS, nameservers, SSL, mailbox records, or checkout that never finished — not mystery “server outages.” This Help Center maps what we cover, where the step-by-step articles live, and how to open a ticket with the details engineers actually need.",
     primaryCta: { label: "Contact support", href: "/contact" },
     secondaryCta: { label: "Customer panel", href: "/login" },
     sections: [
       {
-        id: "topics",
-        title: "What we can actually help with",
-        body: "Support covers products sold on this site: web hosting, WordPress, domains, transfers, SSL, business email, invoices, wallet, and the HostingBeyond panel.",
+        id: "scope",
+        title: "What support covers",
+        body: "We help with products sold on hosting.theglobalorbit.com: web hosting and WordPress, developer stacks, domain registration and transfer, SSL on domains you host with us, business email, Stripe checkout failures, invoices, wallet balance, and navigation of the customer panel. We do not debug unrelated SaaS, third-party themes you bought elsewhere, or local ISP Wi‑Fi.",
         bullets: [
-          "Nameservers and DNS records for domains registered here.",
-          "Free and premium SSL on hosted domains.",
-          "Mailbox DNS (MX/SPF/DKIM) after you buy business email.",
-          "Failed Stripe checkout, invoices, and wallet credit.",
+          "Hosting on plans listed in the main catalog.",
+          "Domains and DNS when the domain is on your HostingBeyond account.",
+          "Mail delivery when MX points at our mail product.",
+          "Billing tied to invoices you can see in /account.",
         ],
       },
       {
-        id: "path",
-        title: "Fastest path to an answer",
-        body: "Logged-in customers should use panel Support so the ticket is tied to the account. Guests can use the contact form. Live chat on the public site is the Beyond AI assistant — it will not invent mailbox prices or DNS records.",
+        id: "dns",
+        title: "DNS and nameservers",
+        body: "“Site not found” usually means nameservers still point at the old host, an A record is wrong, or propagation has not finished. In the panel, open the domain and compare NS and A/AAAA to what your hosting plan email says. After you change DNS, wait for TTL — we cannot skip global resolver caches.",
         bullets: [
-          "Knowledge Base for step-by-step checklists.",
-          "Hosting guides for launch and migration.",
-          "System status if the whole site looks down.",
+          "Use our nameservers when the domain is registered here and DNS is managed in-panel.",
+          "www vs apex: both need records if you expect both to work.",
+          "Transfers need unlock and auth code at the losing registrar first.",
+        ],
+      },
+      {
+        id: "ssl",
+        title: "SSL and HTTPS errors",
+        body: "Certificate errors in the browser come from expired certs, wrong hostname on the cert, or mixed HTTP content. Free SSL on eligible hosting renews when the product includes it; premium SSL is ordered like any other product. Send support the exact hostname, expiry date from the browser cert viewer, and whether you recently changed DNS.",
+        bullets: [
+          "Redirect HTTP to HTTPS in your CMS after the cert is valid.",
+          "Let’s Encrypt-style failures often trace to DNS not pointing at us yet.",
+          "Do not email private keys — use panel tools.",
+        ],
+      },
+      {
+        id: "hosting",
+        title: "Web hosting and WordPress",
+        body: "For blank pages, 500 errors, or disk limits, note the URL, when it started, and recent changes (plugin, theme, cron). We can verify provisioning and platform issues; custom plugin conflicts may need your developer. Staging on developer plans is the safe place to test upgrades.",
+        bullets: [
+          "Check /resources/status before assuming a global outage.",
+          "Migration help starts at the website migration resource.",
+          "Reseller clients should name the reseller in the ticket.",
+        ],
+      },
+      {
+        id: "email",
+        title: "Business email",
+        body: "New mailboxes need paid orders and correct MX, SPF, and DKIM. Mail “works in panel but not Gmail” is almost always DNS. After you add records, allow propagation before re-testing. We do not read your inbox content in tickets — describe bounces and headers when you have them.",
+        bullets: [
+          "Buy mailboxes on the business email page before asking for MX values.",
+          "Remove duplicate MX records at old hosts.",
+          "Autodiscover issues are usually DNS or client config.",
+        ],
+      },
+      {
+        id: "billing",
+        title: "Checkout, invoices, and wallet",
+        body: "If Stripe checkout failed, note the time in UTC and whether the bank declined. Paid orders should appear under invoices and services in the panel. Wallet top-ups are separate from cart checkout — refunds follow product windows and can reverse dependent services.",
+        bullets: [
+          "Do not send card numbers or CVV in email.",
+          "PDF invoices download from the account billing area.",
+          "Tax and receipt details come from the invoice row, not chat guesses.",
+        ],
+      },
+      {
+        id: "paths",
+        title: "Where to go first",
+        body: "Logged-in customers should open tickets from the panel so we see your services. Guests use /contact. Long checklists live in the Knowledge Base; launch and migration walkthroughs live in Hosting guides. AI chat on the site is the Beyond assistant — useful for routing, not authoritative for live prices or your private DNS.",
+        bullets: [
+          "Knowledge Base: /resources/knowledge-base",
+          "Guides: /resources/guides",
+          "Security tips: /resources/security",
+          "Platform incidents: /resources/status",
+        ],
+      },
+      {
+        id: "ticket",
+        title: "Writing a ticket we can act on",
+        body: "Include account email, domain or site URL, error text (not “it’s broken”), and what you already tried. For downtime, state if only you are affected or many users. For SSL, attach cert dates. We prioritize site-down and mail delivery over general how-to questions already answered in the Knowledge Base.",
+        bullets: [
+          "Never paste passwords — reset in panel if needed.",
+          "One issue per ticket keeps threads readable.",
+          "Screenshot the browser error, not only the desktop.",
+        ],
+      },
+      {
+        id: "chat",
+        title: "AI chat vs human support",
+        body: "Public-site chat answers from configured models and site content. It can suggest articles and contact paths. It does not replace a ticket for account-specific DNS edits, refunds, or provisioning delays. When chat and the panel disagree, trust the panel and live catalog pages.",
+        bullets: [
+          "AI Agent does not run when no model key is configured.",
+          "Do not share panel MFA codes in chat.",
+          "Escalation always ends at a human via contact or panel.",
         ],
       },
     ],
@@ -815,7 +887,49 @@ const CATALOG: Record<EditorialSlug, CmsEditorialPageContent> = {
         id: "hours",
         question: "When is support available?",
         answer:
-          "Tickets are handled every day. Emergency SSL and downtime tickets are prioritized over billing questions.",
+          "Tickets are worked on every day. Site-down, SSL, and mail delivery failures are prioritized over general billing questions and how-to items covered in the Knowledge Base.",
+      },
+      {
+        id: "panel",
+        question: "Where do I open a ticket?",
+        answer:
+          "Sign in at /login and use Support in the customer panel so the ticket links to your services. If you cannot log in, use /contact with the account email and domain.",
+      },
+      {
+        id: "phone",
+        question: "Is there phone support?",
+        answer:
+          "We do not list a public phone line on this site unless the contact page shows one for your region. Tickets and email are the supported channels.",
+      },
+      {
+        id: "response",
+        question: "How fast will you reply?",
+        answer:
+          "Response time depends on queue and severity. Outages and TLS issues move ahead of policy questions. We do not promise a specific minute SLA on this page.",
+      },
+      {
+        id: "refund",
+        question: "Can support issue refunds?",
+        answer:
+          "Refunds follow product refund windows and invoice state. Support can explain eligibility; approved refunds appear on the payment method per Stripe rules.",
+      },
+      {
+        id: "third",
+        question: "Do you fix my WordPress plugin?",
+        answer:
+          "We verify hosting and platform health. Conflicts in third-party plugins or custom code are between you and your developer unless the issue is clearly server-side.",
+      },
+      {
+        id: "not-customer",
+        question: "I am not a customer yet — can I get help?",
+        answer:
+          "Pre-sales questions go through contact or sales paths on the site. We will not configure DNS for domains you have not ordered here.",
+      },
+      {
+        id: "status",
+        question: "Is HostingBeyond down right now?",
+        answer:
+          "Check /resources/status. If only your site fails, inspect DNS and SSL first.",
       },
     ],
   }),

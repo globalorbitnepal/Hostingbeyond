@@ -2,6 +2,7 @@ import Script from "next/script";
 
 import { AffiliatesPageView } from "@/components/editorial/affiliates-page-view";
 import { CareersPageView } from "@/components/editorial/careers-page-view";
+import { HelpPageView } from "@/components/editorial/help-page-view";
 import { InfrastructurePageView } from "@/components/editorial/infrastructure-page-view";
 import { PartnersPageView } from "@/components/editorial/partners-page-view";
 import { EditorialPageView } from "@/components/editorial/editorial-page-view";
@@ -80,6 +81,8 @@ export async function EditorialPublicPage({ slug }: { slug: EditorialSlug }) {
           <PartnersPageView content={content} />
         ) : slug === "infrastructure" ? (
           <InfrastructurePageView content={content} />
+        ) : slug === "help" ? (
+          <HelpPageView content={content} />
         ) : (
           <EditorialPageView content={content} />
         )}
