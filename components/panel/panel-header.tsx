@@ -108,7 +108,7 @@ function PanelUserAvatar({
     );
   }
   return (
-    <span className="grid size-[34px] place-items-center rounded-full bg-white/20 text-xs font-black text-white">
+    <span className="grid size-[34px] place-items-center rounded-full bg-[#5b21b6] text-xs font-black text-white">
       {initial}
     </span>
   );
