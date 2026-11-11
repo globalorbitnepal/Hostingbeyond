@@ -2,6 +2,7 @@ import Script from "next/script";
 
 import { AffiliatesPageView } from "@/components/editorial/affiliates-page-view";
 import { CareersPageView } from "@/components/editorial/careers-page-view";
+import { PartnersPageView } from "@/components/editorial/partners-page-view";
 import { EditorialPageView } from "@/components/editorial/editorial-page-view";
 import { SiteFooter, SiteHeader } from "@/components/layout";
 import { breadcrumbJsonLd } from "@/lib/blog/seo";
@@ -74,6 +75,8 @@ export async function EditorialPublicPage({ slug }: { slug: EditorialSlug }) {
           <CareersPageView content={content} />
         ) : slug === "affiliates" ? (
           <AffiliatesPageView content={content} />
+        ) : slug === "partners" ? (
+          <PartnersPageView content={content} />
         ) : (
           <EditorialPageView content={content} />
         )}

@@ -463,51 +463,158 @@ const CATALOG: Record<EditorialSlug, CmsEditorialPageContent> = {
     ],
   }),
   partners: page({
-    seoTitle: "Partner with HostingBeyond — Agencies, Hosts & Registrars",
+    seoTitle:
+      "HostingBeyond Partner Program — Agencies, Resellers & Technology",
     seoDescription:
-      "Agency, reseller and technology partnerships for HostingBeyond hosting, domains and email. Tell us what you need to resell or embed.",
+      "Partner with HostingBeyond for agency workflows, reseller hosting, client migrations, domains, business email and integrations. How billing, support and white-label work.",
     keywords:
-      "hosting partner program, reseller hosting partner, agency hosting, HostingBeyond partners",
-    eyebrow: "Partners",
+      "HostingBeyond partner program, agency web hosting, reseller hosting partner, white label hosting, hosting migration partner, domain portfolio agency, WooCommerce agency hosting",
+    eyebrow: "Partner program",
     heroTitle: "If you already serve sites, plug into our stack.",
     heroLead:
-      "Agencies, freelancers, and regional hosts can white-label or resell HostingBeyond plans where the catalog allows it. We do not partner for link exchanges.",
+      "The HostingBeyond partner path is for agencies, freelancers and regional hosts who bill clients for web hosting, domains, SSL and business email — not for link exchanges or coupon sites. Reseller hosting is the self-serve catalog entry; custom white-label, nameserver branding and portfolio migrations are scoped in a partner conversation.",
     primaryCta: { label: "Start a partner conversation", href: "/contact" },
     secondaryCta: { label: "Reseller hosting", href: "/web-hosting/reseller" },
     sections: [
       {
+        id: "overview",
+        title: "Who the partner program is for",
+        body: "You run client sites today — WordPress shops, business sites, mail on custom domains, or small portfolios you migrate off another host. Partners need predictable checkout, DNS and SSL that match the live catalog, and support that knows when a ticket came from a reseller’s client. If you only want a referral link and commission, use the Affiliate page instead.",
+        bullets: [
+          "Digital agencies and freelance developers.",
+          "Regional hosts moving a client base to HostingBeyond.",
+          "Integrators who need a stable API surface — not a logo swap.",
+        ],
+      },
+      {
         id: "agency",
         title: "Agencies and freelancers",
-        body: "Keep billing in your name or send clients to HostingBeyond checkout. We help with migrations, DNS, SSL and mailbox cutover so you are not stuck in WHM at midnight.",
+        body: "You can bill clients yourself and provision on HostingBeyond, or send clients to our checkout under their own login. We help with launch checklists: DNS cutover, SSL issuance, mailbox migration, and staging on developer plans. You keep the relationship; we run the infrastructure behind the catalog you see on hosting.theglobalorbit.com.",
         bullets: [
-          "WordPress and WooCommerce launches.",
-          "Client domain portfolios under one HostingBeyond login.",
-          "Staging-friendly developer stacks on Pro and above.",
+          "WordPress, WooCommerce and marketing sites on managed plans.",
+          "Staging and git-friendly stacks on Professional-tier developer hosting.",
+          "One login per client — you are not forced to share your master password.",
+        ],
+      },
+      {
+        id: "reseller",
+        title: "Reseller hosting path",
+        body: "Reseller hosting is the productized way to sell HostingBeyond plans under your brand where the catalog allows it. Limits, plan tiers and included features are on the Reseller hosting page — we do not duplicate a moving price table here. You own onboarding and tier-one questions; escalations should identify the reseller account.",
+        bullets: [
+          "Read catalog limits on /web-hosting/reseller before you pitch clients.",
+          "Client sites provision after paid orders, same as direct customers.",
+          "Addons (domains, mailboxes, SSL) follow live checkout rules.",
+        ],
+      },
+      {
+        id: "migration",
+        title: "Client migrations",
+        body: "Portfolio moves are scheduled work, not a magic one-click. Send a domain list, current host, CMS type, and mailbox count. We plan DNS TTL reduction, file and database export, and mail cutover windows. Rush jobs need a real deadline — “go live Friday” without backups is not a migration plan.",
+        bullets: [
+          "Website migration guide and transfer flows on the public site apply.",
+          "Large mailbox moves may need staged MX changes.",
+          "Downtime risk is lowest when DNS and certs are prepared before cutover.",
+        ],
+      },
+      {
+        id: "domains",
+        title: "Domains and email at scale",
+        body: "Partners often manage dozens of domains for clients. Search, register, and transfer use the same NameSilo-backed flow as retail customers. Business email mailboxes attach to domains the client controls. WHOIS privacy and renewal reminders follow product pages — do not promise features that are not on the live domain or email catalog.",
+        bullets: [
+          "Portfolio transfers are per-domain orders, not a bulk fantasy form.",
+          "DNS records are editable from the customer panel when the domain is here.",
+          "Affiliate links do not replace partner billing — pick one model per client.",
+        ],
+      },
+      {
+        id: "support",
+        title: "Support and escalation",
+        body: "Direct customers open tickets from their login. Reseller clients should open tickets that name the reseller or use the process you agree in onboarding. We prioritize site-down and mail delivery failures. Design reviews and plugin conflicts are billable agency work unless your partner agreement says otherwise.",
+        bullets: [
+          "Status page at /resources/status for platform incidents.",
+          "Help Center articles cover DNS, SSL, panel basics.",
+          "Do not promise 24/7 phone support we do not publish.",
+        ],
+      },
+      {
+        id: "billing",
+        title: "Billing models",
+        body: "Three common patterns: client pays HostingBeyond directly; you pay and rebill on your invoice; reseller hosting bundles margin in your price. Stripe checkout on the site is for end-customer card payments. Wallet and invoices in the panel follow the same refund windows as retail — your contract with your client is yours to enforce.",
+        bullets: [
+          "Annual hosting is 10% off monthly on eligible plans — quote live prices.",
+          "Refunds on our side can affect reseller margin — plan accordingly.",
+          "Tax and VAT treatment depends on your entity and region.",
         ],
       },
       {
         id: "tech",
-        title: "Technology partners",
-        body: "We already connect Stripe, domain registrars, and Google sign-in. New integrations ship when they have a production owner — not a logo wall.",
-        bullets: [],
+        title: "Technology and integrations",
+        body: "Production integrations today include card payments (Stripe), domain registrar APIs, Google sign-in on the customer panel, and Orbit CMS for staff. New integrations ship when there is an owner and a security review — we do not add logos to the homepage without a live integration. If you need webhook or SSO scope, describe the production use case in your partner email.",
+        bullets: [
+          "AI Agent on the site requires configured model keys — not a partner perk.",
+          "Do not embed the panel in an iframe without discussing security first.",
+          "Sandbox or staging access is negotiated, not automatic.",
+        ],
       },
       {
-        id: "reseller",
-        title: "Reseller and regional hosts",
-        body: "Reseller hosting is the product path for people who already sell sites. You get client accounts on HostingBeyond infrastructure; you still own the customer relationship. Custom nameserver branding and invoices in your legal name are partner-scope, not a checkbox on checkout.",
+        id: "apply",
+        title: "Start the conversation",
+        body: "Contact us with subject Partner inquiry. Include your company site, countries you serve, approximate active client sites, current host stack, and whether you need reseller catalog only or custom white-label. We respond with fit, next steps, and whether to start on Reseller hosting or a scoped call.",
         bullets: [
-          "Start from the Reseller hosting page for catalog limits.",
-          "Migrations of a client portfolio are scheduled, not instant.",
-          "Support tickets from your clients should say who the reseller is.",
+          "Link one or two representative client projects (with permission).",
+          "Say if you also publish affiliate content — we may route dual models.",
+          "We do not sign NDAs before a basic fit check.",
         ],
       },
     ],
     faqs: [
       {
         id: "white",
-        question: "Can I fully white-label the panel?",
+        question: "Can I fully white-label the customer panel?",
         answer:
-          "Reseller hosting covers client sites. Full white-label of the HostingBeyond customer panel is a custom partner deal, not a self-serve toggle.",
+          "Reseller hosting covers branded client sites within catalog limits. A fully white-labeled HostingBeyond customer panel, custom domain on the panel, or your legal entity on every receipt is a custom partner scope — not a self-serve toggle.",
+      },
+      {
+        id: "affiliate",
+        question: "Partner program vs affiliate program?",
+        answer:
+          "Partners bill or provision for clients and may use reseller hosting. Affiliates earn commission on referred retail checkouts via a tracking link. Many agencies are partners only; creators and reviewers often fit affiliates better.",
+      },
+      {
+        id: "minimum",
+        question: "Is there a minimum number of clients?",
+        answer:
+          "Reseller hosting has catalog minimums on the product page. Custom partner deals expect a real client base or migration pipeline — we do not onboard empty “future reseller” accounts.",
+      },
+      {
+        id: "migration-time",
+        question: "How long does a portfolio migration take?",
+        answer:
+          "Depends on site count, mail volume, DNS control, and source host cooperation. Small sites can move in days; dozens of sites with mail need a written schedule. Rush without backups increases risk.",
+      },
+      {
+        id: "ns",
+        question: "Can we use custom nameservers?",
+        answer:
+          "Retail DNS uses HostingBeyond nameservers unless the product says otherwise. Custom NS branding for resellers is partner-scope — ask during onboarding with your domain list.",
+      },
+      {
+        id: "client-support",
+        question: "Who supports the end client?",
+        answer:
+          "By default you handle tier-one questions. Platform outages and provisioning failures escalate to HostingBeyond when the ticket identifies the reseller and affected service.",
+      },
+      {
+        id: "woo",
+        question: "Do you support WooCommerce agencies?",
+        answer:
+          "Yes on WordPress and eCommerce hosting plans sold on the site. Resource limits follow the plan page — load testing and custom plugin audits are your project scope.",
+      },
+      {
+        id: "decline",
+        question: "When do we decline a partner request?",
+        answer:
+          "Link-exchange pitches, no real clients, refusal to identify who owns support, or demands for unpublished SLAs and pricing. Fix the gap and reapply when the model is clear.",
       },
     ],
   }),
