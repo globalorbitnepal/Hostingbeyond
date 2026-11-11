@@ -53,7 +53,16 @@ const notoDevanagari = Noto_Sans_Devanagari({
   weight: ["400", "500", "600", "700"],
 });
 
-export const metadata: Metadata = buildMetadata();
+export const metadata: Metadata = {
+  ...buildMetadata(),
+  icons: {
+    icon: [
+      { url: "/brand/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon.ico", sizes: "48x48" },
+    ],
+    apple: [{ url: "/brand/apple-touch-icon.png", sizes: "180x180" }],
+  },
+};
 
 export const viewport: Viewport = {
   width: "device-width",

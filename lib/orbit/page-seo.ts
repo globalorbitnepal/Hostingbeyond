@@ -41,7 +41,8 @@ export const PUBLIC_PAGE_SEO_REGISTRY: PublicPageSeoEntry[] = [
     defaultSeo: {
       keywords:
         "web hosting, domain registration, business email, website builder, NVMe hosting, HostingBeyond",
-      ogTitle: "Web Hosting, Domains, Email & AI Sites | HostingBeyond",
+      metaTitle: "HostingBeyond – Web Hosting, Domains, Email & More",
+      ogTitle: "HostingBeyond – Web Hosting, Domains, Email & More",
       ogDescription:
         "Premium hosting, domains, business email and Beyond AI websites — one panel, transparent pricing, 24/7 support.",
     },

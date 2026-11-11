@@ -1343,6 +1343,11 @@ export async function buildPublicPageMetadata(
     twitterDescription:
       entry?.defaultSeo?.twitterDescription ?? defaults.description,
   });
+  if (slug === "home" && !/^hostingbeyond\b/i.test(seo.metaTitle ?? "")) {
+    seo.metaTitle = "HostingBeyond – Web Hosting, Domains, Email & More";
+    seo.ogTitle = seo.metaTitle;
+    seo.twitterTitle = seo.metaTitle;
+  }
   return metadataFromStoredSeo(path, seo, defaults);
 }
 

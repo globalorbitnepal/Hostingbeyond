@@ -15,6 +15,25 @@ describe("buildMetadata", () => {
     );
   });
 
+  it("keeps a brand-first tab title without appending the brand again", () => {
+    const meta = buildMetadata({
+      title: "HostingBeyond – Web Hosting, Domains, Email & More",
+      path: "/",
+    });
+    assert.equal(
+      meta.title,
+      "HostingBeyond – Web Hosting, Domains, Email & More",
+    );
+  });
+
+  it("uses the brand-first tab title when no page title is passed", () => {
+    const meta = buildMetadata({ path: "/" });
+    assert.equal(
+      meta.title,
+      "HostingBeyond – Web Hosting, Domains, Email & More",
+    );
+  });
+
   it("appends the brand once when missing", () => {
     const meta = buildMetadata({
       title: "Domain Name Search",

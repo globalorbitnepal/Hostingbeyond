@@ -27,7 +27,7 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPublicPageMetadata("home", "/", {
-    title: "Web Hosting, Domains, Email & AI Sites",
+    title: "HostingBeyond – Web Hosting, Domains, Email & More",
     description:
       "Premium hosting, domain registration, business email and managed websites — one panel, transparent pricing, 24/7 support.",
     image: "/images/home/domains.webp",

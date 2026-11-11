@@ -35,13 +35,18 @@ export function buildMetadata({
   const url = new URL(path, siteConfig.url).toString();
   const brand = siteConfig.name;
   const brandSuffix = new RegExp(`\\s*[|–—-]\\s*${brand}\\s*$`, "i");
-  /** Titles that already end with the brand must not be branded twice. */
+  const brandPrefix = new RegExp(`^${brand}\\s*[|–—-]\\s+`, "i");
+  /**
+   * Brand stays at the start of the tab title so Chrome shows the name
+   * before it truncates. A title that already starts or ends with the brand
+   * is left as written.
+   */
   const rawTitle = title?.trim() ?? "";
   const fullTitle = rawTitle
-    ? brandSuffix.test(rawTitle)
+    ? brandSuffix.test(rawTitle) || brandPrefix.test(rawTitle)
       ? rawTitle
       : `${rawTitle} | ${brand}`
-    : `${brand} — ${siteConfig.tagline}`;
+    : `${brand} – Web Hosting, Domains, Email & More`;
   const socialTitle = ogTitle || fullTitle;
   const socialDescription = ogDescription || description;
   const xTitle = twitterTitle || socialTitle;
