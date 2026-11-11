@@ -1,105 +1,112 @@
-/** Decorative rack + cloud — no photos, scales with the plan card. */
+"use client";
+
+import { useId } from "react";
+
+/** Flat rack + cloud drawn to the checkout mock — vector only, no photos. */
 export function HostingCheckoutPlanArt({ className }: { className?: string }) {
+  const uid = useId().replace(/:/g, "");
+  const body = `${uid}-body`;
+  const bay = `${uid}-bay`;
+  const glow = `${uid}-glow`;
+
   return (
     <svg
       className={className}
-      viewBox="0 0 220 168"
+      viewBox="0 0 240 200"
       fill="none"
       aria-hidden
       focusable="false"
     >
       <defs>
-        <linearGradient id="hb-rack-body" x1="40" y1="20" x2="180" y2="150">
-          <stop offset="0%" stopColor="#7c3aed" />
-          <stop offset="55%" stopColor="#4f46e5" />
-          <stop offset="100%" stopColor="#1e1b4b" />
+        <linearGradient id={body} x1="70" y1="8" x2="150" y2="170">
+          <stop offset="0%" stopColor="#9b6cff" />
+          <stop offset="42%" stopColor="#7c4dff" />
+          <stop offset="100%" stopColor="#5b35e8" />
         </linearGradient>
-        <linearGradient id="hb-rack-glow" x1="70" y1="0" x2="180" y2="80">
-          <stop offset="0%" stopColor="#c4b5fd" stopOpacity="0.9" />
-          <stop offset="100%" stopColor="#67e8f9" stopOpacity="0.15" />
+        <linearGradient id={bay} x1="70" y1="40" x2="160" y2="40">
+          <stop offset="0%" stopColor="#4c2fd4" />
+          <stop offset="100%" stopColor="#3b1fb8" />
         </linearGradient>
-        <linearGradient id="hb-cloud-fill" x1="120" y1="90" x2="210" y2="160">
-          <stop offset="0%" stopColor="#f5f3ff" />
-          <stop offset="100%" stopColor="#ddd6fe" />
-        </linearGradient>
+        <radialGradient id={glow} cx="28%" cy="18%" r="55%">
+          <stop offset="0%" stopColor="#efe6ff" stopOpacity="1" />
+          <stop offset="70%" stopColor="#d8c8ff" stopOpacity="0.55" />
+          <stop offset="100%" stopColor="#d8c8ff" stopOpacity="0" />
+        </radialGradient>
       </defs>
-      <ellipse
-        cx="118"
-        cy="148"
-        rx="62"
-        ry="10"
-        fill="#5b21b6"
-        opacity="0.12"
+
+      <ellipse cx="78" cy="52" rx="78" ry="58" fill={`url(#${glow})`} />
+
+      <rect
+        x="52"
+        y="22"
+        width="112"
+        height="142"
+        rx="30"
+        fill={`url(#${body})`}
       />
       <rect
         x="58"
-        y="18"
-        width="92"
-        height="118"
-        rx="16"
-        fill="url(#hb-rack-body)"
-      />
-      <rect
-        x="66"
         y="28"
-        width="76"
-        height="22"
-        rx="6"
-        fill="#1e1b4b"
-        opacity="0.55"
+        width="100"
+        height="54"
+        rx="24"
+        fill="#c4b5fd"
+        opacity="0.22"
       />
-      <rect
-        x="66"
-        y="56"
-        width="76"
-        height="22"
-        rx="6"
-        fill="#1e1b4b"
-        opacity="0.55"
-      />
-      <rect
-        x="66"
-        y="84"
-        width="76"
-        height="22"
-        rx="6"
-        fill="#1e1b4b"
-        opacity="0.55"
-      />
-      <rect x="72" y="34" width="36" height="10" rx="3" fill="#a78bfa" />
-      <rect x="72" y="62" width="42" height="10" rx="3" fill="#818cf8" />
-      <rect x="72" y="90" width="30" height="10" rx="3" fill="#67e8f9" />
-      <circle cx="128" cy="39" r="3" fill="#4ade80" />
-      <circle cx="128" cy="67" r="3" fill="#22d3ee" />
-      <circle cx="128" cy="95" r="3" fill="#c084fc" />
-      <path
-        d="M70 8c18-14 52-10 68 8 8-4 22 2 22 16H62c0-12 4-20 8-24Z"
-        fill="url(#hb-rack-glow)"
-        opacity="0.55"
-      />
-      <g transform="translate(118 86)">
-        <ellipse cx="42" cy="48" rx="36" ry="22" fill="url(#hb-cloud-fill)" />
-        <circle cx="22" cy="38" r="16" fill="#f8fafc" />
-        <circle cx="48" cy="32" r="20" fill="#eef2ff" />
-        <circle cx="64" cy="42" r="14" fill="#f5f3ff" />
+
+      <g>
         <rect
-          x="30"
-          y="28"
-          width="26"
+          x="66"
+          y="42"
+          width="84"
           height="26"
-          rx="8"
-          fill="url(#hb-rack-body)"
+          rx="13"
+          fill={`url(#${bay})`}
         />
+        <rect x="76" y="50" width="48" height="10" rx="5" fill="#c9b6ff" />
+        <circle cx="136" cy="55" r="4" fill="#4ade80" />
+      </g>
+      <g>
+        <rect
+          x="66"
+          y="78"
+          width="84"
+          height="26"
+          rx="13"
+          fill={`url(#${bay})`}
+        />
+        <rect x="76" y="86" width="52" height="10" rx="5" fill="#7dd3fc" />
+        <circle cx="136" cy="91" r="4" fill="#22d3ee" />
+      </g>
+      <g>
+        <rect
+          x="66"
+          y="114"
+          width="84"
+          height="26"
+          rx="13"
+          fill={`url(#${bay})`}
+        />
+        <rect x="76" y="122" width="40" height="10" rx="5" fill="#818cf8" />
+        <circle cx="136" cy="127" r="4" fill="#e879f9" />
+      </g>
+
+      <g>
+        <ellipse cx="176" cy="148" rx="42" ry="26" fill="#f4f1ff" />
+        <circle cx="152" cy="140" r="20" fill="#ffffff" />
+        <circle cx="178" cy="128" r="24" fill="#f8f6ff" />
+        <circle cx="202" cy="142" r="18" fill="#efeaff" />
+        <rect x="164" y="124" width="34" height="34" rx="10" fill="#6d3df0" />
         <path
-          d="M43 36v12"
+          d="M181 135v14"
           stroke="#fff"
-          strokeWidth="2.4"
+          strokeWidth="2.8"
           strokeLinecap="round"
         />
         <path
-          d="M37 42l6-6 6 6"
+          d="M174.5 142.5 181 135l6.5 7.5"
           stroke="#fff"
-          strokeWidth="2.4"
+          strokeWidth="2.8"
           strokeLinecap="round"
           strokeLinejoin="round"
         />

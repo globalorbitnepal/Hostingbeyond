@@ -10,7 +10,6 @@ import {
   Database,
   FolderClosed,
   Globe2,
-  HardDrive,
   Lock,
   RefreshCw,
   Star,
@@ -28,9 +27,7 @@ import type { HostingCartQuote } from "@/lib/hosting/cart/types";
 
 function featureVisual(label: string): { Icon: LucideIcon; chip?: string } {
   const t = label.toLowerCase();
-  if (t.includes("nvme") || t.includes("storage")) {
-    return { Icon: HardDrive, chip: t.includes("nvme") ? "NVMe" : undefined };
-  }
+  if (t.includes("nvme")) return { Icon: Check, chip: "NVMe" };
   if (t.includes("website") || t.includes("wordpress") || t.includes("site")) {
     return { Icon: Globe2 };
   }
@@ -40,7 +37,7 @@ function featureVisual(label: string): { Icon: LucideIcon; chip?: string } {
   if (t.includes("mysql") || t.includes("postgres") || t.includes("database")) {
     return { Icon: Database };
   }
-  if (t.includes("ftp") || t.includes("file manager") || t.includes("dns")) {
+  if (t.includes("ftp") || t.includes("file manager")) {
     return { Icon: FolderClosed };
   }
   if (
@@ -122,7 +119,7 @@ export function HostingCheckoutPlanCard({
           ) : null}
         </div>
         <div className="hb-checkout-plan__art">
-          <HostingCheckoutPlanArt className="h-auto w-full max-w-[220px]" />
+          <HostingCheckoutPlanArt className="h-auto w-full" />
         </div>
       </div>
 
@@ -150,12 +147,7 @@ export function HostingCheckoutPlanCard({
           >
             <span className="hb-checkout-plan__radio" aria-hidden />
             <span>
-              <strong>
-                Annually
-                {savePct > 0 ? (
-                  <i className="hb-checkout-plan__save">Save {savePct}%</i>
-                ) : null}
-              </strong>
+              <strong>Annually</strong>
               <em>
                 {quote.freeDomainEligible
                   ? "Optional: register a .com free for 1 year (.net, .org, etc. are billed). Skip and add from your dashboard anytime."
@@ -164,6 +156,9 @@ export function HostingCheckoutPlanCard({
                     : "Best value when available"}
               </em>
             </span>
+            {savePct > 0 ? (
+              <i className="hb-checkout-plan__save">Save {savePct}%</i>
+            ) : null}
           </button>
         ) : null}
       </div>

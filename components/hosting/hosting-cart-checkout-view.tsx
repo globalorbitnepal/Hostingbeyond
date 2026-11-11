@@ -21,6 +21,7 @@ import {
   HostingCartAddonCards,
 } from "@/components/hosting/hosting-cart-addon-cards";
 import { HostingCheckoutPlanCard } from "@/components/hosting/hosting-checkout-plan-card";
+import { HostingCheckoutSilk } from "@/components/hosting/hosting-checkout-silk";
 import { CheckoutNote } from "@/components/i18n/checkout-note";
 import { routes } from "@/config/routes";
 import type { CartAddonUiModel } from "@/lib/hosting/addons/load-cart-ui";
@@ -496,7 +497,9 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
       className="hb-checkout-premium hb-checkout-premium--hosting hb-hosting-booking notranslate relative"
       translate="no"
     >
-      <div className="hb-checkout-premium__ambient" aria-hidden />
+      <div className="hb-checkout-premium__ambient" aria-hidden>
+        <HostingCheckoutSilk />
+      </div>
       <div className="relative z-20">
         <SiteHeader layout="checkout" />
       </div>
