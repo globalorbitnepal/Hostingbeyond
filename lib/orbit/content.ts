@@ -110,6 +110,14 @@ import {
   type CmsAboutPageContent,
 } from "@/lib/orbit/about-page-content";
 import {
+  defaultEditorialPageContent,
+  editorialCmsSlug,
+  editorialPageBySlug,
+  mergeEditorialPageContent,
+  type CmsEditorialPageContent,
+  type EditorialSlug,
+} from "@/lib/orbit/editorial-page-content";
+import {
   defaultContactPageContent,
   mergeContactPageContent,
   type CmsContactPageContent,
@@ -915,6 +923,58 @@ export async function saveCloudHostingPageContent(
   revalidatePath(routes.cloud);
   revalidatePath("/cloud");
   revalidatePath("/orbit/cloud");
+  return normalized;
+}
+
+export async function getEditorialPageContent(
+  slug: EditorialSlug,
+): Promise<CmsEditorialPageContent> {
+  try {
+    const page = await prisma.pageContent.findUnique({
+      where: { slug: editorialCmsSlug(slug) },
+    });
+    if (!page) return defaultEditorialPageContent(slug);
+    return mergeEditorialPageContent(
+      slug,
+      page.sections as Partial<CmsEditorialPageContent>,
+    );
+  } catch {
+    return defaultEditorialPageContent(slug);
+  }
+}
+
+export async function saveEditorialPageContent(
+  slug: EditorialSlug,
+  content: CmsEditorialPageContent,
+) {
+  const meta = editorialPageBySlug(slug);
+  const normalized = mergeEditorialPageContent(slug, content);
+  await prisma.pageContent.upsert({
+    where: { slug: editorialCmsSlug(slug) },
+    create: {
+      slug: editorialCmsSlug(slug),
+      title: meta?.label || slug,
+      isPublished: true,
+      isVisible: true,
+      sections: normalized,
+      seo: {
+        title: normalized.seoTitle,
+        description: normalized.seoDescription,
+        keywords: normalized.keywords,
+      },
+    },
+    update: {
+      sections: normalized,
+      seo: {
+        title: normalized.seoTitle,
+        description: normalized.seoDescription,
+        keywords: normalized.keywords,
+      },
+    },
+  });
+  revalidateContent();
+  if (meta?.path) revalidatePath(meta.path);
+  revalidatePath(`/orbit/editorial/${slug}`);
   return normalized;
 }
 

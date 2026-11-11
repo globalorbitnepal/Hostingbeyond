@@ -104,6 +104,16 @@ const nextConfig: NextConfig = {
         destination: "/domain-transfer",
         permanent: true,
       },
+      {
+        source: "/resources/migrate",
+        destination: "/website-migration",
+        permanent: true,
+      },
+      {
+        source: "/resources/seo",
+        destination: "/resources/tips",
+        permanent: true,
+      },
     ];
   },
   experimental: {

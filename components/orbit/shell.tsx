@@ -15,6 +15,7 @@ import {
   Cloud,
   Code2,
   FileText,
+  Files,
   FolderTree,
   Globe,
   ImageIcon,
@@ -118,6 +119,7 @@ const fullNav: NavGroup[] = [
   },
   { href: "/orbit/pages", label: "Pages", icon: FileText },
   { href: "/orbit/about", label: "About Page", icon: Building2 },
+  { href: "/orbit/editorial", label: "Footer pages", icon: Files },
   {
     href: "/orbit/users",
     label: "Customers",

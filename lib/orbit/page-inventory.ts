@@ -1,5 +1,9 @@
 import { HOSTING_PRODUCT_REGISTRY } from "@/lib/hosting/products-registry";
 import {
+  EDITORIAL_PAGES,
+  editorialCmsSlug,
+} from "@/lib/orbit/editorial-page-content";
+import {
   PUBLIC_PAGE_SEO_REGISTRY,
   type PublicPageSeoEntry,
   type StoredPageSeo,
@@ -50,6 +54,9 @@ const EXTRA_CMS_SLUG: Record<string, string> = {
   contact: "contact-page",
   "tips-hub": "tips-hub",
   ...SEO_TO_CMS_FROM_HOSTING,
+  ...Object.fromEntries(
+    EDITORIAL_PAGES.map((page) => [page.slug, editorialCmsSlug(page.slug)]),
+  ),
 };
 
 const SLUG_CATEGORY: Record<string, Exclude<OrbitPageCategory, "all">> = {
@@ -81,6 +88,10 @@ const SLUG_CATEGORY: Record<string, Exclude<OrbitPageCategory, "all">> = {
   "business-email": "products",
   "website-migration": "products",
   about: "company",
+  careers: "company",
+  affiliates: "company",
+  partners: "company",
+  infrastructure: "company",
   contact: "company",
   blog: "resources",
   "tips-hub": "resources",
@@ -88,6 +99,12 @@ const SLUG_CATEGORY: Record<string, Exclude<OrbitPageCategory, "all">> = {
   "growth-hub": "resources",
   "updates-hub": "resources",
   "case-studies-hub": "resources",
+  help: "resources",
+  status: "resources",
+  "knowledge-base": "resources",
+  guides: "resources",
+  security: "resources",
+  "wordpress-tutorials": "resources",
   terms: "legal",
   privacy: "legal",
   refund: "legal",
@@ -199,6 +216,13 @@ const SUPPLEMENTAL_PAGES: PublicPageSeoEntry[] = [
       metaDescription: "HostingBeyond refund and cancellation policy.",
     },
   },
+  ...EDITORIAL_PAGES.map((page) => ({
+    slug: page.slug,
+    label: page.label,
+    path: page.path,
+    editorHref: `/orbit/editorial/${page.slug}`,
+    note: "Full copy is edited under Footer pages.",
+  })),
 ];
 
 function inferCategory(
@@ -214,7 +238,9 @@ function inferCategory(
 function toInventoryItem(entry: PublicPageSeoEntry): OrbitPageInventoryItem {
   const cmsSlug = EXTRA_CMS_SLUG[entry.slug] ?? null;
   const seoMode =
-    entry.slug === "about" || entry.slug === "contact"
+    entry.slug === "about" ||
+    entry.slug === "contact" ||
+    entry.editorHref.startsWith("/orbit/editorial")
       ? "content-editor"
       : "registry";
   return {

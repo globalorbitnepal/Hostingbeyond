@@ -59,6 +59,46 @@ const CMS_SLUG_LINKS: Record<string, OrbitPageLink> = {
   },
   "about-page": { editor: "/orbit/about", preview: "/about" },
   "contact-page": { editor: "/orbit/contact", preview: "/contact" },
+  "editorial-careers": {
+    editor: "/orbit/editorial/careers",
+    preview: "/about/careers",
+  },
+  "editorial-affiliates": {
+    editor: "/orbit/editorial/affiliates",
+    preview: "/about/affiliates",
+  },
+  "editorial-partners": {
+    editor: "/orbit/editorial/partners",
+    preview: "/about/partners",
+  },
+  "editorial-infrastructure": {
+    editor: "/orbit/editorial/infrastructure",
+    preview: "/about/infrastructure",
+  },
+  "editorial-help": {
+    editor: "/orbit/editorial/help",
+    preview: "/resources/help",
+  },
+  "editorial-status": {
+    editor: "/orbit/editorial/status",
+    preview: "/resources/status",
+  },
+  "editorial-knowledge-base": {
+    editor: "/orbit/editorial/knowledge-base",
+    preview: "/resources/knowledge-base",
+  },
+  "editorial-guides": {
+    editor: "/orbit/editorial/guides",
+    preview: "/resources/guides",
+  },
+  "editorial-security": {
+    editor: "/orbit/editorial/security",
+    preview: "/resources/security",
+  },
+  "editorial-wordpress-tutorials": {
+    editor: "/orbit/editorial/wordpress-tutorials",
+    preview: "/resources/wordpress",
+  },
 };
 
 export function orbitPageLinks(slug: string): OrbitPageLink {

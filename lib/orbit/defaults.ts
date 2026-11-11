@@ -1801,7 +1801,7 @@ export function defaultFooterSection(): CmsFooterContent {
           {
             id: "migrate",
             label: "Migration Support",
-            href: `${routes.resources}/migrate`,
+            href: routes.websiteMigration,
           },
           { id: "abuse", label: "Report Abuse", href: routes.contact },
         ]),
@@ -1817,7 +1817,7 @@ export function defaultFooterSection(): CmsFooterContent {
             label: "Hosting Guides",
             href: `${routes.resources}/guides`,
           },
-          { id: "seo", label: "SEO Tips", href: `${routes.resources}/seo` },
+          { id: "seo", label: "SEO Tips", href: `${routes.resources}/tips` },
           {
             id: "security",
             label: "Website Security",
@@ -3428,6 +3428,18 @@ function mergeAiAssistantSection(
   };
 }
 
+/** Old footer hrefs that 404’d; keep the same labels, point at live pages. */
+export function retargetFooterHref(id: string, href: string): string {
+  const trimmed = href.trim();
+  if (id === "migrate" || /\/resources\/migrate\/?$/i.test(trimmed)) {
+    return routes.websiteMigration;
+  }
+  if (id === "seo" || /\/resources\/seo\/?$/i.test(trimmed)) {
+    return `${routes.resources}/tips`;
+  }
+  return trimmed;
+}
+
 function mergeFooterLinks(
   stored: CmsFooterLink[] | undefined,
   fallback: CmsFooterLink[],
@@ -3435,12 +3447,13 @@ function mergeFooterLinks(
   if (!Array.isArray(stored) || stored.length === 0) return fallback;
   return stored.map((item, index) => {
     const base = fallback[index % fallback.length];
+    const id = item.id || base.id || `link-${index}`;
     return {
-      id: item.id || base.id || `link-${index}`,
+      id,
       visible: item.visible !== false,
       order: typeof item.order === "number" ? item.order : index,
       label: item.label || base.label,
-      href: item.href || base.href,
+      href: retargetFooterHref(id, item.href || base.href),
     };
   });
 }

@@ -63,6 +63,27 @@ describe("getOrbitPageInventory", () => {
     }
   });
 
+  it("lists footer editorial pages with Orbit editors", () => {
+    const slugs = [
+      "careers",
+      "affiliates",
+      "partners",
+      "infrastructure",
+      "help",
+      "status",
+      "knowledge-base",
+      "guides",
+      "security",
+      "wordpress-tutorials",
+    ];
+    for (const slug of slugs) {
+      const page = inventory.find((entry) => entry.slug === slug);
+      assert.ok(page, `${slug} is missing from the page inventory`);
+      assert.equal(page.editorHref, `/orbit/editorial/${slug}`);
+      assert.equal(page.seoMode, "content-editor");
+    }
+  });
+
   it("keeps every developer page in the sitemap inventory exactly once", () => {
     const developer = inventory.filter(
       (page) =>
