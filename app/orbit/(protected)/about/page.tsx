@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { AboutPageEditor } from "@/components/orbit/about-page-editor";
@@ -54,9 +55,9 @@ export default function OrbitAboutPage() {
         <h1 className="text-2xl font-bold">About page</h1>
         <p className="mt-1 text-sm text-slate-500">
           Public URL:{" "}
-          <a href={routes.about} className="font-semibold text-[#673de6]">
+          <Link href={routes.about} className="font-semibold text-[#673de6]">
             {routes.about}
-          </a>
+          </Link>
         </p>
         {status ? (
           <p className="mt-2 text-sm text-slate-600">{status}</p>

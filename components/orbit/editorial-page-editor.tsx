@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import type { CmsEditorialPageContent } from "@/lib/orbit/editorial-page-content";
@@ -58,9 +59,12 @@ export function EditorialPageEditor({ slug }: { slug: EditorialSlug }) {
         <h1 className="text-2xl font-bold">{meta?.label}</h1>
         <p className="mt-1 text-sm text-slate-500">
           Public URL:{" "}
-          <a href={meta?.path} className="font-semibold text-[#673de6]">
+          <Link
+            href={meta?.path ?? "/"}
+            className="font-semibold text-[#673de6]"
+          >
             {meta?.path}
-          </a>
+          </Link>
         </p>
       </div>
       {(

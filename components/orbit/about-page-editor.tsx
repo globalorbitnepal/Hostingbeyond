@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 import type {
@@ -154,19 +155,19 @@ export function AboutPageEditor({
       <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-violet-50 px-3 py-2 text-[11px] leading-relaxed text-violet-900">
         <span>
           Full control of the public{" "}
-          <a href="/about" className="font-semibold underline">
+          <Link href="/about" className="font-semibold underline">
             /about
-          </a>{" "}
+          </Link>{" "}
           page. No images are used — every visual is CSS and icons.
         </span>
-        <a
+        <Link
           href="/about"
           target="_blank"
           rel="noreferrer"
           className="rounded-md bg-violet-600 px-2.5 py-1 text-[11px] font-semibold text-white"
         >
           Preview page
-        </a>
+        </Link>
       </div>
 
       <div className="flex flex-wrap gap-1.5">
