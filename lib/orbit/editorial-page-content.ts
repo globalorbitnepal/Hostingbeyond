@@ -619,43 +619,108 @@ const CATALOG: Record<EditorialSlug, CmsEditorialPageContent> = {
     ],
   }),
   infrastructure: page({
-    seoTitle: "HostingBeyond Infrastructure — Hosting, SSL, Panel & Payments",
+    seoTitle:
+      "HostingBeyond Infrastructure — Platform, NVMe Hosting, SSL & Payments",
     seoDescription:
-      "How HostingBeyond runs web hosting, domains, SSL, the customer panel and Stripe checkout. What we operate, and what we do not invent.",
+      "How HostingBeyond runs hosting.theglobalorbit.com: Next.js app, customer panel, Orbit CMS, Postgres, Stripe payments, domain APIs, SSL inventory and hosting provisioning. Honest scope, no fake PoP maps.",
     keywords:
-      "HostingBeyond infrastructure, NVMe hosting, SSL, customer panel, Stripe hosting payments",
-    eyebrow: "Infrastructure",
+      "HostingBeyond infrastructure, NVMe web hosting stack, hosting control panel, Stripe hosting payments, domain registrar API, SSL certificate management, HostingBeyond data center",
+    eyebrow: "Platform & infrastructure",
     heroTitle: "The stack behind hosting.theglobalorbit.com.",
     heroLead:
-      "This page describes the production HostingBeyond platform: public site, customer panel, Orbit CMS, domain orders, hosting checkout, and TLS on the live hostname. It is not a fake global PoP map.",
+      "This page explains the production HostingBeyond platform — public marketing site, logged-in customer panel, Orbit staff CMS, domain and hosting checkout, TLS, and the services behind the catalog. It is documentation for customers and partners, not a made-up global network diagram.",
     primaryCta: { label: "Web hosting plans", href: "/web-hosting" },
     secondaryCta: { label: "System status", href: "/resources/status" },
     sections: [
       {
+        id: "overview",
+        title: "What this page covers",
+        body: "HostingBeyond is a web hosting, domain, SSL, and business email provider operated from the United States with customers worldwide. You interact with us through this site and the customer panel. Staff operate content, pricing, and operational tools through Orbit. Physical hosting for the plans you purchase is provisioned per product — details appear on plan pages and in support, not as generic marketing numbers here.",
+        bullets: [
+          "Live hostname: hosting.theglobalorbit.com.",
+          "Customer panel at /account after sign-in.",
+          "Status and incidents at /resources/status.",
+        ],
+      },
+      {
         id: "edge",
         title: "Public site and TLS",
-        body: "The marketing site and customer panel are served at hosting.theglobalorbit.com with HTTPS. Certificates are monitored from Orbit. Mixed-content and expired certs are treated as incidents, not blog posts.",
+        body: "The marketing site and authenticated customer routes are served over HTTPS on the live hostname. Reverse proxy TLS terminates in front of the application. Certificate expiry and mixed-content issues are operational concerns — Orbit staff can monitor SSL inventory for customer domains hosted with us.",
         bullets: [
-          "Forced HTTPS on the live hostname.",
-          "Customer SSL inventory for domains you host with us.",
-          "Let’s Encrypt-style free certs where hosting is active; premium SSL is a paid product.",
+          "HTTPS enforced on the public hostname customers bookmark.",
+          "Free SSL on active hosting where the product includes it.",
+          "Premium SSL certificates are a paid catalog item when offered.",
         ],
       },
       {
         id: "app",
-        title: "Application layer",
-        body: "The product is a Next.js application with a Postgres database, Stripe for card payments, and registrar APIs for domain search and lifecycle. Orbit is the staff CMS. The customer panel is the logged-in account at /account.",
+        title: "Application architecture",
+        body: "The product is built as a modern web application (Next.js) with server-rendered and client-rendered routes. Business data for orders, accounts, domains, hosting entitlements, invoices, and wallet balances lives in a Postgres database. Background jobs and registrar calls run through the same codebase — not a separate “ghost” admin nobody maintains.",
         bullets: [
-          "Hosting and domain orders are stored as real rows, not spreadsheets.",
-          "Wallet top-ups are separate from invoice totals.",
-          "AI Agent replies only when a model key is configured.",
+          "Public catalog pages and checkout share one deployment line.",
+          "Orbit CMS powers staff edits to pages, pricing copy, and editorial content.",
+          "AI Agent on the site responds only when an API key is configured in Orbit.",
+        ],
+      },
+      {
+        id: "auth",
+        title: "Accounts and sign-in",
+        body: "Customers create accounts with email and password or supported OAuth providers where enabled (for example Google sign-in when configured). Staff use separate Orbit authentication with role-based access. There is no shared password between your client sites and the HostingBeyond panel — panel login is for billing and services you bought here.",
+        bullets: [
+          "Session security follows current framework defaults and staff hardening.",
+          "Orbit roles limit who can change prices, refunds, or customer data.",
+          "Do not paste panel credentials into client WordPress admin.",
+        ],
+      },
+      {
+        id: "payments",
+        title: "Payments, invoices, and wallet",
+        body: "Card checkout uses Stripe. Paid invoices create entitlements — hosting packages, domain years, mailboxes, SSL orders — as rows you can see in the panel. Wallet top-ups are a separate balance path from line-item invoices; refunds follow product refund windows and can reverse dependent services.",
+        bullets: [
+          "Stripe webhooks reconcile payment success and failure.",
+          "Invoice PDFs and history live in the customer account.",
+          "We do not store full card numbers on HostingBeyond servers.",
+        ],
+      },
+      {
+        id: "domains",
+        title: "Domains and DNS",
+        body: "Domain search, registration, transfer, and lifecycle operations call registrar APIs (NameSilo-backed flows on the live site). DNS management for domains on file is exposed in the panel when the product allows it. WHOIS privacy and renewal behavior follow the domain product pages — not promises invented in sales email.",
+        bullets: [
+          "Bulk search is rate-limited to protect registrar API stability.",
+          "Nameserver changes propagate at DNS TTL, not instantly.",
+          "Transfers need auth codes and unlocked domains at the losing registrar.",
         ],
       },
       {
         id: "host",
-        title: "Hosting you buy",
-        body: "Catalog plans — Starter through Ultimate, WordPress, eCommerce, Python, Node, Laravel, Django, Nest, Cloud and VPS — are the products we sell. Provisioning follows paid orders. We do not publish a fake “200 Tbps backbone” number.",
-        bullets: [],
+        title: "Hosting and provisioning",
+        body: "Catalog plans — Starter through Professional tiers, WordPress, eCommerce, Python, Node, Laravel, Django, Nest, cloud, VPS, and reseller — are defined on their product pages. After a paid hosting order, provisioning runs against our hosting stack; you receive panel credentials or onboarding email when the product is ready. NVMe and resource limits are stated per plan, not as one global unlimited banner.",
+        bullets: [
+          "No provisioning before payment clears.",
+          "Developer stacks match the language pages in the main nav.",
+          "Migrations from other hosts are projects — see the migration resources.",
+        ],
+      },
+      {
+        id: "email",
+        title: "Business email",
+        body: "Business email mailboxes are sold as mail on domains you control. DNS records for MX, SPF, and DKIM are part of cutover. Mail storage and anti-abuse limits follow the business email product page. We do not claim infinite mailbox storage unless the live catalog says so.",
+        bullets: [
+          "Mail requires correct MX pointing at our mail infrastructure.",
+          "New mailboxes provision after paid orders like other products.",
+          "Delivery issues often trace to DNS — check records before opening a ticket.",
+        ],
+      },
+      {
+        id: "ops",
+        title: "Operations, monitoring, and honesty",
+        body: "We maintain a status resource for platform-visible incidents. We do not publish fabricated Tbps figures, anonymous “Tier IV everywhere” badges, or maps of cities we do not actually serve from. When you need facility or network detail for compliance, ask support with your plan SKU and region; answers depend on what you purchased.",
+        bullets: [
+          "Incident communication prefers the status page over social rumors.",
+          "Backups and retention follow plan and product documentation.",
+          "Security reports: use contact with a clear reproduction path.",
+        ],
       },
     ],
     faqs: [
@@ -663,7 +728,49 @@ const CATALOG: Record<EditorialSlug, CmsEditorialPageContent> = {
         id: "dc",
         question: "Where are the servers?",
         answer:
-          "Plan pages list the product you buy. Physical facility detail is given during provisioning and support, not as marketing fiction on this page.",
+          "The product you buy on a plan page determines provisioning region and stack. This marketing page does not replace that detail. Support or provisioning email gives facility-specific answers when they apply to your order.",
+      },
+      {
+        id: "nvme",
+        question: "Is storage NVMe?",
+        answer:
+          "Plans that advertise NVMe on their product page use that storage class for the included disk. Cheaper tiers list their own limits. Read the plan card before you compare us to another host’s homepage.",
+      },
+      {
+        id: "uptime",
+        question: "What uptime do you guarantee?",
+        answer:
+          "We publish status during incidents. A formal uptime SLA, if any, is in your service terms or plan-specific agreement — not a number we invent on this infrastructure page.",
+      },
+      {
+        id: "backups",
+        question: "Are backups included?",
+        answer:
+          "Backup scope depends on the hosting product. Some plans include automated backups; others expect you to configure your own. Check the plan features list and help articles before assuming nightly snapshots.",
+      },
+      {
+        id: "ddos",
+        question: "Do you offer DDoS protection?",
+        answer:
+          "Edge and hosting providers may include baseline mitigation. We do not claim unmetered DDoS scrubbing on every tier. Ask support for what applies to your plan if you are under attack.",
+      },
+      {
+        id: "data",
+        question: "Where is customer data stored?",
+        answer:
+          "Account, billing, and order data live in our application database. Mail and website files reside on the hosting and mail systems tied to your products. Cross-border questions need your specific services listed.",
+      },
+      {
+        id: "orbit",
+        question: "What is Orbit?",
+        answer:
+          "Orbit is the internal staff CMS and operations console for HostingBeyond — content, pricing, editorial pages, SSL monitoring tools, and admin workflows. Customers use the public site and /account, not Orbit.",
+      },
+      {
+        id: "status",
+        question: "How do I check if the platform is down?",
+        answer:
+          "Start at /resources/status. If your site alone is down, the issue is often DNS, SSL, or your CMS — not a global outage.",
       },
     ],
   }),
