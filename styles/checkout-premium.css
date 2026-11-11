@@ -369,9 +369,15 @@
   margin-inline: auto;
 }
 
+.hb-checkout-plan__art img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
 @media (min-width: 768px) {
   .hb-checkout-plan__art {
-    max-width: 280px;
+    max-width: 300px;
     margin-inline: 0;
   }
 }
