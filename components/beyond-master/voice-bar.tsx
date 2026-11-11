@@ -41,8 +41,14 @@ function recognitionLanguage(): string {
 
 export function BeyondMasterVoiceButton({
   disabled = false,
+  className,
+  onBeforeStart,
+  forceVisible = false,
 }: {
   disabled?: boolean;
+  className?: string;
+  onBeforeStart?: () => void;
+  forceVisible?: boolean;
 }) {
   const recRef = useRef<{
     stop: () => void;
@@ -120,6 +126,7 @@ export function BeyondMasterVoiceButton({
 
   function startListening() {
     if (disabled || typeof window === "undefined") return;
+    onBeforeStart?.();
     setBeyondMasterError(null);
     const w = window as Window & {
       SpeechRecognition?: WebSpeechCtor;
@@ -198,12 +205,12 @@ export function BeyondMasterVoiceButton({
     startListening();
   }
 
-  if (!voiceEnabled) return null;
+  if (!voiceEnabled && !forceVisible) return null;
 
   return (
     <button
       type="button"
-      className="hb-bmai-mic"
+      className={className ?? "hb-bmai-mic"}
       data-listening={listening ? "true" : "false"}
       aria-pressed={listening}
       aria-label={listening ? "Stop listening and send" : "Speak your message"}

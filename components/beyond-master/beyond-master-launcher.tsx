@@ -5,6 +5,7 @@ import Image from "next/image";
 import { createPortal } from "react-dom";
 import { useReducedMotion } from "framer-motion";
 
+import { HOSTINGBEYOND_AI_ROBOT_SRC } from "@/components/shared/ai-robot";
 import { BEYOND_MASTER_BRAND_NAME } from "@/lib/beyond-master/copy";
 import {
   closeBeyondMasterAi,
@@ -144,7 +145,7 @@ export function BeyondMasterAiLauncher({
       <span className="hb-bmai-agent" aria-hidden="true">
         <span className="hb-bmai-agent-ring" />
         <Image
-          src="/brand/hostingbeyond-ai-robot.png"
+          src={HOSTINGBEYOND_AI_ROBOT_SRC}
           alt=""
           width={88}
           height={88}

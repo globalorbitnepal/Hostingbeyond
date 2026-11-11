@@ -1,8 +1,11 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { LayoutList, Mic, Send } from "lucide-react";
+import Image from "next/image";
+import { LayoutList, Send } from "lucide-react";
 
+import { BeyondMasterVoiceButton } from "@/components/beyond-master/voice-bar";
+import { HOSTINGBEYOND_AI_ROBOT_SRC } from "@/components/shared/ai-robot";
 import { BEYOND_MASTER_INPUT_PLACEHOLDER } from "@/lib/beyond-master/copy";
 import {
   openBeyondMasterAi,
@@ -28,12 +31,20 @@ export function PanelAiAskBar() {
 
   return (
     <form className="hb-ds-ask" onSubmit={onSubmit}>
-      <span
-        aria-hidden
-        className="grid size-7 place-items-center rounded-full bg-gradient-to-br from-[#7c3aed] to-[#2563eb] text-[11px] font-black text-white"
+      <button
+        type="button"
+        className="hb-ds-ask-robot"
+        aria-label="Open HostingBeyond AI"
+        onClick={() => openBeyondMasterAi()}
       >
-        ✦
-      </span>
+        <Image
+          src={HOSTINGBEYOND_AI_ROBOT_SRC}
+          alt=""
+          width={40}
+          height={40}
+          className="size-full object-cover"
+        />
+      </button>
       <input
         value={value}
         onChange={(event) => setValue(event.target.value)}
@@ -41,16 +52,18 @@ export function PanelAiAskBar() {
         aria-label="Ask HostingBeyond AI"
       />
       <div className="hb-ds-ask-actions">
-        <button type="button" aria-label="Voice input" disabled>
-          <Mic className="h-4 w-4" />
-        </button>
+        <BeyondMasterVoiceButton
+          forceVisible
+          className="hb-ds-ask-mic"
+          onBeforeStart={() => openBeyondMasterAi()}
+        />
         <button type="submit" data-primary="true" aria-label="Send">
           <Send className="h-4 w-4" />
         </button>
         <button
           type="button"
-          aria-label="Open assistant"
-          onClick={() => openBeyondMasterAi()}
+          aria-label="Open conversation history"
+          onClick={() => openBeyondMasterAi("history")}
         >
           <LayoutList className="h-4 w-4" />
         </button>

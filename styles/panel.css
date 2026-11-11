@@ -14,10 +14,10 @@
   --hb-p-accent: #1d4ed8;
   --hb-p-link: #5b21b6;
 
-  --hb-p-surface: #f4f5fb;
-  --hb-p-card: rgba(255, 255, 255, 0.9);
-  --hb-p-card-solid: #ffffff;
-  --hb-p-raised: #ffffff;
+  --hb-p-surface: #f4eefc;
+  --hb-p-card: rgba(255, 250, 246, 0.86);
+  --hb-p-card-solid: #fffaf6;
+  --hb-p-raised: #fff7f0;
 
   --hb-p-text: #16102a;
   --hb-p-text-soft: #352d4e;
@@ -439,7 +439,18 @@ html[data-hb-theme="light"] {
 
 .hb-panel-sidebar {
   border-right: 1px solid var(--hb-p-border);
-  background: color-mix(in srgb, var(--hb-p-card-solid) 94%, #eef0f8 6%);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 250, 246, 0.78) 0%,
+      rgba(244, 238, 252, 0.9) 42%,
+      rgba(237, 242, 255, 0.88) 100%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(91, 33, 182, 0.08) 0%,
+      rgba(37, 99, 235, 0.07) 100%
+    );
   backdrop-filter: blur(22px) saturate(150%);
   box-shadow: 8px 0 28px -24px rgba(46, 16, 101, 0.35);
 }
@@ -1150,6 +1161,12 @@ html[data-hb-theme="light"] {
   border-color: rgba(91, 33, 182, 0.28);
 }
 
+.hb-panel-mega-agent img {
+  border-radius: 999px;
+  background: #2e1065;
+  object-fit: cover;
+}
+
 .hb-panel-mega-icon {
   position: relative;
   display: inline-grid;
@@ -1573,7 +1590,7 @@ html[data-hb-theme="light"] {
   gap: 0.65rem;
   width: min(100%, 40rem);
   margin: 0 auto;
-  padding: 0.45rem 0.55rem 0.45rem 0.95rem;
+  padding: 0.4rem 0.5rem 0.4rem 0.45rem;
   border-radius: 999px;
   background: color-mix(in srgb, var(--hb-p-card-solid) 94%, transparent);
   border: 1px solid var(--hb-p-border-strong);
@@ -1582,6 +1599,37 @@ html[data-hb-theme="light"] {
     0 18px 50px -24px rgba(46, 16, 101, 0.55);
   pointer-events: auto;
   backdrop-filter: blur(18px) saturate(150%);
+}
+
+.hb-ds-ask-robot {
+  display: grid;
+  width: 2.35rem;
+  height: 2.35rem;
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 999px;
+  padding: 0;
+  cursor: pointer;
+  background: #2e1065;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--hb-p-primary) 28%, transparent);
+}
+
+.hb-ds-ask-mic {
+  display: grid;
+  place-items: center;
+  width: 2.15rem;
+  height: 2.15rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--hb-p-muted);
+  cursor: pointer;
+}
+
+.hb-ds-ask-mic[data-listening="true"] {
+  color: var(--hb-p-primary-strong);
+  background: color-mix(in srgb, var(--hb-p-primary) 16%, transparent);
 }
 
 .hb-panel[data-theme="dark"] .hb-ds-ask {

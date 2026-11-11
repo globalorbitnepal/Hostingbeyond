@@ -41,6 +41,7 @@ export const routes = {
   accountEmail: "/account/email",
   accountSupport: "/account/support",
   accountSecurity: "/account/security",
+  accountNotifications: "/account/notifications",
   getStarted: "/signup",
   domainCheckout: "/get-started",
   domainCart: "/cart",

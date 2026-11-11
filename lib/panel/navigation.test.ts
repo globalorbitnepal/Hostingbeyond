@@ -43,6 +43,7 @@ describe("panel navigation", () => {
     assert.equal(panelTitleForPath("/account/hosting"), "Hosting plans");
     assert.equal(panelTitleForPath("/account/email"), "Business email");
     assert.equal(panelTitleForPath("/account/support"), "Support");
+    assert.equal(panelTitleForPath("/account/notifications"), "Notifications");
     assert.equal(panelTitleForPath("/account/ai-agent"), "AI Agent");
     assert.equal(panelTitleForPath("/account/ssl"), "SSL certificates");
     assert.equal(panelTitleForPath("/account/billing/cards"), "Payment cards");
@@ -90,7 +91,8 @@ describe("panel navigation", () => {
     assert.ok(!hosting.items.some((item) => item.id === "tickets"));
     const account = PANEL_NAV.find((section) => section.id === "account");
     assert.ok(account);
-    assert.ok(account.items.some((item) => item.id === "tickets"));
+    assert.ok(!account.items.some((item) => item.id === "tickets"));
+    assert.ok(account.items.some((item) => item.id === "notifications"));
   });
 
   it("keeps every nav link inside the customer panel", () => {

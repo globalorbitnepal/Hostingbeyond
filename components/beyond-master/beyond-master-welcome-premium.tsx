@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { ArrowRight, Globe, Headphones, Layers } from "lucide-react";
 
+import { HOSTINGBEYOND_AI_ROBOT_SRC } from "@/components/shared/ai-robot";
+
 const PREMIUM_ACTIONS = [
   {
     id: "compare-plans",
@@ -38,7 +40,7 @@ export function BeyondMasterWelcomePremium({
         <span className="hb-bmai-premium-hero-orbit" />
         <span className="hb-bmai-premium-mascot-wrap">
           <Image
-            src="/brand/hostingbeyond-ai-robot.png"
+            src={HOSTINGBEYOND_AI_ROBOT_SRC}
             alt=""
             width={200}
             height={200}

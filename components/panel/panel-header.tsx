@@ -24,6 +24,7 @@ import {
 
 import { routes } from "@/config/routes";
 import { openBeyondMasterAi } from "@/lib/beyond-master/ui-store";
+import { HOSTINGBEYOND_AI_ROBOT_SRC } from "@/components/shared/ai-robot";
 import { CANONICAL_HEADER_LOGO_SRC } from "@/components/shared/logo";
 import { getPanelNav } from "@/lib/panel/navigation";
 
@@ -331,11 +332,11 @@ export function PanelHeader({
             onClick={() => openBeyondMasterAi()}
           >
             <Image
-              src="/brand/hostingbeyond-ai-robot.png"
+              src={HOSTINGBEYOND_AI_ROBOT_SRC}
               alt=""
               width={26}
               height={26}
-              className="size-[26px] object-contain"
+              className="size-[26px] object-cover"
             />
             <span>Agent</span>
           </button>

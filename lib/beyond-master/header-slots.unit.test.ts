@@ -40,7 +40,7 @@ describe("header assistant slots", () => {
       "utf8",
     );
     assert.equal(launcher.includes("BEYOND_MASTER_BRAND_NAME"), true);
-    assert.equal(launcher.includes("hostingbeyond-ai-robot.png"), true);
+    assert.equal(launcher.includes("HOSTINGBEYOND_AI_ROBOT_SRC"), true);
     assert.equal(launcher.includes("hb-bmai-launch--mascot"), true);
     assert.equal(launcher.includes("hb-bmai-dock-bubble"), true);
     assert.equal(launcher.includes("Can I help you"), true);

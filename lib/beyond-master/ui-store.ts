@@ -340,8 +340,8 @@ export function useBeyondMasterAi() {
   );
 }
 
-export function openBeyondMasterAi() {
-  emit({ ...snapshot, open: true, view: "chat", error: null });
+export function openBeyondMasterAi(view: BeyondMasterView = "chat") {
+  emit({ ...snapshot, open: true, view, error: null });
 }
 
 export function closeBeyondMasterAi() {
