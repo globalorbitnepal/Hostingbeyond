@@ -170,57 +170,148 @@ export function mergeEditorialPageContent(
 
 const CATALOG: Record<EditorialSlug, CmsEditorialPageContent> = {
   careers: page({
-    seoTitle: "Careers at HostingBeyond — Hosting, Domains & Support Roles",
+    seoTitle: "Careers — Hosting, Domains & Customer Support | HostingBeyond",
     seoDescription:
-      "Work on HostingBeyond hosting, domains, business email and customer panel. Open roles, how we hire, and how to apply.",
+      "Careers at HostingBeyond: support, engineering and writing roles on live web hosting, domains, SSL, business email and the customer panel. How to apply.",
     keywords:
-      "HostingBeyond careers, hosting jobs, customer support jobs, web hosting company careers",
+      "HostingBeyond careers, hosting jobs, web hosting support jobs, domain registrar jobs, customer support hosting, remote hosting jobs",
     eyebrow: "Careers",
     heroTitle: "Build the hosting panel customers actually use.",
     heroLead:
-      "HostingBeyond is a live hosting, domain and email company. We hire people who can ship, support, and explain real services — not slide decks.",
+      "HostingBeyond sells web hosting, WordPress, domains, SSL and business email on hosting.theglobalorbit.com. We hire people who can ship, support and explain those products. This page is the full hiring brief — not a wall of invented openings.",
     primaryCta: { label: "Send your profile", href: "/contact" },
     secondaryCta: { label: "About the company", href: "/about" },
     sections: [
       {
-        id: "who",
-        title: "Who we hire",
-        body: "Roles stay close to the product: web hosting, WordPress and developer stacks, domain registration, SSL, business email, billing, and the customer panel. If you have not used a hosting control panel, this is probably not the team.",
+        id: "fit",
+        title: "Who this is for",
+        body: "Roles stay on the live catalog: web hosting plans, WordPress, developer stacks, domain search, transfers, SSL, business email, checkout, invoices and the customer panel. If you have never used a hosting control panel, nameservers or a mailbox DNS record, this is probably not the team.",
         bullets: [
-          "Customer support who can follow a ticket from DNS to SSL to mailbox.",
-          "Engineers who have shipped Next.js, Postgres, or hosting automation.",
-          "Writers who can document a real checkout, not generic “cloud” copy.",
+          "Support that can follow one ticket from DNS to SSL to mailbox.",
+          "Engineers who have shipped Next.js, Postgres or hosting automation.",
+          "Writers who document a real checkout, not generic cloud copy.",
         ],
       },
       {
-        id: "how",
-        title: "How hiring works",
-        body: "There is no careers portal with fake openings. Write to us from the contact page with the work you want to do, a short CV or GitHub, and two examples of hosting or domain work you have done. We reply when there is a real seat.",
+        id: "support",
+        title: "Customer support",
+        body: "Support owns the path a paying customer is stuck on. A typical ticket is nameservers that have not propagated, an SSL certificate that is not on the hostname, a mailbox whose MX still points at the old host, or a Stripe checkout that did not finish. You write the answer in the panel ticket so the account history stays attached to the order.",
         bullets: [
-          "We do not sell “equity-only internships”.",
-          "Paid trial tasks are scoped and paid.",
-          "Support roles need written English; more languages are a plus.",
+          "Read the order, the domain and the invoice before you reply.",
+          "Emergency SSL and downtime tickets come before billing questions.",
+          "Never ask a customer to paste a password into chat.",
+          "Written English is required. More languages are a plus.",
         ],
       },
       {
-        id: "life",
-        title: "What the work looks like",
-        body: "A typical week is production: checkout bugs, NameSilo or registrar tickets, SSL renewals, WordPress migrations, and Orbit CMS edits. You will talk to customers who already paid.",
-        bullets: [],
+        id: "engineering",
+        title: "Engineering",
+        body: "The product is a Next.js application, a Postgres database, Stripe for cards, and registrar APIs for domain search and lifecycle. Orbit is the staff CMS. The customer panel lives at /account. You will fix checkout bugs, search timeouts, SSL inventory and CMS editors that the public site actually renders.",
+        bullets: [
+          "Production changes land on main and deploy through GitHub Actions.",
+          "Do not invent uptime graphs, prices or registrar status.",
+          "A paid trial task is scoped, time-boxed and paid.",
+        ],
+      },
+      {
+        id: "writing",
+        title: "Writing and documentation",
+        body: "Public pages, help articles and the knowledge base have to match the panel. If a screenshot disagrees with the live UI, the panel wins and the article gets fixed. We do not publish a careers portal full of roles that are not open.",
+        bullets: [
+          "Hosting guides, SSL, DNS and business-email DNS are the core topics.",
+          "Use current plan names and the live annual discount, not last year’s screenshot.",
+          "Developer docs stay separate from the customer knowledge base.",
+        ],
+      },
+      {
+        id: "apply",
+        title: "How to apply",
+        body: "Write from the contact page. Put the seat you want in the first line, attach a short CV or a GitHub link, and add two examples of hosting, domain or support work you have done. We reply when there is a real seat. There is no application form that pretends every role is open.",
+        bullets: [
+          "Subject line: the role, then your name.",
+          "One paragraph on the product area you already know.",
+          "Links beat a five-page CV.",
+        ],
+      },
+      {
+        id: "week",
+        title: "What a week looks like",
+        body: "A normal week is production. Checkout edge cases, registrar tickets, SSL renewals, WordPress moves, and edits in Orbit. You talk to customers who have already paid. There is no separate innovation lab that is disconnected from the panel.",
+        bullets: [
+          "Morning: tickets and failed checkouts from the last day.",
+          "Midday: the change you are shipping on main.",
+          "Later: docs or CMS copy so the public page matches the panel.",
+        ],
+      },
+      {
+        id: "pay",
+        title: "How the work is paid",
+        body: "Seats are paid. We do not run equity-only internships. A trial, when we use one, has a written scope and a fee agreed before you start. Payout details are in the note we send after we decide there is a seat — this page will not invent a salary band.",
+        bullets: [
+          "Remote for most seats.",
+          "Some infrastructure work needs overlap with the live site’s hours.",
+          "Support coverage includes weekends for emergency SSL and downtime.",
+        ],
+      },
+      {
+        id: "no",
+        title: "What we will not hire for",
+        body: "We do not hire people to post fake reviews, to bid on another host’s brand, or to write “unlimited and 99.999%” claims that the product pages do not make. If your portfolio is only that kind of copy, do not apply.",
+        bullets: [
+          "No link-exchange partnerships dressed up as a job.",
+          "No unpaid content mills.",
+          "No access to production until the seat is agreed.",
+        ],
       },
     ],
     faqs: [
       {
         id: "remote",
-        question: "Are roles remote?",
+        question: "Are HostingBeyond roles remote?",
         answer:
-          "Yes, for most seats. Some infrastructure work may need overlap with the live site’s operating hours.",
+          "Yes for most seats. Support and engineering can work remotely. Some infrastructure work needs overlap with the hours the live site is operated. We say which overlap we need in the reply, not as a vague “hybrid culture” line.",
       },
       {
         id: "open",
         question: "Where is the jobs board?",
         answer:
-          "Open seats are listed here when they exist. If this page has no named vacancy, send a short note anyway — we keep a small pipeline.",
+          "Open seats are named on this page when they exist. If you do not see a named vacancy, send a short note anyway. We keep a small pipeline and reply when a seat is real. We do not list roles just to collect CVs.",
+      },
+      {
+        id: "experience",
+        question: "Do I need hosting experience?",
+        answer:
+          "Yes. Support needs to have used DNS, SSL or a hosting panel. Engineering needs shipped web software, ideally Next.js or Postgres. Writing needs samples that explain a real product step, not a generic “cloud benefits” article.",
+      },
+      {
+        id: "languages",
+        question: "Which languages do you need?",
+        answer:
+          "Written English is required for every public reply and every doc. Hindi or another language you can support customers in is useful. We will not put you on a queue for a language you cannot write clearly.",
+      },
+      {
+        id: "trial",
+        question: "Are trial tasks unpaid?",
+        answer:
+          "No. If we ask for a trial, the task is scoped and paid before you start. We do not use a free “test project” as the interview.",
+      },
+      {
+        id: "stack",
+        question: "What stack would I work in?",
+        answer:
+          "The public site and panel are Next.js. Data is in Postgres. Card payments are Stripe. Domain search and registration go through the registrar API configured for the live site. You do not need every layer on day one. You do need one of them for real.",
+      },
+      {
+        id: "visa",
+        question: "Do you sponsor visas?",
+        answer:
+          "Most seats are remote and do not include visa sponsorship. If a seat needs you in a specific country, that is stated when we reply. Do not assume sponsorship from this page.",
+      },
+      {
+        id: "reply",
+        question: "How fast do you reply to applications?",
+        answer:
+          "When a seat is open, we reply to relevant notes. When no seat is open, we may not reply to every message. A short, specific note is more likely to be kept than a bulk application.",
       },
     ],
   }),

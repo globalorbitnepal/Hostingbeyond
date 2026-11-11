@@ -1,5 +1,6 @@
 import Script from "next/script";
 
+import { CareersPageView } from "@/components/editorial/careers-page-view";
 import { EditorialPageView } from "@/components/editorial/editorial-page-view";
 import { SiteFooter, SiteHeader } from "@/components/layout";
 import { breadcrumbJsonLd } from "@/lib/blog/seo";
@@ -68,7 +69,11 @@ export async function EditorialPublicPage({ slug }: { slug: EditorialSlug }) {
         />
       </div>
       <main id="main-content">
-        <EditorialPageView content={content} />
+        {slug === "careers" ? (
+          <CareersPageView content={content} />
+        ) : (
+          <EditorialPageView content={content} />
+        )}
       </main>
       {sections.footer?.visible !== false ? (
         <SiteFooter content={sections.footer} logoPath={settings.logoPath} />
