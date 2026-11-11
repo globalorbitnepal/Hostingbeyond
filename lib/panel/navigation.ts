@@ -48,6 +48,29 @@ export const PANEL_NAV: PanelNavSection[] = [
     ],
   },
   {
+    id: "hosting",
+    label: "",
+    items: [
+      {
+        id: "hosting-hub",
+        label: "Hosting",
+        hub: true,
+      },
+      {
+        id: "hosting-plans",
+        label: "Plans & pricing",
+        href: routes.accountHosting,
+        child: true,
+      },
+      {
+        id: "hosting-orders",
+        label: "Hosting orders",
+        href: routes.accountHostingOrders,
+        child: true,
+      },
+    ],
+  },
+  {
     id: "domains",
     label: "",
     items: [
@@ -95,29 +118,6 @@ export const PANEL_NAV: PanelNavSection[] = [
     ],
   },
   {
-    id: "hosting",
-    label: "",
-    items: [
-      {
-        id: "hosting-hub",
-        label: "Hosting",
-        hub: true,
-      },
-      {
-        id: "hosting-plans",
-        label: "Plans & pricing",
-        href: routes.accountHosting,
-        child: true,
-      },
-      {
-        id: "hosting-orders",
-        label: "Hosting orders",
-        href: routes.accountHostingOrders,
-        child: true,
-      },
-    ],
-  },
-  {
     id: "ssl",
     label: "",
     items: [
@@ -144,19 +144,19 @@ export const PANEL_NAV: PanelNavSection[] = [
     id: "billing",
     label: "Billing",
     items: [
-      { id: "wallet", label: "Wallet", href: routes.accountWallet },
       {
         id: "payment-methods",
         label: "Payment cards",
         href: routes.accountPaymentMethods,
       },
+      { id: "wallet", label: "Wallet", href: routes.accountWallet },
+      { id: "orders", label: "Domain orders", href: routes.accountOrders },
+      { id: "invoices", label: "Invoices", href: routes.accountInvoices },
       {
         id: "transactions",
         label: "Transactions",
         href: routes.accountBilling,
       },
-      { id: "orders", label: "Domain orders", href: routes.accountOrders },
-      { id: "invoices", label: "Invoices", href: routes.accountInvoices },
     ],
   },
   {

@@ -24,7 +24,7 @@ export const metadata: Metadata = {
  * which is exactly the "text hard to read" complaint we are fixing. The script
  * is intentionally tiny and dependency-free.
  */
-const THEME_BOOTSTRAP = `(function(){try{var t=localStorage.getItem("hb-panel-theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.dataset.hbTheme=t;}catch(e){}})();`;
+const THEME_BOOTSTRAP = `(function(){try{var t=localStorage.getItem("hb-panel-theme");if(t!=="dark"&&t!=="light"){t="light";}document.documentElement.dataset.hbTheme=t;}catch(e){}})();`;
 
 export default async function AccountLayout({
   children,

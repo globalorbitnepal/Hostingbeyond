@@ -66,8 +66,8 @@ describe("panel navigation", () => {
     const ids = PANEL_NAV.map((section) => section.id);
     assert.deepEqual(ids.slice(0, 4), [
       "overview",
-      "domains",
       "hosting",
+      "domains",
       "ssl",
     ]);
     const overview = PANEL_NAV.find((section) => section.id === "overview");

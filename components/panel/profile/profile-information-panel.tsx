@@ -40,8 +40,6 @@ export function ProfileInformationPanel({
   const [company, setCompany] = useState(initial.profile.company);
   const [currency, setCurrency] = useState(initial.profile.displayCurrency);
   const [recovery, setRecovery] = useState(initial.profile.recoveryEmail);
-  const [gitlab, setGitlab] = useState(initial.profile.integrations.gitlab);
-  const [ads, setAds] = useState(initial.profile.integrations.googleAds);
   const [deleteEmail, setDeleteEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -213,88 +211,82 @@ export function ProfileInformationPanel({
 
       <section className="hb-profile-card">
         <h2 className="hb-profile-card__title">Social logins</h2>
-        {(["google", "github"] as const).map((provider) => {
-          const connected = provider === "google" ? google : github;
-          return (
-            <div key={provider} className="hb-profile-row">
-              <p className="hb-profile-row__label capitalize">{provider}</p>
-              <p className="hb-text text-sm font-semibold">
-                {connected ? "Connected" : "Not connected"}
-              </p>
-              {connected ? (
-                <button
-                  type="button"
-                  className="hb-btn hb-btn-ghost hb-btn-sm"
-                  onClick={async () => {
-                    setError(null);
-                    const result = await profileAction({
-                      action: "unlink-oauth",
-                      provider,
-                    });
-                    if (!result.ok)
-                      setError(result.error ?? "Could not unlink.");
-                    else router.refresh();
-                  }}
-                >
-                  Unlink
-                </button>
-              ) : (
-                <a
-                  className="hb-btn hb-btn-ghost hb-btn-sm"
-                  href={`/api/auth/oauth/${provider}?next=${encodeURIComponent(routes.accountProfile)}`}
-                >
-                  Connect
-                </a>
-              )}
-            </div>
-          );
-        })}
-      </section>
-
-      <section className="hb-profile-card">
-        <h2 className="hb-profile-card__title">Account integrations</h2>
         <div className="hb-profile-row">
-          <p className="hb-profile-row__label">GitHub</p>
-          <p className="hb-muted text-sm">
-            {github ? "Connected with your GitHub login" : "Not connected"}
+          <p className="hb-profile-row__label">
+            <BrandMark name="google" /> Google
           </p>
-          {github ? (
-            <span className="hb-pill hb-pill-ok">Connected</span>
+          <p className="hb-text text-sm font-semibold">
+            {google ? "Connected" : "Not connected"}
+          </p>
+          {google ? (
+            <button
+              type="button"
+              className="hb-btn hb-btn-ghost hb-btn-sm"
+              onClick={async () => {
+                setError(null);
+                const result = await profileAction({
+                  action: "unlink-oauth",
+                  provider: "google",
+                });
+                if (!result.ok) setError(result.error ?? "Could not unlink.");
+                else router.refresh();
+              }}
+            >
+              Unlink
+            </button>
           ) : (
             <a
               className="hb-btn hb-btn-ghost hb-btn-sm"
-              href={`/api/auth/oauth/github?next=${encodeURIComponent(routes.accountProfile)}`}
+              href={`/api/auth/oauth/google?next=${encodeURIComponent(routes.accountProfile)}`}
             >
               Connect
             </a>
           )}
         </div>
-        {(
-          [
-            ["gitlab", "GitLab", gitlab, setGitlab],
-            ["googleAds", "Google Ads", ads, setAds],
-          ] as const
-        ).map(([id, label, connected, setConnected]) => (
-          <div key={id} className="hb-profile-row">
-            <p className="hb-profile-row__label">{label}</p>
-            <p className="hb-muted text-sm">
-              {connected ? "Connected on this account" : "Not connected"}
-            </p>
+        <div className="hb-profile-row">
+          <p className="hb-profile-row__label">
+            <BrandMark name="github" /> GitHub
+          </p>
+          <p className="hb-muted text-sm">
+            {github ? "Connected" : "Coming soon"}
+          </p>
+          {github ? (
             <button
               type="button"
               className="hb-btn hb-btn-ghost hb-btn-sm"
               onClick={async () => {
+                setError(null);
                 const result = await profileAction({
-                  action: "set-integration",
-                  id,
-                  connected: !connected,
+                  action: "unlink-oauth",
+                  provider: "github",
                 });
-                if (!result.ok) setError(result.error ?? "Could not update.");
-                else setConnected(!connected);
+                if (!result.ok) setError(result.error ?? "Could not unlink.");
+                else router.refresh();
               }}
             >
-              {connected ? "Disconnect" : "Connect"}
+              Unlink
             </button>
+          ) : (
+            <span className="hb-pill hb-pill-neutral">Coming soon</span>
+          )}
+        </div>
+      </section>
+
+      <section className="hb-profile-card">
+        <h2 className="hb-profile-card__title">Account integrations</h2>
+        {(
+          [
+            ["github", "GitHub"],
+            ["gitlab", "GitLab"],
+            ["ads", "Google Ads"],
+          ] as const
+        ).map(([name, label]) => (
+          <div key={name} className="hb-profile-row">
+            <p className="hb-profile-row__label">
+              <BrandMark name={name} /> {label}
+            </p>
+            <p className="hb-muted text-sm">Coming soon</p>
+            <span className="hb-pill hb-pill-neutral">Coming soon</span>
           </div>
         ))}
       </section>
@@ -336,5 +328,74 @@ export function ProfileInformationPanel({
         </div>
       </section>
     </>
+  );
+}
+
+function BrandMark({ name }: { name: "google" | "github" | "gitlab" | "ads" }) {
+  if (name === "google") {
+    return (
+      <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden>
+        <path
+          fill="#FFC107"
+          d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 8 3.1l5.7-5.7C34.2 6.1 29.4 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"
+        />
+        <path
+          fill="#FF3D00"
+          d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 8 3.1l5.7-5.7C34.2 6.1 29.4 4 24 4 16.3 4 9.6 8.3 6.3 14.7z"
+        />
+        <path
+          fill="#4CAF50"
+          d="M24 44c5.2 0 10-2 13.6-5.2l-6.3-5.3C29.2 35.1 26.7 36 24 36c-5.3 0-9.7-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"
+        />
+        <path
+          fill="#1976D2"
+          d="M43.6 20.5H42V20H24v8h11.3c-1.1 3.2-3.5 5.7-6.6 7.1l6.3 5.3C37.4 38.4 44 33 44 24c0-1.3-.1-2.7-.4-3.5z"
+        />
+      </svg>
+    );
+  }
+  if (name === "github") {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
+        <path
+          className="hb-brand-github"
+          fill="#181717"
+          d="M12 2C6.5 2 2 6.6 2 12.2c0 4.5 2.9 8.3 6.9 9.6.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.2-3.4-1.2-.4-1.1-1.1-1.4-1.1-1.4-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.6 2.4 1.1 3 .9.1-.7.4-1.1.6-1.4-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.8 1a9.5 9.5 0 0 1 5 0c2-1.3 2.8-1 2.8-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 3.9-2.3 4.7-4.6 5 .4.3.7 1 .7 1.9v2.8c0 .3.2.6.7.5 4-1.3 6.9-5.1 6.9-9.6C22 6.6 17.5 2 12 2z"
+        />
+      </svg>
+    );
+  }
+  if (name === "gitlab") {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
+        <path fill="#E24329" d="M12 21.4 16.6 7.2H7.4L12 21.4z" />
+        <path fill="#FC6D26" d="M12 21.4 7.4 7.2H2.2L12 21.4z" />
+        <path
+          fill="#FCA326"
+          d="M2.2 7.2 1.1 10.6c-.2.6 0 1.3.5 1.6L12 21.4 2.2 7.2z"
+        />
+        <path fill="#FC6D26" d="M12 21.4 16.6 7.2h5.2L12 21.4z" />
+        <path
+          fill="#FCA326"
+          d="M21.8 7.2 22.9 10.6c.2.6 0 1.3-.5 1.6L12 21.4l9.8-14.2z"
+        />
+      </svg>
+    );
+  }
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
+      <path
+        fill="#FBBC04"
+        d="M3 18.5 10.2 4.2c.4-.8 1.5-.8 1.9 0L14 7.6 3 18.5z"
+      />
+      <path
+        fill="#4285F4"
+        d="M14 7.6 16.2 4c.5-.8 1.6-.8 2.1 0L21 9.2 14 7.6z"
+      />
+      <path
+        fill="#34A853"
+        d="M21 9.2 14.8 20c-.4.8-1.5.8-1.9 0L10 15.2 21 9.2z"
+      />
+    </svg>
   );
 }

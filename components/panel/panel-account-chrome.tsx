@@ -46,10 +46,6 @@ export function PanelAccountChrome({
     const bootstrapped = document.documentElement.dataset.hbTheme;
     if (bootstrapped === "dark" || bootstrapped === "light") {
       setTheme(bootstrapped);
-      return;
-    }
-    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      setTheme("dark");
     }
   }, []);
 
