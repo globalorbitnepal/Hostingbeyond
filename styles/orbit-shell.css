@@ -1,0 +1,179 @@
+/**
+ * Orbit admin chrome — mega bar aligned with the customer panel header.
+ */
+
+.hb-orbit-mega {
+  --hb-orbit-ink: #1b1430;
+  --hb-orbit-ink-soft: #3f355c;
+  --hb-orbit-ink-muted: #5c5478;
+
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  flex-shrink: 0;
+  min-height: 4.15rem;
+  border-bottom: 1px solid rgba(91, 33, 182, 0.14);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.82) 0%,
+      rgba(248, 244, 255, 0.7) 100%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(91, 33, 182, 0.07) 0%,
+      rgba(37, 99, 235, 0.08) 100%
+    );
+  backdrop-filter: blur(22px) saturate(170%);
+  -webkit-backdrop-filter: blur(22px) saturate(170%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 10px 28px -22px rgba(46, 16, 101, 0.45);
+  color: var(--hb-orbit-ink);
+}
+
+.hb-orbit-mega__row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 4.15rem;
+  padding: 0.35rem 1rem;
+}
+
+@media (min-width: 640px) {
+  .hb-orbit-mega__row {
+    gap: 1rem;
+    padding-inline: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hb-orbit-mega__row {
+    padding-inline: 1.5rem;
+  }
+}
+
+.hb-orbit-mega-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  flex-shrink: 0;
+  border: 1px solid rgba(91, 33, 182, 0.16);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #5b21b6;
+  cursor: pointer;
+}
+
+.hb-orbit-mega-icon:hover {
+  border-color: rgba(91, 33, 182, 0.28);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+@media (min-width: 1024px) {
+  .hb-orbit-mega-icon--menu {
+    display: none;
+  }
+}
+
+.hb-orbit-mega-logo {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+@media (min-width: 1024px) {
+  .hb-orbit-mega-logo {
+    display: none;
+  }
+}
+
+.hb-orbit-mega-logo__img {
+  display: block;
+  height: 2rem;
+  width: auto;
+  max-width: min(52vw, 240px);
+  object-fit: contain;
+  object-position: left center;
+}
+
+.hb-orbit-mega-identity {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.hb-orbit-mega-avatar {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #5b21b6, #2563eb);
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #fff;
+  box-shadow: 0 8px 18px -10px rgba(91, 33, 182, 0.65);
+}
+
+.hb-orbit-mega-eyebrow {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--hb-orbit-ink-muted);
+}
+
+.hb-orbit-mega-name {
+  font-size: 0.9375rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--hb-orbit-ink);
+}
+
+.hb-orbit-mega-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.hb-orbit-mega-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid rgba(91, 33, 182, 0.16);
+  border-radius: 999px;
+  padding: 0.52rem 0.9rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--hb-orbit-ink-soft);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px) saturate(160%);
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 8px 22px -16px rgba(91, 33, 182, 0.35);
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.hb-orbit-mega-pill:hover {
+  border-color: rgba(91, 33, 182, 0.28);
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--hb-orbit-ink);
+}
+
+.hb-orbit-mega-pill--accent {
+  color: #5b21b6;
+  border-color: rgba(91, 33, 182, 0.22);
+}
+
+.hb-orbit-mega-pill--logout {
+  color: var(--hb-orbit-ink);
+}

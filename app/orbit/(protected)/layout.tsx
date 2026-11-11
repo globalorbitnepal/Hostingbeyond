@@ -2,6 +2,8 @@ import { cookies } from "next/headers";
 
 import { OrbitLoginForm } from "@/components/orbit/login-form";
 import { OrbitShell } from "@/components/orbit/shell";
+
+import "@/styles/orbit-shell.css";
 import { getSessionAdmin, ORBIT_SESSION_COOKIE } from "@/lib/orbit/session";
 import { orbitAccessForAdmin } from "@/lib/orbit/staff-access";
 

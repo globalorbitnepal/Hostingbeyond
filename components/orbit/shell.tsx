@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -38,7 +39,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-import { Logo } from "@/components/shared/logo";
+import { Logo, CANONICAL_HEADER_LOGO_SRC } from "@/components/shared/logo";
 import type { OrbitAccessMode } from "@/lib/orbit/staff-access";
 import { cn } from "@/lib/utils";
 
@@ -287,6 +288,10 @@ export function OrbitShell({
     router.refresh();
   }
 
+  const roleLabel =
+    orbitAccess === "support_only" ? "Support staff" : "Super Admin";
+  const adminInitial = (adminName.trim()[0] || "A").toUpperCase();
+
   return (
     <div
       className="notranslate min-h-dvh bg-[#e8eeff] text-slate-900"
@@ -411,39 +416,60 @@ export function OrbitShell({
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3 sm:px-6">
-            <div className="flex items-center gap-3">
+          <header className="hb-orbit-mega">
+            <div className="hb-orbit-mega__row">
               <button
                 type="button"
-                className="rounded-lg border border-slate-200 p-2 lg:hidden"
+                className="hb-orbit-mega-icon hb-orbit-mega-icon--menu"
                 onClick={() => setOpen(true)}
+                aria-label="Open navigation"
               >
-                <Menu className="size-4" />
+                <Menu className="size-4" strokeWidth={2.2} />
               </button>
-              <div>
-                <p className="text-[11px] text-slate-500">
-                  {orbitAccess === "support_only" ? "Support" : "Super Admin"}
-                </p>
-                <p className="text-sm font-semibold">{adminName}</p>
+              <Link href="/orbit" className="hb-orbit-mega-logo">
+                <Image
+                  src={CANONICAL_HEADER_LOGO_SRC}
+                  alt="HostingBeyond"
+                  width={996}
+                  height={183}
+                  priority
+                  unoptimized
+                  className="hb-orbit-mega-logo__img"
+                />
+              </Link>
+              <div className="hb-orbit-mega-identity">
+                <span className="hb-orbit-mega-avatar" aria-hidden>
+                  {adminInitial}
+                </span>
+                <div className="min-w-0">
+                  <p className="hb-orbit-mega-eyebrow">{roleLabel}</p>
+                  <p className="hb-orbit-mega-name truncate">{adminName}</p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <a
-                href="/resources/blog"
-                target="_blank"
-                rel="noreferrer"
-                className="hidden rounded-full border border-slate-200 px-3 py-1 text-[11px] text-slate-500 sm:inline"
-              >
-                View blog
-              </a>
-              <button
-                type="button"
-                onClick={() => void logout()}
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-600 transition hover:bg-slate-50 hover:text-slate-900"
-              >
-                <LogOut className="size-4" />
-                Logout
-              </button>
+              <div className="hb-orbit-mega-actions">
+                <Link
+                  href="/"
+                  className="hb-orbit-mega-pill hb-orbit-mega-pill--accent hidden sm:inline-flex"
+                >
+                  Website
+                </Link>
+                <a
+                  href="/resources/blog"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hb-orbit-mega-pill hidden md:inline-flex"
+                >
+                  View blog
+                </a>
+                <button
+                  type="button"
+                  onClick={() => void logout()}
+                  className="hb-orbit-mega-pill hb-orbit-mega-pill--logout"
+                >
+                  <LogOut className="size-4 shrink-0" strokeWidth={2.2} />
+                  <span className="hidden min-[420px]:inline">Logout</span>
+                </button>
+              </div>
             </div>
           </header>
 
