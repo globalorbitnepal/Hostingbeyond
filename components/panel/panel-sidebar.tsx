@@ -157,7 +157,21 @@ export function PanelSidebar({
         )}
         aria-label="Customer navigation"
       >
-        <nav className="flex-1 overflow-y-auto px-2.5 pt-3 pb-2">
+        <div className="hb-panel-sidebar__top">
+          <button
+            type="button"
+            className="hb-panel-collapse"
+            onClick={onToggleCollapsed}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {collapsed ? (
+              <ChevronRight className="h-4 w-4" />
+            ) : (
+              <ChevronLeft className="h-4 w-4" />
+            )}
+          </button>
+        </div>
+        <nav className="flex-1 overflow-y-auto px-2.5 pt-1 pb-2">
           {getPanelNav().map((section) => {
             const { hub, children, rest, isHubSection } = splitHubSection(
               section.items,
@@ -260,18 +274,6 @@ export function PanelSidebar({
             trustpilotUrl={trustpilotUrl}
             trustpilotLabel={trustpilotLabel}
           />
-          <button
-            type="button"
-            className="hb-icon-btn hidden lg:inline-flex"
-            onClick={onToggleCollapsed}
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {collapsed ? (
-              <ChevronRight className="h-4 w-4" />
-            ) : (
-              <ChevronLeft className="h-4 w-4" />
-            )}
-          </button>
         </div>
       </aside>
     </>

@@ -251,14 +251,14 @@ export async function POST(request: Request) {
     });
     if (other) {
       const otherProfile = await readCustomerProfile(other.id);
-      otherProfile.shares = [
-        {
-          ...share,
-          email: user.email,
-          direction: body.direction === "give" ? "request" : "give",
-        },
-        ...otherProfile.shares,
-      ].slice(0, 40);
+      const mirror: ProfileShare = {
+        id: share.id,
+        email: user.email,
+        direction: body.direction === "give" ? "request" : "give",
+        status: share.status,
+        createdAt: share.createdAt,
+      };
+      otherProfile.shares = [mirror, ...otherProfile.shares].slice(0, 40);
       await writeCustomerProfile(other.id, otherProfile);
     }
     return NextResponse.json({ ok: true, profile: publicProfile(profile) });

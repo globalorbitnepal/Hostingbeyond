@@ -82,7 +82,7 @@ export function PanelStat({
   return (
     <Link
       href={href}
-      className="hb-panel-stat group block p-4 transition hover:-translate-y-0.5 hover:shadow-lg"
+      className="hb-panel-stat group block p-4 transition hover:-translate-y-0.5"
     >
       <div className="flex items-center justify-between gap-2">
         <p className="hb-muted text-[11px] font-bold tracking-wide uppercase">
@@ -129,10 +129,7 @@ export function PanelQuickAction({
   icon: LucideIcon;
 }) {
   return (
-    <Link
-      href={href}
-      className="hb-panel-card group flex items-start gap-3 p-4 transition hover:-translate-y-0.5 hover:shadow-lg"
-    >
+    <Link href={href} className="hb-dash-action group">
       <span
         aria-hidden
         className="grid size-9 shrink-0 place-items-center rounded-xl text-[var(--hb-p-primary)]"
