@@ -76,6 +76,7 @@ export default async function HostingCheckoutPage({
   return (
     <Suspense>
       <HostingCartCheckoutView
+        key={`${intent.product}-${intent.plan}`}
         intent={intent}
         initialQuote={initialQuote}
         cartAddons={cartAddons}

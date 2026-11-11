@@ -253,7 +253,7 @@ export async function quoteHostingCart(
     {
       id: "hosting",
       label: "Hosting",
-      amount: hostingCharge,
+      amount: hostingList,
       kind: "hosting",
     },
   ];
@@ -362,6 +362,9 @@ export async function quoteHostingCart(
     errors,
     eligibleAddonSlugs: eligibleSlugs,
     emailTrialRenewalUsd,
+    catalogMonthly: monthly,
+    catalogYearly: yearly,
+    freeDomainAnnualOffered: Boolean(product.freeDomainAnnualEnabled),
   };
 }
 
@@ -388,6 +391,9 @@ function emptyQuote(
     errors,
     eligibleAddonSlugs,
     emailTrialRenewalUsd: null,
+    catalogMonthly: 0,
+    catalogYearly: 0,
+    freeDomainAnnualOffered: false,
   };
 }
 

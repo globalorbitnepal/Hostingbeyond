@@ -79,7 +79,16 @@ export function HostingCheckoutPlanCard({
     quote.configuration.planKey,
     quote.planName,
   );
-  const savePct = annualSavePercent(quote.discount, quote.billedAmount);
+  const listMonthly = quote.catalogMonthly;
+  const savePct = annualSavePercent(
+    Math.max(0, listMonthly * 12 - quote.catalogYearly),
+    quote.catalogYearly,
+  );
+  const showWas =
+    isAnnual &&
+    listMonthly > 0 &&
+    quote.monthlyEquivalent != null &&
+    listMonthly > quote.monthlyEquivalent + 0.004;
 
   return (
     <section className="hb-checkout-premium__card hb-checkout-plan">
@@ -102,6 +111,11 @@ export function HostingCheckoutPlanCard({
           <p className="hb-checkout-plan__tagline">{tagline}</p>
           {quote.monthlyEquivalent != null ? (
             <p className="hb-checkout-plan__price">
+              {showWas ? (
+                <s className="hb-checkout-plan__was">
+                  {formatQuoteAmount(listMonthly)}
+                </s>
+              ) : null}
               {formatQuoteAmount(quote.monthlyEquivalent)}
               <span>/mo</span>
             </p>

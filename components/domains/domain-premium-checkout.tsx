@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ChevronLeft, Globe2, Loader2, Lock, Wallet } from "lucide-react";
 
+import { HostingCheckoutSilk } from "@/components/hosting/hosting-checkout-silk";
 import { SiteHeader } from "@/components/layout/header";
 import {
   CheckoutAddonOfferList,
@@ -408,7 +409,9 @@ export function DomainPremiumCheckout({
 
   return (
     <div className="hb-checkout-premium hb-checkout-premium--domain relative min-h-dvh pb-28 lg:pb-10">
-      <div className="hb-checkout-premium__ambient" aria-hidden />
+      <div className="hb-checkout-premium__ambient" aria-hidden>
+        <HostingCheckoutSilk />
+      </div>
       <div className="relative z-20 shrink-0">
         <SiteHeader layout="checkout" />
       </div>

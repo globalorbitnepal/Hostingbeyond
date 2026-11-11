@@ -125,28 +125,44 @@
 
 /* Domain checkout: globe-like rings (no photos) */
 .hb-checkout-premium--domain .hb-checkout-premium__ambient {
+  overflow: hidden;
   background:
     radial-gradient(
-      circle at 82% 8%,
-      rgb(103 61 230 / 22%) 0%,
-      transparent 32%
+      ellipse 52% 38% at -4% -8%,
+      rgb(139 92 246 / 88%),
+      transparent 64%
     ),
     radial-gradient(
-      circle at 82% 8%,
-      transparent 33%,
-      rgb(59 47 212 / 10%) 34%,
-      transparent 48%
+      ellipse 50% 36% at 104% -10%,
+      rgb(96 165 250 / 72%),
+      transparent 62%
     ),
-    radial-gradient(circle at 12% 88%, rgb(156 122 232 / 16%), transparent 42%),
-    linear-gradient(168deg, #f1ebff 0%, #eceafe 36%, #eef1ff 70%, #fff 100%);
+    radial-gradient(
+      ellipse 50% 34% at 104% 108%,
+      rgb(124 58 237 / 55%),
+      transparent 64%
+    ),
+    radial-gradient(
+      ellipse 48% 32% at -4% 106%,
+      rgb(99 102 241 / 52%),
+      transparent 64%
+    ),
+    linear-gradient(
+      180deg,
+      #d9ceff 0%,
+      #e8e0ff 22%,
+      #f3efff 50%,
+      #e4dcff 78%,
+      #d8d0ff 100%
+    );
 }
 
 /* Hosting checkout: soft white base with purple/blue silk corners (no photos) */
 .hb-checkout-premium--hosting {
-  --hb-co-text: #14103a;
-  --hb-co-text-muted: #474160;
-  --hb-co-royal: #180a45;
-  background: #e8e0ff;
+  --hb-co-text: #120a32;
+  --hb-co-text-muted: #3a3452;
+  --hb-co-royal: #16083f;
+  background: #e4dcff;
 }
 
 .hb-checkout-premium--hosting .hb-checkout-premium__ambient {
@@ -282,8 +298,8 @@
   max-width: 34rem;
   font-size: 15px;
   line-height: 1.5;
-  font-weight: 500;
-  color: #3f3958;
+  font-weight: 600;
+  color: #2f2944;
 }
 
 .hb-checkout-plan__price {
@@ -300,19 +316,27 @@
   }
 }
 
+.hb-checkout-plan__was {
+  margin-right: 0.55rem;
+  font-size: 0.62em;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #8b849e;
+}
+
 .hb-checkout-plan__price span {
   margin-left: 0.3rem;
   font-size: 16px;
   font-weight: 600;
-  color: #5a5474;
+  color: #3f3958;
 }
 
 .hb-checkout-plan__meta {
   margin-top: 0.25rem;
   font-size: 13.5px;
   line-height: 1.5;
-  font-weight: 500;
-  color: #45405c;
+  font-weight: 600;
+  color: #332d4a;
 }
 
 .hb-checkout-plan__meta strong,
@@ -358,8 +382,8 @@
 .hb-checkout-summary__plan {
   margin-top: 0.25rem;
   font-size: 13px;
-  font-weight: 500;
-  color: #5c5674;
+  font-weight: 600;
+  color: #3a3452;
 }
 
 .hb-checkout-plan__art {

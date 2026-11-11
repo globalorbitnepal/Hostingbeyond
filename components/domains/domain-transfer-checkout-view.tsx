@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
+import { HostingCheckoutSilk } from "@/components/hosting/hosting-checkout-silk";
 import { SiteHeader } from "@/components/layout/header";
 import { routes } from "@/config/routes";
 import { CatalogPrice } from "@/components/i18n/localized-text";
@@ -111,7 +112,9 @@ export function DomainTransferCheckoutView({
 
   return (
     <div className="hb-checkout-premium hb-checkout-premium--domain min-h-dvh overflow-x-hidden">
-      <div className="hb-checkout-premium__ambient" aria-hidden />
+      <div className="hb-checkout-premium__ambient" aria-hidden>
+        <HostingCheckoutSilk />
+      </div>
       <div className="relative z-10">
         <SiteHeader layout="checkout" />
       </div>

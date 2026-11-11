@@ -48,6 +48,12 @@ export type HostingCartQuote = {
   errors: string[];
   eligibleAddonSlugs: string[];
   emailTrialRenewalUsd: number | null;
+  /** Catalog monthly list price (USD), used for instant billing toggles. */
+  catalogMonthly: number;
+  /** Catalog yearly prepaid price (USD). */
+  catalogYearly: number;
+  /** True when the product grants a free .com year on annual billing. */
+  freeDomainAnnualOffered: boolean;
 };
 
 export const HOSTING_CART_STORAGE_KEY = "hb_hosting_cart_v2";

@@ -33,6 +33,7 @@ import {
 } from "@/lib/hosting/cart/booking-rules";
 import type { HostingCartQuote } from "@/lib/hosting/cart/types";
 import { HOSTING_CART_STORAGE_KEY } from "@/lib/hosting/cart/types";
+import { applyHostingBillingPeriod } from "@/lib/hosting/checkout-plan-presentation";
 import {
   serializeHostingPurchaseIntent,
   type HostingPurchaseIntent,
@@ -184,9 +185,12 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
   }, []);
 
   const refreshQuote = useCallback(
-    async (patch: Partial<HostingCartQuote["configuration"]>) => {
+    async (
+      patch: Partial<HostingCartQuote["configuration"]>,
+      opts?: { silent?: boolean },
+    ) => {
       const requestId = ++quoteRequestRef.current;
-      setLoading(true);
+      if (!opts?.silent) setLoading(true);
       setStepHint(null);
       const nextConfig = { ...quote.configuration, ...patch };
       try {
@@ -201,7 +205,7 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
           persistExtras(json.quote);
         }
       } finally {
-        if (quoteRequestRef.current === requestId) {
+        if (quoteRequestRef.current === requestId && !opts?.silent) {
           setLoading(false);
         }
       }
@@ -255,12 +259,18 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
 
   const setBilling = (billing: "monthly" | "annually") => {
     if (billing === quote.configuration.billingPeriod) return;
-    void refreshQuote({
-      billingPeriod: billing,
-      freeEmailMonth: true,
-      domainRegisterUsd:
-        billing === "annually" ? null : quote.configuration.domainRegisterUsd,
-    });
+    const nextQuote = applyHostingBillingPeriod(quote, billing);
+    setQuote(nextQuote);
+    persistExtras(nextQuote);
+    void refreshQuote(
+      {
+        billingPeriod: billing,
+        freeEmailMonth: true,
+        domainRegisterUsd:
+          billing === "annually" ? null : quote.configuration.domainRegisterUsd,
+      },
+      { silent: true },
+    );
     const params = new URLSearchParams(intentQuery);
     params.set("billing", billing);
     params.set("step", "plan");
@@ -474,7 +484,7 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
     void placeHostingOrder();
   }
 
-  const busy = loading || checkoutBusy;
+  const busy = checkoutBusy || (step !== "plan" && loading);
   const checkoutBlocked =
     busy || (step === "plan" ? false : quote.errors.length > 0);
 
@@ -944,7 +954,7 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
                     key={line.id}
                     className="flex min-w-0 justify-between gap-3"
                   >
-                    <span className="min-w-0 text-[#4a4463]">
+                    <span className="min-w-0 font-medium text-[#2f2944]">
                       {line.label}
                       {line.note ? (
                         <span className="mt-0.5 block text-[12px] break-words">

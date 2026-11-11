@@ -33,6 +33,9 @@ const quote: HostingCartQuote = {
   errors: [],
   eligibleAddonSlugs: [],
   emailTrialRenewalUsd: null,
+  catalogMonthly: 8.34,
+  catalogYearly: 100,
+  freeDomainAnnualOffered: false,
 };
 
 describe("settleHostingQuote", () => {
