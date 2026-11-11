@@ -331,7 +331,7 @@ async function sleep(ms: number) {
 async function checkAvailabilityChunkWithRetry(
   provider: NonNullable<ReturnType<typeof resolveAvailabilityProvider>>,
   fqdns: string[],
-  maxAttempts = 4,
+  maxAttempts = 5,
 ): Promise<import("@/lib/domains/providers/types").ProviderAvailabilityRow[]> {
   let lastError: unknown;
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -345,8 +345,9 @@ async function checkAvailabilityChunkWithRetry(
           : error instanceof Error
             ? error.message
             : "";
-      if (code !== "rate_limit" || attempt >= maxAttempts - 1) break;
-      await sleep(500 * (attempt + 1));
+      const retryable = code === "rate_limit" || code === "timeout";
+      if (!retryable || attempt >= maxAttempts - 1) break;
+      await sleep(800 * (attempt + 1));
     }
   }
   throw lastError;
@@ -357,23 +358,11 @@ async function checkAvailabilityInBatches(
   fqdns: string[],
 ): Promise<import("@/lib/domains/providers/types").ProviderAvailabilityRow[]> {
   const size = availabilityBatchSize();
-  if (fqdns.length <= size) {
-    return checkAvailabilityChunkWithRetry(provider, fqdns);
-  }
-  const chunks: string[][] = [];
-  for (let i = 0; i < fqdns.length; i += size) {
-    chunks.push(fqdns.slice(i, i + size));
-  }
-  const limit = availabilityBatchConcurrency();
-  const pacing = batchPacingMs();
-  const results: import("@/lib/domains/providers/types").ProviderAvailabilityRow[] =
-    [];
-
   const fallbackRowsForChunk = (
-    fqdns: string[],
+    chunk: string[],
     message?: string,
   ): import("@/lib/domains/providers/types").ProviderAvailabilityRow[] =>
-    fqdns.map((fqdn) => {
+    chunk.map((fqdn) => {
       const { name, tld } = splitDomain(fqdn);
       return {
         domain: fqdn.toLowerCase(),
@@ -391,6 +380,28 @@ async function checkAvailabilityInBatches(
           "Temporarily unavailable — registry check did not complete. Please try again.",
       };
     });
+  const hintFor = (error: unknown) =>
+    error instanceof DomainProviderError && error.code === "timeout"
+      ? "Temporarily unavailable — the registry timed out. Please try again."
+      : error instanceof DomainProviderError && error.code === "rate_limit"
+        ? "Temporarily unavailable — too many checks at once. Please wait and try again."
+        : undefined;
+
+  if (fqdns.length <= size) {
+    try {
+      return await checkAvailabilityChunkWithRetry(provider, fqdns);
+    } catch (error) {
+      return fallbackRowsForChunk(fqdns, hintFor(error));
+    }
+  }
+  const chunks: string[][] = [];
+  for (let i = 0; i < fqdns.length; i += size) {
+    chunks.push(fqdns.slice(i, i + size));
+  }
+  const limit = availabilityBatchConcurrency();
+  const pacing = batchPacingMs();
+  const results: import("@/lib/domains/providers/types").ProviderAvailabilityRow[] =
+    [];
 
   if (limit <= 1) {
     for (let i = 0; i < chunks.length; i++) {
@@ -401,14 +412,7 @@ async function checkAvailabilityInBatches(
         );
         results.push(...part);
       } catch (error) {
-        const hint =
-          error instanceof DomainProviderError && error.code === "timeout"
-            ? "Temporarily unavailable — the registry timed out. Please try again."
-            : error instanceof DomainProviderError &&
-                error.code === "rate_limit"
-              ? "Temporarily unavailable — too many checks at once. Please wait and try again."
-              : undefined;
-        results.push(...fallbackRowsForChunk(chunks[i]!, hint));
+        results.push(...fallbackRowsForChunk(chunks[i]!, hintFor(error)));
       }
       if (i < chunks.length - 1 && pacing > 0) await sleep(pacing);
     }
@@ -427,16 +431,9 @@ async function checkAvailabilityInBatches(
           chunks[chunkIndex]!,
         );
       } catch (error) {
-        const hint =
-          error instanceof DomainProviderError && error.code === "timeout"
-            ? "Temporarily unavailable — the registry timed out. Please try again."
-            : error instanceof DomainProviderError &&
-                error.code === "rate_limit"
-              ? "Temporarily unavailable — too many checks at once. Please wait and try again."
-              : undefined;
         chunkResults[chunkIndex] = fallbackRowsForChunk(
           chunks[chunkIndex]!,
-          hint,
+          hintFor(error),
         );
       }
     }

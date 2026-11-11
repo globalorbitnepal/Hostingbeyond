@@ -870,14 +870,29 @@ export function DomainSearchPanel({
       };
 
       try {
-        const { res: primaryRes, json: primaryJson } = await searchJson({
+        let { res: primaryRes, json: primaryJson } = await searchJson({
           query: trimmed,
           scope: "primary",
         });
         if (gen !== searchGeneration.current) return;
 
-        const primaryRow =
+        let primaryRow =
           primaryJson.primary ?? primaryJson.results?.[0] ?? null;
+        if (primaryRes.ok && primaryRow?.status === "unknown") {
+          await sleep(700);
+          if (gen !== searchGeneration.current) return;
+          const again = await searchJson({
+            query: trimmed,
+            scope: "primary",
+          });
+          const againRow =
+            again.json.primary ?? again.json.results?.[0] ?? null;
+          if (again.res.ok && againRow && againRow.status !== "unknown") {
+            primaryRes = again.res;
+            primaryJson = again.json;
+            primaryRow = againRow;
+          }
+        }
 
         if (!primaryRes.ok || !primaryRow) {
           setPrimaryResult(null);

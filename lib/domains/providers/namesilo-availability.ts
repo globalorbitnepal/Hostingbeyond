@@ -85,6 +85,38 @@ function normalizeAvailableDomains(
   return out;
 }
 
+/**
+ * NameSilo's batch host answers HTTP 503 (HTML, not JSON) when a few
+ * checkRegisterAvailability calls overlap. That is a busy signal, not a
+ * broken key — callers must retry it instead of failing the search.
+ */
+export function namesiloAvailabilityIsBusy(status: number): boolean {
+  return status === 429 || status === 502 || status === 503 || status === 504;
+}
+
+const MAX_IN_FLIGHT = 2;
+let inFlight = 0;
+const waiters: Array<() => void> = [];
+
+function acquireNameSiloSlot(): Promise<void> {
+  if (inFlight < MAX_IN_FLIGHT) {
+    inFlight += 1;
+    return Promise.resolve();
+  }
+  return new Promise((resolve) => {
+    waiters.push(() => {
+      inFlight += 1;
+      resolve();
+    });
+  });
+}
+
+function releaseNameSiloSlot(): void {
+  inFlight = Math.max(0, inFlight - 1);
+  const next = waiters.shift();
+  if (next) next();
+}
+
 function mapNameSiloCodeToError(
   code: string | null,
   detail: string,
@@ -125,6 +157,7 @@ async function fetchNameSiloBatch(
     domains: domains.join(","),
   });
   const url = `${BATCH_BASE.replace(/\/$/, "")}/checkRegisterAvailability?${params}`;
+  await acquireNameSiloSlot();
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
@@ -134,17 +167,21 @@ async function fetchNameSiloBatch(
       headers: { accept: "application/json" },
     });
     const text = await res.text();
+    const busy = namesiloAvailabilityIsBusy(res.status);
     let json: unknown;
     try {
       json = JSON.parse(text);
     } catch {
       throw new DomainProviderError(
-        "provider_failure",
-        "namesilo_malformed_json",
+        busy || res.status >= 500 ? "rate_limit" : "provider_failure",
+        busy ? `http_${res.status}` : "namesilo_malformed_json",
       );
     }
     if (!res.ok) {
-      throw new DomainProviderError("provider_failure", `http_${res.status}`);
+      throw new DomainProviderError(
+        busy ? "rate_limit" : "provider_failure",
+        `http_${res.status}`,
+      );
     }
     const reply =
       json && typeof json === "object" && "reply" in json
@@ -171,6 +208,7 @@ async function fetchNameSiloBatch(
     throw new DomainProviderError("provider_failure");
   } finally {
     clearTimeout(timer);
+    releaseNameSiloSlot();
   }
 }
 

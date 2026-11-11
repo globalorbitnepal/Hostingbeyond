@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { mapNameSiloBucketsToRows } from "@/lib/domains/providers/namesilo-availability";
+import {
+  mapNameSiloBucketsToRows,
+  namesiloAvailabilityIsBusy,
+} from "@/lib/domains/providers/namesilo-availability";
 
 describe("NameSilo availability adapter", () => {
   it("maps unavailable, invalid, available, and missing buckets", () => {
@@ -19,5 +22,13 @@ describe("NameSilo availability adapter", () => {
     assert.equal(byDomain.get("free-test.com")?.status, "available");
     assert.equal(byDomain.get("free-test.com")?.supplier.register, null);
     assert.equal(byDomain.get("ghost.net")?.status, "unknown");
+  });
+
+  it("treats NameSilo 503/502/429 as a retryable busy response", () => {
+    assert.equal(namesiloAvailabilityIsBusy(503), true);
+    assert.equal(namesiloAvailabilityIsBusy(502), true);
+    assert.equal(namesiloAvailabilityIsBusy(429), true);
+    assert.equal(namesiloAvailabilityIsBusy(200), false);
+    assert.equal(namesiloAvailabilityIsBusy(401), false);
   });
 });
