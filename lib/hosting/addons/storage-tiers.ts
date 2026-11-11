@@ -10,5 +10,8 @@ export const EXTRA_STORAGE_TIERS = [
 export const LEGACY_STORAGE_SLUGS = EXTRA_STORAGE_TIERS.map((tier) => tier.id);
 
 export function isStorageAddonSlug(slug: string) {
-  return slug === EXTRA_STORAGE_SLUG || LEGACY_STORAGE_SLUGS.includes(slug);
+  return (
+    slug === EXTRA_STORAGE_SLUG ||
+    (LEGACY_STORAGE_SLUGS as readonly string[]).includes(slug)
+  );
 }

@@ -52,7 +52,7 @@ function parseAddonSelections(raw: unknown): CartAddonSelection[] {
     .filter((item) => item && typeof item === "object")
     .map((item) => {
       const o = item as Record<string, unknown>;
-      const billingPeriod =
+      const billingPeriod: CartAddonSelection["billingPeriod"] =
         o.billingPeriod === "monthly" || o.billingPeriod === "annually"
           ? o.billingPeriod
           : null;
