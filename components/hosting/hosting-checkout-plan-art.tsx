@@ -3,208 +3,226 @@
 import { useId } from "react";
 
 /**
- * Isometric server rack on a glowing pedestal with a floating cloud badge.
- * Pure SVG (gradients only) so it stays sharp at every size and never needs an image.
+ * Generated 3D hosting machine + cloud (SVG only, no photos).
+ * Isometric rack, cyan LED bays, fluffy cloud, upload tile, glow pedestal.
  */
 export function HostingCheckoutPlanArt({ className }: { className?: string }) {
   const uid = useId().replace(/[:]/g, "");
-  const front = `${uid}-front`;
-  const top = `${uid}-top`;
-  const side = `${uid}-side`;
-  const bay = `${uid}-bay`;
   const halo = `${uid}-halo`;
-  const pad = `${uid}-pad`;
+  const front = `${uid}-front`;
+  const side = `${uid}-side`;
+  const top = `${uid}-top`;
+  const bay = `${uid}-bay`;
+  const cyan = `${uid}-cyan`;
+  const mag = `${uid}-mag`;
   const cloud = `${uid}-cloud`;
-  const badge = `${uid}-badge`;
+  const tile = `${uid}-tile`;
+  const glow = `${uid}-glow`;
+  const soft = `${uid}-soft`;
 
   return (
     <svg
       className={className}
-      viewBox="0 0 260 216"
+      viewBox="0 0 320 260"
       fill="none"
       aria-hidden
       focusable="false"
     >
       <defs>
-        <radialGradient id={halo} cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#b9a4ff" stopOpacity="0.75" />
-          <stop offset="55%" stopColor="#c9b8ff" stopOpacity="0.35" />
-          <stop offset="100%" stopColor="#d9ccff" stopOpacity="0" />
+        <filter id={glow} x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="7" />
+        </filter>
+        <filter id={soft} x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="1.2" />
+        </filter>
+        <radialGradient id={halo} cx="40%" cy="42%" r="62%">
+          <stop offset="0%" stopColor="#ddd6fe" stopOpacity="1" />
+          <stop offset="38%" stopColor="#c4b5fd" stopOpacity="0.55" />
+          <stop offset="100%" stopColor="#818cf8" stopOpacity="0" />
         </radialGradient>
-        <linearGradient id={front} x1="58" y1="52" x2="134" y2="172">
-          <stop offset="0%" stopColor="#a888ff" />
-          <stop offset="46%" stopColor="#8257f7" />
-          <stop offset="100%" stopColor="#6435e6" />
+        <linearGradient id={front} x1="52" y1="52" x2="160" y2="210">
+          <stop offset="0%" stopColor="#d8c8ff" />
+          <stop offset="28%" stopColor="#a78bfa" />
+          <stop offset="62%" stopColor="#7c3aed" />
+          <stop offset="100%" stopColor="#4c1d95" />
         </linearGradient>
-        <linearGradient id={top} x1="70" y1="30" x2="150" y2="60">
-          <stop offset="0%" stopColor="#d9c9ff" />
-          <stop offset="100%" stopColor="#b9a1ff" />
+        <linearGradient id={side} x1="160" y1="36" x2="206" y2="206">
+          <stop offset="0%" stopColor="#6d28d9" />
+          <stop offset="100%" stopColor="#1e0b4b" />
         </linearGradient>
-        <linearGradient id={side} x1="134" y1="40" x2="164" y2="170">
-          <stop offset="0%" stopColor="#7a4bf0" />
-          <stop offset="100%" stopColor="#4a22b8" />
+        <linearGradient id={top} x1="70" y1="24" x2="200" y2="58">
+          <stop offset="0%" stopColor="#f5f3ff" />
+          <stop offset="45%" stopColor="#ddd6fe" />
+          <stop offset="100%" stopColor="#8b5cf6" />
         </linearGradient>
-        <linearGradient id={bay} x1="66" y1="60" x2="132" y2="70">
-          <stop offset="0%" stopColor="#3f22b0" />
-          <stop offset="100%" stopColor="#2c1487" />
+        <linearGradient id={bay} x1="72" y1="0" x2="148" y2="0">
+          <stop offset="0%" stopColor="#1e1b4b" />
+          <stop offset="100%" stopColor="#312e81" />
         </linearGradient>
-        <linearGradient id={pad} x1="34" y1="170" x2="164" y2="196">
-          <stop offset="0%" stopColor="#8b5cf6" />
-          <stop offset="55%" stopColor="#6366f1" />
-          <stop offset="100%" stopColor="#3b82f6" />
+        <linearGradient id={cyan} x1="80" y1="0" x2="140" y2="0">
+          <stop offset="0%" stopColor="#a5f3fc" />
+          <stop offset="100%" stopColor="#22d3ee" />
         </linearGradient>
-        <linearGradient id={cloud} x1="150" y1="86" x2="246" y2="150">
+        <linearGradient id={mag} x1="80" y1="0" x2="120" y2="0">
+          <stop offset="0%" stopColor="#f0abfc" />
+          <stop offset="100%" stopColor="#d946ef" />
+        </linearGradient>
+        <linearGradient id={cloud} x1="170" y1="90" x2="300" y2="190">
           <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="60%" stopColor="#f3efff" />
-          <stop offset="100%" stopColor="#ddd3ff" />
+          <stop offset="55%" stopColor="#f8f5ff" />
+          <stop offset="100%" stopColor="#ddd6fe" />
         </linearGradient>
-        <linearGradient id={badge} x1="176" y1="112" x2="216" y2="152">
-          <stop offset="0%" stopColor="#6d8bff" />
-          <stop offset="55%" stopColor="#6366f1" />
+        <linearGradient id={tile} x1="214" y1="108" x2="270" y2="164">
+          <stop offset="0%" stopColor="#93c5fd" />
+          <stop offset="45%" stopColor="#6366f1" />
           <stop offset="100%" stopColor="#4f46e5" />
         </linearGradient>
       </defs>
 
-      {/* ambient glow behind the rack */}
-      <ellipse cx="102" cy="96" rx="92" ry="84" fill={`url(#${halo})`} />
+      <ellipse cx="138" cy="122" rx="128" ry="108" fill={`url(#${halo})`} />
 
-      {/* pedestal */}
-      <ellipse cx="100" cy="182" rx="76" ry="20" fill="#cbb9ff" opacity="0.3" />
-      <ellipse cx="100" cy="178" rx="66" ry="17" fill="#d6c7ff" opacity="0.5" />
-      <ellipse cx="100" cy="174" rx="56" ry="14" fill={`url(#${pad})`} />
+      {/* glow pedestal */}
       <ellipse
-        cx="100"
-        cy="172"
-        rx="44"
-        ry="10.5"
-        fill="#ffffff"
-        opacity="0.38"
+        cx="128"
+        cy="228"
+        rx="96"
+        ry="18"
+        fill="#a78bfa"
+        opacity="0.22"
       />
-      <ellipse cx="100" cy="171" rx="26" ry="6" fill="#8b5cf6" opacity="0.45" />
+      <ellipse cx="128" cy="222" rx="78" ry="15" fill="#c4b5fd" opacity="0.4" />
+      <ellipse
+        cx="128"
+        cy="218"
+        rx="62"
+        ry="12"
+        fill="#7c3aed"
+        opacity="0.55"
+      />
+      <ellipse cx="128" cy="216" rx="44" ry="8" fill="#fff" opacity="0.45" />
 
-      {/* side + top faces give the isometric depth */}
-      <path
-        d="M134 52 158 36v120l-24 16Z"
-        fill={`url(#${side})`}
-        stroke="#5b2ed6"
-        strokeWidth="1"
-        strokeLinejoin="round"
+      {/* isometric right face */}
+      <path d="M160 58 204 32v148l-44 26Z" fill={`url(#${side})`} />
+      {/* isometric top */}
+      <path d="M52 58 96 32h108L160 58Z" fill={`url(#${top})`} />
+      {/* front chassis */}
+      <rect
+        x="52"
+        y="58"
+        width="108"
+        height="148"
+        rx="20"
+        fill={`url(#${front})`}
       />
-      <path
-        d="M58 52 82 36h76l-24 16Z"
-        fill={`url(#${top})`}
-        stroke="#c3aeff"
-        strokeWidth="1"
-        strokeLinejoin="round"
-      />
-
-      {/* front face */}
       <rect
         x="58"
-        y="52"
-        width="76"
-        height="120"
-        rx="15"
-        fill={`url(#${front})`}
-        stroke="#6c3ce8"
-        strokeWidth="1"
+        y="64"
+        width="14"
+        height="136"
+        rx="7"
+        fill="#fff"
+        opacity="0.2"
       />
       <rect
-        x="63"
-        y="57"
-        width="9"
-        height="110"
-        rx="4.5"
-        fill="#ffffff"
-        opacity="0.16"
+        x="54"
+        y="58"
+        width="104"
+        height="18"
+        rx="20"
+        fill="#fff"
+        opacity="0.12"
       />
 
-      {/* three server bays */}
-      <g>
-        <rect
-          x="68"
-          y="63"
-          width="56"
-          height="27"
-          rx="10"
-          fill={`url(#${bay})`}
-        />
-        <rect x="75" y="71" width="30" height="9" rx="4.5" fill="#c4b1ff" />
-        <circle cx="114" cy="75" r="3.6" fill="#4ade80" />
-      </g>
-      <g>
-        <rect
-          x="68"
-          y="97"
-          width="56"
-          height="27"
-          rx="10"
-          fill={`url(#${bay})`}
-        />
-        <rect x="75" y="105" width="36" height="9" rx="4.5" fill="#7dd3fc" />
-        <circle cx="114" cy="109" r="3.6" fill="#22d3ee" />
-      </g>
-      <g>
-        <rect
-          x="68"
-          y="131"
-          width="56"
-          height="27"
-          rx="10"
-          fill={`url(#${bay})`}
-        />
-        <rect x="75" y="139" width="26" height="9" rx="4.5" fill="#a5b4fc" />
-        <circle cx="114" cy="143" r="3.6" fill="#e879f9" />
+      {[
+        { y: 78, bar: 52, fill: cyan, led: "#4ade80" },
+        { y: 112, bar: 58, fill: cyan, led: "#22d3ee" },
+        { y: 146, bar: 48, fill: cyan, led: "#67e8f9" },
+        { y: 180, bar: 36, fill: mag, led: "#e879f9" },
+      ].map((row) => (
+        <g key={row.y}>
+          <rect
+            x="76"
+            y={row.y}
+            width="68"
+            height="24"
+            rx="9"
+            fill={`url(#${bay})`}
+          />
+          <rect
+            x="84"
+            y={row.y + 8}
+            width={row.bar}
+            height="8"
+            rx="4"
+            fill={`url(#${row.fill})`}
+          />
+          <circle
+            cx="132"
+            cy={row.y + 12}
+            r="7"
+            fill={row.led}
+            opacity="0.35"
+            filter={`url(#${glow})`}
+          />
+          <circle cx="132" cy={row.y + 12} r="3.6" fill={row.led} />
+        </g>
+      ))}
+
+      {/* side LEDs receding */}
+      <g opacity="0.7">
+        <rect x="172" y="78" width="18" height="8" rx="3" fill="#22d3ee" />
+        <rect x="176" y="112" width="16" height="8" rx="3" fill="#22d3ee" />
+        <rect x="180" y="146" width="14" height="8" rx="3" fill="#e879f9" />
       </g>
 
-      {/* floating cloud + upload badge */}
-      <g>
+      {/* fluffy 3D cloud overlapping the rack */}
+      <g filter={`url(#${soft})`}>
         <ellipse
-          cx="200"
-          cy="152"
-          rx="30"
-          ry="7"
-          fill="#b7a4ff"
-          opacity="0.25"
+          cx="236"
+          cy="186"
+          rx="42"
+          ry="10"
+          fill="#8b5cf6"
+          opacity="0.22"
         />
-        <path
-          d="M164 138a15 15 0 0 1 .6-30 24 24 0 0 1 45.4 4 17 17 0 0 1-2 33Z"
-          fill={`url(#${cloud})`}
-        />
-        <path
-          d="M164 138a15 15 0 0 1 .6-30"
-          stroke="#ffffff"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          opacity="0.85"
+        <circle cx="196" cy="148" r="26" fill={`url(#${cloud})`} />
+        <circle cx="228" cy="128" r="34" fill={`url(#${cloud})`} />
+        <circle cx="262" cy="146" r="24" fill={`url(#${cloud})`} />
+        <circle cx="218" cy="162" r="28" fill="#ffffff" />
+        <circle cx="250" cy="164" r="22" fill="#f5f3ff" />
+        <ellipse cx="230" cy="168" rx="48" ry="18" fill="#ffffff" />
+        <ellipse cx="218" cy="132" rx="16" ry="8" fill="#fff" opacity="0.7" />
+      </g>
+
+      {/* upload tile sitting on the cloud */}
+      <g>
+        <rect
+          x="214"
+          y="108"
+          width="52"
+          height="52"
+          rx="16"
+          fill={`url(#${tile})`}
         />
         <rect
-          x="188"
-          y="112"
-          width="40"
-          height="40"
-          rx="13"
-          fill={`url(#${badge})`}
-        />
-        <rect
-          x="188"
-          y="112"
-          width="40"
-          height="40"
-          rx="13"
-          fill="#ffffff"
-          opacity="0.12"
+          x="214"
+          y="108"
+          width="52"
+          height="20"
+          rx="16"
+          fill="#fff"
+          opacity="0.22"
         />
         <path
-          d="M208 143v-17"
-          stroke="#ffffff"
-          strokeWidth="3.2"
+          d="M240 146V118"
+          stroke="#fff"
+          strokeWidth="4"
           strokeLinecap="round"
         />
         <path
-          d="m201 132 7-7 7 7"
-          stroke="#ffffff"
-          strokeWidth="3.2"
+          d="m229 130 11-12 11 12"
+          stroke="#fff"
+          strokeWidth="4"
           strokeLinecap="round"
           strokeLinejoin="round"
         />

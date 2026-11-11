@@ -10,42 +10,38 @@ export function HostingCheckoutSilk() {
     >
       <defs>
         <linearGradient id="hb-silk-a" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#b18cff" stopOpacity="0.85" />
-          <stop offset="55%" stopColor="#a78bfa" stopOpacity="0.5" />
+          <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.95" />
+          <stop offset="40%" stopColor="#8b5cf6" stopOpacity="0.72" />
           <stop offset="100%" stopColor="#a78bfa" stopOpacity="0" />
         </linearGradient>
         <linearGradient id="hb-silk-b" x1="1" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#93c5fd" stopOpacity="0.7" />
-          <stop offset="60%" stopColor="#c4b5fd" stopOpacity="0.35" />
-          <stop offset="100%" stopColor="#ddd6fe" stopOpacity="0" />
+          <stop offset="0%" stopColor="#60a5fa" stopOpacity="0.88" />
+          <stop offset="45%" stopColor="#818cf8" stopOpacity="0.55" />
+          <stop offset="100%" stopColor="#c4b5fd" stopOpacity="0" />
         </linearGradient>
         <linearGradient id="hb-silk-c" x1="0" y1="1" x2="1" y2="0">
-          <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.55" />
-          <stop offset="55%" stopColor="#a5b4fc" stopOpacity="0.4" />
-          <stop offset="100%" stopColor="#c4b5fd" stopOpacity="0" />
+          <stop offset="0%" stopColor="#6d28d9" stopOpacity="0.72" />
+          <stop offset="50%" stopColor="#6366f1" stopOpacity="0.5" />
+          <stop offset="100%" stopColor="#a5b4fc" stopOpacity="0" />
         </linearGradient>
       </defs>
 
-      {/* top-left */}
       <path
-        d="M-120 120C70-70 210 190 470 60C640-24 760 60 830-40L-120-120Z"
+        d="M-160 160C40-90 240 230 520 70C720-30 860 90 980-60L-160-140Z"
         fill="url(#hb-silk-a)"
       />
-      {/* top-right */}
       <path
-        d="M1560-80C1430 90 1290 20 1120 110C1000 172 930 96 860-40L1560-120Z"
+        d="M1600-90C1440 110 1280 10 1080 130C940 210 860 90 760-50L1600-140Z"
         fill="url(#hb-silk-b)"
       />
-      {/* bottom-left */}
       <path
-        d="M-120 1090C40 940 210 1080 400 980C560 896 680 1000 760 1090Z"
+        d="M-160 1120C40 920 240 1100 460 980C640 880 780 1020 900 1120Z"
         fill="url(#hb-silk-c)"
       />
-      {/* bottom-right */}
       <path
-        d="M1560 1100C1420 940 1270 1040 1090 980C940 930 880 1010 830 1100Z"
+        d="M1600 1140C1420 940 1260 1060 1060 980C900 910 820 1030 760 1140Z"
         fill="url(#hb-silk-b)"
-        opacity="0.8"
+        opacity="0.9"
       />
     </svg>
   );

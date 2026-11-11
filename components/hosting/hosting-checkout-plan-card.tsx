@@ -132,7 +132,7 @@ export function HostingCheckoutPlanCard({
             data-active={!isAnnual ? "true" : "false"}
           >
             <span className="hb-checkout-plan__radio" aria-hidden />
-            <span>
+            <span className="hb-checkout-plan__cycle-copy">
               <strong>Monthly</strong>
               <em>No free domain. Buy a domain and email with this order.</em>
             </span>
@@ -146,19 +146,18 @@ export function HostingCheckoutPlanCard({
             data-active={isAnnual ? "true" : "false"}
           >
             <span className="hb-checkout-plan__radio" aria-hidden />
-            <span>
-              <strong>Annually</strong>
+            <span className="hb-checkout-plan__cycle-copy">
+              <span className="hb-checkout-plan__cycle-head">
+                <strong>Annually</strong>
+                {savePct > 0 ? (
+                  <i className="hb-checkout-plan__save">Save {savePct}%</i>
+                ) : null}
+              </span>
               <em>
-                {quote.freeDomainEligible
-                  ? "Optional: register a .com free for 1 year (.net, .org, etc. are billed). Skip and add from your dashboard anytime."
-                  : quote.discount > 0
-                    ? `Save ${formatQuoteAmount(quote.discount)} vs monthly`
-                    : "Best value when available"}
+                Optional: register a .com free for 1 year (.net, .org, etc. are
+                billed). Skip and add from your dashboard anytime.
               </em>
             </span>
-            {savePct > 0 ? (
-              <i className="hb-checkout-plan__save">Save {savePct}%</i>
-            ) : null}
           </button>
         ) : null}
       </div>

@@ -212,8 +212,6 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
   const searchKey = searchParams.toString();
 
   useEffect(() => {
-    quoteRequestRef.current += 1;
-    setLoading(false);
     setCheckoutBusy(false);
   }, [searchKey]);
 
@@ -256,16 +254,17 @@ export function HostingCartCheckoutView(props: HostingCartCheckoutProps) {
   };
 
   const setBilling = (billing: "monthly" | "annually") => {
-    const params = new URLSearchParams(intentQuery);
-    params.set("billing", billing);
-    params.set("step", "plan");
-    router.replace(`/checkout/hosting?${params.toString()}`);
+    if (billing === quote.configuration.billingPeriod) return;
     void refreshQuote({
       billingPeriod: billing,
       freeEmailMonth: true,
       domainRegisterUsd:
         billing === "annually" ? null : quote.configuration.domainRegisterUsd,
     });
+    const params = new URLSearchParams(intentQuery);
+    params.set("billing", billing);
+    params.set("step", "plan");
+    router.replace(`/checkout/hosting?${params.toString()}`, { scroll: false });
   };
 
   const domainReady = hostingDomainStepComplete({
