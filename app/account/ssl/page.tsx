@@ -38,9 +38,9 @@ export default async function AccountSslPage({
   return (
     <div className="mx-auto w-full max-w-3xl space-y-5">
       <PanelPageHeader
-        eyebrow="Domains"
+        eyebrow="SSL"
         title="SSL certificates"
-        description="Every domain’s renewal date, free AutoSSL when hosting is active, and premium NameSilo certificates at the registrar’s price."
+        description="Renewal dates for every domain, free AutoSSL on active hosting, and premium NameSilo certificates at the registrar’s price."
       />
       <PanelSslManager
         rows={rows}

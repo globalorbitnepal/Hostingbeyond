@@ -26,9 +26,9 @@ export default async function AccountAiAgentPage() {
   return (
     <div className="mx-auto w-full max-w-3xl space-y-5">
       <PanelPageHeader
-        eyebrow="Overview"
+        eyebrow="AI"
         title="AI Agent"
-        description="Search in your own words — DNS, WordPress, hosting, and mail stay inside this account and follow the plan you paid for."
+        description="Search in your own words. DNS, WordPress, and hosting stay on this account and follow the plan you paid for."
       />
       <PanelAiAgentWorkspace
         name={user.name?.trim() || user.email.split("@")[0]}

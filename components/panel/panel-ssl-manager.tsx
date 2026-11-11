@@ -152,7 +152,7 @@ export function PanelSslManager({
         ) : null}
       </section>
 
-      <section className="hb-panel-card p-5">
+      <section id="buy" className="hb-panel-card scroll-mt-24 p-5">
         <div className="flex items-start gap-3">
           <span className="grid size-9 place-items-center rounded-xl bg-[var(--hb-p-primary)]/12 text-[var(--hb-p-primary)]">
             <ShieldCheck className="h-4 w-4" />

@@ -57,7 +57,28 @@ describe("panel navigation", () => {
       domains.items.some((item) => item.id === "contacts" && item.child),
     );
     assert.ok(domains.items.some((item) => item.id === "tlds" && item.child));
-    assert.ok(domains.items.some((item) => item.id === "ssl" && item.child));
+    assert.ok(!domains.items.some((item) => item.id === "ssl"));
+  });
+
+  it("places SSL and AI Agent after Domains and Hosting", () => {
+    const ids = PANEL_NAV.map((section) => section.id);
+    assert.deepEqual(ids.slice(0, 5), [
+      "overview",
+      "domains",
+      "hosting",
+      "ssl",
+      "ai-agent",
+    ]);
+    const ssl = PANEL_NAV.find((section) => section.id === "ssl");
+    assert.ok(ssl);
+    assert.equal(ssl.items[0]?.hub, true);
+    assert.ok(ssl.items.some((item) => item.id === "ssl-buy" && item.child));
+    const overview = PANEL_NAV.find((section) => section.id === "overview");
+    assert.ok(overview);
+    assert.equal(
+      overview.items.some((item) => item.id === "ai-agent"),
+      false,
+    );
   });
 
   it("nests hosting tools under a Hosting hub", () => {
