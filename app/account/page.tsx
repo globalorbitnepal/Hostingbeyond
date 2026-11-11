@@ -6,6 +6,7 @@ import {
   getCustomerFromToken,
 } from "@/lib/customer/session";
 import { loadDashboardOverview } from "@/lib/panel/load-dashboard-overview";
+import { getBusinessEmailPageContent } from "@/lib/orbit/content";
 import { cookies } from "next/headers";
 
 export default async function AccountPage({
@@ -20,7 +21,16 @@ export default async function AccountPage({
   if (!user) redirect("/login");
 
   const params = await searchParams;
-  const overview = await loadDashboardOverview(user.id);
+  const [overview, emailPage] = await Promise.all([
+    loadDashboardOverview(user.id),
+    getBusinessEmailPageContent(),
+  ]);
 
-  return <DashboardOverview data={overview} orderBannerId={params.order} />;
+  return (
+    <DashboardOverview
+      data={overview}
+      orderBannerId={params.order}
+      emailPlans={emailPage.plans.filter((plan) => plan.visible)}
+    />
+  );
 }

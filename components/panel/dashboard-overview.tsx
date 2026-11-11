@@ -34,6 +34,9 @@ import {
 import { routes } from "@/config/routes";
 import { cn } from "@/lib/utils";
 
+import type { CmsBusinessEmailPlan } from "@/lib/orbit/business-email-page-content";
+
+import { PanelEmailPlans } from "./panel-email-plans";
 import {
   PanelCard,
   PanelCardTitle,
@@ -122,9 +125,11 @@ function DomainRow({ domain }: { domain: DashboardDomain }) {
 export function DashboardOverview({
   data,
   orderBannerId,
+  emailPlans = [],
 }: {
   data: DashboardOverview;
   orderBannerId?: string;
+  emailPlans?: CmsBusinessEmailPlan[];
 }) {
   const {
     user,
@@ -415,6 +420,27 @@ export function DashboardOverview({
           </ul>
         )}
       </PanelCard>
+
+      {emailPlans.length > 0 ? (
+        <section>
+          <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+            <div>
+              <h3 className="hb-h2">Buy business email</h3>
+              <p className="hb-muted text-xs">
+                Monthly or yearly mailbox plans — checkout from this dashboard.
+              </p>
+            </div>
+            <Link
+              href={routes.accountEmail}
+              className="hb-btn hb-btn-ghost hb-btn-sm"
+            >
+              All mailbox details
+              <ArrowRight className="size-3.5" />
+            </Link>
+          </div>
+          <PanelEmailPlans plans={emailPlans} compact />
+        </section>
+      ) : null}
 
       {/* Quick actions */}
       <section>

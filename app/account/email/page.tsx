@@ -1,10 +1,6 @@
 import Link from "next/link";
 
-import { businessEmailBookingHref } from "@/lib/business-email/purchase-intent";
-import {
-  emailDueTodayForTerm,
-  formatEmailUsd,
-} from "@/lib/hosting/business-email-term-pricing";
+import { PanelEmailPlans } from "@/components/panel/panel-email-plans";
 import { getBusinessEmailPageContent } from "@/lib/orbit/content";
 
 export default async function AccountEmailPage() {
@@ -21,52 +17,12 @@ export default async function AccountEmailPage() {
           Professional email on your own domain
         </h1>
         <p className="mt-1 max-w-xl text-sm text-white/85">
-          Mailbox plans are separate from hosting. Pick a plan and checkout asks
-          for the domain and mailboxes.
+          Monthly or yearly — same plans as the public storefront. Checkout asks
+          for the domain and mailbox count.
         </p>
       </section>
 
-      {plans.length === 0 ? (
-        <p className="hb-panel-card hb-muted px-4 py-3 text-sm">
-          Mailbox plans are being updated. Please check back shortly.
-        </p>
-      ) : (
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {plans.map((plan) => (
-            <article key={plan.id} className="hb-panel-card flex flex-col p-5">
-              <div className="flex items-start justify-between gap-2">
-                <p className="hb-text text-sm font-bold">{plan.name}</p>
-                {plan.popular ? (
-                  <span className="hb-pill hb-pill-info">Most popular</span>
-                ) : null}
-              </div>
-              <p className="hb-muted mt-1 text-xs">{plan.bestFor}</p>
-              <p className="hb-text mt-3 text-2xl font-extrabold">
-                {plan.price}
-                <span className="hb-muted text-xs font-semibold">
-                  {" "}
-                  /mailbox
-                </span>
-              </p>
-              <p className="hb-muted text-xs">
-                {plan.storage} · 48-month term{" "}
-                {formatEmailUsd(emailDueTodayForTerm(plan, "48"))} billed today
-              </p>
-              <ul className="hb-muted mt-3 space-y-1 text-xs">
-                {plan.features.slice(0, 5).map((feature) => (
-                  <li key={feature}>{feature}</li>
-                ))}
-              </ul>
-              <Link
-                href={businessEmailBookingHref(plan.id, "12")}
-                className="hb-btn hb-btn-primary mt-4"
-              >
-                Order {plan.name}
-              </Link>
-            </article>
-          ))}
-        </div>
-      )}
+      <PanelEmailPlans plans={plans} />
 
       <div className="hb-panel-card p-5">
         <h2 className="hb-h2">How mailboxes connect to a domain</h2>
