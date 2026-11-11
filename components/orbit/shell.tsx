@@ -39,7 +39,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-import { Logo, CANONICAL_HEADER_LOGO_SRC } from "@/components/shared/logo";
+import { CANONICAL_HEADER_LOGO_SRC } from "@/components/shared/logo";
 import type { OrbitAccessMode } from "@/lib/orbit/staff-access";
 import { cn } from "@/lib/utils";
 
@@ -294,32 +294,83 @@ export function OrbitShell({
 
   return (
     <div
-      className="notranslate min-h-dvh bg-[#e8eeff] text-slate-900"
+      className="notranslate flex min-h-dvh flex-col bg-[#e8eeff] text-slate-900"
       translate="no"
     >
-      <div className="mx-auto flex min-h-dvh max-w-[1600px]">
+      <header className="hb-orbit-mega">
+        <div className="hb-orbit-mega__row">
+          <button
+            type="button"
+            className="hb-orbit-mega-icon hb-orbit-mega-icon--menu"
+            onClick={() => setOpen(true)}
+            aria-label="Open navigation"
+          >
+            <Menu className="size-4" strokeWidth={2.2} />
+          </button>
+          <Link href="/orbit" className="hb-orbit-mega-logo">
+            <Image
+              src={CANONICAL_HEADER_LOGO_SRC}
+              alt="HostingBeyond"
+              width={996}
+              height={183}
+              priority
+              unoptimized
+              className="hb-orbit-mega-logo__img"
+            />
+          </Link>
+          <span className="hb-orbit-mega-badge">Orbit</span>
+          <div className="hb-orbit-mega-identity">
+            <span className="hb-orbit-mega-avatar" aria-hidden>
+              {adminInitial}
+            </span>
+            <div className="min-w-0">
+              <p className="hb-orbit-mega-eyebrow">{roleLabel}</p>
+              <p className="hb-orbit-mega-name truncate">{adminName}</p>
+            </div>
+          </div>
+          <div className="hb-orbit-mega-actions">
+            <Link
+              href="/"
+              className="hb-orbit-mega-pill hb-orbit-mega-pill--accent hidden sm:inline-flex"
+            >
+              Website
+            </Link>
+            <a
+              href="/resources/blog"
+              target="_blank"
+              rel="noreferrer"
+              className="hb-orbit-mega-pill hidden md:inline-flex"
+            >
+              View blog
+            </a>
+            <button
+              type="button"
+              onClick={() => void logout()}
+              className="hb-orbit-mega-pill hb-orbit-mega-pill--logout"
+            >
+              <LogOut className="size-4 shrink-0" strokeWidth={2.2} />
+              <span className="hidden min-[420px]:inline">Logout</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div className="mx-auto flex min-h-0 w-full max-w-[1600px] flex-1">
         <aside
           className={cn(
             "hb-band-purple fixed inset-y-0 left-0 z-40 w-72 overflow-y-auto border-r border-white/15 p-4 text-white transition-transform lg:static lg:translate-x-0",
             open ? "translate-x-0" : "-translate-x-full",
           )}
         >
-          <div className="mb-6 flex items-start justify-between gap-2 px-1">
-            <div className="min-w-0 flex-1 rounded-2xl border border-white/25 bg-white px-3.5 py-3.5 shadow-[0_8px_28px_rgba(15,23,42,0.18)]">
-              <div className="flex justify-center">
-                <Logo
-                  href="/"
-                  className="w-full max-w-[232px] justify-center [&_img]:mx-auto [&_img]:h-9 [&_img]:w-auto [&_img]:max-w-full sm:[&_img]:h-10"
-                />
-              </div>
-              <p className="mt-2.5 text-center text-[10px] font-semibold tracking-[0.28em] text-slate-400 uppercase">
-                Orbit
-              </p>
-            </div>
+          <div className="mb-4 flex items-center justify-between gap-2 px-1 lg:hidden">
+            <p className="text-[10px] font-semibold tracking-[0.28em] text-white/70 uppercase">
+              Orbit
+            </p>
             <button
               type="button"
-              className="rounded-lg border border-white/25 p-2 lg:hidden"
+              className="rounded-lg border border-white/25 p-2"
               onClick={() => setOpen(false)}
+              aria-label="Close navigation"
             >
               <X className="size-4" />
             </button>
@@ -416,63 +467,6 @@ export function OrbitShell({
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="hb-orbit-mega">
-            <div className="hb-orbit-mega__row">
-              <button
-                type="button"
-                className="hb-orbit-mega-icon hb-orbit-mega-icon--menu"
-                onClick={() => setOpen(true)}
-                aria-label="Open navigation"
-              >
-                <Menu className="size-4" strokeWidth={2.2} />
-              </button>
-              <Link href="/orbit" className="hb-orbit-mega-logo">
-                <Image
-                  src={CANONICAL_HEADER_LOGO_SRC}
-                  alt="HostingBeyond"
-                  width={996}
-                  height={183}
-                  priority
-                  unoptimized
-                  className="hb-orbit-mega-logo__img"
-                />
-              </Link>
-              <div className="hb-orbit-mega-identity">
-                <span className="hb-orbit-mega-avatar" aria-hidden>
-                  {adminInitial}
-                </span>
-                <div className="min-w-0">
-                  <p className="hb-orbit-mega-eyebrow">{roleLabel}</p>
-                  <p className="hb-orbit-mega-name truncate">{adminName}</p>
-                </div>
-              </div>
-              <div className="hb-orbit-mega-actions">
-                <Link
-                  href="/"
-                  className="hb-orbit-mega-pill hb-orbit-mega-pill--accent hidden sm:inline-flex"
-                >
-                  Website
-                </Link>
-                <a
-                  href="/resources/blog"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="hb-orbit-mega-pill hidden md:inline-flex"
-                >
-                  View blog
-                </a>
-                <button
-                  type="button"
-                  onClick={() => void logout()}
-                  className="hb-orbit-mega-pill hb-orbit-mega-pill--logout"
-                >
-                  <LogOut className="size-4 shrink-0" strokeWidth={2.2} />
-                  <span className="hidden min-[420px]:inline">Logout</span>
-                </button>
-              </div>
-            </div>
-          </header>
-
           <main className="hb-band-cream flex-1 px-4 py-6 sm:px-6 lg:px-8">
             {children}
           </main>

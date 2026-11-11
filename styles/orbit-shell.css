@@ -78,24 +78,65 @@
 }
 
 .hb-orbit-mega-logo {
+  position: relative;
+  z-index: 2;
   display: inline-flex;
   flex-shrink: 0;
   align-items: center;
-}
-
-@media (min-width: 1024px) {
-  .hb-orbit-mega-logo {
-    display: none;
-  }
+  padding: 0.1rem 0.15rem;
 }
 
 .hb-orbit-mega-logo__img {
   display: block;
-  height: 2rem;
+  height: 2.2rem;
   width: auto;
-  max-width: min(52vw, 240px);
+  max-width: min(62vw, 310px);
   object-fit: contain;
   object-position: left center;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+@media (min-width: 640px) {
+  .hb-orbit-mega-logo__img {
+    height: 2.48rem;
+    max-width: 340px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hb-orbit-mega-logo__img {
+    height: 2.62rem;
+    max-width: 368px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .hb-orbit-mega-logo__img {
+    height: 2.72rem;
+    max-width: 390px;
+  }
+}
+
+.hb-orbit-mega-badge {
+  display: none;
+  flex-shrink: 0;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.22rem 0.65rem;
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #5b21b6;
+  background: rgba(91, 33, 182, 0.1);
+  border: 1px solid rgba(91, 33, 182, 0.16);
+}
+
+@media (min-width: 640px) {
+  .hb-orbit-mega-badge {
+    display: inline-flex;
+  }
 }
 
 .hb-orbit-mega-identity {
