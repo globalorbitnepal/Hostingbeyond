@@ -292,7 +292,7 @@ export function OrbitShell({
       className="notranslate flex min-h-dvh flex-col bg-[#e8eeff] text-slate-900"
       translate="no"
     >
-      <header className="hb-orbit-mega">
+      <header className="hb-orbit-mega sticky top-0 z-30 bg-white">
         <div className="hb-orbit-mega__row">
           <button
             type="button"
