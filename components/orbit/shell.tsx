@@ -291,10 +291,10 @@ export function OrbitShell({
 
   return (
     <div
-      className="notranslate flex min-h-dvh flex-col bg-[#e8eeff] text-slate-900"
+      className="notranslate flex h-dvh flex-col overflow-hidden bg-[#e8eeff] text-slate-900"
       translate="no"
     >
-      <header className="hb-orbit-mega sticky top-0 z-30 bg-white">
+      <header className="hb-orbit-mega relative z-50 shrink-0 bg-white">
         <div className="hb-orbit-mega__row">
           <button
             type="button"
@@ -344,10 +344,10 @@ export function OrbitShell({
         </div>
       </header>
 
-      <div className="mx-auto flex min-h-0 w-full max-w-[1600px] flex-1">
+      <div className="mx-auto flex min-h-0 w-full max-w-[1600px] flex-1 overflow-hidden">
         <aside
           className={cn(
-            "hb-band-purple fixed inset-y-0 left-0 z-40 w-72 overflow-y-auto border-r border-white/15 p-4 text-white transition-transform lg:static lg:translate-x-0",
+            "hb-band-purple fixed inset-y-0 left-0 z-40 w-72 overflow-y-auto overscroll-contain border-r border-white/15 p-4 text-white transition-transform lg:static lg:z-auto lg:h-auto lg:min-h-0 lg:shrink-0 lg:translate-x-0 lg:self-stretch",
             open ? "translate-x-0" : "-translate-x-full",
           )}
         >
@@ -455,8 +455,8 @@ export function OrbitShell({
           </nav>
         </aside>
 
-        <div className="flex min-w-0 flex-1 flex-col">
-          <main className="hb-band-cream flex-1 px-4 py-6 sm:px-6 lg:px-8">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          <main className="hb-band-cream min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-6 sm:px-6 lg:px-8">
             {children}
           </main>
         </div>
