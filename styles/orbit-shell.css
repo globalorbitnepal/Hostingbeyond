@@ -400,3 +400,69 @@
   font-size: 0.85rem;
   color: #564e73;
 }
+
+/**
+ * Premium Orbit scrollbars — bold purple–blue thumb, no OS arrow buttons.
+ */
+.hb-orbit-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #7c3aed transparent;
+}
+
+.hb-orbit-scroll::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.hb-orbit-scroll::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.hb-orbit-scroll::-webkit-scrollbar-track {
+  margin: 12px 3px;
+  background: transparent;
+  border-radius: 999px;
+}
+
+.hb-orbit-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background: linear-gradient(180deg, #8b5cf6 0%, #673de6 42%, #2563eb 100%);
+  background-clip: padding-box;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+}
+
+.hb-orbit-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #a78bfa 0%, #7c3aed 45%, #3b82f6 100%);
+  background-clip: padding-box;
+}
+
+.hb-orbit-scroll::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Sidebar sits on purple — lighter thumb so it stays readable */
+aside.hb-orbit-scroll {
+  scrollbar-color: rgba(255, 255, 255, 0.45) transparent;
+}
+
+aside.hb-orbit-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(196, 181, 253, 0.7) 100%
+  );
+  background-clip: padding-box;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+}
+
+aside.hb-orbit-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.72) 0%,
+    rgba(221, 214, 254, 0.85) 100%
+  );
+  background-clip: padding-box;
+}

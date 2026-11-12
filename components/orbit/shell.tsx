@@ -347,7 +347,7 @@ export function OrbitShell({
       <div className="mx-auto flex min-h-0 w-full max-w-[1600px] flex-1 overflow-hidden">
         <aside
           className={cn(
-            "hb-band-purple fixed inset-y-0 left-0 z-40 w-72 overflow-y-auto overscroll-contain border-r border-white/15 p-4 text-white transition-transform lg:static lg:z-auto lg:h-auto lg:min-h-0 lg:shrink-0 lg:translate-x-0 lg:self-stretch",
+            "hb-orbit-scroll hb-band-purple fixed inset-y-0 left-0 z-40 w-72 overflow-y-auto overscroll-contain border-r border-white/15 p-4 text-white transition-transform lg:static lg:z-auto lg:h-auto lg:min-h-0 lg:shrink-0 lg:translate-x-0 lg:self-stretch",
             open ? "translate-x-0" : "-translate-x-full",
           )}
         >
@@ -456,7 +456,7 @@ export function OrbitShell({
         </aside>
 
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-          <main className="hb-band-cream min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-6 sm:px-6 lg:px-8">
+          <main className="hb-orbit-scroll hb-band-cream min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-6 sm:px-6 lg:px-8">
             {children}
           </main>
         </div>
