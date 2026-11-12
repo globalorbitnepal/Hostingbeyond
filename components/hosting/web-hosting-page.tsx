@@ -145,7 +145,6 @@ export function WebHostingPageView({
           footnote={page.pricingNote}
           className={hideHero ? "!pt-6 sm:!pt-8" : undefined}
           productCheckoutSlug={productCheckoutSlug}
-          showTrustChips={false}
         />
       ) : null}
 

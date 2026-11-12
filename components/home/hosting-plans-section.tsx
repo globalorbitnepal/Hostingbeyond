@@ -6,7 +6,6 @@ import {
   ArrowRight,
   Box,
   Check,
-  Cloud,
   Crown,
   Globe,
   Headphones,
@@ -15,7 +14,6 @@ import {
   Rocket,
   Shield,
   Star,
-  Zap,
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 
@@ -284,46 +282,6 @@ export function HostingPlansSection({
     .sort((a, b) => a.order - b.order);
   const saveBadgeLabel = annualSaveBadgeLabel(billing, data.saveBadge);
 
-  const chips = [
-    data.supportLabel
-      ? {
-          id: "support",
-          label: data.supportLabel,
-          hint: data.supportHint,
-          icon: Headphones,
-        }
-      : null,
-    data.activationLabel
-      ? {
-          id: "activation",
-          label: data.activationLabel,
-          hint: data.activationHint,
-          icon: Zap,
-        }
-      : null,
-    data.uptimeLabel
-      ? {
-          id: "uptime",
-          label: data.uptimeLabel,
-          hint: data.uptimeHint,
-          icon: Shield,
-        }
-      : null,
-    data.scaleLabel
-      ? {
-          id: "scale",
-          label: data.scaleLabel,
-          hint: data.scaleHint,
-          icon: Cloud,
-        }
-      : null,
-  ].filter(Boolean) as Array<{
-    id: string;
-    label: string;
-    hint?: string;
-    icon: typeof Headphones;
-  }>;
-
   const guarantees = (data.guarantees ?? []).filter(Boolean).slice(0, 4);
 
   return (
@@ -352,64 +310,38 @@ export function HostingPlansSection({
           </p>
         </div>
 
-        <div className="mt-7 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <ul className="flex flex-wrap items-start justify-center gap-x-5 gap-y-3 lg:justify-start">
-            {chips.map((item) => {
-              const Icon = item.icon;
-              return (
-                <li key={item.id} className="flex items-start gap-2.5">
-                  <Icon
-                    className="mt-0.5 size-4 shrink-0 text-white"
-                    aria-hidden
-                  />
-                  <span className="min-w-0">
-                    <span className="block text-[13px] leading-tight font-extrabold text-white">
-                      {item.label}
-                    </span>
-                    {item.hint ? (
-                      <span className="mt-0.5 block text-[11.5px] leading-tight text-white/80">
-                        {item.hint}
-                      </span>
-                    ) : null}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-
-          <div className="flex flex-wrap items-center justify-center gap-2 lg:justify-end">
-            <div className="inline-flex items-center rounded-full border border-white/25 bg-[#2f1c6a]/35 p-1">
-              <button
-                type="button"
-                onClick={() => setBilling("monthly")}
-                className={cn(
-                  "rounded-full px-4 py-1.5 text-[13px] font-bold transition",
-                  billing === "monthly"
-                    ? "bg-white text-[#2f1c6a]"
-                    : "text-white hover:text-white",
-                )}
-              >
-                {data.monthlyToggleLabel || "Monthly"}
-              </button>
-              <button
-                type="button"
-                onClick={() => setBilling("annually")}
-                className={cn(
-                  "rounded-full px-4 py-1.5 text-[13px] font-bold transition",
-                  billing === "annually"
-                    ? "bg-emerald-400 text-emerald-950"
-                    : "text-white hover:text-white",
-                )}
-              >
-                {data.annualToggleLabel || "Annually"}
-              </button>
-            </div>
-            {saveBadgeLabel ? (
-              <span className="rounded-full bg-emerald-400 px-3 py-1.5 text-[12px] font-extrabold text-emerald-950">
-                {saveBadgeLabel}
-              </span>
-            ) : null}
+        <div className="mt-7 flex flex-wrap items-center justify-center gap-2">
+          <div className="inline-flex items-center rounded-full border border-white/25 bg-[#2f1c6a]/35 p-1">
+            <button
+              type="button"
+              onClick={() => setBilling("monthly")}
+              className={cn(
+                "rounded-full px-4 py-1.5 text-[13px] font-bold transition",
+                billing === "monthly"
+                  ? "bg-white text-[#2f1c6a]"
+                  : "text-white hover:text-white",
+              )}
+            >
+              {data.monthlyToggleLabel || "Monthly"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setBilling("annually")}
+              className={cn(
+                "rounded-full px-4 py-1.5 text-[13px] font-bold transition",
+                billing === "annually"
+                  ? "bg-emerald-400 text-emerald-950"
+                  : "text-white hover:text-white",
+              )}
+            >
+              {data.annualToggleLabel || "Annually"}
+            </button>
           </div>
+          {saveBadgeLabel ? (
+            <span className="rounded-full bg-emerald-400 px-3 py-1.5 text-[12px] font-extrabold text-emerald-950">
+              {saveBadgeLabel}
+            </span>
+          ) : null}
         </div>
 
         <div className="isolate mt-7 grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-4 xl:gap-5">
@@ -425,11 +357,11 @@ export function HostingPlansSection({
         </div>
 
         {guarantees.length > 0 ? (
-          <div className="mt-7 grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="isolate mt-7 grid grid-cols-1 items-stretch gap-3 overflow-hidden sm:grid-cols-2 lg:grid-cols-4">
             {guarantees.map((item) => (
               <div
                 key={item.id}
-                className="flex h-full items-start gap-3 rounded-[22px] border border-white/25 bg-white/10 px-4 py-3.5 backdrop-blur-md"
+                className="flex h-full [transform:translateZ(0)] items-start gap-3 overflow-hidden rounded-[22px] border border-white/25 bg-[#4a2ad4] px-4 py-3.5 [backdrop-filter:none] [-webkit-backdrop-filter:none]"
               >
                 <span className="mt-0.5 inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-white/12 text-white ring-1 ring-white/25">
                   <GuaranteeIcon icon={item.icon} className="size-[18px]" />

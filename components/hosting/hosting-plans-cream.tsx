@@ -84,7 +84,7 @@ export function HostingPlansCream({
   footnote,
   className,
   productCheckoutSlug,
-  showTrustChips = true,
+  showTrustChips = false,
 }: {
   plansContent: CmsHostingPlansContent | CmsHostingPlansWithTrustIcons;
   eyebrow: string;
@@ -94,7 +94,7 @@ export function HostingPlansCream({
   footnote: string;
   className?: string;
   productCheckoutSlug?: string;
-  /** When false, hides the four trust chips above the billing toggle (web hosting). */
+  /** Trust chips stay off — they duplicated marketing claims on every plan grid. */
   showTrustChips?: boolean;
 }) {
   const data = plansContent as CmsHostingPlansWithTrustIcons;
