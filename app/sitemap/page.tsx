@@ -5,7 +5,7 @@ import Script from "next/script";
 import { breadcrumbJsonLd } from "@/lib/blog/seo";
 import { buildMetadata } from "@/lib/metadata";
 import { routes } from "@/config/routes";
-import { editorialPageCatalog } from "@/lib/orbit/editorial-page-content";
+import { EDITORIAL_PAGES } from "@/lib/orbit/editorial-page-content";
 
 export const metadata: Metadata = buildMetadata({
   title: "Sitemap — HostingBeyond Pages & Resources",
@@ -30,13 +30,13 @@ const PRODUCT_LINKS = [
   { href: routes.websiteMigration, label: "Website migration" },
 ] as const;
 
-const COMPANY_LINKS = editorialPageCatalog
-  .filter((p) => p.category === "company")
-  .map((p) => ({ href: p.path, label: p.label }));
+const COMPANY_LINKS = EDITORIAL_PAGES.filter(
+  (p) => p.category === "company",
+).map((p) => ({ href: p.path, label: p.label }));
 
-const RESOURCE_LINKS = editorialPageCatalog
-  .filter((p) => p.category === "resources")
-  .map((p) => ({ href: p.path, label: p.label }));
+const RESOURCE_LINKS = EDITORIAL_PAGES.filter(
+  (p) => p.category === "resources",
+).map((p) => ({ href: p.path, label: p.label }));
 
 const LEGAL_LINKS = [
   { href: "/legal", label: "Legal overview" },
