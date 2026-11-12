@@ -27,8 +27,8 @@ const MARKS: Record<
   amex: {
     src: "/images/payments/amex.svg",
     label: "American Express",
-    width: 28,
-    height: 28,
+    width: 58,
+    height: 37,
   },
   discover: {
     src: "/images/payments/discover.svg",
@@ -45,8 +45,8 @@ const MARKS: Record<
   diners: {
     src: "/images/payments/diners.svg",
     label: "Diners Club",
-    width: 36,
-    height: 24,
+    width: 58,
+    height: 37,
   },
   unionpay: {
     src: "/images/payments/unionpay.svg",
