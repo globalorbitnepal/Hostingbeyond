@@ -45,32 +45,32 @@ export function PricingHighlights({
           <>
             <span
               className={cn(
-                "inline-flex size-10 items-center justify-center rounded-2xl",
+                "inline-flex size-10 items-center justify-center rounded-2xl text-white shadow-[0_10px_20px_-10px_rgba(15,23,42,0.45)]",
                 isAddon
-                  ? "bg-gradient-to-br from-[#2563eb] to-[#7c3aed] text-white shadow-[0_10px_18px_-10px_rgba(37,99,235,0.55)]"
-                  : "bg-[#f4f0ff] text-[#673de6]",
+                  ? "bg-white/20 ring-1 ring-white/35"
+                  : "bg-white/18 ring-1 ring-white/25",
               )}
             >
               <Icon className="size-[18px]" aria-hidden />
             </span>
             {isAddon ? (
-              <p className="mt-3 text-[11px] font-extrabold tracking-[0.14em] text-[#2563eb] uppercase">
+              <p className="mt-3 text-[11px] font-extrabold tracking-[0.16em] text-white uppercase">
                 Add-on
               </p>
             ) : null}
             <p
               className={cn(
-                "text-[14px] font-extrabold text-[#2f1c6a]",
+                "text-[15px] font-extrabold text-white",
                 isAddon ? "mt-1" : "mt-3",
               )}
             >
               {item.title}
             </p>
-            <p className="mt-1 text-[13px] leading-snug text-[#64748b]">
+            <p className="mt-1.5 text-[13.5px] leading-snug font-medium text-white/92">
               {item.description}
             </p>
             {isAddon ? (
-              <p className="mt-3 text-[12px] font-extrabold text-[#673de6]">
+              <p className="mt-3 text-[13px] font-extrabold text-white">
                 Add at checkout →
               </p>
             ) : null}
@@ -78,10 +78,10 @@ export function PricingHighlights({
         );
 
         const className = cn(
-          "rounded-[22px] border p-4 shadow-[0_14px_32px_-20px_rgba(47,28,106,0.25)] backdrop-blur-md",
+          "rounded-[22px] border p-5 shadow-[0_18px_36px_-18px_rgba(47,28,106,0.55)]",
           isAddon
-            ? "border-dashed border-[#a78bfa] bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(238,242,255,0.78))] ring-1 ring-[#c4b5fd]/70"
-            : "border-[#e9e4ff] bg-white/90",
+            ? "border-white/35 bg-gradient-to-br from-[#2563eb] via-[#4f46e5] to-[#7c3aed] ring-1 ring-white/25"
+            : "border-white/20 bg-gradient-to-br from-[#5b21b6] via-[#673de6] to-[#7c3aed]",
         );
 
         if (isAddon) {

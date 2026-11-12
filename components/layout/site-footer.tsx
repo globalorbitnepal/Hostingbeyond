@@ -273,7 +273,7 @@ export function SiteFooter({
             {legal.map((link) => (
               <Link
                 key={link.id}
-                href={link.href}
+                href={link.href === "/sitemap.xml" ? "/sitemap" : link.href}
                 className="text-[12.5px] font-medium text-slate-500 hover:text-[#2563eb]"
               >
                 <LocalizedText text={link.label} />

@@ -84,6 +84,7 @@ export function HostingPlansCream({
   footnote,
   className,
   productCheckoutSlug,
+  showTrustChips = true,
 }: {
   plansContent: CmsHostingPlansContent | CmsHostingPlansWithTrustIcons;
   eyebrow: string;
@@ -93,6 +94,8 @@ export function HostingPlansCream({
   footnote: string;
   className?: string;
   productCheckoutSlug?: string;
+  /** When false, hides the four trust chips above the billing toggle (web hosting). */
+  showTrustChips?: boolean;
 }) {
   const data = plansContent as CmsHostingPlansWithTrustIcons;
   const reduce = useReducedMotion();
@@ -167,7 +170,7 @@ export function HostingPlansCream({
           </p>
         </motion.div>
 
-        {chips.length > 0 ? (
+        {showTrustChips && chips.length > 0 ? (
           <ul className="mx-auto mt-10 grid max-w-5xl grid-cols-1 gap-3 min-[420px]:grid-cols-2 sm:gap-4 lg:grid-cols-4">
             {chips.map((item, index) => {
               const Icon = ICON_MAP[item.iconKey] ?? TrendingUp;

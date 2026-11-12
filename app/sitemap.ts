@@ -85,6 +85,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/resources/guides",
     "/resources/security",
     "/resources/wordpress",
+    "/legal",
+    "/legal/terms",
+    "/legal/privacy",
+    "/legal/refund",
+    "/sitemap",
   ];
 
   const all = [...new Set([...paths, ...extraHosting])];

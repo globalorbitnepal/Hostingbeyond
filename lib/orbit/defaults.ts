@@ -1918,7 +1918,7 @@ export function defaultFooterSection(): CmsFooterContent {
       { id: "privacy", label: "Privacy Policy", href: "/legal/privacy" },
       { id: "refund", label: "Refund Policy", href: "/legal/refund" },
       { id: "legal", label: "Legal", href: "/legal" },
-      { id: "sitemap", label: "Sitemap", href: "/sitemap.xml" },
+      { id: "sitemap", label: "Sitemap", href: "/sitemap" },
     ]),
     copyright: "© 2026 Hosting Beyond. All rights reserved.",
   };
