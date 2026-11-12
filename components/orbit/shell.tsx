@@ -294,7 +294,7 @@ export function OrbitShell({
       className="notranslate flex h-dvh flex-col overflow-hidden bg-[#e8eeff] text-slate-900"
       translate="no"
     >
-      <header className="hb-orbit-mega relative z-50 shrink-0 bg-white">
+      <header className="hb-orbit-mega sticky top-0 z-50 shrink-0 bg-white">
         <div className="hb-orbit-mega__row">
           <button
             type="button"
