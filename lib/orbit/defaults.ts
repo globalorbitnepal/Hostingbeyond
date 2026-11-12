@@ -2527,30 +2527,30 @@ export function defaultProofSection(): CmsProofContent {
         visible: true,
         order: 0,
         quote:
-          "HostingBeyond AI makes development incredibly fast. I can design, prototype, and launch without wasting a weekend.",
-        name: "Amina Koirala",
-        role: "Studio founder",
-        image: "/images/journey/create.webp",
+          "We launch client sites on HostingBeyond NVMe, then add mailboxes on the same login. Staging, SSL, and DNS stay in one panel.",
+        name: "Hannah Cole",
+        role: "Agency owner",
+        image: "/images/business-email/people/review-priya.jpg",
       },
       {
         id: "daniel",
         visible: true,
         order: 1,
         quote:
-          "Domains, WordPress, and mail in one panel. The rate is why we moved. The inbox is why we stayed.",
-        name: "Daniel Mercer",
-        role: "Agency lead",
-        image: "/images/journey/scale.webp",
+          "Hosting, domains, and business email on one invoice. Checkout shows renewal prices before I pay — no surprise month-two jump.",
+        name: "Ryan Hale",
+        role: "SaaS founder",
+        image: "/images/business-email/people/review-marcus.jpg",
       },
       {
         id: "sofia",
         visible: true,
         order: 2,
         quote:
-          "I explained what I wanted, and Beyond AI did the rest. The site was live in a couple of hours.",
-        name: "Sofia Alvarez",
-        role: "Shop owner",
-        image: "/images/journey/beyond.webp",
+          "Mailbox cutover from Google Workspace took a weekend. Addresses stayed the same and the team was in the inbox Monday morning.",
+        name: "Elena Rossi",
+        role: "Operations lead",
+        image: "/images/business-email/people/review-elena.jpg",
       },
     ],
   };
@@ -3238,12 +3238,20 @@ function mergeProofSection(
           const fallback = defaults.quotes[index % defaults.quotes.length];
           const text = (value: unknown, alternative: string) =>
             typeof value === "string" && value.trim() ? value : alternative;
+          const rawQuote = text(quote.quote, fallback.quote);
+          const rawName = text(quote.name, fallback.name);
+          const legacyQuote =
+            /inbox is why we stayed|HostingBeyond AI makes development incredibly fast|Beyond AI did the rest/i.test(
+              rawQuote,
+            );
+          const legacyName =
+            /^(Amina Koirala|Daniel Mercer|Sofia Alvarez)$/i.test(rawName);
           return {
             id: quote.id || fallback.id || `quote-${index}`,
             visible: quote.visible !== false,
             order: typeof quote.order === "number" ? quote.order : index,
-            quote: text(quote.quote, fallback.quote),
-            name: text(quote.name, fallback.name),
+            quote: legacyQuote ? fallback.quote : rawQuote,
+            name: legacyName ? fallback.name : rawName,
             role: text(quote.role, fallback.role),
             image: text(quote.image, fallback.image),
           } satisfies CmsProofQuote;

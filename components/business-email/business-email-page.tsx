@@ -334,15 +334,22 @@ export function BusinessEmailPageView({
                   <span className="relative size-11 overflow-hidden rounded-full ring-2 ring-[#e9e4ff]">
                     <Image
                       src={item.photo}
-                      alt=""
+                      alt={item.name}
                       fill
                       unoptimized={isRuntimeMediaSrc(item.photo)}
                       className="object-cover object-top"
                     />
                   </span>
-                  <p className="text-[14px] font-bold text-[#2f1c6a]">
-                    {item.name}
-                  </p>
+                  <div>
+                    <p className="text-[14px] font-bold text-[#2f1c6a]">
+                      {item.name}
+                    </p>
+                    {item.role?.trim() ? (
+                      <p className="text-[12px] font-medium text-slate-500">
+                        {item.role}
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
               </article>
             ))}

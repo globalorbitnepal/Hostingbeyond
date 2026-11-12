@@ -126,8 +126,8 @@ export function BusinessEmailProductPageEditor({
   return (
     <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5">
       <div className="rounded-xl border border-violet-100 bg-violet-50/80 px-3 py-2.5 text-[12px] leading-relaxed text-violet-950">
-        <span className="font-bold">Testimonial cards</span> (quote, name,
-        avatar) on{" "}
+        <span className="font-bold">Testimonial cards</span> (heading, quote,
+        name, role, photo upload or URL) on{" "}
         <a
           href={`${routes.businessEmail}#customer-reviews`}
           className="underline"
@@ -631,6 +631,11 @@ export function BusinessEmailProductPageEditor({
               </button>
             </div>
           </div>
+          <p className="text-[12px] leading-relaxed text-slate-600">
+            Replace heading, quote, name, role, and avatar for each card. Upload
+            a photo, pick from the media library, or paste a URL. Order matches
+            the live /business-email review row.
+          </p>
           <Field
             label="Reviews heading"
             value={value.reviewsHeading}
@@ -648,6 +653,7 @@ export function BusinessEmailProductPageEditor({
                     visible: true,
                     quote: "Your customer quote here.",
                     name: "Customer name",
+                    role: "Role or company",
                     photo: "",
                   },
                 ],
@@ -665,35 +671,65 @@ export function BusinessEmailProductPageEditor({
                 <p className="text-sm font-semibold text-slate-800">
                   Review {index + 1}
                 </p>
-                <label className="flex items-center gap-2 text-xs text-slate-600">
-                  <input
-                    type="checkbox"
-                    checked={review.visible !== false}
-                    onChange={(e) => {
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={index === 0}
+                    className="text-xs font-semibold text-slate-600 disabled:opacity-40"
+                    onClick={() => {
+                      if (index === 0) return;
                       const reviews = [...value.reviews];
-                      reviews[index] = {
-                        ...review,
-                        visible: e.target.checked,
-                      };
+                      const [row] = reviews.splice(index, 1);
+                      reviews.splice(index - 1, 0, row);
                       patch({ reviews }, true);
                     }}
-                  />
-                  Visible
-                </label>
-                <button
-                  type="button"
-                  className="text-xs font-semibold text-red-600"
-                  onClick={() =>
-                    patch(
-                      {
-                        reviews: value.reviews.filter((_, i) => i !== index),
-                      },
-                      true,
-                    )
-                  }
-                >
-                  Remove
-                </button>
+                  >
+                    Up
+                  </button>
+                  <button
+                    type="button"
+                    disabled={index === value.reviews.length - 1}
+                    className="text-xs font-semibold text-slate-600 disabled:opacity-40"
+                    onClick={() => {
+                      if (index >= value.reviews.length - 1) return;
+                      const reviews = [...value.reviews];
+                      const [row] = reviews.splice(index, 1);
+                      reviews.splice(index + 1, 0, row);
+                      patch({ reviews }, true);
+                    }}
+                  >
+                    Down
+                  </button>
+                  <label className="flex items-center gap-2 text-xs text-slate-600">
+                    <input
+                      type="checkbox"
+                      checked={review.visible !== false}
+                      onChange={(e) => {
+                        const reviews = [...value.reviews];
+                        reviews[index] = {
+                          ...review,
+                          visible: e.target.checked,
+                        };
+                        patch({ reviews }, true);
+                      }}
+                    />
+                    Visible
+                  </label>
+                  <button
+                    type="button"
+                    className="text-xs font-semibold text-red-600"
+                    onClick={() =>
+                      patch(
+                        {
+                          reviews: value.reviews.filter((_, i) => i !== index),
+                        },
+                        true,
+                      )
+                    }
+                  >
+                    Remove
+                  </button>
+                </div>
               </div>
               <Field
                 label="Quote"
@@ -705,15 +741,26 @@ export function BusinessEmailProductPageEditor({
                 }}
                 multiline
               />
-              <Field
-                label="Name"
-                value={review.name}
-                onChange={(name) => {
-                  const reviews = [...value.reviews];
-                  reviews[index] = { ...review, name };
-                  patch({ reviews });
-                }}
-              />
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Field
+                  label="Name"
+                  value={review.name}
+                  onChange={(name) => {
+                    const reviews = [...value.reviews];
+                    reviews[index] = { ...review, name };
+                    patch({ reviews });
+                  }}
+                />
+                <Field
+                  label="Role / company"
+                  value={review.role ?? ""}
+                  onChange={(role) => {
+                    const reviews = [...value.reviews];
+                    reviews[index] = { ...review, role };
+                    patch({ reviews });
+                  }}
+                />
+              </div>
               <OrbitImageField
                 label={`Avatar — ${BUSINESS_EMAIL_FRAME_SPECS.reviewAvatar}`}
                 value={review.photo}

@@ -39,6 +39,7 @@ export type CmsBusinessEmailReview = {
   visible: boolean;
   quote: string;
   name: string;
+  role: string;
   photo: string;
 };
 
@@ -154,6 +155,29 @@ function mergeById<T extends { id: string }>(
     const partial = byId.get(base.id) ?? {};
     return merge(partial, base);
   });
+}
+
+const LEGACY_REVIEW_NAMES = /^(Amina Koirala|Daniel Mercer|Sofia Alvarez)$/i;
+const LEGACY_REVIEW_QUOTES =
+  /inbox is why we stayed|imported years of Gmail|mail that just works:\s*no outages/i;
+const LEGACY_REVIEW_PHOTOS = /\/people\/p-(woman2?|man)\.(jpg|webp|png)$/i;
+
+function sanitizeReviewQuote(value: unknown, fallback: string): string {
+  const next = typeof value === "string" ? value.trim() : "";
+  if (!next || LEGACY_REVIEW_QUOTES.test(next)) return fallback;
+  return next;
+}
+
+function sanitizeReviewName(value: unknown, fallback: string): string {
+  const next = typeof value === "string" ? value.trim() : "";
+  if (!next || LEGACY_REVIEW_NAMES.test(next)) return fallback;
+  return next;
+}
+
+function sanitizeReviewPhoto(value: unknown, fallback: string): string {
+  const next = typeof value === "string" ? value.trim() : "";
+  if (!next || LEGACY_REVIEW_PHOTOS.test(next)) return fallback;
+  return next;
 }
 
 /** Orbit-saved list order (supports add/remove rows). */
@@ -406,31 +430,34 @@ export function defaultBusinessEmailPageContent(): CmsBusinessEmailPageContent {
     marketingImageAlt:
       "Email marketing workspace with HostingBeyond Reach on purple",
 
-    reviewsHeading: "Join founders who switched their inbox",
+    reviewsHeading: "What customers say about HostingBeyond Mail",
     reviews: [
       {
         id: "1",
         visible: true,
         quote:
-          "Domains, WordPress, and mail in one place — the rate is the reason we moved, the inbox is why we stayed.",
-        name: "Amina Koirala",
-        photo: "/images/business-email/people/p-woman.jpg",
+          "We run client WordPress sites, domains, and inboxes in one HostingBeyond account. MX and SPF were in the panel, SSL stayed green after cutover, and we stopped juggling three vendor logins.",
+        name: "Hannah Cole",
+        role: "Agency owner",
+        photo: "/images/business-email/people/review-priya.jpg",
       },
       {
         id: "2",
         visible: true,
         quote:
-          "I need mail that just works: no outages, easy renewals, and a branded address clients actually trust.",
-        name: "Daniel Mercer",
-        photo: "/images/business-email/people/p-man.jpg",
+          "Business email on our own domain, billed next to hosting. Renewals show the real price before I pay. Support sent DNS records, not a canned “have you tried turning it off”.",
+        name: "Ryan Hale",
+        role: "SaaS founder",
+        photo: "/images/business-email/people/review-marcus.jpg",
       },
       {
         id: "3",
         visible: true,
         quote:
-          "Setup took minutes. We imported years of Gmail history without hiring anyone.",
-        name: "Sofia Alvarez",
-        photo: "/images/business-email/people/p-woman2.jpg",
+          "We moved mailboxes from Google Workspace over a weekend. Addresses stayed the same, storage matched the plan page, and the team logged in from phones the next morning.",
+        name: "Elena Rossi",
+        role: "Operations lead",
+        photo: "/images/business-email/people/review-elena.jpg",
       },
     ],
 
@@ -750,9 +777,10 @@ export function mergeBusinessEmailPageContent(
       stored.reviews,
       (item, base) => ({
         ...base,
-        quote: text(item.quote, base.quote),
-        name: text(item.name, base.name),
-        photo: text(item.photo, base.photo),
+        quote: sanitizeReviewQuote(item.quote, base.quote),
+        name: sanitizeReviewName(item.name, base.name),
+        role: text(item.role, base.role),
+        photo: sanitizeReviewPhoto(item.photo, base.photo),
       }),
     ),
     supportTiles: mergeById(
