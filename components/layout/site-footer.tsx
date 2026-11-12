@@ -195,7 +195,7 @@ export function SiteFooter({
               <p className="mt-1 text-[13px] text-slate-500">
                 <LocalizedText text={data.paymentsDescription} />
               </p>
-              <div className="mt-4 flex flex-wrap items-center gap-2">
+              <div className="mt-4 flex flex-wrap items-center gap-2.5">
                 {payments.map((item) => (
                   <PaymentMark key={item.id} brand={item.brand} />
                 ))}
