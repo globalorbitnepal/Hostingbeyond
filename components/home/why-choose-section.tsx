@@ -4,7 +4,6 @@ import {
   BarChart3,
   Cloud,
   Code2,
-  Crown,
   Database,
   Globe,
   Headphones,
@@ -74,12 +73,6 @@ export function WhyChooseSection({
       <div className="hb-shell relative z-10">
         <div className="hb-why-head">
           <p className="hb-why-kicker">{data.eyebrow}</p>
-          {data.handwrittenNote ? (
-            <p className="hb-why-pill">
-              <Crown className="size-3.5" strokeWidth={2.2} aria-hidden />
-              {data.handwrittenNote}
-            </p>
-          ) : null}
           <h2 className="font-heading hb-why-title">
             {data.title} <span>{data.titleAccent}</span>
           </h2>
