@@ -45,6 +45,8 @@ type Props = {
   menuAlign?: "start" | "end";
   /** Prefer opening above the trigger (e.g. footer) */
   menuSide?: "below" | "above";
+  /** Show the language name instead of the short code. */
+  showName?: boolean;
   className?: string;
 };
 
@@ -181,6 +183,7 @@ export function CountryLanguageSelector({
   tone = "dark",
   menuAlign = "end",
   menuSide = "below",
+  showName = false,
   className,
 }: Props) {
   const light = tone === "light";
@@ -388,11 +391,14 @@ export function CountryLanguageSelector({
         />
         <span
           className={cn(
-            "inline-flex min-w-[1.5rem] shrink-0 items-center justify-center text-center text-[11px] font-bold tracking-wide sm:text-[12px]",
+            "inline-flex min-w-0 items-center text-[12px] font-bold",
+            showName
+              ? "flex-1 justify-start truncate"
+              : "min-w-[1.5rem] shrink-0 justify-center tracking-wide",
             light ? "text-slate-900" : "text-white",
           )}
         >
-          {activeLanguage.triggerCode}
+          {showName ? "English" : activeLanguage.triggerCode}
         </span>
         <ChevronDown
           className={cn(
@@ -452,11 +458,14 @@ export function CountryLanguageSelector({
         )}
         <span
           className={cn(
-            "inline-flex min-w-[1.5rem] shrink-0 items-center justify-center text-center text-[11px] font-bold tracking-wide sm:text-[12px]",
+            "inline-flex min-w-0 items-center text-[12px] font-bold",
+            showName
+              ? "flex-1 justify-start truncate tracking-normal"
+              : "min-w-[1.5rem] shrink-0 justify-center tracking-wide",
             light ? "text-slate-900" : "text-white",
           )}
         >
-          {activeLanguage.triggerCode}
+          {showName ? activeLanguage.englishName : activeLanguage.triggerCode}
         </span>
         <ChevronDown
           className={cn(

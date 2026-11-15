@@ -5,16 +5,13 @@ import { useState } from "react";
 import {
   AlertTriangle,
   ArrowRight,
-  ArrowUpRight,
+  Calendar,
   CheckCircle2,
   Copy,
+  FileText,
   Globe,
   Mail,
-  RefreshCw,
   Search,
-  Server,
-  ShieldCheck,
-  Sparkles,
   Wallet,
 } from "lucide-react";
 
@@ -33,15 +30,6 @@ import {
 } from "@/lib/panel/domain-status";
 import { routes } from "@/config/routes";
 import { cn } from "@/lib/utils";
-
-import { DashboardAgentSearch } from "./dashboard-agent-search";
-import {
-  PanelCard,
-  PanelCardTitle,
-  PanelEmpty,
-  PanelQuickAction,
-  PanelStat,
-} from "./panel-ui";
 
 const ORDER_STATUS_LABELS: Record<string, string> = {
   PENDING_PAYMENT: "Pending payment",
@@ -160,93 +148,69 @@ export function DashboardOverview({
     )[0];
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-6">
-      {/* Hero */}
-      <section className="hb-panel-hero">
-        <div className="flex flex-wrap items-start justify-between gap-5">
-          <div className="min-w-0">
-            <p className="text-[11px] font-bold tracking-[0.18em] text-white/75 uppercase">
-              HostingBeyond control panel
-            </p>
-            <h2 className="font-heading mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">
-              {firstName ? `Good to see you, ${firstName}` : "Good to see you"}
-            </h2>
-            <p className="mt-1.5 max-w-lg text-sm text-white/85">
-              Your domains, hosting, mail, and billing — live on this account.
-            </p>
-            <button
-              type="button"
-              onClick={() => void copyAccountEmail()}
-              className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/12 px-2.5 py-1 text-xs font-semibold text-white/90 ring-1 ring-white/25"
-            >
-              {user.email}
-              {copied ? (
-                <CheckCircle2 className="size-3.5" />
-              ) : (
-                <Copy className="size-3.5" />
-              )}
-            </button>
-          </div>
-
-          <form
-            className="relative w-full max-w-md"
-            action={routes.accountDomainFind}
-          >
-            <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-violet-700" />
-            <input
-              name="q"
-              placeholder="Find your next domain"
-              className="hb-panel-search"
-              aria-label="Search for a domain"
-            />
-            <button
-              type="submit"
-              className="absolute top-1/2 right-1.5 -translate-y-1/2 rounded-full bg-violet-700 px-3 py-1.5 text-xs font-bold text-white"
-            >
-              Search
-            </button>
-          </form>
+    <div className="hb-dash space-y-4">
+      <section className="hb-dash-hero">
+        <img
+          className="hb-dash-hero__bg"
+          src="/images/panel/dash-hero-banner.jpg"
+          alt=""
+          width={1280}
+          height={720}
+          draggable={false}
+        />
+        <img
+          className="hb-dash-hero__art"
+          src="/images/panel/dash-hero-banner.jpg"
+          alt=""
+          width={1280}
+          height={720}
+          draggable={false}
+        />
+        <div className="hb-dash-hero__copy">
+          <p className="hb-dash-hero__kicker">Welcome back</p>
+          <h2>
+            {firstName ? `Good to see you, ${firstName}` : "Good to see you"}{" "}
+            <span aria-hidden>👋</span>
+          </h2>
+          <p>
+            Your domains, hosting, email, and billing — live on this account.
+          </p>
+          <button type="button" onClick={() => void copyAccountEmail()}>
+            <Mail className="size-3.5" />
+            {user.email}
+            {copied ? (
+              <CheckCircle2 className="size-3.5" />
+            ) : (
+              <Copy className="size-3.5" />
+            )}
+          </button>
         </div>
-
-        <div className="mt-5 grid gap-2 sm:grid-cols-3">
-          {[
-            {
-              label: "Next renewal",
-              value: nearestDomain?.domain ?? "No domain yet",
-              hint: nearestDomain ? expiryCopy(nearestDomain.expiresAt) : null,
-              href: routes.myDomains,
-            },
-            {
-              label: "Wallet",
-              value: formatMoney(wallet.balance, wallet.currency),
-              hint: "Available to spend",
-              href: routes.accountWallet,
-            },
-            {
-              label: "Open invoices",
-              value: String(counts.openInvoices),
-              hint: counts.openInvoices > 0 ? "Payment due" : "Nothing to pay",
-              href: routes.accountInvoices,
-            },
-          ].map((tile) => (
-            <Link
-              key={tile.label}
-              href={tile.href}
-              className="rounded-xl bg-white/12 px-3 py-2.5 ring-1 ring-white/20 backdrop-blur-sm transition hover:bg-white/20"
-            >
-              <p className="text-[10px] font-bold tracking-[0.14em] text-white/70 uppercase">
-                {tile.label}
-              </p>
-              <p className="mt-0.5 truncate text-sm font-bold text-white">
-                {tile.value}
-              </p>
-              {tile.hint ? (
-                <p className="truncate text-[11px] text-white/70">
-                  {tile.hint}
-                </p>
-              ) : null}
-            </Link>
-          ))}
+        <div className="hb-dash-hero__stats">
+          <Link href={routes.myDomains}>
+            <Calendar className="size-4" />
+            <span>
+              <em>Next renewal</em>
+              <strong>{nearestDomain?.domain ?? "No domain yet"}</strong>
+            </span>
+          </Link>
+          <Link href={`${routes.accountWallet}#top-up`}>
+            <Wallet className="size-4" />
+            <span>
+              <em>Wallet</em>
+              <strong>{formatMoney(wallet.balance, wallet.currency)}</strong>
+              <small>Available to spend</small>
+            </span>
+          </Link>
+          <Link href={routes.accountInvoices}>
+            <FileText className="size-4" />
+            <span>
+              <em>Open invoices</em>
+              <strong>{counts.openInvoices}</strong>
+              <small>
+                {counts.openInvoices > 0 ? "Payment due" : "Nothing to pay"}
+              </small>
+            </span>
+          </Link>
         </div>
       </section>
 
@@ -258,51 +222,80 @@ export function DashboardOverview({
       ) : null}
 
       {/* Stats */}
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <PanelStat
-          label="Domains"
-          value={String(domainSummary.total)}
-          hint={
-            domainSummary.expiring + domainSummary.expired > 0
-              ? `${domainSummary.expiring + domainSummary.expired} need attention`
-              : domainSummary.total === 0
-                ? "Register your first domain"
-                : "All up to date"
-          }
+      <div className="hb-dash-metrics">
+        <Link
           href={routes.myDomains}
-          icon={Globe}
-          tone={
-            domainSummary.expiring + domainSummary.expired > 0
-              ? "warn"
-              : "default"
-          }
-        />
-        <PanelStat
-          label="Hosting"
-          value={String(counts.hostingOrdersActive)}
-          hint={
-            counts.hostingOrdersActive > 0
-              ? `of ${counts.hostingOrdersTotal} orders active`
-              : "No active hosting"
-          }
-          href={routes.accountHostingOrders}
-          icon={Server}
-        />
-        <PanelStat
-          label="Wallet"
-          value={formatMoney(wallet.balance, wallet.currency)}
-          hint="Available to spend"
-          href={routes.accountWallet}
-          icon={Wallet}
-        />
-        <PanelStat
-          label="Open invoices"
-          value={String(counts.openInvoices)}
-          hint={counts.openInvoices > 0 ? "Payment due" : "Nothing to pay"}
+          className="hb-dash-metric"
+          data-tone="violet"
+        >
+          <img
+            className="hb-dash-metric__art"
+            src="/images/panel/dash-icon-globe.jpg"
+            alt=""
+          />
+          <div>
+            <p>Domains</p>
+            <strong>{domainSummary.total}</strong>
+            <span>Registered domains</span>
+          </div>
+        </Link>
+        <Link
+          href={routes.accountHosting}
+          className="hb-dash-metric"
+          data-tone="slate"
+        >
+          <img
+            className="hb-dash-metric__art"
+            src="/images/panel/dash-icon-servers.jpg"
+            alt=""
+          />
+          <div>
+            <p>Hosting</p>
+            <strong>{counts.hostingOrdersActive}</strong>
+            <span>Active hosting plans</span>
+          </div>
+        </Link>
+        <div className="hb-dash-metric hb-dash-metric--wallet" data-tone="sand">
+          <Link href={routes.accountWallet}>
+            <img
+              className="hb-dash-metric__art"
+              src="/images/panel/dash-icon-wallet.jpg"
+              alt=""
+            />
+            <div>
+              <p>Wallet</p>
+              <strong>{formatMoney(wallet.balance, wallet.currency)}</strong>
+              <span>Available balance</span>
+            </div>
+          </Link>
+          <Link
+            href={`${routes.accountWallet}#top-up`}
+            className="hb-dash-plus"
+            aria-label="Add wallet funds"
+          >
+            +
+          </Link>
+        </div>
+        <Link
           href={routes.accountInvoices}
-          icon={ShieldCheck}
-          tone={counts.openInvoices > 0 ? "warn" : "ok"}
-        />
+          className="hb-dash-metric"
+          data-tone="mint"
+        >
+          <img
+            className="hb-dash-metric__art"
+            src="/images/panel/dash-icon-invoice.jpg"
+            alt=""
+          />
+          <div>
+            <p>Open invoices</p>
+            <strong>{counts.openInvoices}</strong>
+            <span>
+              {counts.openInvoices > 0
+                ? "Payment due"
+                : "No outstanding invoices"}
+            </span>
+          </div>
+        </Link>
       </div>
 
       {attentionDomains.length > 0 ? (
@@ -356,56 +349,40 @@ export function DashboardOverview({
       ) : null}
 
       {/* Domains */}
-      <PanelCard className="!p-0">
-        <div className="px-5 pt-5">
-          <PanelCardTitle
-            title="Domain portfolio"
-            description={
-              domainSummary.total === 0
-                ? "A domain is step one — hosting and email point at it."
-                : `${domainSummary.active} active · ${domainSummary.expiring} expiring · ${domainSummary.expired} expired · ${domainSummary.pending} setting up`
-            }
-            action={
-              <div className="flex items-center gap-2">
-                <Link
-                  href={routes.accountDomainFind}
-                  className="hb-btn hb-btn-ghost hb-btn-sm"
-                >
-                  <Search className="size-3.5" />
-                  Search
-                </Link>
-                <Link
-                  href={routes.myDomains}
-                  className="hb-btn hb-btn-ghost hb-btn-sm"
-                >
-                  View all
-                  <ArrowRight className="size-3.5" />
-                </Link>
-              </div>
-            }
-          />
-        </div>
-
+      <section className="hb-dash-portfolio">
+        <header>
+          <div>
+            <h3>
+              <Globe className="size-4" /> Domain Portfolio
+            </h3>
+            <p>Manage, transfer and renew your domains.</p>
+          </div>
+          <form action={routes.accountDomainFind}>
+            <Search className="size-4" />
+            <input
+              name="q"
+              placeholder="Search your domains..."
+              aria-label="Search your domains"
+            />
+          </form>
+          <Link href={routes.accountDomainTransfer}>Transfer Domain</Link>
+        </header>
         {domains.length === 0 ? (
-          <div className="px-5 pt-4 pb-5">
-            <PanelEmpty
-              title="No domains yet"
-              description="Search for a name, register it, then point nameservers or DNS at hosting whenever you are ready."
-            >
-              <Link
-                href={routes.accountDomainFind}
-                className="hb-btn hb-btn-primary"
-              >
-                <Search className="size-4" />
-                Search a domain
-              </Link>
-              <Link
-                href={routes.accountDomainTransfer}
-                className="hb-btn hb-btn-ghost"
-              >
-                Transfer a domain
-              </Link>
-            </PanelEmpty>
+          <div className="hb-dash-empty">
+            <div className="hb-dash-empty__art" aria-hidden>
+              <img src="/images/panel/dash-empty-laptop.jpg" alt="" />
+            </div>
+            <div>
+              <h4>No domains yet</h4>
+              <p>
+                You don&apos;t have any registered domains. Get started by
+                searching, registering or transferring a domain.
+              </p>
+              <div>
+                <Link href={routes.accountDomainFind}>Search a Domain</Link>
+                <Link href={routes.accountDomainFind}>Register a Domain +</Link>
+              </div>
+            </div>
           </div>
         ) : (
           <ul className="space-y-2 px-4 pt-4 pb-4">
@@ -414,187 +391,120 @@ export function DashboardOverview({
             ))}
           </ul>
         )}
-      </PanelCard>
+      </section>
 
-      <section className="grid gap-3 md:grid-cols-3">
-        <Link href={routes.myDomains} className="hb-dash-work">
-          <Globe className="hb-dash-work__icon" />
-          <p className="hb-dash-work__label">Domains</p>
-          <p className="hb-dash-work__value">{domainSummary.total}</p>
-          <p className="hb-muted text-xs">
-            {nearestDomain
-              ? `Next: ${nearestDomain.domain}`
-              : "Search and register from the panel"}
-          </p>
+      <section className="hb-dash-actions">
+        <Link href={routes.accountDomainFind}>
+          <img src="/images/panel/dash-icon-globe.jpg" alt="" />
+          <span>
+            <strong>Register a domain</strong>
+            <em>Find and buy your perfect domain</em>
+          </span>
+          <ArrowRight className="size-4" />
         </Link>
-        <Link href={routes.accountHostingWebsites} className="hb-dash-work">
-          <Server className="hb-dash-work__icon" />
-          <p className="hb-dash-work__label">Hosting</p>
-          <p className="hb-dash-work__value">{counts.hostingOrdersActive}</p>
-          <p className="hb-muted text-xs">
-            {counts.hostingOrdersActive > 0
-              ? "Active plans on this account"
-              : "No active hosting yet"}
-          </p>
+        <Link href={routes.accountHosting}>
+          <img src="/images/panel/dash-icon-servers.jpg" alt="" />
+          <span>
+            <strong>Get hosting</strong>
+            <em>Launch your website in minutes</em>
+          </span>
+          <ArrowRight className="size-4" />
         </Link>
-        <Link href={routes.accountEmail} className="hb-dash-work">
-          <Mail className="hb-dash-work__icon" />
-          <p className="hb-dash-work__label">Email</p>
-          <p className="hb-dash-work__value">Open</p>
-          <p className="hb-muted text-xs">Mailboxes live on the Emails page</p>
+        <Link href={routes.accountEmail}>
+          <img src="/images/panel/dash-icon-mail.jpg" alt="" />
+          <span>
+            <strong>Set up email</strong>
+            <em>Professional business email</em>
+          </span>
+          <ArrowRight className="size-4" />
+        </Link>
+        <Link href={routes.accountAiAgent}>
+          <img src="/images/panel/dash-icon-spark.jpg" alt="" />
+          <span>
+            <strong>Explore AI Agent</strong>
+            <em>Build, manage, and grow faster</em>
+          </span>
+          <ArrowRight className="size-4" />
         </Link>
       </section>
 
-      {/* Quick actions */}
-      <section>
-        <h3 className="hb-eyebrow mb-2">Quick actions</h3>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          <PanelQuickAction
-            label="Register domain"
-            hint="Live availability and pricing"
-            href={routes.accountDomainFind}
-            icon={Globe}
-          />
-          <PanelQuickAction
-            label="AI Agent"
-            hint="DNS, WordPress, hosting in one search"
-            href={routes.accountAiAgent}
-            icon={Sparkles}
-          />
-          <PanelQuickAction
-            label="My websites"
-            hint="Sites on your active hosting"
-            href={routes.accountHostingWebsites}
-            icon={Server}
-          />
-          <PanelQuickAction
-            label="SSL certificates"
-            hint="Renewal dates and NameSilo premium SSL"
-            href={routes.accountSsl}
-            icon={ShieldCheck}
-          />
-          <PanelQuickAction
-            label="Business email"
-            hint="Mailboxes on your domain"
-            href={routes.accountEmail}
-            icon={Mail}
-          />
-          <PanelQuickAction
-            label="Transfer domain"
-            hint="Move a domain to HostingBeyond"
-            href={routes.accountDomainTransfer}
-            icon={RefreshCw}
-          />
-        </div>
-      </section>
-
-      <div className="grid gap-4 lg:grid-cols-2">
-        <PanelCard>
-          <PanelCardTitle
-            title="Recent hosting orders"
-            action={
-              <Link
-                href={routes.accountHostingOrders}
-                className="hb-link text-xs"
-              >
-                View all
-              </Link>
-            }
-          />
+      <section className="hb-dash-studio" aria-label="Account activity">
+        <article className="hb-dash-studio__card">
+          <header>
+            <img src="/images/panel/dash-icon-servers.jpg" alt="" />
+            <div>
+              <h3>Recent hosting orders</h3>
+              <p>Plans bought on this account</p>
+            </div>
+            <Link href={routes.accountHostingOrders}>View all</Link>
+          </header>
           {orders.length === 0 ? (
-            <div className="mt-4">
-              <PanelEmpty
-                title="No hosting orders yet"
-                description="Pick a plan and it will appear here with its activation status."
-              >
-                <Link
-                  href={routes.accountHosting}
-                  className="hb-btn hb-btn-primary"
-                >
-                  Browse plans
-                  <ArrowUpRight className="size-3.5" />
-                </Link>
-              </PanelEmpty>
+            <div className="hb-dash-studio__empty">
+              <p>No hosting orders yet.</p>
+              <Link href={routes.accountHosting}>Browse plans</Link>
             </div>
           ) : (
-            <ul className="mt-4 space-y-2">
+            <ul>
               {orders.map((order) => (
-                <li
-                  key={order.id}
-                  className="hb-table-row flex flex-wrap items-start justify-between gap-2 px-4 py-3"
-                >
-                  <div className="min-w-0">
-                    <p className="hb-text truncate text-sm font-bold">
-                      {order.planName ??
-                        `${order.productSlug} · ${order.planKey}`}
-                    </p>
-                    <p className="hb-muted text-xs">
-                      {ORDER_STATUS_LABELS[order.status] ?? order.status} ·{" "}
-                      {order.billingCycle}
-                    </p>
-                  </div>
-                  <p className="hb-text shrink-0 text-sm font-bold tabular-nums">
-                    {formatMoney(order.total, order.currency)}
-                  </p>
+                <li key={order.id}>
+                  <Link href={routes.accountHostingOrders}>
+                    <span>
+                      <strong>
+                        {order.planName ??
+                          `${order.productSlug} · ${order.planKey}`}
+                      </strong>
+                      <em>
+                        {ORDER_STATUS_LABELS[order.status] ?? order.status}
+                        {" · "}
+                        {order.billingCycle}
+                      </em>
+                    </span>
+                    <b>{formatMoney(order.total, order.currency)}</b>
+                  </Link>
                 </li>
               ))}
             </ul>
           )}
-        </PanelCard>
+        </article>
 
-        <PanelCard>
-          <PanelCardTitle
-            title="Wallet activity"
-            action={
-              <Link href={routes.accountBilling} className="hb-link text-xs">
-                All transactions
-              </Link>
-            }
-          />
+        <article className="hb-dash-studio__card">
+          <header>
+            <img src="/images/panel/dash-icon-wallet.jpg" alt="" />
+            <div>
+              <h3>Wallet activity</h3>
+              <p>Balance {formatMoney(wallet.balance, wallet.currency)}</p>
+            </div>
+            <Link href={routes.accountBilling}>All transactions</Link>
+          </header>
           {recentTransactions.length === 0 ? (
-            <div className="mt-4">
-              <PanelEmpty
-                title="No transactions yet"
-                description="Domain purchases, renewals and top-ups appear here once money moves."
-              />
+            <div className="hb-dash-studio__empty">
+              <p>No transactions yet.</p>
+              <Link href={`${routes.accountWallet}#top-up`}>Top up wallet</Link>
             </div>
           ) : (
-            <ul className="mt-4 space-y-2">
+            <ul>
               {recentTransactions.map((tx) => (
-                <li
-                  key={tx.id}
-                  className="flex items-center justify-between gap-2 border-b border-[var(--hb-p-border)] pb-2 last:border-0 last:pb-0"
-                >
-                  <div className="min-w-0">
-                    <p className="hb-text truncate text-sm font-semibold">
-                      {tx.note ?? tx.type}
-                    </p>
-                    <p className="hb-muted text-xs">
-                      {formatPanelDateTime(tx.createdAt)}
-                    </p>
-                  </div>
-                  <span className="hb-text shrink-0 text-sm font-bold tabular-nums">
-                    {formatMoney(tx.amount, tx.currency)}
-                  </span>
+                <li key={tx.id}>
+                  <Link href={routes.accountBilling}>
+                    <span>
+                      <strong>{tx.note ?? tx.type}</strong>
+                      <em>{formatPanelDateTime(tx.createdAt)}</em>
+                    </span>
+                    <b data-sign={tx.amount < 0 ? "out" : "in"}>
+                      {formatMoney(tx.amount, tx.currency)}
+                    </b>
+                  </Link>
                 </li>
               ))}
             </ul>
           )}
-          <div className="mt-4 flex flex-wrap gap-3 text-xs">
-            <Link href={routes.accountWallet} className="hb-link">
-              Top up wallet
-            </Link>
-            <Link href={routes.accountOrders} className="hb-link">
-              Domain orders
-            </Link>
-            <Link href={routes.accountInvoices} className="hb-link">
-              Invoices
-            </Link>
+          <div className="hb-dash-studio__links">
+            <Link href={`${routes.accountWallet}#top-up`}>Top up wallet</Link>
+            <Link href={routes.accountOrders}>Domain orders</Link>
+            <Link href={routes.accountInvoices}>Invoices</Link>
           </div>
-        </PanelCard>
-      </div>
-
-      <DashboardAgentSearch />
+        </article>
+      </section>
     </div>
   );
 }

@@ -141,7 +141,11 @@ export async function middleware(request: NextRequest) {
       const returnPath = sanitizeCustomerRedirectPath(
         `${pathname}${request.nextUrl.search}`,
       );
-      const login = new URL("/login", requestSiteOrigin(request));
+      const host = request.headers.get("host") ?? "";
+      const origin = isLoopbackHost(host)
+        ? request.nextUrl.origin
+        : requestSiteOrigin(request);
+      const login = new URL("/login", origin);
       login.searchParams.set("next", returnPath);
       return NextResponse.redirect(login);
     }

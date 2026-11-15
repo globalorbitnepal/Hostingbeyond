@@ -11,6 +11,7 @@ import {
 
 import { PanelGiveFeedback } from "@/components/panel/panel-give-feedback";
 import { panelNavIcon } from "@/components/panel/panel-nav-icons";
+import { CountryLanguageSelector } from "@/components/locale/country-language-selector";
 import { routes } from "@/config/routes";
 import { getPanelNav, type PanelNavItem } from "@/lib/panel/navigation";
 import { cn } from "@/lib/utils";
@@ -158,7 +159,7 @@ export function PanelSidebar({
         aria-label="Customer navigation"
         data-collapsed={collapsed ? "true" : "false"}
       >
-        <nav className="flex-1 overflow-y-auto px-2.5 pt-3 pb-2">
+        <nav className="hb-panel-nav flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto px-2.5 pt-3 pb-1">
           {getPanelNav().map((section) => {
             const { hub, children, rest, isHubSection } = splitHubSection(
               section.items,
@@ -261,6 +262,18 @@ export function PanelSidebar({
             trustpilotUrl={trustpilotUrl}
             trustpilotLabel={trustpilotLabel}
           />
+          <div className="hb-panel-locale-row">
+            <div className="hb-panel-lang-wrap">
+              <CountryLanguageSelector
+                compact
+                showName
+                tone="light"
+                menuSide="above"
+                menuAlign="start"
+                className="w-full justify-between"
+              />
+            </div>
+          </div>
           <button
             type="button"
             className="hb-panel-collapse"

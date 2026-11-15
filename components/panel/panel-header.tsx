@@ -262,7 +262,7 @@ export function PanelHeader({
             }}
             onFocus={() => setSearchOpen(true)}
             onBlur={() => window.setTimeout(() => setSearchOpen(false), 140)}
-            placeholder="Search domains, hosting, billing…"
+            placeholder="Search domains, hosting, billing, emails..."
             aria-label="Search your account"
             className="hb-panel-mega-search__input"
             autoComplete="off"
@@ -317,6 +317,7 @@ export function PanelHeader({
             </button>
             <button
               type="button"
+              className="hb-panel-theme-system"
               onClick={() => {
                 const dark = window.matchMedia(
                   "(prefers-color-scheme: dark)",

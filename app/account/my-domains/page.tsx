@@ -44,16 +44,16 @@ export default async function MyDomainsPage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-5">
-      <div className="flex flex-wrap items-end justify-between gap-3">
+      <div className="hb-page-hero">
         <div>
-          <p className="hb-eyebrow">Domains</p>
-          <h1 className="hb-h1 mt-1">Domain portfolio</h1>
-          <p className="hb-muted mt-1 max-w-2xl text-sm">
-            Renew, lock, change nameservers and edit DNS records. Everything
-            here talks to the registrar directly.
-          </p>
+          <p>Domains</p>
+          <h1>Domain portfolio</h1>
+          <span>
+            Renew, lock, change nameservers and edit DNS. These pages talk to
+            the registrar directly.
+          </span>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="hb-page-hero__actions">
           <Link
             href={routes.accountDomainFind}
             className="hb-btn hb-btn-primary"

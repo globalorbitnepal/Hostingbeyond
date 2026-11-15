@@ -52,9 +52,11 @@ export default async function AccountWalletPage({
           topUpStatus={topUpStatus}
           paymentPublicId={paymentPublicId}
         />
-        <WalletTopUpForm
-          paymentProviderConfigured={isPaymentProviderConfigured()}
-        />
+        <div id="top-up">
+          <WalletTopUpForm
+            paymentProviderConfigured={isPaymentProviderConfigured()}
+          />
+        </div>
       </div>
     </div>
   );

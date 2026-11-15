@@ -72,7 +72,7 @@ export function PanelAccountChrome({
 
   return (
     <div
-      className="hb-panel hb-panel--ultra flex min-h-dvh flex-col"
+      className="hb-panel hb-panel--ultra hb-panel--studio flex min-h-dvh flex-col"
       data-theme={theme}
       data-panel-shell="ultra-v2"
       style={{
@@ -99,7 +99,7 @@ export function PanelAccountChrome({
           trustpilotLabel={trustpilotLabel}
         />
         <div className="hb-panel__main flex min-h-0 min-w-0 flex-1 flex-col">
-          <main className="hb-panel__scroll flex-1 overflow-y-auto px-4 py-5 sm:px-5 lg:px-6 lg:py-6">
+          <main className="hb-panel__scroll flex-1 overflow-y-auto px-4 py-4 sm:px-5 lg:px-6 lg:py-5">
             {children}
           </main>
           <div className="hb-ds-ask-dock">
