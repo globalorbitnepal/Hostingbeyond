@@ -23,28 +23,34 @@ function useDockTypewriter(active: boolean) {
   const [lineIndex, setLineIndex] = useState(0);
   const [text, setText] = useState("");
   const [bubbleHidden, setBubbleHidden] = useState(false);
+  const [finished, setFinished] = useState(false);
 
   useEffect(() => {
     if (!active) {
       setText("");
       setBubbleHidden(false);
       setLineIndex(0);
+      setFinished(false);
       return;
     }
+    if (finished) return;
 
     const full = DOCK_PROMPTS[lineIndex];
+    const lastLine = lineIndex >= DOCK_PROMPTS.length - 1;
     if (reduceMotion) {
       setBubbleHidden(false);
       setText(full);
       const hold = window.setTimeout(
         () => {
           setBubbleHidden(true);
+          setText("");
+          if (lastLine) setFinished(true);
         },
         lineIndex === 0 ? 2200 : 3000,
       );
       const next = window.setTimeout(
         () => {
-          setLineIndex((i) => (i + 1) % DOCK_PROMPTS.length);
+          if (!lastLine) setLineIndex((i) => i + 1);
         },
         lineIndex === 0 ? 2480 : 3280,
       );
@@ -71,11 +77,12 @@ function useDockTypewriter(active: boolean) {
     const hideId = window.setTimeout(() => {
       setBubbleHidden(true);
       setText("");
+      if (lastLine) setFinished(true);
     }, typeMs + holdAfterTypeMs);
 
     const nextId = window.setTimeout(
       () => {
-        setLineIndex((i) => (i + 1) % DOCK_PROMPTS.length);
+        if (!lastLine) setLineIndex((i) => i + 1);
       },
       typeMs + holdAfterTypeMs + fadeMs,
     );
@@ -85,7 +92,7 @@ function useDockTypewriter(active: boolean) {
       window.clearTimeout(hideId);
       window.clearTimeout(nextId);
     };
-  }, [active, lineIndex, reduceMotion]);
+  }, [active, lineIndex, reduceMotion, finished]);
 
   return { text, lineIndex, bubbleHidden };
 }
