@@ -1,2 +1,2 @@
-/** Canonical HostingBeyond AI robot — use this asset everywhere, never a sparkle glyph. */
-export const HOSTINGBEYOND_AI_ROBOT_SRC = "/brand/hostingbeyond-ai-robot.png";
+/** Canonical HostingBeyond AI mark — spiral, used everywhere the agent appears. */
+export const HOSTINGBEYOND_AI_ROBOT_SRC = "/brand/hostingbeyond-ai-mark.png";

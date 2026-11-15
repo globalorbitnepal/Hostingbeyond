@@ -1,13 +1,14 @@
 "use client";
 
 import Image from "next/image";
+
+import { HOSTINGBEYOND_AI_ROBOT_SRC } from "@/components/shared/ai-robot";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Activity,
   ArrowLeftRight,
   BookOpen,
-  Bot,
   Building2,
   CalendarClock,
   ChevronDown,
@@ -68,12 +69,24 @@ const articlesChildren: NavLeaf[] = [
   { href: "/orbit/blog/seo", label: "SEO settings", icon: Search },
 ];
 
+function OrbitAiMark({ className }: { className?: string }) {
+  return (
+    <Image
+      src={HOSTINGBEYOND_AI_ROBOT_SRC}
+      alt=""
+      width={20}
+      height={20}
+      className={`${className ?? ""} object-contain`}
+    />
+  );
+}
+
 const fullNav: NavGroup[] = [
   { href: "/orbit", label: "Dashboard", icon: LayoutDashboard },
   {
     href: "/orbit/beyond-master",
     label: "AI Agent",
-    icon: Bot,
+    icon: OrbitAiMark,
     children: [
       {
         href: "/orbit/beyond-master",

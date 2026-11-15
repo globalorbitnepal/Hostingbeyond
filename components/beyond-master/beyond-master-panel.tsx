@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import Image from "next/image";
 import { Clock3, ImagePlus, Plus, Send, X } from "lucide-react";
 
 import {
@@ -38,6 +39,8 @@ import "@/styles/beyond-master.css";
 import { BeyondMasterVoiceButton } from "./voice-bar";
 import { BeyondMasterQuestionCard } from "./question-card";
 import { BeyondMasterWelcomePremium } from "./beyond-master-welcome-premium";
+import { AssistantMessageBody } from "./assistant-message-body";
+import { HOSTINGBEYOND_AI_ROBOT_SRC } from "@/components/shared/ai-robot";
 
 function formatStamp(iso: string) {
   const date = new Date(iso);
@@ -163,6 +166,13 @@ export function BeyondMasterAiPanel() {
       >
         <header className="hb-bmai-header">
           <div className="hb-bmai-header-brand">
+            <Image
+              src={HOSTINGBEYOND_AI_ROBOT_SRC}
+              alt=""
+              width={32}
+              height={32}
+              className="hb-bmai-brand-mark"
+            />
             <div className="hb-bmai-title">
               <h2 id={titleId}>{BEYOND_MASTER_PANEL_TITLE}</h2>
             </div>
@@ -252,7 +262,7 @@ export function BeyondMasterAiPanel() {
                   </article>
                 ) : message.role === "assistant" ? (
                   <article key={message.id} className="hb-bmai-assistant">
-                    <p>{message.body}</p>
+                    <AssistantMessageBody body={message.body} />
                   </article>
                 ) : (
                   <article key={message.id} className="hb-bmai-notice">

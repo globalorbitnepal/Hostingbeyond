@@ -34,16 +34,7 @@
 }
 
 .hb-bmai-agent-ring {
-  position: absolute;
-  inset: 0;
-  border-radius: 999px;
-  border: 2px solid rgba(192, 132, 252, 0.95);
-  box-shadow:
-    0 0 0 4px rgba(124, 58, 237, 0.18),
-    0 0 28px rgba(168, 85, 247, 0.65),
-    inset 0 0 14px rgba(168, 85, 247, 0.28);
-  pointer-events: none;
-  animation: hb-bmai-ring-pulse 2.6s ease-in-out infinite;
+  display: none;
 }
 
 .hb-bmai-launch[data-open="true"] .hb-bmai-agent {
@@ -53,13 +44,14 @@
 .hb-bmai-agent-mascot {
   position: relative;
   z-index: 1;
-  width: 68px;
-  height: 68px;
-  border-radius: 999px;
-  object-fit: cover;
-  object-position: center 38%;
-  background: radial-gradient(circle at 50% 45%, #2e1065 0%, #1a0a3a 70%);
-  box-shadow: 0 12px 28px rgba(15, 8, 40, 0.4);
+  width: 72px;
+  height: 72px;
+  border-radius: 0;
+  object-fit: contain;
+  object-position: center;
+  background: transparent;
+  box-shadow: none;
+  filter: drop-shadow(0 8px 14px rgba(49, 16, 112, 0.28));
 }
 
 .hb-bmai-launch:hover {
@@ -270,12 +262,12 @@
 }
 
 .hb-bmai-brand-mark {
-  display: grid;
-  width: 28px;
-  height: 28px;
+  display: block;
+  width: 32px;
+  height: 32px;
   flex: none;
-  place-items: center;
-  color: var(--bmai-ink);
+  object-fit: contain;
+  background: transparent;
 }
 
 .hb-bmai-backdrop {
@@ -808,6 +800,17 @@
   line-height: 1.5;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+
+.hb-bmai-link {
+  color: #6d28d9;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.hb-bmai-link:hover {
+  color: #4c1d95;
 }
 
 .hb-bmai-meta {
@@ -1408,30 +1411,9 @@
   margin: 0 0 4px;
 }
 
-.hb-bmai-premium-hero-glow {
-  position: absolute;
-  width: 148px;
-  height: 148px;
-  border-radius: 999px;
-  background: radial-gradient(
-    circle,
-    rgba(168, 85, 247, 0.32),
-    transparent 70%
-  );
-  filter: blur(10px);
-  animation: hb-bmai-glow-breathe 2.8s ease-in-out infinite;
-}
-
+.hb-bmai-premium-hero-glow,
 .hb-bmai-premium-hero-orbit {
-  position: absolute;
-  width: 132px;
-  height: 132px;
-  border-radius: 999px;
-  border: 2px solid transparent;
-  border-top-color: #a855f7;
-  border-right-color: rgba(168, 85, 247, 0.2);
-  box-shadow: 0 0 16px rgba(168, 85, 247, 0.28);
-  animation: hb-bmai-orbit-spin 7s linear infinite;
+  display: none;
 }
 
 .hb-bmai-premium-mascot-wrap {
@@ -1439,9 +1421,8 @@
   z-index: 1;
   display: grid;
   place-items: center;
-  animation: hb-bmai-robot-idle 3.2s ease-in-out infinite;
-  transform-origin: 50% 62%;
-  will-change: transform;
+  animation: hb-bmai-robot-idle 4.8s ease-in-out infinite;
+  transform-origin: center;
 }
 
 .hb-bmai-premium-mascot {

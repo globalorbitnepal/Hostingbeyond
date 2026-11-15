@@ -341,7 +341,7 @@ export function PanelHeader({
               alt=""
               width={26}
               height={26}
-              className="size-[26px] object-cover"
+              className="size-[26px] object-contain"
             />
             <span>Agent</span>
           </button>

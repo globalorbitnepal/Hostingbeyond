@@ -52,7 +52,7 @@ export function Logo({
     ) : (
       <span
         className={cn(
-          "relative inline-flex h-[42px] max-w-full min-w-0 items-center justify-start leading-none min-[375px]:h-[48px] sm:h-[46px] lg:h-[47px] xl:h-[50px]",
+          "relative inline-flex h-[38px] max-w-full min-w-0 items-center justify-start leading-none min-[375px]:h-[43px] sm:h-[46px] lg:h-[47px] xl:h-[50px]",
           className,
         )}
       >

@@ -1263,9 +1263,9 @@ html[data-hb-theme="light"] {
 }
 
 .hb-panel-mega-agent img {
-  border-radius: 999px;
-  background: #2e1065;
-  object-fit: cover;
+  border-radius: 0;
+  background: transparent;
+  object-fit: contain;
 }
 
 .hb-panel-mega-icon {
@@ -1693,13 +1693,13 @@ html[data-hb-theme="light"] {
   width: 2.35rem;
   height: 2.35rem;
   flex-shrink: 0;
-  overflow: hidden;
+  overflow: visible;
   border: 0;
-  border-radius: 999px;
+  border-radius: 0;
   padding: 0;
   cursor: pointer;
-  background: #2e1065;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--hb-p-primary) 28%, transparent);
+  background: transparent;
+  box-shadow: none;
 }
 
 .hb-ds-ask-mic {
@@ -2168,10 +2168,10 @@ html[data-hb-theme="light"] {
   width: 3rem;
   height: 3rem;
   flex-shrink: 0;
-  overflow: hidden;
-  border-radius: 999px;
-  background: #2e1065;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--hb-p-primary) 22%, transparent);
+  overflow: visible;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .hb-dash-agent__form {

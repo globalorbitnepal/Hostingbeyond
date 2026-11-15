@@ -1,7 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+
+import { HOSTINGBEYOND_AI_ROBOT_SRC } from "@/components/shared/ai-robot";
 
 import type {
   BeyondMasterOverview,
@@ -55,9 +58,18 @@ export default function OrbitBeyondMasterPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-          AI Agent
-        </h1>
+        <div className="flex items-center gap-3">
+          <Image
+            src={HOSTINGBEYOND_AI_ROBOT_SRC}
+            alt=""
+            width={40}
+            height={40}
+            className="size-10 object-contain"
+          />
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            AI Agent
+          </h1>
+        </div>
         <p className="mt-1 text-sm text-slate-500">
           Read-only overview. Nothing on this screen changes provider settings,
           tickets, or DNS.

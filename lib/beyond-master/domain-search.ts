@@ -96,7 +96,7 @@ export function formatDomainSearchForPrompt(search: AgentDomainSearch): string {
       row.register != null
         ? `${row.register.toFixed(2)} ${row.currency}/year first year`
         : "price on the domain search page";
-    lines.push(`${row.domain} ${row.status} ${price} ${row.href}`);
+    lines.push(`[${row.domain}](${row.href}) ${row.status} ${price}`);
   }
   lines.push("Registration completes only on /domain-name-search or /cart.");
   return lines.join("\n");

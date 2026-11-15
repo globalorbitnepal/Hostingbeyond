@@ -50,7 +50,7 @@ export function DashboardAgentSearch() {
               alt=""
               width={52}
               height={52}
-              className="size-full object-cover"
+              className="size-full object-contain"
             />
           </span>
           <div className="min-w-0">

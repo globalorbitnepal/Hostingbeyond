@@ -286,9 +286,9 @@ function AssistantStage({ content }: { content: CmsAiAssistantContent }) {
     <GlassVideoStage
       src={src}
       alt={content.imageAlt}
-      className="lg:min-h-[420px] [&_img]:object-[68%_center]"
+      className="overflow-hidden lg:min-h-[420px] lg:overflow-visible [&_img]:object-[68%_center]"
     >
-      <div className="pointer-events-none absolute inset-y-3 right-2 z-20 flex w-[min(46%,228px)] items-center sm:right-4 sm:w-[214px] lg:right-5 lg:w-[228px]">
+      <div className="pointer-events-none absolute right-1 bottom-1 z-20 flex w-[min(58%,210px)] origin-bottom-right scale-[0.62] items-end sm:inset-y-3 sm:right-4 sm:bottom-auto sm:w-[214px] sm:scale-100 sm:items-center lg:right-5 lg:w-[228px]">
         <AssistantChat content={content} />
       </div>
     </GlassVideoStage>
@@ -311,19 +311,19 @@ export function AiAssistantSection({
       />
 
       <div className="hb-shell relative z-10">
-        <div className="mb-5 flex flex-nowrap items-center justify-center overflow-x-auto px-1 sm:mb-6">
+        <div className="mb-5 flex w-full max-w-full flex-wrap items-center justify-center gap-x-3 gap-y-2 overflow-hidden sm:mb-6 sm:flex-nowrap sm:gap-0">
           {data.partners.map((partner, index) => (
             <span
               key={partner.id}
-              className="inline-flex shrink-0 items-center"
+              className="inline-flex max-w-full items-center"
             >
               {index > 0 ? (
                 <span
                   aria-hidden
-                  className="mx-2.5 h-4 w-px shrink-0 bg-white/30 sm:mx-4"
+                  className="mx-3 hidden h-4 w-px shrink-0 bg-white/30 sm:mx-4 sm:block"
                 />
               ) : null}
-              <span className="inline-flex items-center gap-1.5 sm:gap-2">
+              <span className="inline-flex min-w-0 items-center gap-1.5 sm:gap-2">
                 <PartnerMark id={partner.id} />
                 <span className="text-[12.5px] font-semibold tracking-tight whitespace-nowrap text-white sm:text-[14px]">
                   {partner.label}

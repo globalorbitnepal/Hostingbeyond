@@ -3,7 +3,10 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Globe, HardDrive, Mail, Mic, Sparkles, Wand2 } from "lucide-react";
+import Image from "next/image";
+import { Globe, HardDrive, Mail, Mic, Wand2 } from "lucide-react";
+
+import { HOSTINGBEYOND_AI_ROBOT_SRC } from "@/components/shared/ai-robot";
 
 import { routes } from "@/config/routes";
 import {
@@ -95,6 +98,13 @@ export function PanelAiAgentWorkspace({
             aria-hidden
             className="pointer-events-none absolute -top-24 -right-16 size-64 rounded-full bg-white/15 blur-3xl"
           />
+          <Image
+            src={HOSTINGBEYOND_AI_ROBOT_SRC}
+            alt=""
+            width={56}
+            height={56}
+            className="mb-3 size-14 object-contain"
+          />
           <p className="text-[11px] font-bold tracking-[0.2em] text-white/70 uppercase">
             HostingBeyond Agent
           </p>
@@ -106,7 +116,13 @@ export function PanelAiAgentWorkspace({
             account. Nothing is applied until you confirm.
           </p>
           <form className="relative mt-6" onSubmit={onSearch}>
-            <Sparkles className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-white/75" />
+            <Image
+              src={HOSTINGBEYOND_AI_ROBOT_SRC}
+              alt=""
+              width={18}
+              height={18}
+              className="pointer-events-none absolute top-1/2 left-4 size-[18px] -translate-y-1/2 object-contain"
+            />
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}

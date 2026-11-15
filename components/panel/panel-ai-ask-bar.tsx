@@ -42,7 +42,7 @@ export function PanelAiAskBar() {
           alt=""
           width={40}
           height={40}
-          className="size-full object-cover"
+          className="size-full object-contain"
         />
       </button>
       <input
