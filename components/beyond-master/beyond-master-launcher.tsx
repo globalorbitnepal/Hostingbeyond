@@ -154,8 +154,8 @@ export function BeyondMasterAiLauncher({
         <Image
           src={HOSTINGBEYOND_AI_ROBOT_SRC}
           alt=""
-          width={88}
-          height={88}
+          width={64}
+          height={64}
           className="hb-bmai-agent-mascot"
           priority
         />

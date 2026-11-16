@@ -42,8 +42,8 @@ export function BeyondMasterWelcomePremium({
           <Image
             src={HOSTINGBEYOND_AI_ROBOT_SRC}
             alt=""
-            width={200}
-            height={200}
+            width={112}
+            height={112}
             className="hb-bmai-premium-mascot"
             priority
           />

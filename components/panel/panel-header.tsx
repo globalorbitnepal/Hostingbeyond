@@ -339,9 +339,9 @@ export function PanelHeader({
             <Image
               src={HOSTINGBEYOND_AI_ROBOT_SRC}
               alt=""
-              width={26}
-              height={26}
-              className="size-[26px] object-contain"
+              width={22}
+              height={22}
+              className="size-[22px] object-contain"
             />
             <span>Agent</span>
           </button>

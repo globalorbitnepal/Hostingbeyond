@@ -1690,8 +1690,8 @@ html[data-hb-theme="light"] {
 
 .hb-ds-ask-robot {
   display: grid;
-  width: 2.35rem;
-  height: 2.35rem;
+  width: 2.05rem;
+  height: 2.05rem;
   flex-shrink: 0;
   overflow: visible;
   border: 0;
